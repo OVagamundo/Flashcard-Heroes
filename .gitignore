@@ -10,11 +10,7 @@
 .asset_import_maps/
 
 # Godot 4+ specific
-.godot/
-
-# Godot 4+ import/export ignores
-*.import
-*.export
+# .godot/ # This is already covered by a later entry if needed, or can be uncommented if preferred here
 
 # Project-specific ignores
 user://
@@ -67,7 +63,6 @@ core
 CrashReport-*
 
 # Project specific
-Flashcard-Heroes-Godot-4.4.1/ Godot 4+ specific ignores
 .godot/
 /android/
 Flashcard-Heroes-Godot-4.4.1/
