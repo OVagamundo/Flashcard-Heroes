@@ -9,8 +9,8 @@ signal game_resumed()
 const SCENES = {
 	"title": "res://scenes/TitleScreen.tscn",
 	"path_choice": "res://scenes/PathChoice.tscn",
-	"battle": "res://scenes/Battle.tscn",
-	"game_over": "res://scenes/GameOver.tscn"
+	"battle": "res://scenes/Battle.tscn"
+	# GameOver scene will be added when implemented
 }
 
 var current_scene: Node = null

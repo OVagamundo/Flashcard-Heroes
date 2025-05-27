@@ -79,20 +79,24 @@ flashcard-heroes/
 │   ├── trinkets/            # Trinket definition resources
 │   └── flashcards/          # Flashcard sets and definitions
 │
-├── scenes/           # All Godot scene files (.tscn)
-│   ├── battle.tscn     # Battle scene
-│   ├── title_screen.tscn  # Title screen scene
-│   ├── path_choice.tscn  # Path choice scene
-│   └── (other .tscn files)  # Other scene files
+├── scenes/                 # Godot scene files (.tscn)
+│   ├── core/                # Core game scenes
+│   │   ├── main.tscn        # Main game scene
+│   │   ├── battle/          # Battle scene and sub-scenes
+│   │   ├── ui/              # UI scenes and components
+│   │   └── world/           # World/level scenes
+│   └── systems/             # System-specific scenes
 │
-├── scripts/          # All GDScript files (.gd)
-│   ├── battle.gd        # Battle logic
-│   ├── title_screen.gd  # Title screen logic
-│   ├── path_choice.gd   # Path choice logic
-│   ├── event_bus.gd     # Global event system (autoload)
-│   ├── game_manager.gd  # Core game state (autoload)
-│   ├── player_data.gd   # Player progress and resources (autoload)
-│   └── (other .gd files) # Other script files
+├── scripts/                # GDScript files (.gd)
+│   ├── autoloads/          # Autoload scripts (singletons)
+│   │   ├── game_manager.gd  # Core game state
+│   │   ├── player_data.gd   # Player progress and resources
+│   │   ├── event_bus.gd     # Global event system
+│   │   └── save_system.gd   # Save/load functionality
+│   ├── core/                # Core game systems
+│   ├── entities/            # Entity scripts (units, items, etc.)
+│   ├── systems/             # Game systems (battle, gacha, etc.)
+│   └── ui/                  # UI scripts
 │
 ├── tests/                  # Test files
 │   ├── unit/                # Unit tests

@@ -64,7 +64,10 @@ func update_turn_indicator() -> void:
 
 func add_log_message(message: String) -> void:
 	var timestamp = "[%s] " % Time.get_time_string_from_system()
-	battle_log.text += "\n" + timestamp + message
+	if battle_log.text.is_empty():
+		battle_log.text = timestamp + message
+	else:
+		battle_log.text += "\n" + timestamp + message
 	battle_log.scroll_vertical = INF  # Auto-scroll to bottom
 
 # Button Handlers
