@@ -79,24 +79,20 @@ flashcard-heroes/
 │   ├── trinkets/            # Trinket definition resources
 │   └── flashcards/          # Flashcard sets and definitions
 │
-├── scenes/                 # Godot scene files (.tscn)
-│   ├── core/                # Core game scenes
-│   │   ├── main.tscn        # Main game scene
-│   │   ├── battle/          # Battle scene and sub-scenes
-│   │   ├── ui/              # UI scenes and components
-│   │   └── world/           # World/level scenes
-│   └── systems/             # System-specific scenes
+├── scenes/           # All Godot scene files (.tscn)
+│   ├── battle.tscn     # Battle scene
+│   ├── title_screen.tscn  # Title screen scene
+│   ├── path_choice.tscn  # Path choice scene
+│   └── (other .tscn files)  # Other scene files
 │
-├── scripts/                # GDScript files (.gd)
-│   ├── autoloads/          # Autoload scripts (singletons)
-│   │   ├── game_manager.gd  # Core game state
-│   │   ├── player_data.gd   # Player progress and resources
-│   │   ├── event_bus.gd     # Global event system
-│   │   └── save_system.gd   # Save/load functionality
-│   ├── core/                # Core game systems
-│   ├── entities/            # Entity scripts (units, items, etc.)
-│   ├── systems/             # Game systems (battle, gacha, etc.)
-│   └── ui/                  # UI scripts
+├── scripts/          # All GDScript files (.gd)
+│   ├── battle.gd        # Battle logic
+│   ├── title_screen.gd  # Title screen logic
+│   ├── path_choice.gd   # Path choice logic
+│   ├── event_bus.gd     # Global event system (autoload)
+│   ├── game_manager.gd  # Core game state (autoload)
+│   ├── player_data.gd   # Player progress and resources (autoload)
+│   └── (other .gd files) # Other script files
 │
 ├── tests/                  # Test files
 │   ├── unit/                # Unit tests
@@ -222,7 +218,7 @@ SaveSystem="*res://scripts/autoloads/save_system.gd"
 - **State Management**: Use Godot Autoloads/Singletons for global state management
 - **Clear Naming Conventions**: Follow consistent naming conventions for files, classes, functions, and variables (e.g., PascalCase for classes/types, camelCase for functions/variables)
 - **Code Comments**: Write clear and concise comments for complex logic or non-obvious code sections
-- **Testing**: Write unit and integration tests for core logic and systems
+- **Manual Testing**: Core logic and systems will be verified through manual testing
 - **Asset Organization**: Keep assets organized within the `public/` or `src/assets/` directory
 
 ### 5.1 Milestone WS0: Project & Core Scene Setup
@@ -240,150 +236,178 @@ SaveSystem="*res://scripts/autoloads/save_system.gd"
      - Quit button
    - [ ] `scenes/screens/PathChoiceScreen.tscn` (stub)
      - Simple "Battle" button
-     - "Return to Title" button
-   - [ ] `scenes/core/battle/BattleScreen.tscn`
-     - Basic layout (player side, enemy side)
-     - Placeholder UI elements
-   - [ ] `scenes/screens/GameOverScreen.tscn`
-     - Simple "Game Over" text
-     - "Return to Title" button
 
-3. **Autoloads**
-   - [ ] `scripts/autoloads/GameManager.gd`
-     - Scene management
-     - Basic game state
-   - [ ] `scripts/autoloads/PlayerData.gd`
-     - hero_hp: int
-     - gold: int
-     - gacha_tokens: int
-   - [ ] `scripts/autoloads/EventBus.gd`
-     - Basic signal definitions
+2. **Implement Core Autoload Singletons (in `scripts/autoloads/`):**
+   - **GameManager.gd:**
+     - High-level game state management and scene transitions.
+     - Implement functions for basic scene loading and changing.
+     - Include variables for tracking basic battle state.
+   - **PlayerData.gd:**
+     - Store persistent data for the current run (e.g., Hero HP, Gacha Tokens).
+     - Define and initialize variables for hero_hp and gacha_tokens.
+   - **EventBus.gd:**
+     - Central message broker for decoupled communication using Godot signals.
+     - Define initial, essential global signals relevant to battle, UI interaction, and data changes.
+   - **InputManager.gd:**
+     - Centralize the processing of user input, particularly for UI interactions.
+     - Translate raw input into game-specific actions or events.
 
-### 5.2 Milestone WS1: Basic Battle Participants & Data
+3. **Create Core Scene Files:**
+   - `scenes/core/main.tscn` (set as the project's run/main_scene).
+   - `scenes/screens/TitleScreen.tscn` with a "Start Battle Test" button and a "Quit" button.
+   - `scenes/screens/GameOverScreen.tscn` with a simple text display and a button to return to the TitleScreen.
 
-#### Tasks
-1. **Unit System**
-   - [ ] Create `scripts/resources/UnitDefinition.gd`
-     ```gdscript
-     class_name UnitDefinition extends Resource
-     @export var id: String
-     @export var display_name: String
-     @export var max_hp: int
-     @export var power: int
-     @export var icon: Texture2D
-     ```
-   - [ ] Create sample unit definitions:
-     - `data/units/hero_definition.tres`
-     - `data/units/enemy_definition.tres`
+4. **Initial BattleScreen Setup:**
+   - Create `scenes/core/battle/BattleScreen.tscn` with placeholder UI components.
+   - Create `scripts/core/battle/BattleScreen.gd` and attach it to BattleScreen.tscn.
+   - Structure the BattleScreen with areas for:
+     - Player Unit Lineup
+     - Enemy Unit Lineup
+     - Player Information Display
+     - Gacha Machine Interaction Area
+     - Battle Log Display
+     - "End Turn" Button
+     - Inspection Panel Area (initially hidden)
 
-2. **Unit Scene**
-   - [ ] Create `scenes/units/Unit.tscn`
-     - Node2D (root)
-       - Sprite2D (visual)
-       - Label (HP display)
-   - [ ] Create `scripts/units/Unit.gd`
-     - Handles unit state and visuals
-     - Basic methods: take_damage(), attack()
+### Phase 1: Battle Entities, Data Structures, and Foundational Spawning
 
-3. **Battle Setup**
-   - [ ] Update BattleScreen to spawn test units
-   - [ ] Display basic unit information
-   - [ ] Show current turn indicator
+**Goal:** Define the UnitDefinition resource for unit data, create a reusable Unit scene, and implement the spawning of initial units onto the BattleScreen based on this data structure.
 
-### 5.3 Milestone WS2: Rudimentary Combat Interaction
+1. **Define Unit Data Structure (UnitDefinition.gd):**
+   - Create `scripts/resources/UnitDefinition.gd` extending Resource.
+   - Define exported variables for core unit attributes (id, display_name, max_hp, power, icon).
+   - Create sample unit definitions in `data/units/`.
 
-#### Tasks
-1. **Battle UI**
-   - [ ] Add "Attack" button to BattleScreen
-   - [ ] Add basic battle log
-   - [ ] Show HP bars for units
+2. **Create Reusable Unit Scene:**
+   - Create `scenes/entities/Unit.tscn` with visual representation and HP display.
+   - Create `scripts/entities/Unit.gd` with methods for initialization, taking damage, and basic attacks.
+   - Implement event emission for unit actions and state changes.
 
-2. **Combat Logic**
-   - [ ] Implement basic attack flow
-     - Player selects "Attack"
-     - Hero attacks enemy
-     - Enemy counterattacks
-     - Update HP displays
-   - [ ] Check win/lose conditions
-     - If enemy HP <= 0: player wins
-     - If hero HP <= 0: game over
+3. **Implement Initial Unit Spawning Logic:**
+   - Load sample unit definitions in BattleScreen.gd.
+   - Instance and initialize units for both player and enemy sides.
+   - Position units in their respective lineup areas.
+   - Emit relevant events for unit spawning and battle start.
+### Phase 2: Foundational Combat Loop & UI Feedback via EventBus
 
-3. **Turn Management**
-   - [ ] Simple turn state machine
-   - [ ] Visual feedback for active turn
-   - [ ] Basic battle end handling
+**Goal:** Implement a simplified combat turn initiated by the "End Turn" button, with automated combat resolution and event-driven UI updates.
 
-### 5.4 Milestone WS3: Minimal Flashcard & Gacha Integration
+1. **Implement "End Turn" Button Logic:**
+   - Connect the button's pressed signal in BattleScreen.gd.
+   - Disable the button during combat resolution.
+   - Implement a simple combat sequence (player attacks, then enemies attack).
+   - Handle turn transitions and re-enable the button.
 
-#### Tasks
-1. **Flashcard Stub**
-   - [ ] Add "Solve Flashcard" button
-   - [ ] Award 1 Gacha Token on click (no actual flashcard yet)
-   - [ ] Update token display
+2. **Implement Battle Log Updates:**
+   - Create a method to handle battle log messages via EventBus.
+   - Display combat actions and results in the battle log area.
 
-2. **Gacha Stub**
-   - [ ] Add "Draw Unit" button (costs 1 token)
-   - [ ] Spawn friendly unit when clicked (if tokens > 0)
-   - [ ] Update token count
+3. **Implement Unit Death Handling & Basic Win/Loss Conditions:**
+   - Handle unit_death events.
+   - Check for win/loss conditions after each unit death.
+   - Trigger game over or victory states as appropriate.
 
-3. **Unit Management**
-   - [ ] Allow selecting active unit
-   - [ ] Only selected unit can attack
-   - [ ] Basic unit targeting
+### Phase 3: Foundational Inspection Window & Gacha Machine Interaction
 
-### 5.5 Milestone WS4: Basic Battle Loop & Win/Loss Flow
+**Goal:** Implement an initial version of a modal panel for unit inspection and basic Gacha Machine interaction.
 
-#### Tasks
-1. **Battle Flow**
-   - [ ] Implement proper turn order
-   - [ ] Add basic AI for enemy turns
-   - [ ] Handle unit death and cleanup
+1. **Create Inspection Panel:**
+   - Create `scenes/ui/InspectionPanel.tscn` with UI elements for unit details.
+   - Implement `scripts/ui/InspectionPanel.gd` to display unit information.
+   - Handle unit inspection requests via EventBus.
 
-2. **Progression**
-   - [ ] Award gold on battle win
-   - [ ] Update path choice screen with gold display
-   - [ ] Implement basic run progression
+2. **Implement Foundational Flashcard Interaction:**
+   - Add a debug button to simulate correct flashcard answers.
+   - Update Gacha Token count in PlayerData and UI.
 
-3. **Game Over**
-   - [ ] Proper game over handling
-   - [ ] Reset player data on new run
-   - [ ] Return to title screen
+3. **Implement Foundational Gacha Machine Buttons:**
+   - Connect Gacha Machine buttons in BattleScreen.gd.
+   - Implement token cost validation and spending.
+   - Spawn new units based on Gacha tier.
+   - Update UI and emit relevant events.
 
-### 5.6 Testing Plan
+### Phase 4: Foundational Merge System Interaction
 
-#### Unit Tests
-- [ ] Unit damage calculation
-- [ ] Turn management
-- [ ] Win/lose conditions
+**Goal:** Implement an initial version of the unit merging system with basic selection and combination mechanics.
 
-#### Integration Tests
-- [ ] Full battle flow
-- [ ] Scene transitions
-- [ ] Resource management
+1. **Implement Basic Unit Selection for Merging:**
+   - Track selected units in BattleScreen.gd.
+   - Provide visual feedback for selected units.
+   - Handle unit selection/deselection.
 
-### 5.7 Future Considerations
-- Add animations and sound effects
-- Implement proper flashcard mini-game
-- Add more unit types and abilities
-- Implement item system
-- Add visual polish and feedback
-
-### 5.8 Notes
-- Keep UI minimal but functional
-- Use placeholder art where needed
-- Focus on core battle mechanics first
-- Document any assumptions or limitations
+2. **Implement "Merge" Button and Foundational Merge Logic:**
+   - Add a debug merge button to BattleScreen.
+   - Validate selection (exactly two units).
+   - Remove selected units and spawn a merged unit.
+   - Provide feedback via battle log and events.
 
 ## 6. Documentation
 
-### 6.1 Living Documentation
-- Code documentation
-- Architecture decisions
-- API references
-- Tutorials and guides
+### 6.1 Code Documentation
+- [ ] Document all public APIs and complex logic
+- [ ] Update README with setup instructions
+- [ ] Document event system architecture
 
-### 6.2 Onboarding
-- Development environment setup
-- Contribution guidelines
-- Code style guide
-- Testing guidelines
+### 6.2 EventBus Signals Reference
+- **battle_started()**: Emitted when battle begins
+- **battle_ended(victory: bool)**: Emitted when battle ends (true if player won)
+- **unit_spawned(unit: Node, definition: Resource)**: When a new unit enters the battlefield
+- **unit_took_damage(unit: Node, amount: int, new_hp: int)**: When a unit receives damage
+- **unit_died(unit: Node)**: When a unit is defeated
+- **gacha_tokens_changed(new_amount: int)**: When gacha token count changes
+- **request_unit_inspection(unit: Node)**: Request to show unit details
+- **request_show_battle_log_message(message: String)**: Add message to battle log
+- **player_turn_started()**: When player's turn begins
+- **player_turn_ended()**: When player ends their turn
+
+### 6.3 Deployment Guide
+- **Build Procedures**:
+  - Export settings for HTML5 and desktop platforms
+  - Asset optimization settings
+- **Platform Considerations**:
+  - Web: Browser compatibility and performance
+  - Desktop: Minimum system requirements
+  - Mobile: Touch controls and performance
+- **Performance Guidelines**:
+  - Texture and audio optimization
+  - Memory management best practices
+  - Profiling and optimization targets
+
+### 6.4 Future Enhancements
+- **Visual Improvements**:
+  - Combat animations and effects
+  - Screen shake and hit effects
+  - Unit movement and attack animations
+- **Gameplay Expansions**:
+  - Full flashcard mini-game implementation
+  - Additional unit types and abilities
+  - Item and progression systems
+  - Multiple battle arenas and environments
+
+### 6.5 Development Notes
+- **UI/UX**:
+  - Focus on functionality over polish initially
+  - Use clear visual feedback for player actions
+  - Ensure all interactive elements are easily identifiable
+- **Art Assets**:
+  - Use placeholder art during development
+  - Maintain consistent art style guidelines
+  - Document asset specifications and requirements
+- **Core Focus**:
+  - Prioritize battle mechanics implementation
+  - Ensure smooth turn-based gameplay flow
+  - Maintain clean separation of concerns in code
+
+### 6.6 Onboarding
+- **Development Setup**:
+  - Godot 4.1.1 installation
+  - Project import and setup
+  - Required tools and plugins
+- **Project Guidelines**:
+  - Code style and formatting
+  - Branching and version control workflow
+  - Commit message conventions
+- **Development Process**:
+  - Feature implementation workflow
+  - Manual testing approach
+  - Debugging and issue reporting

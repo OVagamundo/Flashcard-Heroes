@@ -7,10 +7,10 @@ signal game_resumed()
 
 # Scene paths
 const SCENES = {
-	"title": "res://scenes/screens/TitleScreen.tscn",
-	"path_choice": "res://scenes/screens/PathChoiceScreen.tscn",
-	"battle": "res://scenes/core/battle/BattleScreen.tscn",
-	"game_over": "res://scenes/screens/GameOverScreen.tscn"
+	"title": "res://scenes/TitleScreen.tscn",
+	"path_choice": "res://scenes/PathChoice.tscn",
+	"battle": "res://scenes/Battle.tscn",
+	"game_over": "res://scenes/GameOver.tscn"
 }
 
 var current_scene: Node = null

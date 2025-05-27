@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://oh7d5uvcaeo8"]
+[gd_scene load_steps=2 format=3 uid="uid://h4rso7xt5e6a"]
 
-[ext_resource type="Script" uid="uid://buxd2byrn2pvd" path="res://scenes/screens/TitleScreen.gd" id="1_9x5e7"]
+[ext_resource type="Script" uid="uid://cp8v7fapo36b6" path="res://scripts/TitleScreen.gd" id="1_qyuap"]
 
 [node name="TitleScreen" type="Control"]
 layout_mode = 3
@@ -9,7 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_9x5e7")
+script = ExtResource("1_qyuap")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 0
