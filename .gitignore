@@ -1,0 +1,73 @@
+# Godot 4+ specific ignores
+.import/
+.export/
+
+# Imported translations (automatically generated from CSV files)
+*.import
+
+# Godot-specific ignores
+.mono/
+.asset_import_maps/
+
+# Godot 4+ specific
+.godot/
+
+# Godot 4+ import/export ignores
+*.import
+*.export
+
+# Project-specific ignores
+user://
+
+# System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Build artifacts
+build/
+bin/
+export/
+builds/
+
+# Logs and temporary files
+*.log
+*.sqlite
+*.sqlite3
+logs/
+
+# Local development settings
+.env
+.env.*
+!.env.example
+
+# Cache and temporary directories
+.cache/
+.temp/
+.tmp/
+
+# Debug symbols and crash dumps
+*.pdb
+*.pdb.meta
+crash*.log
+crash.dmp
+*.dmp
+core.*
+core
+CrashReport-*
+
+# Project specific
+Flashcard-Heroes-Godot-4.4.1/ Godot 4+ specific ignores
+.godot/
+/android/
+Flashcard-Heroes-Godot-4.4.1/
