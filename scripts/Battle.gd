@@ -13,14 +13,14 @@ const MAX_UNITS_PER_SIDE = 6 # As per GDD
 const UNIT_SCENE = preload("res://scenes/Unit.tscn") # Will be used later
 const OFFENSIVE_T1_UNIT_DATA = preload("res://scripts/OffensiveT1UnitData.tres")
 
-# Will hold references to the slot containers
+# Arrays to hold references to the slot Node2D or Control nodes in the scene
 var player_slot_nodes: Array[Node] = []
 var enemy_slot_nodes: Array[Node] = []
-var is_player_turn: bool = true
 
 # Arrays to hold actual unit instances
 var player_units: Array[Unit] = []
 var enemy_units: Array[Unit] = []
+var is_player_turn: bool = true
 
 func _ready() -> void:
 	# Connect button signals (can be kept, but their actions will be simplified)
@@ -35,11 +35,11 @@ func _ready() -> void:
 	
 	# Initialize battle visuals
 	setup_battle_scene()
-	_spawn_initial_units() # Spawn units after scene setup
+	# _spawn_initial_units() # Spawn units after scene setup (TEMPORARILY COMMENTED FOR DEBUGGING)
 
 func setup_battle_scene() -> void:
 	clear_all_slots() # Clear any previous children
-	setup_visual_slots()
+	setup_visual_slots() # Populate the slot node arrays
 	
 	is_player_turn = true
 	update_turn_indicator()
@@ -51,57 +51,61 @@ func setup_battle_scene() -> void:
 	add_log_message("Battle scene initialized. Lineup slots displayed.")
 
 func clear_all_slots() -> void:
-	for container in [player_units_container, enemy_units_container]:
-		if not is_instance_valid(container):
-			push_warning("clear_all_slots(): Invalid container provided.")
-			continue
-		for slot_node in container.get_children(): # These are PlayerSlotX/EnemySlotX nodes (VBoxContainers)
-			if not is_instance_valid(slot_node):
-				continue
-			# Iterate over a copy of children array because queue_free modifies it
-			for unit_candidate in slot_node.get_children().duplicate(): 
-				if is_instance_valid(unit_candidate) and unit_candidate is Unit:
-					unit_candidate.queue_free() # Only remove actual Unit instances
-	player_slot_nodes.clear()
-	enemy_slot_nodes.clear()
+	# Clear units from player slots
+	for slot_node in player_slot_nodes:
+		if is_instance_valid(slot_node):
+			for child in slot_node.get_children():
+				if is_instance_valid(child) and child is Unit:
+					child.queue_free()
+	# Clear units from enemy slots
+	for slot_node in enemy_slot_nodes:
+		if is_instance_valid(slot_node):
+			for child in slot_node.get_children():
+				if is_instance_valid(child) and child is Unit:
+					child.queue_free()
+	
 	player_units.clear() # Also clear logical unit arrays
 	enemy_units.clear()
 
+# New function to get references to the slot nodes from the scene
 func setup_visual_slots() -> void:
-	# Clear any existing references
 	player_slot_nodes.clear()
 	enemy_slot_nodes.clear()
-	
-	var temp_player_slots: Array[Node] = []
-	# Get all slot containers (they should be pre-made in the scene)
-	for i in range(1, MAX_UNITS_PER_SIDE + 1):
-		# Player slots (collect them in natural order first)
-		var player_slot = player_units_container.get_node_or_null("PlayerSlot" + str(i))
-		if player_slot:
-			temp_player_slots.append(player_slot)
-			
-		# Enemy slots (collected in natural L-R order, assuming EnemySlot1 is frontmost for enemy)
-		var enemy_slot = enemy_units_container.get_node_or_null("EnemySlot" + str(i))
-		if enemy_slot:
-			enemy_slot_nodes.append(enemy_slot)
 
-	# Reverse the player slots so index 0 is the rightmost (e.g., PlayerSlot6)
-	player_slot_nodes = temp_player_slots.duplicate() # Make a copy
-	player_slot_nodes.reverse()
-	
-	# Log the setup
-	add_log_message("Visual slots set up. Found %d player slots and %d enemy slots." % 
-		[player_slot_nodes.size(), enemy_slot_nodes.size()])
-	
-	# For debugging, print the order:
-	# print("Player Slots Order (index 0 should be frontmost/rightmost):")
-	# for i in range(player_slot_nodes.size()):
-	# 	print("  Player Slot Index ", i, ": ", player_slot_nodes[i].name)
-	# print("Enemy Slots Order (index 0 should be frontmost/leftmost):")
-	# for i in range(enemy_slot_nodes.size()):
-	# 	print("  Enemy Slot Index ", i, ": ", enemy_slot_nodes[i].name)
+	for i in range(player_units_container.get_child_count()):
+		var slot_node = player_units_container.get_child(i)
+		if is_instance_valid(slot_node):
+			player_slot_nodes.append(slot_node)
+		else:
+			push_warning("Invalid player slot node at index %d" % i)
 
-func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int) -> Unit:
+	for i in range(enemy_units_container.get_child_count()):
+		var slot_node = enemy_units_container.get_child(i)
+		if is_instance_valid(slot_node):
+			enemy_slot_nodes.append(slot_node)
+		else:
+			push_warning("Invalid enemy slot node at index %d" % i)
+
+	# Initialize/resize the logical unit arrays to match the number of visual slots
+	player_units.resize(player_slot_nodes.size())
+	for i in range(player_units.size()):
+		player_units[i] = null
+	
+	enemy_units.resize(enemy_slot_nodes.size())
+	for i in range(enemy_units.size()):
+		enemy_units[i] = null
+
+	# Ensure player_slot_nodes are in the visual order (right-to-left for player if HBox is LTR)
+	# If your HBoxContainer for player units is standard (adds left to right), 
+	# and you want slot_nodes[0] to be the rightmost (front), then reverse.
+	# This depends on your specific scene setup for player_units_container children order.
+	# Assuming player_slot_nodes[0] should be the front-most (often rightmost for player side)
+	# If not, player_slot_nodes.reverse() might be needed here or how you iterate it.
+
+	add_log_message("Found %d player slots and %d enemy slots." % [player_slot_nodes.size(), enemy_slot_nodes.size()])
+
+func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
+	# Mark the function as async since we'll be using await
 	if not UNIT_SCENE:
 		push_error("Battle._spawn_unit(): UNIT_SCENE is not loaded.")
 		return null
@@ -109,75 +113,130 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int) -> 
 		push_error("Battle._spawn_unit(): unit_data is null.")
 		return null
 
-	var unit_instance: Unit = UNIT_SCENE.instantiate()
+	var unit_instance: Unit = UNIT_SCENE.instantiate() as Unit
 	if not unit_instance:
 		push_error("Battle._spawn_unit(): Failed to instantiate UNIT_SCENE.")
 		return null
 
-	# Define tint colors for player and enemy units
-	var player_tint = Color(0.7, 0.7, 1.0, 0.8) # Light blueish tint
-	var enemy_tint = Color(1.0, 0.7, 0.7, 0.8) # Light reddish tint
-	var tint_to_apply = player_tint if is_player_team else enemy_tint
-
-	unit_instance.initialize(unit_data, is_player_team, tint_to_apply) # Initialize with data, team, and color
-
-	var target_container_slots: Array[Node]
-	var target_unit_array: Array[Unit]
-	var unit_name_prefix: String
+	var target_slot_node: Node
+	var team_tint: Color
 
 	if is_player_team:
-		target_container_slots = player_slot_nodes
-		target_unit_array = player_units
-		unit_name_prefix = "PlayerUnit_"
-		unit_instance.set_meta("team", "player")
+		if slot_index < 0 or slot_index >= player_slot_nodes.size():
+			push_error("Battle._spawn_unit(): Invalid player slot_index %d (max %d)." % [slot_index, player_slot_nodes.size() -1])
+			unit_instance.queue_free()
+			return null
+		target_slot_node = player_slot_nodes[slot_index]
+		team_tint = Color(0.7, 0.7, 1.0) # Light blue for player
+		unit_instance.name = "PlayerUnit_%d" % slot_index
 	else:
-		target_container_slots = enemy_slot_nodes
-		target_unit_array = enemy_units
-		unit_name_prefix = "EnemyUnit_"
-		unit_instance.set_meta("team", "enemy")
+		if slot_index < 0 or slot_index >= enemy_slot_nodes.size():
+			push_error("Battle._spawn_unit(): Invalid enemy slot_index %d (max %d)." % [slot_index, enemy_slot_nodes.size() -1])
+			unit_instance.queue_free()
+			return null
+		target_slot_node = enemy_slot_nodes[slot_index]
+		team_tint = Color(1.0, 0.7, 0.7) # Light red for enemy
+		unit_instance.name = "EnemyUnit_%d" % slot_index
 
-	if slot_index >= 0 and slot_index < target_container_slots.size():
-		var slot_node = target_container_slots[slot_index]
-		# Clear any existing UNIT in the slot before adding the new one
-		for child in slot_node.get_children():
-			if child is Unit: # Check if the child is a Unit instance
-				child.queue_free()
-		
-		slot_node.add_child(unit_instance)
-		unit_instance.name = "%s%s_%d" % [unit_name_prefix, unit_data.unit_name.replace(" ", ""), slot_index + 1]
-		target_unit_array.append(unit_instance)
-		
-		# Apply team-specific appearance (moved from Unit.gd for central control)
-		if not is_player_team: # Enemy
-			unit_instance.self_modulate = Color(1, 0.8, 0.8)  # Slight red tint
-		
-		EventBus.unit_spawned.emit(unit_instance)
-		add_log_message("Spawned %s in %s slot %d" % [unit_instance.name, "player" if is_player_team else "enemy", slot_index + 1])
-		return unit_instance
-	else:
-		push_error("Battle._spawn_unit(): Invalid slot_index %d for team %s (slots available: %d)" % [slot_index, "player" if is_player_team else "enemy", target_container_slots.size()])
-		unit_instance.queue_free() # Clean up unparented instance
+	if not is_instance_valid(target_slot_node):
+		push_error("Battle._spawn_unit(): Target slot_node is invalid for team %s, slot %d." % [("player" if is_player_team else "enemy"), slot_index])
+		unit_instance.queue_free()
 		return null
 
-func _spawn_initial_units() -> void:
+	# Clear any existing unit from the target slot
+	for child in target_slot_node.get_children():
+		if is_instance_valid(child) and child is Unit:
+			child.queue_free()
+
+	# Add to the scene
+	target_slot_node.add_child(unit_instance)
+	
+	# Initialize the unit
+	unit_instance.initialize(unit_data, is_player_team, team_tint)
+	
+	# Wait for the next frame to ensure the unit's size is calculated
+	get_tree().process_frame
+	
+	# Get the floor node (should be the first child of the slot)
+	var floor_node = target_slot_node.get_child(0) if target_slot_node.get_child_count() > 0 else null
+	
+	# Position the unit above the floor
+	if floor_node and floor_node is ColorRect:
+		# Position unit right above the floor
+		unit_instance.position = Vector2(
+			target_slot_node.size.x / 2 - unit_instance.size.x / 2,  # Center horizontally
+			target_slot_node.size.y - unit_instance.size.y - floor_node.size.y  # Position right above floor
+		)
+	else:
+		# Fallback if floor node is not found
+		unit_instance.position = Vector2(
+			target_slot_node.size.x / 2 - unit_instance.size.x / 2,  # Center horizontally
+			target_slot_node.size.y - unit_instance.size.y - 20  # Default 20px from bottom
+		)
+
+	# Add to the appropriate team array
+	if is_player_team:
+		player_units[slot_index] = unit_instance
+	else:
+		enemy_units[slot_index] = unit_instance
+
+	# Connect signals
+	unit_instance.unit_died.connect(_on_unit_died_eventbus)
+	EventBus.unit_spawned.emit(unit_instance, is_player_team, slot_index)
+
+	return unit_instance
+
+func _spawn_initial_units():
 	if not OFFENSIVE_T1_UNIT_DATA:
 		push_error("Battle._spawn_initial_units(): OFFENSIVE_T1_UNIT_DATA not loaded.")
 		return
 
 	add_log_message("Spawning initial units...")
 	# Spawn 2 player units (Offensive T1)
-	for i in range(2):
-		if i < player_slot_nodes.size():
-			_spawn_unit(OFFENSIVE_T1_UNIT_DATA, true, i)
+	var player_units_spawned_count = 0
+	var player_units_to_spawn = [
+		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 0},
+		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 1}
+	]
+	
+	for unit_info in player_units_to_spawn:
+		if player_units_spawned_count < MAX_UNITS_PER_SIDE and unit_info.slot < player_slot_nodes.size():
+			var new_unit = _spawn_unit(unit_info.data, true, unit_info.slot)
+			if is_instance_valid(new_unit):
+				player_units_spawned_count += 1
 		else:
-			add_log_message("Warning: Not enough player slots to spawn unit %d" % (i+1))
-			
+			add_log_message("Could not spawn player unit in slot %d. Max units or invalid slot." % unit_info.slot)
+			break
+	
+	# If player_units[0] should correspond to player_slot_nodes[0] (e.g., rightmost/frontmost)
+	# and _spawn_unit appends, and you spawned in order 0, 1, ...
+	# then reversing player_units makes player_units[0] the last one spawned (e.g. into slot 1 if 2 units)
+	# This needs careful thought based on your HBoxContainer order and desired logical front.
+	# Let's keep the reverse for now, assuming player_units[0] should be the unit in the highest player slot index that was filled.
+	if player_units.size() > 1:
+		player_units.reverse()
+
 	# Spawn 3 enemy units (Offensive T1)
-	for i in range(3):
-		if i < enemy_slot_nodes.size():
-			_spawn_unit(OFFENSIVE_T1_UNIT_DATA, false, i)
+	var enemy_units_spawned_count = 0
+	var enemy_units_to_spawn = [
+		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 0},
+		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 1},
+		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 2}
+	]
+
+	for unit_info in enemy_units_to_spawn:
+		if enemy_units_spawned_count < MAX_UNITS_PER_SIDE and unit_info.slot < enemy_slot_nodes.size():
+			var new_unit = _spawn_unit(unit_info.data, false, unit_info.slot)
+			if is_instance_valid(new_unit):
+				enemy_units_spawned_count += 1
 		else:
-			add_log_message("Warning: Not enough enemy slots to spawn unit %d" % (i+1))
+			add_log_message("Could not spawn enemy unit in slot %d. Max units or invalid slot." % unit_info.slot)
+			break
+	
+	# Enemy units are typically frontmost at index 0 (leftmost for HBoxContainer), 
+	# and if spawned into enemy_slot_nodes[0], enemy_slot_nodes[1] etc., 
+	# and _spawn_unit appends, then enemy_units[0] is the unit in enemy_slot_nodes[0]. No reverse needed.
+
 	update_turn_indicator() # Update indicator after units are potentially spawned
 
 # Temporarily simplify button actions
@@ -241,7 +300,7 @@ func _on_end_turn_pressed() -> void:
 func _on_gacha_pressed() -> void:
 	add_log_message("Gacha button pressed. (Functionality pending unit implementation)")
 
-func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Unit:
+func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
 	for unit in unit_array:
 		if is_instance_valid(unit) and unit.current_hp > 0:
 			return unit
@@ -251,7 +310,7 @@ func update_turn_indicator() -> void:
 	if end_turn_button.disabled: # Battle is over
 		return
 		
-	if player_units.is_empty() and enemy_units.is_empty() and not player_slot_nodes.is_empty():
+	if player_units.is_empty() and enemy_units.is_empty():
 		# This condition might be met briefly during setup if called before _spawn_initial_units
 		turn_indicator.text = "Preparing Battle..."
 		turn_indicator.add_theme_color_override("font_color", Color.WHITE) # Neutral color
@@ -279,6 +338,8 @@ func _on_unit_died_eventbus(unit_died: Unit) -> void:
 	var unit_name = unit_died.get_name_for_log() # Use the helper for consistent naming
 	add_log_message("EventBus: Unit %s died." % unit_name)
 
+	var unit_parent_slot = unit_died.get_parent() # The slot node
+
 	var removed_from_player = false
 	if player_units.has(unit_died):
 		player_units.erase(unit_died)
@@ -297,6 +358,11 @@ func _on_unit_died_eventbus(unit_died: Unit) -> void:
 	# Visually remove the unit from the scene
 	if is_instance_valid(unit_died):
 		unit_died.queue_free()
+
+	# Optional: Add a placeholder or 'empty' visual back to the unit_parent_slot if needed
+	# For example, if you had a 'tombstone' or 'empty slot' visual to show.
+	# if is_instance_valid(unit_parent_slot):
+	#    pass # logic to restore slot visual if it was changed by unit presence
 
 	# Check for win/loss conditions only if the battle isn't already marked as ended
 	if not end_turn_button.disabled:

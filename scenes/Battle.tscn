@@ -75,100 +75,88 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="PlayerSlot1" type="VBoxContainer" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
+[node name="PlayerSlot1" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="PlayerSlotArea1" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot1"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.3, 0.3, 0.7, 0.3)
 
 [node name="PlayerFloor1" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot1"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
-[node name="PlayerSlot2" type="VBoxContainer" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
+[node name="PlayerSlot2" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="PlayerSlotArea2" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot2"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.3, 0.3, 0.7, 0.3)
 
 [node name="PlayerFloor2" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot2"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
-[node name="PlayerSlot3" type="VBoxContainer" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
+[node name="PlayerSlot3" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="PlayerSlotArea3" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot3"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.3, 0.3, 0.7, 0.3)
 
 [node name="PlayerFloor3" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot3"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
-[node name="PlayerSlot4" type="VBoxContainer" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
+[node name="PlayerSlot4" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="PlayerSlotArea4" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot4"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.3, 0.3, 0.7, 0.3)
 
 [node name="PlayerFloor4" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot4"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
-[node name="PlayerSlot5" type="VBoxContainer" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
+[node name="PlayerSlot5" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="PlayerSlotArea5" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot5"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.3, 0.3, 0.7, 0.3)
 
 [node name="PlayerFloor5" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot5"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
-[node name="PlayerSlot6" type="VBoxContainer" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
+[node name="PlayerSlot6" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="PlayerSlotArea6" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot6"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.3, 0.3, 0.7, 0.3)
-
 [node name="PlayerFloor6" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot6"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
 [node name="EnemySide" type="VBoxContainer" parent="MainContainer/BattleArea"]
@@ -183,100 +171,88 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="EnemySlot1" type="VBoxContainer" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
+[node name="EnemySlot1" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="EnemySlotArea1" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot1"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.7, 0.3, 0.3, 0.3)
 
 [node name="EnemyFloor1" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot1"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
-[node name="EnemySlot2" type="VBoxContainer" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
+[node name="EnemySlot2" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="EnemySlotArea2" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot2"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.7, 0.3, 0.3, 0.3)
 
 [node name="EnemyFloor2" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot2"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
-[node name="EnemySlot3" type="VBoxContainer" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
+[node name="EnemySlot3" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="EnemySlotArea3" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot3"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.7, 0.3, 0.3, 0.3)
 
 [node name="EnemyFloor3" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot3"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
-[node name="EnemySlot4" type="VBoxContainer" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
+[node name="EnemySlot4" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="EnemySlotArea4" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot4"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.7, 0.3, 0.3, 0.3)
 
 [node name="EnemyFloor4" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot4"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
-[node name="EnemySlot5" type="VBoxContainer" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
+[node name="EnemySlot5" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="EnemySlotArea5" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot5"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.7, 0.3, 0.3, 0.3)
 
 [node name="EnemyFloor5" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot5"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
-[node name="EnemySlot6" type="VBoxContainer" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
+[node name="EnemySlot6" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
 custom_minimum_size = Vector2(100, 170)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="EnemySlotArea6" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot6"]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.7, 0.3, 0.3, 0.3)
-
 [node name="EnemyFloor6" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot6"]
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
 [node name="Actions" type="HBoxContainer" parent="MainContainer"]
