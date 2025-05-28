@@ -265,57 +265,56 @@ func _on_end_turn_pressed() -> void:
 	if end_turn_button.disabled:
 		return
 
-	if is_player_turn:
-		add_log_message("Player's turn actions:")
-		var any_player_action_taken = false
-		# Iterate over a shallow copy in case the array is modified (e.g., a unit dies from counter-attack)
-		for acting_player_unit in player_units.duplicate(false):
-			if not is_instance_valid(acting_player_unit) or acting_player_unit.current_hp <= 0:
-				continue # Skip dead or invalid units
-
-			var target_enemy_unit = _get_frontmost_live_unit(enemy_units) # Get current frontmost enemy
-
-			if target_enemy_unit:
-				add_log_message("Player Unit %s attacks Enemy Unit %s." % [acting_player_unit.get_name_for_log(), target_enemy_unit.get_name_for_log()])
-				acting_player_unit.perform_basic_attack(target_enemy_unit)
-				any_player_action_taken = true
-				# If target_enemy_unit dies, _on_unit_died_eventbus handles removal.
-				# The next iteration's _get_frontmost_live_unit will find the new front.
-			else:
-				add_log_message("Player Unit %s has no live enemy units to target." % acting_player_unit.get_name_for_log())
-				break # No more enemies, player turn actions can stop
-		
-		if not any_player_action_taken and player_units.size() > 0:
-			add_log_message("No player units could act this turn.")
-		elif player_units.is_empty() and not end_turn_button.disabled: # Check disabled to avoid log if battle just ended
-			add_log_message("No player units remaining to act.")
-
-		is_player_turn = false
-	else: # Enemy's turn
-		add_log_message("Enemy's turn actions:")
-		var any_enemy_action_taken = false
-		# Iterate over a shallow copy for safety
-		for acting_enemy_unit in enemy_units.duplicate(false):
-			if not is_instance_valid(acting_enemy_unit) or acting_enemy_unit.current_hp <= 0:
-				continue # Skip dead or invalid units
-
-			var target_player_unit = _get_frontmost_live_unit(player_units) # Get current frontmost player unit
-
-			if target_player_unit:
-				add_log_message("Enemy Unit %s attacks Player Unit %s." % [acting_enemy_unit.get_name_for_log(), target_player_unit.get_name_for_log()])
-				acting_enemy_unit.perform_basic_attack(target_player_unit)
-				any_enemy_action_taken = true
-			else:
-				add_log_message("Enemy Unit %s has no live player units to target." % acting_enemy_unit.get_name_for_log())
-				break # No more player units, enemy turn actions can stop
-
-		if not any_enemy_action_taken and enemy_units.size() > 0:
-			add_log_message("No enemy units could act this turn.")
-		elif enemy_units.is_empty() and not end_turn_button.disabled:
-			add_log_message("No enemy units remaining to act.")
-		
-		is_player_turn = true
+	add_log_message("=== Starting Turn ===")
 	
+	# Player units attack first (left to right)
+	add_log_message("Player's turn actions:")
+	var any_player_action_taken = false
+	for i in range(player_units.size()):
+		var acting_player_unit = player_units[i]
+		if not is_instance_valid(acting_player_unit) or acting_player_unit.current_hp <= 0:
+			continue  # Skip dead or invalid units
+
+		var target_enemy_unit = _get_frontmost_live_unit(enemy_units)  # Get current frontmost enemy
+		if target_enemy_unit:
+			add_log_message("Player Unit %s attacks Enemy Unit %s." % [acting_player_unit.get_name_for_log(), target_enemy_unit.get_name_for_log()])
+			acting_player_unit.perform_basic_attack(target_enemy_unit)
+			any_player_action_taken = true
+		else:
+			add_log_message("No more enemy units to target.")
+			break  # No more enemies, stop player attacks
+	
+	if not any_player_action_taken and player_units.size() > 0:
+		add_log_message("No player units could act this turn.")
+	elif player_units.is_empty() and not end_turn_button.disabled:
+		add_log_message("No player units remaining to act.")
+
+	# Enemy units attack next (right to left)
+	add_log_message("\nEnemy's turn actions:")
+	var any_enemy_action_taken = false
+	# Iterate in reverse order (right to left)
+	for i in range(enemy_units.size() - 1, -1, -1):
+		var acting_enemy_unit = enemy_units[i]
+		if not is_instance_valid(acting_enemy_unit) or acting_enemy_unit.current_hp <= 0:
+			continue  # Skip dead or invalid units
+
+		var target_player_unit = _get_frontmost_live_unit(player_units)  # Get current frontmost player unit
+		if target_player_unit:
+			add_log_message("Enemy Unit %s attacks Player Unit %s." % [acting_enemy_unit.get_name_for_log(), target_player_unit.get_name_for_log()])
+			acting_enemy_unit.perform_basic_attack(target_player_unit)
+			any_enemy_action_taken = true
+		else:
+			add_log_message("No more player units to target.")
+			break  # No more player units, stop enemy attacks
+
+	if not any_enemy_action_taken and enemy_units.size() > 0:
+		add_log_message("No enemy units could act this turn.")
+	elif enemy_units.is_empty() and not end_turn_button.disabled:
+		add_log_message("No enemy units remaining to act.")
+	
+	add_log_message("=== End of Turn ===\n")
+	
+	# Update UI to show it's ready for next turn
 	update_turn_indicator()
 
 func _initialize_gacha_pool() -> void:
@@ -380,9 +379,19 @@ func _update_coin_display() -> void:
 	gacha_tokens_label.text = "Coins: %d" % coins
 
 func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
-	for unit in unit_array:
+	if unit_array.is_empty():
+		return null
+		
+	# Check if this is the player or enemy team
+	var is_player_team = unit_array == player_units
+	
+	# For both teams, the frontmost unit is the one with the highest index in their respective arrays
+	# because enemy_slot_nodes were already reversed during setup
+	for i in range(unit_array.size() - 1, -1, -1):
+		var unit = unit_array[i]
 		if is_instance_valid(unit) and unit.current_hp > 0:
 			return unit
+			
 	return null
 
 func update_turn_indicator() -> void:
