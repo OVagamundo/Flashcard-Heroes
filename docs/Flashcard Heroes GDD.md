@@ -382,7 +382,7 @@ The game interface is organized into logical layers to manage visibility and int
      - Position Units and units in Lineup/Bench/Inventory
      - Merge Units (temporary for this battle)
      - Equip/merge/use Items
-   - When the player clicks the "Ready" button, move to the autobattle phase.
+   - When the player clicks the "End Turn" button, move to the autobattle phase.
 
 3. **Combat Phase**
    - Automatic resolution (no player input possible, only inspection of elements, pausing or speeding up the battle)
