@@ -13,6 +13,10 @@ const MAX_UNITS_PER_SIDE = 6 # As per GDD
 const UNIT_SCENE = preload("res://scenes/Unit.tscn") # Will be used later
 const OFFENSIVE_T1_UNIT_DATA = preload("res://scripts/OffensiveT1UnitData.tres")
 
+# Gacha system variables
+var coins: int = 5  # Starting coins as per GDD
+var gacha_pool: Array[UnitData] = []
+
 # Arrays to hold references to the slot Node2D or Control nodes in the scene
 var player_slot_nodes: Array[Node] = []
 var enemy_slot_nodes: Array[Node] = []
@@ -33,9 +37,11 @@ func _ready() -> void:
 	EventBus.unit_died.connect(_on_unit_died_eventbus) # Connect to the new handler
 	# EventBus.battle_ended.connect(_on_battle_ended)
 	
-	# Initialize battle visuals
+	# Initialize battle visuals and gacha system
 	setup_battle_scene()
+	_initialize_gacha_pool()
 	_spawn_initial_units() # Spawn units after scene setup
+	_update_coin_display()
 
 func setup_battle_scene() -> void:
 	clear_all_slots() # Clear any previous children
@@ -211,52 +217,48 @@ func _spawn_initial_units():
 		return
 
 	add_log_message("Spawning initial units...")
+	
 	# Spawn 2 player units (Offensive T1)
 	var player_units_spawned_count = 0
-	var player_units_to_spawn = [
-		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 0},
-		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 1}
-	]
-	
-	for unit_info in player_units_to_spawn:
-		if player_units_spawned_count < MAX_UNITS_PER_SIDE and unit_info.slot < player_slot_nodes.size():
-			var new_unit = _spawn_unit(unit_info.data, true, unit_info.slot)
-			if is_instance_valid(new_unit):
-				player_units_spawned_count += 1
-		else:
-			add_log_message("Could not spawn player unit in slot %d. Max units or invalid slot." % unit_info.slot)
+	for i in range(2):
+		if player_units_spawned_count >= MAX_UNITS_PER_SIDE or i >= player_slot_nodes.size():
 			break
-	
-	# If player_units[0] should correspond to player_slot_nodes[0] (e.g., rightmost/frontmost)
-	# and _spawn_unit appends, and you spawned in order 0, 1, ...
-	# then reversing player_units makes player_units[0] the last one spawned (e.g. into slot 1 if 2 units)
-	# This needs careful thought based on your HBoxContainer order and desired logical front.
-	# Let's keep the reverse for now, assuming player_units[0] should be the unit in the highest player slot index that was filled.
-	if player_units.size() > 1:
-		player_units.reverse()
+			
+		# Create a new unit data instance
+		var unit_data = UnitData.new()
+		unit_data.unit_name = "Offensive T1"
+		unit_data.max_hp = OFFENSIVE_T1_UNIT_DATA.max_hp
+		unit_data.power = OFFENSIVE_T1_UNIT_DATA.power
+		unit_data.texture = OFFENSIVE_T1_UNIT_DATA.texture
+		unit_data.ability_description = OFFENSIVE_T1_UNIT_DATA.ability_description
+		
+		var new_unit = _spawn_unit(unit_data, true, i)
+		if is_instance_valid(new_unit):
+			player_units_spawned_count += 1
+		else:
+			add_log_message("Could not spawn player unit in slot %d." % i)
 
 	# Spawn 3 enemy units (Offensive T1)
 	var enemy_units_spawned_count = 0
-	var enemy_units_to_spawn = [
-		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 0},
-		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 1},
-		{"data": OFFENSIVE_T1_UNIT_DATA, "slot": 2}
-	]
-
-	for unit_info in enemy_units_to_spawn:
-		if enemy_units_spawned_count < MAX_UNITS_PER_SIDE and unit_info.slot < enemy_slot_nodes.size():
-			var new_unit = _spawn_unit(unit_info.data, false, unit_info.slot)
-			if is_instance_valid(new_unit):
-				enemy_units_spawned_count += 1
-		else:
-			add_log_message("Could not spawn enemy unit in slot %d. Max units or invalid slot." % unit_info.slot)
+	for i in range(3):
+		if enemy_units_spawned_count >= MAX_UNITS_PER_SIDE or i >= enemy_slot_nodes.size():
 			break
-	
-	# Enemy units are typically frontmost at index 0 (leftmost for HBoxContainer), 
-	# and if spawned into enemy_slot_nodes[0], enemy_slot_nodes[1] etc., 
-	# and _spawn_unit appends, then enemy_units[0] is the unit in enemy_slot_nodes[0]. No reverse needed.
+			
+		# Create a new unit data instance
+		var unit_data = UnitData.new()
+		unit_data.unit_name = "Offensive T1"
+		unit_data.max_hp = OFFENSIVE_T1_UNIT_DATA.max_hp
+		unit_data.power = OFFENSIVE_T1_UNIT_DATA.power
+		unit_data.texture = OFFENSIVE_T1_UNIT_DATA.texture
+		unit_data.ability_description = OFFENSIVE_T1_UNIT_DATA.ability_description
+		
+		var new_unit = _spawn_unit(unit_data, false, i)
+		if is_instance_valid(new_unit):
+			enemy_units_spawned_count += 1
+		else:
+			add_log_message("Could not spawn enemy unit in slot %d." % i)
 
-	update_turn_indicator() # Update indicator after units are potentially spawned
+	update_turn_indicator() # Update indicator after units are spawned
 
 # Temporarily simplify button actions
 func _on_end_turn_pressed() -> void:
@@ -316,8 +318,66 @@ func _on_end_turn_pressed() -> void:
 	
 	update_turn_indicator()
 
+func _initialize_gacha_pool() -> void:
+	# Initialize the gacha pool with available units
+	# For now, we'll just add multiple instances of the basic unit
+	# In a full implementation, this would load from a resource folder or database
+	gacha_pool = []
+	for i in range(5):  # Add 5 units to the pool
+		if OFFENSIVE_T1_UNIT_DATA:
+			var unit_data = UnitData.new()
+			unit_data.unit_name = "Offensive T1"
+			unit_data.max_hp = OFFENSIVE_T1_UNIT_DATA.max_hp
+			unit_data.power = OFFENSIVE_T1_UNIT_DATA.power
+			unit_data.texture = OFFENSIVE_T1_UNIT_DATA.texture
+			unit_data.ability_description = OFFENSIVE_T1_UNIT_DATA.ability_description
+			gacha_pool.append(unit_data)
+	add_log_message("Gacha pool initialized with %d units" % gacha_pool.size())
+	
+	# Initialize coins to starting value
+	coins = 5
+	_update_coin_display()
+
 func _on_gacha_pressed() -> void:
-	add_log_message("Gacha button pressed. (Functionality pending unit implementation)")
+	if coins <= 0:
+		add_log_message("Not enough coins to draw!")
+		return
+		
+	if gacha_pool.is_empty():
+		add_log_message("Gacha pool is empty!")
+		return
+		
+	# Find first empty player slot
+	var empty_slot_index = -1
+	for i in range(player_units.size()):
+		if player_units[i] == null:
+			empty_slot_index = i
+			break
+			
+	if empty_slot_index == -1:
+		add_log_message("No empty slots available!")
+		return
+	
+	# Spend coin
+	coins -= 1
+	_update_coin_display()
+	
+	# Draw random unit from pool
+	var random_index = randi() % gacha_pool.size()
+	var unit_data = gacha_pool[random_index]
+	gacha_pool.remove_at(random_index)  # Remove from pool (no duplicates for now)
+	
+	# Spawn the unit in the first available slot
+	var new_unit = _spawn_unit(unit_data, true, empty_slot_index)
+	if new_unit:
+		add_log_message("Drew %s from gacha!" % new_unit.get_display_name())
+	else:
+		add_log_message("Failed to spawn unit from gacha!")
+		coins += 1  # Refund the coin if spawning failed
+		_update_coin_display()
+
+func _update_coin_display() -> void:
+	gacha_tokens_label.text = "Coins: %d" % coins
 
 func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
 	for unit in unit_array:
@@ -400,9 +460,17 @@ func _on_unit_died_eventbus(unit_died: Unit) -> void:
 			_end_battle_actions(false)
 
 func _end_battle_actions(player_won: bool) -> void:
-	add_log_message("Battle ended. Player %s." % ["won" if player_won else "lost"])
 	end_turn_button.disabled = true
-	gacha_button.disabled = true # Or other relevant UI changes
+	gacha_button.disabled = true
+	
+	# Don't reset coins here since we want to keep them during battle
+	# They'll be reset when a new battle starts
+	
+	if player_won:
+		add_log_message("Victory!")
+	else:
+		add_log_message("Defeat!")
+	add_log_message("Battle ended. Player %s." % ["won" if player_won else "lost"])
 	var message = "Player Won!" if player_won else "Player Lost!"
 	turn_indicator.text = "Battle Over: %s" % message
 	if player_won:
