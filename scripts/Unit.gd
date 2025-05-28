@@ -1,159 +1,116 @@
 extends Control
+
 class_name Unit
 
-# UI elements
-@onready var unit_button: TextureButton = $Button
-@onready var unit_rect: ColorRect = $ColorRect
-@onready var health_bar: ProgressBar = $Button/HealthBar if has_node("Button/HealthBar") else null
-@onready var name_label: Label = $Button/NameLabel if has_node("Button/NameLabel") else null
-@onready var attack_label: Label = $Button/AttackLabel if has_node("Button/AttackLabel") else null
-@onready var defense_label: Label = $Button/DefenseLabel if has_node("Button/DefenseLabel") else null
+# --- Signals --- #
+signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
+# signal unit_selected(unit: Unit) # Kept for potential direct selection logic if needed
 
-# Debug function to check node paths
-func _check_node_paths() -> void:
-	print("Checking node paths:")
-	print("- Button: ", has_node("Button"))
-	print("- ColorRect: ", has_node("ColorRect"))
-	if has_node("Button"):
-		print("  - HealthBar: ", has_node("Button/HealthBar"))
-		print("  - NameLabel: ", has_node("Button/NameLabel"))
-		print("  - AttackLabel: ", has_node("Button/AttackLabel"))
-		print("  - DefenseLabel: ", has_node("Button/DefenseLabel"))
+# --- Exported Variables (NodePaths from Unit.tscn, set in Inspector) --- #
+@export var unit_visual_panel: Panel
+@export var hp_label: Label
+@export var pwr_label: Label
 
-# Cache the default style for hover/selection states
-var default_style: StyleBoxFlat
-var hover_style: StyleBoxFlat
-var selected_style: StyleBoxFlat
+# --- Public Properties --- #
+var unit_data: UnitData         # Holds the static data for this unit type
+var current_hp: int             # Current health points
+var is_player_team_unit: bool = true # Flag to identify team, set during initialization
 
-var unit_data: UnitResource
-var current_health: int
-var current_attack: int
-var current_defense: int
+# --- Constants for Label Colors --- #
+const PLAYER_LABEL_COLOR: Color = Color(0.3, 0.7, 1.0)  # A clear blue
+const ENEMY_LABEL_COLOR: Color = Color(1.0, 0.4, 0.4)   # A clear red
 
-signal unit_clicked(unit: Unit)
-signal unit_hovered(unit: Unit, is_hovered: bool)
+# --- Godot Lifecycle Methods --- #
+func _ready():
+	self.z_index = 1 # Ensure unit renders on top of slot's base visuals
+	# Initial display update is handled by initialize() as unit_data is needed.
+	# If unit_data was an @export var and set in scene, _ready could do initial setup.
+	# For now, initialize() is the main entry point for setting up a new unit.
+	pass
 
-func initialize(data: UnitResource) -> void:
+# --- Public Methods --- # 
+func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void:
 	if not data:
-		push_error("Unit.initialize(): data is null")
+		push_error("Unit.initialize(): UnitData is null! Cannot initialize unit.")
 		return
-	self.unit_data = data # Store data; _ready() will use it for setup
 
-func _ready() -> void:
-	# Debug: Print node paths for verification
-	_check_node_paths()
-	
-	# Initialize styles (these don't depend on unit_data yet)
-	default_style = StyleBoxFlat.new(); default_style.bg_color = Color(0.3, 0.3, 0.3, 0.7)
-	hover_style = StyleBoxFlat.new(); hover_style.bg_color = Color(0.4, 0.4, 0.4, 0.8)
-	selected_style = StyleBoxFlat.new(); selected_style.bg_color = Color(0.2, 0.6, 0.2, 0.8)
-	
-	# Setup button if it exists
-	if unit_button:
-		unit_button.focus_mode = Control.FOCUS_ALL
-		if not unit_button.pressed.is_connected(_on_unit_clicked): unit_button.pressed.connect(_on_unit_clicked)
-		if not unit_button.mouse_entered.is_connected(_on_mouse_entered): unit_button.mouse_entered.connect(_on_mouse_entered)
-		if not unit_button.mouse_exited.is_connected(_on_mouse_exited): unit_button.mouse_exited.connect(_on_mouse_exited)
-		
-		# Show either button or colored rectangle
-		if unit_button.texture_normal:
-			unit_button.show()
-			if unit_rect: unit_rect.hide()
-		else:
-			unit_button.hide()
-			if unit_rect: unit_rect.show(); unit_rect.color = Color(0.5, 0.5, 0.8, 0.8)
-		
-		unit_button.add_theme_stylebox_override("normal", default_style)
-	else:
-		push_error("Unit._ready(): unit_button is null.")
-	
-	# Setup health bar base styles if it exists
-	if health_bar:
-		var fill_style = StyleBoxFlat.new()
-		fill_style.bg_color = Color(0.2, 0.8, 0.2) # Default green, will be updated by update_health_bar
-		fill_style.border_width_bottom = 1; fill_style.border_width_left = 1; fill_style.border_width_right = 1; fill_style.border_width_top = 1
-		fill_style.border_color = Color(0,0,0,1)
-		health_bar.add_theme_stylebox_override("fill", fill_style)
-		
-		var bg_style = StyleBoxFlat.new(); bg_style.bg_color = Color(0.2, 0.2, 0.2, 0.7)
-		health_bar.add_theme_stylebox_override("background", bg_style)
-	else:
-		push_error("Unit._ready(): health_bar is null.")
+	self.unit_data = data
+	self.current_hp = unit_data.max_hp
+	self.is_player_team_unit = is_player
 
-	# Ensure unit_data was set by initialize()
-	if not unit_data:
-		push_error("Unit._ready(): unit_data is null. Cannot complete setup.")
-		if name_label: name_label.text = "Error!"
-		return # Stop further setup if no data
+	# The base_tint_color is applied to self_modulate by Battle.gd to tint the UnitVisualPanel
+	# self.modulate = base_tint_color # This is done by Battle.gd
 
-	# Initialize unit's current stats from unit_data
-	current_health = unit_data.max_health
-	current_attack = unit_data.attack
-	current_defense = unit_data.defense
-
-	# Safely update UI elements using unit_data
-	if name_label:
-		name_label.text = unit_data.display_name
-	else:
-		push_error("Unit._ready(): name_label is null when trying to set text from unit_data.")
-	
-	# Set team-specific appearance
-	if unit_data.team == "enemy":
-		self_modulate = Color(1, 0.8, 0.8)  # Slight red tint for enemies
-		if name_label: # Check again for safety, though the one above should cover it
-			name_label.add_theme_color_override("font_color", Color(1, 0.5, 0.5))
-	
-	update_health_bar() # Now uses initialized current_health and unit_data
-	update_stats()      # Now uses initialized current_attack/defense
-
-func update_health_bar() -> void:
-	if not health_bar or not unit_data:
-		push_error("Unit.update_health_bar(): Missing health_bar or unit_data")
-		return
-		
-	var health_percent = float(current_health) / float(unit_data.max_health)
-	health_bar.value = health_percent * 100.0
-	
-	# Create a stylebox for the health bar
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.8, 0.2)  # Default green
-	
-	# Update health bar color based on health percentage
-	if health_percent <= 0.3:
-		style.bg_color = Color(0.8, 0.2, 0.2)  # Red when low
-	elif health_percent <= 0.6:
-		style.bg_color = Color(1.0, 0.8, 0.2)  # Yellow when medium
-		
-	health_bar.add_theme_stylebox_override("fill", style)  # Green when healthy
-
-func update_stats() -> void:
-	if attack_label:
-		attack_label.text = "ATK: %d" % current_attack
-	else:
-		push_error("Unit: attack_label is null in update_stats()")
-		
-	if defense_label:
-		defense_label.text = "DEF: %d" % current_defense
-	else:
-		push_error("Unit: defense_label is null in update_stats()")
+	_update_display()
+	# print("Unit Initialized: ", unit_data.unit_name if unit_data else "N/A", ", HP: ", current_hp, ", Player: ", is_player_team_unit)
 
 func take_damage(amount: int) -> void:
-	var damage_taken = max(1, amount - current_defense)
-	current_health = max(0, current_health - damage_taken)
-	update_health_bar()
-	
-	if current_health <= 0:
-		die()
+	if current_hp <= 0: # Already dead, no further action
+		return
 
-func die() -> void:
-	queue_free()
-	EventBus.unit_died.emit(self)
+	var old_hp = current_hp
+	current_hp = max(0, current_hp - amount)
+	# print(get_name_for_log(), " took ", amount, " damage. HP: ", current_hp, "/", unit_data.max_hp if unit_data else "N/A")
 
-func _on_unit_clicked() -> void:
-	emit_signal("unit_clicked", self)
+	_update_display()
 
-func _on_mouse_entered() -> void:
-	emit_signal("unit_hovered", self, true)
+	EventBus.unit_health_changed.emit(self, current_hp, old_hp, unit_data.max_hp if unit_data else 0)
 
-func _on_mouse_exited() -> void:
-	emit_signal("unit_hovered", self, false)
+	if current_hp <= 0:
+		# print(get_name_for_log(), " has died.")
+		unit_died.emit(self)
+		EventBus.unit_died.emit(self) # Global event for battle system
+		# Actual removal/queue_free is handled by Battle.gd to manage arrays properly
+
+func perform_basic_attack(target_unit: Unit) -> void:
+	if not unit_data or not is_instance_valid(target_unit) or target_unit.current_hp <= 0:
+		# print_error(get_name_for_log(), " attack failed: Invalid unit_data, target, or target already dead.")
+		return
+
+	var damage = unit_data.power
+	# print(get_name_for_log(), " attacks ", target_unit.get_name_for_log(), " for ", damage, " damage.")
+
+	EventBus.unit_action_initiated.emit(self, "basic_attack", target_unit)
+	target_unit.take_damage(damage)
+	EventBus.unit_action_completed.emit(self, "basic_attack", {"target": target_unit, "damage_dealt": damage})
+
+func get_display_name() -> String:
+	if unit_data:
+		return unit_data.unit_name
+	return "Unknown Unit"
+
+func get_name_for_log() -> String:
+	var team_prefix = "Player" if is_player_team_unit else "Enemy"
+	return "%s %s" % [team_prefix, get_display_name()]
+
+# --- Private Helper Methods --- #
+func _update_display() -> void:
+	# Ensure nodes are valid and unit_data is present
+	if not is_instance_valid(hp_label) or not is_instance_valid(pwr_label) or not unit_data:
+		# This can occur if called before nodes are fully ready or if unit_data is missing.
+		# print_debug("Unit._update_display(): Skipping, nodes or unit_data not ready for '" + self.name + "'")
+		return
+
+	hp_label.text = "HP: %s" % current_hp
+	pwr_label.text = "PWR: %s" % unit_data.power
+
+	var label_color_to_apply = PLAYER_LABEL_COLOR if is_player_team_unit else ENEMY_LABEL_COLOR
+
+	# Reset modulate to ensure add_theme_color_override works as expected without interference
+	hp_label.modulate = Color.WHITE 
+	pwr_label.modulate = Color.WHITE
+
+	# Apply the specific color to the font. The LabelSettings in Unit.tscn provides the outline.
+	hp_label.add_theme_color_override("font_color", label_color_to_apply)
+	pwr_label.add_theme_color_override("font_color", label_color_to_apply)
+
+	# The UnitVisualPanel (ellipse) is tinted by Battle.gd using self.modulate on the root Unit node.
+	# No need to directly color unit_visual_panel here unless a more complex style is required.
+
+# --- Input Handling for Selection (Optional) --- #
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		if unit_data: # Ensure unit is properly initialized
+			# print(get_name_for_log(), " clicked.")
+			EventBus.unit_selected_for_action.emit(self)
+			# unit_selected.emit(self) # If direct signal handling is preferred for selection

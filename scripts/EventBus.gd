@@ -11,6 +11,9 @@ signal unit_spawned(unit: Node2D)
 signal unit_damaged(unit: Node2D, amount: int)
 signal unit_healed(unit: Node2D, amount: int)
 signal unit_died(unit: Node2D)
+signal unit_health_changed(unit: Object, new_health: int, old_health: int, max_health: int) # unit is Object to match Unit.gd
+signal unit_action_initiated(unit: Object, action_type: String, target: Object) # unit and target are Objects
+signal unit_action_completed(unit: Object, action_type: String, details: Dictionary) # unit is Object
 
 # Flashcard Events
 signal flashcard_presented(question: String, answers: Array)

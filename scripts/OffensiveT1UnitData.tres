@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UnitData" load_steps=2 format=3 uid="uid://offensive_t1_data_id_001"]
+
+[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1_unitdata_script"]
+
+[resource]
+script = ExtResource("1_unitdata_script")
+unit_name = "Offensive T1"
+max_hp = 3
+power = 3
+texture = null # Placeholder, assign this in the Godot editor (e.g., res://assets/offensive_t1.png)
+ability_description = "Attacks the frontmost enemy unit."
