@@ -116,7 +116,6 @@ func setup_visual_slots() -> void:
 	add_log_message("Found %d player slots and %d enemy slots." % [player_slot_nodes.size(), enemy_slot_nodes.size()])
 
 func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
-	# Mark the function as async since we'll be using await
 	if not UNIT_SCENE:
 		push_error("Battle._spawn_unit(): UNIT_SCENE is not loaded.")
 		return null
@@ -159,11 +158,29 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 		if is_instance_valid(child) and child is Unit:
 			child.queue_free()
 
-	# Add to the scene
+	# Add to the scene as a child of the slot node
 	target_slot_node.add_child(unit_instance)
 	
-	# Initialize the unit
+	# Set proper anchoring to ensure the unit moves with window resizing
+	# Configure anchors first - this is key for proper responsive layout
+	unit_instance.anchor_left = 0.0
+	unit_instance.anchor_top = 1.0  # Anchor top to bottom of parent (like floor)
+	unit_instance.anchor_right = 1.0 # Stretch horizontally
+	unit_instance.anchor_bottom = 1.0 # Anchor bottom to bottom of parent
+	
+	# Set margins to position correctly relative to anchors
+	unit_instance.offset_left = 0 # Left edge at parent's left
+	unit_instance.offset_right = 0 # Right edge at parent's right
+	unit_instance.offset_bottom = 0 # Bottom edge at parent's bottom
+	unit_instance.offset_top = -unit_instance.custom_minimum_size.y # Top edge based on unit's height
+	
+	# Make it grow from the bottom (like the floor rectangle)
+	unit_instance.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	
+	# Initialize the unit after setting anchors
 	unit_instance.initialize(unit_data, is_player_team, team_tint)
+	
+	add_log_message("Unit '%s' anchored to bottom of slot with responsive layout" % [unit_instance.name])
 	
 	# Add to the appropriate team array
 	if is_player_team:
@@ -175,31 +192,18 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 	unit_instance.unit_died.connect(_on_unit_died_eventbus)
 	EventBus.unit_spawned.emit(unit_instance, is_player_team, slot_index)
 
-	call_deferred("_finalize_unit_position", unit_instance, target_slot_node)
+	# No need for deferred positioning since we're using anchors
 	return unit_instance
 
+# This function is no longer needed since we're using anchors for positioning
+# Keeping it as a stub for compatibility with any existing calls
 func _finalize_unit_position(unit: Unit, slot_node: Control) -> void:
 	if not is_instance_valid(unit) or not is_instance_valid(slot_node):
 		push_warning("Battle._finalize_unit_position: Unit or slot_node is invalid.")
 		return
-
-	# Get the floor node (should be the first child of the slot)
-	var floor_node = slot_node.get_child(0) if slot_node.get_child_count() > 0 else null
-	if floor_node and floor_node is Control: # Assuming floor is also a Control node like ColorRect
-		var unit_scaled_size = unit.size * unit.scale
-		# Center horizontally in the slot
-		unit.position.x = (slot_node.size.x / 2.0) - (unit_scaled_size.x / 2.0)
-		# Position the unit so its bottom is aligned with the bottom of the slot_node.
-		# Try with origin at top-left first, then adjust if unit's origin is center.
-		unit.position.y = slot_node.size.y - unit_scaled_size.y # Assumes unit origin is top-left
-		# If unit origin is center, it should be: slot_node.size.y - (unit_scaled_size.y / 2.0)
-		add_log_message("Unit '%s' finalized position at X: %f, Y: %f (Slot Bottom: %f, Unit ScaledSize: %s)" % [unit.name if unit.name else 'Unknown', unit.position.x, unit.position.y, slot_node.size.y, str(unit_scaled_size)])
-	else:
-		# Fallback: position at bottom of slot even if floor_node (child 0) is not found or not a Control node
-		var unit_scaled_size = unit.size * unit.scale # Ensure unit_scaled_size is defined in this scope too
-		unit.position.x = (slot_node.size.x / 2.0) - (unit_scaled_size.x / 2.0)
-		unit.position.y = slot_node.size.y - unit_scaled_size.y # Assumes unit origin is top-left
-		add_log_message("Unit '%s' (no floor node) finalized position at X: %f, Y: %f (Slot Bottom: %f, Unit ScaledSize: %s)" % [unit.name if unit.name else 'Unknown', unit.position.x, unit.position.y, slot_node.size.y, str(unit_scaled_size)])
+	
+	# Units now use anchors for positioning, so no manual position calculation is needed
+	add_log_message("Unit '%s' positioned using anchors (Control.PRESET_BOTTOM_WIDE)" % [unit.name if unit.name else 'Unknown'])
 
 func _spawn_initial_units():
 	if not OFFENSIVE_T1_UNIT_DATA:
