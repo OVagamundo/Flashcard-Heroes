@@ -35,7 +35,7 @@ func _ready() -> void:
 	
 	# Initialize battle visuals
 	setup_battle_scene()
-	# _spawn_initial_units() # Spawn units after scene setup (TEMPORARILY COMMENTED FOR DEBUGGING)
+	_spawn_initial_units() # Spawn units after scene setup
 
 func setup_battle_scene() -> void:
 	clear_all_slots() # Clear any previous children
@@ -72,19 +72,28 @@ func setup_visual_slots() -> void:
 	player_slot_nodes.clear()
 	enemy_slot_nodes.clear()
 
+	# Setup player slots
 	for i in range(player_units_container.get_child_count()):
 		var slot_node = player_units_container.get_child(i)
 		if is_instance_valid(slot_node):
 			player_slot_nodes.append(slot_node)
 		else:
-			push_warning("Invalid player slot node at index %d" % i)
+			push_warning("Battle.setup_visual_slots(): Invalid player slot node at index %d" % i)
 
+	# Setup enemy slots
 	for i in range(enemy_units_container.get_child_count()):
 		var slot_node = enemy_units_container.get_child(i)
 		if is_instance_valid(slot_node):
 			enemy_slot_nodes.append(slot_node)
 		else:
-			push_warning("Invalid enemy slot node at index %d" % i)
+			push_warning("Battle.setup_visual_slots(): Invalid enemy slot node at index %d" % i)
+
+	# Reverse enemy_slot_nodes if populated, to make index 0 the rightmost visual slot
+	# This assumes EnemyUnitContainer (HBoxContainer) lays out children Left-to-Right,
+	# and we want to mirror player's LTR spawning by having enemies spawn effectively RTL.
+	if not enemy_slot_nodes.is_empty():
+		enemy_slot_nodes.reverse()
+		add_log_message("Battle.setup_visual_slots(): Enemy slots reversed. Index 0 is now rightmost.")
 
 	# Initialize/resize the logical unit arrays to match the number of visual slots
 	player_units.resize(player_slot_nodes.size())
@@ -94,6 +103,8 @@ func setup_visual_slots() -> void:
 	enemy_units.resize(enemy_slot_nodes.size())
 	for i in range(enemy_units.size()):
 		enemy_units[i] = null
+	
+	add_log_message("Battle.setup_visual_slots(): Setup complete. Player slots: %d, Enemy slots: %d (logical count after potential reverse)" % [player_slot_nodes.size(), enemy_slot_nodes.size()])
 
 	# Ensure player_slot_nodes are in the visual order (right-to-left for player if HBox is LTR)
 	# If your HBoxContainer for player units is standard (adds left to right), 
@@ -118,7 +129,7 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 		push_error("Battle._spawn_unit(): Failed to instantiate UNIT_SCENE.")
 		return null
 
-	var target_slot_node: Node
+	var target_slot_node: Control
 	var team_tint: Color
 
 	if is_player_team:
@@ -154,26 +165,6 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 	# Initialize the unit
 	unit_instance.initialize(unit_data, is_player_team, team_tint)
 	
-	# Wait for the next frame to ensure the unit's size is calculated
-	get_tree().process_frame
-	
-	# Get the floor node (should be the first child of the slot)
-	var floor_node = target_slot_node.get_child(0) if target_slot_node.get_child_count() > 0 else null
-	
-	# Position the unit above the floor
-	if floor_node and floor_node is ColorRect:
-		# Position unit right above the floor
-		unit_instance.position = Vector2(
-			target_slot_node.size.x / 2 - unit_instance.size.x / 2,  # Center horizontally
-			target_slot_node.size.y - unit_instance.size.y - floor_node.size.y  # Position right above floor
-		)
-	else:
-		# Fallback if floor node is not found
-		unit_instance.position = Vector2(
-			target_slot_node.size.x / 2 - unit_instance.size.x / 2,  # Center horizontally
-			target_slot_node.size.y - unit_instance.size.y - 20  # Default 20px from bottom
-		)
-
 	# Add to the appropriate team array
 	if is_player_team:
 		player_units[slot_index] = unit_instance
@@ -184,7 +175,31 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 	unit_instance.unit_died.connect(_on_unit_died_eventbus)
 	EventBus.unit_spawned.emit(unit_instance, is_player_team, slot_index)
 
+	call_deferred("_finalize_unit_position", unit_instance, target_slot_node)
 	return unit_instance
+
+func _finalize_unit_position(unit: Unit, slot_node: Control) -> void:
+	if not is_instance_valid(unit) or not is_instance_valid(slot_node):
+		push_warning("Battle._finalize_unit_position: Unit or slot_node is invalid.")
+		return
+
+	# Get the floor node (should be the first child of the slot)
+	var floor_node = slot_node.get_child(0) if slot_node.get_child_count() > 0 else null
+	if floor_node and floor_node is Control: # Assuming floor is also a Control node like ColorRect
+		var unit_scaled_size = unit.size * unit.scale
+		# Center horizontally in the slot
+		unit.position.x = (slot_node.size.x / 2.0) - (unit_scaled_size.x / 2.0)
+		# Position the unit so its bottom is aligned with the bottom of the slot_node.
+		# Try with origin at top-left first, then adjust if unit's origin is center.
+		unit.position.y = slot_node.size.y - unit_scaled_size.y # Assumes unit origin is top-left
+		# If unit origin is center, it should be: slot_node.size.y - (unit_scaled_size.y / 2.0)
+		add_log_message("Unit '%s' finalized position at X: %f, Y: %f (Slot Bottom: %f, Unit ScaledSize: %s)" % [unit.name if unit.name else 'Unknown', unit.position.x, unit.position.y, slot_node.size.y, str(unit_scaled_size)])
+	else:
+		# Fallback: position at bottom of slot even if floor_node (child 0) is not found or not a Control node
+		var unit_scaled_size = unit.size * unit.scale # Ensure unit_scaled_size is defined in this scope too
+		unit.position.x = (slot_node.size.x / 2.0) - (unit_scaled_size.x / 2.0)
+		unit.position.y = slot_node.size.y - unit_scaled_size.y # Assumes unit origin is top-left
+		add_log_message("Unit '%s' (no floor node) finalized position at X: %f, Y: %f (Slot Bottom: %f, Unit ScaledSize: %s)" % [unit.name if unit.name else 'Unknown', unit.position.x, unit.position.y, slot_node.size.y, str(unit_scaled_size)])
 
 func _spawn_initial_units():
 	if not OFFENSIVE_T1_UNIT_DATA:
