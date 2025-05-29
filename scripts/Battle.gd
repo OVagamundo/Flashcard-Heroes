@@ -1,7 +1,9 @@
 extends Control
 
 @onready var player_units_container: HBoxContainer = $MainContainer/BattleArea/PlayerSide/PlayerUnits
+@onready var player_bench_container: HBoxContainer = $MainContainer/BattleArea/PlayerSide/PlayerBench
 @onready var enemy_units_container: HBoxContainer = $MainContainer/BattleArea/EnemySide/EnemyUnits
+@onready var enemy_bench_container: HBoxContainer = $MainContainer/BattleArea/EnemySide/EnemyBench
 @onready var battle_log: TextEdit = $MainContainer/BattleLog
 @onready var end_turn_button: Button = $MainContainer/Actions/EndTurnButton
 @onready var gacha_button: Button = $MainContainer/Actions/GachaButton
@@ -15,13 +17,21 @@ const UNIT_SCENE = preload("res://scenes/Unit.tscn")
 # Gacha system variables
 var gacha_tokens: int = 5  # Starting Gacha Tokens as per GDD
 
-# Arrays to hold references to the slot Node2D or Control nodes in the scene
-var player_slot_nodes: Array[Node] = []
-var enemy_slot_nodes: Array[Node] = []
+# Arrays to hold references to the UnitSlot instances in the scene
+var player_lineup_slots: Array[UnitSlot] = []
+var player_bench_slots: Array[UnitSlot] = []
+var enemy_lineup_slots: Array[UnitSlot] = []
+var enemy_bench_slots: Array[UnitSlot] = []
+
+# --- Selection State ---
+var selected_unit_instance: Unit = null
+var selected_unit_original_slot: UnitSlot = null
 
 # Arrays to hold actual unit instances
 var player_units: Array[Unit] = []
+var player_bench_units: Array[Unit] = []
 var enemy_units: Array[Unit] = []
+var enemy_bench_units: Array[Unit] = []
 var is_player_turn: bool = true
 
 func _ready() -> void:
@@ -34,6 +44,9 @@ func _ready() -> void:
 	# EventBus.unit_damaged.connect(_on_unit_damaged)
 	EventBus.unit_died.connect(_on_unit_died_eventbus) # Connect to the new handler
 	# EventBus.battle_ended.connect(_on_battle_ended)
+
+	EventBus.unit_selected_for_action.connect(_on_unit_selected_for_action)
+	EventBus.slot_clicked_for_action.connect(_on_slot_clicked_for_action)
 	
 	# Initialize battle visuals and gacha system
 	setup_battle_scene()
@@ -55,60 +68,99 @@ func setup_battle_scene() -> void:
 	add_log_message("Battle scene initialized. Lineup slots displayed.")
 
 func clear_all_slots() -> void:
-	# Clear units from player slots
-	for slot_node in player_slot_nodes:
-		if is_instance_valid(slot_node):
-			for child in slot_node.get_children():
-				if is_instance_valid(child) and child is Unit:
-					child.queue_free()
-	# Clear units from enemy slots
-	for slot_node in enemy_slot_nodes:
-		if is_instance_valid(slot_node):
-			for child in slot_node.get_children():
-				if is_instance_valid(child) and child is Unit:
-					child.queue_free()
+	# Clear units from player lineup slots
+	for slot_node in player_lineup_slots:
+		if is_instance_valid(slot_node) and not slot_node.is_empty():
+			var unit = slot_node.clear_unit()
+			if is_instance_valid(unit):
+				unit.queue_free() # Free the unit node itself
+	# Clear units from enemy lineup slots
+	for slot_node in enemy_lineup_slots:
+		if is_instance_valid(slot_node) and not slot_node.is_empty():
+			var unit = slot_node.clear_unit()
+			if is_instance_valid(unit):
+				unit.queue_free()
 	
 	player_units.clear() # Also clear logical unit arrays
 	enemy_units.clear()
 
-# New function to get references to the slot nodes from the scene
+# Function to set up UnitSlot instances as children of the existing Control nodes
 func setup_visual_slots() -> void:
-	player_slot_nodes.clear()
-	enemy_slot_nodes.clear()
+	# Clear all slot arrays
+	player_lineup_slots.clear()
+	player_bench_slots.clear()
+	enemy_lineup_slots.clear()
+	enemy_bench_slots.clear()
 
-	# Setup player slots
-	for i in range(player_units_container.get_child_count()):
-		var slot_node = player_units_container.get_child(i)
-		if is_instance_valid(slot_node):
-			player_slot_nodes.append(slot_node)
-		else:
-			push_warning("Battle.setup_visual_slots(): Invalid player slot node at index %d" % i)
-
-	# Setup enemy slots
-	for i in range(enemy_units_container.get_child_count()):
-		var slot_node = enemy_units_container.get_child(i)
-		if is_instance_valid(slot_node):
-			enemy_slot_nodes.append(slot_node)
-		else:
-			push_warning("Battle.setup_visual_slots(): Invalid enemy slot node at index %d" % i)
-
-	# Reverse enemy_slot_nodes if populated, to make index 0 the rightmost visual slot
-	# This assumes EnemyUnitContainer (HBoxContainer) lays out children Left-to-Right,
-	# and we want to mirror player's LTR spawning by having enemies spawn effectively RTL.
-	if not enemy_slot_nodes.is_empty():
-		enemy_slot_nodes.reverse()
-		add_log_message("Battle.setup_visual_slots(): Enemy slots reversed. Index 0 is now rightmost.")
-
-	# Initialize/resize the logical unit arrays to match the number of visual slots
-	player_units.resize(player_slot_nodes.size())
-	for i in range(player_units.size()):
-		player_units[i] = null
+	# Setup player lineup slots
+	setup_slot_container(player_units_container, "player_lineup_", true, true, player_lineup_slots)
 	
-	enemy_units.resize(enemy_slot_nodes.size())
+	# Setup player bench slots if the container exists
+	if is_instance_valid(player_bench_container):
+		setup_slot_container(player_bench_container, "player_bench_", false, true, player_bench_slots)
+	
+	# Setup enemy lineup slots
+	setup_slot_container(enemy_units_container, "enemy_lineup_", true, false, enemy_lineup_slots)
+	
+	# Setup enemy bench slots if the container exists
+	if is_instance_valid(enemy_bench_container):
+		setup_slot_container(enemy_bench_container, "enemy_bench_", false, false, enemy_bench_slots)
+
+# Helper function to set up slots in a container
+func setup_slot_container(container: Control, slot_prefix: String, is_lineup: bool, is_player: bool, slot_array: Array) -> void:
+	for i in range(container.get_child_count()):
+		var slot_control = container.get_child(i)
+		
+		# Clear any existing UnitSlot nodes but keep the floor visuals
+		var children_to_remove = []
+		for child in slot_control.get_children():
+			if child is UnitSlot:
+				children_to_remove.append(child)
+		for child in children_to_remove:
+			child.queue_free()
+			
+		# Create a new UnitSlot instance
+		var unit_slot = UnitSlot.new()
+		unit_slot.slot_id = "%s%d" % [slot_prefix, i]
+		unit_slot.is_lineup_slot = is_lineup
+		unit_slot.is_player_slot = is_player
+		
+		# Add the UnitSlot as a child of the existing Control node
+		slot_control.add_child(unit_slot)
+		
+		# Configure the UnitSlot to fill its parent Control but leave room for the floor visual
+		unit_slot.anchor_left = 0.0
+		unit_slot.anchor_right = 1.0
+		unit_slot.anchor_top = 0.0
+		unit_slot.anchor_bottom = 1.0
+		unit_slot.offset_left = 0
+		unit_slot.offset_right = 0
+		unit_slot.offset_top = 0
+		unit_slot.offset_bottom = 20  # Leave space for the floor visual at the bottom
+		unit_slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		unit_slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		unit_slot.z_index = 1  # Ensure units appear above floor visuals
+		
+			# Add to our array of slot references
+		slot_array.append(unit_slot)
+
+	# Reverse enemy_lineup_slots for consistent indexing (0 is front/right for enemy)
+	if not enemy_lineup_slots.is_empty():
+		enemy_lineup_slots.reverse()
+		add_log_message("Battle.setup_visual_slots(): Enemy lineup slots reversed. Index 0 is now their front (typically rightmost visual).")
+
+	# Initialize/resize the logical unit arrays to match the number of UnitSlots
+	player_units.resize(player_lineup_slots.size())
+	for i in range(player_units.size()):
+		player_units[i] = null # This array stores the Unit instance at a logical slot index
+	
+	enemy_units.resize(enemy_lineup_slots.size())
 	for i in range(enemy_units.size()):
 		enemy_units[i] = null
 	
-	add_log_message("Battle.setup_visual_slots(): Setup complete. Player slots: %d, Enemy slots: %d (logical count after potential reverse)" % [player_slot_nodes.size(), enemy_slot_nodes.size()])
+	add_log_message("Battle.setup_visual_slots(): Setup complete. " + \
+		"Player lineup slots: %d, Player bench slots: %d, " % [player_lineup_slots.size(), player_bench_slots.size()] + \
+		"Enemy lineup slots: %d, Enemy bench slots: %d" % [enemy_lineup_slots.size(), enemy_bench_slots.size()])
 
 func _spawn_initial_units() -> void:
 	_spawn_hero_unit()
@@ -124,22 +176,37 @@ func _spawn_hero_unit() -> void:
 		push_error("Battle._spawn_hero_unit(): Could not retrieve Hero data from UnitLibrary.")
 		return
 
-	if player_slot_nodes.is_empty():
-		push_warning("Battle._spawn_hero_unit(): No player slots available for Hero.")
+	if player_lineup_slots.is_empty():
+		push_warning("Battle._spawn_hero_unit(): No player lineup slots available for Hero.")
 		return
 
 	# GDD: Hero automatically starts in the backmost available Lineup slot.
 	# Assuming player slots are 0 (front/left) to N-1 (back/right).
-	var hero_slot_index = player_slot_nodes.size() - 1 
-	_spawn_unit(hero_data, true, hero_slot_index)
-	add_log_message("Hero unit '%s' spawned in slot %d." % [hero_data.display_name, hero_slot_index])
+	var hero_slot_index = player_lineup_slots.size() - 1
+	var hero_slot = player_lineup_slots[hero_slot_index]
+	
+	# Make sure the slot is valid and empty
+	if not is_instance_valid(hero_slot):
+		push_error("Battle._spawn_hero_unit(): Invalid hero slot at index %d." % hero_slot_index)
+		return
+		
+	if not hero_slot.is_empty():
+		push_warning("Battle._spawn_hero_unit(): Hero slot %d is already occupied." % hero_slot_index)
+		return
+
+	# Spawn the hero in the lineup (not on the bench)
+	var hero_unit = _spawn_unit(hero_data, true, hero_slot_index, false)
+	if hero_unit:
+		add_log_message("Hero unit '%s' spawned in lineup slot %d." % [hero_data.display_name, hero_slot_index])
+	else:
+		push_error("Battle._spawn_hero_unit(): Failed to spawn hero unit.")
 
 func _generate_enemy_lineup() -> void:
 	if not UnitLibrary:
 		push_error("Battle._generate_enemy_lineup(): UnitLibrary autoload not found!")
 		return
 
-	var num_enemies = randi_range(3, min(6, enemy_slot_nodes.size())) # 3 to 6 enemies, capped by available slots
+	var num_enemies = randi_range(3, min(6, enemy_lineup_slots.size())) # 3 to 6 enemies, capped by available slots
 	add_log_message("Generating %d enemies." % num_enemies)
 
 	var enemy_options: Array[UnitData] = UnitLibrary.get_enemy_pool_t1()
@@ -148,19 +215,19 @@ func _generate_enemy_lineup() -> void:
 		return
 
 	for i in range(num_enemies):
-		if i >= enemy_slot_nodes.size():
+		if i >= enemy_lineup_slots.size():
 			push_warning("Battle._generate_enemy_lineup(): Not enough enemy slots for %d enemies. Stopping at %d." % [num_enemies, i])
 			break
 		
 		var random_enemy_data: UnitData = enemy_options.pick_random()
 		if random_enemy_data:
-			# Enemies spawn from their front (index 0 of reversed enemy_slot_nodes) to back
+			# Enemies spawn from their front (index 0 of reversed enemy_lineup_slots) to back
 			_spawn_unit(random_enemy_data, false, i)
 			add_log_message("Spawned enemy '%s' in enemy slot %d." % [random_enemy_data.display_name, i])
 		else:
 			push_warning("Battle._generate_enemy_lineup(): Failed to pick random enemy data.")
 
-func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
+func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int, is_bench: bool = false):
 	if not UNIT_SCENE:
 		push_error("Battle._spawn_unit(): UNIT_SCENE is not loaded.")
 		return null
@@ -170,74 +237,71 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 
 	var unit_instance: Unit = UNIT_SCENE.instantiate() as Unit
 	if not unit_instance:
-		push_error("Battle._spawn_unit(): Failed to instantiate UNIT_SCENE.")
+		push_error("Battle._spawn_unit(): Failed to instantiate unit.")
 		return null
 
-	var target_slot_node: Control
-	var team_tint: Color
+	# Add the unit to the scene tree first (needed for some node operations)
+	add_child(unit_instance)
 
+	# Initialize the unit with data
+	unit_instance.initialize(unit_data, is_player_team, Color(1.0, 1.0, 1.0)) # Default white tint for now
+
+	# Determine which slot container to use based on team and slot type
+	var target_slot_node: UnitSlot = null
+	var team_name = "Player" if is_player_team else "Enemy"
+	var slot_type = "bench" if is_bench else "lineup"
+	var slot_array: Array
 	if is_player_team:
-		if slot_index < 0 or slot_index >= player_slot_nodes.size():
-			push_error("Battle._spawn_unit(): Invalid player slot_index %d (max %d)." % [slot_index, player_slot_nodes.size() -1])
-			unit_instance.queue_free()
-			return null
-		target_slot_node = player_slot_nodes[slot_index]
-		team_tint = Color(0.7, 0.7, 1.0) # Light blue for player
-		unit_instance.name = "PlayerUnit_%d" % slot_index
+		slot_array = player_bench_slots if is_bench else player_lineup_slots
 	else:
-		if slot_index < 0 or slot_index >= enemy_slot_nodes.size():
-			push_error("Battle._spawn_unit(): Invalid enemy slot_index %d (max %d)." % [slot_index, enemy_slot_nodes.size() -1])
-			unit_instance.queue_free()
-			return null
-		target_slot_node = enemy_slot_nodes[slot_index]
-		team_tint = Color(1.0, 0.7, 0.7) # Light red for enemy
-		unit_instance.name = "EnemyUnit_%d" % slot_index
+		slot_array = enemy_bench_slots if is_bench else enemy_lineup_slots
 
-	if not is_instance_valid(target_slot_node):
-		push_error("Battle._spawn_unit(): Target slot_node is invalid for team %s, slot %d." % [("player" if is_player_team else "enemy"), slot_index])
+	# Validate slot index
+	if slot_index < 0 or slot_index >= slot_array.size():
+		push_error("Battle._spawn_unit(): Invalid %s slot_index %d for %s team (valid: 0-%d)." % 
+			[slot_type, slot_index, team_name, slot_array.size() - 1])
 		unit_instance.queue_free()
 		return null
 
-	# Clear any existing unit from the target slot
-	for child in target_slot_node.get_children():
-		if is_instance_valid(child) and child is Unit:
-			child.queue_free()
+	target_slot_node = slot_array[slot_index]
 
-	# Add to the scene as a child of the slot node
-	target_slot_node.add_child(unit_instance)
-	
-	# Set proper anchoring to ensure the unit moves with window resizing
-	# Configure anchors first - this is key for proper responsive layout
-	unit_instance.anchor_left = 0.0
-	unit_instance.anchor_top = 1.0  # Anchor top to bottom of parent (like floor)
-	unit_instance.anchor_right = 1.0 # Stretch horizontally
-	unit_instance.anchor_bottom = 1.0 # Anchor bottom to bottom of parent
-	
-	# Set margins to position correctly relative to anchors
-	unit_instance.offset_left = 0 # Left edge at parent's left
-	unit_instance.offset_right = 0 # Right edge at parent's right
-	unit_instance.offset_bottom = 0 # Bottom edge at parent's bottom
-	unit_instance.offset_top = -unit_instance.custom_minimum_size.y # Top edge based on unit's height
-	
-	# Make it grow from the bottom (like the floor rectangle)
-	unit_instance.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	
-	# Initialize the unit after setting anchors
-	unit_instance.initialize(unit_data, is_player_team, team_tint)
-	
-	add_log_message("Unit '%s' anchored to bottom of slot with responsive layout" % [unit_instance.name])
-	
-	# Add to the appropriate team array
+	# Check if the slot is valid and empty
+	if not is_instance_valid(target_slot_node):
+		push_error("Battle._spawn_unit(): Target %s slot_node is invalid for %s team, slot %d." % 
+			[slot_type, team_name, slot_index])
+		unit_instance.queue_free()
+		return null
+
+	if not target_slot_node.is_empty():
+		push_warning("Battle._spawn_unit(): Target %s slot %d for %s team is already occupied." % 
+			[slot_type, slot_index, team_name])
+		unit_instance.queue_free()
+		return null
+
+	# Check if this is a hero unit trying to go to a bench slot (not allowed)
+	if is_bench and unit_data.unit_type_tag == "hero":
+		push_warning("Battle._spawn_unit(): Hero units cannot be placed on the bench.")
+		unit_instance.queue_free()
+		return null
+
+	# Check if the slot can accommodate the unit (e.g., hero units can't go to bench slots)
+	if not target_slot_node.can_accommodate_hero() and unit_data.unit_type_tag == "hero":
+		push_warning("Battle._spawn_unit(): Hero units cannot be placed in this slot.")
+		unit_instance.queue_free()
+		return null
+
+	# Assign the unit to the slot
+	target_slot_node.assign_unit(unit_instance)
+
+	# Update the appropriate logical unit array
+	# Store the unit in the appropriate array
 	if is_player_team:
 		player_units[slot_index] = unit_instance
 	else:
 		enemy_units[slot_index] = unit_instance
 
-	# Connect signals
-	unit_instance.unit_died.connect(_on_unit_died_eventbus)
-	EventBus.unit_spawned.emit(unit_instance, is_player_team, slot_index)
-
-	# No need for deferred positioning since we're using anchors
+	# Update the unit's display
+	unit_instance._update_display()
 	return unit_instance
 
 # This function is no longer needed since we're using anchors for positioning
@@ -262,40 +326,70 @@ func _on_gacha_pressed() -> void:
 		push_error("Battle._on_gacha_pressed(): UnitLibrary autoload not found!")
 		return
 
-	if gacha_tokens >= 1:
-		gacha_tokens -= 1
-		_update_gacha_tokens_display()
-		
-		var gacha_options: Array[UnitData] = UnitLibrary.get_gacha_pool_t1()
-		if gacha_options.is_empty():
-			add_log_message("Gacha pool is empty!")
-			return
+	if gacha_tokens < 1:
+		add_log_message("Not enough gacha tokens!")
+		return
 
-		var drawn_unit_data: UnitData = gacha_options.pick_random()
-		
-		if not drawn_unit_data:
-			add_log_message("Failed to draw unit from gacha (pool might be okay, but pick_random failed).")
-			return
+	gacha_tokens -= 1
+	_update_gacha_tokens_display()
+	
+	var gacha_options: Array[UnitData] = UnitLibrary.get_gacha_pool_t1()
+	if gacha_options.is_empty():
+		add_log_message("Gacha pool is empty!")
+		return
 
-		add_log_message("Gacha draw: %s" % drawn_unit_data.display_name)
+	var drawn_unit_data: UnitData = gacha_options.pick_random()
+	
+	if not drawn_unit_data:
+		add_log_message("Failed to draw unit from gacha (pool might be okay, but pick_random failed).")
+		return
 
-		var placed_in_slot = -1
-		# Try to place in the first available player slot (front to back)
-		for i in range(player_units.size()):
-			if player_units[i] == null: # Check if logical slot is empty
-				# Check if visual slot node is valid before spawning
-				if i < player_slot_nodes.size() and is_instance_valid(player_slot_nodes[i]):
-					_spawn_unit(drawn_unit_data, true, i)
-					add_log_message("Gacha unit '%s' placed in player slot %d." % [drawn_unit_data.display_name, i])
+	add_log_message("Gacha draw: %s" % drawn_unit_data.display_name)
+
+	# First, try to place in the first available lineup slot
+	var placed_in_slot = -1
+	for i in range(player_lineup_slots.size()):
+		var slot = player_lineup_slots[i]
+		if is_instance_valid(slot) and slot.is_empty():
+			# If this is a hero unit, make sure it's not being placed in a non-hero slot
+			if drawn_unit_data.unit_type_tag == "hero" and not slot.can_accommodate_hero():
+				continue
+			
+			# Spawn the unit in the lineup
+			var unit = _spawn_unit(drawn_unit_data, true, i, false)
+			if unit:
+				add_log_message("Gacha unit '%s' placed in lineup slot %d." % [drawn_unit_data.display_name, i])
+				placed_in_slot = i
+				break
+
+	# If no space in lineup, try to place on the bench
+	if placed_in_slot == -1 and is_instance_valid(player_bench_container) and not player_bench_slots.is_empty():
+		for i in range(player_bench_slots.size()):
+			var bench_slot = player_bench_slots[i]
+			if is_instance_valid(bench_slot) and bench_slot.is_empty():
+				# Check if this is a hero unit (can't go to bench)
+				if drawn_unit_data.unit_type_tag == "hero":
+					add_log_message("Cannot place hero unit on the bench. No space in lineup.")
+					placed_in_slot = -2  # Special value to indicate hero can't be placed
+					break
+				
+				# Spawn the unit on the bench
+				var unit = _spawn_unit(drawn_unit_data, true, i, true)
+				if unit:
+					add_log_message("Gacha unit '%s' placed on bench slot %d." % [drawn_unit_data.display_name, i])
 					placed_in_slot = i
 					break
-				else:
-					push_warning("Battle._on_gacha_pressed(): Player slot node %d is invalid, cannot place unit." % i)
-					# Potentially try next slot or handle error
-		
-		if placed_in_slot == -1:
-			add_log_message("No empty player slots to place gacha unit.")
-			# Optional: refund token or handle full bench
+
+	# Handle cases where the unit couldn't be placed
+	if placed_in_slot == -1:
+		add_log_message("No space in lineup or bench for the new unit.")
+		# Optional: Refund the gacha token since we couldn't place the unit
+		# gacha_tokens += 1
+		# _update_gacha_tokens_display()
+		# add_log_message("Gacha token refunded - no space for unit.")
+	elif placed_in_slot == -2:
+		# Special case for hero units that couldn't be placed
+		pass  # Already logged the issue above
 			# gacha_tokens += 1 
 			# _update_gacha_tokens_display()
 	else:
@@ -309,11 +403,11 @@ func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
 	if unit_array.is_empty():
 		return null
 		
-	# Check if this is the player or enemy team
-	var is_player_team = unit_array == player_units
+	# Check if this is the player or enemy team (commented out as it's not currently used)
+	var _is_player_team = unit_array == player_units  # Currently unused, but keeping for potential future use
 	
 	# For both teams, the frontmost unit is the one with the highest index in their respective arrays
-	# because enemy_slot_nodes were already reversed during setup
+	# because enemy_lineup_slots were already reversed during setup
 	for i in range(unit_array.size() - 1, -1, -1):
 		var unit = unit_array[i]
 		if is_instance_valid(unit) and unit.current_hp > 0:
@@ -346,38 +440,282 @@ func add_log_message(message: String) -> void:
 		battle_log.text += "\n" + timestamp + message
 	battle_log.scroll_vertical = INF
 
+# --- Helper Functions for Selection and Movement ---
+func _get_slot_for_unit(unit_to_find: Unit) -> UnitSlot:
+	if not is_instance_valid(unit_to_find):
+		return null
+
+	# Check player lineup slots
+	for slot in player_lineup_slots:
+		if is_instance_valid(slot) and slot.occupying_unit == unit_to_find:
+			return slot
+
+	# Check player bench slots
+	for slot in player_bench_slots:
+		if is_instance_valid(slot) and slot.occupying_unit == unit_to_find:
+			return slot
+
+	# Check enemy lineup slots
+	for slot in enemy_lineup_slots:
+		if is_instance_valid(slot) and slot.occupying_unit == unit_to_find:
+			return slot
+
+	# Check enemy bench slots (if any)
+	for slot in enemy_bench_slots:
+		if is_instance_valid(slot) and slot.occupying_unit == unit_to_find:
+			return slot
+
+	# push_warning("Battle._get_slot_for_unit(): Unit '%s' not found in any known slot." % unit_to_find.get_display_name())
+	return null
+
+func _deselect_current_unit() -> void:
+	if is_instance_valid(selected_unit_instance):
+		selected_unit_instance.update_selection_visual(false)
+	selected_unit_instance = null
+	selected_unit_original_slot = null
+	# TODO: Call _highlight_valid_slots(false) when implemented
+	add_log_message("Current unit deselected.")
+
+
+# --- EventBus Handlers for Unit/Slot Interaction ---
+func _on_unit_selected_for_action(clicked_unit: Unit) -> void:
+	if not is_instance_valid(clicked_unit):
+		return
+
+	if not is_player_turn:
+		add_log_message("Cannot select unit: Not player's turn.")
+		return
+
+	var slot_of_clicked_unit: UnitSlot = _get_slot_for_unit(clicked_unit)
+	if not is_instance_valid(slot_of_clicked_unit) or not slot_of_clicked_unit.is_player_slot:
+		add_log_message("Cannot select unit: Not a player unit or not in a player slot.")
+		return
+
+	add_log_message("Player unit clicked: %s in slot %s" % [clicked_unit.get_name_for_log(), slot_of_clicked_unit.slot_id])
+
+	if selected_unit_instance == clicked_unit:
+		# Clicked the already selected unit - deselect it
+		add_log_message("Deselecting unit: %s" % clicked_unit.get_name_for_log())
+		_deselect_current_unit()
+	elif is_instance_valid(selected_unit_instance):
+		# Another unit is already selected - this is a unit-on-unit click (attempt swap)
+		add_log_message("Attempting swap with selected unit %s and clicked unit %s" % [selected_unit_instance.get_name_for_log(), clicked_unit.get_name_for_log()])
+		_attempt_swap_units(selected_unit_instance, selected_unit_original_slot, clicked_unit, slot_of_clicked_unit)
+		_deselect_current_unit() # Always deselect after an action attempt
+	else:
+		# No unit was selected - select this one
+		selected_unit_instance = clicked_unit
+		selected_unit_original_slot = slot_of_clicked_unit
+		selected_unit_instance.update_selection_visual(true)
+		add_log_message("Selected unit: %s in slot %s" % [selected_unit_instance.get_name_for_log(), selected_unit_original_slot.slot_id])
+		# TODO: Highlight valid target slots for the selected_unit_instance
+
+func _on_slot_clicked_for_action(clicked_slot: UnitSlot) -> void:
+	if not is_instance_valid(clicked_slot):
+		return
+
+	if not is_player_turn:
+		add_log_message("Cannot interact with slot: Not player's turn.")
+		return
+
+	if not is_instance_valid(selected_unit_instance):
+		add_log_message("Slot %s clicked, but no unit is selected. Ignoring." % clicked_slot.slot_id)
+		return
+
+	# Ensure the clicked slot is a player-controllable slot (lineup or bench)
+	if not clicked_slot.is_player_slot:
+		add_log_message("Cannot interact with non-player slot: %s" % clicked_slot.slot_id)
+		_deselect_current_unit() # Clicking an invalid slot should deselect
+		return
+
+	add_log_message("Player slot clicked: %s. Selected unit: %s" % [clicked_slot.slot_id, selected_unit_instance.get_name_for_log()])
+
+	if clicked_slot == selected_unit_original_slot:
+		# Clicked the original slot of the selected unit - deselect it
+		add_log_message("Clicked original slot. Deselecting unit: %s" % selected_unit_instance.get_name_for_log())
+		_deselect_current_unit()
+	elif clicked_slot.is_empty():
+		# Clicked an empty slot - attempt move
+		add_log_message("Attempting move to empty slot: %s" % clicked_slot.slot_id)
+		_attempt_move_to_empty_slot(selected_unit_instance, selected_unit_original_slot, clicked_slot)
+		_deselect_current_unit() # Always deselect after an action attempt
+	elif is_instance_valid(clicked_slot.occupying_unit):
+		# Clicked an occupied slot - attempt swap
+		var target_unit_in_slot = clicked_slot.occupying_unit
+		add_log_message("Attempting swap with unit %s in slot %s" % [target_unit_in_slot.get_name_for_log(), clicked_slot.slot_id])
+		_attempt_swap_units(selected_unit_instance, selected_unit_original_slot, target_unit_in_slot, clicked_slot)
+		_deselect_current_unit() # Always deselect after an action attempt
+	else:
+		# Should not happen if is_empty() is false and occupying_unit is null, but as a fallback:
+		add_log_message("Clicked slot %s has an unexpected state. Deselecting." % clicked_slot.slot_id)
+		_deselect_current_unit()
+
+
+# --- Core Logic for Movement and Swapping ---
+func _attempt_move_to_empty_slot(unit_to_move: Unit, from_slot: UnitSlot, to_slot: UnitSlot) -> bool:
+	# 1. Validate Inputs & State
+	if not is_instance_valid(unit_to_move) or not is_instance_valid(from_slot) or not is_instance_valid(to_slot):
+		add_log_message("Move failed: Invalid unit or slot instance(s).")
+		return false
+
+	if from_slot.occupying_unit != unit_to_move:
+		add_log_message("Move failed: Unit %s is not in the specified from_slot %s." % [unit_to_move.get_name_for_log(), from_slot.slot_id])
+		return false
+
+	if not to_slot.is_empty():
+		add_log_message("Move failed: Target slot %s is not empty." % to_slot.slot_id)
+		return false
+
+	# 2. Hero Constraint Check (using UnitSlot's own check)
+	if unit_to_move.unit_data and unit_to_move.unit_data.unit_type_tag == "hero":
+		if not to_slot.can_accommodate_hero():
+			add_log_message("Move failed: Hero unit %s cannot move to slot %s (e.g., bench slot)." % [unit_to_move.get_name_for_log(), to_slot.slot_id])
+			return false
+
+	# 3. Perform Move (Visual and Slot Logic)
+	var unit_ref = from_slot.clear_unit() # Should be unit_to_move
+	if unit_ref != unit_to_move: # Should not happen if logic is correct
+		push_error("Battle._attempt_move_to_empty_slot: Mismatch in unit cleared from from_slot!")
+		# Attempt to recover or fail gracefully
+		if is_instance_valid(unit_ref) and not is_instance_valid(from_slot.occupying_unit):
+			from_slot.assign_unit(unit_ref) # Put it back if something went wrong
+		return false
+	
+	to_slot.assign_unit(unit_to_move)
+
+	# 4. Update Logical Array (player_units)
+	var from_slot_idx = player_lineup_slots.find(from_slot)
+	var to_slot_idx = player_lineup_slots.find(to_slot)
+
+	if from_slot_idx == -1 or to_slot_idx == -1:
+		add_log_message("Move failed: Could not find one or both slots in player_lineup_slots array. This is a critical error.")
+		# Attempt to revert visual move if logical update fails catastrophically
+		to_slot.clear_unit()
+		from_slot.assign_unit(unit_to_move)
+		return false
+
+	player_units[from_slot_idx] = null
+	player_units[to_slot_idx] = unit_to_move
+
+	add_log_message("Move successful: %s moved from %s to %s." % [unit_to_move.get_name_for_log(), from_slot.slot_id, to_slot.slot_id])
+	return true
+
+func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_slot2: UnitSlot) -> bool:
+	# 1. Validate Inputs & State
+	if (not is_instance_valid(unit1) or not is_instance_valid(from_slot1) or 
+	   not is_instance_valid(unit2) or not is_instance_valid(from_slot2)):
+		add_log_message("Swap failed: Invalid unit or slot instance(s).")
+		return false
+
+	# Make sure the units are actually in the specified slots
+	if from_slot1.occupying_unit != unit1 or from_slot2.occupying_unit != unit2:
+		add_log_message("Swap failed: Unit-slot mismatch.")
+		return false
+
+	# 2. Check if both units are on the same team (can't swap with enemy units)
+	if unit1.is_player_team != unit2.is_player_team:
+		add_log_message("Swap failed: Cannot swap units from different teams.")
+		return false
+
+	# 3. Check hero constraints for both slots
+	if unit1.unit_data.unit_type_tag == "hero" and not from_slot2.can_accommodate_hero():
+		add_log_message("Swap failed: Hero unit %s cannot move to slot %s." % [unit1.get_name_for_log(), from_slot2.slot_id])
+		return false
+
+	if unit2.unit_data.unit_type_tag == "hero" and not from_slot1.can_accommodate_hero():
+		add_log_message("Swap failed: Hero unit %s cannot move to slot %s." % [unit2.get_name_for_log(), from_slot1.slot_id])
+		return false
+
+	# 4. Perform the swap
+	# First clear both slots
+	var temp_unit1 = from_slot1.clear_unit()
+	var temp_unit2 = from_slot2.clear_unit()
+
+	# Sanity check
+	if temp_unit1 != unit1 or temp_unit2 != unit2:
+		push_error("Battle._attempt_swap_units: Mismatch in units cleared from slots!")
+		# Attempt to revert
+		if is_instance_valid(temp_unit1): from_slot1.assign_unit(temp_unit1)
+		if is_instance_valid(temp_unit2): from_slot2.assign_unit(temp_unit2)
+		return false
+
+	# Assign units to new slots
+	from_slot1.assign_unit(unit2)
+	from_slot2.assign_unit(unit1)
+
+	# 5. Update logical arrays if these are player units
+	if unit1.is_player_team:  # Both units are on the same team, so just check one
+		var slot1_idx = player_lineup_slots.find(from_slot1)
+		var slot2_idx = player_lineup_slots.find(from_slot2)
+
+		# If either slot is in the lineup, update the player_units array
+		if slot1_idx != -1 and slot2_idx != -1:
+			# Both slots are in the lineup, just swap them
+			player_units[slot1_idx] = unit2
+			player_units[slot2_idx] = unit1
+		elif slot1_idx != -1:
+			# Only slot1 is in the lineup
+			player_units[slot1_idx] = unit2
+		elif slot2_idx != -1:
+			# Only slot2 is in the lineup
+			player_units[slot2_idx] = unit1
+		# If neither slot is in the lineup, they're both bench slots - no need to update player_units
+
+	add_log_message("Swap successful: %s and %s swapped positions." % [unit1.get_name_for_log(), unit2.get_name_for_log()])
+	return true
+
+
+# --- Existing EventBus Handlers (Modified) ---
 func _on_unit_died_eventbus(unit_died: Unit) -> void:
 	if not is_instance_valid(unit_died):
 		return
 
-	var unit_name = unit_died.get_name_for_log() # Use the helper for consistent naming
+	var unit_name = unit_died.get_name_for_log()
 	add_log_message("EventBus: Unit %s died." % unit_name)
 
-	var unit_parent_slot = unit_died.get_parent() # The slot node
+	var slot_of_died_unit: UnitSlot = _get_slot_for_unit(unit_died)
 
-	var removed_from_player = false
-	if player_units.has(unit_died):
-		player_units.erase(unit_died)
-		removed_from_player = true
+	if is_instance_valid(slot_of_died_unit):
+		var team_info = "Player" if slot_of_died_unit.is_player_slot else "Enemy"
+		var slot_idx = -1
+		var is_bench_slot = not slot_of_died_unit.is_lineup_slot
+		
+		if slot_of_died_unit.is_player_slot:
+			if is_bench_slot:
+				slot_idx = player_bench_slots.find(slot_of_died_unit)
+				if slot_idx != -1 and player_bench_units[slot_idx] == unit_died:
+					player_bench_units[slot_idx] = null
+			else:
+				slot_idx = player_lineup_slots.find(slot_of_died_unit)
+				if slot_idx != -1 and player_units[slot_idx] == unit_died:
+					player_units[slot_idx] = null
+		else: # Enemy unit
+			if is_bench_slot:
+				slot_idx = enemy_bench_slots.find(slot_of_died_unit)
+				if slot_idx != -1 and enemy_bench_units[slot_idx] == unit_died:
+					enemy_bench_units[slot_idx] = null
+			else:
+				slot_idx = enemy_lineup_slots.find(slot_of_died_unit)
+				if slot_idx != -1 and enemy_units[slot_idx] == unit_died:
+					enemy_units[slot_idx] = null
+		
+		slot_of_died_unit.clear_unit() # This removes it from the slot's child hierarchy
+		var slot_type = "bench" if is_bench_slot else "lineup"
+		add_log_message("Unit %s cleared from %s %s slot %s. Corresponding logical array updated." % [unit_name, team_info, slot_type, slot_of_died_unit.slot_id])
+	else:
+		# Fallback if unit wasn't in a tracked slot (shouldn't happen for units in play)
+		# This might occur if a unit dies before being fully placed, or from a non-slot source.
+		push_warning("Battle._on_unit_died_eventbus: Died unit %s was not found in any tracked slot." % unit_name)
 
-	var removed_from_enemy = false
-	if enemy_units.has(unit_died):
-		enemy_units.erase(unit_died)
-		removed_from_enemy = true
+	# If the died unit was selected, deselect it
+	if selected_unit_instance == unit_died:
+		_deselect_current_unit()
 
-	if removed_from_player:
-		add_log_message("%s removed from player units." % unit_name)
-	if removed_from_enemy:
-		add_log_message("%s removed from enemy units." % unit_name)
-	
-	# Visually remove the unit from the scene
-	if is_instance_valid(unit_died):
+	# Visually remove the unit from the scene (queue_free is now handled by clear_unit if it was parented to slot, or here if not)
+	if is_instance_valid(unit_died) and not unit_died.is_queued_for_deletion():
+		# If clear_unit didn't queue_free it (e.g., it wasn't parented to the slot directly for some reason)
+		# or if it wasn't found in a slot, ensure it's freed.
 		unit_died.queue_free()
-
-	# Optional: Add a placeholder or 'empty' visual back to the unit_parent_slot if needed
-	# For example, if you had a 'tombstone' or 'empty slot' visual to show.
-	# if is_instance_valid(unit_parent_slot):
-	#    pass # logic to restore slot visual if it was changed by unit presence
 
 	# Check for win/loss conditions only if the battle isn't already marked as ended
 	if not end_turn_button.disabled:

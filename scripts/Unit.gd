@@ -12,9 +12,15 @@ signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
 @export var pwr_label: Label
 
 # --- Public Properties --- #
+var is_currently_selected: bool = false
+
 var unit_data: UnitData         # Holds the static data for this unit type
 var current_hp: int             # Current health points
 var is_player_team_unit: bool = true # Flag to identify team, set during initialization
+
+# --- Constants for Visual Selection --- #
+const SELECTED_VISUAL_MODULATE: Color = Color(1.2, 1.2, 0.7, 1.0) # Brighter, slightly yellowish
+const DESELECTED_VISUAL_MODULATE: Color = Color(1.0, 1.0, 1.0) # Neutral modulate
 
 # --- Constants for Label Colors --- #
 const PLAYER_LABEL_COLOR: Color = Color(0.3, 0.7, 1.0)  # A clear blue
@@ -26,6 +32,8 @@ func _ready():
 	# Initial display update is handled by initialize() as unit_data is needed.
 	# If unit_data was an @export var and set in scene, _ready could do initial setup.
 	# For now, initialize() is the main entry point for setting up a new unit.
+	if is_instance_valid(unit_visual_panel):
+		unit_visual_panel.self_modulate = DESELECTED_VISUAL_MODULATE
 	pass
 
 # --- Public Methods --- # 
@@ -78,6 +86,14 @@ func get_display_name() -> String:
 	if unit_data:
 		return unit_data.display_name
 	return "Unknown Unit"
+
+func update_selection_visual(selected_state: bool) -> void:
+	is_currently_selected = selected_state
+	if is_instance_valid(unit_visual_panel):
+		if is_currently_selected:
+			unit_visual_panel.self_modulate = SELECTED_VISUAL_MODULATE
+		else:
+			unit_visual_panel.self_modulate = DESELECTED_VISUAL_MODULATE
 
 func get_name_for_log() -> String:
 	var team_prefix = "Player" if is_player_team_unit else "Enemy"

@@ -14,6 +14,8 @@ signal unit_died(unit: Node2D)
 signal unit_health_changed(unit: Object, new_health: int, old_health: int, max_health: int) # unit is Object to match Unit.gd
 signal unit_action_initiated(unit: Object, action_type: String, target: Object) # unit and target are Objects
 signal unit_action_completed(unit: Object, action_type: String, details: Dictionary) # unit is Object
+signal unit_selected_for_action(unit: Object) # Signal emitted when a unit is selected for an action
+signal slot_clicked_for_action(slot: Object) # Signal emitted when a slot is clicked for an action
 
 # Flashcard Events
 signal flashcard_presented(question: String, answers: Array)
