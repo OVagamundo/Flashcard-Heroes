@@ -14,6 +14,13 @@ config/name="Flashcard Heroes"
 run/main_scene="uid://h4rso7xt5e6a"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
+#Windowsettingsconfig/window/size/viewport_width=1280
+config/window/size/viewport_height=720
+config/window/size/window_width_override=1280
+config/window/size/window_height_override=720
+config/window/stretch/mode="canvas_items"
+config/window/stretch/aspect="keep"
+config/window/stretch/scale=1.0
 
 [autoload]
 

@@ -21,9 +21,13 @@ color = Color(0.0784314, 0.0784314, 0.117647, 1)
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -40.0
-offset_bottom = -40.0
-theme_override_constants/separation = 20
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 5
 
 [node name="Header" type="HBoxContainer" parent="MainContainer"]
 layout_mode = 2
@@ -43,7 +47,7 @@ text = "HP: 30/30"
 [node name="GachaTokens" type="Label" parent="MainContainer/Header/PlayerInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "Tokens: 0"
 
 [node name="Spacer" type="Control" parent="MainContainer/Header"]
@@ -61,22 +65,22 @@ text = "Your Turn"
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 40
+theme_override_constants/separation = 10
 
 [node name="PlayerSide" type="VBoxContainer" parent="MainContainer/BattleArea"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
 [node name="PlayerUnits" type="HBoxContainer" parent="MainContainer/BattleArea/PlayerSide"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 5
 
 [node name="PlayerSlot1" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -90,7 +94,7 @@ offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
 [node name="PlayerSlot2" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -104,7 +108,7 @@ offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
 [node name="PlayerSlot3" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -118,7 +122,7 @@ offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
 [node name="PlayerSlot4" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -132,7 +136,7 @@ offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
 [node name="PlayerSlot5" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -146,7 +150,7 @@ offset_top = -20.0
 color = Color(0.2, 0.2, 0.5, 0.7)
 
 [node name="PlayerSlot6" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -163,16 +167,16 @@ color = Color(0.2, 0.2, 0.5, 0.7)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
 [node name="EnemyUnits" type="HBoxContainer" parent="MainContainer/BattleArea/EnemySide"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 5
 
 [node name="EnemySlot6" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -186,7 +190,7 @@ offset_top = -20.0
 color = Color(0.5, 0.2, 0.2, 0.7)
 
 [node name="EnemySlot5" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(100, 170)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
