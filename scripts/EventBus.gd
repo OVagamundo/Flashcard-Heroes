@@ -16,6 +16,7 @@ signal unit_action_initiated(unit: Object, action_type: String, target: Object) 
 signal unit_action_completed(unit: Object, action_type: String, details: Dictionary) # unit is Object
 signal unit_selected_for_action(unit: Object) # Signal emitted when a unit is selected for an action
 signal slot_clicked_for_action(slot: Object) # Signal emitted when a slot is clicked for an action
+signal units_merged(unit1: Object, unit2: Object, result_unit: Object) # Signal emitted when two units are merged
 
 # Flashcard Events
 signal flashcard_presented(question: String, answers: Array)

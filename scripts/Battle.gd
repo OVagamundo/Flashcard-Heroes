@@ -24,9 +24,11 @@ var player_units: Array[Unit] = []
 var enemy_units: Array[Unit] = []
 var is_player_turn: bool = true
 
-# Selection state
-var selected_unit_instance: Unit = null
-var selected_unit_original_slot: UnitSlot = null
+# Merge and selection state
+var selected_unit: Unit = null
+var selected_slot: UnitSlot = null
+var is_awaiting_merge_confirmation: bool = false
+var pending_merge_slot: UnitSlot = null
 
 func _ready() -> void:
 	# Connect button signals (can be kept, but their actions will be simplified)
@@ -210,7 +212,7 @@ func _generate_enemy_lineup() -> void:
 		else:
 			push_warning("Battle._generate_enemy_lineup(): Failed to pick random enemy data.")
 
-func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
+func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int = -1) -> Unit:
 	if not UNIT_SCENE:
 		push_error("Battle._spawn_unit(): UNIT_SCENE is not loaded.")
 		return null
@@ -218,55 +220,48 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 		push_error("Battle._spawn_unit(): unit_data is null.")
 		return null
 
-	var unit_instance: Unit = UNIT_SCENE.instantiate() as Unit
+	var unit_instance = UNIT_SCENE.instantiate()
 	if not unit_instance:
 		push_error("Battle._spawn_unit(): Failed to instantiate unit.")
 		return null
 
-	# Add the unit to the scene tree first (needed for some node operations)
-	add_child(unit_instance)
+	# Determine which container to add the unit to
+	var target_container = player_units_container if is_player_team else enemy_units_container
+	if not is_instance_valid(target_container):
+		push_error("Battle._spawn_unit(): Invalid target container.")
+		unit_instance.queue_free()
+		return null
+
+	# Add the unit to the scene tree first
+	target_container.add_child(unit_instance)
 
 	# Initialize the unit with data
-	unit_instance.initialize(unit_data, is_player_team, Color(1.0, 1.0, 1.0)) # Default white tint for now
+	var team_color = Color(0.3, 0.7, 1.0) if is_player_team else Color(1.0, 0.4, 0.4)
+	unit_instance.initialize(unit_data, is_player_team, team_color)
 
-	# Determine which slot container to use based on team
-	var target_slot_node: UnitSlot = null
-	var team_name = "Player" if is_player_team else "Enemy"
-	var slot_array = player_lineup_slots if is_player_team else enemy_lineup_slots
-	# Validate slot index
-	if slot_index < 0 or slot_index >= slot_array.size():
-		push_error("Battle._spawn_unit(): Invalid %s slot_index %d for %s team (valid: 0-%d)." % 
-			["lineup", slot_index, team_name, slot_array.size() - 1])
-		unit_instance.queue_free()
-		return null
+	# If slot_index is provided, assign to that slot
+	if slot_index >= 0:
+		var target_slots = player_lineup_slots if is_player_team else enemy_lineup_slots
+		if slot_index < target_slots.size():
+			var target_slot = target_slots[slot_index]
+			if is_instance_valid(target_slot):
+				# If the slot is occupied, remove the current unit
+				if not target_slot.is_empty():
+					var old_unit = target_slot.clear_unit()
+					if is_instance_valid(old_unit):
+						old_unit.queue_free()
+				target_slot.assign_unit(unit_instance)
 
-	target_slot_node = slot_array[slot_index]
-
-	# Check if the slot is valid and empty
-	if not is_instance_valid(target_slot_node):
-		push_error("Battle._spawn_unit(): Target lineup slot_node is invalid for %s team, slot %d." % 
-			[team_name, slot_index])
-		unit_instance.queue_free()
-		return null
-
-	if not target_slot_node.is_empty():
-		push_warning("Battle._spawn_unit(): Target lineup slot %d for %s team is already occupied." % 
-			[slot_index, team_name])
-		unit_instance.queue_free()
-		return null
-
-	# Assign the unit to the slot
-	target_slot_node.assign_unit(unit_instance)
-
-	# Update the appropriate logical unit array
-	# Store the unit in the appropriate array
+	# Add to the appropriate units array
 	if is_player_team:
-		player_units[slot_index] = unit_instance
+		player_units.append(unit_instance)
 	else:
-		enemy_units[slot_index] = unit_instance
+		enemy_units.append(unit_instance)
 
 	# Update the unit's display
-	unit_instance._update_display()
+	if is_instance_valid(unit_instance):
+		unit_instance._update_display()
+	
 	return unit_instance
 
 # This function is no longer needed since we're using anchors for positioning
@@ -523,88 +518,189 @@ func _get_slot_for_unit(unit_to_find: Unit) -> UnitSlot:
 	return null
 
 func _deselect_current_unit() -> void:
-	if is_instance_valid(selected_unit_instance):
-		selected_unit_instance.update_selection_visual(false)
-	selected_unit_instance = null
-	selected_unit_original_slot = null
+	if is_instance_valid(selected_unit):
+		selected_unit.update_selection_visual(false)
+	selected_unit = null
+	if selected_slot and is_instance_valid(selected_slot):
+		selected_slot.set_highlight("")
+	selected_slot = null
 	# TODO: Call _highlight_valid_slots(false) when implemented
 	add_log_message("Current unit deselected.")
 
-
 # --- EventBus Handlers for Unit/Slot Interaction ---
 func _on_unit_selected_for_action(clicked_unit: Unit) -> void:
-	if not is_instance_valid(clicked_unit):
+	if not is_instance_valid(clicked_unit) or not is_player_turn:
 		return
 
-	if not is_player_turn:
-		add_log_message("Cannot select unit: Not player's turn.")
+	if is_awaiting_merge_confirmation:
+		# If we're waiting for merge confirmation, ignore other clicks
 		return
 
-	var slot_of_clicked_unit: UnitSlot = _get_slot_for_unit(clicked_unit)
-	if not is_instance_valid(slot_of_clicked_unit) or not slot_of_clicked_unit.is_player_slot:
-		add_log_message("Cannot select unit: Not a player unit or not in a player slot.")
+	if selected_unit == clicked_unit:
+		# Clicked the same unit, deselect it
+		_clear_selection()
 		return
 
-	add_log_message("Player unit clicked: %s in slot %s" % [clicked_unit.get_name_for_log(), slot_of_clicked_unit.slot_id])
-
-	if selected_unit_instance == clicked_unit:
-		# Clicked the already selected unit - deselect it
-		add_log_message("Deselecting unit: %s" % clicked_unit.get_name_for_log())
-		_deselect_current_unit()
-	elif is_instance_valid(selected_unit_instance):
-		# Another unit is already selected - this is a unit-on-unit click (attempt swap)
-		add_log_message("Attempting swap with selected unit %s and clicked unit %s" % [selected_unit_instance.get_name_for_log(), clicked_unit.get_name_for_log()])
-		_attempt_swap_units(selected_unit_instance, selected_unit_original_slot, clicked_unit, slot_of_clicked_unit)
-		_deselect_current_unit() # Always deselect after an action attempt
+	if selected_unit == null:
+		# First selection
+		selected_unit = clicked_unit
+		selected_slot = _get_slot_for_unit(clicked_unit)
+		if selected_slot:
+			selected_slot.set_highlight("selected")
+			_update_merge_highlights(clicked_unit)
 	else:
-		# No unit was selected - select this one
-		selected_unit_instance = clicked_unit
-		selected_unit_original_slot = slot_of_clicked_unit
-		selected_unit_instance.update_selection_visual(true)
-		add_log_message("Selected unit: %s in slot %s" % [selected_unit_instance.get_name_for_log(), selected_unit_original_slot.slot_id])
-		# TODO: Highlight valid target slots for the selected_unit_instance
+		# Second click - try to merge or swap
+		var target_slot = _get_slot_for_unit(clicked_unit)
+		if target_slot:
+			_handle_second_click(target_slot, clicked_unit)
 
 func _on_slot_clicked_for_action(clicked_slot: UnitSlot) -> void:
-	if not is_instance_valid(clicked_slot):
+	if not is_instance_valid(clicked_slot) or not is_player_turn or is_awaiting_merge_confirmation:
 		return
 
-	if not is_player_turn:
-		add_log_message("Cannot interact with slot: Not player's turn.")
-		return
+	# If we have a selected unit, handle the slot click
+	if selected_unit:
+		# Ensure the clicked slot is a player-controllable slot
+		if not clicked_slot.is_player_slot:
+			add_log_message("Cannot interact with enemy slots directly.")
+			return
 
-	if not is_instance_valid(selected_unit_instance):
-		add_log_message("Slot %s clicked, but no unit is selected. Ignoring." % clicked_slot.slot_id)
-		return
+		add_log_message("Player slot clicked: %s. Selected unit: %s" % [clicked_slot.slot_id, selected_unit.get_name_for_log()] if selected_unit else "None")
 
-	# Ensure the clicked slot is a player-controllable slot
-	if not clicked_slot.is_player_slot:
-		add_log_message("Cannot interact with enemy slots directly.")
-		return
-
-	add_log_message("Player slot clicked: %s. Selected unit: %s" % [clicked_slot.slot_id, selected_unit_instance.get_name_for_log()])
-
-	if clicked_slot == selected_unit_original_slot:
-		# Clicked the original slot of the selected unit - deselect it
-		add_log_message("Clicked original slot. Deselecting unit: %s" % selected_unit_instance.get_name_for_log())
-		_deselect_current_unit()
-	elif clicked_slot.is_empty():
-		# Clicked an empty slot - attempt move
-		add_log_message("Attempting move to empty slot: %s" % clicked_slot.slot_id)
-		_attempt_move_to_empty_slot(selected_unit_instance, selected_unit_original_slot, clicked_slot)
-		_deselect_current_unit() # Always deselect after an action attempt
-	elif is_instance_valid(clicked_slot.occupying_unit):
-		# Clicked an occupied slot - attempt swap
-		var target_unit_in_slot = clicked_slot.occupying_unit
-		add_log_message("Attempting swap with unit %s in slot %s" % [target_unit_in_slot.get_name_for_log(), clicked_slot.slot_id])
-		_attempt_swap_units(selected_unit_instance, selected_unit_original_slot, target_unit_in_slot, clicked_slot)
-		_deselect_current_unit() # Always deselect after an action attempt
+		if clicked_slot == selected_slot:
+			# Clicked the same slot where the selected unit is - deselect it
+			add_log_message("Clicked same slot. Deselecting unit: %s" % selected_unit.get_name_for_log())
+			_deselect_current_unit()
+		elif clicked_slot.is_empty():
+			# Clicked an empty slot - attempt move
+			add_log_message("Attempting move to empty slot: %s" % clicked_slot.slot_id)
+			_attempt_move_to_empty_slot(selected_unit, selected_slot, clicked_slot)
+			_deselect_current_unit() # Always deselect after an action attempt
+		elif is_instance_valid(clicked_slot.occupying_unit):
+			# Clicked an occupied slot - attempt swap
+			var target_unit_in_slot = clicked_slot.occupying_unit
+			add_log_message("Attempting swap with unit %s in slot %s" % [target_unit_in_slot.get_name_for_log(), clicked_slot.slot_id])
+			_attempt_swap_units(selected_unit, selected_slot, target_unit_in_slot, clicked_slot)
+			_deselect_current_unit() # Always deselect after an action attempt
+		else:
+			# Should not happen if is_empty() is false and occupying_unit is null, but as a fallback:
+			add_log_message("Clicked slot %s has an unexpected state. Deselecting." % clicked_slot.slot_id)
+			_deselect_current_unit()
 	else:
-		# Should not happen if is_empty() is false and occupying_unit is null, but as a fallback:
-		add_log_message("Clicked slot %s has an unexpected state. Deselecting." % clicked_slot.slot_id)
-		_deselect_current_unit()
+		# No unit selected, select the unit in the clicked slot if there is one
+		if clicked_slot.occupying_unit and clicked_slot.is_player_slot:
+			selected_unit = clicked_slot.occupying_unit
+			selected_slot = clicked_slot
+			selected_slot.set_highlight("selected")
+			_update_merge_highlights(selected_unit)
 
 
 # --- Core Logic for Movement and Swapping ---
+func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
+	if not selected_slot or not selected_unit:
+		_clear_selection()
+		return
+
+	# If clicked on empty slot, move the unit there
+	if target_slot.is_empty():
+		_attempt_move_to_empty_slot(selected_unit, selected_slot, target_slot)
+		_clear_selection()
+		return
+
+	# If clicked on another unit, check for merge
+	if target_unit and target_unit != selected_unit:
+		var result_unit_id = UnitLibrary.get_merge_result(selected_unit.unit_data, target_unit.unit_data)
+		if result_unit_id:
+			_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
+		else:
+			# Can't merge, try to swap
+			_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
+			_clear_selection()
+
+func _show_merge_confirmation(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
+	var result_data = UnitLibrary.get_unit_data(result_unit_id)
+	if not result_data:
+		_clear_selection()
+		return
+
+	# Store merge info for confirmation
+	pending_merge_slot = target_slot
+	is_awaiting_merge_confirmation = true
+
+	# Show confirmation dialog (you'll need to implement this in your UI)
+	# For now, we'll auto-confirm after a short delay
+	await get_tree().create_timer(0.5).timeout
+	_perform_merge(unit1, unit2, target_slot, result_unit_id)
+
+func _perform_merge(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
+	if not is_instance_valid(unit1) or not is_instance_valid(unit2) or not is_instance_valid(target_slot):
+		_clear_selection()
+		return
+
+	var result_data = UnitLibrary.get_unit_data(result_unit_id)
+	if not result_data:
+		_clear_selection()
+		return
+
+	# Get the other slot
+	var other_slot = target_slot if (unit1 == selected_unit) else selected_slot
+	if not is_instance_valid(other_slot):
+		_clear_selection()
+		return
+	
+	# Remove both units from their slots
+	var removed_unit1 = selected_slot.clear_unit()
+	var removed_unit2 = target_slot.clear_unit()
+
+	# Create and place the new unit
+	var slot_index = player_lineup_slots.find(target_slot)
+	if slot_index == -1:
+		push_error("Target slot not found in player_lineup_slots")
+		_clear_selection()
+		return
+		
+	var new_unit = _spawn_unit(result_data, true, slot_index)
+	if new_unit:
+		target_slot.assign_unit(new_unit)
+		# Update player_units array
+		player_units.erase(removed_unit1)
+		player_units.erase(removed_unit2)
+		player_units.append(new_unit)
+
+		# Emit merge event
+		EventBus.units_merged.emit(unit1, unit2, new_unit)
+
+	# Clean up old units
+	if is_instance_valid(removed_unit1):
+		removed_unit1.queue_free()
+	if is_instance_valid(removed_unit2):
+		removed_unit2.queue_free()
+
+	_clear_selection()
+	
+	# UI will update on next frame automatically
+
+func _update_merge_highlights(unit_to_highlight: Unit) -> void:
+	if not unit_to_highlight:
+		return
+
+	for slot in player_lineup_slots:
+		if slot == selected_slot:
+			slot.set_highlight("selected")
+		elif slot.occupying_unit:
+			var result = UnitLibrary.get_merge_result(selected_unit.unit_data, slot.occupying_unit.unit_data)
+			slot.set_highlight("merge" if result else "invalid")
+		else:
+			slot.set_highlight("")
+
+func _clear_selection() -> void:
+	if selected_slot and is_instance_valid(selected_slot):
+		selected_slot.set_highlight("")
+	selected_unit = null
+	selected_slot = null
+	is_awaiting_merge_confirmation = false
+	pending_merge_slot = null
+
 func _attempt_move_to_empty_slot(unit_to_move: Unit, from_slot: UnitSlot, to_slot: UnitSlot) -> bool:
 	# 1. Validate Inputs & State
 	if not is_instance_valid(unit_to_move) or not is_instance_valid(from_slot) or not is_instance_valid(to_slot):
@@ -653,6 +749,7 @@ func _attempt_move_to_empty_slot(unit_to_move: Unit, from_slot: UnitSlot, to_slo
 	add_log_message("Move successful: %s moved from %s to %s." % [unit_to_move.get_name_for_log(), from_slot.slot_id, to_slot.slot_id])
 	return true
 
+
 func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_slot2: UnitSlot) -> bool:
 	# 1. Validate Inputs & State
 	if (not is_instance_valid(unit1) or not is_instance_valid(from_slot1) or 
@@ -694,26 +791,18 @@ func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_sl
 	
 	from_slot1.assign_unit(unit2)
 	from_slot2.assign_unit(unit1)
-
+	
 	# 5. Update logical arrays if these are player units
 	if unit1.is_player_team_unit:  # Both units are on the same team, so just check one
 		var slot1_idx = player_lineup_slots.find(from_slot1)
 		var slot2_idx = player_lineup_slots.find(from_slot2)
 
-		# If either slot is in the lineup, update the player_units array
 		if slot1_idx != -1 and slot2_idx != -1:
-			# Both slots are in the lineup, just swap them
+			# Update the logical arrays
 			player_units[slot1_idx] = unit2
 			player_units[slot2_idx] = unit1
-		elif slot1_idx != -1:
-			# Only slot1 is in the lineup
-			player_units[slot1_idx] = unit2
-		elif slot2_idx != -1:
-			# Only slot2 is in the lineup
-			player_units[slot2_idx] = unit1
-		# All slots are lineup slots now
 
-	add_log_message("Swap successful: %s and %s swapped positions." % [unit1.get_name_for_log(), unit2.get_name_for_log()])
+	add_log_message("Swapped %s and %s" % [unit1.get_name_for_log(), unit2.get_name_for_log()])
 	return true
 
 
@@ -747,7 +836,7 @@ func _on_unit_died_eventbus(unit_died: Unit) -> void:
 		push_warning("Battle._on_unit_died_eventbus: Died unit %s was not found in any tracked slot." % unit_name)
 
 	# If the died unit was selected, deselect it
-	if selected_unit_instance == unit_died:
+	if selected_unit == unit_died:
 		_deselect_current_unit()
 
 	# Visually remove the unit from the scene (queue_free is now handled by clear_unit if it was parented to slot, or here if not)

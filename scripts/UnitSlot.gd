@@ -16,8 +16,14 @@ var is_lineup_slot: bool = false # True if this is a slot in the active battle l
 var is_player_slot: bool = true # Assuming these slots are for player units initially
 
 # --- Constants for Visuals --- #
-const DEFAULT_HIGHLIGHT_COLOR: Color = Color(0,0,0,0) # Transparent
-const VALID_TARGET_HIGHLIGHT_COLOR: Color = Color(0.5, 1.0, 0.5, 0.3) # Light green, semi-transparent
+const HIGHLIGHT_SELECTED = Color(0.2, 0.5, 1.0, 0.5)  # Blue
+const HIGHLIGHT_MERGE = Color(0.2, 1.0, 0.2, 0.5)     # Green
+const HIGHLIGHT_INVALID = Color(1.0, 0.2, 0.2, 0.5)   # Red
+const NO_HIGHLIGHT = Color(0, 0, 0, 0)  # Transparent
+
+# For backward compatibility
+const DEFAULT_HIGHLIGHT_COLOR: Color = NO_HIGHLIGHT
+const VALID_TARGET_HIGHLIGHT_COLOR: Color = HIGHLIGHT_MERGE
 
 # --- Godot Lifecycle Methods --- #
 func _ready():
@@ -70,12 +76,26 @@ func is_empty() -> bool:
 	return occupying_unit == null or not is_instance_valid(occupying_unit)
 
 # Basic highlight for valid drop target (can be expanded)
+func set_highlight(type: String) -> void:
+	if not is_instance_valid(highlight_panel):
+		return
+		
+	match type:
+		"selected":
+			highlight_panel.self_modulate = HIGHLIGHT_SELECTED
+			highlight_panel.visible = true
+		"merge":
+			highlight_panel.self_modulate = HIGHLIGHT_MERGE
+			highlight_panel.visible = true
+		"invalid":
+			highlight_panel.self_modulate = HIGHLIGHT_INVALID
+			highlight_panel.visible = true
+		_:
+			highlight_panel.visible = false
+
+# For backward compatibility
 func set_highlight_as_valid_target(is_valid: bool) -> void:
-	if is_instance_valid(highlight_panel):
-		if is_valid:
-			highlight_panel.self_modulate = VALID_TARGET_HIGHLIGHT_COLOR
-		else:
-			highlight_panel.self_modulate = DEFAULT_HIGHLIGHT_COLOR
+	set_highlight("merge" if is_valid else "")
 
 # Helper to check if a Hero unit can be placed (Heroes can't go to bench slots)
 func can_accommodate_hero() -> bool:

@@ -17,6 +17,8 @@ var is_currently_selected: bool = false
 var unit_data: UnitData         # Holds the static data for this unit type
 var current_hp: int             # Current health points
 var is_player_team_unit: bool = true # Flag to identify team, set during initialization
+var unit_type: String = ""      # Type of unit (offensive, defensive, etc.)
+var tier: int = 1               # Unit tier (1 for basic, 2 for merged, etc.)
 
 # --- Constants for Visual Selection --- #
 const SELECTED_VISUAL_MODULATE: Color = Color(1.2, 1.2, 0.7, 1.0) # Brighter, slightly yellowish
@@ -45,6 +47,12 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 	self.unit_data = data
 	self.current_hp = unit_data.max_hp
 	self.is_player_team_unit = is_player
+	self.unit_type = data.unit_type_tag
+	self.tier = data.tier
+	
+	# Apply tint color to visual elements
+	if is_instance_valid(unit_visual_panel):
+		unit_visual_panel.self_modulate = base_tint_color
 
 	# The base_tint_color is applied to self_modulate by Battle.gd to tint the UnitVisualPanel
 	# self.modulate = base_tint_color # This is done by Battle.gd
@@ -87,17 +95,16 @@ func get_display_name() -> String:
 		return unit_data.display_name
 	return "Unknown Unit"
 
-func update_selection_visual(selected_state: bool) -> void:
-	is_currently_selected = selected_state
+func update_selection_visual(is_selected: bool) -> void:
+	is_currently_selected = is_selected
 	if is_instance_valid(unit_visual_panel):
-		if is_currently_selected:
-			unit_visual_panel.self_modulate = SELECTED_VISUAL_MODULATE
-		else:
-			unit_visual_panel.self_modulate = DESELECTED_VISUAL_MODULATE
+		unit_visual_panel.self_modulate = SELECTED_VISUAL_MODULATE if is_selected else DESELECTED_VISUAL_MODULATE
 
 func get_name_for_log() -> String:
 	var team_prefix = "Player" if is_player_team_unit else "Enemy"
-	return "%s %s" % [team_prefix, get_display_name()]
+	if unit_data:
+		return "%s %s (HP: %d/%d)" % [team_prefix, unit_data.display_name, current_hp, unit_data.max_hp]
+	return "%s Unknown Unit" % team_prefix
 
 # --- Private Helper Methods --- #
 func _update_display() -> void:
