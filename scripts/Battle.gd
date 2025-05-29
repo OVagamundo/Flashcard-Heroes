@@ -613,7 +613,7 @@ func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_sl
 		return false
 
 	# 2. Check if both units are on the same team (can't swap with enemy units)
-	if unit1.is_player_team != unit2.is_player_team:
+	if unit1.is_player_team_unit != unit2.is_player_team_unit:
 		add_log_message("Swap failed: Cannot swap units from different teams.")
 		return false
 
@@ -644,7 +644,7 @@ func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_sl
 	from_slot2.assign_unit(unit1)
 
 	# 5. Update logical arrays if these are player units
-	if unit1.is_player_team:  # Both units are on the same team, so just check one
+	if unit1.is_player_team_unit:  # Both units are on the same team, so just check one
 		var slot1_idx = player_lineup_slots.find(from_slot1)
 		var slot2_idx = player_lineup_slots.find(from_slot2)
 
