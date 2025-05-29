@@ -323,7 +323,9 @@ func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_
 			continue
 			
 		var unit = slot.occupying_unit
-		if not is_instance_valid(unit) or unit.current_hp <= 0:
+		if not is_instance_valid(unit) or not is_instance_valid(unit.unit_data) or unit.current_hp <= 0:
+			if is_instance_valid(slot) and is_instance_valid(unit) and not is_instance_valid(unit.unit_data):
+				slot.clear_unit()  # Clean up invalid unit
 			continue
 			
 		# Find target - frontmost unit in the opposing team
@@ -333,20 +335,41 @@ func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_
 			break
 			
 		var target = target_slot.occupying_unit
+		if not is_instance_valid(target) or not is_instance_valid(target.unit_data):
+			add_log_message("Invalid target found, skipping attack")
+			continue
+			
 		add_log_message("%s attacks %s!" % [unit.unit_data.display_name, target.unit_data.display_name])
 		
-		# Calculate damage
-		var damage = unit.unit_data.pwr
-		target.take_damage(damage)
-		add_log_message("%s deals %d damage to %s" % [unit.unit_data.display_name, damage, target.unit_data.display_name])
+		# Calculate damage with safety checks
+		var damage = 1
+		var attacker_name = "Unknown"
+		var target_name = "Unknown"
+		
+		if is_instance_valid(unit) and is_instance_valid(unit.unit_data):
+			damage = unit.unit_data.pwr
+			attacker_name = unit.unit_data.display_name
+			
+		if is_instance_valid(target) and is_instance_valid(target.unit_data):
+			target_name = target.unit_data.display_name
+			target.take_damage(damage)
+		else:
+			add_log_message("Invalid target, skipping attack")
+			continue
+			
+		add_log_message("%s deals %d damage to %s" % [attacker_name, damage, target_name])
 		
 		# Small delay between attacks for better visibility
 		await get_tree().create_timer(0.5).timeout
 		
 		# Check if target died
-		if target.current_hp <= 0:
-			add_log_message("%s was defeated!" % target.unit_data.display_name)
+		if is_instance_valid(target) and target.current_hp <= 0:
+			var defeated_name = target.unit_data.display_name if is_instance_valid(target.unit_data) else "Unknown"
+			add_log_message("%s was defeated!" % defeated_name)
 			EventBus.unit_died.emit(target)
+			# Clear the slot immediately to prevent accessing freed unit
+			if is_instance_valid(target_slot):
+				target_slot.clear_unit()
 			
 			# Check if combat ended after this attack
 			if _check_combat_ended():
