@@ -67,7 +67,7 @@ func perform_basic_attack(target_unit: Unit) -> void:
 		# print_error(get_name_for_log(), " attack failed: Invalid unit_data, target, or target already dead.")
 		return
 
-	var damage = unit_data.power
+	var damage = unit_data.pwr
 	# print(get_name_for_log(), " attacks ", target_unit.get_name_for_log(), " for ", damage, " damage.")
 
 	EventBus.unit_action_initiated.emit(self, "basic_attack", target_unit)
@@ -76,7 +76,7 @@ func perform_basic_attack(target_unit: Unit) -> void:
 
 func get_display_name() -> String:
 	if unit_data:
-		return unit_data.unit_name
+		return unit_data.display_name
 	return "Unknown Unit"
 
 func get_name_for_log() -> String:
@@ -92,7 +92,7 @@ func _update_display() -> void:
 		return
 
 	hp_label.text = "HP: %s" % current_hp
-	pwr_label.text = "PWR: %s" % unit_data.power
+	pwr_label.text = "PWR: %s" % unit_data.pwr
 
 	var label_color_to_apply = PLAYER_LABEL_COLOR if is_player_team_unit else ENEMY_LABEL_COLOR
 

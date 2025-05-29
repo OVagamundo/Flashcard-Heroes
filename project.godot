@@ -27,6 +27,7 @@ config/window/stretch/scale=1.0
 EventBus="*res://scripts/EventBus.gd"
 GameManager="*res://scripts/GameManager.gd"
 PlayerData="*res://scripts/PlayerData.gd"
+UnitLibrary="*res://scripts/UnitLibrary.gd"
 
 [rendering]
 

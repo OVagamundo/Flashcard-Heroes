@@ -10,12 +10,10 @@ extends Control
 @onready var turn_indicator: Label = $MainContainer/Header/TurnIndicator
 
 const MAX_UNITS_PER_SIDE = 6 # As per GDD
-const UNIT_SCENE = preload("res://scenes/Unit.tscn") # Will be used later
-const OFFENSIVE_T1_UNIT_DATA = preload("res://scripts/OffensiveT1UnitData.tres")
+const UNIT_SCENE = preload("res://scenes/Unit.tscn")
 
 # Gacha system variables
-var coins: int = 5  # Starting coins as per GDD
-var gacha_pool: Array[UnitData] = []
+var gacha_tokens: int = 5  # Starting Gacha Tokens as per GDD
 
 # Arrays to hold references to the slot Node2D or Control nodes in the scene
 var player_slot_nodes: Array[Node] = []
@@ -39,9 +37,9 @@ func _ready() -> void:
 	
 	# Initialize battle visuals and gacha system
 	setup_battle_scene()
-	_initialize_gacha_pool()
+	# _initialize_gacha_pool() # Removed, UnitLibrary is used directly
 	_spawn_initial_units() # Spawn units after scene setup
-	_update_coin_display()
+	_update_gacha_tokens_display() # Renamed from _update_coin_display
 
 func setup_battle_scene() -> void:
 	clear_all_slots() # Clear any previous children
@@ -112,14 +110,55 @@ func setup_visual_slots() -> void:
 	
 	add_log_message("Battle.setup_visual_slots(): Setup complete. Player slots: %d, Enemy slots: %d (logical count after potential reverse)" % [player_slot_nodes.size(), enemy_slot_nodes.size()])
 
-	# Ensure player_slot_nodes are in the visual order (right-to-left for player if HBox is LTR)
-	# If your HBoxContainer for player units is standard (adds left to right), 
-	# and you want slot_nodes[0] to be the rightmost (front), then reverse.
-	# This depends on your specific scene setup for player_units_container children order.
-	# Assuming player_slot_nodes[0] should be the front-most (often rightmost for player side)
-	# If not, player_slot_nodes.reverse() might be needed here or how you iterate it.
+func _spawn_initial_units() -> void:
+	_spawn_hero_unit()
+	_generate_enemy_lineup()
 
-	add_log_message("Found %d player slots and %d enemy slots." % [player_slot_nodes.size(), enemy_slot_nodes.size()])
+func _spawn_hero_unit() -> void:
+	if not UnitLibrary:
+		push_error("Battle._spawn_hero_unit(): UnitLibrary autoload not found!")
+		return
+
+	var hero_data: UnitData = UnitLibrary.get_unit_data("hero")
+	if not hero_data:
+		push_error("Battle._spawn_hero_unit(): Could not retrieve Hero data from UnitLibrary.")
+		return
+
+	if player_slot_nodes.is_empty():
+		push_warning("Battle._spawn_hero_unit(): No player slots available for Hero.")
+		return
+
+	# GDD: Hero automatically starts in the backmost available Lineup slot.
+	# Assuming player slots are 0 (front/left) to N-1 (back/right).
+	var hero_slot_index = player_slot_nodes.size() - 1 
+	_spawn_unit(hero_data, true, hero_slot_index)
+	add_log_message("Hero unit '%s' spawned in slot %d." % [hero_data.display_name, hero_slot_index])
+
+func _generate_enemy_lineup() -> void:
+	if not UnitLibrary:
+		push_error("Battle._generate_enemy_lineup(): UnitLibrary autoload not found!")
+		return
+
+	var num_enemies = randi_range(3, min(6, enemy_slot_nodes.size())) # 3 to 6 enemies, capped by available slots
+	add_log_message("Generating %d enemies." % num_enemies)
+
+	var enemy_options: Array[UnitData] = UnitLibrary.get_enemy_pool_t1()
+	if enemy_options.is_empty():
+		push_warning("Battle._generate_enemy_lineup(): No T1 enemy types available in UnitLibrary.")
+		return
+
+	for i in range(num_enemies):
+		if i >= enemy_slot_nodes.size():
+			push_warning("Battle._generate_enemy_lineup(): Not enough enemy slots for %d enemies. Stopping at %d." % [num_enemies, i])
+			break
+		
+		var random_enemy_data: UnitData = enemy_options.pick_random()
+		if random_enemy_data:
+			# Enemies spawn from their front (index 0 of reversed enemy_slot_nodes) to back
+			_spawn_unit(random_enemy_data, false, i)
+			add_log_message("Spawned enemy '%s' in enemy slot %d." % [random_enemy_data.display_name, i])
+		else:
+			push_warning("Battle._generate_enemy_lineup(): Failed to pick random enemy data.")
 
 func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int):
 	if not UNIT_SCENE:
@@ -211,172 +250,60 @@ func _finalize_unit_position(unit: Unit, slot_node: Control) -> void:
 	# Units now use anchors for positioning, so no manual position calculation is needed
 	add_log_message("Unit '%s' positioned using anchors (Control.PRESET_BOTTOM_WIDE)" % [unit.name if unit.name else 'Unknown'])
 
-func _spawn_initial_units():
-	if not OFFENSIVE_T1_UNIT_DATA:
-		push_error("Battle._spawn_initial_units(): OFFENSIVE_T1_UNIT_DATA not loaded.")
-		return
-
-	add_log_message("Spawning initial units...")
-	
-	# Spawn 2 player units (Offensive T1)
-	var player_units_spawned_count = 0
-	for i in range(2):
-		if player_units_spawned_count >= MAX_UNITS_PER_SIDE or i >= player_slot_nodes.size():
-			break
-			
-		# Create a new unit data instance
-		var unit_data = UnitData.new()
-		unit_data.unit_name = "Offensive T1"
-		unit_data.max_hp = OFFENSIVE_T1_UNIT_DATA.max_hp
-		unit_data.power = OFFENSIVE_T1_UNIT_DATA.power
-		unit_data.texture = OFFENSIVE_T1_UNIT_DATA.texture
-		unit_data.ability_description = OFFENSIVE_T1_UNIT_DATA.ability_description
-		
-		var new_unit = _spawn_unit(unit_data, true, i)
-		if is_instance_valid(new_unit):
-			player_units_spawned_count += 1
-		else:
-			add_log_message("Could not spawn player unit in slot %d." % i)
-
-	# Spawn 3 enemy units (Offensive T1)
-	var enemy_units_spawned_count = 0
-	for i in range(3):
-		if enemy_units_spawned_count >= MAX_UNITS_PER_SIDE or i >= enemy_slot_nodes.size():
-			break
-			
-		# Create a new unit data instance
-		var unit_data = UnitData.new()
-		unit_data.unit_name = "Offensive T1"
-		unit_data.max_hp = OFFENSIVE_T1_UNIT_DATA.max_hp
-		unit_data.power = OFFENSIVE_T1_UNIT_DATA.power
-		unit_data.texture = OFFENSIVE_T1_UNIT_DATA.texture
-		unit_data.ability_description = OFFENSIVE_T1_UNIT_DATA.ability_description
-		
-		var new_unit = _spawn_unit(unit_data, false, i)
-		if is_instance_valid(new_unit):
-			enemy_units_spawned_count += 1
-		else:
-			add_log_message("Could not spawn enemy unit in slot %d." % i)
-
-	update_turn_indicator() # Update indicator after units are spawned
-
-# Temporarily simplify button actions
 func _on_end_turn_pressed() -> void:
-	if end_turn_button.disabled:
-		return
-
-	add_log_message("=== Starting Turn ===")
-	
-	# Player units attack first (left to right)
-	add_log_message("Player's turn actions:")
-	var any_player_action_taken = false
-	for i in range(player_units.size()):
-		var acting_player_unit = player_units[i]
-		if not is_instance_valid(acting_player_unit) or acting_player_unit.current_hp <= 0:
-			continue  # Skip dead or invalid units
-
-		var target_enemy_unit = _get_frontmost_live_unit(enemy_units)  # Get current frontmost enemy
-		if target_enemy_unit:
-			add_log_message("Player Unit %s attacks Enemy Unit %s." % [acting_player_unit.get_name_for_log(), target_enemy_unit.get_name_for_log()])
-			acting_player_unit.perform_basic_attack(target_enemy_unit)
-			any_player_action_taken = true
-		else:
-			add_log_message("No more enemy units to target.")
-			break  # No more enemies, stop player attacks
-	
-	if not any_player_action_taken and player_units.size() > 0:
-		add_log_message("No player units could act this turn.")
-	elif player_units.is_empty() and not end_turn_button.disabled:
-		add_log_message("No player units remaining to act.")
-
-	# Enemy units attack next (right to left)
-	add_log_message("\nEnemy's turn actions:")
-	var any_enemy_action_taken = false
-	# Iterate in reverse order (right to left)
-	for i in range(enemy_units.size() - 1, -1, -1):
-		var acting_enemy_unit = enemy_units[i]
-		if not is_instance_valid(acting_enemy_unit) or acting_enemy_unit.current_hp <= 0:
-			continue  # Skip dead or invalid units
-
-		var target_player_unit = _get_frontmost_live_unit(player_units)  # Get current frontmost player unit
-		if target_player_unit:
-			add_log_message("Enemy Unit %s attacks Player Unit %s." % [acting_enemy_unit.get_name_for_log(), target_player_unit.get_name_for_log()])
-			acting_enemy_unit.perform_basic_attack(target_player_unit)
-			any_enemy_action_taken = true
-		else:
-			add_log_message("No more player units to target.")
-			break  # No more player units, stop enemy attacks
-
-	if not any_enemy_action_taken and enemy_units.size() > 0:
-		add_log_message("No enemy units could act this turn.")
-	elif enemy_units.is_empty() and not end_turn_button.disabled:
-		add_log_message("No enemy units remaining to act.")
-	
-	add_log_message("=== End of Turn ===\n")
-	
-	# Update UI to show it's ready for next turn
+	add_log_message("End Turn pressed. Placeholder.")
+	# Basic turn toggle for now
+	is_player_turn = not is_player_turn
 	update_turn_indicator()
-
-func _initialize_gacha_pool() -> void:
-	# Initialize the gacha pool with available units
-	# For now, we'll just add multiple instances of the basic unit
-	# In a full implementation, this would load from a resource folder or database
-	gacha_pool = []
-	for i in range(5):  # Add 5 units to the pool
-		if OFFENSIVE_T1_UNIT_DATA:
-			var unit_data = UnitData.new()
-			unit_data.unit_name = "Offensive T1"
-			unit_data.max_hp = OFFENSIVE_T1_UNIT_DATA.max_hp
-			unit_data.power = OFFENSIVE_T1_UNIT_DATA.power
-			unit_data.texture = OFFENSIVE_T1_UNIT_DATA.texture
-			unit_data.ability_description = OFFENSIVE_T1_UNIT_DATA.ability_description
-			gacha_pool.append(unit_data)
-	add_log_message("Gacha pool initialized with %d units" % gacha_pool.size())
-	
-	# Initialize coins to starting value
-	coins = 5
-	_update_coin_display()
+	# Actual combat logic will go here in the future
 
 func _on_gacha_pressed() -> void:
-	if coins <= 0:
-		add_log_message("Not enough coins to draw!")
+	if not UnitLibrary:
+		push_error("Battle._on_gacha_pressed(): UnitLibrary autoload not found!")
 		return
-		
-	if gacha_pool.is_empty():
-		add_log_message("Gacha pool is empty!")
-		return
-		
-	# Find first empty player slot
-	var empty_slot_index = -1
-	for i in range(player_units.size()):
-		if player_units[i] == null:
-			empty_slot_index = i
-			break
-			
-	if empty_slot_index == -1:
-		add_log_message("No empty slots available!")
-		return
-	
-	# Spend coin
-	coins -= 1
-	_update_coin_display()
-	
-	# Draw random unit from pool
-	var random_index = randi() % gacha_pool.size()
-	var unit_data = gacha_pool[random_index]
-	gacha_pool.remove_at(random_index)  # Remove from pool (no duplicates for now)
-	
-	# Spawn the unit in the first available slot
-	var new_unit = _spawn_unit(unit_data, true, empty_slot_index)
-	if new_unit:
-		add_log_message("Drew %s from gacha!" % new_unit.get_display_name())
-	else:
-		add_log_message("Failed to spawn unit from gacha!")
-		coins += 1  # Refund the coin if spawning failed
-		_update_coin_display()
 
-func _update_coin_display() -> void:
-	gacha_tokens_label.text = "Coins: %d" % coins
+	if gacha_tokens >= 1:
+		gacha_tokens -= 1
+		_update_gacha_tokens_display()
+		
+		var gacha_options: Array[UnitData] = UnitLibrary.get_gacha_pool_t1()
+		if gacha_options.is_empty():
+			add_log_message("Gacha pool is empty!")
+			return
+
+		var drawn_unit_data: UnitData = gacha_options.pick_random()
+		
+		if not drawn_unit_data:
+			add_log_message("Failed to draw unit from gacha (pool might be okay, but pick_random failed).")
+			return
+
+		add_log_message("Gacha draw: %s" % drawn_unit_data.display_name)
+
+		var placed_in_slot = -1
+		# Try to place in the first available player slot (front to back)
+		for i in range(player_units.size()):
+			if player_units[i] == null: # Check if logical slot is empty
+				# Check if visual slot node is valid before spawning
+				if i < player_slot_nodes.size() and is_instance_valid(player_slot_nodes[i]):
+					_spawn_unit(drawn_unit_data, true, i)
+					add_log_message("Gacha unit '%s' placed in player slot %d." % [drawn_unit_data.display_name, i])
+					placed_in_slot = i
+					break
+				else:
+					push_warning("Battle._on_gacha_pressed(): Player slot node %d is invalid, cannot place unit." % i)
+					# Potentially try next slot or handle error
+		
+		if placed_in_slot == -1:
+			add_log_message("No empty player slots to place gacha unit.")
+			# Optional: refund token or handle full bench
+			# gacha_tokens += 1 
+			# _update_gacha_tokens_display()
+	else:
+		add_log_message("Not enough Gacha Tokens (requires 1). Have: %d" % gacha_tokens)
+
+func _update_gacha_tokens_display() -> void:
+	if gacha_tokens_label:
+		gacha_tokens_label.text = "Tokens: %d" % gacha_tokens
 
 func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
 	if unit_array.is_empty():
