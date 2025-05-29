@@ -18,7 +18,24 @@ font_size = 12
 outline_size = 2
 outline_color = Color(0, 0, 0, 0.7)
 
-[node name="Unit" type="Control" node_paths=PackedStringArray("unit_visual_panel", "hp_label", "pwr_label")]
+[sub_resource type="LabelSettings" id="UnitNameLabelSettings"]
+font_size = 10
+outline_size = 1
+outline_color = Color(0, 0, 0, 0.7)
+font_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="TierBadgeStyle"]
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
+bg_color = Color(0.2, 0.2, 0.2, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Unit" type="Control" node_paths=PackedStringArray("unit_visual_panel", "hp_label", "pwr_label", "unit_name_label", "tier_badge")]
 custom_minimum_size = Vector2(60, 90)
 layout_mode = 3
 anchors_preset = 0
@@ -35,12 +52,53 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+size_flags_vertical = 3
+custom_minimum_size = Vector2(60, 90)
 
 [node name="UnitVisualPanel" type="Panel" parent="VBoxContainer"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_ellipse_s1")
+
+[node name="TierBadge" type="Panel" parent="VBoxContainer/UnitVisualPanel"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = -5.0
+offset_bottom = -5.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("TierBadgeStyle")
+
+[node name="TierLabel" type="Label" parent="VBoxContainer/UnitVisualPanel/TierBadge"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+vertical_alignment = 1
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "T1"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="UnitNameLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)
+vertical_alignment = 1
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+horizontal_alignment = 1
+text = "Unit Name"
 
 [node name="HPLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2

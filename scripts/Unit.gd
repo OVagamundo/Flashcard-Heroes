@@ -10,6 +10,8 @@ signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
 @export var unit_visual_panel: Panel
 @export var hp_label: Label
 @export var pwr_label: Label
+@export var unit_name_label: Label
+@export var tier_label: Label
 
 # --- Public Properties --- #
 var is_currently_selected: bool = false
@@ -53,6 +55,13 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 	# Apply tint color to visual elements
 	if is_instance_valid(unit_visual_panel):
 		unit_visual_panel.self_modulate = base_tint_color
+	
+	# Update name and tier display
+	if is_instance_valid(unit_name_label):
+		unit_name_label.text = data.display_name
+	
+	if is_instance_valid(tier_label):
+		tier_label.text = "T" + str(tier)
 
 	# The base_tint_color is applied to self_modulate by Battle.gd to tint the UnitVisualPanel
 	# self.modulate = base_tint_color # This is done by Battle.gd

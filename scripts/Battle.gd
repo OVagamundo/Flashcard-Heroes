@@ -527,6 +527,28 @@ func _deselect_current_unit() -> void:
 	# TODO: Call _highlight_valid_slots(false) when implemented
 	add_log_message("Current unit deselected.")
 
+# --- Core Logic for Movement and Swapping ---
+func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
+	if not selected_slot or not selected_unit:
+		_clear_selection()
+		return
+
+	# If clicked on empty slot, move the unit there
+	if target_slot.is_empty():
+		_attempt_move_to_empty_slot(selected_unit, selected_slot, target_slot)
+		_clear_selection()
+		return
+
+	# If clicked on another unit, check for merge
+	if target_unit and target_unit != selected_unit:
+		var result_unit_id = UnitLibrary.get_merge_result(selected_unit.unit_data, target_unit.unit_data)
+		if result_unit_id:
+			_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
+		else:
+			# Can't merge, try to swap
+			_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
+			_clear_selection()
+
 # --- EventBus Handlers for Unit/Slot Interaction ---
 func _on_unit_selected_for_action(clicked_unit: Unit) -> void:
 	if not is_instance_valid(clicked_unit) or not is_player_turn:
@@ -594,28 +616,6 @@ func _on_slot_clicked_for_action(clicked_slot: UnitSlot) -> void:
 			selected_slot.set_highlight("selected")
 			_update_merge_highlights(selected_unit)
 
-
-# --- Core Logic for Movement and Swapping ---
-func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
-	if not selected_slot or not selected_unit:
-		_clear_selection()
-		return
-
-	# If clicked on empty slot, move the unit there
-	if target_slot.is_empty():
-		_attempt_move_to_empty_slot(selected_unit, selected_slot, target_slot)
-		_clear_selection()
-		return
-
-	# If clicked on another unit, check for merge
-	if target_unit and target_unit != selected_unit:
-		var result_unit_id = UnitLibrary.get_merge_result(selected_unit.unit_data, target_unit.unit_data)
-		if result_unit_id:
-			_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
-		else:
-			# Can't merge, try to swap
-			_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
-			_clear_selection()
 
 func _show_merge_confirmation(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
 	var result_data = UnitLibrary.get_unit_data(result_unit_id)
