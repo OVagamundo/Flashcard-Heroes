@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "hero"
+display_name = "Hero"
+max_hp = 10
+pwr = 2
+tier = 0
+unit_type_tag = "hero"
+texture = null
+ability_description = "Basic Attack"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "defensive_t1"
+display_name = "Defensive Unit T1"
+max_hp = 3
+pwr = 1
+tier = 1
+unit_type_tag = "defensive"
+texture = null
+ability_description = "Basic Attack"

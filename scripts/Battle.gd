@@ -541,7 +541,7 @@ func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
 
 	# If clicked on another unit, check for merge
 	if target_unit and target_unit != selected_unit:
-		var result_unit_id = UnitLibrary.get_merge_result(selected_unit.unit_data, target_unit.unit_data)
+		var result_unit_id = UnitLibrary.get_merge_result_for_units(selected_unit.unit_data, target_unit.unit_data)
 		if result_unit_id:
 			_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
 		else:
@@ -705,7 +705,7 @@ func _update_merge_highlights(unit_to_highlight: Unit) -> void:
 		if slot == selected_slot:
 			slot.set_highlight("selected")
 		elif slot.occupying_unit:
-			var result = UnitLibrary.get_merge_result(selected_unit.unit_data, slot.occupying_unit.unit_data)
+			var result = UnitLibrary.get_merge_result_for_units(selected_unit.unit_data, slot.occupying_unit.unit_data)
 			slot.set_highlight("merge" if result else "invalid")
 		else:
 			slot.set_highlight("")

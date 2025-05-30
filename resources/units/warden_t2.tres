@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "warden_t2"
+display_name = "Warden T2"
+max_hp = 5
+pwr = 4
+tier = 2
+unit_type_tag = "defensive"
+texture = null
+ability_description = "Nature's Protection"

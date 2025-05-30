@@ -1,0 +1,242 @@
+Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
+
+=== Starting to load unit resources ===
+Attempting to load: res://resources/units/utility_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/utility_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: utility_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/battlemage_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/battlemage_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: battlemage_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/warlock_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/warlock_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: warlock_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/archmage_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/archmage_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: archmage_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/offensive_t1.tres
+WARNING: Unit resource has empty ID: res://resources/units/offensive_t1.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: offensive_t1 (Unnamed Unit)
+Attempting to load: res://resources/units/warden_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/warden_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: warden_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/magical_t1.tres
+WARNING: Unit resource has empty ID: res://resources/units/magical_t1.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: magical_t1 (Unnamed Unit)
+Attempting to load: res://resources/units/cleric_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/cleric_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: cleric_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/paladin_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/paladin_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: paladin_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/defensive_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/defensive_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: defensive_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/defensive_t1.tres
+WARNING: Unit resource has empty ID: res://resources/units/defensive_t1.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: defensive_t1 (Unnamed Unit)
+Attempting to load: res://resources/units/magical_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/magical_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: magical_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/berserker_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/berserker_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: berserker_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/druid_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/druid_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: druid_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/elementalist_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/elementalist_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: elementalist_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/offensive_t2.tres
+WARNING: Unit resource has empty ID: res://resources/units/offensive_t2.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: offensive_t2 (Unnamed Unit)
+Attempting to load: res://resources/units/utility_t1.tres
+WARNING: Unit resource has empty ID: res://resources/units/utility_t1.tres
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+✅ Loaded unit: utility_t1 (Unnamed Unit)
+Attempting to load: res://resources/units/hero.tres
+✅ Loaded unit: hero (Hero)
+Attempting to load: res://resources/units/guardian_t2.tres
+ERROR: Resource is not a UnitData: res://resources/units/guardian_t2.tres
+   at: push_error (core/variant/variant_utility.cpp:1098)
+=== Finished loading 18 unit resources ===
+Successfully loaded 18 unit resources
+Available unit IDs: ["utility_t2", "battlemage_t2", "warlock_t2", "archmage_t2", "offensive_t1", "warden_t2", "magical_t1", "cleric_t2", "paladin_t2", "defensive_t2", "defensive_t1", "magical_t2", "berserker_t2", "druid_t2", "elementalist_t2", "offensive_t2", "utility_t1", "hero"]
+WARNING: Missing some T2 units for merge recipes. Some recipes may not work.
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Initialized merge recipes. Total recipes: 16
+UnitLibrary initialized with 18 units
+WARNING: PlayerBench node not found. Bench slots will not be available.
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+=== Generating Enemy T1 Pool ===
+Total units in database: 18
+  - utility_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - battlemage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - warlock_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - archmage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - offensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - warden_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - magical_t1 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - cleric_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - paladin_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - defensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - defensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - magical_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - berserker_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - druid_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - elementalist_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - offensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - utility_t1 (Tier: 1, Type: offensive)
+    -> ADDING to enemy pool
+  - hero (Tier: 0, Type: hero)
+    -> SKIPPING (not T1 or is hero)
+Enemy T1 pool contains 17 units
+=== Generating Gacha T1 Pool ===
+Total units in database: 18
+  - utility_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - battlemage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - warlock_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - archmage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - offensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - warden_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - magical_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - cleric_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - paladin_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - defensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - defensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - magical_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - berserker_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - druid_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - elementalist_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - offensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - utility_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - hero (Tier: 0, Type: hero)
+    -> SKIPPING (not T1 or is hero)
+Gacha T1 pool contains 17 units
+=== Generating Gacha T1 Pool ===
+Total units in database: 18
+  - utility_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - battlemage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - warlock_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - archmage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - offensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - warden_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - magical_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - cleric_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - paladin_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - defensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - defensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - magical_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - berserker_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - druid_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - elementalist_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - offensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - utility_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - hero (Tier: 0, Type: hero)
+    -> SKIPPING (not T1 or is hero)
+Gacha T1 pool contains 17 units
+=== Generating Gacha T1 Pool ===
+Total units in database: 18
+  - utility_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - battlemage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - warlock_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - archmage_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - offensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - warden_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - magical_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - cleric_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - paladin_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - defensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - defensive_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - magical_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - berserker_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - druid_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - elementalist_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - offensive_t2 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - utility_t1 (Tier: 1, Type: offensive)
+    -> ADDING to gacha pool
+  - hero (Tier: 0, Type: hero)
+    -> SKIPPING (not T1 or is hero)
+Gacha T1 pool contains 17 units

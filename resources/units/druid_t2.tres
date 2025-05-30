@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "druid_t2"
+display_name = "Druid T2"
+max_hp = 6
+pwr = 2
+tier = 2
+unit_type_tag = "utility"
+texture = null
+ability_description = "Nature's Blessing"
