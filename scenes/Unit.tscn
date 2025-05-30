@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://cau7nd1n4iwsc"]
+[gd_scene load_steps=5 format=3 uid="uid://cau7nd1n4iwsc"]
 
 [ext_resource type="Script" uid="uid://cj3dl14tu6yvu" path="res://scripts/Unit.gd" id="1_abcde"]
 
@@ -13,17 +13,6 @@ corner_radius_top_right = 25
 corner_radius_bottom_right = 25
 corner_radius_bottom_left = 25
 
-[sub_resource type="LabelSettings" id="UnitLabelSettings_s2"]
-font_size = 12
-outline_size = 2
-outline_color = Color(0, 0, 0, 0.7)
-
-[sub_resource type="LabelSettings" id="UnitNameLabelSettings"]
-font_size = 10
-outline_size = 1
-outline_color = Color(0, 0, 0, 0.7)
-font_color = Color(1, 1, 1, 1)
-
 [sub_resource type="StyleBoxFlat" id="TierBadgeStyle"]
 content_margin_left = 4.0
 content_margin_top = 2.0
@@ -35,25 +24,27 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="Unit" type="Control" node_paths=PackedStringArray("unit_visual_panel", "hp_label", "pwr_label", "unit_name_label", "tier_badge")]
+[sub_resource type="LabelSettings" id="UnitLabelSettings_s2"]
+font_size = 12
+outline_size = 2
+outline_color = Color(0, 0, 0, 0.7)
+
+[node name="Unit" type="Control"]
 custom_minimum_size = Vector2(60, 90)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_abcde")
-unit_visual_panel = NodePath("VBoxContainer/UnitVisualPanel")
-hp_label = NodePath("VBoxContainer/HPLabel")
-pwr_label = NodePath("VBoxContainer/PWRLabel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
 size_flags_vertical = 3
-custom_minimum_size = Vector2(60, 90)
+alignment = 1
 
 [node name="UnitVisualPanel" type="Panel" parent="VBoxContainer"]
 custom_minimum_size = Vector2(50, 50)
@@ -72,6 +63,8 @@ offset_left = -20.0
 offset_top = -20.0
 offset_right = -5.0
 offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("TierBadgeStyle")
@@ -81,33 +74,37 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-vertical_alignment = 1
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-text = "T1"
 theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 10
+text = "T1"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="UnitNameLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
 custom_minimum_size = Vector2(0, 16)
-vertical_alignment = 1
+layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
-theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 10
 text = "Unit Name"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="HPLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "HP: 0"
 label_settings = SubResource("UnitLabelSettings_s2")
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="PWRLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "PWR: 0"
 label_settings = SubResource("UnitLabelSettings_s2")
 horizontal_alignment = 1
+vertical_alignment = 1

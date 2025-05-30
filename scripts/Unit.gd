@@ -6,12 +6,12 @@ class_name Unit
 signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
 # signal unit_selected(unit: Unit) # Kept for potential direct selection logic if needed
 
-# --- Exported Variables (NodePaths from Unit.tscn, set in Inspector) --- #
-@export var unit_visual_panel: Panel
-@export var hp_label: Label
-@export var pwr_label: Label
-@export var unit_name_label: Label
-@export var tier_label: Label
+# --- Node References ---
+@onready var unit_visual_panel: Panel = $VBoxContainer/UnitVisualPanel
+@onready var hp_label: Label = $VBoxContainer/HPLabel
+@onready var pwr_label: Label = $VBoxContainer/PWRLabel
+@onready var unit_name_label: Label = $VBoxContainer/UnitNameLabel
+@onready var tier_label: Label = $VBoxContainer/UnitVisualPanel/TierBadge/TierLabel
 
 # --- Public Properties --- #
 var is_currently_selected: bool = false
@@ -33,12 +33,22 @@ const ENEMY_LABEL_COLOR: Color = Color(1.0, 0.4, 0.4)   # A clear red
 # --- Godot Lifecycle Methods --- #
 func _ready():
 	self.z_index = 1 # Ensure unit renders on top of slot's base visuals
-	# Initial display update is handled by initialize() as unit_data is needed.
-	# If unit_data was an @export var and set in scene, _ready could do initial setup.
-	# For now, initialize() is the main entry point for setting up a new unit.
+	# Wait for the next frame to ensure all nodes are ready
+	await get_tree().process_frame
+	
+	# Initialize visual panel if it exists
 	if is_instance_valid(unit_visual_panel):
 		unit_visual_panel.self_modulate = DESELECTED_VISUAL_MODULATE
-	pass
+	else:
+		print("Unit._ready(): unit_visual_panel is not valid")
+	
+	# Debug print for all UI elements
+	print("Unit._ready() - UI Elements Status:")
+	print("  - unit_visual_panel:", "valid" if is_instance_valid(unit_visual_panel) else "invalid")
+	print("  - hp_label:", "valid" if is_instance_valid(hp_label) else "invalid")
+	print("  - pwr_label:", "valid" if is_instance_valid(pwr_label) else "invalid")
+	print("  - unit_name_label:", "valid" if is_instance_valid(unit_name_label) else "invalid")
+	print("  - tier_label:", "valid" if is_instance_valid(tier_label) else "invalid")
 
 # --- Public Methods --- # 
 func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void:
@@ -46,27 +56,22 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 		push_error("Unit.initialize(): UnitData is null! Cannot initialize unit.")
 		return
 
+	print("Unit.initialize() called with data:", data.display_name)
+
 	self.unit_data = data
-	self.current_hp = unit_data.max_hp
+	self.current_hp = data.max_hp  # Use data.max_hp directly to ensure we get the correct value
 	self.is_player_team_unit = is_player
 	self.unit_type = data.unit_type_tag
 	self.tier = data.tier
-	
+
+	print("Unit initialized with name:", data.display_name, " tier:", tier, " type:", unit_type, " max_hp:", data.max_hp, " current_hp:", current_hp)
+
 	# Apply tint color to visual elements
 	if is_instance_valid(unit_visual_panel):
 		unit_visual_panel.self_modulate = base_tint_color
-	
-	# Update name and tier display
-	if is_instance_valid(unit_name_label):
-		unit_name_label.text = data.display_name
-	
-	if is_instance_valid(tier_label):
-		tier_label.text = "T" + str(tier)
 
-	# The base_tint_color is applied to self_modulate by Battle.gd to tint the UnitVisualPanel
-	# self.modulate = base_tint_color # This is done by Battle.gd
-
-	_update_display()
+	# Force update the display
+	call_deferred("_update_display")
 	# print("Unit Initialized: ", unit_data.unit_name if unit_data else "N/A", ", HP: ", current_hp, ", Player: ", is_player_team_unit)
 
 func take_damage(amount: int) -> void:
@@ -117,24 +122,49 @@ func get_name_for_log() -> String:
 
 # --- Private Helper Methods --- #
 func _update_display() -> void:
-	# Ensure nodes are valid and unit_data is present
-	if not is_instance_valid(hp_label) or not is_instance_valid(pwr_label) or not unit_data:
-		# This can occur if called before nodes are fully ready or if unit_data is missing.
-		# print_debug("Unit._update_display(): Skipping, nodes or unit_data not ready for '" + self.name + "'")
+	# Ensure we have valid unit data
+	if not unit_data:
+		push_error("Unit._update_display(): unit_data is null")
 		return
 
-	hp_label.text = "HP: %s" % current_hp
-	pwr_label.text = "PWR: %s" % unit_data.pwr
+	# Debug info
+	print("\n--- Unit._update_display() ---")
+	print("Unit:", unit_data.display_name, "(HP:", current_hp, "/", unit_data.max_hp, ")")
+	print("UI Elements:")
+	print("  - hp_label:", "valid" if is_instance_valid(hp_label) else "invalid")
+	print("  - pwr_label:", "valid" if is_instance_valid(pwr_label) else "invalid")
+	print("  - unit_name_label:", "valid" if is_instance_valid(unit_name_label) else "invalid")
+	print("  - tier_label:", "valid" if is_instance_valid(tier_label) else "invalid")
 
-	var label_color_to_apply = PLAYER_LABEL_COLOR if is_player_team_unit else ENEMY_LABEL_COLOR
+	# Update HP and PWR labels
+	if is_instance_valid(hp_label):
+		hp_label.text = "HP: %d" % current_hp
+		print("  - Set HP to:", hp_label.text)
+		
+	if is_instance_valid(pwr_label):
+		pwr_label.text = "PWR: %d" % unit_data.pwr
+		print("  - Set PWR to:", pwr_label.text)
 
-	# Reset modulate to ensure add_theme_color_override works as expected without interference
-	hp_label.modulate = Color.WHITE 
-	pwr_label.modulate = Color.WHITE
+	# Update name and tier
+	if is_instance_valid(unit_name_label):
+		unit_name_label.text = unit_data.display_name
+		print("  - Set name to:", unit_name_label.text)
+		
+	if is_instance_valid(tier_label):
+		tier_label.text = "T%d" % tier
+		print("  - Set tier to:", tier_label.text)
 
-	# Apply the specific color to the font. The LabelSettings in Unit.tscn provides the outline.
-	hp_label.add_theme_color_override("font_color", label_color_to_apply)
-	pwr_label.add_theme_color_override("font_color", label_color_to_apply)
+	# Set label colors based on team
+	var label_color = PLAYER_LABEL_COLOR if is_player_team_unit else ENEMY_LABEL_COLOR
+	print("  - Using label color:", label_color)
+
+	# Apply colors to labels
+	for label in [hp_label, pwr_label]:
+		if is_instance_valid(label):
+			label.modulate = Color.WHITE
+			label.add_theme_color_override("font_color", label_color)
+
+	print("--- End _update_display() ---\n")
 
 	# The UnitVisualPanel (ellipse) is tinted by Battle.gd using self.modulate on the root Unit node.
 	# No need to directly color unit_visual_panel here unless a more complex style is required.
