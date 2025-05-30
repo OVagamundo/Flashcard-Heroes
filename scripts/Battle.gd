@@ -648,19 +648,34 @@ func _perform_merge(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit
 		_clear_selection()
 		return
 	
+	# Calculate combined stats from both units
+	var combined_hp = unit1.current_hp + unit2.current_hp
+	var combined_pwr = unit1.unit_data.pwr + unit2.unit_data.pwr
+	
+	# Add a small bonus for merging (10% of combined stats)
+	combined_pwr = int(combined_pwr * 1.1)
+	
+	# Create a copy of the result data to modify
+	var merged_data = result_data.duplicate()
+	merged_data.max_hp = combined_hp  # Set the base health to combined current HP
+	merged_data.pwr = combined_pwr
+	
 	# Remove both units from their slots
 	var removed_unit1 = selected_slot.clear_unit()
 	var removed_unit2 = target_slot.clear_unit()
 
-	# Create and place the new unit
+	# Create and place the new unit with combined stats
 	var slot_index = player_lineup_slots.find(target_slot)
 	if slot_index == -1:
 		push_error("Target slot not found in player_lineup_slots")
 		_clear_selection()
 		return
 		
-	var new_unit = _spawn_unit(result_data, true, slot_index)
+	var new_unit = _spawn_unit(merged_data, true, slot_index)
 	if new_unit:
+		# The unit will be initialized with the combined HP since we set max_hp = combined_hp
+		# and the Unit.initialize() method sets current_hp = data.max_hp
+		
 		target_slot.assign_unit(new_unit)
 		# Update player_units array
 		player_units.erase(removed_unit1)
@@ -678,7 +693,9 @@ func _perform_merge(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit
 
 	_clear_selection()
 	
-	# UI will update on next frame automatically
+	# Force update the display
+	if is_instance_valid(new_unit):
+		new_unit._update_display()
 
 func _update_merge_highlights(unit_to_highlight: Unit) -> void:
 	if not unit_to_highlight:

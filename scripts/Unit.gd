@@ -39,16 +39,6 @@ func _ready():
 	# Initialize visual panel if it exists
 	if is_instance_valid(unit_visual_panel):
 		unit_visual_panel.self_modulate = DESELECTED_VISUAL_MODULATE
-	else:
-		print("Unit._ready(): unit_visual_panel is not valid")
-	
-	# Debug print for all UI elements
-	print("Unit._ready() - UI Elements Status:")
-	print("  - unit_visual_panel:", "valid" if is_instance_valid(unit_visual_panel) else "invalid")
-	print("  - hp_label:", "valid" if is_instance_valid(hp_label) else "invalid")
-	print("  - pwr_label:", "valid" if is_instance_valid(pwr_label) else "invalid")
-	print("  - unit_name_label:", "valid" if is_instance_valid(unit_name_label) else "invalid")
-	print("  - tier_label:", "valid" if is_instance_valid(tier_label) else "invalid")
 
 # --- Public Methods --- # 
 func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void:
@@ -56,15 +46,11 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 		push_error("Unit.initialize(): UnitData is null! Cannot initialize unit.")
 		return
 
-	print("Unit.initialize() called with data:", data.display_name)
-
 	self.unit_data = data
-	self.current_hp = data.max_hp  # Use data.max_hp directly to ensure we get the correct value
+	self.current_hp = data.max_hp
 	self.is_player_team_unit = is_player
 	self.unit_type = data.unit_type_tag
 	self.tier = data.tier
-
-	print("Unit initialized with name:", data.display_name, " tier:", tier, " type:", unit_type, " max_hp:", data.max_hp, " current_hp:", current_hp)
 
 	# Apply tint color to visual elements
 	if is_instance_valid(unit_visual_panel):
@@ -72,7 +58,6 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 
 	# Force update the display
 	call_deferred("_update_display")
-	# print("Unit Initialized: ", unit_data.unit_name if unit_data else "N/A", ", HP: ", current_hp, ", Player: ", is_player_team_unit)
 
 func take_damage(amount: int) -> void:
 	if current_hp <= 0: # Already dead, no further action
@@ -127,44 +112,28 @@ func _update_display() -> void:
 		push_error("Unit._update_display(): unit_data is null")
 		return
 
-	# Debug info
-	print("\n--- Unit._update_display() ---")
-	print("Unit:", unit_data.display_name, "(HP:", current_hp, "/", unit_data.max_hp, ")")
-	print("UI Elements:")
-	print("  - hp_label:", "valid" if is_instance_valid(hp_label) else "invalid")
-	print("  - pwr_label:", "valid" if is_instance_valid(pwr_label) else "invalid")
-	print("  - unit_name_label:", "valid" if is_instance_valid(unit_name_label) else "invalid")
-	print("  - tier_label:", "valid" if is_instance_valid(tier_label) else "invalid")
-
 	# Update HP and PWR labels
 	if is_instance_valid(hp_label):
 		hp_label.text = "HP: %d" % current_hp
-		print("  - Set HP to:", hp_label.text)
 		
 	if is_instance_valid(pwr_label):
 		pwr_label.text = "PWR: %d" % unit_data.pwr
-		print("  - Set PWR to:", pwr_label.text)
 
 	# Update name and tier
 	if is_instance_valid(unit_name_label):
 		unit_name_label.text = unit_data.display_name
-		print("  - Set name to:", unit_name_label.text)
 		
 	if is_instance_valid(tier_label):
 		tier_label.text = "T%d" % tier
-		print("  - Set tier to:", tier_label.text)
 
 	# Set label colors based on team
 	var label_color = PLAYER_LABEL_COLOR if is_player_team_unit else ENEMY_LABEL_COLOR
-	print("  - Using label color:", label_color)
 
 	# Apply colors to labels
 	for label in [hp_label, pwr_label]:
 		if is_instance_valid(label):
 			label.modulate = Color.WHITE
 			label.add_theme_color_override("font_color", label_color)
-
-	print("--- End _update_display() ---\n")
 
 	# The UnitVisualPanel (ellipse) is tinted by Battle.gd using self.modulate on the root Unit node.
 	# No need to directly color unit_visual_panel here unless a more complex style is required.
