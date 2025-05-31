@@ -2,7 +2,7 @@ extends Control
 
 @onready var player_units_container: HBoxContainer = $MainContainer/BattleArea/PlayerSide/PlayerUnits
 @onready var enemy_units_container: HBoxContainer = $MainContainer/BattleArea/EnemySide/EnemyUnits
-@onready var battle_log: TextEdit = $MainContainer/BattleLog
+@onready var battle_log: TextEdit = $BattleLog
 @onready var end_turn_button: Button = $MainContainer/Actions/EndTurnButton
 @onready var gacha_button: Button = $MainContainer/Actions/GachaButton
 @onready var player_health_label: Label = $MainContainer/Header/PlayerInfo/PlayerHealth
