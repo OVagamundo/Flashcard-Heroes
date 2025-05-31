@@ -1,6 +1,9 @@
 extends Control
-
 class_name Unit
+
+# Sprite paths
+const HERO_SPRITE_PATH = "res://assets/images/UnitSprites/Sprite01.png"
+const UNIT_SPRITE_PATH = "res://assets/images/UnitSprites/Sprite02.png"
 
 # --- Signals --- #
 signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
@@ -8,6 +11,7 @@ signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
 
 # --- Node References ---
 @onready var unit_visual_panel: Panel = $VBoxContainer/UnitVisualPanel
+@onready var unit_sprite: Sprite2D = $VBoxContainer/UnitVisualPanel/Sprite2D
 @onready var hp_label: Label = $VBoxContainer/HPLabel
 @onready var pwr_label: Label = $VBoxContainer/PWRLabel
 @onready var unit_name_label: Label = $VBoxContainer/UnitNameLabel
@@ -52,9 +56,12 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 	self.unit_type = data.unit_type_tag
 	self.tier = data.tier
 
-	# Apply tint color to visual elements
+		# Apply tint color to visual elements
 	if is_instance_valid(unit_visual_panel):
 		unit_visual_panel.self_modulate = base_tint_color
+	
+	# Set the appropriate sprite and flip if needed
+	_update_sprite()
 
 	# Force update the display
 	call_deferred("_update_display")
@@ -106,6 +113,19 @@ func get_name_for_log() -> String:
 	return "%s Unknown Unit" % team_prefix
 
 # --- Private Helper Methods --- #
+func _update_sprite() -> void:
+	if not is_instance_valid(unit_sprite) or not unit_data:
+		return
+	
+	# Set the appropriate sprite based on unit type
+	if unit_data.unit_type_tag == "hero":
+		unit_sprite.texture = load(HERO_SPRITE_PATH)
+	else:
+		unit_sprite.texture = load(UNIT_SPRITE_PATH)
+	
+	# Flip the sprite for enemy units
+	unit_sprite.flip_h = not is_player_team_unit
+
 func _update_display() -> void:
 	# Ensure we have valid unit data
 	if not unit_data:

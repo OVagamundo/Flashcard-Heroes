@@ -1,17 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://cau7nd1n4iwsc"]
+[gd_scene load_steps=4 format=3 uid="uid://cau7nd1n4iwsc"]
 
 [ext_resource type="Script" uid="uid://cj3dl14tu6yvu" path="res://scripts/Unit.gd" id="1_abcde"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ellipse_s1"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0.4, 0.4, 0.4, 1)
-corner_radius_top_left = 25
-corner_radius_top_right = 25
-corner_radius_bottom_right = 25
-corner_radius_bottom_left = 25
 
 [sub_resource type="StyleBoxFlat" id="TierBadgeStyle"]
 content_margin_left = 4.0
@@ -50,7 +39,9 @@ alignment = 1
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_ellipse_s1")
+size_flags_vertical = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="VBoxContainer/UnitVisualPanel"]
 
 [node name="TierBadge" type="Panel" parent="VBoxContainer/UnitVisualPanel"]
 layout_mode = 1
@@ -65,8 +56,6 @@ offset_right = -5.0
 offset_bottom = -5.0
 grow_horizontal = 0
 grow_vertical = 0
-size_flags_horizontal = 0
-size_flags_vertical = 0
 theme_override_styles/panel = SubResource("TierBadgeStyle")
 
 [node name="TierLabel" type="Label" parent="VBoxContainer/UnitVisualPanel/TierBadge"]
