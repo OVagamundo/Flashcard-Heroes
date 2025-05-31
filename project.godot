@@ -29,6 +29,12 @@ GameManager="*res://scripts/GameManager.gd"
 PlayerData="*res://scripts/PlayerData.gd"
 UnitLibrary="*res://scripts/UnitLibrary.gd"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="viewport"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
