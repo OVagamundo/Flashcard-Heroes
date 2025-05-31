@@ -49,6 +49,18 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 	if not data:
 		push_error("Unit.initialize(): UnitData is null! Cannot initialize unit.")
 		return
+	
+	# Set size and anchoring properties
+	self.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	self.size_flags_vertical = Control.SIZE_SHRINK_END
+	self.anchor_left = 0.5
+	self.anchor_top = 1.0
+	self.anchor_right = 0.5
+	self.anchor_bottom = 1.0
+	self.offset_left = -self.size.x * 0.5
+	self.offset_top = -self.size.y
+	self.offset_right = self.size.x * 0.5
+	self.offset_bottom = 0
 
 	self.unit_data = data
 	self.current_hp = data.max_hp

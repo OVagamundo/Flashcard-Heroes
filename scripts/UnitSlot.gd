@@ -55,9 +55,21 @@ func assign_unit(unit_node: Unit) -> void:
 	if unit_node.get_parent():
 		unit_node.get_parent().remove_child(unit_node)
 	add_child(unit_node)
-	# Position the unit; assuming Unit's root is a Control node and will fill/center in the slot.
-	# If Unit's root is Node2D, you might need to set unit_node.position = self.size / 2 or similar.
-	unit_node.position = Vector2.ZERO # Or center it: (size - unit_node.size) / 2.0
+	# Set anchor to bottom center
+	unit_node.anchor_left = 0.5
+	unit_node.anchor_top = 1.0
+	unit_node.anchor_right = 0.5
+	unit_node.anchor_bottom = 1.0
+	
+	# Set pivot offset to center bottom of unit
+	unit_node.offset_left = -unit_node.size.x * 0.5  # Center horizontally
+	unit_node.offset_top = -unit_node.size.y  # Align bottom of unit with bottom of slot
+	unit_node.offset_right = unit_node.size.x * 0.5
+	unit_node.offset_bottom = 0
+	
+	# Force update the layout
+	unit_node.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	unit_node.size_flags_vertical = Control.SIZE_SHRINK_END
 	unit_node.visible = true
 	# print("UnitSlot.assign_unit(): Assigned ", unit_node.get_display_name(), " to slot ", slot_id)
 
