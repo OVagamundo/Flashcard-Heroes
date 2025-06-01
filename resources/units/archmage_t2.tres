@@ -1,4 +1,5 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
+[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/archmage_t2.png" id="3"]
 
 [ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
 
@@ -10,5 +11,6 @@ max_hp = 2
 pwr = 8
 tier = 2
 unit_type_tag = "magical"
-texture = null
+texture = ExtResource("3")
 ability_description = "Arcane Blast"
+
