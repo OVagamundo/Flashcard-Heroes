@@ -8,6 +8,7 @@ extends Control
 @onready var player_health_label: Label = $MainContainer/Header/PlayerInfo/PlayerHealth
 @onready var gacha_tokens_label: Label = $MainContainer/Header/PlayerInfo/GachaTokens
 @onready var turn_indicator: Label = $MainContainer/Header/TurnIndicator
+var unit_info_modal = null
 
 const MAX_UNITS_PER_SIDE = 6 # As per GDD
 const UNIT_SCENE = preload("res://scenes/Unit.tscn")
@@ -27,8 +28,11 @@ var is_player_turn: bool = true
 # Merge and selection state
 var selected_unit: Unit = null
 var selected_slot: UnitSlot = null
+var pending_merge_units: Array[Unit] = []
+var pending_result_unit_id: String = ""
 var is_awaiting_merge_confirmation: bool = false
 var pending_merge_slot: UnitSlot = null
+@onready var merge_confirmation_dialog: Window = null
 
 func _ready() -> void:
 	# Connect button signals (can be kept, but their actions will be simplified)
@@ -44,11 +48,76 @@ func _ready() -> void:
 	EventBus.unit_selected_for_action.connect(_on_unit_selected_for_action)
 	EventBus.slot_clicked_for_action.connect(_on_slot_clicked_for_action)
 	
+	# Try to load and add unit info modal to the scene
+	var modal_scene = load("res://scenes/UnitInfoModal.tscn") as PackedScene
+	if modal_scene:
+		unit_info_modal = modal_scene.instantiate()
+		if unit_info_modal:
+			add_child(unit_info_modal)
+			print("Unit info modal loaded successfully")
+	else:
+		print("Could not load UnitInfoModal.tscn. Unit info display will be unavailable.")
+	
 	# Initialize battle visuals and gacha system
 	setup_battle_scene()
 	# _initialize_gacha_pool() # Removed, UnitLibrary is used directly
 	_spawn_initial_units() # Spawn units after scene setup
 	_update_gacha_tokens_display() # Renamed from _update_coin_display
+
+	_initialize_merge_confirmation_dialog()
+
+func _initialize_merge_confirmation_dialog() -> void:
+	if not merge_confirmation_dialog:
+		merge_confirmation_dialog = Window.new()
+		merge_confirmation_dialog.title = "Merge Units"
+		merge_confirmation_dialog.unresizable = true
+		merge_confirmation_dialog.exclusive = true
+		merge_confirmation_dialog.wrap_controls = true
+		merge_confirmation_dialog.size = Vector2(400, 200)
+		merge_confirmation_dialog.close_requested.connect(_on_merge_canceled)
+		# Ensure the window is visible and interactive
+		merge_confirmation_dialog.visible = false
+		merge_confirmation_dialog.show()
+		add_child(merge_confirmation_dialog)
+		
+		var vbox = VBoxContainer.new()
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		vbox.add_theme_constant_override("separation", 10)
+		vbox.add_theme_constant_override("margin_left", 10)
+		vbox.add_theme_constant_override("margin_top", 10)
+		vbox.add_theme_constant_override("margin_right", 10)
+		vbox.add_theme_constant_override("margin_bottom", 10)
+		
+		var label = Label.new()
+		label.name = "MessageLabel"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(label)
+		
+		var button_container = HBoxContainer.new()
+		button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		button_container.add_theme_constant_override("separation", 10)
+		
+		var merge_button = Button.new()
+		merge_button.text = "Merge"
+		merge_button.pressed.connect(_on_merge_confirmed)
+		button_container.add_child(merge_button)
+		
+		var swap_button = Button.new()
+		swap_button.text = "Swap"
+		swap_button.pressed.connect(_on_swap_units)  # Connect to swap handler
+		button_container.add_child(swap_button)
+		
+		vbox.add_child(button_container)
+		merge_confirmation_dialog.add_child(vbox)
+		add_child(merge_confirmation_dialog)
+		
+		# Set exclusive window mode to capture input
+		merge_confirmation_dialog.exclusive = true
+		print("Merge confirmation dialog initialized")
 
 func setup_battle_scene() -> void:
 	clear_all_slots() # Clear any previous children
@@ -566,13 +635,18 @@ func _get_slot_for_unit(unit_to_find: Unit) -> UnitSlot:
 
 	return null
 
-func _deselect_current_unit() -> void:
-	if is_instance_valid(selected_unit):
+func _clear_selection() -> void:
+	if selected_unit and is_instance_valid(selected_unit):
 		selected_unit.update_selection_visual(false)
 	selected_unit = null
 	if selected_slot and is_instance_valid(selected_slot):
 		selected_slot.set_highlight("")
 	selected_slot = null
+	# Clear any pending merge state
+	pending_merge_units.clear()
+	pending_result_unit_id = ""
+	is_awaiting_merge_confirmation = false
+	pending_merge_slot = null
 	# TODO: Call _highlight_valid_slots(false) when implemented
 	add_log_message("Current unit deselected.")
 
@@ -581,110 +655,244 @@ func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
 	if not selected_slot or not selected_unit:
 		_clear_selection()
 		return
-
-	# If clicked on empty slot, move the unit there
-	if target_slot.is_empty():
+	
+	# If clicking on an empty slot on the same team
+	if not target_unit and target_slot.is_player_slot == selected_unit.is_player_team_unit:
 		_attempt_move_to_empty_slot(selected_unit, selected_slot, target_slot)
-		_clear_selection()
-		return
-
-	# If clicked on another unit
-	if target_unit and target_unit != selected_unit:
-		# Check if both units are on the same team
-		if selected_unit.is_player_team_unit != target_unit.is_player_team_unit:
-			add_log_message("Cannot interact with enemy units!")
-			_clear_selection()
-			return
-			
+	# If clicking on another unit on the same team
+	elif target_unit and target_unit.is_player_team_unit == selected_unit.is_player_team_unit:
 		# Check if units can be merged
-		var result_unit_id = UnitLibrary.get_merge_result_for_units(selected_unit.unit_data, target_unit.unit_data)
-		if result_unit_id:
-			# Show merge confirmation dialog
-			_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
+		if is_instance_valid(target_unit.unit_data) and is_instance_valid(selected_unit.unit_data):
+			var result_unit_id = UnitLibrary.get_merge_result_for_units(selected_unit.unit_data, target_unit.unit_data)
+			if result_unit_id and target_unit.tier == selected_unit.tier and target_unit.tier < 3:
+				# Show merge confirmation dialog
+				_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
+				# Don't clear selection here - wait for confirmation
+				return
+			else:
+				# If merge not possible, swap the units
+				_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
 		else:
-			# If merge not possible, swap the units
+			# If unit data is invalid, just swap
 			_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
-			_clear_selection()
+	
+	# Only clear selection if we're not waiting for merge confirmation
+	if not is_awaiting_merge_confirmation:
+		_clear_selection()
 
 # --- EventBus Handlers for Unit/Slot Interaction ---
 func _on_unit_selected_for_action(clicked_unit: Unit) -> void:
-	if not is_instance_valid(clicked_unit) or not is_player_turn or is_awaiting_merge_confirmation:
-		return
-
-	# If we have a selected unit and we're clicking a different unit
-	if selected_unit and selected_unit != clicked_unit:
-		var target_slot = _get_slot_for_unit(clicked_unit)
-		if target_slot:
-			_handle_second_click(target_slot, clicked_unit)
-		return
-
-	# If we get here, either we have no selected unit or we're clicking the same unit
-	if selected_unit == clicked_unit:
-		# Clicked the same unit, deselect it
+	if not is_instance_valid(clicked_unit):
 		_clear_selection()
-	else:
-		# First selection
-		selected_unit = clicked_unit
-		selected_slot = _get_slot_for_unit(clicked_unit)
-		if selected_slot:
-			selected_slot.set_highlight("selected")
-			_update_merge_highlights(clicked_unit)
+		return
+	
+	# If we're already showing a merge confirmation, don't allow selection changes
+	if is_awaiting_merge_confirmation:
+		return
+		
+	# If we already have a selected unit and it's the same as the clicked unit
+	if is_instance_valid(selected_unit) and selected_unit == clicked_unit:
+		# Show unit info if available, otherwise just deselect
+		if unit_info_modal:
+			unit_info_modal.show_unit_info(clicked_unit)
+		_clear_selection()
+		return
+	
+	# If we have a selected unit and it's different from the clicked unit
+	if is_instance_valid(selected_unit) and selected_unit != clicked_unit:
+		# Try to merge or swap
+		var clicked_slot = _get_slot_for_unit(clicked_unit)
+		if is_instance_valid(clicked_slot):
+			_handle_second_click(clicked_slot, clicked_unit)
+		return
+	
+	# If we don't have a selected unit, select the clicked unit
+	selected_unit = clicked_unit
+	selected_slot = _get_slot_for_unit(clicked_unit)
+	
+	if is_instance_valid(selected_slot):
+		selected_slot.set_highlight("selected")
+		add_log_message("Selected " + clicked_unit.unit_data.display_name)
 
 func _on_slot_clicked_for_action(clicked_slot: UnitSlot) -> void:
-	if not is_instance_valid(clicked_slot) or not is_player_turn or is_awaiting_merge_confirmation:
+	if not is_instance_valid(clicked_slot):
+		_clear_selection()
 		return
-
-	# If we have a selected unit, handle the slot click
-	if selected_unit:
-		# Ensure the clicked slot is a player-controllable slot
-		if not clicked_slot.is_player_slot:
-			add_log_message("Cannot interact with enemy slots directly.")
-			return
-
-		add_log_message("Player slot clicked: %s. Selected unit: %s" % [clicked_slot.slot_id, selected_unit.get_name_for_log()] if selected_unit else "None")
-
+	
+	# If we have a selected unit
+	if is_instance_valid(selected_unit) and is_instance_valid(selected_slot):
+		# If clicking the same slot, deselect
 		if clicked_slot == selected_slot:
-			# Clicked the same slot where the selected unit is - deselect it
-			add_log_message("Clicked same slot. Deselecting unit: %s" % selected_unit.get_name_for_log())
-			_deselect_current_unit()
-		elif clicked_slot.is_empty():
-			# Clicked an empty slot - attempt move
-			add_log_message("Attempting move to empty slot: %s" % clicked_slot.slot_id)
-			_attempt_move_to_empty_slot(selected_unit, selected_slot, clicked_slot)
-			_deselect_current_unit() # Always deselect after an action attempt
-		elif is_instance_valid(clicked_slot.occupying_unit):
-			# Clicked an occupied slot - attempt swap
-			var target_unit_in_slot = clicked_slot.occupying_unit
-			add_log_message("Attempting swap with unit %s in slot %s" % [target_unit_in_slot.get_name_for_log(), clicked_slot.slot_id])
-			_attempt_swap_units(selected_unit, selected_slot, target_unit_in_slot, clicked_slot)
-			_deselect_current_unit() # Always deselect after an action attempt
-		else:
-			# Should not happen if is_empty() is false and occupying_unit is null, but as a fallback:
-			add_log_message("Clicked slot %s has an unexpected state. Deselecting." % clicked_slot.slot_id)
-			_deselect_current_unit()
+			_clear_selection()
+			return
+		
+		# Handle the second click based on the target slot
+		_handle_second_click(clicked_slot, clicked_slot.occupying_unit)
 	else:
-		# No unit selected, select the unit in the clicked slot if there is one
-		if clicked_slot.occupying_unit and clicked_slot.is_player_slot:
+		# If no unit is selected, select the unit in the clicked slot if it exists
+		if is_instance_valid(clicked_slot.occupying_unit):
 			selected_unit = clicked_slot.occupying_unit
 			selected_slot = clicked_slot
 			selected_slot.set_highlight("selected")
-			_update_merge_highlights(selected_unit)
-
+		else:
+			_clear_selection()
 
 func _show_merge_confirmation(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
+	print("Showing merge confirmation dialog")
 	var result_data = UnitLibrary.get_unit_data(result_unit_id)
 	if not result_data:
+		print("No result data found for unit id: ", result_unit_id)
 		_clear_selection()
 		return
 
 	# Store merge info for confirmation
 	pending_merge_slot = target_slot
+	pending_merge_units = [unit1, unit2]
+	pending_result_unit_id = result_unit_id
 	is_awaiting_merge_confirmation = true
 
-	# Show confirmation dialog (you'll need to implement this in your UI)
-	# For now, we'll auto-confirm after a short delay
-	await get_tree().create_timer(0.5).timeout
-	_perform_merge(unit1, unit2, target_slot, result_unit_id)
+	# Update dialog text
+	var unit1_name = unit1.unit_data.display_name if unit1 and unit1.unit_data else "Unit 1"
+	var unit2_name = unit2.unit_data.display_name if unit2 and unit2.unit_data else "Unit 2"
+	var result_name = result_data.display_name if result_data else "New Unit"
+	
+	# Ensure the dialog is initialized
+	_initialize_merge_confirmation_dialog()
+	
+	# Update dialog content
+	var vbox = merge_confirmation_dialog.get_child(0) as VBoxContainer
+	if vbox:
+		var label = vbox.get_node("MessageLabel") as Label
+		if label:
+			label.text = "Merge %s and %s to create %s?" % [unit1_name, unit2_name, result_name]
+	else:
+		print("Warning: Could not find VBoxContainer in merge dialog")
+	
+	# Show the dialog
+	print("Showing merge dialog at position: ", get_global_mouse_position())
+	merge_confirmation_dialog.popup_centered_ratio(0.4)
+	merge_confirmation_dialog.move_to_center()
+	merge_confirmation_dialog.grab_focus()
+	print("Dialog should be visible now")
+
+func _on_merge_confirmed() -> void:
+	print("Merge confirmed, performing merge...")
+	# Hide dialog first to prevent multiple clicks
+	if is_instance_valid(merge_confirmation_dialog):
+		merge_confirmation_dialog.hide()
+	
+	# Verify we have everything we need
+	if (pending_merge_units.size() != 2 or 
+		not is_instance_valid(pending_merge_units[0]) or 
+		not is_instance_valid(pending_merge_units[1]) or 
+		not is_instance_valid(pending_merge_slot) or 
+		pending_result_unit_id.is_empty()):
+		
+		print("Merge validation failed, cleaning up...")
+		_clear_merge_state()
+		return
+	
+	print("Performing merge with valid parameters")
+	# Perform the merge
+	_perform_merge(
+		pending_merge_units[0], 
+		pending_merge_units[1], 
+		pending_merge_slot, 
+		pending_result_unit_id
+	)
+	
+	print("Merge complete, cleaning up...")
+	# Clean up
+	_clear_merge_state()
+	
+	if (pending_merge_units.size() >= 2 and 
+		pending_result_unit_id and 
+		pending_merge_slot and
+		is_instance_valid(pending_merge_units[0]) and 
+		is_instance_valid(pending_merge_units[1])):
+		
+		var unit1 = pending_merge_units[0]
+		var unit2 = pending_merge_units[1]
+		var target_slot = pending_merge_slot
+		var result_id = pending_result_unit_id
+		
+		# Clear state before performing merge to prevent re-entry issues
+		is_awaiting_merge_confirmation = false
+		pending_merge_units.clear()
+		pending_merge_slot = null
+		pending_result_unit_id = ""
+		
+		_perform_merge(unit1, unit2, target_slot, result_id)
+	else:
+		var error_msg = "Merge failed: Invalid merge state. "
+		error_msg += "Units: %d, " % pending_merge_units.size()
+		error_msg += "Result ID: %s, " % ("yes" if pending_result_unit_id else "no")
+		error_msg += "Slot: %s, " % ("valid" if pending_merge_slot else "invalid")
+		if pending_merge_units.size() > 0:
+			error_msg += "Unit1: %s, " % ("valid" if is_instance_valid(pending_merge_units[0]) else "invalid")
+		if pending_merge_units.size() > 1:
+			error_msg += "Unit2: %s" % ("valid" if is_instance_valid(pending_merge_units[1]) else "invalid")
+		
+		push_error(error_msg)
+		add_log_message(error_msg)
+		is_awaiting_merge_confirmation = false
+		_clear_selection()
+
+func _input(event: InputEvent) -> void:
+	# Only process input if the merge dialog is visible
+	if is_instance_valid(merge_confirmation_dialog) and merge_confirmation_dialog.visible and event is InputEventMouseButton and event.pressed:
+		var dialog_rect = Rect2(merge_confirmation_dialog.position, merge_confirmation_dialog.size)
+		# Check if click is outside the dialog
+		if not dialog_rect.has_point(event.global_position):
+			print("Clicked outside merge dialog, cancelling...")
+			merge_confirmation_dialog.hide()
+			_on_merge_canceled()
+			# Mark the input as handled to prevent other nodes from processing it
+			get_viewport().set_input_as_handled()
+
+func _on_swap_units() -> void:
+	print("Swap units requested")
+	# Hide dialog first to prevent multiple clicks
+	if is_instance_valid(merge_confirmation_dialog):
+		merge_confirmation_dialog.hide()
+	
+	print("Pending merge units count: ", pending_merge_units.size())
+	# Perform the swap
+	if pending_merge_units.size() == 2 and is_instance_valid(pending_merge_units[0]) and is_instance_valid(pending_merge_units[1]):
+		var unit1 = pending_merge_units[0]
+		var unit2 = pending_merge_units[1]
+		print("Found valid units for swap")
+		
+		var slot1 = _get_slot_for_unit(unit1)
+		var slot2 = _get_slot_for_unit(unit2)
+		
+		print("Slot1 valid: ", is_instance_valid(slot1), " Slot2 valid: ", is_instance_valid(slot2))
+		
+		if is_instance_valid(slot1) and is_instance_valid(slot2):
+			print("Attempting to swap units...")
+			_attempt_swap_units(unit1, slot1, unit2, slot2)
+	else:
+		print("Invalid units for swap")
+	
+	# Clean up
+	print("Cleaning up after swap")
+	_clear_merge_state()
+
+func _on_merge_canceled() -> void:
+	_clear_merge_state()
+
+func _clear_merge_state() -> void:
+	print("Clearing merge state...")
+	is_awaiting_merge_confirmation = false
+	_clear_selection()
+	if is_instance_valid(merge_confirmation_dialog):
+		merge_confirmation_dialog.hide()
+	
+	# Clear pending merge state
+	pending_merge_units.clear()
+	pending_merge_slot = null
+	pending_result_unit_id = ""
+	print("Merge state cleared")
 
 func _perform_merge(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
 	if not is_instance_valid(unit1) or not is_instance_valid(unit2) or not is_instance_valid(target_slot):
@@ -764,13 +972,6 @@ func _update_merge_highlights(unit_to_highlight: Unit) -> void:
 		else:
 			slot.set_highlight("")
 
-func _clear_selection() -> void:
-	if selected_slot and is_instance_valid(selected_slot):
-		selected_slot.set_highlight("")
-	selected_unit = null
-	selected_slot = null
-	is_awaiting_merge_confirmation = false
-	pending_merge_slot = null
 
 func _attempt_move_to_empty_slot(unit_to_move: Unit, from_slot: UnitSlot, to_slot: UnitSlot) -> bool:
 	# 1. Validate Inputs & State
@@ -908,7 +1109,7 @@ func _on_unit_died_eventbus(unit_died: Unit) -> void:
 
 	# If the died unit was selected, deselect it
 	if selected_unit == unit_died:
-		_deselect_current_unit()
+		_clear_selection()
 
 	# Visually remove the unit from the scene (queue_free is now handled by clear_unit if it was parented to slot, or here if not)
 	if is_instance_valid(unit_died) and not unit_died.is_queued_for_deletion():
