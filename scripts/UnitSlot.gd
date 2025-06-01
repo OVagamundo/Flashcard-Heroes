@@ -28,10 +28,20 @@ const VALID_TARGET_HIGHLIGHT_COLOR: Color = HIGHLIGHT_MERGE
 
 # --- Godot Lifecycle Methods --- #
 func _ready():
-	self.mouse_filter = Control.MOUSE_FILTER_STOP # Ensure this Control node can receive mouse events
+	# Ensure this Control node can receive mouse events
+	self.mouse_filter = Control.MOUSE_FILTER_STOP
+	self.mouse_entered.connect(_on_mouse_entered)
+	self.mouse_exited.connect(_on_mouse_exited)
+	
 	if is_instance_valid(highlight_panel):
 		highlight_panel.visible = true
 		highlight_panel.self_modulate = DEFAULT_HIGHLIGHT_COLOR
+
+func _on_mouse_entered() -> void:
+	print("Mouse entered slot: ", slot_id)
+
+func _on_mouse_exited() -> void:
+	print("Mouse exited slot: ", slot_id)
 
 # --- Input Handling --- #
 func _gui_input(event: InputEvent) -> void:

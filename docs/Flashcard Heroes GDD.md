@@ -63,14 +63,14 @@ Date: 2025-05-25
 
 ## 1. Game Overview
 
-Flashcard Heroes: Gachamon is a turn-based, deckbuilder, auto-battler roguelike where players use flashcard mini-games as a resource generator. Players assemble a team led by a chosen Hero Unit, manage their deck of Balls (Units and Items), and engage in strategic battles. Success relies on both tactical decision-making and mastery of the chosen flashcard deck, with each run offering unique opportunities and escalating difficulty as they player gets more familiar with the deck he's using. The Hero Unit's Health Points (HP) persist and is the player's health points for the run; if depleted to zero, the run ends (Game Over). The goal is to defeat the final boss of the run that only appears once they player has unlocked all flashcards in the chosen flashcard deck for the run.
+Flashcard Heroes: Gachamon is a turn-based, deckbuilder, auto-battler roguelike where players use japanese characters flashcard mini-games as a resource generator. Players build their decks of Balls (Units and Items) and engage in strategic battles using the units they have in their decks to form the best lineup possible and deafeat increasingly powerful enemies. Success relies on both long term strategy building their Gacha decks and tactical decision-making on battles as well as mastery of the chosen flashcard deck. The player starts with a Hero Unit and a Flashcard Deck. If player's HP is depleted to zero, the run ends (Game Over). The goal is to survivel for as long as possible and defeat the final boss of the run that only appears once they player has unlocked all flashcards in the chosen flashcard deck for the run.
 
 ### Core Gameplay Loop
 
 1. **Run Start**: Player selects a Hero Unit and Flashcard Deck
 2. **Path Selection**: Choose between 3 RNG generated nodes (Battle (Common, Elite, Mini-Boss, Final Boss), Shop, Event, Rest Site)
 3. **Node Resolution**:
-   - **Battle**: Engage in combat using Units drawn from Gacha Machines and earn new Balls (Units and Items) or gold as rewards.
+   - **Battle**: Engage in combat using Units drawn from Gacha Machines decks and earn new Balls (Units and Items) or gold as rewards.
    - **Shop**: Spend Gold to acquire new Balls or services
    - **Event**: Make choices with various outcomes
    - **Rest Site**: Heal, train, or gamble for rewards
@@ -488,12 +488,6 @@ The game interface is organized into logical layers to manage visibility and int
 ### Battle Node
 - **Battlefield**:
   - Unit placement lineup (horizontal line of 6 slots, 1x6, for each side)
-  - Turn order display
-  - Ability bar
-- **Unit HUD**:
-  - Health bars
-  - Status effects
-  - Cooldowns
 
 ### 8.4. Path Choice Scene
 - **Node Preview**:
@@ -934,7 +928,7 @@ The game interface is organized into logical layers to manage visibility and int
    - Player can arrange their Lineup and Bench (move Units between slots).
    - Player can merge compatible Units (temporary for this battle).
    - Player can equip/use Items.
-   - Phase ends when player clicks the "End Phase" button.
+   - Phase ends when player clicks the "End Turn" button.
 
 3. **COMBAT_PHASE**:
    - Both Player's and Enemy's Units automatically attack each other.

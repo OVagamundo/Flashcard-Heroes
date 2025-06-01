@@ -14,7 +14,6 @@ WARNING: res://resources/units/utility_t1.tres:4 - ext_resource, invalid UID: ui
 WARNING: res://resources/units/hero.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
    at: load (scene/resources/resource_format_text.cpp:447)
 Loaded 15 unit resources
-Unit info modal loaded successfully
 Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
 Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
 Assigned PlayerSlot1 to slot 1 (node: PlayerSlot2)
@@ -39,135 +38,288 @@ Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
 Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
 Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
 Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
-ERROR: Can't add child '@Window@19' to 'Battle', already has a parent 'Battle'.
-   at: add_child (scene/main/node.cpp:1653)
-Merge confirmation dialog initialized
-Clicked outside merge dialog, cancelling...
-Clearing merge state...
-Merge state cleared
-Attempting merge between hero (hero) and offensive_t1 (offensive)
-Merge failed: Cannot merge hero units
-Attempting merge between utility_t1 (utility) and offensive_t1 (offensive)
-Checking merge keys: 'utility_offensive' and 'offensive_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_offensive
-Merge result for utility + offensive: spellblade_t2
-Showing merge confirmation dialog
-Showing merge dialog at position: (858.0, 626.0)
-Dialog should be visible now
-Swap units requested
-Pending merge units count: 2
-Found valid units for swap
-Slot1 valid: true Slot2 valid: true
-Attempting to swap units...
-Cleaning up after swap
-Clearing merge state...
-Merge state cleared
-Attempting merge between utility_t1 (utility) and offensive_t1 (offensive)
-Checking merge keys: 'utility_offensive' and 'offensive_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_offensive
-Merge result for utility + offensive: spellblade_t2
-Showing merge confirmation dialog
-Showing merge dialog at position: (244.0, 632.0)
-Dialog should be visible now
-Merge confirmed, performing merge...
-Performing merge with valid parameters
-Merge complete, cleaning up...
-Clearing merge state...
-Merge state cleared
-ERROR: Merge failed: Invalid merge state. Units: 0, Result ID: no, Slot: invalid, 
-   at: push_error (core/variant/variant_utility.cpp:1098)
-Attempting merge between spellblade_t2 (offensive) and offensive_t1 (offensive)
-Merge failed: Tiers don't match (2 vs 1)
-Attempting merge between offensive_t1 (offensive) and spellblade_t2 (offensive)
-Merge failed: Tiers don't match (1 vs 2)
-Attempting merge between spellblade_t2 (offensive) and magical_t1 (magical)
-Merge failed: Tiers don't match (2 vs 1)
-Attempting merge between offensive_t1 (offensive) and magical_t1 (magical)
-Checking merge keys: 'offensive_magical' and 'magical_offensive'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: offensive_magical
-Merge result for offensive + magical: battlemage_t2
-Showing merge confirmation dialog
-Showing merge dialog at position: (234.0, 630.0)
-Dialog should be visible now
-Swap units requested
-Pending merge units count: 2
-Found valid units for swap
-Slot1 valid: true Slot2 valid: true
-Attempting to swap units...
-Cleaning up after swap
-Clearing merge state...
-Merge state cleared
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
 Attempting merge between magical_t1 (magical) and offensive_t1 (offensive)
 Checking merge keys: 'magical_offensive' and 'offensive_magical'
 Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
 Found merge recipe with key: magical_offensive
 Merge result for magical + offensive: battlemage_t2
-Showing merge confirmation dialog
-Showing merge dialog at position: (230.0, 628.0)
-Dialog should be visible now
-Merge confirmed, performing merge...
-Performing merge with valid parameters
-Merge complete, cleaning up...
-Clearing merge state...
-Merge state cleared
-ERROR: Merge failed: Invalid merge state. Units: 0, Result ID: no, Slot: invalid, 
-   at: push_error (core/variant/variant_utility.cpp:1098)
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
+Attempting merge between magical_t1 (magical) and defensive_t1 (defensive)
+Checking merge keys: 'magical_defensive' and 'defensive_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_defensive
+Merge result for magical + defensive: warden_t2
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
+Attempting merge between magical_t1 (magical) and hero (hero)
+Merge failed: Cannot merge hero units
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Attempting merge between magical_t1 (magical) and defensive_t1 (defensive)
+Checking merge keys: 'magical_defensive' and 'defensive_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_defensive
+Merge result for magical + defensive: warden_t2
 
-=== Player Team's Turn ===
-Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
-Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
+=== CREATING MERGE/SWAP POPUP ===
+Unit 1: magical_t1
+Unit 2: defensive_t1
+Target slot: @Control@9
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Swap button pressed
+Mouse entered slot: EnemySlot5
+Mouse exited slot: EnemySlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
 
-[Turn 1] Spellblade T2 (slot: PlayerSlot3, index: 3) is attacking
+=== CREATING MERGE/SWAP POPUP ===
+Unit 1: magical_t1
+Unit 2: magical_t1
+Target slot: @Control@10
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Merge button pressed
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
+Performing merge
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Attempting merge between magical_t1 (magical) and offensive_t1 (offensive)
+Checking merge keys: 'magical_offensive' and 'offensive_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_offensive
+Merge result for magical + offensive: battlemage_t2
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
+Attempting merge between magical_t1 (magical) and archmage_t2 (magical)
+Merge failed: Tiers don't match (1 vs 2)
+Attempting merge between magical_t1 (magical) and hero (hero)
+Merge failed: Cannot merge hero units
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot0
+Mouse exited slot: PlayerSlot0
+Attempting merge between magical_t1 (magical) and offensive_t1 (offensive)
+Checking merge keys: 'magical_offensive' and 'offensive_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_offensive
+Merge result for magical + offensive: battlemage_t2
 
-[Turn 1] Battlemage T2 (slot: PlayerSlot1, index: 1) is attacking
+=== CREATING MERGE/SWAP POPUP ===
+Unit 1: magical_t1
+Unit 2: offensive_t1
+Target slot: @Control@7
+Mouse entered slot: PlayerSlot0
+Mouse exited slot: PlayerSlot0
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Swap button pressed
+Mouse entered slot: EnemySlot5
+Mouse exited slot: EnemySlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Attempting merge between magical_t1 (magical) and offensive_t1 (offensive)
+Checking merge keys: 'magical_offensive' and 'offensive_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_offensive
+Merge result for magical + offensive: battlemage_t2
 
-[Turn 1] Hero (slot: PlayerSlot0, index: 0) is attacking
+=== CREATING MERGE/SWAP POPUP ===
+Unit 1: magical_t1
+Unit 2: offensive_t1
+Target slot: @Control@9
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Merge button pressed
+Attempting merge between magical_t1 (magical) and offensive_t1 (offensive)
+Checking merge keys: 'magical_offensive' and 'offensive_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_offensive
+Merge result for magical + offensive: battlemage_t2
+Performing merge
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
+Attempting merge between magical_t1 (magical) and battlemage_t2 (magical)
+Merge failed: Tiers don't match (1 vs 2)
+Attempting merge between magical_t1 (magical) and archmage_t2 (magical)
+Merge failed: Tiers don't match (1 vs 2)
+Attempting merge between magical_t1 (magical) and hero (hero)
+Merge failed: Cannot merge hero units
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot0
+Mouse exited slot: PlayerSlot0
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
 
-=== Enemy Team's Turn ===
-Attacking team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
-Defending team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
+=== CREATING MERGE/SWAP POPUP ===
+Unit 1: magical_t1
+Unit 2: magical_t1
+Target slot: @Control@7
+Mouse entered slot: PlayerSlot0
+Mouse exited slot: PlayerSlot0
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Swap button pressed
+Mouse entered slot: EnemySlot5
+Mouse exited slot: EnemySlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
 
-[Turn 1] Defensive Unit T1 (slot: EnemySlot2, index: 2) is attacking
-
-[Turn 1] Defensive Unit T1 (slot: EnemySlot1, index: 1) is attacking
-
-[Turn 1] Defensive Unit T1 (slot: EnemySlot0, index: 0) is attacking
-
-=== Player Team's Turn ===
-Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
-Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
-
-[Turn 1] Battlemage T2 (slot: PlayerSlot1, index: 1) is attacking
-
-[Turn 1] Hero (slot: PlayerSlot0, index: 0) is attacking
-
-=== Enemy Team's Turn ===
-Attacking team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
-Defending team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
-
-[Turn 1] Defensive Unit T1 (slot: EnemySlot1, index: 1) is attacking
-
-[Turn 1] Defensive Unit T1 (slot: EnemySlot0, index: 0) is attacking
-
-=== Player Team's Turn ===
-Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
-Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
-
-[Turn 1] Battlemage T2 (slot: PlayerSlot1, index: 1) is attacking
-
-[Turn 1] Hero (slot: PlayerSlot0, index: 0) is attacking
-
-=== Enemy Team's Turn ===
-Attacking team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
-Defending team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
-
-[Turn 1] Defensive Unit T1 (slot: EnemySlot0, index: 0) is attacking
-
-=== Player Team's Turn ===
-Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
-Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
-
-[Turn 1] Hero (slot: PlayerSlot0, index: 0) is attacking
+=== CREATING MERGE/SWAP POPUP ===
+Unit 1: magical_t1
+Unit 2: magical_t1
+Target slot: @Control@8
+Mouse entered slot: PlayerSlot1
+Mouse exited slot: PlayerSlot1
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot2
+Mouse exited slot: PlayerSlot2
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot3
+Mouse exited slot: PlayerSlot3
+Mouse entered slot: PlayerSlot4
+Mouse exited slot: PlayerSlot4
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
+Merge button pressed
+Attempting merge between magical_t1 (magical) and magical_t1 (magical)
+Checking merge keys: 'magical_magical' and 'magical_magical'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: magical_magical
+Merge result for magical + magical: archmage_t2
+Performing merge
+Mouse entered slot: PlayerSlot5
+Mouse exited slot: PlayerSlot5
