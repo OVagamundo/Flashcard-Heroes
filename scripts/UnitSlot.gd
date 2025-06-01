@@ -13,7 +13,8 @@ signal slot_clicked(slot: UnitSlot)
 var occupying_unit: Unit = null
 var slot_id: String = "" # e.g., "lineup_0", "bench_1"
 var is_lineup_slot: bool = false # True if this is a slot in the active battle lineup
-var is_player_slot: bool = true # Assuming these slots are for player units initially
+var is_player_slot: bool = true # True if this is a player team slot
+var slot_position: int = 0 # 0=backline, 5=frontline (same for both teams)
 
 # --- Constants for Visuals --- #
 const HIGHLIGHT_SELECTED = Color(0.2, 0.5, 1.0, 0.5)  # Blue

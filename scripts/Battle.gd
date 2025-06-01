@@ -94,25 +94,42 @@ func setup_visual_slots() -> void:
 
 # Helper function to set up slots in a container
 func setup_slot_container(container: Control, slot_prefix: String, is_lineup: bool, is_player: bool, slot_array: Array) -> void:
-	for i in range(container.get_child_count()):
+	var child_count = container.get_child_count()
+	var slot_controls = []
+	
+	# First, collect all slot controls and their numeric indices from node names
+	for i in range(child_count):
 		var slot_control = container.get_child(i)
+		var slot_number = slot_control.name.trim_prefix(slot_prefix).to_int()
+		slot_controls.append({"control": slot_control, "number": slot_number})
+	
+	# Sort slot controls by their numeric value
+	slot_controls.sort_custom(func(a, b): return a["number"] < b["number"])
+	
+	# No need to reverse the array anymore - we're using slot_position for ordering
+	
+	# Process slots in sorted order
+	for slot_data in slot_controls:
+		var slot_control = slot_data["control"]
+		var slot_number = slot_data["number"]
 		
-		# Clear any existing UnitSlot nodes but keep the floor visuals
-		var children_to_remove = []
+		# Clear existing UnitSlot nodes
 		for child in slot_control.get_children():
 			if child is UnitSlot:
-				children_to_remove.append(child)
-		for child in children_to_remove:
-			child.queue_free()
-			
-		# Create a new UnitSlot instance
+				slot_control.remove_child(child)
+				child.queue_free()
+		
+		# Create and configure UnitSlot
 		var unit_slot = UnitSlot.new()
-		unit_slot.slot_id = "%s%d" % [slot_prefix, i]
+		unit_slot.slot_id = "%s%d" % [slot_prefix, slot_number - 1]
 		unit_slot.is_lineup_slot = is_lineup
 		unit_slot.is_player_slot = is_player
-		
-		# Add the UnitSlot as a child of the existing Control node
+		# Set slot position (0=backline, 5=frontline)
+		unit_slot.slot_position = slot_number - 1
+		unit_slot.slot_clicked.connect(_on_slot_clicked_for_action)
 		slot_control.add_child(unit_slot)
+		slot_array.append(unit_slot)
+		print("Assigned %s to slot %d (node: %s)" % [unit_slot.slot_id, slot_number - 1, slot_control.name])
 		
 		# Configure the UnitSlot to fill its parent Control but leave room for the floor visual
 		unit_slot.anchor_left = 0.0
@@ -127,13 +144,11 @@ func setup_slot_container(container: Control, slot_prefix: String, is_lineup: bo
 		unit_slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		unit_slot.z_index = 1  # Ensure units appear above floor visuals
 		
-			# Add to our array of slot references
-		slot_array.append(unit_slot)
+		# Log the slot assignment for debugging
+		print("Assigned %s to slot %d (node: %s)" % [unit_slot.slot_id, slot_number - 1, slot_control.name])
 
-	# Reverse enemy_lineup_slots for consistent indexing (0 is front/right for enemy)
-	if not enemy_lineup_slots.is_empty():
-		enemy_lineup_slots.reverse()
-		add_log_message("Battle.setup_visual_slots(): Enemy lineup slots reversed. Index 0 is now their front (typically rightmost visual).")
+	# Ensure both teams have consistent slot ordering (index 0 = frontline, higher indices = backline)
+	# No need to reverse enemy_lineup_slots anymore as we handle it in the scene setup
 
 	# Initialize/resize the logical unit arrays to match the number of UnitSlots
 	player_units.resize(player_lineup_slots.size())
@@ -200,15 +215,16 @@ func _generate_enemy_lineup() -> void:
 		return
 
 	for i in range(num_enemies):
-		if i >= enemy_lineup_slots.size():
-			push_warning("Battle._generate_enemy_lineup(): Not enough enemy slots for %d enemies. Stopping at %d." % [num_enemies, i])
+		var slot_index = enemy_lineup_slots.size() - 1 - i  # Start from highest index (frontline) to lowest (backline)
+		if slot_index < 0 or slot_index >= enemy_lineup_slots.size():
+			push_warning("Battle._generate_enemy_lineup(): Invalid slot index %d for enemy %d." % [slot_index, i])
 			break
 		
 		var random_enemy_data: UnitData = enemy_options.pick_random()
 		if random_enemy_data:
-			# Enemies spawn from their front (index 0 of reversed enemy_lineup_slots) to back
-			_spawn_unit(random_enemy_data, false, i)
-			add_log_message("Spawned enemy '%s' in enemy slot %d." % [random_enemy_data.display_name, i])
+			# Spawn enemies from front to back (highest to lowest index)
+			_spawn_unit(random_enemy_data, false, slot_index)
+			add_log_message("Spawned enemy '%s' in enemy slot %d (front to back)." % [random_enemy_data.display_name, slot_index])
 		else:
 			push_warning("Battle._generate_enemy_lineup(): Failed to pick random enemy data.")
 
@@ -307,79 +323,112 @@ func _process_combat_phase() -> void:
 	end_turn_button.disabled = false
 	gacha_button.disabled = false
 
-func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_attacking: bool) -> void:
-	# Process units from back to front (left to right for player, right to left for enemy)
-	var units_to_act = attacking_team.duplicate()
-	if not is_player_attacking:
-		units_to_act.reverse()
+func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_team: bool) -> void:
+	# Debug: Print team info
+	var team_name = "Player" if is_player_team else "Enemy"
+	print("\n=== %s Team's Turn ===" % team_name)
 	
-	for slot in units_to_act:
+	# Print attacking team slots
+	var attacking_slots = []
+	for i in range(attacking_team.size()):
+		attacking_slots.append("%d:%s" % [i, attacking_team[i].slot_id])
+	print("Attacking team slots (index:slot_id): ", attacking_slots)
+	
+	# Print defending team slots
+	var defending_slots = []
+	for i in range(defending_team.size()):
+		defending_slots.append("%d:%s" % [i, defending_team[i].slot_id])
+	print("Defending team slots (index:slot_id): ", defending_slots)
+	
+	# Create a list to track which units have already acted this turn
+	var acted_this_turn = {}
+	
+	# Continue processing turns until all units have acted or combat ends
+	var turn_ended = false
+	var turn_count = 0
+	while not turn_ended:
+		turn_count += 1
+		turn_ended = true  # Assume we're done unless we find units that can act
+		
+		# Process units from front to back (highest to lowest index)
+		for i in range(attacking_team.size() - 1, -1, -1):
+			var slot = attacking_team[i]
+			if not is_instance_valid(slot) or slot.is_empty():
+				continue
+				
+			var unit = slot.occupying_unit
+			if not is_instance_valid(unit) or unit.current_hp <= 0:
+				if is_instance_valid(slot) and is_instance_valid(unit) and not is_instance_valid(unit.unit_data):
+					slot.clear_unit()  # Clean up invalid unit
+				continue
+			
+			# Skip if this unit has already acted this turn
+			if acted_this_turn.has(unit):
+				continue
+			
+			# Mark that we found at least one unit that can act
+			turn_ended = false
+			
+			# Mark this unit as having acted this turn
+			acted_this_turn[unit] = true
+			
+			# Debug: Print attacker info
+			print("\n[Turn %d] %s (slot: %s, index: %d) is attacking" % 
+				[turn_count, unit.unit_data.display_name, slot.slot_id, i])
+			
+			# Find target - frontmost unit in the opposing team
+			var target_slot = _find_frontmost_unit(defending_team)
+			if not target_slot or not is_instance_valid(target_slot.occupying_unit):
+				add_log_message("No valid targets found!")
+				continue
+				
+			var target = target_slot.occupying_unit
+			if not is_instance_valid(target) or not is_instance_valid(target.unit_data):
+				add_log_message("Invalid target found, skipping attack")
+				continue
+			
+			# Perform the attack
+			add_log_message("%s attacks %s!" % [unit.unit_data.display_name, target.unit_data.display_name])
+			var damage = unit.unit_data.pwr
+			target.take_damage(damage)
+			add_log_message("%s deals %d damage to %s" % [unit.unit_data.display_name, damage, target.unit_data.display_name])
+			
+			# Wait for animation/damage to be applied
+			await get_tree().create_timer(0.5).timeout
+			
+			# Check if target was defeated
+			if is_instance_valid(target) and target.current_hp <= 0:
+				add_log_message("%s was defeated!" % target.unit_data.display_name)
+				EventBus.unit_died.emit(target)
+				if is_instance_valid(target_slot):
+					target_slot.clear_unit()
+				if _check_combat_ended():
+					return
+			
+			# Small delay between unit actions for better visibility
+			await get_tree().create_timer(0.3).timeout
+
+func _find_frontmost_unit(team_slots: Array) -> UnitSlot:
+	var frontmost_slot = null
+	var highest_position = -1
+	
+	for slot in team_slots:
 		if not is_instance_valid(slot) or slot.is_empty():
 			continue
 			
 		var unit = slot.occupying_unit
-		if not is_instance_valid(unit) or not is_instance_valid(unit.unit_data) or unit.current_hp <= 0:
+		if not is_instance_valid(unit) or unit.current_hp <= 0:
+			# Clean up invalid units
 			if is_instance_valid(slot) and is_instance_valid(unit) and not is_instance_valid(unit.unit_data):
-				slot.clear_unit()  # Clean up invalid unit
+				slot.clear_unit()
 			continue
 			
-		# Find target - frontmost unit in the opposing team
-		var target_slot = _find_frontmost_unit(defending_team, not is_player_attacking)
-		if not target_slot or not is_instance_valid(target_slot.occupying_unit):
-			add_log_message("No valid targets found!")
-			break
-			
-		var target = target_slot.occupying_unit
-		if not is_instance_valid(target) or not is_instance_valid(target.unit_data):
-			add_log_message("Invalid target found, skipping attack")
-			continue
-			
-		add_log_message("%s attacks %s!" % [unit.unit_data.display_name, target.unit_data.display_name])
-		
-		# Calculate damage with safety checks
-		var damage = 1
-		var attacker_name = "Unknown"
-		var target_name = "Unknown"
-		
-		if is_instance_valid(unit) and is_instance_valid(unit.unit_data):
-			damage = unit.unit_data.pwr
-			attacker_name = unit.unit_data.display_name
-			
-		if is_instance_valid(target) and is_instance_valid(target.unit_data):
-			target_name = target.unit_data.display_name
-			target.take_damage(damage)
-		else:
-			add_log_message("Invalid target, skipping attack")
-			continue
-			
-		add_log_message("%s deals %d damage to %s" % [attacker_name, damage, target_name])
-		
-		# Small delay between attacks for better visibility
-		await get_tree().create_timer(0.5).timeout
-		
-		# Check if target died
-		if is_instance_valid(target) and target.current_hp <= 0:
-			var defeated_name = target.unit_data.display_name if is_instance_valid(target.unit_data) else "Unknown"
-			add_log_message("%s was defeated!" % defeated_name)
-			EventBus.unit_died.emit(target)
-			# Clear the slot immediately to prevent accessing freed unit
-			if is_instance_valid(target_slot):
-				target_slot.clear_unit()
-			
-			# Check if combat ended after this attack
-			if _check_combat_ended():
-				return
-
-func _find_frontmost_unit(team_slots: Array, reverse_order: bool) -> UnitSlot:
-	var slots = team_slots.duplicate()
-	if reverse_order:
-		slots.reverse()
-		
-	for slot in slots:
-		if is_instance_valid(slot) and not slot.is_empty() and is_instance_valid(slot.occupying_unit):
-			if slot.occupying_unit.current_hp > 0:
-				return slot
-	return null
+		# Check if this unit is in a more forward position
+		if slot.slot_position > highest_position:
+			highest_position = slot.slot_position
+			frontmost_slot = slot
+	
+	return frontmost_slot
 
 func _check_combat_ended() -> bool:
 	# Check if all enemy units are defeated

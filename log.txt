@@ -20,3 +20,55 @@ WARNING: Texture not found: res://assets/sprites/units/03_utility.png
 WARNING: res://resources/units/hero.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
    at: load (scene/resources/resource_format_text.cpp:447)
 Loaded 14 unit resources
+Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
+Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
+Assigned PlayerSlot1 to slot 1 (node: PlayerSlot2)
+Assigned PlayerSlot1 to slot 1 (node: PlayerSlot2)
+Assigned PlayerSlot2 to slot 2 (node: PlayerSlot3)
+Assigned PlayerSlot2 to slot 2 (node: PlayerSlot3)
+Assigned PlayerSlot3 to slot 3 (node: PlayerSlot4)
+Assigned PlayerSlot3 to slot 3 (node: PlayerSlot4)
+Assigned PlayerSlot4 to slot 4 (node: PlayerSlot5)
+Assigned PlayerSlot4 to slot 4 (node: PlayerSlot5)
+Assigned PlayerSlot5 to slot 5 (node: PlayerSlot6)
+Assigned PlayerSlot5 to slot 5 (node: PlayerSlot6)
+Assigned EnemySlot0 to slot 0 (node: EnemySlot1)
+Assigned EnemySlot0 to slot 0 (node: EnemySlot1)
+Assigned EnemySlot1 to slot 1 (node: EnemySlot2)
+Assigned EnemySlot1 to slot 1 (node: EnemySlot2)
+Assigned EnemySlot2 to slot 2 (node: EnemySlot3)
+Assigned EnemySlot2 to slot 2 (node: EnemySlot3)
+Assigned EnemySlot3 to slot 3 (node: EnemySlot4)
+Assigned EnemySlot3 to slot 3 (node: EnemySlot4)
+Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
+Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
+Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
+Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
+
+=== Player Team's Turn ===
+Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
+Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
+
+[Turn 1] Hero (slot: PlayerSlot5, index: 5) is attacking
+
+[Turn 1] Offensive Unit T1 (slot: PlayerSlot1, index: 1) is attacking
+
+[Turn 1] Utility Unit T1 (slot: PlayerSlot0, index: 0) is attacking
+
+=== Enemy Team's Turn ===
+Attacking team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
+Defending team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
+
+[Turn 1] Defensive Unit T1 (slot: EnemySlot2, index: 2) is attacking
+
+[Turn 1] Utility Unit T1 (slot: EnemySlot1, index: 1) is attacking
+
+=== Player Team's Turn ===
+Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
+Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
+
+[Turn 1] Hero (slot: PlayerSlot5, index: 5) is attacking
+
+[Turn 1] Offensive Unit T1 (slot: PlayerSlot1, index: 1) is attacking
+
+[Turn 1] Utility Unit T1 (slot: PlayerSlot0, index: 0) is attacking
