@@ -588,42 +588,47 @@ func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
 		_clear_selection()
 		return
 
-	# If clicked on another unit, check for merge
+	# If clicked on another unit
 	if target_unit and target_unit != selected_unit:
+		# Check if both units are on the same team
+		if selected_unit.is_player_team_unit != target_unit.is_player_team_unit:
+			add_log_message("Cannot interact with enemy units!")
+			_clear_selection()
+			return
+			
+		# Check if units can be merged
 		var result_unit_id = UnitLibrary.get_merge_result_for_units(selected_unit.unit_data, target_unit.unit_data)
 		if result_unit_id:
+			# Show merge confirmation dialog
 			_show_merge_confirmation(selected_unit, target_unit, target_slot, result_unit_id)
 		else:
-			# Can't merge, try to swap
+			# If merge not possible, swap the units
 			_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
 			_clear_selection()
 
 # --- EventBus Handlers for Unit/Slot Interaction ---
 func _on_unit_selected_for_action(clicked_unit: Unit) -> void:
-	if not is_instance_valid(clicked_unit) or not is_player_turn:
+	if not is_instance_valid(clicked_unit) or not is_player_turn or is_awaiting_merge_confirmation:
 		return
 
-	if is_awaiting_merge_confirmation:
-		# If we're waiting for merge confirmation, ignore other clicks
+	# If we have a selected unit and we're clicking a different unit
+	if selected_unit and selected_unit != clicked_unit:
+		var target_slot = _get_slot_for_unit(clicked_unit)
+		if target_slot:
+			_handle_second_click(target_slot, clicked_unit)
 		return
 
+	# If we get here, either we have no selected unit or we're clicking the same unit
 	if selected_unit == clicked_unit:
 		# Clicked the same unit, deselect it
 		_clear_selection()
-		return
-
-	if selected_unit == null:
+	else:
 		# First selection
 		selected_unit = clicked_unit
 		selected_slot = _get_slot_for_unit(clicked_unit)
 		if selected_slot:
 			selected_slot.set_highlight("selected")
 			_update_merge_highlights(clicked_unit)
-	else:
-		# Second click - try to merge or swap
-		var target_slot = _get_slot_for_unit(clicked_unit)
-		if target_slot:
-			_handle_second_click(target_slot, clicked_unit)
 
 func _on_slot_clicked_for_action(clicked_slot: UnitSlot) -> void:
 	if not is_instance_valid(clicked_slot) or not is_player_turn or is_awaiting_merge_confirmation:

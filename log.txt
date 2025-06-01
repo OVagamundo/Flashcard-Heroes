@@ -3,23 +3,17 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 WARNING: res://resources/units/offensive_t1.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
    at: load (scene/resources/resource_format_text.cpp:447)
-WARNING: Texture not found: res://assets/sprites/units/01_offensive.png
-   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: res://resources/units/magical_t1.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a7 - using text path instead: res://assets/images/UnitSprites/Sprite04.png
    at: load (scene/resources/resource_format_text.cpp:447)
-WARNING: Texture not found: res://assets/sprites/units/04_magical.png
-   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: res://resources/units/defensive_t1.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a5 - using text path instead: res://assets/images/UnitSprites/Sprite02.png
    at: load (scene/resources/resource_format_text.cpp:447)
-WARNING: Texture not found: res://assets/sprites/units/02_defensive.png
-   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: res://resources/units/battlemaster_t2.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
+   at: load (scene/resources/resource_format_text.cpp:447)
 WARNING: res://resources/units/utility_t1.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a6 - using text path instead: res://assets/images/UnitSprites/Sprite03.png
    at: load (scene/resources/resource_format_text.cpp:447)
-WARNING: Texture not found: res://assets/sprites/units/03_utility.png
-   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: res://resources/units/hero.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
    at: load (scene/resources/resource_format_text.cpp:447)
-Loaded 14 unit resources
+Loaded 15 unit resources
 Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
 Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
 Assigned PlayerSlot1 to slot 1 (node: PlayerSlot2)
@@ -44,16 +38,80 @@ Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
 Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
 Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
 Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
+Attempting merge between offensive_t1 (offensive) and defensive_t1 (defensive)
+Checking merge keys: 'offensive_defensive' and 'defensive_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_defensive
+Merge result for offensive + defensive: battlemaster_t2
+Attempting merge between offensive_t1 (offensive) and offensive_t1 (offensive)
+Checking merge keys: 'offensive_offensive' and 'offensive_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_offensive
+Merge result for offensive + offensive: berserker_t2
+Attempting merge between offensive_t1 (offensive) and defensive_t1 (defensive)
+Checking merge keys: 'offensive_defensive' and 'defensive_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_defensive
+Merge result for offensive + defensive: battlemaster_t2
+Attempting merge between offensive_t1 (offensive) and utility_t1 (utility)
+Checking merge keys: 'offensive_utility' and 'utility_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_utility
+Merge result for offensive + utility: spellblade_t2
+Attempting merge between offensive_t1 (offensive) and hero (hero)
+Merge failed: Cannot merge hero units
+Attempting merge between offensive_t1 (offensive) and defensive_t1 (defensive)
+Checking merge keys: 'offensive_defensive' and 'defensive_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_defensive
+Merge result for offensive + defensive: battlemaster_t2
+Attempting merge between offensive_t1 (offensive) and defensive_t1 (defensive)
+Checking merge keys: 'offensive_defensive' and 'defensive_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_defensive
+Merge result for offensive + defensive: battlemaster_t2
+Attempting merge between offensive_t1 (offensive) and battlemaster_t2 (battlemaster)
+Merge failed: Tiers don't match (1 vs 2)
+Attempting merge between offensive_t1 (offensive) and utility_t1 (utility)
+Checking merge keys: 'offensive_utility' and 'utility_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_utility
+Merge result for offensive + utility: spellblade_t2
+Attempting merge between offensive_t1 (offensive) and hero (hero)
+Merge failed: Cannot merge hero units
+Attempting merge between offensive_t1 (offensive) and defensive_t1 (defensive)
+Checking merge keys: 'offensive_defensive' and 'defensive_offensive'
+Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
+Found merge recipe with key: offensive_defensive
+Merge result for offensive + defensive: battlemaster_t2
+Attempting merge between hero (hero) and battlemaster_t2 (battlemaster)
+Merge failed: Cannot merge hero units
+Attempting merge between hero (hero) and battlemaster_t2 (battlemaster)
+Merge failed: Cannot merge hero units
+Attempting merge between hero (hero) and utility_t1 (utility)
+Merge failed: Cannot merge hero units
+Attempting merge between hero (hero) and battlemaster_t2 (battlemaster)
+Merge failed: Cannot merge hero units
+Attempting merge between utility_t1 (utility) and hero (hero)
+Merge failed: Cannot merge hero units
+Attempting merge between utility_t1 (utility) and battlemaster_t2 (battlemaster)
+Merge failed: Tiers don't match (1 vs 2)
+Attempting merge between utility_t1 (utility) and battlemaster_t2 (battlemaster)
+Merge failed: Tiers don't match (1 vs 2)
+Attempting merge between utility_t1 (utility) and battlemaster_t2 (battlemaster)
+Merge failed: Tiers don't match (1 vs 2)
 
 === Player Team's Turn ===
 Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
 Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
 
-[Turn 1] Hero (slot: PlayerSlot5, index: 5) is attacking
+[Turn 1] Utility Unit T1 (slot: PlayerSlot5, index: 5) is attacking
 
-[Turn 1] Offensive Unit T1 (slot: PlayerSlot1, index: 1) is attacking
+[Turn 1] Battlemaster (slot: PlayerSlot4, index: 4) is attacking
 
-[Turn 1] Utility Unit T1 (slot: PlayerSlot0, index: 0) is attacking
+[Turn 1] Battlemaster (slot: PlayerSlot3, index: 3) is attacking
+
+[Turn 1] Hero (slot: PlayerSlot0, index: 0) is attacking
 
 === Enemy Team's Turn ===
 Attacking team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
@@ -61,14 +119,14 @@ Defending team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:Play
 
 [Turn 1] Defensive Unit T1 (slot: EnemySlot2, index: 2) is attacking
 
-[Turn 1] Utility Unit T1 (slot: EnemySlot1, index: 1) is attacking
+[Turn 1] Defensive Unit T1 (slot: EnemySlot1, index: 1) is attacking
 
 === Player Team's Turn ===
 Attacking team slots (index:slot_id): ["0:PlayerSlot0", "1:PlayerSlot1", "2:PlayerSlot2", "3:PlayerSlot3", "4:PlayerSlot4", "5:PlayerSlot5"]
 Defending team slots (index:slot_id): ["0:EnemySlot0", "1:EnemySlot1", "2:EnemySlot2", "3:EnemySlot3", "4:EnemySlot4", "5:EnemySlot5"]
 
-[Turn 1] Hero (slot: PlayerSlot5, index: 5) is attacking
+[Turn 1] Battlemaster (slot: PlayerSlot4, index: 4) is attacking
 
-[Turn 1] Offensive Unit T1 (slot: PlayerSlot1, index: 1) is attacking
+[Turn 1] Battlemaster (slot: PlayerSlot3, index: 3) is attacking
 
-[Turn 1] Utility Unit T1 (slot: PlayerSlot0, index: 0) is attacking
+[Turn 1] Hero (slot: PlayerSlot0, index: 0) is attacking

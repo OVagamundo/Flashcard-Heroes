@@ -1,0 +1,15 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bqjq9m1c4i6a4" path="res://assets/images/UnitSprites/Sprite01.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "battlemaster_t2"
+display_name = "Battlemaster"
+max_hp = 4
+pwr = 4
+tier = 2
+unit_type_tag = "battlemaster"
+texture = ExtResource("2")
+ability_description = "Balanced warrior with both offensive and defensive capabilities"
