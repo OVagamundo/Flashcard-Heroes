@@ -29,6 +29,12 @@ GameManager="*res://scripts/GameManager.gd"
 PlayerData="*res://scripts/PlayerData.gd"
 UnitLibrary="*res://scripts/UnitLibrary.gd"
 
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/log_path="/Users/danhh/Desktop/Flashcard Heroes/log.txt"
+file_logging/max_log_files=1
+
 [display]
 
 window/size/viewport_width=1920

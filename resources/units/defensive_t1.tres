@@ -1,6 +1,7 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bqjq9m1c4i6a5" path="res://assets/images/UnitSprites/Sprite02.png" id="2"]
 
 [resource]
 script = ExtResource("1")
@@ -10,5 +11,5 @@ max_hp = 3
 pwr = 1
 tier = 1
 unit_type_tag = "defensive"
-texture = null
+texture = ExtResource("2")
 ability_description = "Basic Attack"

@@ -13,6 +13,26 @@ func _ready() -> void:
 	_load_unit_resources()
 	_initialize_merge_recipes()
 
+func _get_texture_for_t1_unit(unit_type: String) -> Texture2D:
+	var texture_path = "res://assets/sprites/units/"
+	match unit_type:
+		"offensive":
+			texture_path += "01_offensive.png"
+		"defensive":
+			texture_path += "02_defensive.png"
+		"utility":
+			texture_path += "03_utility.png"
+		"magical":
+			texture_path += "04_magical.png"
+		_:
+			texture_path += "default.png"
+	
+	if ResourceLoader.exists(texture_path):
+		return load(texture_path)
+	else:
+		push_warning("Texture not found: " + texture_path)
+		return null
+
 func _load_unit_resources() -> void:
 	var dir = DirAccess.open(UNITS_DIR)
 	if not dir:
@@ -30,6 +50,13 @@ func _load_unit_resources() -> void:
 			
 			if resource is UnitData:
 				var unit_data: UnitData = resource as UnitData
+				
+				# Automatically set texture for T1 units if not already set
+				if unit_data.tier == 1 and unit_data.unit_type_tag in ["offensive", "defensive", "utility", "magical"]:
+					var texture = _get_texture_for_t1_unit(unit_data.unit_type_tag)
+					if texture:
+						unit_data.texture = texture
+				
 				_unit_database[unit_data.id] = unit_data
 				loaded_count += 1
 			else:

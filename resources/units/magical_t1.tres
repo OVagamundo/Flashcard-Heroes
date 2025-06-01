@@ -1,14 +1,15 @@
-[gd_resource type="Resource" load_steps=2 format=3]
+[gd_resource type="Resource" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bqjq9m1c4i6a7" path="res://assets/images/UnitSprites/Sprite04.png" id="2"]
 
 [resource]
-script = ExtResource( 1 )
+script = ExtResource(1)
 id = "magical_t1"
 display_name = "Magical Unit T1"
 max_hp = 2
 pwr = 2
 tier = 1
 unit_type_tag = "magical"
-texture = null
+texture = ExtResource("2")
 ability_description = "Basic Attack"

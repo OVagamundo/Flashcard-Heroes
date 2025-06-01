@@ -1,9 +1,7 @@
 extends Control
 class_name Unit
 
-# Sprite paths
-const HERO_SPRITE_PATH = "res://assets/images/UnitSprites/Sprite01.png"
-const UNIT_SPRITE_PATH = "res://assets/images/UnitSprites/Sprite02.png"
+# Sprite paths are now defined in the .tres resource files
 
 # --- Signals --- #
 signal unit_died(unit: Unit) # Emitted when this unit's HP reaches 0
@@ -129,11 +127,8 @@ func _update_sprite() -> void:
 	if not is_instance_valid(unit_sprite) or not unit_data:
 		return
 	
-	# Set the appropriate sprite based on unit type
-	if unit_data.unit_type_tag == "hero":
-		unit_sprite.texture = load(HERO_SPRITE_PATH)
-	else:
-		unit_sprite.texture = load(UNIT_SPRITE_PATH)
+	# Set the sprite from the unit_data resource
+	unit_sprite.texture = unit_data.texture
 	
 	# Flip the sprite for enemy units
 	unit_sprite.flip_h = not is_player_team_unit
