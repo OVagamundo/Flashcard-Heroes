@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://cau7nd1n4iwsc"]
+[gd_scene load_steps=3 format=3 uid="uid://cau7nd1n4iwsc"]
 
-[ext_resource type="Script" uid="uid://cj3dl14tu6yvu" path="res://scripts/Unit.gd" id="1_abcde"]
+[ext_resource type="Script" path="res://scripts/Unit.gd" id="1_abcde"]
 
 [sub_resource type="StyleBoxFlat" id="TierBadgeStyle"]
 content_margin_left = 4.0
@@ -21,10 +21,10 @@ outline_color = Color(0, 0, 0, 0.7)
 [node name="Unit" type="Control"]
 custom_minimum_size = Vector2(60, 90)
 layout_mode = 3
+script = ExtResource("1_abcde")
 anchors_preset = 0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-script = ExtResource("1_abcde")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 custom_minimum_size = Vector2(60, 90)
@@ -42,6 +42,17 @@ custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
+
+[node name="Outline" type="ColorRect" parent="VBoxContainer/UnitVisualPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -4.0
+offset_right = 4.0
+offset_bottom = 4.0
+visible = false
 
 [node name="Sprite2D" type="Sprite2D" parent="VBoxContainer/UnitVisualPanel"]
 

@@ -1,0 +1,21 @@
+# This file ensures the Unit class is properly registered
+[gd_resource type="GDScript" load_steps=2 format=2]
+
+[ext_resource path="res://scripts/Unit.gd" type="Script" id=1]
+
+[resource]
+script/class_name = "Unit"
+script/class_icon = ""
+script/base_type = "Control"
+script/language = "GDScript"
+script/path = "res://scripts/Unit.gd"
+script/icon = ""
+script/description = ""
+script/class_documentation = ""
+script/tutorials = []
+script/constants = {}
+script/signals = []
+script/properties = []
+script/methods = []
+script/theme_items = []
+script/script = ExtResource( 1 )

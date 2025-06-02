@@ -25,8 +25,9 @@ var unit_type: String = ""      # Type of unit (offensive, defensive, etc.)
 var tier: int = 1               # Unit tier (1 for basic, 2 for merged, etc.)
 
 # --- Constants for Visual Selection --- #
-const SELECTED_VISUAL_MODULATE: Color = Color(1.2, 1.2, 0.7, 1.0) # Brighter, slightly yellowish
-const DESELECTED_VISUAL_MODULATE: Color = Color(1.0, 1.0, 1.0) # Neutral modulate
+const SELECTED_OUTLINE_COLOR: Color = Color(1.0, 1.0, 1.0, 0.8) # White outline for selection
+const OUTLINE_WIDTH: int = 4
+const SELECTED_MODULATE: Color = Color(1.1, 1.1, 1.1, 1.0) # Slight brighten when selected
 
 # --- Constants for Label Colors --- #
 const PLAYER_LABEL_COLOR: Color = Color(0.3, 0.7, 1.0)  # A clear blue
@@ -35,12 +36,9 @@ const ENEMY_LABEL_COLOR: Color = Color(1.0, 0.4, 0.4)   # A clear red
 # --- Godot Lifecycle Methods --- #
 func _ready():
 	self.z_index = 1 # Ensure unit renders on top of slot's base visuals
-	# Wait for the next frame to ensure all nodes are ready
-	await get_tree().process_frame
-	
 	# Initialize visual panel if it exists
 	if is_instance_valid(unit_visual_panel):
-		unit_visual_panel.self_modulate = DESELECTED_VISUAL_MODULATE
+		unit_visual_panel.self_modulate = Color(1.0, 1.0, 1.0)  # Default white color
 
 # --- Public Methods --- # 
 func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void:
@@ -48,33 +46,31 @@ func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void
 		push_error("Unit.initialize(): UnitData is null! Cannot initialize unit.")
 		return
 	
+	# Store the unit data
+	unit_data = data
+	is_player_team_unit = is_player
+	current_hp = data.max_hp
+	# Default tier to 1 if not specified
+	tier = 1
+	if data and data.get("tier"):
+		tier = data.tier
+	
 	# Set size and anchoring properties
 	self.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	self.size_flags_vertical = Control.SIZE_SHRINK_END
-	self.anchor_left = 0.5
-	self.anchor_top = 1.0
-	self.anchor_right = 0.5
-	self.anchor_bottom = 1.0
-	self.offset_left = -self.size.x * 0.5
-	self.offset_top = -self.size.y
-	self.offset_right = self.size.x * 0.5
-	self.offset_bottom = 0
 
-	self.unit_data = data
-	self.current_hp = data.max_hp
-	self.is_player_team_unit = is_player
-	self.unit_type = data.unit_type_tag
-	self.tier = data.tier
-
-		# Apply tint color to visual elements
-	if is_instance_valid(unit_visual_panel):
-		unit_visual_panel.self_modulate = base_tint_color
-	
 	# Set the appropriate sprite and flip if needed
 	_update_sprite()
+	
+	# Set up the initial visual state
+	if unit_visual_panel:
+		unit_visual_panel.self_modulate = Color(1.0, 1.0, 1.0)
+		set_selected(false)  # Ensure outline is hidden initially
 
-	# Force update the display
-	call_deferred("_update_display")
+	# Update all visual elements
+	_update_display()
+	
+	# Make sure the unit is visible
+	show()
 
 func take_damage(amount: int) -> void:
 	if current_hp <= 0: # Already dead, no further action
@@ -114,13 +110,34 @@ func get_display_name() -> String:
 func update_selection_visual(is_selected: bool) -> void:
 	is_currently_selected = is_selected
 	if is_instance_valid(unit_visual_panel):
-		unit_visual_panel.self_modulate = SELECTED_VISUAL_MODULATE if is_selected else DESELECTED_VISUAL_MODULATE
+		unit_visual_panel.self_modulate = SELECTED_MODULATE if is_selected else Color(1.0, 1.0, 1.0)
 
 func get_name_for_log() -> String:
 	var team_prefix = "Player" if is_player_team_unit else "Enemy"
 	if unit_data:
 		return "%s %s (HP: %d/%d)" % [team_prefix, unit_data.display_name, current_hp, unit_data.max_hp]
 	return "%s Unknown Unit" % team_prefix
+
+# --- Selection and Visual Feedback --- #
+
+# Set the unit's selected state
+func set_selected(selected: bool) -> void:
+	is_currently_selected = selected
+	
+	# Update outline visibility
+	var outline = get_node_or_null("VBoxContainer/UnitVisualPanel/Outline")
+	if outline:
+		outline.visible = selected
+		if selected:
+			outline.color = Color.WHITE  # White outline when selected
+			outline.show_behind_parent = true
+	
+	# Update visual feedback
+	if is_instance_valid(unit_visual_panel):
+		if selected:
+			unit_visual_panel.self_modulate = Color(1.2, 1.2, 1.2)  # Slightly brighter when selected
+		else:
+			unit_visual_panel.self_modulate = Color.WHITE  # Back to normal when deselected
 
 # --- Private Helper Methods --- #
 func _update_sprite() -> void:
@@ -134,33 +151,29 @@ func _update_sprite() -> void:
 	unit_sprite.flip_h = not is_player_team_unit
 
 func _update_display() -> void:
-	# Ensure we have valid unit data
 	if not unit_data:
-		push_error("Unit._update_display(): unit_data is null")
 		return
-
-	# Update HP and PWR labels
-	if is_instance_valid(hp_label):
-		hp_label.text = "HP: %d" % current_hp
-		
-	if is_instance_valid(pwr_label):
+	
+	# Update sprite if available
+	if unit_sprite and unit_data.texture:
+		unit_sprite.texture = unit_data.texture
+	
+	# Update labels if they exist
+	if hp_label:
+		hp_label.text = "HP: %d/%d" % [current_hp, unit_data.max_hp]
+	if pwr_label:
 		pwr_label.text = "PWR: %d" % unit_data.pwr
-
-	# Update name and tier
-	if is_instance_valid(unit_name_label):
+	if unit_name_label:
 		unit_name_label.text = unit_data.display_name
-		
-	if is_instance_valid(tier_label):
+	if tier_label:
 		tier_label.text = "T%d" % tier
-
+	
 	# Set label colors based on team
 	var label_color = PLAYER_LABEL_COLOR if is_player_team_unit else ENEMY_LABEL_COLOR
-
-	# Apply colors to labels
-	for label in [hp_label, pwr_label]:
-		if is_instance_valid(label):
-			label.modulate = Color.WHITE
-			label.add_theme_color_override("font_color", label_color)
+	if hp_label:
+		hp_label.add_theme_color_override("font_color", label_color)
+	if pwr_label:
+		pwr_label.add_theme_color_override("font_color", label_color)
 
 	# The UnitVisualPanel (ellipse) is tinted by Battle.gd using self.modulate on the root Unit node.
 	# No need to directly color unit_visual_panel here unless a more complex style is required.

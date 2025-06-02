@@ -571,29 +571,143 @@ func _get_slot_for_unit(unit_to_find: Unit) -> UnitSlot:
 
 func _deselect_current_unit() -> void:
 	if is_instance_valid(selected_unit):
-		selected_unit.update_selection_visual(false)
+		if selected_unit.has_method("set_selected"):
+			selected_unit.set_selected(false)
+		elif selected_unit.has_method("update_selection_visual"):
+			selected_unit.update_selection_visual(false)
+		
 	selected_unit = null
-	if selected_slot and is_instance_valid(selected_slot):
+	
+	if selected_slot and is_instance_valid(selected_slot) and selected_slot.has_method("set_highlight"):
 		selected_slot.set_highlight("")
+	
 	selected_slot = null
-	# TODO: Call _highlight_valid_slots(false) when implemented
 	add_log_message("Current unit deselected.")
 
 func show_unit_inspection(unit: Unit) -> void:
-	if not is_instance_valid(unit):
+	if not is_instance_valid(unit) or not unit.unit_data:
 		return
+	
+	# Create a full-screen background to capture clicks
+	var bg = ColorRect.new()
+	bg.size = get_viewport_rect().size
+	bg.color = Color(0, 0, 0, 0.5)  # Semi-transparent black
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP  # Block input to underlying elements
+	bg.name = "InspectionBackground"
+	add_child(bg)
+	
+	# Create the inspection panel
+	var panel = Panel.new()
+	panel.custom_minimum_size = Vector2(320, 240)
+	panel.position = (get_viewport_rect().size - panel.size) * 0.5  # Center on screen
+	panel.theme_type_variation = "InspectionPanel"
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bg.add_child(panel)
+	
+	# Add a close button (X) in the top-right corner
+	var close_button = Button.new()
+	close_button.text = "X"
+	close_button.custom_minimum_size = Vector2(24, 24)
+	close_button.position = Vector2(panel.size.x - 30, 10)
+	close_button.pressed.connect(bg.queue_free)
+	panel.add_child(close_button)
+	
+	# Main container for content
+	var vbox = VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+	
+	# Unit name
+	var name_label = Label.new()
+	name_label.text = unit.unit_data.display_name
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 24)
+	vbox.add_child(name_label)
+	
+	# Tier and type
+	var tier_type_label = Label.new()
+	tier_type_label.text = "Tier %d • %s" % [unit.unit_data.tier, unit.unit_data.unit_type_tag.capitalize()]
+	tier_type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(tier_type_label)
+	
+	# Stats
+	var stats_hbox = HBoxContainer.new()
+	stats_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stats_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	
+	var hp_label = Label.new()
+	hp_label.text = "❤️ %d" % unit.unit_data.max_hp
+	stats_hbox.add_child(hp_label)
+	
+	var pwr_label = Label.new()
+	pwr_label.text = "⚔️ %d" % unit.unit_data.pwr
+	pwr_label.add_theme_constant_override("margin_left", 20)
+	stats_hbox.add_child(pwr_label)
+	
+	vbox.add_child(stats_hbox)
+	
+	# Separator
+	var separator = HSeparator.new()
+	separator.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(separator)
+	
+	# Ability description
+	if unit.unit_data.ability_description:
+		var help_container = VBoxContainer.new()
+		help_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		help_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		
-	# Create a simple modal dialog
-	var dialog = AcceptDialog.new()
-	dialog.title = "Unit Inspection"
-	dialog.dialog_text = "Name: %s\nTier: %d\n\nAbility: %s" % [
-		unit.unit_data.display_name,
-		unit.unit_data.tier,
-		unit.unit_data.ability_description if unit.unit_data.ability_description else "No special ability"
-	]
-	add_child(dialog)
-	dialog.popup_centered()
-	dialog.confirmed.connect(dialog.queue_free)
+		var help_label = Label.new()
+		help_label.text = "Ability: " + unit.unit_data.ability_description
+		help_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		help_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		help_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		help_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		
+		var scroll = ScrollContainer.new()
+		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		
+		var vbox_scroll = VBoxContainer.new()
+		vbox_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox_scroll.add_child(help_label)
+		
+		scroll.add_child(vbox_scroll)
+		help_container.add_child(scroll)
+		vbox.add_child(help_container)
+	
+	# Close when clicking outside the panel
+	# Close when clicking outside the panel or pressing escape
+	bg.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if event is InputEventMouseButton and event.pressed:
+				if event.button_index == MOUSE_BUTTON_LEFT:
+					var local_pos = panel.get_local_mouse_position()
+					if not panel.get_rect().has_point(local_pos):
+						bg.queue_free()
+			elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+				bg.queue_free()
+	)
+	
+	# Also close when the background is clicked directly
+	bg.gui_input.connect(
+		func(event: InputEvent) -> void:
+			if event is InputEventMouseButton and event.pressed:
+				bg.queue_free()
+	)
+
+func _is_click_inside_ui(click_position: Vector2) -> bool:
+	# Check if click is inside any UI elements
+	var space_rid = get_world_2d().space
+	var space_state = PhysicsServer2D.space_get_direct_state(space_rid)
+	var params = PhysicsPointQueryParameters2D.new()
+	params.position = click_position
+	params.collision_mask = 1 # UI layer
+	var results = space_state.intersect_point(params)
+	return not results.is_empty()
 
 func show_merge_swap_popup(unit1: Unit, unit2: Unit, target_slot: UnitSlot) -> void:
 	print("\n=== CREATING MERGE/SWAP POPUP ===")
@@ -601,91 +715,219 @@ func show_merge_swap_popup(unit1: Unit, unit2: Unit, target_slot: UnitSlot) -> v
 	print("Unit 2: ", unit2.unit_data.id if unit2.unit_data else "No unit data")
 	print("Target slot: ", target_slot.name if target_slot else "No target slot")
 	
-	# Create a simple popup dialog
-	var dialog = AcceptDialog.new()
-	dialog.title = "Merge or Swap?"
-	dialog.dialog_text = "Choose an action:"
-	add_child(dialog)
+	# Set flag to prevent input from clearing selection
+	is_awaiting_merge_confirmation = true
 	
-	# Add merge button
-	var merge_btn = dialog.add_button("Merge", true, "merge")
+	# Create a full-screen background to capture clicks
+	var bg = ColorRect.new()
+	bg.size = get_viewport_rect().size
+	bg.color = Color(0, 0, 0, 0.3)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(bg)
+	
+	# Create a panel for the popup
+	var panel = Panel.new()
+	panel.custom_minimum_size = Vector2(200, 100)
+	panel.position = get_global_mouse_position()
+	panel.size = Vector2(200, 100)
+	bg.add_child(panel)
+	
+	# Ensure panel is within screen bounds
+	var viewport_size = get_viewport_rect().size
+	panel.position.x = clamp(panel.position.x, 0, viewport_size.x - panel.size.x)
+	panel.position.y = clamp(panel.position.y, 0, viewport_size.y - panel.size.y)
+	
+	# Create merge button
+	var merge_btn = Button.new()
+	merge_btn.text = "Merge"
+	merge_btn.position = Vector2(10, 10)
+	merge_btn.size = Vector2(180, 30)
+	panel.add_child(merge_btn)
+	
+	# Create swap button
+	var swap_btn = Button.new()
+	swap_btn.text = "Swap"
+	swap_btn.position = Vector2(10, 50)
+	swap_btn.size = Vector2(180, 30)
+	panel.add_child(swap_btn)
+	
+	# Store references to units and slots that we'll need later
+	var first_unit = unit1
+	var second_unit = unit2
+	var first_slot = selected_slot
+	
+	# Function to clean up the popup
+	var cleanup = func():
+		is_awaiting_merge_confirmation = false
+		if is_instance_valid(bg) and is_instance_valid(bg.get_parent()):
+			bg.queue_free()
+		_clear_selection()
+	
+	# Connect button signals
 	merge_btn.pressed.connect(
 		func():
 			print("Merge button pressed")
-			var result_unit_id = UnitLibrary.get_merge_result_for_units(unit1.unit_data, unit2.unit_data)
-			if result_unit_id:
-				print("Performing merge")
-				_perform_merge(unit1, unit2, target_slot, result_unit_id)
-			dialog.queue_free()
+			# Double check merge is still valid
+			if is_instance_valid(first_unit) and is_instance_valid(second_unit) and \
+			   is_instance_valid(first_slot) and is_instance_valid(target_slot) and \
+			   first_slot.occupying_unit == first_unit and \
+			   target_slot.occupying_unit == second_unit and \
+			   first_unit.unit_data.tier < 3 and second_unit.unit_data.tier < 3:
+				
+				var result_unit_id = UnitLibrary.get_merge_result_for_units(first_unit.unit_data, second_unit.unit_data)
+				if result_unit_id:
+					print("Performing merge")
+					_perform_merge(first_unit, second_unit, target_slot, result_unit_id)
+			cleanup.call()
 	)
 	
-	# Add swap button
-	var swap_btn = dialog.add_button("Swap", true, "swap")
 	swap_btn.pressed.connect(
 		func():
 			print("Swap button pressed")
-			_attempt_swap_units(unit1, selected_slot, unit2, target_slot)
-			dialog.queue_free()
+			if is_instance_valid(first_unit) and is_instance_valid(second_unit) and \
+			   is_instance_valid(first_slot) and is_instance_valid(target_slot) and \
+			   first_slot.occupying_unit == first_unit and target_slot.occupying_unit == second_unit:
+				_attempt_swap_units(first_unit, first_slot, second_unit, target_slot)
+			cleanup.call()
 	)
 	
-	# Handle dialog close
-	dialog.close_requested.connect(dialog.queue_free)
-	
-	# Show the dialog
-	dialog.popup_centered()
+	# Close when clicking outside
+	bg.gui_input.connect(
+		func(event: InputEvent):
+			if event is InputEventMouseButton and event.pressed:
+				cleanup.call()
+	)
 
 # --- Core Logic for Movement and Swapping ---
 func _handle_second_click(target_slot: UnitSlot, target_unit: Unit) -> void:
-	if not selected_slot or not selected_unit:
+	print("\n=== HANDLE SECOND CLICK ===")
+	print("Selected unit: ", selected_unit.unit_data.id if selected_unit and selected_unit.unit_data else "No selected unit")
+	print("Target unit: ", target_unit.unit_data.id if target_unit and target_unit.unit_data else "No target unit")
+	print("Target slot: ", target_slot.name if target_slot else "No target slot")
+	
+	if not selected_slot or not selected_unit or not is_instance_valid(selected_unit):
+		print("No valid selection, deselecting")
 		_deselect_current_unit()
 		return
 
 	# If clicked on empty slot, move the unit there
 	if target_slot.is_empty():
+		print("Target slot is empty, attempting move")
 		_attempt_move_to_empty_slot(selected_unit, selected_slot, target_slot)
 		_clear_selection()
 		return
 
 	# If clicked on another unit
 	if target_unit and target_unit != selected_unit:
+		print("Target is another unit, checking team")
 		# Check if both units are on the same team
 		if selected_unit.is_player_team_unit != target_unit.is_player_team_unit:
+			print("Different teams, cannot interact")
 			add_log_message("Cannot interact with enemy units!")
 			_clear_selection()
 			return
-			
+		
+		print("Same team, checking merge possibility")
+		# Store references before any potential clearing
+		var first_unit = selected_unit
+		var first_slot = selected_slot
+		
 		# Check if units can be merged
-		var result_unit_id = UnitLibrary.get_merge_result_for_units(selected_unit.unit_data, target_unit.unit_data)
+		var result_unit_id = UnitLibrary.get_merge_result_for_units(first_unit.unit_data, target_unit.unit_data)
+		print("Merge result unit ID: ", result_unit_id)
+		
 		if result_unit_id:
-			# Show merge/swap popup
-			show_merge_swap_popup(selected_unit, target_unit, target_slot)
+			# Show merge/swap popup - don't clear selection yet
+			print("Can merge, showing popup")
+			show_merge_swap_popup(first_unit, target_unit, target_slot)
 		else:
 			# If merge not possible, swap the units
-			_attempt_swap_units(selected_unit, selected_slot, target_unit, target_slot)
+			print("Cannot merge, attempting swap")
+			_attempt_swap_units(first_unit, first_slot, target_unit, target_slot)
 			_clear_selection()
 
 # --- EventBus Handlers for Unit/Slot Interaction ---
+func _input(event: InputEvent) -> void:
+	print("\n=== INPUT DETECTED ===")
+	print("Selected unit: ", selected_unit.unit_data.id if selected_unit and selected_unit.unit_data else "No selected unit")
+	print("Awaiting merge confirmation: ", is_awaiting_merge_confirmation)
+	
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
+		return
+		
+	if selected_unit and not is_awaiting_merge_confirmation:
+		var mouse_pos = get_global_mouse_position()
+		print("Mouse position: ", mouse_pos)
+		
+		# Don't clear if clicking on the selected unit
+		if is_instance_valid(selected_unit) and selected_unit.get_global_rect().has_point(mouse_pos):
+			print("Clicked on selected unit, not clearing selection")
+			return
+			
+		# Don't clear if clicking on another unit
+		for unit in player_units:
+			if unit != selected_unit and is_instance_valid(unit) and unit.get_global_rect().has_point(mouse_pos):
+				print("Clicked on another unit, not clearing selection")
+				return
+				
+		for slot in player_lineup_slots:
+			if slot != selected_slot and is_instance_valid(slot) and slot.get_global_rect().has_point(mouse_pos):
+				print("Clicked on a slot, not clearing selection")
+				return
+		
+		# If we got here, we clicked outside any unit or slot
+		print("Clicked outside units and slots, clearing selection")
+		_clear_selection()
+	else:
+		print("No selection or awaiting merge confirmation, not clearing")
+
 func _on_unit_selected_for_action(clicked_unit: Unit) -> void:
-	if not is_instance_valid(clicked_unit) or not is_player_turn or is_awaiting_merge_confirmation:
+	print("\n=== UNIT SELECTED FOR ACTION ===")
+	print("Clicked unit: ", clicked_unit.unit_data.id if clicked_unit and clicked_unit.unit_data else "No unit data")
+	print("Selected unit: ", selected_unit.unit_data.id if selected_unit and selected_unit.unit_data else "No selected unit")
+	
+	if not is_instance_valid(clicked_unit):
+		print("Clicked unit is not valid, returning")
+		return
+		
+	if not is_player_turn or is_awaiting_merge_confirmation:
+		print("Not player's turn or awaiting merge confirmation, returning")
+		return
+
+	var clicked_slot = _get_slot_for_unit(clicked_unit)
+	print("Clicked slot: ", clicked_slot.name if clicked_slot else "No slot found")
+	
+	if not clicked_slot:
+		print("No valid slot found, clearing selection")
+		_clear_selection()
 		return
 
 	# If we have a selected unit and we're clicking a different unit
 	if selected_unit and selected_unit != clicked_unit:
-		var target_slot = _get_slot_for_unit(clicked_unit)
-		if target_slot:
-			_handle_second_click(target_slot, clicked_unit)
+		print("Second unit clicked, handling second click")
+		_handle_second_click(clicked_slot, clicked_unit)
 		return
 
-	# If we get here, either we have no selected unit or we're clicking the same unit
+	# Handle single click on already selected unit (show inspection)
 	if selected_unit == clicked_unit:
-		# Second click on same unit - show inspection modal
+		print("Same unit clicked again, showing inspection")
 		show_unit_inspection(clicked_unit)
 		_clear_selection()
 	else:
-		# First selection
+		print("First selection - setting new selection")
+		# First selection - clear any existing selection first
+		_clear_selection()
+		
+		# Set new selection
 		selected_unit = clicked_unit
-		selected_slot = _get_slot_for_unit(clicked_unit)
-		if selected_slot:
+		selected_slot = clicked_slot
+		print("New selection - Unit: ", selected_unit.unit_data.id if selected_unit.unit_data else "No unit data", ", Slot: ", selected_slot.name if selected_slot else "No slot")
+		
+		# Update visuals
+		if selected_unit.has_method("set_selected"):
+			selected_unit.set_selected(true)
+		
+		if selected_slot and selected_slot.has_method("set_highlight"):
 			selected_slot.set_highlight("selected")
 			_update_merge_highlights(clicked_unit)
 
@@ -853,12 +1095,33 @@ func _update_merge_highlights(unit_to_highlight: Unit) -> void:
 			slot.set_highlight("")
 
 func _clear_selection() -> void:
+	# Clear highlights from selected unit
+	if selected_unit and is_instance_valid(selected_unit):
+		if selected_unit.has_method("set_selected"):
+			selected_unit.set_selected(false)
+		elif selected_unit.has_method("update_selection_visual"):
+			selected_unit.update_selection_visual(false)
+	
+	# Clear highlights from selected slot
 	if selected_slot and is_instance_valid(selected_slot):
-		selected_slot.set_highlight("")
+		if selected_slot.has_method("set_highlight"):
+			selected_slot.set_highlight("")
+	
+	# Clear all references
+	var was_selected = selected_unit != null
 	selected_unit = null
 	selected_slot = null
 	is_awaiting_merge_confirmation = false
 	pending_merge_slot = null
+	
+	# Clear any merge highlights from all slots
+	for slot in player_lineup_slots:
+		if slot and is_instance_valid(slot) and slot.has_method("set_highlight"):
+			slot.set_highlight("")
+	
+	# Update UI if we had a selection
+	if was_selected:
+		add_log_message("Selection cleared")
 
 func _attempt_move_to_empty_slot(unit_to_move: Unit, from_slot: UnitSlot, to_slot: UnitSlot) -> bool:
 	# 1. Validate Inputs & State
