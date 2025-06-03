@@ -14,169 +14,111 @@ WARNING: res://resources/units/utility_t1.tres:4 - ext_resource, invalid UID: ui
 WARNING: res://resources/units/hero.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
    at: load (scene/resources/resource_format_text.cpp:447)
 Loaded 15 unit resources
-Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
-Assigned PlayerSlot0 to slot 0 (node: PlayerSlot1)
-Assigned PlayerSlot1 to slot 1 (node: PlayerSlot2)
-Assigned PlayerSlot1 to slot 1 (node: PlayerSlot2)
-Assigned PlayerSlot2 to slot 2 (node: PlayerSlot3)
-Assigned PlayerSlot2 to slot 2 (node: PlayerSlot3)
-Assigned PlayerSlot3 to slot 3 (node: PlayerSlot4)
-Assigned PlayerSlot3 to slot 3 (node: PlayerSlot4)
-Assigned PlayerSlot4 to slot 4 (node: PlayerSlot5)
-Assigned PlayerSlot4 to slot 4 (node: PlayerSlot5)
-Assigned PlayerSlot5 to slot 5 (node: PlayerSlot6)
-Assigned PlayerSlot5 to slot 5 (node: PlayerSlot6)
-Assigned EnemySlot0 to slot 0 (node: EnemySlot1)
-Assigned EnemySlot0 to slot 0 (node: EnemySlot1)
-Assigned EnemySlot1 to slot 1 (node: EnemySlot2)
-Assigned EnemySlot1 to slot 1 (node: EnemySlot2)
-Assigned EnemySlot2 to slot 2 (node: EnemySlot3)
-Assigned EnemySlot2 to slot 2 (node: EnemySlot3)
-Assigned EnemySlot3 to slot 3 (node: EnemySlot4)
-Assigned EnemySlot3 to slot 3 (node: EnemySlot4)
-Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
-Assigned EnemySlot4 to slot 4 (node: EnemySlot5)
-Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
-Assigned EnemySlot5 to slot 5 (node: EnemySlot6)
-Attempting merge between magical_t1 (magical) and utility_t1 (utility)
-Checking merge keys: 'magical_utility' and 'utility_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_utility
-Merge result for magical + utility: elementalist_t2
-Attempting merge between magical_t1 (magical) and magical_t1 (magical)
-Checking merge keys: 'magical_magical' and 'magical_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_magical
-Merge result for magical + magical: archmage_t2
-Attempting merge between magical_t1 (magical) and hero (hero)
+Setting up container: PlayerUnits with prefix: PlayerSlot
+Child count: 6
+Found slot: PlayerSlot1 with number: 1
+Found slot: PlayerSlot2 with number: 2
+Found slot: PlayerSlot3 with number: 3
+Found slot: PlayerSlot4 with number: 4
+Found slot: PlayerSlot5 with number: 5
+Found slot: PlayerSlot6 with number: 6
+Added slot PlayerSlot1 at index 0
+Assigned PlayerSlot1 to slot 0
+Added slot PlayerSlot2 at index 1
+Assigned PlayerSlot2 to slot 1
+Added slot PlayerSlot3 at index 2
+Assigned PlayerSlot3 to slot 2
+Added slot PlayerSlot4 at index 3
+Assigned PlayerSlot4 to slot 3
+Added slot PlayerSlot5 at index 4
+Assigned PlayerSlot5 to slot 4
+Added slot PlayerSlot6 at index 5
+Assigned PlayerSlot6 to slot 5
+Setting up container: EnemyUnits with prefix: EnemySlot
+Child count: 6
+Found slot: EnemySlot6 with number: 6
+Found slot: EnemySlot5 with number: 5
+Found slot: EnemySlot4 with number: 4
+Found slot: EnemySlot3 with number: 3
+Found slot: EnemySlot2 with number: 2
+Found slot: EnemySlot1 with number: 1
+Added slot EnemySlot1 at index 0
+Assigned EnemySlot1 to slot 0
+Added slot EnemySlot2 at index 1
+Assigned EnemySlot2 to slot 1
+Added slot EnemySlot3 at index 2
+Assigned EnemySlot3 to slot 2
+Added slot EnemySlot4 at index 3
+Assigned EnemySlot4 to slot 3
+Added slot EnemySlot5 at index 4
+Assigned EnemySlot5 to slot 4
+Added slot EnemySlot6 at index 5
+Assigned EnemySlot6 to slot 5
+Player lineup slots: 6
+Player bench slots: 0
+Enemy lineup slots: 6
+Attempting merge between hero (hero) and utility_t1 (utility)
 Merge failed: Cannot merge hero units
-Attempting merge between magical_t1 (magical) and utility_t1 (utility)
-Checking merge keys: 'magical_utility' and 'utility_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_utility
-Merge result for magical + utility: elementalist_t2
-Attempting merge between magical_t1 (magical) and magical_t1 (magical)
-Checking merge keys: 'magical_magical' and 'magical_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_magical
-Merge result for magical + magical: archmage_t2
-Attempting merge between magical_t1 (magical) and hero (hero)
+Attempting merge between hero (hero) and utility_t1 (utility)
 Merge failed: Cannot merge hero units
-
-=== HANDLE SECOND CLICK ===
-Selected unit: magical_t1
-Target unit: magical_t1
-Target slot: @Control@8
-Target is another unit, checking team
-Same team, checking merge possibility
-Attempting merge between magical_t1 (magical) and magical_t1 (magical)
-Checking merge keys: 'magical_magical' and 'magical_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_magical
-Merge result for magical + magical: archmage_t2
-Merge result unit ID: archmage_t2
-Can merge, showing popup
-
-=== CREATING MERGE/SWAP POPUP ===
-Unit 1: magical_t1
-Unit 2: magical_t1
-Target slot: @Control@8
-Swap button pressed
-Attempting merge between magical_t1 (magical) and utility_t1 (utility)
-Checking merge keys: 'magical_utility' and 'utility_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_utility
-Merge result for magical + utility: elementalist_t2
-Attempting merge between magical_t1 (magical) and magical_t1 (magical)
-Checking merge keys: 'magical_magical' and 'magical_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_magical
-Merge result for magical + magical: archmage_t2
-Attempting merge between magical_t1 (magical) and hero (hero)
-Merge failed: Cannot merge hero units
-
-=== HANDLE SECOND CLICK ===
-Selected unit: magical_t1
-Target unit: utility_t1
-Target slot: @Control@7
-Target is another unit, checking team
-Same team, checking merge possibility
-Attempting merge between magical_t1 (magical) and utility_t1 (utility)
-Checking merge keys: 'magical_utility' and 'utility_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_utility
-Merge result for magical + utility: elementalist_t2
-Merge result unit ID: elementalist_t2
-Can merge, showing popup
-
-=== CREATING MERGE/SWAP POPUP ===
-Unit 1: magical_t1
-Unit 2: utility_t1
-Target slot: @Control@7
-Swap button pressed
-Attempting merge between utility_t1 (utility) and magical_t1 (magical)
-Checking merge keys: 'utility_magical' and 'magical_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_magical
-Merge result for utility + magical: elementalist_t2
-Attempting merge between utility_t1 (utility) and magical_t1 (magical)
-Checking merge keys: 'utility_magical' and 'magical_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_magical
-Merge result for utility + magical: elementalist_t2
-Attempting merge between utility_t1 (utility) and hero (hero)
+Attempting merge between hero (hero) and offensive_t1 (offensive)
 Merge failed: Cannot merge hero units
 Attempting merge between hero (hero) and magical_t1 (magical)
 Merge failed: Cannot merge hero units
 Attempting merge between hero (hero) and utility_t1 (utility)
 Merge failed: Cannot merge hero units
+Attempting merge between hero (hero) and utility_t1 (utility)
+Merge failed: Cannot merge hero units
+Attempting merge between hero (hero) and offensive_t1 (offensive)
+Merge failed: Cannot merge hero units
 Attempting merge between hero (hero) and magical_t1 (magical)
 Merge failed: Cannot merge hero units
-Attempting merge between magical_t1 (magical) and magical_t1 (magical)
-Checking merge keys: 'magical_magical' and 'magical_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_magical
-Merge result for magical + magical: archmage_t2
-Attempting merge between magical_t1 (magical) and utility_t1 (utility)
-Checking merge keys: 'magical_utility' and 'utility_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_utility
-Merge result for magical + utility: elementalist_t2
-Attempting merge between magical_t1 (magical) and hero (hero)
+
+=== HANDLE SECOND CLICK ===
+Selected unit: hero
+Target unit: magical_t1
+Target slot: @Control@10
+Target is another unit, checking team
+Same team, checking merge possibility
+Attempting merge between hero (hero) and magical_t1 (magical)
 Merge failed: Cannot merge hero units
-Attempting merge between magical_t1 (magical) and magical_t1 (magical)
-Checking merge keys: 'magical_magical' and 'magical_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_magical
-Merge result for magical + magical: archmage_t2
-Attempting merge between magical_t1 (magical) and utility_t1 (utility)
-Checking merge keys: 'magical_utility' and 'utility_magical'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: magical_utility
-Merge result for magical + utility: elementalist_t2
-Attempting merge between magical_t1 (magical) and hero (hero)
-Merge failed: Cannot merge hero units
-Attempting merge between utility_t1 (utility) and magical_t1 (magical)
-Checking merge keys: 'utility_magical' and 'magical_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_magical
-Merge result for utility + magical: elementalist_t2
-Attempting merge between utility_t1 (utility) and magical_t1 (magical)
-Checking merge keys: 'utility_magical' and 'magical_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_magical
-Merge result for utility + magical: elementalist_t2
-Attempting merge between utility_t1 (utility) and hero (hero)
-Merge failed: Cannot merge hero units
-Attempting merge between utility_t1 (utility) and magical_t1 (magical)
-Checking merge keys: 'utility_magical' and 'magical_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_magical
-Merge result for utility + magical: elementalist_t2
-Attempting merge between utility_t1 (utility) and magical_t1 (magical)
-Checking merge keys: 'utility_magical' and 'magical_utility'
-Available merge recipes: ["offensive_offensive", "defensive_defensive", "utility_utility", "magical_magical", "defensive_utility", "utility_defensive", "offensive_magical", "magical_offensive", "offensive_utility", "utility_offensive", "defensive_magical", "magical_defensive", "magical_utility", "utility_magical", "offensive_defensive", "defensive_offensive"]
-Found merge recipe with key: utility_magical
-Merge result for utility + magical: elementalist_t2
-Attempting merge between utility_t1 (utility) and hero (hero)
-Merge failed: Cannot merge hero units
+Merge result unit ID: 
+Cannot merge, attempting swap
+
+=== Enemy Team's Turn ===
+Attacking team slots (index:slot_id): ["0:EnemySlot1", "1:EnemySlot2", "2:EnemySlot3", "3:EnemySlot4", "4:EnemySlot5", "5:EnemySlot6"]
+Defending team slots (index:slot_id): ["0:PlayerSlot1", "1:PlayerSlot2", "2:PlayerSlot3", "3:PlayerSlot4", "4:PlayerSlot5", "5:PlayerSlot6"]
+
+[Turn 1] Defensive Unit T1 (slot: EnemySlot6, index: 5) is attacking
+Unit health changed: utility_t1 from 2 to 1
+
+[Turn 1] Offensive Unit T1 (slot: EnemySlot5, index: 4) is attacking
+Unit health changed: utility_t1 from 1 to 0
+
+[Turn 1] Utility Unit T1 (slot: EnemySlot4, index: 3) is attacking
+Unit health changed: utility_t1 from 2 to 0
+
+[Turn 1] Offensive Unit T1 (slot: EnemySlot3, index: 2) is attacking
+Unit health changed: offensive_t1 from 1 to 0
+
+[Turn 1] Utility Unit T1 (slot: EnemySlot2, index: 1) is attacking
+Unit health changed: hero from 10 to 8
+
+=== Enemy Team's Turn ===
+Attacking team slots (index:slot_id): ["0:EnemySlot1", "1:EnemySlot2", "2:EnemySlot3", "3:EnemySlot4", "4:EnemySlot5", "5:EnemySlot6"]
+Defending team slots (index:slot_id): ["0:PlayerSlot1", "1:PlayerSlot2", "2:PlayerSlot3", "3:PlayerSlot4", "4:PlayerSlot5", "5:PlayerSlot6"]
+
+[Turn 1] Defensive Unit T1 (slot: EnemySlot6, index: 5) is attacking
+Unit health changed: utility_t1 from 2 to 1
+
+[Turn 1] Offensive Unit T1 (slot: EnemySlot5, index: 4) is attacking
+Unit health changed: utility_t1 from 1 to 0
+
+[Turn 1] Utility Unit T1 (slot: EnemySlot4, index: 3) is attacking
+Unit health changed: hero from 8 to 6
+
+[Turn 1] Offensive Unit T1 (slot: EnemySlot3, index: 2) is attacking
+Unit health changed: hero from 6 to 3
+
+[Turn 1] Utility Unit T1 (slot: EnemySlot2, index: 1) is attacking
+Unit health changed: hero from 3 to 1

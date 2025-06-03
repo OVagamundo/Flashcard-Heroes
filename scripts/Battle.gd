@@ -22,6 +22,9 @@ var is_awaiting_merge_confirmation: bool = false
 const MAX_UNITS_PER_SIDE = 6 # As per GDD
 const UNIT_SCENE = preload("res://scenes/Unit.tscn")
 
+# Game constants
+const MAX_PLAYER_UNITS = 10  # Maximum number of units a player can have
+
 # Gacha system variables
 var gacha_tokens: int = 5  # Starting Gacha Tokens as per GDD
 
@@ -31,9 +34,10 @@ var player_bench_slots: Array[UnitSlot] = []
 var enemy_lineup_slots: Array[UnitSlot] = []
 
 # Arrays to hold actual unit instances
-var player_units: Array[Unit] = []
-var player_lineup_units: Array[Unit] = []
-var enemy_units: Array[Unit] = []
+# Using untyped arrays to avoid type system issues
+var player_units = [] # Array of Unit
+var player_lineup_units = [] # Array of Unit
+var enemy_units = [] # Array of Unit
 
 # Merge and selection state
 var pending_merge_slot: UnitSlot = null
@@ -41,6 +45,10 @@ var pending_merge_slot: UnitSlot = null
 var UnitInspectionPanel
 
 func _ready() -> void:
+	# Initialize player_units with nulls for the maximum number of units
+	for i in range(MAX_PLAYER_UNITS):
+		player_units.append(null)
+
 	# Get input handler reference
 	input_handler = get_node_or_null("/root/InputHandler")
 	
@@ -109,70 +117,88 @@ func clear_all_slots() -> void:
 
 # Function to set up UnitSlot instances as children of the existing Control nodes
 func setup_visual_slots() -> void:
-	# Clear all slot arrays
+	# Clear any existing slot references and arrays
 	player_lineup_slots.clear()
+	player_bench_slots.clear()
 	enemy_lineup_slots.clear()
-
-	# Setup player lineup slots
+	player_lineup_units.clear()
+	
+	# Setup player lineup slots (all 6 slots in PlayerUnits container)
 	setup_slot_container(player_units_container, "PlayerSlot", true, true, player_lineup_slots)
 	
-	# Setup enemy lineup slots
+	# Setup enemy lineup slots (all 6 slots in EnemyUnits container)
 	setup_slot_container(enemy_units_container, "EnemySlot", true, false, enemy_lineup_slots)
+	
+	# Initialize lineup_units with nulls for each lineup slot (6 slots total)
+	for i in range(6):  # Fixed size of 6 slots
+		player_lineup_units.append(null)
+		
+	# Debug: Print slot information
+	print("Player lineup slots: ", player_lineup_slots.size())
+	print("Player bench slots: ", player_bench_slots.size())
+	print("Enemy lineup slots: ", enemy_lineup_slots.size())
 
 # Helper function to set up slots in a container
 func setup_slot_container(container: Control, slot_prefix: String, is_lineup: bool, is_player: bool, slot_array: Array) -> void:
+	if not container:
+		push_error("Container is null for slot prefix: " + slot_prefix)
+		return
+		
 	var child_count = container.get_child_count()
 	var slot_controls = []
 	
+	# Debug: Print container info
+	print("Setting up container: ", container.name, " with prefix: ", slot_prefix)
+	print("Child count: ", child_count)
+	
 	# First, collect all slot controls and their numeric indices from node names
 	for i in range(child_count):
-		var slot_control = container.get_child(i)
-		var slot_number = slot_control.name.trim_prefix(slot_prefix).to_int()
-		slot_controls.append({"control": slot_control, "number": slot_number})
+		var child = container.get_child(i)
+		if child is Control and child.name.begins_with(slot_prefix):
+			# Extract the slot number from the name (e.g., "PlayerSlot3" -> 3)
+			var slot_num_str = child.name.trim_prefix(slot_prefix)
+			var slot_num = slot_num_str.to_int()
+			
+			print("Found slot: ", child.name, " with number: ", slot_num)
+			
+			# Create a UnitSlot instance for each slot
+			var unit_slot = UnitSlot.new()
+			unit_slot.slot_id = child.name
+			unit_slot.is_lineup_slot = is_lineup
+			unit_slot.is_player_slot = is_player
+			
+			# Add the UnitSlot to the container
+			child.add_child(unit_slot)
+			
+			# Store the slot in the appropriate array
+			slot_controls.append({"node": unit_slot, "index": slot_num - 1})  # Convert to 0-based index
+		else:
+			print("Skipping child: ", child.name, " (type: ", child.get_class(), ")")
 	
-	# Sort slot controls by their numeric value
-	slot_controls.sort_custom(func(a, b): return a["number"] < b["number"])
-	
-	# No need to reverse the array anymore - we're using slot_position for ordering
-	
-	# Process slots in sorted order
+	# Sort slots by their index to ensure correct order
+	slot_controls.sort_custom(func(a, b): return a["index"] < b["index"])
+	# Add the sorted slots to the output array
 	for slot_data in slot_controls:
-		var slot_control = slot_data["control"]
-		var slot_number = slot_data["number"]
-		
-		# Clear existing UnitSlot nodes
-		for child in slot_control.get_children():
-			if child is UnitSlot:
-				slot_control.remove_child(child)
-				child.queue_free()
-		
-		# Create and configure UnitSlot
-		var unit_slot = UnitSlot.new()
-		unit_slot.slot_id = "%s%d" % [slot_prefix, slot_number - 1]
-		unit_slot.is_lineup_slot = is_lineup
-		unit_slot.is_player_slot = is_player
-		# Set slot position (0=backline, 5=frontline)
-		unit_slot.slot_position = slot_number - 1
-		unit_slot.slot_clicked.connect(_on_slot_clicked_for_action)
-		slot_control.add_child(unit_slot)
-		slot_array.append(unit_slot)
-		print("Assigned %s to slot %d (node: %s)" % [unit_slot.slot_id, slot_number - 1, slot_control.name])
+		var slot = slot_data["node"]
+		slot_array.append(slot)
+		print("Added slot ", slot.slot_id, " at index ", slot_array.size() - 1)
+		slot.slot_clicked.connect(_on_slot_clicked_for_action)
 		
 		# Configure the UnitSlot to fill its parent Control but leave room for the floor visual
-		unit_slot.anchor_left = 0.0
-		unit_slot.anchor_right = 1.0
-		unit_slot.anchor_top = 0.0
-		unit_slot.anchor_bottom = 1.0
-		unit_slot.offset_left = 0
-		unit_slot.offset_right = 0
-		unit_slot.offset_top = 0
-		unit_slot.offset_bottom = 20  # Leave space for the floor visual at the bottom
-		unit_slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		unit_slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		unit_slot.z_index = 1  # Ensure units appear above floor visuals
+		slot.anchor_left = 0.0
+		slot.anchor_right = 1.0
+		slot.anchor_top = 0.0
+		slot.anchor_bottom = 1.0
+		slot.offset_left = 0
+		slot.offset_right = 0
+		slot.offset_top = 0
+		slot.offset_bottom = 20  # Leave space for the floor visual at the bottom
+		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		slot.z_index = 1  # Ensure units appear above floor visuals
 		
 		# Log the slot assignment for debugging
-		print("Assigned %s to slot %d (node: %s)" % [unit_slot.slot_id, slot_number - 1, slot_control.name])
+		print("Assigned %s to slot %d" % [slot.slot_id, slot_array.size() - 1])
 
 	# Ensure both teams have consistent slot ordering (index 0 = frontline, higher indices = backline)
 	# No need to reverse enemy_lineup_slots anymore as we handle it in the scene setup
@@ -255,7 +281,7 @@ func _generate_enemy_lineup() -> void:
 		else:
 			push_warning("Battle._generate_enemy_lineup(): Failed to pick random enemy data.")
 
-func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int = -1) -> Unit:
+func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int = -1, current_hp: int = -1) -> Unit:
 	if not UNIT_SCENE:
 		push_error("Battle._spawn_unit(): UNIT_SCENE is not loaded.")
 		return null
@@ -281,6 +307,10 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int = -1
 	# Initialize the unit with data
 	var team_color = Color(0.3, 0.7, 1.0) if is_player_team else Color(1.0, 0.4, 0.4)
 	unit_instance.initialize(unit_data, is_player_team, team_color)
+	
+	# Set current HP if provided (for merged units)
+	if current_hp > 0:
+		unit_instance.current_hp = current_hp
 
 	# If slot_index is provided, assign to that slot
 	if slot_index >= 0:
@@ -293,12 +323,29 @@ func _spawn_unit(unit_data: UnitData, is_player_team: bool, slot_index: int = -1
 					var old_unit = target_slot.clear_unit()
 					if is_instance_valid(old_unit):
 						old_unit.queue_free()
-				target_slot.assign_unit(unit_instance)
+				# Only assign if the slot is empty or was just cleared
+				if target_slot.is_empty():
+					target_slot.assign_unit(unit_instance)
+				else:
+					push_error("Failed to assign unit to slot: slot not empty after clear")
 
 	# Add to the appropriate units array
 	if is_player_team:
-		player_units.append(unit_instance)
+		# Find first null slot or add to end
+		var slot_found = false
+		for i in range(player_units.size()):
+			if player_units[i] == null:
+				player_units[i] = unit_instance
+				slot_found = true
+				break
+		if not slot_found:
+			player_units.append(unit_instance)
+		
+		# If this is a lineup slot, update player_lineup_units
+		if slot_index >= 0 and slot_index < player_lineup_units.size():
+			player_lineup_units[slot_index] = unit_instance
 	else:
+		# For enemies, just append to the array
 		enemy_units.append(unit_instance)
 
 	# Update the unit's display
@@ -335,15 +382,16 @@ func _on_end_turn_pressed() -> void:
 	if has_node("MainContainer/Actions/GachaButton"):
 		$MainContainer/Actions/GachaButton.disabled = true
 	
-	# Process enemy turn
-	_process_enemy_turn()
-	
 	# Update UI
 	update_turn_indicator()
-	add_log_message("Player turn ended. Enemy's turn.")
+	add_log_message("Your turn has ended. Enemy's turn...")
+	
+	# Start enemy turn with a small delay
+	await get_tree().create_timer(0.5).timeout
+	_process_enemy_turn()
 
 func _process_enemy_turn() -> void:
-	# Enemy team acts first
+	# Enemy team acts
 	add_log_message("Enemy team's turn!")
 	await _process_team_turn(enemy_lineup_slots, player_lineup_slots, false)
 	
@@ -351,12 +399,17 @@ func _process_enemy_turn() -> void:
 	if _check_combat_ended():
 		return
 	
-	# End of combat phase
-	add_log_message("Combat phase ended.")
+	# Switch back to player's turn
+	is_player_turn = true
+	update_turn_indicator()
 	
-	# Re-enable UI for next turn
-	end_turn_button.disabled = false
-	gacha_button.disabled = false
+	# Re-enable UI elements for player's turn
+	if has_node("MainContainer/Actions/EndTurnButton"):
+		$MainContainer/Actions/EndTurnButton.disabled = false
+	if has_node("MainContainer/Actions/GachaButton"):
+		$MainContainer/Actions/GachaButton.disabled = false
+	
+	add_log_message("Enemy turn ended. Your turn!")
 
 func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_team: bool) -> void:
 	# Debug: Print team info
@@ -366,46 +419,55 @@ func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_
 	# Print attacking team slots
 	var attacking_slots = []
 	for i in range(attacking_team.size()):
-		attacking_slots.append("%d:%s" % [i, attacking_team[i].slot_id])
+		if is_instance_valid(attacking_team[i]):
+			attacking_slots.append("%d:%s" % [i, attacking_team[i].slot_id])
 	print("Attacking team slots (index:slot_id): ", attacking_slots)
 	
 	# Print defending team slots
 	var defending_slots = []
 	for i in range(defending_team.size()):
-		defending_slots.append("%d:%s" % [i, defending_team[i].slot_id])
+		if is_instance_valid(defending_team[i]):
+			defending_slots.append("%d:%s" % [i, defending_team[i].slot_id])
 	print("Defending team slots (index:slot_id): ", defending_slots)
 	
 	# Create a list to track which units have already acted this turn
 	var acted_this_turn = {}
+	var max_turns = attacking_team.size() * 2  # Safety net: max turns is 2x number of units
+	var turn_count = 0
+	var units_acted_this_iteration = 0
 	
 	# Continue processing turns until all units have acted or combat ends
-	var turn_ended = false
-	var turn_count = 0
-	while not turn_ended:
+	while true:
+		if turn_count >= max_turns:
+			print("Warning: Reached maximum number of turns, forcing turn end")
+			break
+		
 		turn_count += 1
-		turn_ended = true  # Assume we're done unless we find units that can act
+		units_acted_this_iteration = 0
 		
 		# Process units from front to back (highest to lowest index)
 		for i in range(attacking_team.size() - 1, -1, -1):
-			var slot = attacking_team[i]
+			var slot = attacking_team[i] if i < attacking_team.size() else null
+			
+			# Skip invalid or empty slots
 			if not is_instance_valid(slot) or slot.is_empty():
 				continue
 				
 			var unit = slot.occupying_unit
+			
+			# Clean up invalid or dead units
 			if not is_instance_valid(unit) or unit.current_hp <= 0:
-				if is_instance_valid(slot) and is_instance_valid(unit) and not is_instance_valid(unit.unit_data):
-					slot.clear_unit()  # Clean up invalid unit
+				if is_instance_valid(slot):
+					slot.clear_unit()
 				continue
 			
 			# Skip if this unit has already acted this turn
 			if acted_this_turn.has(unit):
 				continue
 			
-			# Mark that we found at least one unit that can act
-			turn_ended = false
-			
 			# Mark this unit as having acted this turn
 			acted_this_turn[unit] = true
+			units_acted_this_iteration += 1
 			
 			# Debug: Print attacker info
 			print("\n[Turn %d] %s (slot: %s, index: %d) is attacking" % 
@@ -442,6 +504,10 @@ func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_
 			
 			# Small delay between unit actions for better visibility
 			await get_tree().create_timer(0.3).timeout
+		
+		# If no units acted in this iteration, we're done
+		if units_acted_this_iteration == 0:
+			break
 	
 	# This appears to be a duplicate section of code that was already processed above
 	# Removing the duplicate code to prevent execution of the same logic twice
@@ -550,12 +616,16 @@ func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
 	if unit_array.is_empty():
 		return null
 		
-	# Check if this is the player or enemy team (commented out as it's not currently used)
-	var _is_player_team = unit_array == player_units  # Currently unused, but keeping for potential future use
+	# Determine if this is the player or enemy team
+	var is_player_team = unit_array == player_units
 	
-	# For both teams, the frontmost unit is the one with the highest index in their respective arrays
-	# because enemy_lineup_slots were already reversed during setup
-	for i in range(unit_array.size() - 1, -1, -1):
+	# Player team: front is highest index (rightmost)
+	# Enemy team: front is lowest index (leftmost)
+	var start_idx = unit_array.size() - 1 if is_player_team else 0
+	var end_idx = -1 if is_player_team else unit_array.size()
+	var step = -1 if is_player_team else 1
+	
+	for i in range(start_idx, end_idx, step):
 		var unit = unit_array[i]
 		if is_instance_valid(unit) and unit.current_hp > 0:
 			return unit
@@ -752,6 +822,27 @@ func show_merge_swap_popup(unit1: Unit, unit2: Unit, target_slot: UnitSlot) -> v
 			bg.queue_free()
 			_clear_selection()
 	
+	# Connect merge button
+	merge_btn.pressed.connect(
+		func():
+			print("Merge button pressed")
+			if not is_instance_valid(first_unit) or not is_instance_valid(second_unit) or \
+			   not is_instance_valid(first_slot) or not is_instance_valid(target_slot) or \
+			   first_slot.occupying_unit != first_unit or target_slot.occupying_unit != second_unit:
+				print("Invalid merge state, units or slots no longer valid")
+				cleanup.call()
+				return
+				
+			var result_unit_id = UnitLibrary.get_merge_result_for_units(first_unit.unit_data, second_unit.unit_data)
+			if result_unit_id:
+				print("Merge possible with result: ", result_unit_id)
+				_show_merge_confirmation(first_unit, second_unit, target_slot, result_unit_id)
+			else:
+				print("No valid merge result for these units")
+				add_log_message("These units cannot be merged!")
+			cleanup.call()
+	)
+	
 	# Connect swap button
 	swap_btn.pressed.connect(
 		func():
@@ -935,73 +1026,132 @@ func _on_slot_selected(clicked_slot: UnitSlot) -> void:
 
 
 func _show_merge_confirmation(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
+	print("Showing merge confirmation for units: ", unit1.unit_data.id, " and ", unit2.unit_data.id, " -> ", result_unit_id)
+	
 	var result_data = UnitLibrary.get_unit_data(result_unit_id)
 	if not result_data:
+		push_error("No result data found for unit ID: " + result_unit_id)
+		add_log_message("Error: Could not find data for merged unit type")
 		_deselect_current_unit()
 		return
 
+	# Set merge state
 	pending_merge_slot = target_slot
 	is_awaiting_merge_confirmation = true
 
-	await get_tree().create_timer(0.5).timeout
-	_perform_merge(unit1, unit2, target_slot, result_unit_id)
+	# Debug log the merge details
+	print("Merge details:")
+	print("- Unit 1: ", unit1.unit_data.id, " (HP: ", unit1.current_hp, ")")
+	print("- Unit 2: ", unit2.unit_data.id, " (HP: ", unit2.current_hp, ")")
+	print("- Result: ", result_unit_id)
+	print("- Target slot: ", target_slot.slot_id if target_slot else "None")
+	
+	# Small delay to allow any UI animations to complete
+	await get_tree().create_timer(0.1).timeout
+	
+	# Perform the merge
+	_perform_merge(unit1, unit2, target_slot, result_unit_id, result_data)
+	
+	# Reset the merge state
+	is_awaiting_merge_confirmation = false
+	pending_merge_slot = null
 
-func _perform_merge(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String) -> void:
+func _perform_merge(unit1: Unit, unit2: Unit, target_slot: UnitSlot, result_unit_id: String, result_data: UnitData) -> void:
+	print("Performing merge between ", unit1.unit_data.id, " and ", unit2.unit_data.id, " -> ", result_unit_id)
+	
 	if not is_instance_valid(unit1) or not is_instance_valid(unit2) or not is_instance_valid(target_slot):
+		push_error("Invalid unit or slot in merge")
 		_clear_selection()
 		return
 
-	var result_data = UnitLibrary.get_unit_data(result_unit_id)
 	if not result_data:
+		push_error("No result data provided for merge")
 		_clear_selection()
 		return
+
+	# Find the slots for both units
+	var slot1 = _get_slot_for_unit(unit1)
+	var slot2 = _get_slot_for_unit(unit2)
 	
-	var other_slot = target_slot if (unit1 == selected_unit) else selected_slot
-	if not is_instance_valid(other_slot):
+	if not is_instance_valid(slot1) or not is_instance_valid(slot2):
+		push_error("Could not find slots for one or both units")
 		_clear_selection()
 		return
-	
+
+	# Calculate combined stats
 	var combined_hp = unit1.current_hp + unit2.current_hp
 	var combined_pwr = unit1.unit_data.pwr + unit2.unit_data.pwr
-	
 	combined_pwr = int(combined_pwr * 1.1)
-	
-	var merged_data = result_data.duplicate()
-	merged_data.max_hp = combined_hp  
-	merged_data.pwr = combined_pwr
-	
-	var removed_unit1 = selected_slot.clear_unit()
-	var removed_unit2 = target_slot.clear_unit()
 
+	# Create merged unit data
+	var merged_data = result_data.duplicate()
+	merged_data.max_hp = combined_hp
+	merged_data.pwr = combined_pwr
+
+	# Clear the slots first but keep references to the units
+	var removed_unit1 = slot1.clear_unit()
+	var removed_unit2 = slot2.clear_unit()
+
+	# Spawn the new unit in the target slot with the combined HP
 	var slot_index = player_lineup_slots.find(target_slot)
 	if slot_index == -1:
 		push_error("Target slot not found in player_lineup_slots")
 		_clear_selection()
 		return
-		
-	var new_unit = _spawn_unit(merged_data, true, slot_index)
+
+	# Make sure the target slot is empty
+	if not target_slot.is_empty():
+		push_error("Target slot is not empty")
+		_clear_selection()
+		return
+
+	# Spawn the new unit with the combined HP
+	var new_unit = _spawn_unit(merged_data, true, slot_index, combined_hp)
 	if new_unit:
-		target_slot.assign_unit(new_unit)
+		print("Successfully spawned merged unit:", new_unit.unit_data.id, " with HP:", new_unit.current_hp)
 		
-		player_units.erase(removed_unit1)
-		player_units.erase(removed_unit2)
+		# Update unit tracking arrays
+		if removed_unit1 in player_units:
+			player_units.erase(removed_unit1)
+		if removed_unit2 in player_units:
+			player_units.erase(removed_unit2)
 		player_units.append(new_unit)
 
-		EventBus.units_merged.emit(unit1, unit2, new_unit)
-
-		if removed_unit1 in player_lineup_units:
+		# Update lineup units if needed
+		if player_lineup_units.has(removed_unit1):
 			player_lineup_units[player_lineup_units.find(removed_unit1)] = new_unit
-		if removed_unit2 in player_lineup_units:
+		if player_lineup_units.has(removed_unit2):
 			player_lineup_units[player_lineup_units.find(removed_unit2)] = new_unit
 
-		_clear_selection()
-		
+		# Emit merged signal
 		EventBus.units_merged.emit(unit1, unit2, new_unit)
 		
+		# Clean up old units safely
+		if is_instance_valid(removed_unit1):
+			if removed_unit1.is_inside_tree():
+				removed_unit1.get_parent().remove_child(removed_unit1)
+			removed_unit1.queue_free()
+			
+		if is_instance_valid(removed_unit2) and removed_unit2 != removed_unit1:
+			if removed_unit2.is_inside_tree():
+				removed_unit2.get_parent().remove_child(removed_unit2)
+			removed_unit2.queue_free()
+
 		add_log_message("Merged " + unit1.unit_data.display_name + " and " + unit2.unit_data.display_name + " into a stronger " + new_unit.unit_data.display_name + "!")
+		
+		# Force update the display
+		if new_unit.has_method("_update_display"):
+			new_unit._update_display()
+		
 	else:
 		push_error("Failed to spawn merged unit")
-		_clear_selection()
+		# Try to restore the original units if possible
+		if is_instance_valid(removed_unit1) and is_instance_valid(slot1) and slot1.is_empty():
+			slot1.assign_unit(removed_unit1)
+		if is_instance_valid(removed_unit2) and is_instance_valid(slot2) and slot2.is_empty():
+			slot2.assign_unit(removed_unit2)
+	
+	_clear_selection()
 
 func _update_merge_highlights(unit_to_highlight: Unit) -> void:
 	if not unit_to_highlight:
@@ -1077,26 +1227,65 @@ func _attempt_move_to_empty_slot(unit_to_move: Unit, from_slot: UnitSlot, to_slo
 	# 4. Update Slot References (UnitSlot handles visual parenting)
 	to_slot.assign_unit(unit_to_move)
 
-	# 5. Update Logical Arrays (if needed)
-	var from_idx = player_lineup_slots.find(from_slot)
-	var to_idx = player_lineup_slots.find(to_slot)
+	# 5. Update logical arrays if these are player units
+	if unit_to_move.is_player_team_unit:  # Both slots are on the player team
+		print("\n=== DEBUG: Updating player unit arrays ===")
+		print("Unit to move: ", unit_to_move, " (type: ", typeof(unit_to_move), ")")
+		
+		# Find the indices of the slots in their respective arrays
+		var from_idx = player_lineup_slots.find(from_slot)
+		var to_idx = player_lineup_slots.find(to_slot)
+		print("From idx: ", from_idx, " | To idx: ", to_idx)
 
-	if from_idx != -1 and to_idx != -1:
-		# Both slots are in the lineup, just update the array
-		player_lineup_units[to_idx] = unit_to_move
-		player_lineup_units[from_idx] = null
-	elif from_idx != -1:
-		# Moving from lineup to bench (should be handled by UnitSlot)
-		player_lineup_units[from_idx] = null
-	elif to_idx != -1:
-		# Moving from bench to lineup
-		player_lineup_units[to_idx] = unit_to_move
+		if from_idx != -1 and to_idx != -1:
+			print("Both slots in lineup - swapping positions")
+			# Both slots are in the lineup, just swap in the lineup array
+			print("Before - player_lineup_units[", to_idx, "]: ", player_lineup_units[to_idx])
+			player_lineup_units[to_idx] = unit_to_move
+			print("After - player_lineup_units[", to_idx, "]: ", player_lineup_units[to_idx])
+			
+			print("Before - player_lineup_units[", from_idx, "]: ", player_lineup_units[from_idx])
+			player_lineup_units[from_idx] = null
+			print("After - player_lineup_units[", from_idx, "]: ", player_lineup_units[from_idx])
+			
+			# Update the main player_units array to maintain consistency
+			var unit_idx = player_units.find(unit_to_move)
+			print("Updating player_units[", unit_idx, "]")
+			if unit_idx != -1:
+				player_units[unit_idx] = unit_to_move  # Keep the same reference, just update position
+			
+		elif from_idx != -1:
+			print("Moving from lineup to bench")
+			# Moving from lineup to bench
+			player_lineup_units[from_idx] = null
+			
+			# No need to update player_units as the unit is already there
+			# Just ensure it's not null in the array
+			var unit_idx = player_units.find(unit_to_move)
+			print("Unit idx in player_units: ", unit_idx)
+			if unit_idx == -1:  # Shouldn't happen, but just in case
+				print("Adding unit to player_units")
+				player_units.append(unit_to_move)
+			
+		elif to_idx != -1:
+			print("Moving from bench to lineup")
+			# Moving from bench to lineup
+			print("Before - player_lineup_units[", to_idx, "]: ", player_lineup_units[to_idx])
+			player_lineup_units[to_idx] = unit_to_move
+			print("After - player_lineup_units[", to_idx, "]: ", player_lineup_units[to_idx])
+			
+			# Ensure the unit is in player_units
+			var unit_idx = player_units.find(unit_to_move)
+			print("Unit idx in player_units: ", unit_idx)
+			if unit_idx == -1:  # Shouldn't happen, but just in case
+				print("Adding unit to player_units")
+				player_units.append(unit_to_move)
+		
+		print("=== END DEBUG ===\n")
 
 	# 6. Log and Return Success
 	add_log_message("Moved %s from %s to %s" % [unit_to_move.get_name_for_log(), from_slot.slot_id, to_slot.slot_id])
 	return true
-
-
 func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_slot2: UnitSlot) -> bool:
 	# 1. Validate Inputs & State
 	if (not is_instance_valid(unit1) or not is_instance_valid(from_slot1) or 
@@ -1145,11 +1334,32 @@ func _attempt_swap_units(unit1: Unit, from_slot1: UnitSlot, unit2: Unit, from_sl
 	if unit1.is_player_team_unit:  # Both units are on the same team, so just check one
 		var slot1_idx = player_lineup_slots.find(from_slot1)
 		var slot2_idx = player_lineup_slots.find(from_slot2)
-
+		
+		# Update the lineup units array if both slots are in the lineup
 		if slot1_idx != -1 and slot2_idx != -1:
-			# Update the logical arrays
-			player_units[slot1_idx] = unit2
-			player_units[slot2_idx] = unit1
+			player_lineup_units[slot1_idx] = unit2
+			player_lineup_units[slot2_idx] = unit1
+		# Handle case where one unit is in lineup and one is on bench
+		elif slot1_idx != -1:
+			player_lineup_units[slot1_idx] = unit2
+			# Ensure unit2 is in player_units
+			if player_units.find(unit2) == -1:
+				player_units.append(unit2)
+		elif slot2_idx != -1:
+			player_lineup_units[slot2_idx] = unit1
+			# Ensure unit1 is in player_units
+			if player_units.find(unit1) == -1:
+				player_units.append(unit1)
+		
+		# Update the main player_units array to maintain consistency
+		var unit1_idx = player_units.find(unit1)
+		var unit2_idx = player_units.find(unit2)
+		
+		# If both units are found in player_units, swap them
+		if unit1_idx != -1 and unit2_idx != -1:
+			var temp = player_units[unit1_idx]
+			player_units[unit1_idx] = player_units[unit2_idx]
+			player_units[unit2_idx] = temp
 
 	add_log_message("Swapped %s and %s" % [unit1.get_name_for_log(), unit2.get_name_for_log()])
 	return true

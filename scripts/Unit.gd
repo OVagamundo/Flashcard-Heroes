@@ -1,6 +1,9 @@
 extends Control
 class_name Unit
 
+# This class is now properly registered in project.godot using class_name
+# No need for manual registration with Engine.set_meta
+
 # Sprite paths are now defined in the .tres resource files
 
 # --- Signals --- #
