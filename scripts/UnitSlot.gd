@@ -38,16 +38,22 @@ func _ready():
 		highlight_panel.self_modulate = DEFAULT_HIGHLIGHT_COLOR
 
 func _on_mouse_entered() -> void:
-	print("Mouse entered slot: ", slot_id)
+	# Notify input handler about hovered slot
+	var input_handler = get_node_or_null("/root/InputHandler")
+	if input_handler and input_handler.has_method("set_hovered_slot"):
+		input_handler.set_hovered_slot(self)
 
 func _on_mouse_exited() -> void:
-	print("Mouse exited slot: ", slot_id)
+	# Clear hovered slot when mouse leaves
+	var input_handler = get_node_or_null("/root/InputHandler")
+	if input_handler and input_handler.has_method("set_hovered_slot"):
+		input_handler.set_hovered_slot(null)
 
 # --- Input Handling --- #
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# print("Slot ", slot_id, " clicked. Occupied by: ", occupying_unit.get_display_name() if occupying_unit else "Empty")
-		EventBus.slot_clicked_for_action.emit(self)
+		# Emit slot selected signal through the event bus
+		EventBus.emit_signal("slot_selected", self)
 
 # --- Public Methods --- #
 func assign_unit(unit_node: Unit) -> void:

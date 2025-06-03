@@ -39,6 +39,12 @@ func _ready():
 	# Initialize visual panel if it exists
 	if is_instance_valid(unit_visual_panel):
 		unit_visual_panel.self_modulate = Color(1.0, 1.0, 1.0)  # Default white color
+	
+	# Connect mouse signals for hover detection
+	if has_signal("mouse_entered"):
+		connect("mouse_entered", Callable(self, "_on_mouse_entered"))
+	if has_signal("mouse_exited"):
+		connect("mouse_exited", Callable(self, "_on_mouse_exited"))
 
 # --- Public Methods --- # 
 func initialize(data: UnitData, is_player: bool, base_tint_color: Color) -> void:
@@ -178,10 +184,21 @@ func _update_display() -> void:
 	# The UnitVisualPanel (ellipse) is tinted by Battle.gd using self.modulate on the root Unit node.
 	# No need to directly color unit_visual_panel here unless a more complex style is required.
 
-# --- Input Handling for Selection (Optional) --- #
+# --- Input Handling for Selection --- #
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		if unit_data: # Ensure unit is properly initialized
-			# print(get_name_for_log(), " clicked.")
-			EventBus.unit_selected_for_action.emit(self)
-			# unit_selected.emit(self) # If direct signal handling is preferred for selection
+			# Emit selection request through the event bus
+			EventBus.emit_signal("unit_selection_requested", self)
+
+func _on_mouse_entered() -> void:
+	# Notify input handler about hovered unit
+	var input_handler = get_node_or_null("/root/InputHandler")
+	if input_handler and input_handler.has_method("set_hovered_unit"):
+		input_handler.set_hovered_unit(self)
+
+func _on_mouse_exited() -> void:
+	# Clear hovered unit when mouse leaves
+	var input_handler = get_node_or_null("/root/InputHandler")
+	if input_handler and input_handler.has_method("set_hovered_unit"):
+		input_handler.set_hovered_unit(null)
