@@ -166,6 +166,7 @@ func setup_slot_container(container: Control, slot_prefix: String, is_lineup: bo
 			unit_slot.slot_id = child.name
 			unit_slot.is_lineup_slot = is_lineup
 			unit_slot.is_player_slot = is_player
+			unit_slot.slot_position = slot_num  # Set the position based on the slot number (1-6)
 			
 			# Add the UnitSlot to the container
 			child.add_child(unit_slot)
@@ -382,16 +383,15 @@ func _on_end_turn_pressed() -> void:
 	if has_node("MainContainer/Actions/GachaButton"):
 		$MainContainer/Actions/GachaButton.disabled = true
 	
+	# Process enemy turn
+	_process_enemy_turn()
+	
 	# Update UI
 	update_turn_indicator()
-	add_log_message("Your turn has ended. Enemy's turn...")
-	
-	# Start enemy turn with a small delay
-	await get_tree().create_timer(0.5).timeout
-	_process_enemy_turn()
+	add_log_message("Player turn ended. Enemy's turn.")
 
 func _process_enemy_turn() -> void:
-	# Enemy team acts
+	# Enemy team acts first
 	add_log_message("Enemy team's turn!")
 	await _process_team_turn(enemy_lineup_slots, player_lineup_slots, false)
 	
@@ -399,17 +399,12 @@ func _process_enemy_turn() -> void:
 	if _check_combat_ended():
 		return
 	
-	# Switch back to player's turn
-	is_player_turn = true
-	update_turn_indicator()
+	# End of combat phase
+	add_log_message("Combat phase ended.")
 	
-	# Re-enable UI elements for player's turn
-	if has_node("MainContainer/Actions/EndTurnButton"):
-		$MainContainer/Actions/EndTurnButton.disabled = false
-	if has_node("MainContainer/Actions/GachaButton"):
-		$MainContainer/Actions/GachaButton.disabled = false
-	
-	add_log_message("Enemy turn ended. Your turn!")
+	# Re-enable UI for next turn
+	end_turn_button.disabled = false
+	gacha_button.disabled = false
 
 func _process_team_turn(attacking_team: Array, defending_team: Array, is_player_team: bool) -> void:
 	# Debug: Print team info
@@ -616,16 +611,12 @@ func _get_frontmost_live_unit(unit_array: Array[Unit]) -> Variant:
 	if unit_array.is_empty():
 		return null
 		
-	# Determine if this is the player or enemy team
-	var is_player_team = unit_array == player_units
+	# Check if this is the player or enemy team (commented out as it's not currently used)
+	var _is_player_team = unit_array == player_units  # Currently unused, but keeping for potential future use
 	
-	# Player team: front is highest index (rightmost)
-	# Enemy team: front is lowest index (leftmost)
-	var start_idx = unit_array.size() - 1 if is_player_team else 0
-	var end_idx = -1 if is_player_team else unit_array.size()
-	var step = -1 if is_player_team else 1
-	
-	for i in range(start_idx, end_idx, step):
+	# For both teams, the frontmost unit is the one with the highest index in their respective arrays
+	# because enemy_lineup_slots were already reversed during setup
+	for i in range(unit_array.size() - 1, -1, -1):
 		var unit = unit_array[i]
 		if is_instance_valid(unit) and unit.current_hp > 0:
 			return unit
