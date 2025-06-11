@@ -1,12 +1,13 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/images/UnitSprites/utility_t1.png" id="2"]
 
 [resource]
 id = "utility_t1"
 display_name_key = "Acolyte"
 description_key = "A versatile support unit with minor healing abilities."
-icon_texture = ExtResource("2")
+icon_texture = ExtResource( 2 )
 tier = 1
 rarity = "COMMON"
 ball_category = "UNIT"

@@ -4,7 +4,9 @@ extends Node
 var gachaball_definitions: Dictionary = {}
 
 func _ready() -> void:
-    _load_resources_from_path("res://resources/units/", gachaball_definitions)
+    var hero_definition = load("res://resources/units/hero.tres")
+    if hero_definition and hero_definition.get_script() == preload("res://scripts/GachaBallDefinition.gd"):
+        gachaball_definitions[hero_definition.id] = hero_definition
     print("Database loaded %d units." % gachaball_definitions.size())
 
 func _load_resources_from_path(path: String, target_dictionary: Dictionary) -> void:

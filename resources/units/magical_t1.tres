@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/images/UnitSprites/magical_t1.png" id="2"]
 
 [resource]
