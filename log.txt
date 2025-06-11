@@ -1,6 +1,7 @@
 Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
 OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
+<<<<<<< Updated upstream
 WARNING: res://resources/units/offensive_t1.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a4 - using text path instead: res://assets/images/UnitSprites/Sprite01.png
    at: load (scene/resources/resource_format_text.cpp:447)
 WARNING: res://resources/units/magical_t1.tres:4 - ext_resource, invalid UID: uid://bqjq9m1c4i6a7 - using text path instead: res://assets/images/UnitSprites/Sprite04.png
@@ -97,3 +98,94 @@ Unit health changed: hero from 7 to 5
 
 [Turn 1] Magical Unit T1 (slot: EnemySlot2, index: 1) is attacking
 Unit health changed: hero from 5 to 3
+=======
+ERROR: Attempt to open script 'res://scripts/UnitData.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1115)
+ERROR: Failed loading resource: res://scripts/UnitData.gd. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: res://resources/units/battlemage_t2.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/battlemage_t2.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/battlemage_t2.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Attempt to open script 'res://scripts/UnitData.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1115)
+ERROR: Failed loading resource: res://scripts/UnitData.gd. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: res://resources/units/archmage_t2.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/archmage_t2.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/archmage_t2.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Attempt to open script 'res://scripts/UnitData.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1115)
+ERROR: Failed loading resource: res://scripts/UnitData.gd. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Resource file not found: res://assets/images/UnitSprites/offensive_t1.png (expected type: Texture2D)
+   at: _load (core/io/resource_loader.cpp:352)
+ERROR: res://resources/units/offensive_t1.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/offensive_t1.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/offensive_t1.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Attempt to open script 'res://scripts/UnitData.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1115)
+ERROR: Failed loading resource: res://scripts/UnitData.gd. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: res://resources/units/warden_t2.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/warden_t2.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/warden_t2.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Attempt to open script 'res://scripts/UnitData.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1115)
+ERROR: Failed loading resource: res://scripts/UnitData.gd. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Resource file not found: res://assets/images/UnitSprites/magical_t1.png (expected type: Texture2D)
+   at: _load (core/io/resource_loader.cpp:352)
+ERROR: res://resources/units/magical_t1.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/magical_t1.tres:7 - Parse Error: [ext_resource] referenced non-existent resource at: res://scripts/UnitData.gd.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/magical_t1.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Resource file not found: res://assets/images/UnitSprites/defensive_t1.png (expected type: Texture2D)
+   at: _load (core/io/resource_loader.cpp:352)
+ERROR: res://resources/units/defensive_t1.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/defensive_t1.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/defensive_t1.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/defensive_t1.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/defensive_t1.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Resource file not found: res://assets/images/UnitSprites/battlemaster_t2.png (expected type: Texture2D)
+   at: _load (core/io/resource_loader.cpp:352)
+ERROR: res://resources/units/battlemaster_t2.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/battlemaster_t2.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/battlemaster_t2.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/battlemaster_t2.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/battlemaster_t2.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Resource file not found: res://assets/images/UnitSprites/utility_t1.png (expected type: Texture2D)
+   at: _load (core/io/resource_loader.cpp:352)
+ERROR: res://resources/units/utility_t1.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/utility_t1.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/utility_t1.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/utility_t1.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/utility_t1.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+ERROR: Resource file not found: res://assets/images/UnitSprites/hero.png (expected type: Texture2D)
+   at: _load (core/io/resource_loader.cpp:352)
+ERROR: res://resources/units/hero.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/hero.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: res://resources/units/hero.tres:9 - Parse Error: [ext_resource] referenced non-existent resource at: res://assets/images/UnitSprites/hero.png.
+   at: _printerr (scene/resources/resource_format_text.cpp:39)
+ERROR: Failed loading resource: res://resources/units/hero.tres. Make sure resources have been imported by opening the project in the editor at least once.
+   at: _load (core/io/resource_loader.cpp:344)
+Database loaded 0 units.
+Error: Could not find hero definition for id: hero
+Error: Could not find hero definition for id: hero
+>>>>>>> Stashed changes

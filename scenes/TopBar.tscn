@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://topbarplaceholder"]
+
+[node name="TopBar" type="PanelContainer"]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="GoldLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Gold: 0"
+
+[node name="HPLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Hero HP: 0/0"
+
+[node name="DayLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Day: 1"

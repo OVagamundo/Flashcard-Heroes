@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ccwelqtvctrxe"]
+[gd_scene load_steps=2 format=3 uid="uid://b23oi6sv0e7or"]
 
-[ext_resource type="Script" uid="uid://o2qy46snhdt8" path="res://scripts/Battle.gd" id="1"]
+[ext_resource type="Script" uid="uid://d3lfx8vgewxr5" path="res://scripts/BattleManager.gd" id="1_battlemanager"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -9,290 +9,50 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 0
+[node name="BattleManager" type="Node" parent="."]
+script = ExtResource("1_battlemanager")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.0784314, 0.0784314, 0.117647, 1)
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="MainContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
+[node name="EnemyLineup" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="PlayerLineup" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="PlayerBench" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+alignment = 1
+
+[node name="PlayerInventory" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+alignment = 1
+
+[node name="BattleUI" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="EndTurnButton" type="Button" parent="VBoxContainer/BattleUI"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -88.0
+anchor_top = -31.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = 5.0
-offset_right = -5.0
-offset_bottom = -5.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 5
-
-[node name="Header" type="HBoxContainer" parent="MainContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="PlayerInfo" type="VBoxContainer" parent="MainContainer/Header"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerHealth" type="Label" parent="MainContainer/Header/PlayerInfo"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
-text = "HP: 30/30"
-
-[node name="GachaTokens" type="Label" parent="MainContainer/Header/PlayerInfo"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Tokens: 0"
-
-[node name="Spacer" type="Control" parent="MainContainer/Header"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="TurnIndicator" type="Label" parent="MainContainer/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
-text = "Your Turn"
-
-[node name="BattleArea" type="HBoxContainer" parent="MainContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 6
-theme_override_constants/separation = 10
-
-[node name="PlayerSide" type="VBoxContainer" parent="MainContainer/BattleArea"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="PlayerUnits" type="HBoxContainer" parent="MainContainer/BattleArea/PlayerSide"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 5
-
-[node name="PlayerSlot1" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerFloor1" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot1"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.2, 0.2, 0.5, 0.7)
-
-[node name="PlayerSlot2" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerFloor2" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot2"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.2, 0.2, 0.5, 0.7)
-
-[node name="PlayerSlot3" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerFloor3" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot3"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.2, 0.2, 0.5, 0.7)
-
-[node name="PlayerSlot4" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerFloor4" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot4"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.2, 0.2, 0.5, 0.7)
-
-[node name="PlayerSlot5" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerFloor5" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot5"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.2, 0.2, 0.5, 0.7)
-
-[node name="PlayerSlot6" type="Control" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PlayerFloor6" type="ColorRect" parent="MainContainer/BattleArea/PlayerSide/PlayerUnits/PlayerSlot6"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.2, 0.2, 0.5, 0.7)
-
-[node name="EnemySide" type="VBoxContainer" parent="MainContainer/BattleArea"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="EnemyUnits" type="HBoxContainer" parent="MainContainer/BattleArea/EnemySide"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 5
-
-[node name="EnemySlot6" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyFloor6" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot6"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.5, 0.2, 0.2, 0.7)
-
-[node name="EnemySlot5" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(60, 90)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyFloor5" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot5"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.5, 0.2, 0.2, 0.7)
-
-[node name="EnemySlot4" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(100, 170)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyFloor4" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot4"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.5, 0.2, 0.2, 0.7)
-
-[node name="EnemySlot3" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(100, 170)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyFloor3" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot3"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.5, 0.2, 0.2, 0.7)
-
-[node name="EnemySlot2" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(100, 170)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyFloor2" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot2"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.5, 0.2, 0.2, 0.7)
-
-[node name="EnemySlot1" type="Control" parent="MainContainer/BattleArea/EnemySide/EnemyUnits"]
-custom_minimum_size = Vector2(100, 170)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="EnemyFloor1" type="ColorRect" parent="MainContainer/BattleArea/EnemySide/EnemyUnits/EnemySlot1"]
-layout_mode = 2
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -20.0
-color = Color(0.5, 0.2, 0.2, 0.7)
-
-[node name="Actions" type="HBoxContainer" parent="MainContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_constants/separation = 20
-
-[node name="EndTurnButton" type="Button" parent="MainContainer/Actions"]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
+grow_horizontal = 0
+grow_vertical = 0
 text = "End Turn"
 
-[node name="GachaButton" type="Button" parent="MainContainer/Actions"]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-disabled = true
-text = "Gacha (0)"
-
-[node name="BattleLog" type="TextEdit" parent="."]
-layout_mode = 1
-anchors_preset = 11
-anchor_left = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -743.0
-offset_top = 697.0
-offset_right = -45.0
-offset_bottom = -5.0
-grow_horizontal = 0
-grow_vertical = 2
-theme_override_colors/font_readonly_color = Color(1, 1, 1, 1)
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "Battle started!"
-wrap_mode = 1
+[connection signal="pressed" from="VBoxContainer/BattleUI/EndTurnButton" to="BattleManager" method="_on_end_turn_button_pressed"]

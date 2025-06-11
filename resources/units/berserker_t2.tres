@@ -1,16 +1,16 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 [ext_resource type="Texture2D" path="res://assets/images/UnitSprites/berserker_t2.png" id="3"]
 
-[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
-
 [resource]
-script = ExtResource("1")
 id = "berserker_t2"
-display_name = "Berserker T2"
-max_hp = 2
-pwr = 8
+display_name_key = "Berserker"
+description_key = "A fierce warrior who trades defense for overwhelming offense."
+icon_texture = ExtResource("3")
 tier = 2
-unit_type_tag = "offensive"
-texture = ExtResource("3")
-ability_description = "Powerful Attack"
-
+rarity = "UNCOMMON"
+ball_category = "UNIT"
+base_hp = 3
+base_pwr = 7
+item_slot_count = 2
+tags = ["Warrior", "Offensive"]
+ability_definition_refs = ["frenzied_assault"]

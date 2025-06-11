@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=3 uid="uid://h4rso7xt5e6a"]
+
+[ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://topbarplaceholder" path="res://scenes/TopBar.tscn" id="2_tscn"]
+[ext_resource type="PackedScene" uid="uid://bottombarplaceholder" path="res://scenes/BottomBar.tscn" id="3_tscn"]
+
+[ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
+
+[node name="Main" type="Control" groups=["main_scene_root"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopBar" parent="VBoxContainer" instance=ExtResource("2_tscn")]
+layout_mode = 2
+
+[node name="DynamicContentArea" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+# This container will hold the dynamically loaded scenes (PathChoice, Battle, etc.)
+
+[node name="BottomBar" parent="VBoxContainer" instance=ExtResource("3_tscn")]
+layout_mode = 2

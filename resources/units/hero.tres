@@ -1,15 +1,17 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://bqjq9m1c4i6a4" path="res://assets/images/UnitSprites/Sprite01.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/hero.png" id="2"]
 
 [resource]
-script = ExtResource("1")
 id = "hero"
-display_name = "Hero"
-max_hp = 10
-pwr = 2
+display_name_key = "Hero"
+description_key = "The legendary hero leading the battle against darkness."
+icon_texture = ExtResource("2")
 tier = 0
-unit_type_tag = "hero"
-texture = ExtResource("2")
-ability_description = "Basic Attack"
+rarity = "HERO"
+ball_category = "UNIT"
+base_hp = 10
+base_pwr = 2
+item_slot_count = 5
+tags = ["Hero", "Leader"]
+ability_definition_refs = ["heroic_strike"]

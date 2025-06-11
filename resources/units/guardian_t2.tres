@@ -1,16 +1,16 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 [ext_resource type="Texture2D" path="res://assets/images/UnitSprites/guardian_t2.png" id="3"]
 
-[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
-
 [resource]
-script = ExtResource("1")
 id = "guardian_t2"
-display_name = "Guardian T2"
-max_hp = 8
-pwr = 2
+display_name_key = "Guardian"
+description_key = "A stalwart defender who protects allies from harm."
+icon_texture = ExtResource("3")
 tier = 2
-unit_type_tag = "defensive"
-texture = ExtResource("3")
-ability_description = "Defensive Stance"
-
+rarity = "UNCOMMON"
+ball_category = "UNIT"
+base_hp = 8
+base_pwr = 2
+item_slot_count = 2
+tags = ["Defensive", "Tank"]
+ability_definition_refs = ["protective_aura"]

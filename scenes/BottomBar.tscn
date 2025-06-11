@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://bottombarplaceholder"]
+
+[node name="BottomBar" type="PanelContainer"]
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Bottom Bar Placeholder (Gacha Machines, etc.)"
+alignment = 1

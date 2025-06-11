@@ -1,51 +1,41 @@
 extends Node
 
-# ===== BATTLE EVENTS =====
-signal battle_started()
-signal battle_ended(victory: bool)
-signal turn_started(turn_owner: String)  # "player" or "enemy"
-signal turn_ended(turn_owner: String)
-signal end_turn_pressed()  # When the end turn button is pressed
+# Game Flow & State
+signal new_run_requested(hero_def_id, deck_def_id)
+signal run_started
+signal run_ended(was_victory)
+signal save_run_requested
+signal load_run_requested
 
-# ===== UNIT EVENTS =====
-signal unit_spawned(unit: Node2D)
-signal unit_damaged(unit: Node2D, amount: int)
-signal unit_healed(unit: Node2D, amount: int)
-signal unit_died(unit: Node2D)
-signal unit_health_changed(unit: Object, new_health: int, old_health: int, max_health: int)  # unit is Object to match Unit.gd
-signal unit_action_initiated(unit: Object, action_type: String, target: Object)  # unit and target are Objects
-signal unit_action_completed(unit: Object, action_type: String, details: Dictionary)  # unit is Object
-signal units_merged(unit1: Object, unit2: Object, result_unit: Object)  # Emitted when two units are merged
+# Scene Management
+signal change_scene_to_file_requested(scene_path)
+signal load_scene_in_container_requested(scene_path, container)
 
-# ===== INPUT EVENTS =====
-# Unit interaction
-signal unit_inspection_requested(unit: Object)  # When a unit is right-clicked or inspected via hotkey
-signal unit_selection_requested(unit: Object)   # When a unit is left-clicked for selection
-signal slot_selected(slot: Object)              # When a slot is selected
-signal hovered_unit_changed(unit: Object)       # When mouse hovers over a unit
-signal hovered_slot_changed(slot: Object)       # When mouse hovers over a slot
+# Player State & Resources
+signal gold_updated(new_total)
+signal hero_hp_updated(current_hp, base_hp)
+signal day_updated(new_day)
+signal master_pool_changed
+signal trinkets_updated(active_trinkets)
 
-# ===== UI EVENTS =====
-signal ui_button_pressed(button_name: String)
-signal tooltip_shown(content: String, position: Vector2)
-signal tooltip_hidden()
-signal ui_element_opened(element: Control)     # When a UI element is opened
-signal ui_element_closed(element: Control)     # When a UI element is closed
+# Battle & Turn Management
+signal battle_start_requested(encounter_definition)
+signal initiate_battle(battle_setup_data)
+signal battle_started
+signal battle_won
+signal battle_lost
+signal turn_phase_changed(new_phase)
+signal gacha_tokens_updated(new_total)
+signal draw_gacha_request(tier)
+signal end_turn_button_pressed
+signal merge_units_requested(unit_a_uuid, unit_b_uuid)
+signal equip_item_requested(item_uuid, target_unit_uuid)
 
-# ===== FLASHCARD EVENTS =====
-signal flashcard_presented(question: String, answers: Array)
-signal flashcard_answered(correct: bool)
-
-# ===== GACHA EVENTS =====
-signal gacha_pull_requested(cost: int)
-signal gacha_result_received(rewards: Array)
-
-# ===== SYSTEM EVENTS =====
-signal game_saved()
-signal game_loaded()
-signal error_occurred(message: String, is_critical: bool)
-
-# Helper function to emit errors
-func emit_error(message: String, is_critical: bool = false) -> void:
-	push_error(message)
-	emit_signal("error_occurred", message, is_critical)
+# Ability System Triggers
+signal turn_started
+signal turn_ended
+signal unit_performed_attack(attacker_instance, target_instance)
+signal unit_took_damage(attacker_instance, defender_instance, damage_amount)
+signal unit_was_merged(merged_unit_instance)
+signal unit_defeated(unit_uuid, is_enemy)
+signal unit_is_acting(unit_instance)

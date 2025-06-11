@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://unitdisplayplaceholder"]
+
+[ext_resource type="Script" path="res://scripts/UnitDisplay.gd" id="1_unitdisplay"]
+
+[node name="UnitDisplay" type="PanelContainer"]
+custom_minimum_size = Vector2(80, 100)
+script = ExtResource("1_unitdisplay")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HPLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "HP: 99"
+alignment = 1
+
+[node name="PwrLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "PWR: 99"
+alignment = 1

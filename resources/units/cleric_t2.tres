@@ -1,16 +1,16 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 [ext_resource type="Texture2D" path="res://assets/images/UnitSprites/cleric_t2.png" id="3"]
 
-[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
-
 [resource]
-script = ExtResource("1")
 id = "cleric_t2"
-display_name = "Cleric T2"
-max_hp = 5
-pwr = 4
+display_name_key = "Cleric"
+description_key = "A holy warrior who heals and supports allies with divine magic."
+icon_texture = ExtResource( 3 )
 tier = 2
-unit_type_tag = "utility"
-texture = ExtResource("3")
-ability_description = "Healing Aura"
-
+rarity = "UNCOMMON"
+ball_category = "UNIT"
+base_hp = 6
+base_pwr = 2
+item_slot_count = 2
+tags = ["Healer", "Support"]
+ability_definition_refs = ["divine_healing"]

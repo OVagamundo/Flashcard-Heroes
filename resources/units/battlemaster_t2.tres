@@ -1,15 +1,17 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/UnitData.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://bqjq9m1c4i6a4" path="res://assets/images/UnitSprites/Sprite01.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/battlemaster_t2.png" id="3"]
 
 [resource]
-script = ExtResource("1")
 id = "battlemaster_t2"
-display_name = "Battlemaster"
-max_hp = 4
-pwr = 4
+display_name_key = "Battlemaster"
+description_key = "A seasoned warrior with unmatched combat expertise."
+icon_texture = ExtResource( 3 )
 tier = 2
-unit_type_tag = "battlemaster"
-texture = ExtResource("2")
-ability_description = "Balanced warrior with both offensive and defensive capabilities"
+rarity = "UNCOMMON"
+ball_category = "UNIT"
+base_hp = 5
+base_pwr = 5
+item_slot_count = 2
+tags = ["Warrior", "Offensive"]
+ability_definition_refs = ["master_striker"]
