@@ -1,17 +1,15 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/hero.png" id="2"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_abc"]
+[ext_resource type="Texture2D" path="res://icon.svg" id="2_abc"]
 
 [resource]
+script = ExtResource("1_abc")
 id = "hero"
-display_name_key = "Hero"
-description_key = "The legendary hero leading the battle against darkness."
-icon_texture = ExtResource("2")
-tier = 0
-rarity = "HERO"
-ball_category = "UNIT"
+rarity = 3 # HERO
 base_hp = 10
 base_pwr = 2
-item_slot_count = 5
-tags = ["Hero", "Leader"]
-ability_definition_refs = ["heroic_strike"]
+icon_texture = ExtResource("2_abc")
+is_equippable = false
+is_consumable = false
+target_type_restriction = ""

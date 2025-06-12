@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://bottom_bar"]
+
+[ext_resource type="Script" path="res://scripts/BottomBar.gd" id="1_bottom_bar"]
+
+[node name="BottomBar" type="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 60)
+script = ExtResource("1_bottom_bar")
+theme_override_constants/separation = 20
+
+[node name="LeftSpacer" type="Control" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MenuButton" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_minimum_size = Vector2(100, 40)
+text = "Menu"
+
+[node name="CenterSpacer" type="Control" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GachaPoolButton" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+custom_minimum_size = Vector2(120, 40)
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+text = "Gacha Pool"
+
+[node name="RightSpacer" type="Control" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

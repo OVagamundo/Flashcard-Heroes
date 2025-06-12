@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://n5lvlu1ekcck"]
+
+[ext_resource type="Script" uid="uid://6br1h7vj6bsa" path="res://scripts/create_placeholders.gd" id="1_create_placeholders"]
+
+[node name="CreatePlaceholders" type="Node"]
+script = ExtResource("1_create_placeholders")

@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="Flashcard Heroes"
-run/main_scene="uid://c5w7q6v4g8f7x"
+run/main_scene="res://scenes/Title.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
-#Windowsettingsconfig/window/size/viewport_width=1280
+config/window/size/viewport_width=1280
 config/window/size/viewport_height=720
 config/window/size/window_width_override=1280
 config/window/size/window_height_override=720
@@ -25,11 +25,7 @@ config/window/stretch/scale=1.0
 [autoload]
 
 EventBus="*res://scripts/EventBus.gd"
-Database="*res://scripts/Database.gd"
 SceneManager="*res://scripts/SceneManager.gd"
-GameManager="*res://scripts/GameManager.gd"
-SaveManager="*res://scripts/SaveManager.gd"
-AbilityResolver="*res://scripts/AbilityResolver.gd"
 
 [debug]
 
@@ -41,7 +37,7 @@ file_logging/max_log_files=1
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/stretch/mode="viewport"
+window/stretch/mode="canvas_items"
 
 [rendering]
 

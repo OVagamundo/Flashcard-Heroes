@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://kf5wkdcxdfih"]
 
 [ext_resource type="Script" uid="uid://b1m7ix7nsmnl6" path="res://scripts/Main.gd" id="1_main"]
-[ext_resource type="PackedScene" uid="uid://dl72piktad8k3" path="res://scenes/TopBar.tscn" id="3_top_bar"]
-[ext_resource type="PackedScene" uid="uid://s3osj6b76dtc" path="res://scenes/BottomBar.tscn" id="4_bottom_bar"]
+[ext_resource type="PackedScene" path="res://scenes/TopBar.tscn" id="3_top_bar"]
+[ext_resource type="PackedScene" path="res://scenes/BottomBar.tscn" id="4_bottom_bar"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -13,18 +13,20 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
 
-[node name="PopupLayer" type="CanvasLayer" parent="."]
-layer = 128
-
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 2
-anchor_right = 1.0
-anchor_bottom = 1.0
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="TopBar" parent="VBoxContainer" instance=ExtResource("3_top_bar")]
-layout_mode = 2
 
 [node name="DynamicContent" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 400)
@@ -33,4 +35,3 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="BottomBar" parent="VBoxContainer" instance=ExtResource("4_bottom_bar")]
-layout_mode = 2

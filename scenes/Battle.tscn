@@ -1,58 +1,175 @@
-[gd_scene load_steps=2 format=3 uid="uid://b23oi6sv0e7or"]
+[gd_scene load_steps=3 format=3 uid="uid://battle_scene"]
 
-[ext_resource type="Script" uid="uid://d3lfx8vgewxr5" path="res://scripts/BattleManager.gd" id="1_battlemanager"]
+[ext_resource type="Script" path="res://scripts/Battle.gd" id="1_battle"]
+[ext_resource type="PackedScene" uid="uid://placeholder_unit" path="res://scenes/PlaceholderUnit.tscn" id="2_placeholder_unit"]
 
 [node name="Battle" type="Control"]
-layout_mode = 3
-anchors_preset = 15
+layout_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+script = ExtResource("1_battle")
 
-[node name="BattleManager" type="Node" parent="."]
-script = ExtResource("1_battlemanager")
-
+# Main container that will hold both enemy and player areas
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
+layout_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+theme_override_constants/separation = 20
 
-[node name="EnemyLineup" type="HBoxContainer" parent="VBoxContainer"]
+# Enemy Area
+[node name="EnemyArea" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 3
-alignment = 1
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 200)
 
-[node name="PlayerLineup" type="HBoxContainer" parent="VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/EnemyArea"]
 layout_mode = 2
-size_flags_vertical = 3
-alignment = 1
-
-[node name="PlayerBench" type="HBoxContainer" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
-alignment = 1
-
-[node name="PlayerInventory" type="HBoxContainer" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
-alignment = 1
-
-[node name="BattleUI" type="Control" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="EndTurnButton" type="Button" parent="VBoxContainer/BattleUI"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = -88.0
-anchor_top = -31.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "End Turn"
 
-[connection signal="pressed" from="VBoxContainer/BattleUI/EndTurnButton" to="BattleManager" method="_on_end_turn_button_pressed"]
+[node name="EnemyLineupLabel" type="Label" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+layout_mode = 2
+text = "Enemy Lineup"
+theme_override_font_sizes/font_size = 16
+
+[node name="EnemyLineup" type="HBoxContainer" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+theme_override_constants/separation = 10
+
+# Add 6 enemy slots
+[node name="Enemy1" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Enemy2" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Enemy3" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Enemy4" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Enemy5" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Enemy6" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="EnemyTrinketsLabel" type="Label" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+layout_mode = 2
+text = "Enemy Trinkets"
+theme_override_font_sizes/font_size = 14
+
+[node name="EnemyTrinkets" type="HBoxContainer" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+theme_override_constants/separation = 10
+
+# Player Area
+[node name="PlayerArea" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/PlayerArea"]
+layout_mode = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PlayerLineupLabel" type="Label" parent="VBoxContainer/PlayerArea/VBoxContainer"]
+layout_mode = 2
+text = "Your Lineup"
+theme_override_font_sizes/font_size = 16
+
+[node name="PlayerLineup" type="HBoxContainer" parent="VBoxContainer/PlayerArea/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+theme_override_constants/separation = 10
+
+# Add 6 player unit slots
+[node name="Player1" parent="VBoxContainer/PlayerArea/VBoxContainer/PlayerLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Player2" parent="VBoxContainer/PlayerArea/VBoxContainer/PlayerLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Player3" parent="VBoxContainer/PlayerArea/VBoxContainer/PlayerLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Player4" parent="VBoxContainer/PlayerArea/VBoxContainer/PlayerLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Player5" parent="VBoxContainer/PlayerArea/VBoxContainer/PlayerLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Player6" parent="VBoxContainer/PlayerArea/VBoxContainer/PlayerLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+# Player Bench and Inventory
+[node name="BenchAndInventory" type="HBoxContainer" parent="VBoxContainer/PlayerArea/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_constants/separation = 20
+
+# Player Bench
+[node name="BenchContainer" type="VBoxContainer" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory"]
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 3
+
+[node name="BenchLabel" type="Label" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/BenchContainer"]
+layout_mode = 2
+text = "Bench"
+theme_override_font_sizes/font_size = 14
+
+[node name="Bench" type="HBoxContainer" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/BenchContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 80)
+theme_override_constants/separation = 10
+
+# Add 3 bench slots
+[node name="Bench1" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/BenchContainer/Bench" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Bench2" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/BenchContainer/Bench" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Bench3" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/BenchContainer/Bench" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+# Spacer between bench and inventory
+[node name="Spacer" type="Control" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory"]
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 3
+
+# Player Inventory
+[node name="InventoryContainer" type="VBoxContainer" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="InventoryLabel" type="Label" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/InventoryContainer"]
+layout_mode = 2
+text = "Inventory"
+theme_override_font_sizes/font_size = 14
+
+[node name="Inventory" type="HBoxContainer" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/InventoryContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
+theme_override_constants/separation = 5
+
+# Add 3 inventory slots (using PlaceholderItem instead of Unit)
+[node name="Item1" type="TextureRect" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/InventoryContainer/Inventory"]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+
+[node name="Item2" type="TextureRect" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/InventoryContainer/Inventory"]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+
+[node name="Item3" type="TextureRect" parent="VBoxContainer/PlayerArea/VBoxContainer/BenchAndInventory/InventoryContainer/Inventory"]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)

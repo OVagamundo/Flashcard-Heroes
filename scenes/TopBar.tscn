@@ -1,18 +1,23 @@
-[gd_scene format=3 uid="uid://topbarplaceholder"]
+[gd_scene load_steps=2 format=3 uid="uid://dl72piktad8k3"]
+
+[ext_resource type="Script" path="res://scripts/TopBar.gd" id="1_top_bar"]
 
 [node name="TopBar" type="PanelContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+size_flags_horizontal = 3
+size_flags_vertical = 4
+script = ExtResource("1_top_bar")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
-[node name="GoldLabel" type="Label" parent="HBoxContainer"]
+[node name="Label" type="Label" parent="HBoxContainer"]
 layout_mode = 2
-text = "Gold: 0"
-
-[node name="HPLabel" type="Label" parent="HBoxContainer"]
-layout_mode = 2
-text = "Hero HP: 0/0"
-
-[node name="DayLabel" type="Label" parent="HBoxContainer"]
-layout_mode = 2
-text = "Day: 1"
+size_flags_horizontal = 3
+text = "Top Bar"
+horizontal_alignment = 1
+vertical_alignment = 1

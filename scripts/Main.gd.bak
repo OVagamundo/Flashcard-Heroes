@@ -1,0 +1,10 @@
+extends Control
+
+# UI References
+@onready var top_bar = $VBoxContainer/TopBar
+@onready var dynamic_content = $VBoxContainer/DynamicContent
+@onready var bottom_bar = $VBoxContainer/BottomBar
+
+func _ready() -> void:
+    # Just UI setup, no functionality yet
+    pass

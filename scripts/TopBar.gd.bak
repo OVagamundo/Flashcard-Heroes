@@ -1,0 +1,5 @@
+extends HBoxContainer
+
+# UI-only, no functionality
+func _ready() -> void:
+	pass
