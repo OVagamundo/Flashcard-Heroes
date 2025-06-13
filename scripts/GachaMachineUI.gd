@@ -1,4 +1,4 @@
-extends PanelContainer
+extends Control
 
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var gacha_body_button: Button = $VBoxContainer/GachaBodyButton

@@ -3,13 +3,25 @@
 [ext_resource type="Script" uid="uid://kf7g16yc224c" path="res://scripts/BottomBar.gd" id="1_bottom_bar"]
 [ext_resource type="PackedScene" uid="uid://bmyd53510nxr5" path="res://scenes/GachaMachineUI.tscn" id="2_gacha_machine"]
 
-[node name="BottomBar" type="PanelContainer"]
+[node name="BottomBar" type="Control"]
 custom_minimum_size = Vector2(0, 200)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -880.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 script = ExtResource("1_bottom_bar")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 30
 
 [node name="LeftSpacer" type="Control" parent="HBoxContainer"]
@@ -17,24 +29,35 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="GachaMachinesContainer" type="HBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(1000, 0)
+layout_direction = 2
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 30
 
+[node name="Control" type="Control" parent="HBoxContainer/GachaMachinesContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="GachaMachine1" parent="HBoxContainer/GachaMachinesContainer" instance=ExtResource("2_gacha_machine")]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="GachaMachine2" parent="HBoxContainer/GachaMachinesContainer" instance=ExtResource("2_gacha_machine")]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="GachaMachine3" parent="HBoxContainer/GachaMachinesContainer" instance=ExtResource("2_gacha_machine")]
 layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EndTurnButton" type="Button" parent="HBoxContainer/GachaMachinesContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "End Turn"
 
 [node name="RightSpacer" type="Control" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="EndTurnButton" type="Button" parent="HBoxContainer"]
-custom_minimum_size = Vector2(150, 50)
-layout_mode = 2
-text = "End Turn"

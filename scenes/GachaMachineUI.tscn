@@ -2,12 +2,18 @@
 
 [ext_resource type="Script" uid="uid://c0ejrkh5k2x4y" path="res://scripts/GachaMachineUI.gd" id="1_gacha_machine"]
 
-[node name="GachaMachineUI" type="PanelContainer"]
+[node name="GachaMachineUI" type="Control"]
 custom_minimum_size = Vector2(120, 200)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 127.0
+offset_bottom = 200.0
 script = ExtResource("1_gacha_machine")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
+offset_right = 127.0
+offset_bottom = 200.0
 theme_override_constants/separation = 10
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]

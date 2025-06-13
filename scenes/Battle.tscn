@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://battle_scene"]
+[gd_scene load_steps=5 format=3 uid="uid://battle_scene"]
 
 [ext_resource type="Script" path="res://scripts/Battle.gd" id="1_battle"]
 [ext_resource type="PackedScene" uid="uid://placeholder_unit" path="res://scenes/PlaceholderUnit.tscn" id="2_placeholder_unit"]
+[ext_resource type="PackedScene" uid="uid://placeholder_item" path="res://scenes/PlaceholderItem.tscn" id="3_placeholder_item"]
+[ext_resource type="Texture2D" uid="uid://placeholder_icon" path="res://assets/images/UnitSprites/hero.png" id="4_placeholder_icon"]
 
 [node name="Battle" type="Control"]
 layout_mode = 2
@@ -9,63 +11,171 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_battle")
 
-# Main container that will hold both enemy and player areas
+# Main container that will hold all UI elements
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme_override_constants/separation = 10
+
+# Top Bar
+[node name="TopBar" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 80)
+size_flags_horizontal = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TopBar"]
+layout_mode = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
 theme_override_constants/separation = 20
+
+# Left side - HP and Gold
+[node name="Stats" type="VBoxContainer" parent="VBoxContainer/TopBar/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TopBar/HBoxContainer/Stats"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HPLabel" type="Label" parent="VBoxContainer/TopBar/HBoxContainer/Stats/HBoxContainer"]
+layout_mode = 2
+text = "HP: 10"
+
+[node name="GoldLabel" type="Label" parent="VBoxContainer/TopBar/HBoxContainer/Stats/HBoxContainer"]
+layout_mode = 2
+text = "Gold: 50"
+
+# Trinkets
+[node name="Trinkets" type="HBoxContainer" parent="VBoxContainer/TopBar/HBoxContainer/Stats"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+# Add 5 trinket slots (using PlaceholderItem)
+[node name="Trinket1" parent="VBoxContainer/TopBar/HBoxContainer/Stats/Trinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+
+[node name="Trinket2" parent="VBoxContainer/TopBar/HBoxContainer/Stats/Trinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+
+[node name="Trinket3" parent="VBoxContainer/TopBar/HBoxContainer/Stats/Trinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+
+[node name="Trinket4" parent="VBoxContainer/TopBar/HBoxContainer/Stats/Trinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+
+[node name="Trinket5" parent="VBoxContainer/TopBar/HBoxContainer/Stats/Trinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+
+# Center - Day Counter
+[node name="DayCounter" type="Label" parent="VBoxContainer/TopBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "DAY 1"
+
+# Right side - Buttons
+[node name="Buttons" type="HBoxContainer" parent="VBoxContainer/TopBar/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="CodexButton" type="Button" parent="VBoxContainer/TopBar/HBoxContainer/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+text = "i"
+
+[node name="MenuButton" type="Button" parent="VBoxContainer/TopBar/HBoxContainer/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+text = "☰"
 
 # Enemy Area
 [node name="EnemyArea" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 250)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/EnemyArea"]
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/EnemyArea"]
 layout_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
 
-[node name="EnemyLineupLabel" type="Label" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/EnemyArea/MarginContainer"]
+layout_mode = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/separation = 10
+
+# Enemy Lineup
+[node name="EnemyLineupLabel" type="Label" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Enemy Lineup"
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
-[node name="EnemyLineup" type="HBoxContainer" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+[node name="EnemyLineup" type="HBoxContainer" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 100)
-theme_override_constants/separation = 10
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 120)
+theme_override_constants/separation = 15
 
-# Add 6 enemy slots
-[node name="Enemy1" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
-layout_mode = 2
-
-[node name="Enemy2" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
-layout_mode = 2
-
-[node name="Enemy3" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+# Add 6 enemy slots (using 6 for now, can be adjusted)
+[node name="Enemy1" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
 layout_mode = 2
 
-[node name="Enemy4" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+[node name="Enemy2" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
 layout_mode = 2
 
-[node name="Enemy5" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+[node name="Enemy3" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
 layout_mode = 2
 
-[node name="Enemy6" parent="VBoxContainer/EnemyArea/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+[node name="Enemy4" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
 layout_mode = 2
 
-[node name="EnemyTrinketsLabel" type="Label" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+[node name="Enemy5" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+[node name="Enemy6" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyLineup" instance=ExtResource("2_placeholder_unit")]
+layout_mode = 2
+
+# Enemy Trinkets
+[node name="EnemyTrinketsLabel" type="Label" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Enemy Trinkets"
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
-[node name="EnemyTrinkets" type="HBoxContainer" parent="VBoxContainer/EnemyArea/VBoxContainer"]
+[node name="EnemyTrinkets" type="HBoxContainer" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 60)
 theme_override_constants/separation = 10
+
+# Add 3 enemy trinket slots
+[node name="EnemyTrinket1" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyTrinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+
+[node name="EnemyTrinket2" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyTrinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
+
+[node name="EnemyTrinket3" parent="VBoxContainer/EnemyArea/MarginContainer/VBoxContainer/EnemyTrinkets" instance=ExtResource("3_placeholder_item")]
+layout_mode = 2
+custom_minimum_size = Vector2(40, 40)
 
 # Player Area
 [node name="PlayerArea" type="PanelContainer" parent="VBoxContainer"]

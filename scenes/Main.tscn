@@ -23,8 +23,13 @@ anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TopBar" parent="VBoxContainer" instance=ExtResource("3_top_bar")]
+[node name="Control" type="Control" parent="VBoxContainer"]
 layout_mode = 2
+
+[node name="TopBar" parent="VBoxContainer" instance=ExtResource("3_top_bar")]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_vertical = 1
 
 [node name="DynamicContent" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 400)
@@ -33,4 +38,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="BottomBar" parent="VBoxContainer" instance=ExtResource("4_bottom_bar")]
+layout_mode = 2
+
+[node name="Control2" type="Control" parent="VBoxContainer"]
 layout_mode = 2
