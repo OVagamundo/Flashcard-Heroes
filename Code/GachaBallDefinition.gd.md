@@ -1,3 +1,6 @@
+<!-- Original: GachaBallDefinition.gd -->
+
+```gdscript
 extends Resource
 class_name GachaBallDefinition
 
@@ -15,3 +18,5 @@ class_name GachaBallDefinition
 @export var is_equippable: bool
 @export var is_consumable: bool
 @export var target_type_restriction: String
+
+```

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+id = "tier2_sword"
+display_name_key = "Steel Sword"
+description_key = "A well-crafted steel sword. +3 Power when equipped."
+icon_texture = null
+tier = 2
+rarity = 1 # Uncommon
+ball_category = 1 # Item
+is_equippable = true
+is_consumable = false
+target_type_restriction = "UNIT"

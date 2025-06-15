@@ -1,3 +1,6 @@
+<!-- Original: Item.gd -->
+
+```gdscript
 extends Control
 class_name Item
 
@@ -38,3 +41,5 @@ func _update_display() -> void:
         _sprite.texture = _gacha_instance.definition.icon_texture
     else:
         push_warning("No icon_texture set for item: ", _gacha_instance.definition.id)
+
+```

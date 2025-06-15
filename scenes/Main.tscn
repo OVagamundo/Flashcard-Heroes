@@ -19,7 +19,6 @@ layer = 128
 
 [node name="GachaPoolInspection" parent="PopupLayer" instance=ExtResource("2_gacha_pool")]
 visible = false
-layout_mode = 3
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+id = "tier3_paladin"
+display_name_key = "Tier 3 Paladin"
+description_key = "A powerful holy warrior."
+icon_texture = null
+tier = 3
+rarity = 2 # Rare
+ball_category = 0 # Unit
+base_hp = 25
+base_pwr = 8
+ability_definition_refs = []
+item_slot_count = 2

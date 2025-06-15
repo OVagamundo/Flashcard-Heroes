@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+id = "tier2_knight"
+display_name_key = "Tier 2 Knight"
+description_key = "A sturdy knight with balanced stats."
+icon_texture = null
+tier = 2
+rarity = 1 # Uncommon
+ball_category = 0 # Unit
+base_hp = 18
+base_pwr = 5
+ability_definition_refs = []
+item_slot_count = 1

@@ -1,3 +1,6 @@
+<!-- Original: GachaPoolInspection.gd -->
+
+```gdscript
 extends VBoxContainer
 
 const UnitScene = preload("res://scenes/Unit.tscn")
@@ -66,3 +69,5 @@ func setup_gacha_pool():
 				new_card.initialize(instance)
 			else:
 				push_error("Instanced scene %s does not have an initialize method." % new_card.get_path())
+
+```

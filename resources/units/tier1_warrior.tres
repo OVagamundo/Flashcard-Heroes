@@ -1,0 +1,14 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+id = "tier1_warrior"
+display_name_key = "Tier 1 Warrior"
+description_key = "A basic warrior unit."
+icon_texture = null
+tier = 1
+rarity = 0 # Common
+ball_category = 0 # Unit
+base_hp = 10
+base_pwr = 3
+ability_definition_refs = []
+item_slot_count = 1

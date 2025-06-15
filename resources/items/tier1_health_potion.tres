@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+id = "tier1_health_potion"
+display_name_key = "Health Potion"
+description_key = "Restores 5 HP when used."
+icon_texture = null
+tier = 1
+rarity = 0 # Common
+ball_category = 1 # Item
+is_equippable = false
+is_consumable = true
+target_type_restriction = ""

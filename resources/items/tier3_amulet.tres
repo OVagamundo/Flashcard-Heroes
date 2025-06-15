@@ -1,0 +1,13 @@
+[gd_resource type="Resource" format=3]
+
+[resource]
+id = "tier3_amulet"
+display_name_key = "Amulet of Power"
+description_key = "A magical amulet that boosts power. +5 Power when equipped."
+icon_texture = null
+tier = 3
+rarity = 2 # Rare
+ball_category = 1 # Item
+is_equippable = true
+is_consumable = false
+target_type_restriction = "HERO"

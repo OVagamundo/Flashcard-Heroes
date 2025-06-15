@@ -1,3 +1,7 @@
 Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
 OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
+Loaded 1 tier 0 gacha balls
+Loaded 0 tier 1 gacha balls
+Loaded 0 tier 2 gacha balls
+Loaded 0 tier 3 gacha balls

@@ -26,6 +26,7 @@ config/window/stretch/scale=1.0
 
 EventBus="*res://scripts/EventBus.gd"
 SceneManager="*res://scripts/SceneManager.gd"
+Database="*res://scripts/Database.gd"
 
 [debug]
 

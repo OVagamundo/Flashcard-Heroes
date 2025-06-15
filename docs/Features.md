@@ -371,6 +371,52 @@ func _on_start_button_pressed() -> void:
 3. Loadout screen appears (placeholder for character selection)
 4. Player clicks "Start" to begin the game
 
+### Implemented Gacha System Features (as of 2025-06-15)
+
+This section details the components of the Gacha System that have been implemented or significantly updated during recent development sessions. It complements any existing descriptions in sections 3.1, 3.2, and 3.3 by providing a consolidated summary of concrete implementations.
+
+#### Core Data Structures:
+- **`GachaBallDefinition.gd`**: (`scripts/Gacha/GachaBallDefinition.gd`)
+  - A `Resource` script defining static properties: `id` (String), `display_name_key` (String), `description_key` (String), `icon_texture` (Texture2D), `tier` (int, e.g., 0 for Hero, 1-3 for gacha), `ball_category` (enum: UNIT, ITEM).
+  - These are created as `.tres` files within the `res://resources/units/` and `res://resources/items/` directories.
+  - Example: `res://resources/units/tier1_warrior.tres`.
+- **`GachaBallInstance.gd`**: (`scripts/Gacha/GachaBallInstance.gd`)
+  - A `Resource` script (class `GachaBallInstance`) representing a specific, dynamic instance of a `GachaBallDefinition`.
+  - Holds a reference to its `definition: GachaBallDefinition`.
+  - Will store instance-specific data (e.g., current HP, unique ID, location state) as the system evolves.
+
+#### Database and Pool Management:
+- **`Database.gd`**: (`scripts/Core/Database.gd`)
+  - An autoload singleton (accessible globally as `Database`).
+  - Responsible for loading all `GachaBallDefinition` resources from the `res://resources/` subdirectories (specifically `units` and `items`) at game startup.
+  - Organizes these loaded definitions into its `gachaball_definitions` dictionary. This dictionary is keyed by `tier` (integer: 0, 1, 2, 3), and each value is an array of `GachaBallDefinition`s belonging to that tier.
+  - This `Database.gachaball_definitions` effectively serves as the master list of all possible gacha outcomes and defined game entities.
+
+#### Item/Unit Display Scenes:
+- **`Unit.tscn` & `Unit.gd`**: (`scenes/Unit.tscn`, `scripts/Unit.gd`)
+  - The scene and script pair for visually representing a single Unit.
+  - `Unit.tscn` typically includes UI elements like a `Sprite2D` for the unit's art, a `Label` for its name, and another `Label` for its HP.
+  - `Unit.gd` (class `Unit`) extends `Control` and provides an `initialize(instance: GachaBallInstance)` method. This method populates the UI elements using data from the provided `gacha_instance.definition`.
+- **`Item.tscn` & `Item.gd`**: (`scenes/Item.tscn`, `scripts/Item.gd`)
+  - The scene and script pair for visually representing a single Item.
+  - `Item.tscn` typically includes a `Sprite2D` for the item's icon and a `Label` for its description or name.
+  - `Item.gd` (class `Item`) extends `Control` and also features an `initialize(instance: GachaBallInstance)` method for UI population.
+- **Texture Handling**: The `icon_texture` property in `GachaBallDefinition` (.tres files) should hold the direct `Texture2D` resource. Scene scripts (`Unit.gd`, `Item.gd`) assign this texture to their respective `Sprite2D` nodes. Initial issues with `preload()` in `.tscn` files were resolved by setting sprite textures to `null` in the scene files and relying on dynamic assignment or `.tres` file definitions.
+
+#### Gacha Pool Inspection UI:
+- **`GachaPoolInspection.tscn` & `GachaPoolInspection.gd`**: (`scenes/GachaPoolInspection.tscn`, `scripts/GachaPoolInspection.gd`)
+  - A UI screen designed to display all available `GachaBallDefinition`s that have been loaded by the `Database`.
+  - When activated, `GachaPoolInspection.gd`:
+    1. Accesses `Database.gachaball_definitions`.
+    2. Iterates through definitions for Tiers 1, 2, and 3. (Note: Display of Tier 0 definitions in this specific UI is pending user clarification).
+    3. For each `GachaBallDefinition`, it creates a new `GachaBallInstance`.
+    4. Determines if the definition is for a Unit or an Item using `instance.is_unit()` (derived from `ball_category`).
+    5. Instantiates the corresponding scene (`Unit.tscn` or `Item.tscn`).
+    6. Calls the `initialize(instance)` method on the newly created card scene to populate its visual elements.
+    7. Adds the populated card scene to the appropriate tier-specific `GridContainer` within the `GachaPoolInspection.tscn` UI.
+  - This screen serves as a crucial debugging and verification tool, ensuring that gacha definitions are correctly loaded and that their basic display scenes are functional.
+
+---
 ## 4. Battle System
 
 The Battle System manages combat encounters, including unit management and combat mechanics.
