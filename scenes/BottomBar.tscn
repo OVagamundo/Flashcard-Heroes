@@ -47,10 +47,12 @@ size_flags_horizontal = 3
 [node name="GachaMachine2" parent="HBoxContainer/GachaMachinesContainer" instance=ExtResource("2_gacha_machine")]
 layout_mode = 2
 size_flags_horizontal = 3
+tier = 2
 
 [node name="GachaMachine3" parent="HBoxContainer/GachaMachinesContainer" instance=ExtResource("2_gacha_machine")]
 layout_mode = 2
 size_flags_horizontal = 3
+tier = 3
 
 [node name="Control2" type="Control" parent="HBoxContainer/GachaMachinesContainer"]
 layout_mode = 2

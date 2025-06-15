@@ -7,18 +7,6 @@ Loaded 2 tier 2 gacha balls
 Loaded 2 tier 3 gacha balls
 New run started! Hero: 
 Master Pool Tier 1 has 6 units.
-WARNING: No icon_texture set for unit: tier1_potion
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier1_potion
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier1_potion
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier2_sword
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier2_sword
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier3_amulet
-   at: push_warning (core/variant/variant_utility.cpp:1118)
 Battle pools created for combat!
 WARNING: No icon_texture set for unit: tier1_potion
    at: push_warning (core/variant/variant_utility.cpp:1118)
@@ -32,3 +20,53 @@ WARNING: No icon_texture set for unit: tier2_sword
    at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: No icon_texture set for unit: tier3_amulet
    at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 3
+Drew a: Tier 3 Paladin
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier3_amulet
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 3
+Drew a: Amulet of Power
+WARNING: No icon_texture set for unit: tier3_amulet
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 3
+Tier 3 pool is empty! Cannot draw.
+Draw requested for tier 3
+Tier 3 pool is empty! Cannot draw.
+Draw requested for tier 3
+Tier 3 pool is empty! Cannot draw.
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier3_amulet
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier3_amulet
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 2
+Drew a: Tier 2 Knight
