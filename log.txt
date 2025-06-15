@@ -21,6 +21,20 @@ WARNING: No icon_texture set for unit: tier2_sword
 WARNING: No icon_texture set for unit: tier3_amulet
    at: push_warning (core/variant/variant_utility.cpp:1118)
 Draw requested for tier 3
+Drew a: Amulet of Power
+WARNING: No icon_texture set for unit: tier3_amulet
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 3
 Drew a: Tier 3 Paladin
 WARNING: No icon_texture set for unit: tier1_potion
    at: push_warning (core/variant/variant_utility.cpp:1118)
@@ -32,18 +46,6 @@ WARNING: No icon_texture set for unit: tier2_sword
    at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: No icon_texture set for unit: tier2_sword
    at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier3_amulet
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-Draw requested for tier 3
-Drew a: Amulet of Power
-WARNING: No icon_texture set for unit: tier3_amulet
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-Draw requested for tier 3
-Tier 3 pool is empty! Cannot draw.
-Draw requested for tier 3
-Tier 3 pool is empty! Cannot draw.
-Draw requested for tier 3
-Tier 3 pool is empty! Cannot draw.
 WARNING: No icon_texture set for unit: tier1_potion
    at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: No icon_texture set for unit: tier1_potion
@@ -53,20 +55,66 @@ WARNING: No icon_texture set for unit: tier1_potion
 WARNING: No icon_texture set for unit: tier2_sword
    at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: No icon_texture set for unit: tier2_sword
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier3_amulet
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier1_potion
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier1_potion
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier1_potion
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier2_sword
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier2_sword
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: No icon_texture set for unit: tier3_amulet
    at: push_warning (core/variant/variant_utility.cpp:1118)
 Draw requested for tier 2
 Drew a: Tier 2 Knight
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 2
+Drew a: Steel Sword
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 2
+Drew a: Tier 2 Knight
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 2
+Drew a: Steel Sword
+WARNING: No icon_texture set for unit: tier2_sword
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 2
+Tier 2 pool is empty! Cannot draw.
+Draw requested for tier 2
+Tier 2 pool is empty! Cannot draw.
+Draw requested for tier 2
+Tier 2 pool is empty! Cannot draw.
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 1
+Drew a: TIER1_POTION_NAME
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 1
+Drew a: TIER1_POTION_NAME
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 1
+Drew a: TIER1_POTION_NAME
+WARNING: No icon_texture set for unit: tier1_potion
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+Draw requested for tier 1
+Drew a: Tier 1 Warrior
+Draw requested for tier 1
+Drew a: Tier 1 Warrior
+Draw requested for tier 1
+Drew a: Tier 1 Warrior
+Draw requested for tier 1
+Tier 1 pool is empty! Cannot draw.

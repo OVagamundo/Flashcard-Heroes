@@ -44,17 +44,20 @@ func _on_draw_gacha_requested(tier: int):
 	# 1. Pick a random instance and REMOVE it from the temporary pool
 	var drawn_instance = pool.pick_random()
 	pool.erase(drawn_instance)
-	
+	# drawn_instance is now removed from the battle pool array.
+	# Now, update its persistent location state.
 	print("Drew a: ", drawn_instance.get_display_name())
 	
 	# 2. Check if it's a Unit or an Item and place it in the correct UI container
 	if drawn_instance.is_unit():
 		# It's a unit, so create a Unit card and place it on the bench
+		drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_PLAYER_BENCH)
 		var unit_card = UnitScene.instantiate()
 		player_bench.add_child(unit_card) 
 		unit_card.initialize(drawn_instance)
 	else:
 		# It's an item, so create an Item card and place it in the battle inventory
+		drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_BATTLE_INVENTORY)
 		var item_card = ItemScene.instantiate()
 		battle_inventory.add_child(item_card)
 		item_card.initialize(drawn_instance)

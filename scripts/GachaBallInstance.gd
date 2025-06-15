@@ -18,7 +18,7 @@ enum LocationState {
 }
 
 var definition: GachaBallDefinition
-var uuid: String
+var ball_uuid: String
 var current_hp: int
 var current_pwr: int
 var current_location_state: int = LocationState.UNDEFINED
@@ -26,7 +26,17 @@ var equipped_item_uuids: Array[String] = []
 
 func _init(p_definition: GachaBallDefinition):
 	definition = p_definition
-	uuid = _generate_uuid()
+	ball_uuid = _generate_uuid()
+	# Initial location state will be set based on definition's tier
+	match definition.tier:
+		1:
+			current_location_state = LocationState.IN_MASTER_RUN_POOL_TIER_1
+		2:
+			current_location_state = LocationState.IN_MASTER_RUN_POOL_TIER_2
+		3:
+			current_location_state = LocationState.IN_MASTER_RUN_POOL_TIER_3
+		_:
+			current_location_state = LocationState.UNDEFINED # Or a general master pool state if added
 	current_hp = definition.base_hp
 	current_pwr = definition.base_pwr
 
@@ -66,3 +76,10 @@ func get_display_name() -> String:
 # Get the current HP as a string (e.g., "5/10")
 func get_hp_string() -> String:
 	return "%d/%d" % [current_hp, definition.base_hp]
+
+func set_location_state(new_state: LocationState, old_state_override: int = -1) -> void:
+	var old_state = current_location_state
+	if old_state_override != -1:
+		old_state = old_state_override
+	current_location_state = new_state
+	EventBus.gachaball_location_changed.emit(ball_uuid, new_state, old_state)

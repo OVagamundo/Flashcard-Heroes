@@ -55,6 +55,18 @@ func setup_gacha_pool():
 
 		# We are now looping through INSTANCES, not DEFINITIONS
 		for instance in instances_in_tier:
+			var expected_location_state = -1
+			match tier:
+				1:
+					expected_location_state = GachaBallInstance.LocationState.IN_BATTLE_GACHA_POOL_TIER_1
+				2:
+					expected_location_state = GachaBallInstance.LocationState.IN_BATTLE_GACHA_POOL_TIER_2
+				3:
+					expected_location_state = GachaBallInstance.LocationState.IN_BATTLE_GACHA_POOL_TIER_3
+
+			# Only display instances that are currently in the respective battle gacha pool
+			if instance.current_location_state != expected_location_state:
+				continue
 			var scene_to_instance = UnitScene if instance.is_unit() else ItemScene
 			
 			var new_card = scene_to_instance.instantiate()
