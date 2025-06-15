@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=2 format=3 uid="uid://bklg5w8vj5h3g"]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_gb_def"]
+
+[resource]
+script = ExtResource("1_gb_def")
+id = "tier1_potion"
+display_name_key = "TIER1_POTION_NAME"
+tier = 1
+ball_category = "ITEM"

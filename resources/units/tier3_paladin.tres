@@ -1,10 +1,14 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/warden_t2.png" id="2_tex"]
 
 [resource]
+script = ExtResource("1_def")
 id = "tier3_paladin"
 display_name_key = "Tier 3 Paladin"
 description_key = "A powerful holy warrior."
-icon_texture = null
+icon_texture = ExtResource("2_tex")
 tier = 3
 rarity = 2 # Rare
 ball_category = 0 # Unit

@@ -41,12 +41,11 @@ func setup_gacha_pool():
 		else:
 			push_warning("Child %d of GachaInventoriesArea is not a GridContainer." % i)
 
-	# Populate the grids from the Database
-	# Wait a frame to ensure the Database has loaded everything
-	await get_tree().process_frame
-	
-	for tier in Database.gachaball_definitions:
-		var definitions = Database.gachaball_definitions[tier]
+	# We now populate from the RunState's master pool, not the Database.
+	# This shows the player THEIR collection for this run.
+	for tier in RunState.master_run_pool:
+		var instances_in_tier = RunState.master_run_pool[tier]
+		
 		# Tier is 1, 2, or 3. Array is 0-indexed.
 		if tier - 1 >= tier_containers.size():
 			push_warning("Not enough tier containers for tier %d." % tier)
@@ -54,8 +53,8 @@ func setup_gacha_pool():
 			
 		var container = tier_containers[tier - 1]
 
-		for definition in definitions:
-			var instance = GachaBallInstance.new(definition)
+		# We are now looping through INSTANCES, not DEFINITIONS
+		for instance in instances_in_tier:
 			var scene_to_instance = UnitScene if instance.is_unit() else ItemScene
 			
 			var new_card = scene_to_instance.instantiate()

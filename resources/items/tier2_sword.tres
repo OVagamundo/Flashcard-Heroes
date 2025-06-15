@@ -1,6 +1,9 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_def"]
 
 [resource]
+script = ExtResource("1_def")
 id = "tier2_sword"
 display_name_key = "Steel Sword"
 description_key = "A well-crafted steel sword. +3 Power when equipped."
