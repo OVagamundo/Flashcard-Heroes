@@ -1,12 +1,15 @@
-[gd_scene load_steps=2 format=3 uid="uid://battle_scene"]
+[gd_scene load_steps=2 format=3 uid="uid://dqtba4m0cga6a"]
 
-[ext_resource type="Script" path="res://scripts/BattleScene.gd" id="1_battle_scene"]
+[ext_resource type="Script" uid="uid://cin2d8ksopicw" path="res://scripts/BattleScene.gd" id="1_battle_scene"]
 
 [node name="BattleScene" type="VBoxContainer"]
-layout_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-custom_constants/separation = 20
 script = ExtResource("1_battle_scene")
 
 [node name="Title" type="Label" parent="."]
@@ -17,5 +20,171 @@ horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="."]
 layout_mode = 2
-size_flags_horizontal = 1
 text = "Back to Path"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayerContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 3
+
+[node name="Control3" type="Control" parent="HBoxContainer/PlayerContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayerLineup" type="HBoxContainer" parent="HBoxContainer/PlayerContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="PlayerLineup#Panel1" type="Panel" parent="HBoxContainer/PlayerContainer/PlayerLineup"]
+modulate = Color(1, 0, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="PlayerLineup#Panel2" type="Panel" parent="HBoxContainer/PlayerContainer/PlayerLineup"]
+modulate = Color(1, 0, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="PlayerLineup#Panel3" type="Panel" parent="HBoxContainer/PlayerContainer/PlayerLineup"]
+modulate = Color(1, 0, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="PlayerLineup#Panel4" type="Panel" parent="HBoxContainer/PlayerContainer/PlayerLineup"]
+modulate = Color(1, 0, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="PlayerLineup#Panel5" type="Panel" parent="HBoxContainer/PlayerContainer/PlayerLineup"]
+modulate = Color(1, 0, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="PlayerLineup#Panel6" type="Panel" parent="HBoxContainer/PlayerContainer/PlayerLineup"]
+modulate = Color(1, 0, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="BenchBattleInventory" type="HBoxContainer" parent="HBoxContainer/PlayerContainer"]
+layout_mode = 2
+
+[node name="Bench" type="HBoxContainer" parent="HBoxContainer/PlayerContainer/BenchBattleInventory"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Bench#Panel1" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/Bench"]
+modulate = Color(0, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Bench#Panel2" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/Bench"]
+modulate = Color(0, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Bench#Panel3" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/Bench"]
+modulate = Color(0, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="BattleInventory" type="HBoxContainer" parent="HBoxContainer/PlayerContainer/BenchBattleInventory"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Inventory#Panel1" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory"]
+modulate = Color(0, 0, 1, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Inventory#Panel2" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory"]
+modulate = Color(0, 0, 1, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Inventory#Panel3" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory"]
+modulate = Color(0, 0, 1, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Control2" type="Control" parent="HBoxContainer/PlayerContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Control" type="Control" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnemyContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Control4" type="Control" parent="HBoxContainer/EnemyContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EnemyLineup" type="HBoxContainer" parent="HBoxContainer/EnemyContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="EnemyLineup#Panel1" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyLineup"]
+modulate = Color(1, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyLineup#Panel2" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyLineup"]
+modulate = Color(1, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyLineup#Panel3" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyLineup"]
+modulate = Color(1, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyLineup#Panel4" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyLineup"]
+modulate = Color(1, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyLineup#Panel5" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyLineup"]
+modulate = Color(1, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyLineup#Panel6" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyLineup"]
+modulate = Color(1, 1, 0, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyTrinkets" type="HBoxContainer" parent="HBoxContainer/EnemyContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="EnemyTrinkets#Panel1" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyTrinkets"]
+modulate = Color(1, 0, 1, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyTrinkets#Panel2" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyTrinkets"]
+modulate = Color(1, 0, 1, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="EnemyTrinkets#Panel3" type="Panel" parent="HBoxContainer/EnemyContainer/EnemyTrinkets"]
+modulate = Color(1, 0, 1, 1)
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Control5" type="Control" parent="HBoxContainer/EnemyContainer"]
+layout_mode = 2
+size_flags_vertical = 3

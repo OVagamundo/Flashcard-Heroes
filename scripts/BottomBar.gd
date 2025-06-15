@@ -4,7 +4,6 @@ extends Control
 @onready var gacha_machine_1 = $HBoxContainer/GachaMachinesContainer/GachaMachine1
 @onready var gacha_machine_2 = $HBoxContainer/GachaMachinesContainer/GachaMachine2
 @onready var gacha_machine_3 = $HBoxContainer/GachaMachinesContainer/GachaMachine3
-@onready var end_turn_button = $HBoxContainer/GachaMachinesContainer/EndTurnButton
 
 func _ready():
 	gacha_machine_1.gacha_body_button.pressed.connect(_on_gacha_machine_1_pressed)
