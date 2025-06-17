@@ -1,16 +1,22 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_gb_def"]
+[ext_resource type="Texture2D" path="res://assets/images/ItemSprites/Tier2Item.png" id="2_texture"]
 
 [resource]
-script = ExtResource("1_def")
+script = ExtResource("1_gb_def")
 id = "tier2_sword"
 display_name_key = "Steel Sword"
-description_key = "A well-crafted steel sword. +3 Power when equipped."
-icon_texture = null
+description_key = "A sharp steel sword."
+icon_texture = ExtResource("2_texture")
 tier = 2
-rarity = 1 # Uncommon
-ball_category = 1 # Item
+rarity = 1 # UNCOMMON
+ball_category = 1 # ITEM
+tags = []
+base_hp = 0
+base_pwr = 0
+ability_definition_refs = []
+item_slot_count = 0
 is_equippable = true
 is_consumable = false
-target_type_restriction = "UNIT"
+target_type_restriction = ""

@@ -3,14 +3,12 @@
 [ext_resource type="Script" path="res://scripts/Item.gd" id="1_abc"]
 
 [node name="Item" type="TextureRect"]
+size_flags_horizontal = 3  # Fill | Expand
+size_flags_vertical = 3    # Fill | Expand
 custom_minimum_size = Vector2(64, 64)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
+texture_filter = 1  # Linear
+stretch_mode = 6  # KEEP_ASPECT_COVERED
+expand_mode = 1  # Ignore Size
 script = ExtResource("1_abc")
 
 

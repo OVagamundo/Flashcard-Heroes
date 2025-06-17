@@ -96,22 +96,8 @@ layout_mode = 2
 [node name="BattleInventory" type="HBoxContainer" parent="HBoxContainer/PlayerContainer/BenchBattleInventory"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-
-[node name="Inventory#Panel1" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory"]
-modulate = Color(0, 0, 1, 1)
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-
-[node name="Inventory#Panel2" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory"]
-modulate = Color(0, 0, 1, 1)
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-
-[node name="Inventory#Panel3" type="Panel" parent="HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory"]
-modulate = Color(0, 0, 1, 1)
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 
 [node name="Control2" type="Control" parent="HBoxContainer/PlayerContainer"]
 layout_mode = 2

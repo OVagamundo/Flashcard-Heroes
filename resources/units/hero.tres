@@ -1,15 +1,19 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://djotdfcgofc5o"]
 
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_abc"]
-[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/hero.png" id="2_abc"]
+[ext_resource type="Script" uid="uid://dj3pk4ai8im5s" path="res://scripts/GachaBallDefinition.gd" id="1_abc"]
+[ext_resource type="Texture2D" uid="uid://6m7dllp4gsxh" path="res://assets/images/UnitSprites/hero.png" id="2_abc"]
 
 [resource]
 script = ExtResource("1_abc")
 id = "hero"
-rarity = 3 # HERO
-base_hp = 10
-base_pwr = 2
+display_name_key = ""
+description_key = ""
 icon_texture = ExtResource("2_abc")
+tier = 0
+rarity = 3
+ball_category = 0
+base_hp = 0
+base_pwr = 2
 is_equippable = false
 is_consumable = false
 target_type_restriction = ""

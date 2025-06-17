@@ -1,18 +1,22 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_def"]
-[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/guardian_t2.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/images/UnitSprites/berserker_t2.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_def")
 id = "tier2_knight"
 display_name_key = "Tier 2 Knight"
-description_key = "A sturdy knight with balanced stats."
+description_key = "A strong knight unit."
 icon_texture = ExtResource("2_tex")
 tier = 2
-rarity = 1 # Uncommon
-ball_category = 0 # Unit
+rarity = 1 # UNCOMMON
+ball_category = 0 # UNIT
+tags = []
 base_hp = 18
 base_pwr = 5
 ability_definition_refs = []
 item_slot_count = 1
+is_equippable = false
+is_consumable = false
+target_type_restriction = ""
