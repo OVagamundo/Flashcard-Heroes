@@ -8,29 +8,3 @@ Loaded 2 tier 3 gacha balls
 New run started! Hero: 
 Master Pool Tier 1 has 6 units.
 Battle pools created for combat!
-Draw requested for tier 1
-Drew a: TIER1_POTION_NAME
-Draw requested for tier 1
-Drew a: Tier 1 Warrior
-Draw requested for tier 1
-Drew a: Tier 1 Warrior
-Draw requested for tier 1
-Drew a: TIER1_POTION_NAME
-Draw requested for tier 1
-Drew a: Tier 1 Warrior
-Draw requested for tier 1
-Drew a: TIER1_POTION_NAME
-Draw requested for tier 1
-Tier 1 pool is empty! Cannot draw.
-Draw requested for tier 2
-Drew a: Tier 2 Knight
-Draw requested for tier 2
-Drew a: Steel Sword
-Draw requested for tier 2
-Drew a: Tier 2 Knight
-Draw requested for tier 2
-Drew a: Steel Sword
-Draw requested for tier 2
-Tier 2 pool is empty! Cannot draw.
-Draw requested for tier 2
-Tier 2 pool is empty! Cannot draw.

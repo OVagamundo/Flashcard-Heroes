@@ -24,17 +24,17 @@ GachaBall System: Definitions, Entities, & Core Behaviors
 5.6. Core Enums & States
 5.7. Tier & Rarity System
 1. Game Overview
-"Flashcard Heroes: Gachamon" (hereafter "Flashcard Heroes") is a single-player, turn-based roguelike that integrates strategic auto-battler combat with an engaging flashcard learning system. The core premise revolves around players building and curating a collection of unique entities called GachaBalls – which encompass both combat Units and utility Items. This collection, known as the Master Run Gacha Pool, functions as the player's "deck" for the current run, directly influencing the GachaBalls available to be drawn from Gacha Machines during tactical battles.
-Resource generation, particularly for activating Gacha Machines, is intrinsically linked to player performance in flashcard mini-games focusing on Japanese characters and vocabulary. Success in Flashcard Heroes demands a blend of long-term strategic planning in building the Master Run Gacha Pool, tactical decision-making in battles, and consistent engagement with the flashcard learning mechanics.
+"Flashcard Heroes: Gachamon" is a single-player, turn-based roguelike that integrates strategic auto-battler combat with an engaging flashcard learning system. The core premise revolves around players building and curating a collection of unique entities called GachaBalls – which encompass both combat Units and Items. This collection, known as the RunInventory, functions as the player's "deck" for the current run, directly influencing the GachaBalls available to be drawn from Gacha Machines during tactical battles.
+Resource generation, particularly for activating Gacha Machines, is intrinsically linked to player performance in flashcard mini-games focusing on Japanese characters and vocabulary. Success in Flashcard Heroes demands a blend of long-term strategic planning in building the RunInventory, tactical decision-making in battles, and consistent engagement with the flashcard learning mechanics.
 Each run begins with the player selecting a Hero Unit and a specific Flashcard Deck. The Hero Unit is a special, persistent character whose Health Points (HP) represent the player's overall life for the run. If the Hero Unit's HP is depleted to zero, the run ends in failure (Game Over). The primary objective is to navigate a procedurally generated path of encounters, strengthen the Hero and GachaBall collection, and ultimately defeat a series of challenging bosses. The final boss of the run only becomes accessible once the player has unlocked all flashcards within their chosen Flashcard Deck for that run.
 Meta-progression allows players to unlock new Heroes, Flashcard Decks, GachaBall types, and other game-enhancing elements, providing replayability and expanding strategic options for subsequent runs.
 2. Core Gameplay Loop & Flow
 2.1. Run Structure
 A single "run" in Flashcard Heroes is a complete playthrough attempt, from starting with a chosen Hero and Flashcard Deck to either achieving victory by defeating the Final Boss or succumbing to failure if the Hero's HP reaches zero.
 The Core Gameplay Loop is as follows:
-Run Start (Loadout): The player selects a Hero Unit and a Flashcard Deck. The Master Run Gacha Pool is initialized with a starting set of GachaBallInstances based on the chosen Hero.
+Run Start (Loadout): The player selects a Hero Unit and a Flashcard Deck. The RunInventory is initialized with a starting set of GachaBallInstances based on the chosen Hero.
 Path Selection (Node Choice): The player is presented with a choice of three procedurally generated nodes on a map. Each node represents a different type of encounter or opportunity (e.g., Battle, Shop, Event, Rest Site).
-Node Resolution: The player selects and resolves one node. This involves engaging with the node's specific mechanics.
+Node Resolution: The player selects and resolves one node. The ContentArea changes based on the current node type (Battle, Shop, Event, Rest Site). This is where the primary gameplay and interactions for each node type occur.
 Progression & Iteration: After resolving a node, the game's "Day" counter typically advances, often increasing the difficulty of subsequent encounters. The player then returns to Step 2 (Path Selection) to choose their next node, continuing this cycle.
 Boss Encounters: At specific milestones related to Flashcard Deck progression (e.g., every 20% of cards unlocked for mini-bosses, 100% unlocked for the final boss), mandatory boss battle nodes will appear.
 Run Conclusion: The run ends either in Victory (defeating the Final Boss) or Failure (Hero HP reaches zero). Meta-progression may be updated based on achievements and performance during the run.
@@ -42,7 +42,7 @@ Run Conclusion: The run ends either in Victory (defeating the Final Boss) or Fai
 Players always choose one out of three presented node options to advance.
 The types of nodes offered are determined by procedural generation rules, which may incorporate factors like the current "Day," player progression, and specific event flags to ensure variety and a balanced challenge.
 There is no guarantee of specific node types (like Shop or Rest Site) appearing at fixed intervals, encouraging adaptive strategy.
-Successfully completing a node typically leads to rewards (Gold, new GachaBallInstances for the Master Run Gacha Pool, Trinkets, etc.) and then a transition back to the Path Selection screen.
+Successfully completing a node typically leads to rewards (Gold, new GachaBallInstances for the RunInventory, Trinkets, etc.) and then a transition back to the Path Selection screen.
 2.3. Scene Transitions (Conceptual)
 The game will transition smoothly between different game states and scenes:
 Title Screen → Loadout Scene (Hero/Deck Selection) → Initial Path Choice Scene.
@@ -50,7 +50,7 @@ Path Choice Scene ↔ Selected Node Scene (Battle, Shop, Event, Rest Site).
 Battle Node → Battle Reward Sequence (if victorious) → Path Choice Scene.
 Battle Node → Game Over Screen (if Hero HP reaches zero) → Title Screen.
 Shop/Event/Rest Site Node → Interaction Resolution → Path Choice Scene.
-All transitions must ensure the persistent state of the current run (Hero HP, Gold, Master Run Gacha Pool contents, Day counter, active Trinkets, Flashcard Deck progress) is correctly maintained and carried forward. Temporary battle-specific states (like Current Battle Gacha Pools and Battle Discard Piles) are initialized anew for each battle.
+All transitions must ensure the persistent state of the current run (Hero HP, Gold, RunInventory contents, Day counter, active Trinkets, Flashcard Deck progress) is correctly maintained and carried forward. Temporary battle-specific states (like BattleInventory and Discard Pile) are initialized anew for each battle and are not persistent for the run.
 3. Resources
 Players manage several key resources that are crucial for progression and strategic decision-making within a run.
 3.1. Hero Health Points (HP)
@@ -69,7 +69,7 @@ Awarded for winning Battle Nodes (the amount may scale with battle difficulty or
 Obtained as a result of favorable outcomes in Event Nodes or specific choices made by the player.
 Can be won through "Gamble" actions at Rest Site Nodes.
 Expenditure:
-Used to purchase GachaBallInstances or services (e.g., Reroll Shop Inventory, Remove GachaBallInstance from Master Run Gacha Pool, Transform GachaBallInstance) at Shop Nodes.
+Used to purchase GachaBallInstances or services (e.g., Reroll Shop Inventory, Remove GachaBallInstance from RunInventory, Transform GachaBallInstance) at Shop Nodes.
 May be required as a cost for certain choices in Event Nodes.
 Used for "Gamble" actions at Rest Site Nodes.
 Persistence: Gold is accumulated and persists throughout the entirety of a single run. It is saved and loaded with the run data. All Gold is lost if the run ends in failure and does not carry over to new runs by default (unless specific meta-progression unlocks provide a small starting bonus).
@@ -141,7 +141,7 @@ A GachaBallInstance is a specific, unique occurrence of a GachaBall within the g
 Common Attributes for all GachaBallInstances:
 definition_id: (StringName) Stores the id of the GachaBallData this instance is based on, allowing lookup of its base properties.
 ball_uuid: (String) A universally unique identifier (UUID) generated when the instance is created, distinguishing it from all other instances, even those of the same type. This is crucial for tracking individual GachaBalls.
-current_location_state: (Enum: LocationState) Tracks the current logical position or status of this instance within the game (e.g., in the Master Run Gacha Pool tier 1 inventory slot 13, on the player's Bench slot 2, equipped on another Unit slot 1, in a Gacha Machine's drawable pool tier 2 inventory slot 6, etc.).
+current_location_state: (Enum: LocationState) Tracks the current logical position or status of this instance within the game (e.g., in the RunInventory tier 1 inventory slot 13, on the player's Bench slot 2, equipped on another Unit slot 1, in a Gacha Machine's drawable pool tier 2 inventory slot 6, etc.).
 instance_specific_modifiers: (Data Structure, e.g., Dictionary or Array) Stores any temporary or permanent modifications applied directly to this instance that deviate from its base GachaBallDefinition (e.g., persistent stat increases from certain events, current status effect applications).
 5.4. Unit GachaBalls
 Unit GachaBalls represent the characters that players deploy in battles.
@@ -182,14 +182,14 @@ TIER_1
 TIER_2
 TIER_3
 LocationState (for GachaBallInstances):
-IN_MASTER_RUN_POOL_TIER_1, IN_MASTER_RUN_POOL_TIER_2, IN_MASTER_RUN_POOL_TIER_3 (Indicates availability in the respective tier's inventory within the Master Run Gacha Pool)
-IN_BATTLE_GACHA_POOL_TIER_1, IN_BATTLE_GACHA_POOL_TIER_2, IN_BATTLE_GACHA_POOL_TIER_3 (Currently in the drawable inventory of the respective Gacha Machine for the battle)
+IN_RUN_INVENTORY_TIER_1, IN_RUN_INVENTORY_TIER_2, IN_RUN_INVENTORY_TIER_3 (Indicates availability in the respective tier's inventory within the RunInventory)
+IN_BATTLE_INVENTORY_TIER_1, IN_BATTLE_INVENTORY_TIER_2, IN_BATTLE_INVENTORY_TIER_3 (Currently in the drawable BattleInventory of the respective Gacha Machine for the battle)
 IN_PLAYER_BENCH (Unit instance in the player's reserve bench slots during battle)
 IN_PLAYER_LINEUP (Unit instance in an active combat slot in the player's lineup)
 IN_ENEMY_LINEUP (Unit instance in an enemy's combat slot)
-IN_BATTLE_INVENTORY (Item instance in the player's temporary item inventory during battle, not yet equipped)
+IN_ITEM_INVENTORY (Item instance in the player's temporary item inventory during battle, not yet equipped)
 EQUIPPED_ON_UNIT (Item instance equipped on a Unit instance; the Unit instance would store the item's ball_uuid)
-IN_BATTLE_DISCARD_PILE (Instance is in the discard pile for the current battle)
+IN_DISCARD_PILE (Instance is in the discard pile for the current battle)
 5.7. Tier & Rarity System
 Tier: Primarily dictates the Gacha Machine a GachaBall is compatible with and merge compatibility.
 Tier 0: Hero Units.
@@ -202,41 +202,41 @@ Tier 2 GachaBalls are UNCOMMON Rarity.
 Tier 3 GachaBalls can be RARE or LEGENDARY Rarity.
 Hero Units have no rarity, since they are unique and can't be obtained after the run starts.
 
-7. Master Run Gacha Pool
-The Master Run Gacha Pool is the player's persistent collection of unique GachaBallInstances (Units and Items) for the current run. It functions as the player's "deck," directly influencing the GachaBalls available to be drawn from Gacha Machines during battles and forming the basis for strategic team building throughout the run.
+7. RunInventory
+The RunInventory is the player's persistent collection of unique GachaBallInstances (Units and Items) for the current run. It functions as the player's "deck," directly influencing the GachaBalls available to be drawn from Gacha Machines (BattleInventory) during battles and forming the basis for strategic team building throughout the run.
 ### 7.1. Nature and Structure
 
-*   **Persistence**: The Master Run Gacha Pool and its contents (specific `GachaBallInstance`s) exist for the duration of the current run. It is initialized at the start of a new run based on the chosen Hero Unit's starting set of `GachaBall`s.
+*   **Persistence**: The RunInventory and its contents (specific `GachaBallInstance`s) exist for the duration of the current run. It is initialized at the start of a new run based on the chosen Hero Unit's starting set of `GachaBall`s.
 *   **Content**: Composed of individual `GachaBallInstance`s, each with a unique `ball_uuid` and its own `current_location_state` (refer to Section 4.5 for `LocationState` enum definitions).
-*   **Structure & Organization**: The Master Run Gacha Pool is logically organized into three distinct inventories, one for each `GachaBallTier` (refer to Section 4.5 for `GachaBallTier` enum definitions):
+*   **Structure & Organization**: The RunInventory is logically organized into three distinct inventories, one for each `GachaBallTier` (refer to Section 4.5 for `GachaBallTier` enum definitions):
     *   **Tier 1 Master Inventory**: Holds all Tier 1 `GachaBallInstance`s.
     *   **Tier 2 Master Inventory**: Holds all Tier 2 `GachaBallInstance`s.
     *   **Tier 3 Master Inventory**: Holds all Tier 3 `GachaBallInstance`s.
-    This tiered organization facilitates populating the corresponding Gacha Machines at the start of each battle. It also allows players to inspect the contents of their Master Run Gacha Pool by tier outside of battle (e.g., for planning Permanent Merges or shop interactions).
-*   **Capacity**: There is no hard limit on the number of `GachaBallInstance`s the Master Run Gacha Pool can hold.
-*   **Instance Uniqueness**: Each `GachaBallInstance` within the Master Run Gacha Pool is unique, identified by its `ball_uuid`.
-*   **Primary Interface**: The player's primary interface for viewing and managing the Master Run Gacha Pool outside of battle is through the three persistent Gacha Machines displayed in the UI. By inspecting a Gacha Machine (e.g., the Tier 1 machine), the player is directly viewing the contents of the Tier 1 Master Inventory.
+    This tiered organization facilitates populating the corresponding Gacha Machines at the start of each battle. It also allows players to inspect the contents of their RunInventory by tier outside of battle (e.g., for planning Permanent Merges or shop interactions).
+*   **Capacity**: There is no hard limit on the number of `GachaBallInstance`s the RunInventory can hold.
+*   **Instance Uniqueness**: Each `GachaBallInstance` within the RunInventory is unique, identified by its `ball_uuid`.
+*   **Primary Interface**: The player's primary interface for viewing and managing the RunInventory outside of battle is through the three persistent Gacha Machines displayed in the UI. By inspecting any Gacha Machine (e.g., the Tier 1 machine), the player is directly viewing the contents of all RunInventory inventories for all tiers.
 
 ### 7.2. Initial Population
 
-At the start of a new run, after the player selects their Flashcard Deck and Hero Unit, the Master Run Gacha Pool is initialized.
-This involves creating new `GachaBallInstance`s based on the chosen Hero Unit's predefined starting `GachaBallInstance`s (as defined in its `GachaBallDefinition`). These new instances are added to the appropriate tier's inventory within the Master Run Gacha Pool, and their `current_location_state` is set accordingly (e.g., `IN_MASTER_RUN_POOL_TIER_1`).
+At the start of a new run, after the player selects their Flashcard Deck and Hero Unit, the RunInventory is initialized.
+This involves creating new `GachaBallInstance`s based on the chosen Hero Unit's predefined starting `GachaBallInstance`s (as defined in its `GachaBallDefinition`). These new instances are added to the appropriate tier's inventory within the RunInventory, and their `current_location_state` is set accordingly (e.g., `IN_RUN_INVENTORY_TIER_1`).
 
 ### 7.3. Modification During a Run
 
-The Master Run Gacha Pool is dynamic and changes throughout a run:
+The RunInventory is dynamic and changes throughout a run:
 
 *   **Expansion**:
     *   New `GachaBallInstance`s are acquired as battle rewards, from shop purchases, or through event outcomes.
-    *   These new instances are added to the appropriate tier's inventory within the Master Run Gacha Pool, and their `current_location_state` is updated (e.g., `IN_MASTER_RUN_POOL_TIER_1`, `IN_MASTER_RUN_POOL_TIER_2`, etc.).
-    *   `GachaBallInstance`s resulting from Permanent Merges (see Section 9.4) are also added to the Master Run Gacha Pool. The `GachaBallInstance`s used as ingredients for these merges are removed (see Reduction below).
+    *   These new instances are added to the appropriate tier's inventory within the RunInventory, and their `current_location_state` is updated (e.g., `IN_RUN_INVENTORY_TIER_1`, `IN_RUN_INVENTORY_TIER_2`, etc.).
+    *   `GachaBallInstance`s resulting from Permanent Merges (see Section 9.4) are also added to the RunInventory. The `GachaBallInstance`s used as ingredients for these merges are removed (see Reduction below).
 *   **Reduction**:
-    *   `GachaBallInstance`s can be permanently removed from the Master Run Gacha Pool via specific shop services (e.g., "Remove Ball"). These instances are effectively destroyed and cease to be tracked within the game's state systems.
-    *   `GachaBallInstance`s used as ingredients in Permanent Merges (Section 9.4) are similarly consumed. They are removed from the Master Run Gacha Pool and all tracking, effectively being destroyed.
+    *   `GachaBallInstance`s can be permanently removed from the RunInventory via specific shop services (e.g., "Remove Ball"). These instances are effectively destroyed and cease to be tracked within the game's state systems.
+    *   `GachaBallInstance`s used as ingredients in Permanent Merges (Section 9.4) are similarly consumed. They are removed from the RunInventory and all tracking, effectively being destroyed.
 
 ## 8. Gacha System (In-Battle)
 
-This system governs how players acquire `GachaBallInstance`s from Gacha Machines during the Battle Management Phase (see Section 10.1), using Gacha Tokens (see Section 5.3). It relies on temporary "Current Battle Gacha Pools" populated from the Master Run Gacha Pool at the start of each battle.
+This system governs how players acquire `GachaBallInstance`s from Gacha Machines during the Battle Management Phase (see Section 10.1), using Gacha Tokens (see Section 5.3). It relies on temporary BattleInventories populated from the RunInventory at the start of each battle.
 
 ### 8.1. Gacha Machines
 
@@ -247,30 +247,30 @@ This system governs how players acquire `GachaBallInstance`s from Gacha Machines
     *   Tier 3 Gacha Machine: Costs 3 Gacha Tokens per draw.
 *   **Interaction**:
     *   Players can interact with a Gacha Machine to initiate a draw if they have sufficient Gacha Tokens (typically by clicking/tapping a draw button associated with the machine).
-    *   During the Battle Management Phase, players can inspect each Gacha Machine (e.g., by clicking/tapping its body) to view the `GachaBallInstance`s currently available in its "Current Battle Gacha Pool," including counts if multiple identical types are present.
+    *   During the Battle Management Phase, players can inspect each Gacha Machine (e.g., by clicking/tapping its body) to view the `GachaBallInstance`s currently available in its BattleInventory, including counts if multiple identical types are present.
 
 ### 8.2. Battle Initialization: Populating Gacha Machine Pools
 
 At the very start of each battle (e.g., during a `BATTLE_SETUP_PHASE`):
 
 1.  For each `GachaBallTier` (1, 2, and 3):
-    *   A temporary **"Current Battle Gacha Pool"** is created. This pool will serve as the drawable inventory for that tier's Gacha Machine for the duration of the current battle.
+    *   A temporary **BattleInventory** is created. This will serve as the drawable inventory for that tier's Gacha Machine for the duration of the current battle.
     *   A single, temporary **"Battle Discard Pile"** is created for the battle.
-2.  To populate these Current Battle Gacha Pools:
-    *   A deep copy of each GachaBallInstance from the Master Run Gacha Pool is created and placed into the corresponding Current Battle Gacha Pool of the same tier.
-    *   These temporary instances are assigned a `current_location_state` of `IN_BATTLE_GACHA_POOL_TIER_X` (e.g., `IN_BATTLE_GACHA_POOL_TIER_1` for temporary instances in the Tier 1 Battle Pool).
-    *   Crucially, the original `GachaBallInstance`s within the Master Run Gacha Pool **do not change their state** or "move"; they remain in their `IN_MASTER_RUN_POOL_TIER_X` state. This ensures the Master Run Gacha Pool is preserved. The temporary instances created for the battle are the ones drawn from Gacha Machines.
+2.  To populate these BattleInventories:
+    *   A deep copy of each GachaBallInstance from the RunInventory is created and placed into the corresponding BattleInventory of the same tier.
+    *   These temporary instances are assigned a `current_location_state` of `IN_BATTLE_INVENTORY_TIER_X` (e.g., `IN_BATTLE_INVENTORY_TIER_1` for temporary instances in the Tier 1 Battle Pool).
+    *   Crucially, the original `GachaBallInstance`s within the RunInventory **do not change their state** or "move"; they remain in their `IN_RUN_INVENTORY_TIER_X` state. This ensures the RunInventory is preserved. The temporary instances created for the battle are the ones drawn from Gacha Machines.
 
 ### 8.3. Drawing from a Gacha Machine
 
 During the Battle Management Phase, when a player activates a Gacha Machine:
 
 1.  The required Gacha Tokens are deducted from the player's current Gacha Token count.
-2.  A `GachaBallInstance` is randomly selected from that Gacha Machine's Current Battle Gacha Pool.
+2.  A `GachaBallInstance` is randomly selected from that Gacha Machine's BattleInventory.
 3.  The selected `GachaBallInstance`'s `current_location_state` is updated:
     *   If it's a Unit GachaBall (`category == GachaBallCategory.UNIT` as defined in Section 4.5), its state changes to `IN_PLAYER_BENCH` and spawn in the player's bench.
-    *   If it's an Item GachaBall (`category == GachaBallCategory.ITEM` as defined in Section 4.5), its state changes to `IN_BATTLE_INVENTORY` and spawn in the player's inventory.
-4.  The drawn `GachaBallInstance` is removed from that Gacha Machine's Current Battle Gacha Pool (it cannot be drawn again from that machine in the current battle unless it is reshuffled from the discard pile).
+    *   If it's an Item GachaBall (`category == GachaBallCategory.ITEM` as defined in Section 4.5), its state changes to `IN_ITEM_INVENTORY` and spawn in the player's inventory.
+4.  The drawn `GachaBallInstance` is removed from that Gacha Machine's BattleInventory (it cannot be drawn again from that machine in the current battle unless it is reshuffled from the discard pile).
 
 ### 8.4. Battle Discard Piles
 
@@ -279,15 +279,15 @@ This pile temporarily stores `GachaBallInstance`s that were removed from active 
 Defeated GachaBallInstances and their equipped items are sent to the Battle Discard Pile.
 
 ### 8.5. Reshuffling
-If a Gacha Machine's Current Battle Gacha Pool becomes empty during a battle (i.e., all GachaBallInstances initially moved into it have been drawn):
-All `GachaBallInstance`s in the Battle Discard Pile that possess the same `GachaBallTier` as this Gacha Machine are moved back into this Gacha Machine's Current Battle Gacha Pool.
-Their `current_location_state` is updated from `IN_BATTLE_DISCARD_PILE` to the corresponding `IN_BATTLE_GACHA_POOL_TIER_X` (e.g., `IN_BATTLE_GACHA_POOL_TIER_1` if it's a Tier 1 instance).
+If a Gacha Machine's BattleInventory becomes empty during a battle (i.e., all GachaBallInstances initially moved into it have been drawn):
+All `GachaBallInstance`s in the Discard Pile that possess the same `GachaBallTier` as this Gacha Machine are moved back into this Gacha Machine's BattleInventory.
+        Their `current_location_state` is updated from `IN_DISCARD_PILE` to the corresponding `IN_BATTLE_INVENTORY_TIER_X` (e.g., `IN_BATTLE_INVENTORY_TIER_1` if it's a Tier 1 instance).
 These specific instances are removed from the Battle Discard Pile.
 These reshuffled instances are now available to be drawn again.
 8.6. End of Battle Cleanup
 At the conclusion of a battle (after victory rewards or before transitioning from a loss):
-All temporary `GachaBallInstance`s that were created for and used during the battle (i.e., those that had `current_location_state`s such as `IN_BATTLE_GACHA_POOL_TIER_X`, `IN_BATTLE_DISCARD_PILE`, `IN_PLAYER_BENCH`, `IN_PLAYER_LINEUP` (excluding the persistent Hero Unit), `IN_BATTLE_INVENTORY`, or `EQUIPPED_ON_UNIT` for items on non-Hero units) cease to exist.
-The Master Run Gacha Pool itself remains as it was at the start of the battle, with its `GachaBallInstance`s still in their `IN_MASTER_RUN_POOL_TIER_X` states. The Master Pool is only modified by events that explicitly target its contents for permanent change (e.g., consumption of an instance for a Permanent Merge, or acquisition of new instances from battle rewards which are added directly to the Master Pool).
+All temporary `GachaBallInstance`s that were created for and used during the battle (i.e., those that had `current_location_state`s such as `IN_BATTLE_INVENTORY_TIER_X`, `IN_DISCARD_PILE`, `IN_PLAYER_BENCH`, `IN_PLAYER_LINEUP` (excluding the persistent Hero Unit), `IN_ITEM_INVENTORY`, or `EQUIPPED_ON_UNIT` for items on non-Hero units) cease to exist.
+The RunInventory itself remains as it was at the start of the battle, with its `GachaBallInstance`s still in their `IN_RUN_INVENTORY_TIER_X` states. The RunInventory is only modified by events that explicitly target its contents for permanent change (e.g., consumption of an instance for a Permanent Merge, or acquisition of new instances from battle rewards which are added directly to the RunInventory).
 Only the Hero Unit's current_hp is maintained.
 The player's Gacha Tokens are reset to zero (as they are node/battle-specific).
 9. Merge System
@@ -304,20 +304,20 @@ Recipes may need to be discovered or unlocked by the player through meta-progres
 The Merge System validates any merge attempt against the available and unlocked recipes.
 9.3. Temporary Merges (In-Battle)
 Context: Occur during the Battle Management Phase.
-Inputs: Involve two Unit GachaBallInstances of the same tier, selected from the player's Bench or Lineup. Item GachaBallInstances can also be merged from the Battle Inventory. 
+Inputs: Involve two Unit GachaBallInstances of the same tier, selected from the player's Bench or Lineup. Item GachaBallInstances can also be merged from the ItemInventory. 
 Outcome: The resulting merged GachaBallInstance is created and placed into the player's control for the current battle at the location of the last instance used in the merge.
-Persistence: This resulting merged GachaBallInstance exists only for the current battle. It is NOT added to the Master Run Gacha Pool after the battle and its input components are consumed for the battle but that does not affect the Master Run Gacha Pool.
-9.4. Permanent Merges (Master Run Gacha Pool)
+Persistence: This resulting merged GachaBallInstance exists only for the current battle. It is NOT added to the RunInventory after the battle and its input components are consumed for the battle but that does not affect the RunInventory.
+9.4. Permanent Merges (RunInventory)
 Context: Permanent Merges can be performed at any time outside of the Combat Phase. The player initiates a Permanent Merge by inspecting one of the Gacha Machines, selecting two compatible GachaBallInstances from within that machine's inventory, and confirming the action. This is the sole method for performing Permanent Merges.
 9.5. Item Handling During Unit Merges
 When two Unit GachaBallInstances are merged (either temporarily or permanently), any Item GachaBallInstances they had equipped are handled as follows:
-All equipped Item GachaBallInstances from both input units are equipped to the newly merged Unit GachaBallInstance, this only happens on temporary merges since equipped items are not saved to the Master Run Gacha Pool.
+All equipped Item GachaBallInstances from both input units are equipped to the newly merged Unit GachaBallInstance, this only happens on temporary merges since equipped items are not saved to the RunInventory.
 10. Battle System
 The Battle System governs combat encounters between the player's team of GachaBalls and enemy's team of GachaBalls and Hero Units.
 ### 10.1. Battle Phases & Turn Structure
 
 At the start of battle, only the player's Hero Unit is automatically placed in the lineup. All other player units must be deployed from the bench.
-The Player Bench has a fixed capacity of 3 slots. The battle inventory also has a fixed capacity of 3 slots. If there is no space on the Player Bench when a new Unit GachaBallInstance is acquired during battle, it will be placed in the next available slot in the player's Lineup. If both the Bench and Lineup are full, the Unit is sent directly to the Battle Discard Pile. Similarly, if the Battle Inventory is full when an Item GachaBallInstance is acquired, the Item is sent directly to the Battle Discard Pile.
+The Player Bench has a fixed capacity of 3 slots. The ItemInventory also has a fixed capacity of 3 slots. If there is no space on the Player Bench when a new Unit GachaBallInstance is acquired during battle, it will be placed in the next available slot in the player's Lineup. If both the Bench and Lineup are full, the Unit is sent directly to the Discard Pile. Similarly, if the ItemInventory is full when an Item GachaBallInstance is acquired, the Item is sent directly to the Discard Pile.
 Targeting is dynamic. When a unit is due to perform its action, it determines its target based on the current state of the battlefield at that exact moment.
 Each turn in a battle node proceeds through distinct phases:
 Start of Turn Phase (START_OF_TURN_PHASE):
@@ -331,7 +331,7 @@ Player can perform strategic actions:
 Deploy Unit GachaBallInstances from their Bench to their Lineup.
 Rearrange Unit GachaBallInstances within the Lineup or between Lineup and Bench.
 Perform Temporary Merges of compatible Unit GachaBallInstances (or Item GachaBallInstances).
-Equip Item GachaBallInstances from their Battle Inventory onto Unit GachaBallInstances in the Lineup or Bench.
+Equip Item GachaBallInstances from their ItemInventory onto Unit GachaBallInstances in the Lineup or Bench.
 Use consumable Item GachaBallInstances.
 This phase ends when the player clicks an "End Turn" button.
 Combat Phase (COMBAT_PHASE):
@@ -356,15 +356,15 @@ Ability-Driven: Unit actions are primarily determined by their defined abilities
 State Changes: Combat involves continuous updates to GachaBallInstance states (current_hp, status effects, location if defeated).
 10.3. Item Equipping & Usage (only possible in Battle Management Phase)
 Context: Occurs during the Battle Management Phase.
-Source: Item GachaBallInstances are drawn from Gacha Machines into the Battle Inventory.
+Source: Item GachaBallInstances are drawn from Gacha Machines into the ItemInventory.
 Equipping Process:
-Player selects an equippable Item GachaBallInstance from their Battle Inventory.
+Player selects an equippable Item GachaBallInstance from their ItemInventory.
 Player selects a target Unit GachaBallInstance (on Bench or Lineup).
 The system checks if the target Unit has an available generic item slot (based on its item_slot_count and currently equipped items).
-If a slot is available, the Item GachaBallInstance is equipped: its current_location_state changes to EQUIPPED_ON_UNIT, and its ball_uuid is associated with the Unit GachaBallInstance. The item is removed from the Battle Inventory. Any ON_EQUIP effects of the item trigger.
+If a slot is available, the Item GachaBallInstance is equipped: its current_location_state changes to EQUIPPED_ON_UNIT, and its ball_uuid is associated with the particular Unit GachaBallInstance. The item is removed from the ItemInventory. Any ON_EQUIP effects of the item trigger.
 If no empty slots are available, the action fails.
 Consuming Process:
-Player selects a consumable Item GachaBallInstance from Battle Inventory.
+Player selects a consumable Item GachaBallInstance from ItemInventory.
 Player may select a target if the item requires one.
 The item's effects are applied. if the item does not require a target, it is activated if used on any player unit.
 If the item is consumed, the item ceases to exist in the Battle pool of GachaBalls.
@@ -387,7 +387,7 @@ Selection & Uniqueness: The player selects one Hero Unit at the start of a run f
 Distinct starting base_hp and base_pwr.
 One or more unique passive abilities or core mechanics that significantly influence playstyle.
 A specific item_slot_count (e.g., 5 generic item slots).
-A predefined starting set of GachaBallInstances that populate the initial Master Run Gacha Pool.
+A predefined starting set of GachaBallInstances that populate the initial RunInventory.
 Persistence in Battle: The Hero Unit automatically participates in every battle of the run, starting in a designated position in the player's Lineup (e.g., backmost available slot).
 Run Lifeline: The Hero Unit's current_hp is the player's overall health for the run. If the Hero's current_hp reaches 0 (either in battle or due to events), the run ends.
 Restrictions:
@@ -414,7 +414,7 @@ Gacha System (e.g., "25% chance to draw an extra GachaBall on every draw").
 Flashcard Mini-Game (e.g., "+2 seconds on Flashcard Mini-Game timer").
 Battle mechanics (e.g., "Player team's first unit to act,  acts twice in a row in Combat Phase").
 Rarity/Power: Trinkets can have different rarities (Common, Uncommon, Rare, Legendary), influencing the magnitude or uniqueness of their effects.
-UI Display: Active Trinkets are displayed in the Fixed Top Bar of the UI. Players can inspect them to see their effects.
+UI Display: Active Trinkets are displayed in the TopArea of the UI. Players can inspect them to see their effects.
 
 13. Node Types & Logic
 This section details the specific behaviors and interactions within each type of node the player can encounter on the path.
@@ -427,11 +427,11 @@ Mini-Boss Battle: Mandatory encounters at progression milestones, featuring uniq
 Final Boss Battle: The ultimate encounter of the run, unlocked after all Flashcards in the Main Deck have been introduced.
 Resolution: The node is resolved upon victory (leading to rewards) or defeat (leading to Game Over).
 13.2. Shop Node
-Behavioral Role: An economic hub for spending Gold to strategically improve the Master Run Gacha Pool.
+Behavioral Role: An economic hub for spending Gold to strategically improve the RunInventory.
 Player Actions:
-Purchase GachaBallInstance: Buy specific GachaBallInstances from a randomly generated stock to add them to the Master Run Gacha Pool.
+Purchase GachaBallInstance: Buy specific GachaBallInstances from a randomly generated stock to add them to the RunInventory.
 Reroll Shop Inventory: Pay Gold to generate a new set of GachaBallInstances for purchase.
-Remove GachaBallInstance: Pay Gold to permanently remove a chosen GachaBallInstance from the Master Run Gacha Pool.
+Remove GachaBallInstance: Pay Gold to permanently remove a chosen GachaBallInstance from the RunInventory.
 Transform GachaBallInstance: Pay Gold to replace a chosen GachaBallInstance with another random GachaBallInstance of the same tier.
 Resolution: The node is resolved when the player chooses to leave the shop.
 13.3. Event Node
@@ -498,10 +498,10 @@ Feedback: All player actions must have clear and immediate visual and audio feed
 Consistency: Interaction patterns (e.g., selection, confirmation, inspection) should be uniform across all game scenes.
 16.2 UI Structure: The Persistent View
 The game's interface is built around a persistent view to provide the player with constant access to core information and actions.
-Fixed Top Bar: Always visible, this bar displays the player's Hero HP, current Gold, the Day counter, and active Trinkets. It also provides access to the game Menu.
-Fixed Bottom Bar: Always visible, this bar houses the three Gacha Machines (Tier 1, 2, and 3). These machines are the player's constant interaction point for drawing and managing their GachaBall collections.
-Dynamic Contextual Area: This is the large central portion of the screen. Its content changes based on the player's current location or node. It fluidly transitions to show the battleground, the shop interface, the node selection map, or event narratives without ever leaving the main game screen. This creates a seamless, unified experience.
-Overlays: Modal windows that appear on top of the entire interface for focused tasks, such as inspecting a Gacha Machine's inventory or confirming a merge. These modal windows do not feature explicit 'close' buttons; they are designed to automatically dismiss if the player clicks anywhere on the screen outside the bounds of the modal window itself or any sub-windows spawned from it.
+TopArea: Always visible, this area displays the player's Hero HP, current Gold, the Day counter, and active Trinkets. It also provides access to the game Menu.
+BottomArea: Always visible, this area houses the three Gacha Machines (Tier 1, 2, and 3). These machines are the player's constant interaction point for drawing and managing their GachaBall collections.
+ContentArea: This is the large central portion of the screen. Its content changes based on the player's current location or node. It fluidly transitions to show the battleground, the shop interface, the node selection map, or event narratives without ever leaving the main game screen. This creates a seamless, unified experience.
+ModalWindows: Modal windows that appear on top of the entire interface for focused tasks, such as inspecting a Gacha Machine's inventory or confirming a merge. These modal windows do not feature explicit 'close' buttons; they are designed to automatically dismiss if the player clicks anywhere on the screen outside the bounds of the modal window itself or any sub-windows spawned from it.
 16.3 Core Interaction Model
 Single Click/Tap: The primary method for selecting an entity (Unit, Item) or activating a button but also used for tooltips on or even inspection windows for elements that can't be selected like Gacha machines, keywords, Status Effects icons, etc.
 Double click / clicking on the same selected element again / Right-Click / Long Press: Used to open inspection windows for an entity without performing an action.
@@ -586,7 +586,7 @@ Player State:
 Current Gold amount.
 Hero Unit's current_hp and current base_hp (including any in-run upgrades).
 Collection State:
-A complete list of all GachaBallInstances in the Master Run Gacha Pool inventories (tier 1, 2, 3), including their definition_id, unique ball_uuid, and any instance_specific_modifiers.
+A complete list of all GachaBallInstances in the RunInventory (tier 1, 2, 3), including their definition_id, unique ball_uuid, and any instance_specific_modifiers.
 A list of all active Trinkets.
 Progression State:
 The complete list of flashcards in the run's Active Deck.

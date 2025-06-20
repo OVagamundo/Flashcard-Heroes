@@ -36,8 +36,8 @@ graph TD
     subgraph "Scenes & UI Components"
         TitleScene[Title.tscn]
         MainScene[Main.tscn]
-        TopBar[TopBar.tscn]
-        BottomBar[BottomBar.tscn]
+        TopArea[TopArea.tscn]
+        BottomArea[BottomArea.tscn]
         BattleScene[Battle.tscn]
         subgraph Battle.tscn
             BattleManager[BattleManager.gd]
@@ -54,7 +54,7 @@ graph TD
     %% Event-Driven Communication Flow (Decoupled)
     UserInput --> TitleScene & PathChoiceScene & BattleScene & GachaPoolInspection
     TitleScene & PathChoiceScene & BattleScene & BattleManager -- "Emits Signals" --> EventBus
-    EventBus -- "Broadcasts Signals" --> GameManager & SceneManager & BattleManager & AbilityResolver & TopBar & BottomBar
+    EventBus -- "Broadcasts Signals" --> GameManager & SceneManager & BattleManager & AbilityResolver & TopArea & BottomArea
     GameManager -- "Emits State Change Signals" --> EventBus
     SaveManager -- "Listens for Save/Load Requests" --> EventBus
     SceneManager -- "Listens for Scene Change Requests" --> EventBus
@@ -62,7 +62,7 @@ graph TD
 
     %% Scene Management Flow
     SceneManager -- "Loads/Unloads Scenes" --> MainScene
-    MainScene -- "Contains" --> TopBar & BottomBar
+    MainScene -- "Contains" --> TopArea & BottomArea
     MainScene -- "Hosts Overlays" --> GachaPoolInspection
     SceneManager -- "Loads Into Dynamic Area" --> PathChoiceScene & BattleScene
 
@@ -100,7 +100,7 @@ Player State & Resources:
 gold_updated(new_total: int): Emitted when the player's gold changes.
 hero_hp_updated(current_hp: int, base_hp: int): Emitted when the hero's HP changes.
 day_updated(new_day: int): Emitted when the day counter increments.
-master_pool_changed(): Emitted when a GachaBallInstance is added to or removed from the GameManager's master pool.
+run_inventory_changed(): Emitted when a GachaBallInstance is added to or removed from the GameManager's run_inventory.
 trinkets_updated(active_trinkets: Array[TrinketDefinition]): Emitted by GameManager when trinkets are added or removed.
 Battle & Turn Management:
 battle_start_requested(encounter_definition: EnemyEncounterDefinition): Emitted from a node (e.g., PathChoice) to initiate a battle with a specific enemy setup.
@@ -195,7 +195,7 @@ _state: StringName = "NO_RUN"
 current_day: int
 gold: int
 hero_instance: GachaBallInstance
-master_run_gacha_pool: Dictionary = {1: [], 2: [], 3: []}
+run_inventory: Dictionary = {1: [], 2: [], 3: []}  # Tiered dictionary for persistent run inventory
 active_trinkets: Array[TrinketDefinition]
 unlocked_hero_ids: Array[StringName]
 unlocked_deck_ids: Array[StringName]
@@ -206,7 +206,7 @@ Methods:
 _ready() -> void: Loads meta-progression data using SaveManager.load_meta_data() to populate unlocked_* arrays. Connects to EventBus.new_run_requested, EventBus.battle_start_requested, EventBus.battle_won, EventBus.battle_lost.
 _on_new_run_requested(hero_def_id, deck_def_id) -> void: Initializes a new run.
 _on_battle_start_requested(encounter_def) -> void: Prepares battle data and emits signals to start the battle.
-_prepare_battle_data(encounter_def) -> Dictionary: Creates deep copies of the hero and master pool for the battle.
+_prepare_battle_data(encounter_def) -> Dictionary: Creates deep copies of the hero and run inventory for the battle.
 _on_battle_won() -> void: Transitions state, gives rewards, and loads the next scene.
 _on_battle_lost() -> void: Ends the run.
 package_run_data() -> Dictionary: Serializes the entire run state into a dictionary for saving.
@@ -239,16 +239,16 @@ Inherits: Resource, class_name GachaBallInstance
 Enums:
 enum LocationState { 
     UNDEFINED, 
-    IN_MASTER_RUN_POOL_TIER_1, 
-    IN_MASTER_RUN_POOL_TIER_2, 
-    IN_MASTER_RUN_POOL_TIER_3, 
-    IN_BATTLE_GACHA_POOL_TIER_1, 
-    IN_BATTLE_GACHA_POOL_TIER_2, 
-    IN_BATTLE_GACHA_POOL_TIER_3, 
+    IN_RUN_INVENTORY_TIER_1, 
+    IN_RUN_INVENTORY_TIER_2, 
+    IN_RUN_INVENTORY_TIER_3, 
+    IN_BATTLE_INVENTORY_TIER_1, 
+    IN_BATTLE_INVENTORY_TIER_2, 
+    IN_BATTLE_INVENTORY_TIER_3, 
     IN_PLAYER_BENCH, 
     IN_PLAYER_LINEUP, 
     IN_ENEMY_LINEUP, 
-    IN_BATTLE_INVENTORY, 
+    IN_ITEM_INVENTORY, 
     EQUIPPED_ON_UNIT, 
     IN_BATTLE_DISCARD_PILE 
 }
@@ -397,10 +397,10 @@ NewGameButton.pressed: Emits EventBus.new_run_requested() with hardcoded starter
 ContinueButton.pressed: Emits EventBus.load_run_requested().
 4.2. Main.tscn
 Purpose: The persistent game shell holding UI bars and the dynamic content area.
-Node Tree: Control (Root) > VBoxContainer > TopBar.tscn, Control (Name: DynamicContentArea, Group: "dynamic_content_area"), BottomBar.tscn
+Node Tree: Control (Root) > VBoxContainer > TopArea.tscn, Control (Name: ContentArea, Group: "content_area"), BottomArea.tscn
 Script Logic (Main.gd):
 _ready(): Emits EventBus.load_scene_in_container_requested("res://scenes/path/PathChoice.tscn", $VBoxContainer/DynamicContentArea).
-4.3. TopBar.tscn & BottomBar.tscn
+4.3. TopArea.tscn & BottomArea.tscn
 Purpose: Display persistent run information and Gacha machines.
 Script Logic: Connect to relevant EventBus signals (hero_hp_updated, gold_updated, etc.) in _ready() to update their respective Label nodes.
 4.4. PathChoice.tscn
@@ -424,7 +424,7 @@ PlayerSideUI: Contains HBoxContainer (Name: PlayerLineup), HBoxContainer (Name: 
 Script Logic (BattleManager.gd):
 FSM States: IDLE, SETUP, START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, VICTORY, DEFEAT.
 Properties:
-_battle_gacha_pools: Dictionary: Stores the drawable instances for each tier for the current battle.
+battle_inventory: Dictionary: Stores the drawable instances for each tier for the current battle.
 _battle_discard_pile: Array: Stores all instances removed from play during the current battle.
 _gacha_tokens: int: The player's currency for the Gacha Machines in this battle.
 active_synergies: Dictionary: Tracks currently active synergies and their tiers.
@@ -433,7 +433,7 @@ Connect to EventBus signals: initiate_battle, draw_gacha_request, end_turn_butto
 SETUP State Logic:
 Clear all previous battle state (lineups, pools, discard).
 Populate _battle_gacha_pools by calling create_battle_copy() on each instance from battle_setup_data["player_pool"].
-Set each copied instance's current_location_state to the appropriate IN_BATTLE_GACHA_POOL_TIER_X.
+Set each copied instance's current_location_state to the appropriate IN_BATTLE_INVENTORY_TIER_X.
 Instantiate UnitDisplay.tscn for each enemy unit defined in battle_setup_data["encounter_def"] and add to the EnemyLineup container.
 Instantiate a UnitDisplay.tscn for the player hero from battle_setup_data["player_hero"] and add to the PlayerLineup.
 Set hero's current_location_state to IN_PLAYER_LINEUP.

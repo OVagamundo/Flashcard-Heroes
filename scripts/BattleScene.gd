@@ -1,20 +1,26 @@
 extends VBoxContainer
 
-# NOTE: Ensure your BattleScene.tscn has nodes named "PlayerLineup", "PlayerBench", and "BattleInventory".
-# These should be containers like HBoxContainer or GridContainer.
+const DiscardPileInspectorScene = preload("res://scenes/DiscardPileInspector.tscn")
+
 @onready var player_lineup = $HBoxContainer/PlayerContainer/PlayerLineup
 @onready var player_bench = $HBoxContainer/PlayerContainer/BenchBattleInventory/Bench
-@onready var battle_inventory = $HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory # Adjusted path, please verify in BattleScene.tscn
+@onready var battle_inventory = $HBoxContainer/PlayerContainer/BenchBattleInventory/BattleInventory
+@onready var view_discard_pile_button: Button = $HBoxContainer/EnemyContainer/ViewDiscardPileButton
 @onready var back_button = $BackButton
 
+const MAX_BENCH_SIZE = 3
+const MAX_LINEUP_SIZE = 6
+const MAX_INVENTORY_SIZE = 3
+
 const UnitScene = preload("res://scenes/Unit.tscn")
-const ItemScene = preload("res://scenes/Item.tscn") # Added ItemScene preload
+const ItemScene = preload("res://scenes/Item.tscn")
 
 func _ready():
 	back_button.pressed.connect(_on_back_pressed)
-	
-	# Connect to the new signal from the EventBus
 	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
+
+	if view_discard_pile_button:
+		view_discard_pile_button.pressed.connect(_on_view_discard_pile_button_pressed)
 
 	if RunState.hero_instance:
 		var hero_card = UnitScene.instantiate()
@@ -29,35 +35,47 @@ func _on_back_pressed():
 		get_parent()
 	)
 
-# This function will handle the draw request from any gacha machine
-func _on_draw_gacha_requested(tier: int):
-	print("Draw requested for tier ", tier)
-	
-	# Get the correct temporary battle pool for the requested tier
-	var pool = RunState.battle_gacha_pools[tier]
-	
+func _on_draw_gacha_requested(tier_drawn: int):
+	var pool = RunState.battle_gacha_pools[tier_drawn]
 	if pool.is_empty():
-		print("Tier ", tier, " pool is empty! Cannot draw.")
-		# In a full implementation, this is where you would implement reshuffling the discard pile.
 		return
 	
-	# 1. Pick a random instance and REMOVE it from the temporary pool
 	var drawn_instance = pool.pick_random()
 	pool.erase(drawn_instance)
-	# drawn_instance is now removed from the battle pool array.
-	# Now, update its persistent location state.
-	print("Drew a: ", drawn_instance.get_display_name())
-	
-	# 2. Check if it's a Unit or an Item and place it in the correct UI container
+
 	if drawn_instance.is_unit():
-		# It's a unit, so create a Unit card and place it on the bench
-		drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_PLAYER_BENCH)
-		var unit_card = UnitScene.instantiate()
-		player_bench.add_child(unit_card) 
-		unit_card.initialize(drawn_instance)
-	else:
-		# It's an item, so create an Item card and place it in the battle inventory
-		drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_BATTLE_INVENTORY)
-		var item_card = ItemScene.instantiate()
-		battle_inventory.add_child(item_card)
-		item_card.initialize(drawn_instance)
+		var unit_scene = UnitScene.instantiate()
+		if _get_entity_count(player_bench) < MAX_BENCH_SIZE:
+			drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_PLAYER_BENCH)
+			player_bench.add_child(unit_scene)
+			unit_scene.initialize(drawn_instance)
+		elif _get_entity_count(player_lineup) < MAX_LINEUP_SIZE:
+			drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_PLAYER_LINEUP)
+			player_lineup.add_child(unit_scene)
+			unit_scene.initialize(drawn_instance)
+		else:
+			drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_BATTLE_DISCARD_PILE)
+			RunState.add_to_discard_pile(drawn_instance)
+			unit_scene.queue_free()
+	else: # It's an item
+		var item_scene = ItemScene.instantiate()
+		if _get_entity_count(battle_inventory) < MAX_INVENTORY_SIZE:
+			drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_BATTLE_INVENTORY)
+			battle_inventory.add_child(item_scene)
+			item_scene.initialize(drawn_instance)
+		else:
+			drawn_instance.set_location_state(GachaBallInstance.LocationState.IN_BATTLE_DISCARD_PILE)
+			RunState.add_to_discard_pile(drawn_instance)
+			item_scene.queue_free()
+
+func _get_entity_count(container: Node) -> int:
+	var count = 0
+	for child in container.get_children():
+		if child.has_method("initialize"):
+			count += 1
+	return count
+
+func _on_view_discard_pile_button_pressed():
+	var inspector_instance = DiscardPileInspectorScene.instantiate()
+	add_child(inspector_instance)
+	inspector_instance.populate_display(RunState.battle_discard_pile)
