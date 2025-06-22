@@ -1,4 +1,3 @@
-# res://scripts/BattleManager.gd
 extends Node
 
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
@@ -28,6 +27,10 @@ func _ready():
 	item_slots = item_container.get_children()
 	_setup_battle()
 	_connect_signals()
+	EventBus.emit_signal("battle_state_changed", true)
+
+func _exit_tree():
+	EventBus.emit_signal("battle_state_changed", false)
 
 func _setup_battle():
 	for tier in GameManager.run_state.run_inventory:

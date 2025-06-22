@@ -14,6 +14,7 @@ signal battle_start_requested
 signal inspect_inventory_requested
 signal close_modal_requested
 signal display_discard_pile_requested
+signal battle_state_changed(is_in_battle: bool)
 
 # --- Player Action & Interaction Signals ---
 signal draw_gacha_requested(tier: int)

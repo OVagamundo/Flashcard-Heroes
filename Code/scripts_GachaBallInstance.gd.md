@@ -55,7 +55,13 @@ func initialize(definition: GachaBallDefinition):
 
 ## Creates a temporary, deep copy of this instance for a battle session.
 func create_battle_copy() -> GachaBallInstance:
-    var copy = self.duplicate(true) as GachaBallInstance
+    # BUGFIX: Do not use duplicate(). It does not copy non-exported script variables.
+    # Manually create a new instance and copy the data.
+    var copy = GachaBallInstance.new()
+    
+    # Manually copy the essential data.
+    copy.definition_id = self.definition_id
+    copy.equipped_item_uuids = self.equipped_item_uuids.duplicate(true)
     
     # Generate a new, unique UUID for the battle copy.
     copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)

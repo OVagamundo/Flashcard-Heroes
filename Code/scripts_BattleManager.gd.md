@@ -1,7 +1,6 @@
 <!-- Original: scripts/BattleManager.gd -->
 
 ```gdscript
-# res://scripts/BattleManager.gd
 extends Node
 
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
@@ -31,6 +30,10 @@ func _ready():
 	item_slots = item_container.get_children()
 	_setup_battle()
 	_connect_signals()
+	EventBus.emit_signal("battle_state_changed", true)
+
+func _exit_tree():
+	EventBus.emit_signal("battle_state_changed", false)
 
 func _setup_battle():
 	for tier in GameManager.run_state.run_inventory:
@@ -40,18 +43,20 @@ func _setup_battle():
 	if not _battle_inventory[0].is_empty():
 		var hero_instance = _battle_inventory[0][0]
 		_place_instance_in_slot(hero_instance, lineup_slots[0])
-		_battle_inventory[0].clear()
+		# BUGFIX: Erase only the specific hero instance, don't clear the whole tier.
+		_battle_inventory[0].erase(hero_instance)
 	else:
 		printerr("BattleManager: Hero instance not found.")
 	_update_discard_pile_ui()
 
 func _connect_signals():
 	# Connect signals for various UI interactions
-	
 	EventBus.inventory_action_requested.connect(_on_inventory_action_requested)
 	EventBus.choice_made.connect(_on_choice_made)
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
+	# FIX: Connect the draw gacha signal
+	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 
 # --- Core Logic Flows ---
 func _on_inventory_action_requested(source_view: Control, target_view: Control):
@@ -135,6 +140,30 @@ func _handle_equip(item_view: GachaBallView, unit_view: GachaBallView):
 		EventBus.emit_signal("invalid_action_triggered", item_view)
 
 # --- Gacha & Discard Pile ---
+func _on_draw_gacha_requested(tier: int):
+	if not _battle_inventory.has(tier) or _battle_inventory[tier].is_empty():
+		# TODO: Implement reshuffle logic as per TDD
+		print("BattleManager: Draw pool for tier %d is empty." % tier)
+		return
+
+	var pool = _battle_inventory[tier]
+	var drawn_instance = pool.pick_random()
+	pool.erase(drawn_instance)
+	
+	var definition = Database.units.get(drawn_instance.definition_id, Database.items.get(drawn_instance.definition_id))
+	var empty_slot = null
+	if definition.category == &"UNIT":
+		empty_slot = _find_empty_unit_slot()
+	elif definition.category == &"ITEM":
+		empty_slot = _find_empty_item_slot()
+
+	if is_instance_valid(empty_slot):
+		_place_instance_in_slot(drawn_instance, empty_slot)
+	else:
+		_discard_pile.append(drawn_instance)
+		_update_discard_pile_ui()
+		print("BattleManager: No empty slot found. Discarding ", drawn_instance.definition_id)
+
 func _on_display_discard_pile_requested():
 	var modal = DISCARD_PILE_MODAL_SCENE.instantiate()
 	modal.discard_pile_data = self._discard_pile

@@ -8,29 +8,11 @@ Database loaded.
  - Decks: 0
 GameManager: Start run requested. Creating new RunState.
 Initial run inventory created.
-BattleManager: No empty slot found. Discarding item_t2_c
-BattleManager: No empty slot found. Discarding item_t3_d
-BattleManager: Draw pool for tier 3 is empty.
-BattleManager: Draw pool for tier 2 is empty.
-BattleManager: No empty slot found. Discarding item_t1_b
-BattleManager: No empty slot found. Discarding item_t1_a
 View selected: GachaBallView
 View deselected: GachaBallView
 View selected: GachaBallView
 View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2378)
+ERROR: Node not found: "%MergeButton" (relative to "/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/ModalLayer/ChoicePromptUI").
+   at: get_node (scene/main/node.cpp:1878)
+ERROR: Node not found: "%SwapButton" (relative to "/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/ModalLayer/ChoicePromptUI").
+   at: get_node (scene/main/node.cpp:1878)
