@@ -6,10 +6,10 @@ extends Control
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var inspect_inventory_button: Button = %InspectInventoryButton
+@onready var modal_layer: CanvasLayer = %ModalLayer
 @onready var draw_tier1_button: Button = %DrawTier1Button
 @onready var draw_tier2_button: Button = %DrawTier2Button
 @onready var draw_tier3_button: Button = %DrawTier3Button
-@onready var modal_layer: CanvasLayer = %ModalLayer
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
@@ -20,9 +20,7 @@ func _ready():
 	draw_tier1_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 1))
 	draw_tier2_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 2))
 	draw_tier3_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 3))
-
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
-
 	_load_content(PATH_CHOICE_SCENE)
 
 func _clear_content_area():
@@ -37,10 +35,6 @@ func _load_content(scene_resource: PackedScene):
 	content_area.get_node("SubViewport").add_child(instance)
 
 func _on_battle_start_requested():
-	inspect_inventory_button.visible = false
-	draw_tier1_button.visible = true
-	draw_tier2_button.visible = true
-	draw_tier3_button.visible = true
 	_load_content(BATTLE_SCENE)
 
 func _on_inspect_inventory_pressed():

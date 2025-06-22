@@ -9,19 +9,26 @@ const CHOICE_PROMPT_UI_SCENE = preload("res://scenes/ChoicePromptUI.tscn")
 const DISCARD_PILE_MODAL_SCENE = preload("res://scenes/DiscardPileModal.tscn")
 
 # --- Node References (from @export in .tscn) ---
-@export var lineup_slots: Array[Node]
-@export var bench_slots: Array[Node]
-@export var item_slots: Array[Node]
-@export var discard_pile_button: Button
-@export var end_turn_button: Button
-@export var modal_layer: CanvasLayer
+@onready var lineup_container: HBoxContainer = %PlayerLineup
+@onready var bench_container: HBoxContainer = %PlayerBench
+@onready var item_container: HBoxContainer = %ItemInventory
+@onready var discard_pile_button: Button = %DiscardPileButton
+@onready var modal_layer: CanvasLayer = %ModalLayer
+
+
 
 # --- Battle State ---
+var lineup_slots: Array[Node]
+var bench_slots: Array[Node]
+var item_slots: Array[Node]
 var _battle_inventory: Dictionary = {0: [], 1: [], 2: [], 3: []}
 var _discard_pile: Array[GachaBallInstance] = []
 var _pending_action: Dictionary = {}
 
 func _ready():
+	lineup_slots = lineup_container.get_children()
+	bench_slots = bench_container.get_children()
+	item_slots = item_container.get_children()
 	_setup_battle()
 	_connect_signals()
 
@@ -39,12 +46,12 @@ func _setup_battle():
 	_update_discard_pile_ui()
 
 func _connect_signals():
-	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
+	# Connect signals for various UI interactions
+	
 	EventBus.inventory_action_requested.connect(_on_inventory_action_requested)
 	EventBus.choice_made.connect(_on_choice_made)
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
-	# end_turn_button connection can be added here when logic is implemented
 
 # --- Core Logic Flows ---
 func _on_inventory_action_requested(source_view: Control, target_view: Control):
@@ -128,29 +135,6 @@ func _handle_equip(item_view: GachaBallView, unit_view: GachaBallView):
 		EventBus.emit_signal("invalid_action_triggered", item_view)
 
 # --- Gacha & Discard Pile ---
-func _on_draw_gacha_requested(tier: int):
-	if not _battle_inventory.has(tier) or _battle_inventory[tier].is_empty():
-		print("No items of tier %d left to draw." % tier)
-		return
-		
-	var tier_pool = _battle_inventory[tier]
-	var drawn_instance = tier_pool.pick_random()
-	tier_pool.erase(drawn_instance)
-	
-	var definition = Database.units.get(drawn_instance.definition_id, Database.items.get(drawn_instance.definition_id))
-	var target_slot = null
-	
-	if definition.category == &"UNIT":
-		target_slot = _find_empty_unit_slot()
-	elif definition.category == &"ITEM":
-		target_slot = _find_empty_item_slot()
-
-	if is_instance_valid(target_slot):
-		_place_instance_in_slot(drawn_instance, target_slot)
-	else:
-		_discard_pile.push_back(drawn_instance)
-		_update_discard_pile_ui()
-
 func _on_display_discard_pile_requested():
 	var modal = DISCARD_PILE_MODAL_SCENE.instantiate()
 	modal.discard_pile_data = self._discard_pile

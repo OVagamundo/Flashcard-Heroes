@@ -46,6 +46,7 @@ size_flags_horizontal = 3
 layout_mode = 2
 
 [node name="PlayerLineup" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/PlayerArea"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
@@ -84,6 +85,7 @@ script = ExtResource("2_ghijk")
 layout_mode = 2
 
 [node name="PlayerBench" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
@@ -103,22 +105,23 @@ custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 script = ExtResource("2_ghijk")
 
-[node name="ItemIventory" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea"]
+[node name="ItemInventory" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
 
-[node name="ItemIventorySlot0" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemIventory"]
+[node name="ItemIventorySlot0" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemInventory"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 script = ExtResource("2_ghijk")
 
-[node name="ItemIventorySlot1" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemIventory"]
+[node name="ItemIventorySlot1" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemInventory"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 script = ExtResource("2_ghijk")
 
-[node name="ItemIventorySlot2" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemIventory"]
+[node name="ItemIventorySlot2" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemInventory"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 script = ExtResource("2_ghijk")
@@ -167,18 +170,23 @@ script = ExtResource("2_ghijk")
 
 [node name="DrawBallArea" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/EnemyArea"]
 layout_mode = 2
+alignment = 1
 
 [node name="DiscardPileArea" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea"]
 layout_mode = 2
 alignment = 1
 
-[node name="DiscardPileButton" type="Button" parent="UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea/DiscardPileArea"]
-layout_mode = 2
-text = "Discard Pile (0)"
-
 [node name="ReshuffleButton" type="Button" parent="UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea/DiscardPileArea"]
 layout_mode = 2
 text = "Reshuffle"
+
+[node name="DiscardPileButton" type="Button" parent="UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Discard Pile (0)"
+
+[node name="DrawButtonContainer" type="Control" parent="UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea"]
+layout_mode = 2
 
 [node name="Control3" type="Control" parent="UI/BattleArea/TeamAreas"]
 layout_mode = 2
@@ -189,6 +197,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="ModalLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
 layer = 128
 
 ```

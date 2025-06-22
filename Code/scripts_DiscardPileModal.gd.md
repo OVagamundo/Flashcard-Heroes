@@ -6,7 +6,7 @@ extends Control
 
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
 
-@export var discard_grid: GridContainer
+@onready var discard_grid: GridContainer = %DiscardGrid
 
 var discard_pile_data: Array[GachaBallInstance] = []
 

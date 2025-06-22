@@ -21,6 +21,7 @@ signal display_discard_pile_requested
 # --- Player Action & Interaction Signals ---
 signal draw_gacha_requested(tier: int)
 signal inventory_action_requested(source_view: Control, target_view: Control)
+signal choice_made(choice: StringName)
 signal reshuffle_discard_pile_requested
 
 # --- View State Signals ---

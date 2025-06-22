@@ -53,6 +53,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="DiscardGrid" type="GridContainer" parent="PanelContainer/VBoxContainer/ScrollContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
