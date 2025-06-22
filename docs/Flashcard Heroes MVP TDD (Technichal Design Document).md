@@ -56,7 +56,7 @@ Item Transfer on Merge: When units are merged, all items they held are transferr
 Discard & Reshuffle: The user can view the DiscardPile and click "Reshuffle" to return its contents to the BattleInventory.
 2. Data Schemas & Definitions
 These are the custom data structures for the project. They should be created as GDScript files inheriting from Resource.
-2.1. GachaBallDefinition.gd (res://resources/units/)
+2.1. GachaBallDefinition.gd (res://scripts/)
 Inherits: Resource, class_name GachaBallDefinition
 Purpose: The static template for a type of GachaBall.
 Properties:
@@ -93,7 +93,7 @@ Methods:
 initialize(def: GachaBallDefinition): Sets definition_id, generates a unique ball_uuid using the global `UUIDUtils` autoload, resizes equipped_item_uuids to def.item_slot_count (filling it with empty strings), and sets the initial location_state to RUN_INVENTORY. The UUID format is descriptive, e.g., "unit_t1_a_1677628800_1234".
 create_battle_copy() -> GachaBallInstance: Creates a temporary copy for a battle session. A new ball_uuid is generated, the origin_uuid links back to the permanent instance in the RunInventory, and the copy's location_state is set to BATTLE_INVENTORY.
 
-2.3. MergeRecipe.gd (res://scripts/)
+2.3. MergeRecipe.gd
 Inherits: Resource, class_name MergeRecipe
 Purpose: Defines a valid merge combination.
 Properties:
@@ -105,18 +105,14 @@ Properties:
 Example .tres Files:
 Recipes: Merge_Unit_A_B_to_C.tres, Merge_Unit_C_C_to_D.tres, Merge_Item_A_B_to_C.tres, Merge_Item_C_C_to_D.tres.
 
-2.4. FlashcardDeckDefinition.gd (res://resources/flashcard_decks/)
+2.4. FlashcardDeckDefinition.gd (res://scripts/)
 Inherits: Resource, class_name FlashcardDeckDefinition
-Purpose: Defines a flashcard deck for the educational component of the game.
+Purpose: This resource defines a collection of flashcards that will be used in the game's educational component.
 
-@export Variables:
-| `id` | String | A unique identifier for this GachaBall definition (e.g., "warrior_t1"). |
-| `display_name_key` | String | Localization key for the display name (e.g., "unit_warrior_name"). |
-| `description_key` | String | Localization key for the description (e.g., "unit_warrior_desc"). |
-
-**MVP Placeholder:** For the MVP, the game will use direct string values for display, but the architecture is designed to support localization in the future.
-
-Purpose: This resource defines a collection of flashcards that will be used in the game's educational component. Each deck represents a set of related questions and answers that players will engage with during gameplay.
+Properties:
+@export var id: StringName # Unique identifier for the deck.
+@export var display_name_key: String # Localization key for the deck's display name.
+@export var card_list: Array[Dictionary] # e.g., [{"question": "Q1", "answer": "A1"}]
 
 2.5. MVP Data File Creation & Asset Convention
 
@@ -125,21 +121,21 @@ Purpose: This resource defines a collection of flashcards that will be used in t
 **Data Convention:** The following `.tres` files must be created with the exact property values listed in the tables below to ensure testability and consistency. The `id` and `display_name` are derived from the resource's filename.
 
 **Table 2.5.1: GachaBallDefinition for Units & Hero**
-| Filename          | `id` (StringName) | `display_name` (String) | `tier` (int) | `category` (StringName) | `item_slot_count` (int) | `icon` (Path)                            |
-| :---------------- | :---------------- | :---------------------- | :----------- | :---------------------- | :---------------------- | :--------------------------------------- |
-| `Hero.tres`       | `hero`            | "Hero"                  | 0            | "UNIT"                  | 5                       | `res://assets/sprites/units/Hero.png`      |
-| `UnitTier1A.tres` | `unit_t1_a`       | "UnitTier1A"            | 1            | "UNIT"                  | 1                       | `res://assets/sprites/units/UnitTier1A.png`|
-| `UnitTier1B.tres` | `unit_t1_b`       | "UnitTier1B"            | 1            | "UNIT"                  | 1                       | `res://assets/sprites/units/UnitTier1B.png`|
-| `UnitTier2C.tres` | `unit_t2_c`       | "UnitTier2C"            | 2            | "UNIT"                  | 2                       | `res://assets/sprites/units/UnitTier2C.png`|
-| `UnitTier3D.tres` | `unit_t3_d`       | "UnitTier3D"            | 3            | "UNIT"                  | 4                       | `res://assets/sprites/units/UnitTier3D.png`|
+| Filename          | `id` (StringName) | `display_name_key` (String) | `tier` (int) | `category` (StringName) | `item_slot_count` (int) | `icon` (Path)                            |
+| :---------------- | :---------------- | :-------------------------- | :----------- | :---------------------- | :---------------------- | :--------------------------------------- |
+| `Hero.tres`       | `hero`            | "hero.name"                 | 0            | "UNIT"                  | 5                       | `res://assets/sprites/units/Hero.png`      |
+| `UnitTier1A.tres` | `unit_t1_a`       | "unit_t1_a.name"            | 1            | "UNIT"                  | 1                       | `res://assets/sprites/units/UnitTier1A.png`|
+| `UnitTier1B.tres` | `unit_t1_b`       | "unit_t1_b.name"            | 1            | "UNIT"                  | 1                       | `res://assets/sprites/units/UnitTier1B.png`|
+| `UnitTier2C.tres` | `unit_t2_c`       | "unit_t2_c.name"            | 2            | "UNIT"                  | 2                       | `res://assets/sprites/units/UnitTier2C.png`|
+| `UnitTier3D.tres` | `unit_t3_d`       | "unit_t3_d.name"            | 3            | "UNIT"                  | 4                       | `res://assets/sprites/units/UnitTier3D.png`|
 
 **Table 2.5.2: GachaBallDefinition for Items**
-| Filename          | `id` (StringName) | `display_name` (String) | `tier` (int) | `category` (StringName) | `item_slot_count` (int) | `icon` (Path)                            |
-| :---------------- | :---------------- | :---------------------- | :----------- | :---------------------- | :---------------------- | :--------------------------------------- |
-| `ItemTier1A.tres` | `item_t1_a`       | "ItemTier1A"            | 1            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier1A.png`|
-| `ItemTier1B.tres` | `item_t1_b`       | "ItemTier1B"            | 1            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier1B.png`|
-| `ItemTier2C.tres` | `item_t2_c`       | "ItemTier2C"            | 2            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier2C.png`|
-| `ItemTier3D.tres` | `item_t3_d`       | "ItemTier3D"            | 3            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier3D.png`|
+| Filename          | `id` (StringName) | `display_name_key` (String) | `tier` (int) | `category` (StringName) | `item_slot_count` (int) | `icon` (Path)                            |
+| :---------------- | :---------------- | :-------------------------- | :----------- | :---------------------- | :---------------------- | :--------------------------------------- |
+| `ItemTier1A.tres` | `item_t1_a`       | "item_t1_a.name"            | 1            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier1A.png`|
+| `ItemTier1B.tres` | `item_t1_b`       | "item_t1_b.name"            | 1            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier1B.png`|
+| `ItemTier2C.tres` | `item_t2_c`       | "item_t2_c.name"            | 2            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier2C.png`|
+| `ItemTier3D.tres` | `item_t3_d`       | "item_t3_d.name"            | 3            | "ITEM"                  | 0                       | `res://assets/sprites/items/ItemTier3D.png`|
 
 **Table 2.5.3: MergeRecipe Data**
 | Filename                   | `ingredient_a_id` | `ingredient_b_id` | `result_id` | `is_self_merge` | `merge_type` |
@@ -149,7 +145,20 @@ Purpose: This resource defines a collection of flashcards that will be used in t
 | `Merge_Item_A_B_to_C.tres` | `item_t1_a`       | `item_t1_b`       | `item_t2_c` | `false`         | "ITEM"       |
 | `Merge_Item_C_C_to_D.tres` | `item_t2_c`       | `item_t2_c`       | `item_t3_d` | `true`          | "ITEM"       |
 
-2.6. ConditionDefinition.gd (res://scripts/)
+2.6. RunState.gd (res://scripts/)
+Inherits: Resource, class_name RunState
+Purpose: Holds the entire persistent state for a player's run. It is created by the GameManager at the start of a run and contains the inventory and other progress markers.
+
+Properties:
+@export var gold: int
+@export var current_stage: int
+@export var current_battle: int
+@export var run_inventory: Dictionary # Tiered inventory: {0:[], 1:[], 2:[], 3:[]}
+
+Methods:
+start_new_run(): Initializes all properties to their starting values (e.g., gold=10, stage=1). It clears the `run_inventory` dictionary and then populates it with the starting set of GachaBallInstances as defined in Section 3.3.
+
+2.7. ConditionDefinition.gd (res://scripts/)
 Inherits: Resource, class_name ConditionDefinition
 Purpose: Defines conditions for ability effects and other game mechanics.
 
@@ -199,36 +208,35 @@ _ready() -> void:
 _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 - A helper function that iterates through a directory, loads each `.tres` file, and stores it in the provided dictionary, using the resource's `id` property as the key.
 3.3. GameManager.gd
-Purpose: Manages the persistent state of the current run (RunInventory). It initializes the run and handles permanent inventory actions by delegating to the MergeManager.
+Purpose: Manages the persistent state of the current run by creating and holding the `RunState` resource. It handles permanent inventory actions by delegating to the MergeManager.
 
 Properties:
-run_state: RunState  # Holds the tiered inventory structure
+run_state: RunState  # The single source of truth for the current run's state.
 is_inspecting_inventory: bool = false
+
+Signals:
+run_inventory_changed() # Emitted after a permanent merge or swap occurs.
 
 Methods:
 _ready() -> void:
 - Connects to EventBus.start_run_requested.
 - Connects to EventBus.inspect_inventory_requested to set its state.
 - Connects to EventBus.close_modal_requested to clear its state.
-- Connects to EventBus.inventory_action_requested to handle permanent merges.
+- Connects to EventBus.inventory_action_requested to handle permanent merges/swaps.
 
 _on_start_run_requested() -> void:
-- Clears any existing run_inventory.
-- Calls _create_initial_run_inventory().
-- Emits main_scene_requested.
+- Creates a new `RunState` resource instance.
+- Calls `run_state.start_new_run()` to populate the initial inventory.
+- Emits `run_inventory_changed`.
+- Emits `main_scene_requested`.
 
 _on_inventory_action_requested(source_view: Control, target_view: Control) -> void:
-- This function only proceeds if is_inspecting_inventory is true.
+- This function only proceeds if `is_inspecting_inventory` is true.
 - It retrieves the GachaBallInstance data from both the source and target views.
-- It delegates the merge logic to MergeManager.attempt_merge(source_data, target_data, self.run_state.run_inventory). The run_inventory is now a tiered dictionary, and the MergeManager is responsible for all manipulations within it.
-- If the merge is successful, the inventory is updated, and the logic concludes.
-- If the merge fails (i.e., returns null), it proceeds to perform a swap. It finds the indices of the source and target instances in the run_inventory array and swaps their positions.
-- This ensures that any interaction between two views in the inventory modal results in either a merge or a swap, providing consistent and intuitive feedback to the player.
-- If the merge is successful, it triggers a UI refresh of the inventory modal.
-
-_create_initial_run_inventory() -> void:
-- Creates a starting set of GachaBallInstances containing two of every defined unit and item type to allow for direct testing of all merge recipes. The inventory will contain: 1x Hero, 2x UnitTier1A, 2x UnitTier1B, 2x UnitTier2C, 2x UnitTier3D, 2x ItemTier1A, 2x ItemTier1B, 2x ItemTier2C, and 2x ItemTier3D.
-- For each GachaBallInstance created, it reads the tier from its definition and adds the instance to the correct sub-array within the run_state.run_inventory dictionary (e.g., run_inventory[definition.tier].append(instance)).
+- It delegates the merge logic to `MergeManager.attempt_merge(source_data, target_data, self.run_state.run_inventory)`.
+- If the merge is successful, it emits `run_inventory_changed`.
+- If the merge fails (returns null), it performs a swap of the two instances within the `run_state.run_inventory` tiered dictionary.
+- After a successful swap, it emits `run_inventory_changed`.
 3.4. InteractionManager.gd
 Purpose: Manages the temporary UI state of a user's action (e.g., which GachaBallView is currently selected). It acts as the central point for handling player input state.
 
@@ -329,10 +337,12 @@ func generate_uuid(prefix: StringName) -> String:
 4.1. Reusable UI Components (Views)
 The project will use a single, versatile scene for all visual representations of GachaBall data:
 
-**GachaBallView.tscn**: The primary visual element for any unit or item, whether it's on the board, in an inventory, or shown as an equipped item. Its root node is a PanelContainer with the GachaBallView.gd script attached. Its scene tree must contain:
-- VBoxContainer
-  - %Icon (TextureRect): Displays the main icon of the unit or item.
-  - %ItemGrid (GridContainer): For units that can hold items, this container will be dynamically populated with other GachaBallView instances (configured to be non-interactive) representing the equipped items.
+**GachaBallView.tscn**: The primary visual element for any unit or item. This single, reusable scene is instanced everywhere a GachaBall needs to be represented.
+- **Design Principle:** The `GachaBallView.tscn` is always the same. There are no different versions for inventories or equipped items. A parent manager (like `BattleManager`) may dynamically change properties of an instance, such as its `custom_minimum_size` or `is_interactable` flag, for layout purposes (e.g., to make equipped item icons appear smaller), but it is always the same base scene being used.
+- **Scene Tree:** Its root node is a PanelContainer with the `GachaBallView.gd` script attached. Its tree must contain:
+  - VBoxContainer
+    - %Icon (TextureRect): Displays the main icon of the unit or item.
+    - %ItemGrid (GridContainer): For units, this is dynamically populated with `GachaBallView` instances representing equipped items.
 4.2. Main Scenes
 Title.tscn & Loadout.tscn: Simple scenes with one button each that emit a signal to the EventBus.
 Main.tscn: The persistent shell.

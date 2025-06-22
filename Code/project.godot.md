@@ -1,3 +1,6 @@
+<!-- Original: project.godot -->
+
+```ini
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
 ; since the parameters that go here are not all obvious.
@@ -50,3 +53,5 @@ window/stretch/mode="canvas_items"
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+```
