@@ -10,9 +10,24 @@ GameManager: Start run requested. Creating new RunState.
 Initial run inventory created.
 View selected: GachaBallView
 View deselected: GachaBallView
+Merge successful. Created: unit_t2_c
 View selected: GachaBallView
 View deselected: GachaBallView
-ERROR: Node not found: "%MergeButton" (relative to "/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/ModalLayer/ChoicePromptUI").
-   at: get_node (scene/main/node.cpp:1878)
-ERROR: Node not found: "%SwapButton" (relative to "/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/ModalLayer/ChoicePromptUI").
-   at: get_node (scene/main/node.cpp:1878)
+Merge successful. Created: unit_t3_d
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+Merge successful. Created: item_t2_c
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: @PanelContainer@56
+View deselected: @PanelContainer@56
