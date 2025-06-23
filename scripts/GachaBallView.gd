@@ -1,4 +1,3 @@
-# res://scripts/GachaBallView.gd
 class_name GachaBallView
 extends PanelContainer
 
@@ -132,10 +131,17 @@ func _apply_selection_feedback():
 		stylebox.border_width_bottom = 2
 	add_theme_stylebox_override("panel", stylebox)
 
+# MODIFIED: Replaced the old notification logic with a more robust version.
 func _notification(what):
-	# This ensures that if a drag is cancelled (e.g., by pressing Esc),
-	# the original view becomes visible again.
+	# This ensures that if a drag is cancelled for any reason (e.g., dropping
+	# on an invalid area, pressing Esc), the original view becomes visible again.
 	if what == NOTIFICATION_DRAG_END:
-		if InteractionManager.is_drag_active:
+		# If the node is still invisible when the drag ends, it means the drop
+		# was not handled by a process that explicitly took ownership (like a merge,
+		# which would queue_free it). Therefore, it must be made visible.
+		if not self.visible:
 			self.visible = true
+		
+		# Always reset the global drag flag to prevent it from getting stuck.
+		if InteractionManager.is_drag_active:
 			InteractionManager.is_drag_active = false

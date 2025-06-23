@@ -6,6 +6,7 @@ extends Node
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
 const CHOICE_PROMPT_UI_SCENE = preload("res://scenes/ChoicePromptModal.tscn")
 const DISCARD_PILE_MODAL_SCENE = preload("res://scenes/DiscardPileModal.tscn")
+const UNIT_INSPECTION_MODAL_SCENE = preload("res://scenes/UnitInspectionModal.tscn")
 
 # --- Node References (from @export in .tscn) ---
 @onready var lineup_container: HBoxContainer = %PlayerLineup
@@ -20,7 +21,8 @@ const DISCARD_PILE_MODAL_SCENE = preload("res://scenes/DiscardPileModal.tscn")
 var lineup_slots: Array[Node]
 var bench_slots: Array[Node]
 var item_slots: Array[Node]
-var _battle_inventory: Dictionary = {0: [], 1: [], 2: [], 3: []}
+var _battle_inventory: Dictionary = {0: [], 1: [], 2: [], 3: []} # Master list for the whole battle
+var _draw_pools: Dictionary = {0: [], 1: [], 2: [], 3: []}      # Consumable list for drawing
 var _discard_pile: Array[GachaBallInstance] = []
 var _pending_action: Dictionary = {}
 
@@ -36,17 +38,24 @@ func _exit_tree():
 	EventBus.emit_signal("battle_state_changed", false)
 
 func _setup_battle():
+	# 1. Create the master inventory of battle-specific copies.
 	for tier in GameManager.run_state.run_inventory:
 		for instance in GameManager.run_state.run_inventory[tier]:
 			_battle_inventory[tier].append(instance.create_battle_copy())
 	
-	if not _battle_inventory[0].is_empty():
-		var hero_instance = _battle_inventory[0][0]
+	# 2. Create the consumable draw pools from the master inventory.
+	for tier in _battle_inventory:
+		# .duplicate() creates a shallow copy of the array, which is what we want.
+		# The instances themselves are not duplicated again.
+		_draw_pools[tier] = _battle_inventory[tier].duplicate()
+
+	# 3. Place the hero and remove them from the DRAW POOL, not the master inventory.
+	if not _draw_pools[0].is_empty():
+		var hero_instance = _draw_pools[0][0]
 		_place_instance_in_slot(hero_instance, lineup_slots[0])
-		# BUGFIX: Erase only the specific hero instance, don't clear the whole tier.
-		_battle_inventory[0].erase(hero_instance)
+		_draw_pools[0].erase(hero_instance) # Erase from the draw pool only.
 	else:
-		printerr("BattleManager: Hero instance not found.")
+		printerr("BattleManager: Hero instance not found in draw pool.")
 	_update_discard_pile_ui()
 
 func _connect_signals():
@@ -57,6 +66,7 @@ func _connect_signals():
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
 	# FIX: Connect the draw gacha signal
 	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
+	EventBus.unit_inspection_requested.connect(_on_unit_inspection_requested)
 
 # --- Core Logic Flows ---
 func _on_inventory_action_requested(source_view: Control, target_view: Control):
@@ -105,6 +115,11 @@ func _on_choice_made(choice: StringName):
 	elif choice == &"SWAP": _handle_swap(source, target)
 	_pending_action.clear()
 
+func _on_unit_inspection_requested(unit_view: GachaBallView):
+	var modal = UNIT_INSPECTION_MODAL_SCENE.instantiate()
+	modal_layer.add_child(modal)
+	modal.display_unit(unit_view.get_instance_data(), _battle_inventory)
+
 # --- Action Handlers ---
 func _handle_merge(source_view: GachaBallView, target_view: GachaBallView):
 	var merged_instance = MergeManager.attempt_merge(source_view.get_instance_data(), target_view.get_instance_data(), _battle_inventory)
@@ -135,20 +150,20 @@ func _handle_equip(item_view: GachaBallView, unit_view: GachaBallView):
 	if empty_slot_idx != -1:
 		unit_data.equipped_item_uuids[empty_slot_idx] = item_data.ball_uuid
 		item_view.queue_free()
-		_redraw_equipped_items(unit_view)
 	else:
 		EventBus.emit_signal("invalid_action_triggered", item_view)
 
 # --- Gacha & Discard Pile ---
 func _on_draw_gacha_requested(tier: int):
-	if not _battle_inventory.has(tier) or _battle_inventory[tier].is_empty():
-		# TODO: Implement reshuffle logic as per TDD
+	# MODIFIED: Check the _draw_pools, not the master inventory.
+	if not _draw_pools.has(tier) or _draw_pools[tier].is_empty():
 		print("BattleManager: Draw pool for tier %d is empty." % tier)
 		return
 
-	var pool = _battle_inventory[tier]
+	# MODIFIED: Use the _draw_pools for drawing.
+	var pool = _draw_pools[tier]
 	var drawn_instance = pool.pick_random()
-	pool.erase(drawn_instance)
+	pool.erase(drawn_instance) # Remove from the draw pool, NOT the master inventory.
 	
 	var definition = Database.units.get(drawn_instance.definition_id, Database.items.get(drawn_instance.definition_id))
 	var empty_slot = null
@@ -189,28 +204,6 @@ func _place_instance_in_slot(instance_data: GachaBallInstance, slot_node: Node):
 	var view = GACHA_BALL_VIEW_SCENE.instantiate()
 	slot_node.add_child(view)
 	view.set_instance_data(instance_data)
-	_redraw_equipped_items(view)
-
-func _redraw_equipped_items(unit_view: GachaBallView):
-	# This check is important because items don't have an item_grid.
-	if not unit_view.has_node("VBoxContainer/ItemGrid"): return
-	
-	var item_grid = unit_view.get_node("VBoxContainer/ItemGrid")
-	for child in item_grid.get_children():
-		child.queue_free()
-		
-	var unit_data = unit_view.get_instance_data()
-	if not unit_data or unit_data.equipped_item_uuids.is_empty(): return
-	
-	for item_uuid in unit_data.equipped_item_uuids:
-		if item_uuid.is_empty(): continue
-		var item_instance = _find_instance_by_uuid(item_uuid)
-		if item_instance:
-			var item_icon_view = GACHA_BALL_VIEW_SCENE.instantiate()
-			item_icon_view.set_instance_data(item_instance)
-			item_icon_view.is_interactable = false
-			item_icon_view.custom_minimum_size = Vector2(32, 32)
-			item_grid.add_child(item_icon_view)
 
 func _find_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	for tier in _battle_inventory:

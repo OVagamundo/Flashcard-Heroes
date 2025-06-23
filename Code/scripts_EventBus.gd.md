@@ -15,6 +15,7 @@ signal battle_start_requested
 
 # --- UI & Modal Signals ---
 signal inspect_inventory_requested
+signal unit_inspection_requested(unit_view: GachaBallView) # <-- NEW SIGNAL
 signal close_modal_requested
 signal display_discard_pile_requested
 signal battle_state_changed(is_in_battle: bool)

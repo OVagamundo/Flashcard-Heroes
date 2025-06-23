@@ -11,8 +11,7 @@ const UNIT_INSPECTION_MODAL_SCENE = preload("res://scenes/UnitInspectionModal.ts
 @onready var item_container: HBoxContainer = %ItemInventory
 @onready var discard_pile_button: Button = %DiscardPileButton
 @onready var modal_layer: CanvasLayer = %ModalLayer
-
-
+@onready var reshuffle_button: Button = get_node("UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea/DiscardPileArea/ReshuffleButton")
 
 # --- Battle State ---
 var lineup_slots: Array[Node]
@@ -61,9 +60,9 @@ func _connect_signals():
 	EventBus.choice_made.connect(_on_choice_made)
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
-	# FIX: Connect the draw gacha signal
 	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	EventBus.unit_inspection_requested.connect(_on_unit_inspection_requested)
+	reshuffle_button.pressed.connect(_on_reshuffle_requested)
 
 # --- Core Logic Flows ---
 func _on_inventory_action_requested(source_view: Control, target_view: Control):
@@ -152,12 +151,10 @@ func _handle_equip(item_view: GachaBallView, unit_view: GachaBallView):
 
 # --- Gacha & Discard Pile ---
 func _on_draw_gacha_requested(tier: int):
-	# MODIFIED: Check the _draw_pools, not the master inventory.
 	if not _draw_pools.has(tier) or _draw_pools[tier].is_empty():
-		print("BattleManager: Draw pool for tier %d is empty." % tier)
+		print("BattleManager: Draw pool for tier %d is empty. Consider reshuffling." % tier)
 		return
 
-	# MODIFIED: Use the _draw_pools for drawing.
 	var pool = _draw_pools[tier]
 	var drawn_instance = pool.pick_random()
 	pool.erase(drawn_instance) # Remove from the draw pool, NOT the master inventory.
@@ -181,6 +178,25 @@ func _on_display_discard_pile_requested():
 	modal.discard_pile_data = self._discard_pile
 	modal_layer.add_child(modal)
 
+func _on_reshuffle_requested():
+	if _discard_pile.is_empty():
+		print("Reshuffle requested, but discard pile is empty.")
+		return
+
+	print("Reshuffling %d items from discard pile into draw pools." % _discard_pile.size())
+	for instance in _discard_pile:
+		var definition = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+		if definition:
+			if _draw_pools.has(definition.tier):
+				_draw_pools[definition.tier].append(instance)
+			else:
+				printerr("BattleManager: Cannot reshuffle instance '%s' to a non-existent tier pool: %d" % [instance.definition_id, definition.tier])
+		else:
+			printerr("BattleManager: Could not find definition for instance '%s' during reshuffle." % instance.definition_id)
+	
+	_discard_pile.clear()
+	_update_discard_pile_ui()
+
 func _update_discard_pile_ui():
 	discard_pile_button.text = "DISCARD PILE (%d)" % _discard_pile.size()
 
@@ -189,6 +205,9 @@ func _find_empty_unit_slot() -> PanelContainer:
 	for slot in bench_slots:
 		if slot.get_child_count() == 0: return slot
 	for slot in lineup_slots:
+		# Don't overwrite the hero in slot 0 if it's there
+		if slot.get_child_count() > 0 and slot.get_child(0).get_instance_data().definition_id == &"hero":
+			continue
 		if slot.get_child_count() == 0: return slot
 	return null
 
