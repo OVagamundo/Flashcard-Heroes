@@ -4,7 +4,7 @@
 extends Node
 
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
-const CHOICE_PROMPT_UI_SCENE = preload("res://scenes/ChoicePromptUI.tscn")
+const CHOICE_PROMPT_UI_SCENE = preload("res://scenes/ChoicePromptModal.tscn")
 const DISCARD_PILE_MODAL_SCENE = preload("res://scenes/DiscardPileModal.tscn")
 
 # --- Node References (from @export in .tscn) ---
