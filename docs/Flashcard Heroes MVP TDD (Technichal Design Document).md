@@ -2,16 +2,25 @@ Flashcard Heroes Core Mechanics MVP TDD v12.1
 1. Introduction & MVP Goal
 1.1. Purpose
 This document provides the complete and final technical blueprint for the "Core Mechanics MVP" of Flashcard Heroes. It is a self-contained specification designed to be followed precisely by a development agent. All required data, scene structures, script logic, and interaction flows are explicitly defined herein to eliminate ambiguity and assumptions. This document is the sole source of truth for the MVP.
-1.2. Core Architectural Principles
-This project is built on two key ideas to keep the code clean and easy to manage:
-Separation of Data and View:
-Data (GachaBallInstance): This is a Resource file, which is like a data container in Godot. It holds all the information about a specific, unique GachaBall (its ID, UUID, what items it has equipped, etc.). It has no visual component and is never shown directly to the player. Think of it as the "brain" or the "character sheet."
-View (GachaBallView and its variants): This is a UI Scene (Control node). It's the visual representation that the player sees and interacts with on screen. Each GachaBallView holds a reference to a GachaBallInstance. Its job is to look at the data in that instance and update its own appearance (its icon, the icons of its equipped items, etc.) to match. Think of it as the "body" or the "pawn on the board."
-Event-Driven Communication (EventBus):
-Instead of different parts of the code calling each other directly (which can get messy), they communicate by sending out signals, like radio broadcasts. A central, global script called EventBus manages these signals. For example, when the player clicks a button, that button's script doesn't need to know about the GameManager; it just emits a signal like start_run_requested. The GameManager, which is listening for that signal, then performs its action. This keeps all the systems decoupled and independent.
+### 1.2. Core Architectural Principles
+This project is built on three key ideas to keep the code clean and easy to manage:
+
+1.  **Separation of Data and View:**
+    *   **Data (`GachaBallInstance`):** A `Resource` file holding all information about a unique GachaBall (ID, UUID, equipped items). It has no visual component.
+    *   **View (`GachaBallView`):** A UI `Scene` that visually represents a `GachaBallInstance`. Its job is to display the data it is given.
+
+2.  **Event-Driven Communication (`EventBus`):
+    *   Systems communicate indirectly by emitting signals through the global `EventBus`. For example, a button emits `start_run_requested`, and the `GameManager` listens for it. This keeps all systems decoupled.
+
+3.  **Contextual Data Persistence:**
+    *   The game operates in two distinct data contexts. The interaction logic (how you merge/swap) is universal, but its effect depends on the context.
+    *   **Run Context (Permanent):** Active outside of battle. All changes made to the `run_inventory` are saved for the duration of the run.
+    *   **Battle Context (Temporary):** Active during a battle. All changes (merges, draws, discards) affect a temporary copy of the inventory and last only for the current battle.
+
 1.3. Terminology Clarification
-Slot: A conceptual, numbered position within an inventory's data array (e.g., PlayerBench[0]). This is a data-level concept used by the programmer.
-GachaBallView: The player-facing UI element. The player clicks on and drags GachaBallViews. When this view is not displaying any data, it will show a faint placeholder frame. When it is displaying data, it shows the GachaBall's icon and other information.
+*   **Slot:** A conceptual, numbered position within an inventory's data array (e.g., `PlayerBench[0]`). This is a data-level concept used by the programmer.
+*   **Zone:** A specific area of the UI with its own interaction rules (e.g., `PlayerLineup`, `PlayerBench`, `ItemInventory`, `InventoryModal`).
+*   **GachaBallView:** The player-facing UI element. The player clicks on and drags `GachaBallView`s. When this view is not displaying any data, it will show a faint placeholder frame. When it is displaying data, it shows the GachaBall's icon and other information.
 1.4. Directory Structure
 
 The project follows a strict directory structure. All scripts reside directly in `scripts/`, and all scenes reside directly in `scenes/`. Only the `assets/` and `resources/` directories are organized with subdirectories.
@@ -43,17 +52,17 @@ res://
 
 This structure ensures clear separation of concerns and makes the project more maintainable. All scripts go in the `scripts/` directory, all scenes in `scenes/`, and all resources in `resources/` with appropriate subdirectories.
 
-1.5. MVP User Journey
+### 1.5. MVP User Journey
 A developer using only this document will build an application where a player can:
-Launch & Start: Navigate Title -> Loadout -> Main. A default Hero and starting set of GachaBallInstances are created and stored in the persistent run_inventory.
+*   **Navigate and Start:** Launch the game and start a run, creating a persistent `run_inventory`.
+*   **Manage Inventories:** Open an `InventoryModal` to manage their collection. The modal's content and the permanence of actions depend on the game's context (Run vs. Battle). Both Run and Battle inventory modals are fully interactive workspaces.
+*   **Enter Battle:** Start a battle, creating a temporary copy of the inventory for that battle.
+*   **Build a Team:** Draw GachaBalls from the temporary battle inventory, which appear on the bench or item slots.
+*   **Interact with the Board:** Use a universal Drag-and-Drop or Click-and-Click system to move, swap, equip, and merge GachaBalls according to strict zone-based rules.
+*   **Merge & Swap:** When a valid merge is possible, the player is prompted to either "Merge" or "Swap". If no merge is possible, a swap occurs automatically.
+*   **Inspect GachaBalls:** Use specific, context-aware inputs (simple click vs. long-press/double-click) to open an inspection window for any GachaBall.
+*   **Manage Discard Pile:** View the contents of the discard pile in a read-only modal and reshuffle them back into the battle's draw pools.
 
-Main Scene: The Main scene appears. The user can click "Inspect Inventory" to open a modal view of their run_inventory. Inside this modal, the user can perform permanent merges by dragging one GachaBall onto another. Swapping and moving GachaBalls is also supported.
-Enter Battle: From PathChoice, the user starts a battle. The Battle scene loads into the Main scene's ContentArea. The BottomArea UI updates to show "Draw" buttons.
-Battle Setup: A temporary BattleInventory (copy of RunInventory) is created. The player's board starts empty, save for the Hero. A "Discard Pile" button appears.
-Build a Team: The user clicks "Draw" buttons to pull random GachaBallInstances. A corresponding GachaBallView is instantiated and placed on the board. If a destination is full, the drawn instance goes to the DiscardPile.
-Manage the Board: The user interacts with GachaBallViews via two equivalent methods: Click-and-Click or Drag-and-Drop to move, equip, swap, and merge.
-Item Transfer on Merge: When units are merged, all items they held are transferred to the new, higher-tier unit.
-Discard & Reshuffle: The user can view the DiscardPile and click "Reshuffle" to return its contents to the BattleInventory.
 2. Data Schemas & Definitions
 These are the custom data structures for the project. They should be created as GDScript files inheriting from Resource.
 2.1. GachaBallDefinition.gd (res://scripts/)
@@ -353,19 +362,21 @@ Battle.tscn: Loaded into ContentArea.
 Node Tree: Battle(Node) > UI(Control), %ModalLayer(CanvasLayer).
 UI contains Control nodes for PlayerLineup (6 empty Control placeholders) and PlayerBench (3 empty Control placeholders). It also contains a DiscardPileArea with "Discard Pile" and "Reshuffle" buttons.
 
-4.4. Battle Setup (BattleManager.gd)
-During the SETUP state, the BattleManager will:
-- Create a _battle_inventory dictionary, structured by tier: {0: [], 1: [], 2: [], 3: []}
-- Iterate through the GameManager.run_state.run_inventory dictionary, creating a battle copy of each instance and placing it into the corresponding tier of the new _battle_inventory
-- Place each GachaBallView instance in the appropriate container (PlayerLineup or EnemyLineup)
+### 4.4. Battle Board Zone Rules
+The containers within `Battle.tscn` define the primary interaction zones, each with strict rules governing its contents.
+
+*   **`%PlayerLineup` (`ZONE_LINEUP`):** Can **only** contain GachaBalls of category "UNIT".
+*   **`%PlayerBench` (`ZONE_BENCH`):** Can **only** contain GachaBalls of category "UNIT".
+*   **`ItemInventory` (`ZONE_ITEM_INV`):** Can **only** contain GachaBalls of category "ITEM".
+*   **`EnemyLineup` (`ZONE_ENEMY_LINEUP`):** For the MVP, this zone is non-interactive for the player. Any attempt to drag a player view to this zone is an invalid action.
+
+During the SETUP state, the BattleManager will create a temporary `_battle_inventory` (a master list for the battle) and `_draw_pools` (a consumable gacha inventory) by creating battle copies of every instance in the `GameManager.run_state.run_inventory`.
 - Instantiate GachaBallView instances for all units in the battle
 - Position them in the appropriate placeholders
 - Set up their initial state and connections
 - Handle the "Start Battle" button press to transition to the ACTIVE state. This transient battle state (team, position) is stored on the visual GachaBallView node, not the data resource
-- Place each GachaBallView instance in the appropriate container (PlayerLineup or EnemyLineup)
 
-InspectInventoryView.tscn & DiscardPileView.tscn: Modal overlays with a ScrollContainer and a GridContainer. The grid will be dynamically populated with GachaBallView.tscn instances to display the contents of the RunInventory or DiscardPile respectively, not pre-filled with empty views.
-ChoicePromptUI.tscn: A simple modal with "Merge" and "Swap" buttons.
+
 
 4.5. Script and Scene Associations
 To ensure clarity, the following core scripts are attached to their respective scene's root node:
@@ -417,78 +428,35 @@ Implementation: In View_A's script, _get_drag_data() calls set_drag_preview(self
 This allows a user to close a modal and interact with the game behind it in a single, fluid action. This behavior does **not** trigger if the user clicks and then drags the mouse; this distinction prevents interference with the drag-and-drop system.
 
 *Implementation Note:* This will be achieved using a `ColorRect` node for the modal background. Its `mouse_filter` property must be set to **`MOUSE_FILTER_STOP`** to intercept the click. Its script will connect to the `gui_input` signal. The function will detect a valid click (an `InputEventMouseButton` that is pressed and then released without significant mouse travel), at which point it will first emit `EventBus.close_modal_requested`, then immediately inject a new pair of mouse button press/release events at the click's global position using `Input.parse_input_event()`, and finally consume the original event to prevent duplicates.
-6. Detailed Logic Flows & Behaviors
-6.1. Gacha Draw Flow (in BattleManager.gd)
-1. Receives `draw_gacha_requested(tier: int)` signal from EventBus.
-2. If `_battle_inventory[tier]` is empty, calls `_reshuffle_tier_from_discard(tier)`.
-3. If the tier's pool is still empty, the action fails silently.
-4. Removes a random GachaBallInstance from the tier's pool in `_battle_inventory`.
-5. Determines the first available empty placeholder on the PlayerBench, then the PlayerLineup.
-6. If an empty placeholder is found:
-   - Instantiates a new GachaBallView.tscn
-   - Assigns the drawn GachaBallInstance data to the view
-   - Places the new view as a child of the empty placeholder Control node
-   - Updates the view to display the correct data
-7. If no empty placeholder is found on the board, the drawn GachaBallInstance is added directly to the `_discard_pile` array.
-6.2. Master Interaction Flow (in BattleManager.gd)
-1. Receives `inventory_action_requested(source_view: Control, target_view: Control)` from EventBus.
-2. Retrieves the GachaBallInstance data from both views.
+## 6. Detailed Logic Flows & Behaviors
 
-3. Master Interaction Logic:
-The BattleManager (or GameManager for the run inventory) will analyze the interaction based on the source and target views in a precise order:
+### 6.1. Gacha Draw Flow (in BattleManager.gd)
+1.  Receives `draw_gacha_requested(tier: int)`.
+2.  Removes a random GachaBallInstance from the `_draw_pools[tier]`.
+3.  Emits `battle_inventory_changed` to notify the UI that the pools have changed.
+4.  Finds the first available empty slot in the appropriate zone (`PlayerBench`/`PlayerLineup` for Units, `ItemInventory` for Items).
+5.  If a slot is found, places the new view there. If not, the instance is added to the `_discard_pile`.
 
-**Case A: Interaction between two GachaBallView instances.**
-- Retrieve instance_data from both source and target views.
-- Check for Merge Possibility: Call MergeManager.find_recipe() with the definition IDs of the two instances.
-  - If a valid recipe exists (Complex Interaction): The interaction is both a potential merge and a potential swap. Emit the EventBus.show_choice_prompt signal with the options "MERGE" and "SWAP". The manager will then wait for the EventBus.choice_made signal to execute the player's chosen action.
-  - If no recipe exists: The action cannot be a merge. Proceed to check if it's a valid swap (e.g., both are units, or both are items). If it is a valid swap, execute the swap logic immediately. If not, treat it as an invalid action.
+### 6.2. Master Interaction Flow (The Unified Handler)
+This logic is implemented in both `GameManager` and `BattleManager` to handle the `inventory_action_requested` signal, ensuring consistent behavior based on zones.
 
-**Case B: Interaction between a GachaBallView and an empty placeholder Control node.**
-- This is a Move operation. The GachaBallView's data does not change, but the view itself is moved to become a child of the target placeholder node, visually moving it on the board.
+**Pre-Check:** The system first determines the **Zone** of the source and target views. If the zones are different (e.g., Board to Modal) or invalid for the interaction (e.g., Player to Enemy), the action is rejected.
 
-**Case C: Interaction between an Item GachaBallView and a Unit GachaBallView.**
-- This is an Equip operation. Check the target unit's equipped_item_uuids data array for an empty slot. If found, update the data on both instances. Then, instantiate a new GachaBallView for the item, set its is_interactable property to false, and place it inside the target unit's %ItemGrid container. If the unit has no empty item slots, treat it as an invalid action.
+**Case A: Moving to an Empty Slot**
+*   This is a **Move** operation.
+*   **Validation:** The system checks if the source GachaBall's category ("UNIT" or "ITEM") is allowed in the target slot's zone.
+*   **Outcome:** If valid, the view is moved. If invalid (e.g., moving a Unit to an Item slot), it's an invalid action.
 
-**Design Note:** Unequipping an item by dragging it off a unit is intentionally not a feature in the MVP. Once an item is equipped, the player is committed to that choice. An item can only be moved to a new unit when its current wielder is used as an ingredient in a merge, at which point the item is transferred to the resulting merged unit. In case the unit is sent to the discard pile with the equipped items, in this case the unit and its equipped items are both sent to the discard pile separately.
+**Case B: View on View**
+*   **Equip Check (Board Only):** If the source is an "ITEM" from the `ItemInventory` zone and the target is a "UNIT" in the `PlayerLineup` or `PlayerBench` zone, it is processed as an **Equip** action. This check takes precedence over the merge/swap logic.
+*   **Merge/Swap Logic:** If it's not an equip action, the universal "Merge > Prompt > Swap" flow is triggered.
 
-**Case D: All other interactions.**
-- These are considered an Invalid Action. Emit EventBus.invalid_action_triggered to provide feedback to the player.
-6.3. Merge Logic
-1. **Merge Trigger**
-   - When two GachaBallInstances are dropped onto each other, the system checks for a valid merge recipe using `MergeManager.find_recipe()`
-   - If a valid recipe exists, the merge process begins
+**Design Note on Unequipping:** Unequipping an item by dragging it off a unit is intentionally not a feature in the MVP. Once an item is equipped, the player is committed to that choice. An item can only be moved to a new unit when its current wielder is used as an ingredient in a merge, at which point the item is transferred to the resulting merged unit.
 
-2. **Merge Process** (handled by `MergeManager.attempt_merge()`)
-   - **Validation**:
-     - Verifies both instances belong to the same inventory (either both in RunInventory or both in BattleInventory)
-     - Confirms the merge recipe is valid for the given instance types
-   
-   - **New Instance Creation**:
-     - Creates a new GachaBallInstance using the recipe's result definition
-     - Generates a new UUID for the merged instance
-     - Sets the `origin_uuid` to maintain lineage (useful for battle copies)
-   
-   - **Item Transfer**:
-     - Creates a temporary list of all GachaBallInstance objects representing the items equipped on both parent units.
-     - The item instances themselves are not copied. They are re-assigned to the new merged unit. This is a critical design choice to ensure that any state changes an item accumulates during a battle (e.g., a "times equipped" counter, stat boosts) persist with that unique item instance for the duration of the battle.
-     - The MergeManager will handle moving the data references from the parents' equipped_item_uuids arrays to the new unit's array.
-   
-   - **Inventory Update**:
-     - Removes both parent instances from their source inventory
-     - Adds the new merged instance to the same inventory
-     - Equips items from the temporary list to the new instance, respecting its `item_slot_count`
-   
-   - **UI Update**:
-     - Removes the visual representations of the parent units
-     - Creates and positions a new GachaBallView for the merged unit
-     - Updates any relevant UI elements to reflect the inventory changes
+*   **Inside a Modal (`RunInventory` or `BattleInventory`):** The data is updated in the corresponding inventory dictionary (`run_inventory` or `_battle_inventory` + `_draw_pools`). The modal then refreshes itself automatically by listening to the `run_inventory_changed` or `battle_inventory_changed` signal, showing the new unit in its correct tier.
 
-3. **Post-Merge Effects**
-   - Emits appropriate signals for visual/audio feedback
-   - Updates the game state if necessary
-   - Triggers any post-merge abilities or effects
-
-4. **Error Handling**:
-   - If the merge fails at any point (invalid recipe, full inventory, etc.), the operation is rolled back
-   - Provides appropriate feedback to the player
-   - Ensures game state remains consistent
+#### 6.3.2. Merge Process (Inside `MergeManager.attempt_merge`)
+1.  **Validation:** Confirms both instances belong to the same inventory context and that a valid recipe exists.
+2.  **New Instance Creation:** Creates a new `GachaBallInstance` based on the recipe's result definition and generates a new UUID.
+3.  **Item Transfer:** Creates a temporary list of all `GachaBallInstance` objects representing the items equipped on both parent units. The item instances themselves are **not copied**; they are re-assigned to the new merged unit to preserve any battle-specific state they may have accumulated.
+4.  **Inventory Update:** Removes both parent instances and all their transferred items from the source inventory/inventories. Then adds the new merged instance and re-adds the transferred items back into the inventory, now linked to the new unit.
