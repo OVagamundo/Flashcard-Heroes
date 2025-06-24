@@ -2,6 +2,7 @@
 
 ```gdscript
 extends Node
+class_name BattleManager
 
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
 const CHOICE_PROMPT_UI_SCENE = preload("res://scenes/ChoicePromptUI.tscn")
@@ -223,6 +224,10 @@ func _place_instance_in_slot(instance_data: GachaBallInstance, slot_node: Node):
 	var view = GACHA_BALL_VIEW_SCENE.instantiate()
 	slot_node.add_child(view)
 	view.set_instance_data(instance_data)
+
+# --- Public Getters ---
+func get_draw_pools() -> Dictionary:
+	return _draw_pools
 
 func _find_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	for tier in _battle_inventory:

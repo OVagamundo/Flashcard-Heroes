@@ -50,7 +50,6 @@ func _populate_grids(inventory_data: Dictionary):
 		return
 
 	var grids = {
-		0: tier_1_grid, # Hero (Tier 0) goes into the Tier 1 grid for display
 		1: tier_1_grid,
 		2: tier_2_grid,
 		3: tier_3_grid,

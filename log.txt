@@ -8,51 +8,21 @@ Database loaded.
  - Decks: 0
 GameManager: Start run requested. Creating new RunState.
 Initial run inventory created.
-View selected: @PanelContainer@12
-View deselected: @PanelContainer@12
-Permanent swap successful.
-View selected: @PanelContainer@32
-View deselected: @PanelContainer@32
-Merge successful. Created: item_t3_d
-Permanent merge successful. New unit: item_t3_d
-View selected: @PanelContainer@51
-View deselected: @PanelContainer@51
-Permanent swap successful.
-View selected: @PanelContainer@64
-View deselected: @PanelContainer@64
-BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 3 is empty. Consider reshuffling.
-BattleManager: No empty slot found. Discarding item_t1_a
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-BattleManager: No empty slot found. Discarding item_t1_a
-BattleManager: No empty slot found. Discarding item_t1_b
-BattleManager: No empty slot found. Discarding item_t1_b
-BattleManager: Draw pool for tier 1 is empty. Consider reshuffling.
-Reshuffling 4 items from discard pile into draw pools.
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
+View selected: @PanelContainer@3
+View deselected: @PanelContainer@3
 Merge successful. Created: unit_t2_c
-View selected: @PanelContainer@102
-View deselected: @PanelContainer@102
-View selected: @PanelContainer@102
-View deselected: @PanelContainer@102
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
+Permanent merge successful. New unit: unit_t2_c
+View selected: @PanelContainer@16
+View deselected: @PanelContainer@16
 Merge successful. Created: unit_t2_c
-View selected: @PanelContainer@108
-View deselected: @PanelContainer@108
+Permanent merge successful. New unit: unit_t2_c
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+Merge successful. Created: item_t2_c
+View selected: @PanelContainer@58
+View deselected: @PanelContainer@58
 View selected: GachaBallView
 View deselected: GachaBallView
 View selected: GachaBallView
@@ -61,15 +31,8 @@ View selected: GachaBallView
 View deselected: GachaBallView
 View selected: GachaBallView
 View deselected: GachaBallView
-View selected: @PanelContainer@108
-View deselected: @PanelContainer@108
 View selected: GachaBallView
 View deselected: GachaBallView
-View selected: @PanelContainer@102
-View deselected: @PanelContainer@102
-View selected: @PanelContainer@102
-View deselected: @PanelContainer@102
-Merge successful. Created: unit_t3_d
 View selected: GachaBallView
 View deselected: GachaBallView
 Merge successful. Created: unit_t3_d
@@ -77,30 +40,16 @@ View selected: GachaBallView
 View deselected: GachaBallView
 View selected: GachaBallView
 View deselected: GachaBallView
-View selected: @PanelContainer@110
-View deselected: @PanelContainer@110
-BattleManager: No empty slot found. Discarding item_t1_b
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: @PanelContainer@74
+View deselected: @PanelContainer@74
+View selected: GachaBallView
+View deselected: GachaBallView
+View selected: GachaBallView
+View deselected: GachaBallView
+BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
+BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
 BattleManager: Draw pool for tier 1 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 1 is empty. Consider reshuffling.
-View selected: GachaBallView
-View deselected: GachaBallView
-Merge successful. Created: item_t2_c
-BattleManager: Draw pool for tier 1 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 1 is empty. Consider reshuffling.
-Reshuffling 1 items from discard pile into draw pools.
-View selected: GachaBallView
-View deselected: GachaBallView
-Merge successful. Created: item_t2_c
-View selected: @PanelContainer@113
-View deselected: @PanelContainer@113
-Merge successful. Created: item_t3_d
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: @PanelContainer@110
-View deselected: @PanelContainer@110
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: @PanelContainer@110
-View deselected: @PanelContainer@110

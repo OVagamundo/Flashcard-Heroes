@@ -26,27 +26,6 @@ extends Resource
 }
 
 
-## The player's hero instance for the current battle.
-var hero_instance: GachaBallInstance
-
-## Gacha pools for the current battle, generated from the run inventory.
-var battle_gacha_pools: Dictionary = {}
-
-## The discard pile for the current battle.
-var battle_discard_pile: Array[GachaBallInstance] = []
-
-
-## Populates the battle-specific gacha pools from the run inventory.
-func create_battle_pools() -> void:
-	# TODO: Implement pool creation logic based on TDD.
-	# This will involve creating battle copies of units and items.
-	pass
-
-## Adds a GachaBallInstance to the battle discard pile.
-func add_to_discard_pile(ball: GachaBallInstance) -> void:
-	battle_discard_pile.append(ball)
-
-
 ## Resets the run state to the initial state for a new run.
 func start_new_run() -> void:
 	gold = 10  # Starting gold

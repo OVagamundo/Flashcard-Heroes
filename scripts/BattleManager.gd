@@ -35,24 +35,27 @@ func _exit_tree():
 	EventBus.emit_signal("battle_state_changed", false)
 
 func _setup_battle():
-	# 1. Create the master inventory of battle-specific copies.
+	# 1. Get the Hero instance directly from its dedicated property in RunState.
+	var hero_run_instance: GachaBallInstance = GameManager.run_state.hero_instance
+
+	# 2. Create the Hero's battle copy and place it directly on the board.
+	if is_instance_valid(hero_run_instance):
+		var hero_battle_copy = hero_run_instance.create_battle_copy()
+		# Add the hero to the master battle inventory, but NOT the draw pool.
+		_battle_inventory[0].append(hero_battle_copy)
+		_place_instance_in_slot(hero_battle_copy, lineup_slots[0])
+	else:
+		printerr("CRITICAL: BattleManager could not find the Hero instance in the RunState! The game cannot continue correctly.")
+
+	# 3. Populate battle inventories and draw pools with ONLY the gacha-able units/items.
 	for tier in GameManager.run_state.run_inventory:
 		for instance in GameManager.run_state.run_inventory[tier]:
-			_battle_inventory[tier].append(instance.create_battle_copy())
-	
-	# 2. Create the consumable draw pools from the master inventory.
-	for tier in _battle_inventory:
-		# .duplicate() creates a shallow copy of the array, which is what we want.
-		# The instances themselves are not duplicated again.
-		_draw_pools[tier] = _battle_inventory[tier].duplicate()
+			var battle_copy = instance.create_battle_copy()
+			# Add to both the master list and the consumable draw pool.
+			_battle_inventory[tier].append(battle_copy)
+			_draw_pools[tier].append(battle_copy)
 
-	# 3. Place the hero and remove them from the DRAW POOL, not the master inventory.
-	if not _draw_pools[0].is_empty():
-		var hero_instance = _draw_pools[0][0]
-		_place_instance_in_slot(hero_instance, lineup_slots[0])
-		_draw_pools[0].erase(hero_instance) # Erase from the draw pool only.
-	else:
-		printerr("BattleManager: Hero instance not found in draw pool.")
+	# 4. Final UI update.
 	_update_discard_pile_ui()
 
 func _connect_signals():
