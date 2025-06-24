@@ -91,8 +91,6 @@ text = "Draw Tier 3"
 
 [node name="ModalLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
-
-[node name="%ModalLayer" type="CanvasLayer" parent="."]
 layer = 128
 
 ```
