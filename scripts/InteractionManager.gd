@@ -18,22 +18,13 @@ func select_view(view: Control) -> void:
 		clear_selection()
 		return
 		
-	# If clicking the same view again, check if it's a unit to be inspected.
+	# If clicking the same view again, it's an inspection request.
 	if _selected_view == view:
-		# NEW LOGIC STARTS HERE
-		if view is GachaBallView:
-			var gacha_view = view as GachaBallView
-			var instance_data = gacha_view.get_instance_data()
-			if instance_data:
-				var definition = Database.units.get(instance_data.definition_id)
-				if definition and definition.category == "UNIT":
-					EventBus.emit_signal("unit_inspection_requested", gacha_view)
-					clear_selection() # Deselect after opening the modal.
-					return
-		# If it's not a unit or something went wrong, just deselect as normal.
-		clear_selection()
+		# Per TDD 5.3, InteractionManager's job is just to emit the signal.
+		# WindowManager will handle the logic of what window to open.
+		EventBus.inspection_requested.emit(view)
+		clear_selection() # Deselect after requesting inspection.
 		return
-		# NEW LOGIC ENDS HERE
 
 	# If a different view was selected, deselect it first.
 	if is_instance_valid(_selected_view):

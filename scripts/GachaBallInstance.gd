@@ -20,17 +20,17 @@ var equipped_item_uuids: Array[String]
 ## Current location of this instance.
 var location_state: int = LocationState.UNDEFINED
 
-## Location states for the instance
+## Location states for the instance, aligned with TDD Section 2.2
 enum LocationState {
     UNDEFINED = -1,
     RUN_INVENTORY = 0,
-    IN_BATTLE_INVENTORY = 1,
-    BATTLE_BOARD = 2,
-    IN_BATTLE_DISCARD_PILE = 3,
-    MERGE_PREVIEW = 4,
-    INSPECT_VIEW = 5,
-    IN_PLAYER_BENCH = 6,
-    IN_PLAYER_LINEUP = 7
+    IN_BATTLE_INVENTORY = 1, # In the master list for the battle, but not on board.
+    IN_PLAYER_LINEUP = 2,
+    IN_PLAYER_BENCH = 3,
+    IN_ITEM_INVENTORY = 4,   # The battle item bar.
+    IN_BATTLE_DISCARD_PILE = 5,
+    MERGE_PREVIEW = 6,
+    INSPECT_VIEW = 7
 }
 
 ## Sets up the instance based on a GachaBallDefinition.

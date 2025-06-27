@@ -8,35 +8,22 @@ Database loaded.
  - Decks: 0
 GameManager: Start run requested. Creating new RunState.
 Initial run inventory created.
-View selected: @PanelContainer@7
-View deselected: @PanelContainer@7
-Merge successful. Created: item_t2_c
-Permanent merge successful. New unit: item_t2_c
-View selected: @PanelContainer@16
-View deselected: @PanelContainer@16
-Merge successful. Created: unit_t2_c
-Permanent merge successful. New unit: unit_t2_c
 View selected: GachaBallView
 View deselected: GachaBallView
-BattleManager: Draw pool for tier 1 is empty. Consider reshuffling.
-BattleManager: No empty slot found. Discarding item_t2_c
-BattleManager: No empty slot found. Discarding item_t2_c
-BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
-View selected: GachaBallView
-View deselected: GachaBallView
-Merge successful. Created: item_t2_c
-Reshuffling 2 items from discard pile into draw pools.
-BattleManager: No empty slot found. Discarding item_t3_d
-BattleManager: No empty slot found. Discarding item_t2_c
-BattleManager: No empty slot found. Discarding item_t2_c
+Permanent swap successful.
+View selected: @PanelContainer@27
+View deselected: @PanelContainer@27
+Permanent swap successful.
+View selected: @PanelContainer@38
+View deselected: @PanelContainer@38
+Permanent swap successful.
+View selected: @PanelContainer@50
+View deselected: @PanelContainer@50
+Permanent swap successful.
+View selected: @PanelContainer@68
+View deselected: @PanelContainer@68
+Permanent swap successful.
+BattleManager: Draw pool for tier 3 is empty. Consider reshuffling.
+BattleManager: Draw pool for tier 3 is empty. Consider reshuffling.
 BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
 BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView
-Merge successful. Created: unit_t3_d
-View selected: GachaBallView
-View deselected: GachaBallView
-View selected: GachaBallView
-View deselected: GachaBallView

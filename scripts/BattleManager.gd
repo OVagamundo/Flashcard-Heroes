@@ -65,7 +65,7 @@ func _connect_signals():
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
 	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
-	EventBus.unit_inspection_requested.connect(_on_unit_inspection_requested)
+
 	reshuffle_button.pressed.connect(_on_reshuffle_requested)
 
 # --- Core Logic Flows ---
@@ -114,11 +114,6 @@ func _on_choice_made(choice: StringName):
 	if choice == &"MERGE": _handle_merge(source, target)
 	elif choice == &"SWAP": _handle_swap(source, target)
 	_pending_action.clear()
-
-func _on_unit_inspection_requested(unit_view: GachaBallView):
-	var modal = UNIT_INSPECTION_MODAL_SCENE.instantiate()
-	modal_layer.add_child(modal)
-	modal.display_unit(unit_view.get_instance_data(), _battle_inventory)
 
 # --- Action Handlers ---
 func _handle_merge(source_view: GachaBallView, target_view: GachaBallView):

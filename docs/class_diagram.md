@@ -1,103 +1,184 @@
 classDiagram
     direction LR
 
-    class GameManager {
-        <<Autoload>>
-        +RunInventory: Dictionary
-        +battle_setup_data: Dictionary
-        +handle_start_run_requested()
-        +handle_battle_start_requested()
-        +handle_permanent_merge_request(source_uuid, target_uuid)
+    %% --- 1. Data Layer (Resources) ---
+    namespace Data {
+        class Resource {
+            <<Godot Base Class>>
+        }
+
+        class GachaBallDefinition {
+            <<Resource>>
+            +StringName id
+            +String display_name_key
+            +Texture2D icon
+            +int tier
+            +StringName category
+            +int item_slot_count
+        }
+
+        class GachaBallInstance {
+            <<Resource>>
+            +StringName definition_id
+            +String ball_uuid
+            +String origin_uuid
+            +Array~String~ equipped_item_uuids
+            +int location_state
+            +initialize(GachaBallDefinition) void
+            +create_battle_copy() GachaBallInstance
+        }
+
+        class RunState {
+            <<Resource>>
+            +int gold
+            +Dictionary run_inventory
+            +start_new_run() void
+        }
+
+        class MergeRecipe {
+            <<Resource>>
+            +StringName ingredient_a_id
+            +StringName ingredient_b_id
+            +StringName result_id
+        }
+
+        Resource <|-- GachaBallDefinition
+        Resource <|-- GachaBallInstance
+        Resource <|-- RunState
+        Resource <|-- MergeRecipe
+
+        RunState "1" *-- "0..*" GachaBallInstance : run_inventory
+        GachaBallInstance --> GachaBallDefinition : definition_id
     }
 
-    class BattleManager {
-        <<Node Script>>
-        -battle_inventory: Dictionary
-        -discard_pile: Array
-        -player_lineup_data: Array
-        -player_bench_data: Array
-        -item_inventory_data: Array
-        -uuid_to_instance_map: Dictionary
-        +initialize(data: Dictionary)
-        +handle_draw_gacha_request(tier)
-        +handle_interaction_request(sourceView, targetView)
-        +handle_reshuffle_request()
-        -_perform_move(sourceView, targetView)
-        -_perform_equip(sourceView, targetView)
-        -_perform_swap(sourceView, targetView)
-        -_perform_merge(sourceView, targetView)
-        -_reshuffle_tier_from_discard(tier)
+    %% --- 2. Autoloaded Singletons (Core Systems) ---
+    namespace Singletons {
+        class EventBus {
+            <<Singleton>>
+            +signal start_run_requested
+            +signal inventory_action_requested
+            +...
+        }
+
+        class Database {
+            <<Singleton>>
+            +Dictionary units
+            +Dictionary items
+            +Dictionary recipes
+            +_load_resources_from_path()
+        }
+
+        class GameManager {
+            <<Singleton>>
+            +RunState run_state
+            +bool is_inspecting_inventory
+            +_on_start_run_requested()
+            +_on_inventory_action_requested()
+        }
+
+        class MergeManager {
+            <<Singleton>>
+            +attempt_merge(inst_a, inst_b, inventory_dict) GachaBallInstance
+            +find_recipe(id_a, id_b) MergeRecipe
+        }
+
+        class InteractionManager {
+            <<Singleton>>
+            +Control _selected_view
+            +select_view(Control) void
+            +clear_selection() void
+        }
+        
+        class SceneManager {
+            <<Singleton>>
+            +_change_scene_to(path) void
+        }
+        
+        class UUIDUtils {
+            <<Singleton>>
+            +generate_uuid(prefix) String
+        }
+
+        GameManager --> RunState : manages
+        GameManager ..> EventBus : emits run_inventory_changed
+        EventBus ..> GameManager : connects signals
+        
+        Database --> GachaBallDefinition : loads
+        Database --> MergeRecipe : loads
+        
+        MergeManager ..> Database : uses
+        MergeManager ..> GachaBallInstance : operates on
+        
+        InteractionManager ..> EventBus : emits view_selected
+        EventBus ..> InteractionManager : connects signals
+        
+        SceneManager ..> EventBus : listens for scene changes
     }
 
-    class InteractionManager {
-        <<Autoload>>
-        -selected_view: GachaBallView
-        +handle_view_interaction(view, event)
-        +clear_selection()
-        +trigger_invalid_action_feedback(view)
-    }
+    %% --- 3. Scenes and UI Components ---
+    namespace Scenes_And_UI {
+        class Node { <<Godot Base Class>> }
+        class Control { <<Godot Base Class>> }
+        class PanelContainer { <<Godot Base Class>> }
+        Control <|-- PanelContainer
+        Node <|-- Control
 
-    class SceneManager {
-        <<Autoload>>
-        +change_scene_to_file(path)
-        +load_scene_in_container(path, container)
-    }
+        class GachaBallView {
+            <<Scene>>
+            +GachaBallInstance instance_data
+            +set_instance_data(data) void
+            +_gui_input(event)
+            +_get_drag_data()
+        }
+        
+        class BattleManager {
+            <<Script>>
+            +Dictionary _battle_inventory
+            +Array _discard_pile
+            +_setup_battle() void
+            +_on_inventory_action_requested()
+        }
+        
+        class Main {
+            <<Scene>>
+            +_load_content(scene) void
+            +_on_battle_start_requested()
+        }
+        
+        class Title {
+            <<Scene>>
+            +_on_start_run_button_pressed() void
+        }
+        
+        class InspectInventoryView {
+            <<Scene>>
+            +_populate_grid() void
+        }
+        
+        class DropTarget {
+            <<Script>>
+            +_can_drop_data() bool
+            +_drop_data() void
+        }
 
-    class Database {
-        <<Autoload>>
-        +GachaBallDefinitions: Dictionary
-        +MergeRecipes: Dictionary
-        +get_gachaball_definition(id): GachaBallDefinition
-        +get_merge_recipe(id_a, id_b): MergeRecipe
-    }
+        PanelContainer <|-- GachaBallView
+        PanelContainer <|-- DropTarget
 
-    class EventBus {
-        <<Singleton>>
-        +emit_signal(name, ...args)
-        +connect(name, callable)
+        Title ..> EventBus : emits start_run_requested
+        
+        Main ..> EventBus : listens for signals
+        Main ..> SceneManager : (implicitly via EventBus)
+        Main *-- BattleManager : (loads Battle.tscn)
+        Main *-- InspectInventoryView : (instantiates as modal)
+        
+        BattleManager ..> GameManager : uses run_state
+        BattleManager ..> MergeManager : uses
+        BattleManager "1" *-- "0..*" GachaBallView : instantiates
+        
+        GachaBallView --> GachaBallInstance : displays
+        GachaBallView ..> InteractionManager : uses
+        GachaBallView ..> EventBus : emits inventory_action_requested
+        
+        InspectInventoryView ..> GameManager : uses run_state
+        InspectInventoryView "1" *-- "0..*" GachaBallView : instantiates
     }
-
-    class GachaBallInstance {
-        <<Resource>>
-        +definition_id: StringName
-        +ball_uuid: String
-        +equipped_item_uuids: Array
-        +equipped_on_unit_uuid: String
-        +initialize(def)
-        +create_battle_copy(): GachaBallInstance
-    }
-
-    class GachaBallView {
-        <<Scene Script>>
-        -instance_ref: GachaBallInstance
-        +display(instance)
-        +handle_gui_input(event)
-        +play_feedback_animation(name)
-        +set_drag_preview(control)
-    }
-    class ItemView {
-        <<Scene Script>>
-    }
-    class UnitView {
-        <<Scene Script>>
-        +update_equipped_items_display()
-    }
-    GachaBallView <|-- ItemView
-    GachaBallView <|-- UnitView
-
-    GameManager --|> EventBus : Emits signals
-    BattleManager --|> EventBus : Emits signals
-    InteractionManager --|> EventBus : Emits signals
-    
-    EventBus --|> GameManager : Calls handlers
-    EventBus --|> BattleManager : Calls handlers
-    EventBus --|> SceneManager : Calls handlers
-
-    BattleManager o-- GachaBallInstance : Manages
-    GameManager o-- GachaBallInstance : Owns
-    
-    BattleManager ..> GachaBallView : Commands UI updates
-    InteractionManager ..> GachaBallView : Responds to input from
-
-    GameManager ..> Database : Reads definitions
-    BattleManager ..> Database : Reads definitions

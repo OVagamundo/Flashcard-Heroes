@@ -7,7 +7,6 @@ This project is built on four key ideas to keep the code clean, decoupled, and e
 Separation of Data and View:
 Data (GachaBallInstance): A Resource file holding all information about a unique GachaBall (ID, UUID, equipped items). It has no visual component.
 
-
 Event-Driven Communication (EventBus):
 Systems communicate indirectly by emitting signals through the global EventBus. For example, a button emits start_run_requested, and the GameManager listens for it. This keeps all systems decoupled and unaware of each other's implementation.
 Contextual Data Persistence:
@@ -75,7 +74,7 @@ Use code with caution.
 Gdscript
 Methods:
 initialize(def: GachaBallDefinition): Sets definition_id, generates a unique ball_uuid, resizes equipped_item_uuids, and sets location_state.
-create_battle_copy() -> GachaBallInstance: Creates a new, temporary instance for battle. This copy receives a new, unique ball_uuid, and its origin_uuid is set to the ball_uuid of the permanent instance it was copied from.
+create_battle_copy() -> GachaBallInstance: Creates a new, temporary instance for battle. It's crucial that this is implemented by manually creating a new GachaBallInstance resource (.new()) and copying properties, NOT by using the .duplicate() method, which can be unreliable for non-exported script variables. This new copy receives a unique ball_uuid, and its origin_uuid is set to the ball_uuid of the permanent instance it was copied from.
 2.3. MergeRecipe.gd
 Inherits: Resource, class_name MergeRecipe
 Purpose: Defines a valid merge combination.
@@ -242,14 +241,10 @@ Methods:
 - **Scene Tree:** Its root is a `PanelContainer` with the `ItemInspectionWindow.gd` script. It contains:
   - VBoxContainer
     - %NameLabel (Label)
-*   **`GachaBallView.gd`**: This is a 'dumb' view component that handles only the visual representation of a GachaBall. It is responsible for differentiating between a short-click (for action) and a long-press (for inspection).
-    *   **Input Logic**: Uses a `Timer` node to detect input duration.
-        *   A **short-click** (press and release before the timer finishes) triggers the action flow via `InteractionManager`.
-        *   A **long-press** (the timer finishes before release) triggers the information flow by emitting `EventBus.inspection_requested(self)`.
-    *   **Properties**: `instance_data: GachaBallInstance` (read-only, updated by parent manager)
-    *   **Methods**: `update_display()`: Updates visuals based on `instance_data`.
-        `_gui_input(event)`: Manages the press/release events and the `Timer` to differentiate input types.
-        `play_animation(anim_name)`: Plays visual feedback animations.
+*   **`GachaBallView.gd`**: This is a 'dumb' view component that handles only the visual representation of a GachaBall. It receives user input and forwards it to the appropriate manager.
+    *   **Input Logic**: Its `_gui_input` function detects clicks and drag-and-drop actions. All action logic is initiated by passing control to the `InteractionManager` or by emitting signals on the `EventBus`.
+    *   **Properties**: `instance_data: GachaBallInstance` (read-only, updated by its parent container/manager)
+    *   **Methods**: `update_display()`: Updates visuals based on `instance_data`. `play_animation(anim_name)`: Plays visual feedback animations.
 
 4.2. Main.tscn & Main.gd
 The persistent UI shell. Its script, Main.gd, acts as a UI controller, primarily responsible for showing/hiding the "Draw Tier" buttons based on the battle_state_changed signal. The "Inspect Inventory" button directly emits the inspect_inventory_requested signal, which is handled globally by the WindowManager. The WindowManager then determines the context and opens the InventoryModal with the correct data source.
@@ -264,10 +259,9 @@ All placeholder slots in Battle.tscn (and any other drop zone) are PanelContaine
 This section explicitly defines the two primary input paradigms: action-oriented and information-oriented.
 
 5.1. Input Types on GachaBallView
-The `GachaBallView` script is responsible for differentiating user intent based on input timing.
-*   **Short-Click (Action):** A standard, quick press and release. This is used to select a view for an action (move, swap, merge). This interaction is managed by the `InteractionManager`.
-*   **Drag-and-Drop (Action):** Functionally equivalent to two sequential short-clicks. This is also managed by the `InteractionManager`.
-*   **Long-Press (Information):** Holding the mouse button down on a view for a short duration (e.g., 0.4 seconds, managed by a `Timer`). This signals intent to see more details and emits `EventBus.inspection_requested(self)`, which is handled by the `WindowManager`. (Note: While the architecture is designed to support this, the 'click on selected' method handled by InteractionManager is the primary inspection trigger to be implemented for the MVP.)
+There are two primary input paradigms: Action-Oriented (selecting and moving pieces) and Information-Oriented (inspecting pieces). For the MVP, these are handled as follows:
+*   **Short-Click / Drag-and-Drop (Action):** These inputs are used to select, move, swap, merge, and equip items. This entire flow is managed by the `InteractionManager`.
+*   **Click on Selected (Information):** The sole method for inspecting a unit in the MVP. If a user clicks on a `GachaBallView` that is already selected, the `InteractionManager` interprets this as a request for information and emits `EventBus.inspection_requested(self)`.
 
 5.2. Action-Oriented Flow (InteractionManager)
 This flow is for manipulating game pieces.
@@ -278,7 +272,7 @@ This flow is for manipulating game pieces.
 
 5.3. Information-Oriented Flow (WindowManager)
 This flow is for opening and managing `Inspection Windows`.
-*   **Trigger:** A long-press on any `GachaBallView` emits `EventBus.inspection_requested(self)`.
+*   **Trigger:** A user clicks on a `GachaBallView` that is already selected (as tracked by `InteractionManager`). The `InteractionManager` then emits `EventBus.inspection_requested(self)`.
 *   **Handling:** The global `WindowManager` receives this signal and orchestrates the opening of the appropriate `UnitInspectionWindow` or `ItemInspectionWindow`, calculating its position to avoid overlapping its parent.
 
 5.4. Universal Window Closing Logic (WindowManager)
