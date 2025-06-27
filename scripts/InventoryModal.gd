@@ -8,21 +8,26 @@ const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
 @onready var tier_2_grid: GridContainer = %Tier2Grid
 @onready var tier_3_grid: GridContainer = %Tier3Grid
 
-var _connect_to_refresh: bool = false
+var _is_battle_context: bool = false
 
 func _ready():
 	EventBus.close_modal_requested.connect(queue_free)
 
 func _exit_tree():
-	if _connect_to_refresh and EventBus.is_connected("run_inventory_changed", _populate_grids_from_run_inventory):
+	if EventBus.is_connected("run_inventory_changed", _populate_grids_from_run_inventory):
 		EventBus.run_inventory_changed.disconnect(_populate_grids_from_run_inventory)
+	if EventBus.is_connected("battle_inventory_changed", _populate_grids_from_battle_inventory):
+		EventBus.battle_inventory_changed.disconnect(_populate_grids_from_battle_inventory)
 
 func populate(context: Dictionary):
 	title_label.text = context.get("title", "Inventory")
 	var is_interactive = context.get("is_interactive", true)
-	_connect_to_refresh = context.get("connect_to_refresh", false)
+	_is_battle_context = context.get("is_battle_context", false)
 	
-	if _connect_to_refresh:
+	if _is_battle_context:
+		if not EventBus.is_connected("battle_inventory_changed", _populate_grids_from_battle_inventory):
+			EventBus.battle_inventory_changed.connect(_populate_grids_from_battle_inventory)
+	else: # Run context
 		if not EventBus.is_connected("run_inventory_changed", _populate_grids_from_run_inventory):
 			EventBus.run_inventory_changed.connect(_populate_grids_from_run_inventory)
 	
@@ -32,8 +37,13 @@ func _populate_grids_from_run_inventory():
 	if is_instance_valid(GameManager.run_state):
 		_populate_grids(GameManager.run_state.run_inventory, true)
 
+func _populate_grids_from_battle_inventory():
+	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(battle_manager):
+		_populate_grids(battle_manager.get_battle_inventory(), true)
+
 func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
-	var grids = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
+	var grids = { 0: tier_1_grid, 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
 	
 	for grid in grids.values():
 		for child in grid.get_children():

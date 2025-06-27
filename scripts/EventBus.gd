@@ -20,6 +20,7 @@ signal close_modal_requested
 # --- State Change Signals ---
 signal battle_state_changed(is_in_battle: bool)
 signal run_inventory_changed
+signal battle_inventory_changed # New signal for battle UI refresh
 
 # --- Player Action & Interaction Signals ---
 signal draw_gacha_requested(tier: int)

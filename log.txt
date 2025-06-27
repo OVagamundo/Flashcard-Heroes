@@ -6,13 +6,8 @@ Database loaded.
  - Items: 4
  - Recipes: 4
  - Decks: 0
-GameManager: Start run requested. Creating new RunState.
 Initial run inventory created.
-ERROR: The object does not have any 'meta' values with the key 'view_node'.
-   at: get_meta (core/object/object.cpp:1054)
-ERROR: The object does not have any 'meta' values with the key 'view_node'.
-   at: get_meta (core/object/object.cpp:1054)
-GameManager: Invalid swap between different tiers or categories.
 Merge successful. Created: unit_t2_c
-Permanent merge successful. New unit: unit_t2_c
+Merge successful. Created: item_t3_d
+Merge successful. Created: unit_t2_c
 Merge successful. Created: item_t2_c
