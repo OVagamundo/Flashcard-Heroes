@@ -1,4 +1,6 @@
-# res://scripts/DiscardPileModal.gd
+<!-- Original: scripts/DiscardPileModal.gd -->
+
+```gdscript
 # res://scripts/DiscardPileModal.gd
 extends Control
 
@@ -19,5 +21,6 @@ func populate(context: Dictionary):
 		var view = GACHA_BALL_VIEW_SCENE.instantiate()
 		discard_grid.add_child(view)
 		view.set_instance_data(instance_data)
-		# BUGFIX: Views must be interactable to be inspected.
-		view.is_interactable = true
+		# Items in the discard pile view cannot be interacted with.
+		view.is_interactable = false
+```

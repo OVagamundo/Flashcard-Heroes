@@ -1,3 +1,6 @@
+<!-- Original: scenes/Main.tscn -->
+
+```ini
 [gd_scene load_steps=4 format=3 uid="uid://crndwktdbp0rc"]
 
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="1_cdefg"]
@@ -89,3 +92,5 @@ text = "Draw Tier 3"
 [node name="ModalLayer" type="CanvasLayer" parent="." groups=["modal_layer"]]
 unique_name_in_owner = true
 layer = 128
+
+```

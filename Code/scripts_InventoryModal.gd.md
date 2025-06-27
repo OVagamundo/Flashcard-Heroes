@@ -1,3 +1,6 @@
+<!-- Original: scripts/InventoryModal.gd -->
+
+```gdscript
 # res://scripts/InventoryModal.gd
 extends Control
 
@@ -49,3 +52,5 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 			target_grid.add_child(view)
 			view.set_instance_data(instance)
 			view.is_interactable = is_interactive
+
+```

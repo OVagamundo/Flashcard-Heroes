@@ -8,22 +8,11 @@ Database loaded.
  - Decks: 0
 GameManager: Start run requested. Creating new RunState.
 Initial run inventory created.
-View selected: GachaBallView
-View deselected: GachaBallView
-Permanent swap successful.
-View selected: @PanelContainer@27
-View deselected: @PanelContainer@27
-Permanent swap successful.
-View selected: @PanelContainer@38
-View deselected: @PanelContainer@38
-Permanent swap successful.
-View selected: @PanelContainer@50
-View deselected: @PanelContainer@50
-Permanent swap successful.
-View selected: @PanelContainer@68
-View deselected: @PanelContainer@68
-Permanent swap successful.
-BattleManager: Draw pool for tier 3 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 3 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
-BattleManager: Draw pool for tier 2 is empty. Consider reshuffling.
+ERROR: The object does not have any 'meta' values with the key 'view_node'.
+   at: get_meta (core/object/object.cpp:1054)
+ERROR: The object does not have any 'meta' values with the key 'view_node'.
+   at: get_meta (core/object/object.cpp:1054)
+GameManager: Invalid swap between different tiers or categories.
+Merge successful. Created: unit_t2_c
+Permanent merge successful. New unit: unit_t2_c
+Merge successful. Created: item_t2_c

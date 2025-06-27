@@ -1,5 +1,6 @@
 # res://scripts/Loadout.gd
 extends Control
+class_name Loadout
 
 func _ready() -> void:
 	var begin_button: Button = $CenterContainer/BeginButton

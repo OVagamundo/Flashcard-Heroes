@@ -1,3 +1,6 @@
+<!-- Original: scripts/Main.gd -->
+
+```gdscript
 # res://scripts/Main.gd
 extends Control
 
@@ -15,6 +18,8 @@ var _is_in_battle: bool = false
 var _current_content_node: Node = null
 
 func _ready():
+	# The ModalLayer is now added to its group via the scene file inspector.
+
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
 	draw_tier1_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 1))
 	draw_tier2_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 2))
@@ -41,21 +46,22 @@ func _on_battle_start_requested():
 	_load_content(BATTLE_SCENE)
 
 func _on_inspect_inventory_pressed():
-	if _is_in_battle and _current_content_node is BattleManager:
-		# BUGFIX: Show the entire interactive battle inventory, not just the read-only draw pools.
-		var battle_manager = _current_content_node as BattleManager
+	if _is_in_battle:
 		var context = {
-			"inventory": battle_manager.get_battle_inventory(),
-			"title": "Battle Inventory (Temporary)",
-			"is_interactive": true,
-			"connect_to_refresh": false # Battle inventory does not auto-refresh from GameManager
+			"inventory": (_current_content_node as BattleManager).get_draw_pools(),
+			"title": "Battle Draw Pools",
+			"is_interactive": false,
+			"connect_to_refresh": false
 		}
 		WindowManager.open_workspace_window(&"Inventory", context)
 	else:
+		# This signal is now handled by the WindowManager.
 		EventBus.emit_signal("inspect_inventory_requested")
 
 func _on_battle_state_changed(is_in_battle: bool):
 	self._is_in_battle = is_in_battle
-	draw_tier1_button.visible = is_in_battle
-	draw_tier2_button.visible = is_in_battle
-	draw_tier3_button.visible = is_in_battle
+	draw_tier1_button.disabled = not is_in_battle
+	draw_tier2_button.disabled = not is_in_battle
+	draw_tier3_button.disabled = not is_in_battle
+
+```

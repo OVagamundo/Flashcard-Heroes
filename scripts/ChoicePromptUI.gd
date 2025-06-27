@@ -7,8 +7,10 @@ extends Control
 func _ready():
 	merge_button.pressed.connect(func(): _on_choice_made(&"MERGE"))
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP"))
-	EventBus.close_modal_requested.connect(self.queue_free)
+	# BUGFIX: Removed the line 'EventBus.close_modal_requested.connect(self.queue_free)'.
+	# The WindowManager is solely responsible for closing this window.
 
 func _on_choice_made(choice: StringName):
 	EventBus.emit_signal("choice_made", choice)
-	queue_free()
+	# The choice has been made, so we can now request that the modal be closed.
+	EventBus.emit_signal("close_modal_requested")

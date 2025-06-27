@@ -1,4 +1,6 @@
-# res://scripts/BattleManager.gd
+<!-- Original: scripts/BattleManager.gd -->
+
+```gdscript
 extends Node
 class_name BattleManager
 
@@ -87,7 +89,7 @@ func _on_inventory_action_requested(source_view: Control, target_view: Control):
 		var recipe = MergeManager.find_recipe(source_data.definition_id, target_data.definition_id)
 		if recipe:
 			_pending_action = {"source_view": source_view, "target_view": target_view}
-			WindowManager.open_dialog_window(&"ChoicePrompt")
+			WindowManager.open_workspace_window(&"ChoicePrompt")
 		else:
 			_handle_swap(source_view, target_view)
 	else:
@@ -107,17 +109,10 @@ func _on_choice_made(choice: StringName):
 func _handle_merge(source_view: GachaBallView, target_view: GachaBallView):
 	var merged_instance = MergeManager.attempt_merge(source_view.get_instance_data(), target_view.get_instance_data(), _battle_inventory)
 	if merged_instance:
-		if WindowManager.is_window_open(&"Inventory"):
-			EventBus.emit_signal("inspect_inventory_requested") # This will reopen with fresh data
-		
-		var _source_parent = source_view.get_parent()
-		var target_parent = target_view.get_parent()
-		
+		var target_slot = target_view.get_parent()
 		source_view.queue_free()
 		target_view.queue_free()
-		
-		if target_parent in lineup_slots or target_parent in bench_slots:
-			_place_instance_in_slot(merged_instance, target_parent)
+		_place_instance_in_slot(merged_instance, target_slot)
 	else:
 		InteractionManager.trigger_invalid_action_feedback(source_view)
 
@@ -146,8 +141,6 @@ func _handle_equip(item_view: GachaBallView, unit_view: GachaBallView):
 	if empty_slot_idx != -1:
 		unit_data.equipped_item_uuids[empty_slot_idx] = item_data.ball_uuid
 		item_view.queue_free()
-		if WindowManager.is_window_open(&"Inventory"):
-			EventBus.emit_signal("inspect_inventory_requested")
 	else:
 		InteractionManager.trigger_invalid_action_feedback(item_view)
 
@@ -159,12 +152,7 @@ func _on_draw_gacha_requested(tier: int):
 	pool.erase(drawn_instance)
 	
 	var definition = Database.units.get(drawn_instance.definition_id, Database.items.get(drawn_instance.definition_id))
-	
-	var empty_slot: PanelContainer
-	if definition.category == &"UNIT":
-		empty_slot = _find_empty_unit_slot()
-	else: # Must be an ITEM
-		empty_slot = _find_empty_item_slot()
+	var empty_slot = _find_empty_slot_for_category(definition.category)
 
 	if is_instance_valid(empty_slot):
 		_place_instance_in_slot(drawn_instance, empty_slot)
@@ -187,15 +175,11 @@ func _on_reshuffle_requested():
 func _update_discard_pile_ui():
 	discard_pile_button.text = "DISCARD PILE (%d)" % _discard_pile.size()
 
-func _find_empty_unit_slot() -> PanelContainer:
-	for slot in bench_slots:
-		if slot.get_child_count() == 0: return slot
-	for slot in lineup_slots:
-		if slot.get_child_count() == 0: return slot
-	return null
 
-func _find_empty_item_slot() -> PanelContainer:
-	for slot in item_slots:
+
+func _find_empty_slot_for_category(category: StringName) -> PanelContainer:
+	var slots_to_check = bench_slots if category == &"UNIT" else item_slots
+	for slot in slots_to_check:
 		if slot.get_child_count() == 0: return slot
 	return null
 
@@ -203,10 +187,10 @@ func _place_instance_in_slot(instance_data: GachaBallInstance, slot_node: Node):
 	var view = GACHA_BALL_VIEW_SCENE.instantiate()
 	slot_node.add_child(view)
 	view.set_instance_data(instance_data)
-	instance_data.set_meta("view_node", view)
 
-func get_battle_inventory() -> Dictionary:
-	return _battle_inventory
+# --- Public Getters ---
+func get_draw_pools() -> Dictionary:
+	return _draw_pools
 
 func _find_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	for tier in _battle_inventory:
@@ -214,3 +198,5 @@ func _find_instance_by_uuid(uuid: String) -> GachaBallInstance:
 			if instance.ball_uuid == uuid:
 				return instance
 	return null
+
+```

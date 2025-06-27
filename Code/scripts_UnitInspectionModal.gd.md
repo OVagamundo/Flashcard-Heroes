@@ -1,3 +1,7 @@
+<!-- Original: scripts/UnitInspectionModal.gd -->
+
+```gdscript
+class_name UnitInspectionModal
 extends Control
 
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
@@ -65,3 +69,5 @@ func _find_instance_by_uuid(uuid: String) -> GachaBallInstance:
 			if instance is GachaBallInstance and instance.ball_uuid == uuid:
 				return instance
 	return null
+
+```

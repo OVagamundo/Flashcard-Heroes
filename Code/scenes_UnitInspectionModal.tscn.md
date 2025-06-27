@@ -1,3 +1,6 @@
+<!-- Original: scenes/UnitInspectionModal.tscn -->
+
+```ini
 [gd_scene load_steps=3 format=3 uid="uid://c5w2d2h7s7x8y"]
 
 [ext_resource type="Script" path="res://scripts/UnitInspectionModal.gd" id="1_abcde"]
@@ -94,3 +97,5 @@ size_flags_horizontal = 3
 theme_override_constants/h_separation = 5
 theme_override_constants/v_separation = 5
 columns = 5
+
+```

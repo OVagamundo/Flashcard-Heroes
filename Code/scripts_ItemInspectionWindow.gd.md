@@ -1,3 +1,6 @@
+<!-- Original: scripts/ItemInspectionWindow.gd -->
+
+```gdscript
 # res://scripts/ItemInspectionWindow.gd
 class_name ItemInspectionWindow
 extends PanelContainer
@@ -17,3 +20,5 @@ func populate(context: Dictionary):
 		
 	name_label.text = tr(item_definition.display_name_key)
 	description_label.text = tr(item_definition.description_key)
+
+```

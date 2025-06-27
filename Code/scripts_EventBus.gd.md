@@ -1,3 +1,6 @@
+<!-- Original: scripts/EventBus.gd -->
+
+```gdscript
 # res://scripts/EventBus.gd
 extends Node
 
@@ -30,6 +33,8 @@ signal reshuffle_discard_pile_requested
 # --- View State Signals ---
 signal view_selected(view: Control)
 signal view_deselected(view: Control)
-signal invalid_action_triggered(view: Control) # BUGFIX: This signal was missing.
+signal view_data_updated(view: Control)
 
 # Signals have been removed as they were unused
+
+```

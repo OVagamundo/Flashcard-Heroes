@@ -1,3 +1,6 @@
+<!-- Original: scripts/InteractionManager.gd -->
+
+```gdscript
 # res://scripts/InteractionManager.gd
 extends Node
 
@@ -45,8 +48,9 @@ func clear_selection() -> void:
 ## Returns the currently selected view.
 func get_selected_view() -> Control:
 	return _selected_view
-
-## Emits a signal to trigger visual feedback for an invalid action.
 func trigger_invalid_action_feedback(view: Control) -> void:
 	if is_instance_valid(view):
 		EventBus.emit_signal("invalid_action_triggered", view)
+		print("Invalid action triggered on view: ", String(view.name) if view else "null")
+
+```
