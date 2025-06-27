@@ -1,10 +1,6 @@
 # res://scripts/WindowManager.gd
 extends Node
 
-## Manages the entire lifecycle of all pop-up windows (Modals, Inspection).
-## It is the single source of truth for window state, hierarchy, positioning,
-## and universal closing logic, as per the TDD.
-
 var _open_windows: Array[Control] = []
 var _window_scenes: Dictionary = {}
 var _modal_layer: CanvasLayer = null
@@ -19,6 +15,10 @@ func _ready():
 		&"ItemInspection": preload("res://scenes/ItemInspectionWindow.tscn"),
 		&"ChoicePrompt": preload("res://scenes/ChoicePromptUI.tscn"),
 	}
+	EventBus.inspect_inventory_requested.connect(func(): open_workspace_window(&"Inventory"))
+	EventBus.display_discard_pile_requested.connect(func(): open_workspace_window(&"DiscardPile"))
+	EventBus.inspection_requested.connect(open_inspection_window)
+	
 	EventBus.close_modal_requested.connect(_close_topmost_window)
 	EventBus.main_scene_requested.connect(_close_all_windows)
 	EventBus.loadout_scene_requested.connect(_close_all_windows)
@@ -32,25 +32,43 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		if InteractionManager.is_drag_active: return
 		var click_pos = event.get_global_position()
-		
-		# TDD Hierarchical Closing Logic
 		for i in range(_open_windows.size() - 1, -1, -1):
 			var window = _open_windows[i]
 			if not window.get_global_rect().has_point(click_pos):
 				_close_window_at_index(i)
 			else:
-				# Click was inside this window, so stop processing.
 				return
 		get_viewport().set_input_as_handled()
 
-func open_workspace_window(type: StringName, context_data: Dictionary = {}) -> void:
+func open_workspace_window(type: StringName) -> void:
 	if not _window_scenes.has(type): return
 	_close_all_windows()
+	
+	var context = {}
+	if type == &"Inventory":
+		if GameManager.is_in_battle:
+			var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+			context = {
+				"inventory": battle_manager.get_battle_inventory(),
+				"title": "Battle Inventory (Temporary)",
+				"is_interactive": true, "is_battle_context": true
+			}
+		else:
+			context = {
+				"inventory": GameManager.run_state.run_inventory,
+				"title": "Run Inventory",
+				"is_interactive": true, "is_battle_context": false
+			}
+	elif type == &"DiscardPile":
+		if GameManager.is_in_battle:
+			var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+			context = {"discard_pile": battle_manager.get_discard_pile()}
+
 	var window_instance = _window_scenes[type].instantiate()
 	_get_modal_layer().add_child(window_instance)
 	_open_windows.push_back(window_instance)
 	if window_instance.has_method("populate"):
-		window_instance.populate(context_data)
+		window_instance.populate(context)
 
 func open_dialog_window(type: StringName, context_data: Dictionary = {}) -> void:
 	if not _window_scenes.has(type): return
@@ -66,9 +84,7 @@ func open_inspection_window(source_view: Control) -> void:
 	if not instance_data: return
 	var definition = Database.units.get(instance_data.definition_id, Database.items.get(instance_data.definition_id))
 	if not definition: return
-	
 	_close_inspection_windows()
-	
 	var window_type = &"UnitInspection" if definition.category == &"UNIT" else &"ItemInspection"
 	var window_instance = _window_scenes[window_type].instantiate()
 	_get_modal_layer().add_child(window_instance)

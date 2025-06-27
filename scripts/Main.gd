@@ -3,7 +3,6 @@ extends Control
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var inspect_inventory_button: Button = %InspectInventoryButton
-@onready var modal_layer: CanvasLayer = %ModalLayer
 @onready var draw_tier1_button: Button = %DrawTier1Button
 @onready var draw_tier2_button: Button = %DrawTier2Button
 @onready var draw_tier3_button: Button = %DrawTier3Button
@@ -11,7 +10,6 @@ extends Control
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 
-var _is_in_battle: bool = false
 var _current_content_node: Node = null
 
 func _ready():
@@ -41,26 +39,11 @@ func _on_battle_start_requested():
 	_load_content(BATTLE_SCENE)
 
 func _on_inspect_inventory_pressed():
-	var context = {}
-	if GameManager.is_in_battle:
-		var battle_manager = get_tree().get_first_node_in_group("battle_manager")
-		context = {
-			"inventory": battle_manager.get_battle_inventory(),
-			"title": "Battle Inventory (Temporary)",
-			"is_interactive": true,
-			"is_battle_context": true
-		}
-	else:
-		context = {
-			"inventory": GameManager.run_state.run_inventory,
-			"title": "Run Inventory",
-			"is_interactive": true,
-			"is_battle_context": false
-		}
-	WindowManager.open_workspace_window(&"Inventory", context)
+	# BUGFIX: This button now emits a generic signal. The WindowManager is
+	# responsible for figuring out which inventory to open based on game state.
+	EventBus.emit_signal("inspect_inventory_requested")
 
 func _on_battle_state_changed(is_in_battle: bool):
-	self._is_in_battle = is_in_battle
 	draw_tier1_button.visible = is_in_battle
 	draw_tier2_button.visible = is_in_battle
 	draw_tier3_button.visible = is_in_battle

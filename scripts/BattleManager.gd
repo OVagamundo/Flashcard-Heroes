@@ -46,7 +46,8 @@ func _setup_battle():
 	_update_discard_pile_ui()
 
 func _connect_signals():
-	discard_pile_button.pressed.connect(func(): WindowManager.open_workspace_window(&"DiscardPile", {"discard_pile": self._discard_pile}))
+	# BUGFIX: The button now emits a generic signal, which the WindowManager listens for.
+	discard_pile_button.pressed.connect(EventBus.display_discard_pile_requested.emit)
 	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	reshuffle_button.pressed.connect(_on_reshuffle_requested)
 
@@ -96,9 +97,5 @@ func _place_instance_in_slot(instance_data: GachaBallInstance, slot_node: Node):
 func get_battle_inventory() -> Dictionary:
 	return _battle_inventory
 
-func _find_instance_by_uuid(uuid: String) -> GachaBallInstance:
-	for tier in _battle_inventory:
-		for instance in _battle_inventory[tier]:
-			if instance.ball_uuid == uuid:
-				return instance
-	return null
+func get_discard_pile() -> Array[GachaBallInstance]:
+	return _discard_pile
