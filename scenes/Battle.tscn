@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://uiilu4273mtt"]
+[gd_scene load_steps=3 format=3 uid="uid://uiilu4273ttr"]
 
-[ext_resource type="Script" uid="uid://bwx6ux5t1drf5" path="res://scripts/BattleManager.gd" id="1_ghijk"]
-[ext_resource type="Script" uid="uid://bq800jfb2hk3n" path="res://scripts/DropTarget.gd" id="2_ghijk"]
+[ext_resource type="Script" uid="uid://bwx6ux5t1drf5" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
+[ext_resource type="Script" uid="uid://dp7nlwa5djbf" path="res://scripts/Battle.gd" id="2_abcde"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -10,7 +10,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_ghijk")
+script = ExtResource("2_abcde")
+
+[node name="BattleManager" type="Node" parent="."]
+script = ExtResource("1_battle_manager_script")
 
 [node name="UI" type="Control" parent="."]
 layout_mode = 1
@@ -51,32 +54,26 @@ alignment = 1
 [node name="LineupSlot0" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/PlayerLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot1" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/PlayerLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot2" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/PlayerLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot3" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/PlayerLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot4" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/PlayerLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot5" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/PlayerLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="DrawBallArea" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/PlayerArea"]
 layout_mode = 2
@@ -90,17 +87,14 @@ alignment = 1
 [node name="BenchSlot0" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/PlayerBench"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="BenchSlot1" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/PlayerBench"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="BenchSlot2" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/PlayerBench"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="ItemInventory" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea"]
 unique_name_in_owner = true
@@ -111,23 +105,21 @@ alignment = 1
 [node name="ItemIventorySlot0" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemInventory"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="ItemIventorySlot1" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemInventory"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="ItemIventorySlot2" type="PanelContainer" parent="UI/BattleArea/TeamAreas/PlayerArea/DrawBallArea/ItemInventory"]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="Control2" type="Control" parent="UI/BattleArea/TeamAreas"]
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="EnemyArea" type="VBoxContainer" parent="UI/BattleArea/TeamAreas"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="EnemyLineup" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/EnemyArea"]
@@ -138,32 +130,26 @@ alignment = 1
 [node name="LineupSlot0" type="PanelContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/EnemyLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot1" type="PanelContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/EnemyLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot2" type="PanelContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/EnemyLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot3" type="PanelContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/EnemyLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot4" type="PanelContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/EnemyLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="LineupSlot5" type="PanelContainer" parent="UI/BattleArea/TeamAreas/EnemyArea/EnemyLineup"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
-script = ExtResource("2_ghijk")
 
 [node name="DrawBallArea" type="HBoxContainer" parent="UI/BattleArea/TeamAreas/EnemyArea"]
 layout_mode = 2

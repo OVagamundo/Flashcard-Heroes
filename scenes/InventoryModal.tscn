@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b0fs8lab4tsoa"]
 
-[ext_resource type="Script" uid="uid://b5mux5oxeygi3" path="res://scripts/InventoryModal.gd" id="1_yvw8v"]
-[ext_resource type="Script" uid="uid://drmsaqi6n7nre" path="res://scripts/ModalBackground.gd" id="2_fghij"]
+[ext_resource type="Script" path="res://scripts/InventoryModal.gd" id="1_yvw8v"]
+[ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
 
 [node name="InventoryModal" type="Control"]
 layout_mode = 3
@@ -10,19 +10,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("1_yvw8v")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.5)
-script = ExtResource("2_fghij")
+[node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -35,15 +29,17 @@ offset_right = 500.0
 offset_bottom = 350.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 10
 
 [node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Run Inventory"
+text = "Inventory"
 horizontal_alignment = 1
 
 [node name="GridsArea" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]

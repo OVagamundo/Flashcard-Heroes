@@ -1,0 +1,93 @@
+<!-- Original: scripts/MergeManager.gd -->
+
+```gdscript
+# res://scripts/MergeManager.gd
+extends Node
+
+## A dedicated, stateless helper to handle all merge logic calculations.
+
+## Calculates the result of a merge attempt.
+## It does NOT modify any inventory data. It only reads the inventory to find
+## equipped items and returns a dictionary with the results of the calculation.
+## Returns: Dictionary{"merged_instance": GachaBallInstance, "parents_to_remove": Array[GachaBallInstance]}
+func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, inventory_context: Dictionary) -> Dictionary:
+	if not instance_a or not instance_b:
+		printerr("MergeManager: Attempted merge with a null instance.")
+		return {}
+		
+	var recipe: MergeRecipe = find_recipe(instance_a.definition_id, instance_b.definition_id)
+	if not recipe:
+		return {}
+
+	# --- Merge is valid, proceed with calculation ---
+	var result_definition: GachaBallDefinition = Database.units.get(recipe.result_id, Database.items.get(recipe.result_id))
+	if not result_definition:
+		printerr("MergeManager: Result ID from recipe not found in Database: ", recipe.result_id)
+		return {}
+		
+	# 1. Create the new result GachaBallInstance.
+	var merged_instance := GachaBallInstance.new()
+	merged_instance.initialize(result_definition)
+	
+	# 2. Gather all equipped item INSTANCES from parents into a temporary list.
+	var all_parent_items: Array[GachaBallInstance] = []
+	all_parent_items.append_array(_get_equipped_item_instances(instance_a, inventory_context))
+	all_parent_items.append_array(_get_equipped_item_instances(instance_b, inventory_context))
+
+	# 3. Equip the gathered items onto the new unit by copying their UUIDs.
+	for i in range(min(all_parent_items.size(), merged_instance.equipped_item_uuids.size())):
+		var item_to_equip: GachaBallInstance = all_parent_items[i]
+		merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
+		
+	# 4. Create the list of all instances that need to be removed from inventories.
+	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
+	parents_to_remove.append_array(all_parent_items)
+
+	print("Merge calculated. Created: %s. Parents to remove: %s" % [merged_instance.definition_id, parents_to_remove.size()])
+	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
+
+
+## Finds a matching recipe for two GachaBall definition IDs.
+func find_recipe(id_a: StringName, id_b: StringName) -> MergeRecipe:
+	for recipe_key in Database.recipes:
+		var recipe: MergeRecipe = Database.recipes[recipe_key]
+		
+		if recipe.is_self_merge:
+			if id_a == recipe.ingredient_a_id and id_a == id_b:
+				return recipe
+		else: # Check for A+B or B+A
+			if (id_a == recipe.ingredient_a_id and id_b == recipe.ingredient_b_id) or \
+			   (id_a == recipe.ingredient_b_id and id_b == recipe.ingredient_a_id):
+				return recipe
+				
+	return null
+
+
+## Helper to find equipped item INSTANCES of a unit within a specific tiered inventory.
+func _get_equipped_item_instances(unit_instance: GachaBallInstance, inventory_context: Dictionary) -> Array[GachaBallInstance]:
+	var equipped_items: Array[GachaBallInstance] = []
+	if unit_instance.equipped_item_uuids.is_empty():
+		return equipped_items
+		
+	var full_inventory_list: Array = []
+	if inventory_context.has("run_inventory"):
+		for tier_array in inventory_context.run_inventory.values():
+			full_inventory_list.append_array(tier_array)
+	elif inventory_context.has("battle_inventory"):
+		for tier_array in inventory_context.battle_inventory.values():
+			full_inventory_list.append_array(tier_array)
+		full_inventory_list.append_array(inventory_context.lineup_data)
+		full_inventory_list.append_array(inventory_context.bench_data)
+		full_inventory_list.append_array(inventory_context.item_data)
+
+	for item_uuid in unit_instance.equipped_item_uuids:
+		if item_uuid.is_empty(): continue
+		
+		for entity in full_inventory_list:
+			if is_instance_valid(entity) and entity.ball_uuid == item_uuid:
+				equipped_items.push_back(entity)
+				break # Found the item, move to next UUID
+				
+	return equipped_items
+
+```

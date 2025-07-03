@@ -1,0 +1,51 @@
+<!-- Original: project.godot -->
+
+```ini
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Flashcard Heroes"
+run/main_scene="res://scenes/Title.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+EventBus="*res://scripts/EventBus.gd"
+UUIDUtils="*res://scripts/UUIDUtils.gd"
+Database="*res://scripts/Database.gd"
+SceneManager="*res://scripts/SceneManager.gd"
+MergeManager="*res://scripts/MergeManager.gd"
+AbilityResolver="*res://scripts/AbilityResolver.gd"
+InteractionManager="*res://scripts/InteractionManager.gd"
+InventoryManager="*res://scripts/InventoryManager.gd"
+GameManager="*res://scripts/GameManager.gd"
+WindowManager="*res://scripts/WindowManager.gd"
+
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/log_path="/Users/danhh/Desktop/Flashcard Heroes/log.txt"
+file_logging/max_log_files=1
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+
+```

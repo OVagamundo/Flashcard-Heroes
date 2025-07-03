@@ -1,0 +1,32 @@
+<!-- Original: scenes/tests/TestItemView.tscn -->
+
+```ini
+[gd_scene load_steps=3 format=3 uid="uid://c635m8h3t2w0w"]
+
+[ext_resource type="Script" path="res://scripts/tests/TestItemView.gd" id="1_abcde"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_12345"]
+bg_color = Color(0.2, 0.23, 0.3, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.5, 0.5, 1)
+
+[node name="TestItemView" type="PanelContainer"]
+custom_minimum_size = Vector2(80, 80)
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_12345")
+script = ExtResource("1_abcde")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 2
+
+[node name="NameLabel" type="Label" parent="CenterContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Item"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+```

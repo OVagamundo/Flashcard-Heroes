@@ -1,96 +1,88 @@
 # res://scripts/MergeManager.gd
 extends Node
 
-## A dedicated, global manager to handle all merge logic.
+## A dedicated, stateless helper to handle all merge logic calculations.
 
-## Attempts to merge two GachaBallInstances within a tiered inventory dictionary.
-## Returns the new merged instance on success, or null on failure.
-func attempt_merge(instance_a: GachaBallInstance, instance_b: GachaBallInstance, inventory_dict: Dictionary) -> GachaBallInstance:
-    if not instance_a or not instance_b:
-        printerr("MergeManager: Attempted merge with a null instance.")
-        return null
-        
-    var recipe: MergeRecipe = find_recipe(instance_a.definition_id, instance_b.definition_id)
-    if not recipe:
-        return null # No valid recipe found.
-        
-    var def_a = Database.units.get(instance_a.definition_id, Database.items.get(instance_a.definition_id))
-    var def_b = Database.units.get(instance_b.definition_id, Database.items.get(instance_b.definition_id))
-    
-    if not def_a or not def_b:
-        printerr("MergeManager: Could not find definitions for ingredients.")
-        return null
-        
-    # --- Merge is valid, proceed ---
-    
-    # 1. Create the new result GachaBallInstance.
-    var result_definition: GachaBallDefinition = Database.units.get(recipe.result_id, Database.items.get(recipe.result_id))
-    if not result_definition:
-        printerr("MergeManager: Result ID from recipe not found in Database: ", recipe.result_id)
-        return null
-        
-    var merged_instance := GachaBallInstance.new()
-    merged_instance.initialize(result_definition)
-    
-    # 2. Gather all items from parents into a temporary list.
-    var all_parent_items: Array[GachaBallInstance] = []
-    all_parent_items.append_array(_get_equipped_items_from_inventory(instance_a, inventory_dict))
-    all_parent_items.append_array(_get_equipped_items_from_inventory(instance_b, inventory_dict))
+## Calculates the result of a merge attempt.
+## It does NOT modify any inventory data. It only reads the inventory to find
+## equipped items and returns a dictionary with the results of the calculation.
+## Returns: Dictionary{"merged_instance": GachaBallInstance, "parents_to_remove": Array[GachaBallInstance]}
+func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, inventory_context: Dictionary) -> Dictionary:
+	if not instance_a or not instance_b:
+		printerr("MergeManager: Attempted merge with a null instance.")
+		return {}
+		
+	var recipe: MergeRecipe = find_recipe(instance_a.definition_id, instance_b.definition_id)
+	if not recipe:
+		return {}
 
-    # 3. Remove parent instances and their items from the source inventory dictionary.
-    inventory_dict[def_a.tier].erase(instance_a)
-    inventory_dict[def_b.tier].erase(instance_b)
-    for item in all_parent_items:
-        var item_def = Database.items.get(item.definition_id)
-        if item_def and inventory_dict.has(item_def.tier):
-            inventory_dict[item_def.tier].erase(item)
+	# --- Merge is valid, proceed with calculation ---
+	var result_definition: GachaBallDefinition = Database.units.get(recipe.result_id, Database.items.get(recipe.result_id))
+	if not result_definition:
+		printerr("MergeManager: Result ID from recipe not found in Database: ", recipe.result_id)
+		return {}
+		
+	# 1. Create the new result GachaBallInstance.
+	var merged_instance := GachaBallInstance.new()
+	merged_instance.initialize(result_definition)
+	
+	# 2. Gather all equipped item INSTANCES from parents into a temporary list.
+	var all_parent_items: Array[GachaBallInstance] = []
+	all_parent_items.append_array(_get_equipped_item_instances(instance_a, inventory_context))
+	all_parent_items.append_array(_get_equipped_item_instances(instance_b, inventory_context))
 
-    # 4. Add the new result instance to the correct tier in the inventory.
-    inventory_dict[result_definition.tier].append(merged_instance)
-    
-    # 5. Equip the gathered items onto the new unit.
-    for i in range(min(all_parent_items.size(), merged_instance.equipped_item_uuids.size())):
-        var item_to_equip: GachaBallInstance = all_parent_items[i]
-        merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
-        
-        # Add the item back into its correct tier, now linked to the new unit.
-        var item_def = Database.items.get(item_to_equip.definition_id)
-        if item_def and inventory_dict.has(item_def.tier):
-            inventory_dict[item_def.tier].append(item_to_equip)
-            
-    print("Merge successful. Created: ", merged_instance.definition_id)
-    return merged_instance
+	# 3. Equip the gathered items onto the new unit by copying their UUIDs.
+	for i in range(min(all_parent_items.size(), merged_instance.equipped_item_uuids.size())):
+		var item_to_equip: GachaBallInstance = all_parent_items[i]
+		merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
+		
+	# 4. Create the list of all instances that need to be removed from inventories.
+	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
+	parents_to_remove.append_array(all_parent_items)
 
-## Helper to find equipped items of a unit within a specific tiered inventory.
-func _get_equipped_items_from_inventory(unit_instance: GachaBallInstance, inventory_dict: Dictionary) -> Array[GachaBallInstance]:
-    var equipped_items: Array[GachaBallInstance] = []
-    if unit_instance.equipped_item_uuids.is_empty():
-        return equipped_items
-        
-    for item_uuid in unit_instance.equipped_item_uuids:
-        if item_uuid.is_empty(): continue
-        # We must search all tiers of the item inventory to find the item.
-        for tier in inventory_dict:
-            # Ensure tier key exists and is an array before iterating
-            if not inventory_dict.has(tier) or not inventory_dict[tier] is Array: continue
-            var tier_inventory = inventory_dict[tier]
-            for entity in tier_inventory:
-                if entity is GachaBallInstance and entity.ball_uuid == item_uuid:
-                    equipped_items.push_back(entity)
-                    break # Found the item, move to next UUID
-    return equipped_items
+	print("Merge calculated. Created: %s. Parents to remove: %s" % [merged_instance.definition_id, parents_to_remove.size()])
+	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
+
 
 ## Finds a matching recipe for two GachaBall definition IDs.
 func find_recipe(id_a: StringName, id_b: StringName) -> MergeRecipe:
-    for recipe_key in Database.recipes:
-        var recipe: MergeRecipe = Database.recipes[recipe_key]
-        
-        if recipe.is_self_merge:
-            if id_a == recipe.ingredient_a_id and id_a == id_b:
-                return recipe
-        else: # Check for A+B or B+A
-            if (id_a == recipe.ingredient_a_id and id_b == recipe.ingredient_b_id) or \
-               (id_a == recipe.ingredient_b_id and id_b == recipe.ingredient_a_id):
-                return recipe
-                
-    return null
+	for recipe_key in Database.recipes:
+		var recipe: MergeRecipe = Database.recipes[recipe_key]
+		
+		if recipe.is_self_merge:
+			if id_a == recipe.ingredient_a_id and id_a == id_b:
+				return recipe
+		else: # Check for A+B or B+A
+			if (id_a == recipe.ingredient_a_id and id_b == recipe.ingredient_b_id) or \
+			   (id_a == recipe.ingredient_b_id and id_b == recipe.ingredient_a_id):
+				return recipe
+				
+	return null
+
+
+## Helper to find equipped item INSTANCES of a unit within a specific tiered inventory.
+func _get_equipped_item_instances(unit_instance: GachaBallInstance, inventory_context: Dictionary) -> Array[GachaBallInstance]:
+	var equipped_items: Array[GachaBallInstance] = []
+	if unit_instance.equipped_item_uuids.is_empty():
+		return equipped_items
+		
+	var full_inventory_list: Array = []
+	if inventory_context.has("run_inventory"):
+		for tier_array in inventory_context.run_inventory.values():
+			full_inventory_list.append_array(tier_array)
+	elif inventory_context.has("battle_inventory"):
+		for tier_array in inventory_context.battle_inventory.values():
+			full_inventory_list.append_array(tier_array)
+		full_inventory_list.append_array(inventory_context.lineup_data)
+		full_inventory_list.append_array(inventory_context.bench_data)
+		full_inventory_list.append_array(inventory_context.item_data)
+
+	for item_uuid in unit_instance.equipped_item_uuids:
+		if item_uuid.is_empty(): continue
+		
+		for entity in full_inventory_list:
+			if is_instance_valid(entity) and entity.ball_uuid == item_uuid:
+				equipped_items.push_back(entity)
+				break # Found the item, move to next UUID
+				
+	return equipped_items

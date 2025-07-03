@@ -6,7 +6,8 @@ extends Node
 var scene_paths: Dictionary = {
 	"Title": "res://scenes/Title.tscn",
 	"Loadout": "res://scenes/Loadout.tscn",
-	"Main": "res://scenes/Main.tscn"
+	"Main": "res://scenes/Main.tscn",
+	"TestInspectionSystem": "res://scenes/tests/TestInspectionSystem.tscn"
 }
 var current_scene: Node = null
 
@@ -14,6 +15,7 @@ func _ready() -> void:
 	# Note: In Godot 4, direct connection syntax is preferred.
 	EventBus.loadout_scene_requested.connect(_on_loadout_scene_requested)
 	EventBus.main_scene_requested.connect(_on_main_scene_requested)
+	EventBus.inspection_test_scene_requested.connect(_on_inspection_test_scene_requested)
 	
 	var root = get_tree().root
 	current_scene = root.get_child(root.get_child_count() - 1)
@@ -24,6 +26,8 @@ func _on_loadout_scene_requested() -> void:
 func _on_main_scene_requested() -> void:
 	_change_scene_to(scene_paths["Main"])
 
+func _on_inspection_test_scene_requested() -> void:
+	_change_scene_to(scene_paths["TestInspectionSystem"])
 func _change_scene_to(path: String) -> void:
 	if is_instance_valid(current_scene):
 		current_scene.queue_free()
@@ -35,3 +39,5 @@ func _change_scene_to(path: String) -> void:
 		
 	current_scene = new_scene_res.instantiate()
 	get_tree().root.add_child(current_scene)
+
+
