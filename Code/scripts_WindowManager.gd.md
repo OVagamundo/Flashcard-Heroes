@@ -35,6 +35,9 @@ func _ready():
 	# Centralized input event handling
 	EventBus.close_modal_requested.connect(_close_top_modal)
 	EventBus.background_clicked.connect(_on_background_blocker_clicked)
+	
+	# THIS IS THE FIX: Connect to the signal that announces a new selection is being attempted.
+	EventBus.selection_context_changed.connect(_on_selection_context_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# TDD Rule 3.2.3: This is the final authority on unhandled input.
@@ -83,6 +86,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		_global_deselect_and_close_inspections()
 
 # --- Public Methods: Window Management ---
+
+# --- New Function to handle the context change ---
+func _on_selection_context_changed(view: Control):
+	# TDD Rule 3.2.1.4: Invalidate inspection chains when context changes.
+	# If the newly selected item is a "root" item (i.e., not part of an existing
+	# inspection window chain), then close all open inspection windows.
+	var parent_info = _find_parent_group(view)
+	if not parent_info.group:
+		close_all_inspection_windows()
 
 func handle_inspection_window_click(clicked_window: Control):
 	# TDD Rule 3.2.1.4: Hierarchical Pruning
@@ -190,10 +202,13 @@ func _get_workspace_context(type: StringName) -> Dictionary:
 func _find_parent_group(source_view: Control) -> Dictionary:
 	var current_node = source_view
 	while is_instance_valid(current_node) and not current_node is Window and current_node != get_tree().root:
-		for group in _inspection_window_groups:
-			var window_index = group.find(current_node)
-			if window_index != -1:
-				return {"group": group, "index": window_index}
+		# This guard prevents the 'find' method from being called with a non-Control node
+		# (like a CanvasLayer), which was causing the type validation error.
+		if current_node is Control:
+			for group in _inspection_window_groups:
+				var window_index = group.find(current_node)
+				if window_index != -1:
+					return {"group": group, "index": window_index}
 		current_node = current_node.get_parent()
 	return {"group": null, "index": -1}
 

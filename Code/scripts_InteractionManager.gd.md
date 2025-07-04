@@ -60,33 +60,27 @@ func start_drag(source_view: Control, placeholder: Control):
 	_is_drag_active = true
 	_drag_source_view = source_view
 	_drag_placeholder = placeholder
+	# We manually hide the source view to prevent GridContainer from reflowing.
+	# The placeholder will hold its spot.
+	source_view.visible = false
 	emit_signal("drag_operation_started", source_view)
 	clear_selection()
 
 func end_drag(was_handled: bool):
 	if not _is_drag_active: return
 	
+	# If drag was not handled, the source view needs to be shown again.
+	# If it was handled, it was either moved or deleted, so we don't touch it.
+	if not was_handled and is_instance_valid(_drag_source_view):
+		_drag_source_view.visible = true
+
 	if is_instance_valid(_drag_placeholder):
 		_drag_placeholder.queue_free()
-		_drag_placeholder = null
 		
-	# If drag was not handled, the source view (hidden by engine) needs to be shown again.
-	if not was_handled and is_instance_valid(_drag_source_view):
-		_drag_source_view.visible = true
-	
 	_is_drag_active = false
-	emit_signal("drag_operation_ended", was_handled)
 	_drag_source_view = null
+	_drag_placeholder = null
 	emit_signal("drag_operation_ended", was_handled)
-	_drag_source_view = null
-
-	# If drag was not handled, the source view (hidden by engine) needs to be shown again.
-	if not was_handled and is_instance_valid(_drag_source_view):
-		_drag_source_view.visible = true
-	
-	_is_drag_active = false
-	emit_signal("drag_operation_ended", was_handled)
-	_drag_source_view = null
 
 func trigger_invalid_action_feedback(view: Control) -> void:
 	if is_instance_valid(view):

@@ -7,6 +7,7 @@ extends Control
 const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
 const SLOT_VIEW_SCENE = preload("res://scenes/SlotView.tscn")
 
+@onready var panel_container: PanelContainer = %PanelContainer
 @onready var title_label: Label = %TitleLabel
 @onready var tier_1_grid: GridContainer = %Tier1Grid
 @onready var tier_2_grid: GridContainer = %Tier2Grid
@@ -15,7 +16,8 @@ const SLOT_VIEW_SCENE = preload("res://scenes/SlotView.tscn")
 var _is_battle_context: bool = false
 
 func _ready():
-	pass
+	# Connect the panel's input signal to our new handler.
+	panel_container.gui_input.connect(_on_panel_gui_input)
 
 func _exit_tree():
 	if EventBus.is_connected("run_inventory_changed", _populate_grids_from_run_inventory):
@@ -40,6 +42,16 @@ func populate(context: Dictionary):
 func _populate_grids_from_run_inventory():
 	if is_instance_valid(GameManager.run_state):
 		_populate_grids(GameManager.run_state.run_inventory, true)
+
+# This new function is the fix. It mirrors the logic from the test scene.
+func _on_panel_gui_input(event: InputEvent):
+	# If a click reaches this panel, it means it wasn't on a button or an item view.
+	# This is a click on the modal's own "background".
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Tell the global manager to close any open inspection windows.
+		WindowManager.close_all_inspection_windows()
+		# Consume the input so it doesn't also trigger the BackgroundBlocker behind this panel.
+		get_viewport().set_input_as_handled()
 
 func _populate_grids_from_battle_inventory():
 	var battle_manager = get_tree().get_first_node_in_group("battle_manager")

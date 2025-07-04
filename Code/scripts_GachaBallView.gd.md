@@ -68,12 +68,16 @@ func _gui_input(event: InputEvent):
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not is_selectable or not instance_data: return null
 
-	# Create the visual preview for the drag.
-	var preview = self.duplicate()
-	preview.custom_minimum_size = self.size
+	# Create a simple, robust preview: just the icon.
+	var preview = TextureRect.new()
+	preview.texture = icon_rect.texture
+	# Make the texture fill a fixed size for a consistent drag look.
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.custom_minimum_size = Vector2(64, 64)
+	
 	set_drag_preview(preview)
 
-	# Create a placeholder to hold the grid slot open.
+	# --- The rest of the logic for the placeholder is unchanged ---
 	var placeholder = Control.new()
 	placeholder.custom_minimum_size = self.size
 	var parent = get_parent()
@@ -81,10 +85,8 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		parent.add_child(placeholder)
 		parent.move_child(placeholder, get_index())
 
-	# The engine will now auto-hide `self`. The placeholder prevents the grid from reflowing.
 	InteractionManager.start_drag(self, placeholder)
 	
-	# Return a payload dictionary.
 	return { "source_view": self }
 
 func _can_drop_data(_at_position, data) -> bool:
@@ -92,7 +94,6 @@ func _can_drop_data(_at_position, data) -> bool:
 
 func _drop_data(_at_position, data):
 	var source_view = data.source_view as GachaBallView
-	# The drop is handled, so InteractionManager will clean up the placeholder.
 	InteractionManager.end_drag(true)
 	EventBus.emit_signal("inventory_action_requested", source_view, self)
 
