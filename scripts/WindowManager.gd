@@ -187,10 +187,13 @@ func _get_workspace_context(type: StringName) -> Dictionary:
 func _find_parent_group(source_view: Control) -> Dictionary:
 	var current_node = source_view
 	while is_instance_valid(current_node) and not current_node is Window and current_node != get_tree().root:
-		for group in _inspection_window_groups:
-			var window_index = group.find(current_node)
-			if window_index != -1:
-				return {"group": group, "index": window_index}
+		# This guard prevents the 'find' method from being called with a non-Control node
+		# (like a CanvasLayer), which was causing the type validation error.
+		if current_node is Control:
+			for group in _inspection_window_groups:
+				var window_index = group.find(current_node)
+				if window_index != -1:
+					return {"group": group, "index": window_index}
 		current_node = current_node.get_parent()
 	return {"group": null, "index": -1}
 

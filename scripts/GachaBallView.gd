@@ -65,9 +65,25 @@ func _gui_input(event: InputEvent):
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not is_selectable or not instance_data: return null
 
-	InteractionManager.start_drag(self)
+	# Create a simple, robust preview: just the icon.
+	var preview = TextureRect.new()
+	preview.texture = icon_rect.texture
+	# Make the texture fill a fixed size for a consistent drag look.
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.custom_minimum_size = Vector2(64, 64)
 	
-	# Return a payload dictionary.
+	set_drag_preview(preview)
+
+	# --- The rest of the logic for the placeholder is unchanged ---
+	var placeholder = Control.new()
+	placeholder.custom_minimum_size = self.size
+	var parent = get_parent()
+	if is_instance_valid(parent):
+		parent.add_child(placeholder)
+		parent.move_child(placeholder, get_index())
+
+	InteractionManager.start_drag(self, placeholder)
+	
 	return { "source_view": self }
 
 func _can_drop_data(_at_position, data) -> bool:

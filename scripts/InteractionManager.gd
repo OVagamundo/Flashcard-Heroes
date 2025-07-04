@@ -52,17 +52,10 @@ func is_drag_active() -> bool:
 func get_drag_source_view() -> Control:
 	return _drag_source_view
 
-func start_drag(source_view: Control):
+func start_drag(source_view: Control, placeholder: Control):
 	if not is_instance_valid(source_view): return
 	_is_drag_active = true
 	_drag_source_view = source_view
-	# Create a placeholder to hold the grid slot open.
-	var placeholder = Control.new()
-	placeholder.custom_minimum_size = source_view.size
-	var parent = source_view.get_parent()
-	if is_instance_valid(parent):
-		parent.add_child(placeholder)
-		parent.move_child(placeholder, source_view.get_index())
 	_drag_placeholder = placeholder
 	# We manually hide the source view to prevent GridContainer from reflowing.
 	# The placeholder will hold its spot.
@@ -80,10 +73,10 @@ func end_drag(was_handled: bool):
 
 	if is_instance_valid(_drag_placeholder):
 		_drag_placeholder.queue_free()
-		_drag_placeholder = null
 		
 	_is_drag_active = false
 	_drag_source_view = null
+	_drag_placeholder = null
 	emit_signal("drag_operation_ended", was_handled)
 
 func trigger_invalid_action_feedback(view: Control) -> void:
