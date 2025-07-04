@@ -7,7 +7,3 @@ Database loaded.
  - Recipes: 4
  - Decks: 0
 RunState initialized with TDD-compliant data grids.
-Merge calculated. Created: unit_t2_c. Parents to remove: 2
-Merge calculated. Created: unit_t3_d. Parents to remove: 2
-ERROR: Node not found: "UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea/DiscardPileArea/ReshuffleButton" (relative to "/root/Main/VBoxContainer/ContentArea/SubViewport/Battle").
-   at: get_node (scene/main/node.cpp:1878)
