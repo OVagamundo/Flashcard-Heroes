@@ -18,6 +18,7 @@ grow_vertical = 2
 script = ExtResource("1_cdefg")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+mouse_filter = 2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,6 +27,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TopArea" type="PanelContainer" parent="VBoxContainer"]
+mouse_filter = 2
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_top")
@@ -56,11 +58,13 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="BottomArea" type="PanelContainer" parent="VBoxContainer"]
+mouse_filter = 2
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bottom")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/BottomArea"]
+mouse_filter = 2
 layout_mode = 2
 alignment = 1
 

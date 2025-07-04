@@ -17,8 +17,7 @@ var _is_selected: bool = false
 func _ready():
 	EventBus.view_selected.connect(_on_view_selected)
 	EventBus.view_deselected.connect(_on_view_deselected)
-	EventBus.invalid_action_triggered.connect(_on_invalid_action_triggered)
-	InteractionManager.drag_operation_ended.connect(_on_drag_operation_ended)
+	EventBus.invalid_action_triggered.connect(func(v): _on_invalid_action_triggered(v))
 	_update_visuals()
 
 func _update_visuals():
@@ -40,8 +39,6 @@ func _update_visuals():
 
 func set_instance_data(data: GachaBallInstance):
 	self.instance_data = data
-	# If the node is already in the scene tree and ready, update visuals now.
-	# Otherwise, _ready() will handle the initial update.
 	if is_node_ready():
 		_update_visuals()
 
@@ -63,25 +60,39 @@ func _gui_input(event: InputEvent):
 				EventBus.emit_signal("inventory_action_requested", selected_view, self)
 			else:
 				InteractionManager.select_view(self)
-		else: # Is not selectable, so it's "inspect-only"
+		else:
 			EventBus.emit_signal("inspection_requested", self)
 
 		get_viewport().set_input_as_handled()
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	if not is_selectable or not instance_data: return null # Use is_selectable here
-	InteractionManager.start_drag(self)
+	if not is_selectable or not instance_data: return null
+
+	# Create the visual preview for the drag.
 	var preview = self.duplicate()
 	preview.custom_minimum_size = self.size
 	set_drag_preview(preview)
-	self.visible = false
-	return self
+
+	# Create a placeholder to hold the grid slot open.
+	var placeholder = Control.new()
+	placeholder.custom_minimum_size = self.size
+	var parent = get_parent()
+	if is_instance_valid(parent):
+		parent.add_child(placeholder)
+		parent.move_child(placeholder, get_index())
+
+	# The engine will now auto-hide `self`. The placeholder prevents the grid from reflowing.
+	InteractionManager.start_drag(self, placeholder)
+	
+	# Return a payload dictionary.
+	return { "source_view": self }
 
 func _can_drop_data(_at_position, data) -> bool:
-	return data is GachaBallView
+	return data is Dictionary and data.has("source_view")
 
 func _drop_data(_at_position, data):
-	var source_view = data as GachaBallView
+	var source_view = data.source_view as GachaBallView
+	# The drop is handled, so InteractionManager will clean up the placeholder.
 	InteractionManager.end_drag(true)
 	EventBus.emit_signal("inventory_action_requested", source_view, self)
 
@@ -99,11 +110,6 @@ func _on_invalid_action_triggered(view: Control):
 	if view == self and animation_player.has_animation("shake"):
 		animation_player.play("shake")
 
-func _on_drag_operation_ended(was_handled: bool):
-	if not was_handled and InteractionManager.get_drag_source_view() == self:
-		if not self.visible:
-			self.visible = true
-
 func _apply_selection_feedback():
 	if _is_selected:
 		var stylebox: StyleBoxFlat = get_theme_stylebox("panel").duplicate()
@@ -115,5 +121,4 @@ func _apply_selection_feedback():
 		add_theme_stylebox_override("panel", stylebox)
 	else:
 		remove_theme_stylebox_override("panel")
-
 ```

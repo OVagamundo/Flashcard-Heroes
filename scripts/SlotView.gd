@@ -30,12 +30,11 @@ func _gui_input(event: InputEvent):
 
 # TDD: Must be a valid drop target.
 func _can_drop_data(_at_position, data) -> bool:
-	return data is GachaBallView
+	return data is Dictionary and data.has("source_view")
 
 func _drop_data(_at_position, data):
-	var source_view = data as GachaBallView
-	source_view.visible = true # Make the original visible again.
-	# A successful drop is a "handled" drag.
+	var source_view = data.source_view as GachaBallView
+	# A successful drop is a "handled" drag. InteractionManager will clean up.
 	InteractionManager.end_drag(true)
 	# A view was dropped on this empty slot. This is a "Move" intent.
 	EventBus.emit_signal("inventory_action_requested", source_view, self)

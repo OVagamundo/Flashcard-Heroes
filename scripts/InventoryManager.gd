@@ -76,6 +76,7 @@ func _on_choice_made(choice: StringName):
 
 func _handle_move(source_view: Control, target_view: Control):
 	var source_instance = source_view.get_instance_data()
+	# TDD Rule: The Hero is locked to the lineup and cannot be moved.
 	if source_instance.definition_id == &"hero":
 		trigger_invalid_action_feedback(source_view)
 		return

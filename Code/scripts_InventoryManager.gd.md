@@ -79,6 +79,7 @@ func _on_choice_made(choice: StringName):
 
 func _handle_move(source_view: Control, target_view: Control):
 	var source_instance = source_view.get_instance_data()
+	# TDD Rule: The Hero is locked to the lineup and cannot be moved.
 	if source_instance.definition_id == &"hero":
 		trigger_invalid_action_feedback(source_view)
 		return
@@ -252,5 +253,4 @@ func _find_battle_location(instance: GachaBallInstance, bm: BattleManager) -> Di
 func trigger_invalid_action_feedback(view: Control):
 	if is_instance_valid(view):
 		EventBus.emit_signal("invalid_action_triggered", view)
-
 ```

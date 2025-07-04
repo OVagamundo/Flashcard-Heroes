@@ -38,8 +38,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
-		# Pressing Esc first closes a modal, then inspection windows, then deselects.
-		if not _modal_stack.is_empty():
+		# Pressing Esc first cancels a drag, then closes a modal, then inspection windows, then deselects.
+		if InteractionManager.is_drag_active():
+			InteractionManager.cancel_active_drag()
+		elif not _modal_stack.is_empty():
 			_close_top_modal()
 		elif not _inspection_window_groups.is_empty():
 			close_all_inspection_windows()
@@ -48,6 +50,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		# If a drag is active, any background click should cancel it and do nothing else.
+		if InteractionManager.is_drag_active():
+			InteractionManager.cancel_active_drag()
+			get_viewport().set_input_as_handled()
+			return
+
 		var click_pos = event.global_position
 		
 		# 1. Is the click inside any modal window's content panel? If so, ignore.
