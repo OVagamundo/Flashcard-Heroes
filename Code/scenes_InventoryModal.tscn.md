@@ -47,12 +47,14 @@ horizontal_alignment = 1
 
 [node name="GridsArea" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Tier1Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column"]
@@ -62,6 +64,7 @@ horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_vertical = 3
 
 [node name="Tier1Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column/ScrollContainer"]
@@ -75,6 +78,7 @@ columns = 4
 
 [node name="Tier2Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column"]
@@ -84,6 +88,7 @@ horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_vertical = 3
 
 [node name="Tier2Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column/ScrollContainer"]
@@ -97,6 +102,7 @@ columns = 4
 
 [node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 
 [node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column"]
@@ -106,6 +112,7 @@ horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_vertical = 3
 
 [node name="Tier3Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column/ScrollContainer"]

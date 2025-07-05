@@ -23,10 +23,13 @@ func initialize(tier: int, index: int, container_name: StringName = ""):
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		var selected_view = InteractionManager.get_selected_view()
-		if is_instance_valid(selected_view):
+		if is_instance_valid(selected_view) and not InteractionManager.is_drag_active():
 			# An item is selected, and this empty slot was clicked. This is a "Move" intent.
 			EventBus.emit_signal("inventory_action_requested", selected_view, self)
-			get_viewport().set_input_as_handled()
+		elif not is_instance_valid(selected_view):
+			# Nothing is selected. This is a pure background click to deselect or close windows.
+			EventBus.emit_signal("global_background_clicked")
+		get_viewport().set_input_as_handled()
 
 # TDD: Must be a valid drop target.
 func _can_drop_data(_at_position, data) -> bool:
@@ -34,7 +37,6 @@ func _can_drop_data(_at_position, data) -> bool:
 
 func _drop_data(_at_position, data):
 	var source_view = data.source_view as GachaBallView
-	# A successful drop is a "handled" drag. InteractionManager will clean up.
-	InteractionManager.end_drag(true)
+
 	# A view was dropped on this empty slot. This is a "Move" intent.
 	EventBus.emit_signal("inventory_action_requested", source_view, self)

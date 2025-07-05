@@ -35,6 +35,7 @@ signal view_selected(view: Control)
 signal view_deselected(view: Control)
 signal invalid_action_triggered(view: Control) # BUGFIX: This signal was missing.
 signal selection_context_changed(view: Control)
+signal global_background_clicked # Emitted when a main content background is clicked.
 
 
 # Signals have been removed as they were unused

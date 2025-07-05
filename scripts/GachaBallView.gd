@@ -91,7 +91,7 @@ func _can_drop_data(_at_position, data) -> bool:
 
 func _drop_data(_at_position, data):
 	var source_view = data.source_view as GachaBallView
-	InteractionManager.end_drag(true)
+
 	EventBus.emit_signal("inventory_action_requested", source_view, self)
 
 func _on_view_selected(view: Control):

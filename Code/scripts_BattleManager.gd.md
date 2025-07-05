@@ -12,11 +12,11 @@ const DISCARD_PILE_INITIAL_SIZE = 16 # TDD Compliance: 4x4 grid
 const GRID_GROWTH_AMOUNT = 4 # TDD Compliance
 
 # --- UI Node References ---
-var lineup_container: HBoxContainer
-var bench_container: HBoxContainer
-var item_container: HBoxContainer
-var discard_pile_button: Button
-var reshuffle_button: Button
+@onready var lineup_container: HBoxContainer = get_owner().get_node("%PlayerLineup")
+@onready var bench_container: HBoxContainer = get_owner().get_node("%PlayerBench")
+@onready var item_container: HBoxContainer = get_owner().get_node("%ItemInventory")
+@onready var discard_pile_button: Button = get_owner().get_node("%DiscardPileButton")
+@onready var reshuffle_button: Button = get_owner().get_node("%ReshuffleButton")
 
 var lineup_slots: Array[Node]
 var bench_slots: Array[Node]
@@ -34,13 +34,6 @@ var _draw_pools: Dictionary = {1: [], 2: [], 3: []}
 var _discard_pile: Array[GachaBallInstance]
 
 func _ready():
-	# Initialize containers here to avoid @onready timing issues.
-	var owner_node = get_owner()
-	lineup_container = owner_node.find_child("PlayerLineup", true, false)
-	bench_container = owner_node.find_child("PlayerBench", true, false)
-	item_container = owner_node.find_child("ItemInventory", true, false)
-	reshuffle_button = owner_node.get_node("UI/BattleArea/TeamAreas/EnemyArea/DrawBallArea/DiscardPileArea/ReshuffleButton")
-	discard_pile_button = owner_node.find_child("DiscardPileButton", true, false)
 	add_to_group("battle_manager")
 	
 	lineup_slots = lineup_container.get_children()

@@ -45,6 +45,10 @@ func _on_panel_gui_input(event: InputEvent):
 	# If a click reaches this panel, it means it wasn't on a button or an item view.
 	# This is a click on the modal's own "background".
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# If a drag is active when the panel is clicked, it's an invalid drop.
+		if InteractionManager.is_drag_active():
+			InteractionManager.end_drag(false)
+			return # Don't also close windows.
 		# Tell the global manager to close any open inspection windows.
 		WindowManager.close_all_inspection_windows()
 		# Consume the input so it doesn't also trigger the BackgroundBlocker behind this panel.
@@ -77,9 +81,9 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 				var view = GACHA_BALL_VIEW_SCENE.instantiate()
 				target_grid.add_child(view)
 				view.set_instance_data(instance)
-				view.initialize(tier, i)
+				view.initialize(tier, i, target_grid.name) # Use the grid's name as the container
 				view.is_selectable = is_interactive
 			elif is_interactive:
 				var slot_view = SLOT_VIEW_SCENE.instantiate()
 				target_grid.add_child(slot_view)
-				slot_view.initialize(tier, i)
+				slot_view.initialize(tier, i, target_grid.name) # Use the grid's name as the container

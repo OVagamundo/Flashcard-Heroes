@@ -7,3 +7,6 @@ Database loaded.
  - Recipes: 4
  - Decks: 0
 RunState initialized with TDD-compliant data grids.
+Merge calculated. Created: unit_t2_c. Parents to remove: 2
+Merge calculated. Created: item_t2_c. Parents to remove: 2
+Merge calculated. Created: unit_t2_c. Parents to remove: 2

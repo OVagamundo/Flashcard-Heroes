@@ -51,3 +51,6 @@ func create_battle_copy() -> GachaBallInstance:
 	copy.origin_uuid = self.ball_uuid
 	
 	return copy
+
+func get_definition() -> GachaBallDefinition:
+	return Database.units.get(definition_id, Database.items.get(definition_id))

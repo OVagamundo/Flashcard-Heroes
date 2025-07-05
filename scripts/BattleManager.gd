@@ -127,7 +127,18 @@ func _on_draw_gacha_requested(tier: int):
 	
 	var pool = _draw_pools[tier]
 	var drawn_instance = pool.pick_random()
+	# TDD Compliance: The drawn instance MUST be removed from the pool.
+	pool.erase(drawn_instance)
 	var definition = Database.units.get(drawn_instance.definition_id, Database.items.get(drawn_instance.definition_id))
+
+	# TDD COMPLIANCE: Remove the drawn instance from the master battle inventory
+	# so it no longer appears in the modal.
+	if _battle_inventory.has(definition.tier):
+		var master_grid = _battle_inventory[definition.tier]
+		var idx = master_grid.find(drawn_instance)
+		if idx != -1:
+			master_grid[idx] = null
+
 	var empty_slot_found = false
 	if definition.category == "UNIT":
 		var bench_idx = bench_data.find(null)
@@ -169,15 +180,17 @@ func _on_reshuffle_requested():
 			
 	# TDD Compliance: A data grid must be cleared by nullifying its slots.
 	_discard_pile.fill(null)
-	
-	EventBus.emit_signal("battle_inventory_changed")
+
+	# TDD Compliance: Explicitly update the UI that has changed.
+	# Emitting a generic signal was causing confusion. The only thing that
+	# has visually changed is the discard pile count.
+	_update_discard_pile_ui()
 
 func _update_discard_pile_ui():
 	# TDD Compliance: Count non-null items, as .size() is now the total capacity.
 	var discard_count = _discard_pile.filter(func(x): return x != null).size()
-	discard_pile_button.text = "Discard Pile (%d)" % discard_count
-	# TDD Safeguard: Re-enable reshuffle button after UI update.
-	reshuffle_button.disabled = false
+	discard_pile_button.text = "Discard Pile (%d)" % discard_count	
+	reshuffle_button.disabled = _discard_pile.is_empty()
 
 # --- Public Data Accessors for InventoryManager ---
 func get_data_array_and_instance(container_name: StringName, index: int) -> Dictionary:
