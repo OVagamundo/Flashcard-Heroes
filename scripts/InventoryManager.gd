@@ -147,7 +147,19 @@ func _handle_equip(item_view: Control, unit_view: Control):
 	# Action is valid, proceed.
 	_set_instance_at_location(item_loc, null)
 	unit_instance.equipped_item_uuids[empty_slot_idx] = item_instance.ball_uuid
-	
+
+	# Place the item back into the master battle inventory.
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	var def = item_instance.get_definition()
+	if is_instance_valid(bm) and is_instance_valid(def):
+		var inventory_grid = bm.get_battle_inventory().get(def.tier)
+		if inventory_grid is Array:
+			var empty_inv_idx = inventory_grid.find(null)
+			if empty_inv_idx != -1:
+				inventory_grid[empty_inv_idx] = item_instance
+			else:
+				printerr("InventoryManager: CRITICAL - No space in battle inventory for equipped item. Item may be lost.")
+
 	InteractionManager.end_drag(true) # Action was valid, end the drag successfully.
 	EventBus.emit_signal("battle_inventory_changed")
 
@@ -214,13 +226,25 @@ func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
 					run_inv[def.tier][idx] = null
 
 # TDD Merge Destination Logic Implementation
-func _place_merged_instance(merged_instance: GachaBallInstance, _source_view: Control, _target_view: Control):
-	var def = Database.units.get(merged_instance.definition_id, Database.items.get(merged_instance.definition_id))
+# TDD Merge Destination Logic Implementation
+func _place_merged_instance(merged_instance: GachaBallInstance, _source_view: Control, target_view: Control):
+	var def = merged_instance.get_definition()
 	if not def: return
 	
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		# TDD UX FIX: Prioritize placing the new unit on the bench for immediate feedback.
+		var target_loc = target_view.get_meta("location_identifier", {})
+
+		# If the merge target was on the battle board, place the result there.
+		if _is_on_battle_board(target_loc):
+			# The parent slots are already cleared. We can place the new instance
+			# in the target's original slot. This is valid because merge recipes
+			# do not change category (UNIT -> UNIT, ITEM -> ITEM).
+			_set_instance_at_location(target_loc, merged_instance)
+			return # Action complete.
+
+		# Fallback for merges that happen in the inventory modal.
+		# Prioritize placing a new unit on the bench for immediate feedback.
 		var bench_idx = bm.bench_data.find(null)
 		if def.category == &"UNIT" and bench_idx != -1:
 			bm.bench_data[bench_idx] = merged_instance

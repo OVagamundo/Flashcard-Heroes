@@ -25,9 +25,15 @@ func _ready():
 	EventBus.battle_state_changed.connect(_on_battle_state_changed)
 	# TDD Safeguard: Re-enable draw buttons after the UI has redrawn.
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
+	content_area.gui_input.connect(_on_content_area_gui_input)
 	
 	_on_battle_state_changed(false)
 	_load_content(PATH_CHOICE_SCENE)
+
+func _on_content_area_gui_input(event: InputEvent):
+	# This acts as a backstop for drops on the background of the game area.
+	if event is InputEventMouseButton and not event.is_pressed() and InteractionManager.is_drag_active():
+		InteractionManager.end_drag(false)
 
 func _clear_content_area():
 	if is_instance_valid(_current_content_node):

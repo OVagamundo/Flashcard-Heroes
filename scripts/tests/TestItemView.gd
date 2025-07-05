@@ -23,13 +23,17 @@ func initialize(item_data: Dictionary):
 
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Branching logic based on selectability.
 		if is_selectable:
-			# Behaves like an inventory item: select first, then inspect.
-			InteractionManager.select_view(self)
+			# Handle double-click for inspection
+			if event.double_click:
+				EventBus.emit_signal("inspection_requested", self)
+				# Clear selection after inspection
+				InteractionManager.clear_selection()
+			else:
+				# Single click just selects
+				InteractionManager.select_view(self)
 		else:
-			# Behaves like a child item in an inspection window: one-click inspect.
-			# It bypasses InteractionManager's selection and directly requests inspection.
+			# Non-selectable views still use single-click for inspection
 			EventBus.emit_signal("inspection_requested", self)
 
 		get_viewport().set_input_as_handled()

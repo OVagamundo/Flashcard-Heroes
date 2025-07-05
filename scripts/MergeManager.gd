@@ -37,8 +37,8 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
 		
 	# 4. Create the list of all instances that need to be removed from inventories.
+	# Only the two base instances being merged should be removed, not their equipped items
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
-	parents_to_remove.append_array(all_parent_items)
 
 	print("Merge calculated. Created: %s. Parents to remove: %s" % [merged_instance.definition_id, parents_to_remove.size()])
 	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}

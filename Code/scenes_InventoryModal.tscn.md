@@ -69,7 +69,7 @@ size_flags_vertical = 3
 
 [node name="Tier1Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column/ScrollContainer"]
 unique_name_in_owner = true
-layout_mode = 2
+name = "Tier1InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 5
@@ -93,7 +93,7 @@ size_flags_vertical = 3
 
 [node name="Tier2Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column/ScrollContainer"]
 unique_name_in_owner = true
-layout_mode = 2
+name = "Tier2InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 5
@@ -117,7 +117,7 @@ size_flags_vertical = 3
 
 [node name="Tier3Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column/ScrollContainer"]
 unique_name_in_owner = true
-layout_mode = 2
+name = "Tier3InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 5

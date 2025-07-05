@@ -35,6 +35,7 @@ func _ready():
 	# Centralized input event handling
 	EventBus.close_modal_requested.connect(_close_top_modal)
 	EventBus.background_clicked.connect(_on_background_blocker_clicked)
+	EventBus.global_background_clicked.connect(_global_deselect_and_close_inspections)
 	
 	# THIS IS THE FIX: Connect to the signal that announces a new selection is being attempted.
 	EventBus.selection_context_changed.connect(_on_selection_context_changed)
@@ -62,28 +63,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-		var click_pos = event.global_position
-		
-		# 1. Is the click inside any modal window's content panel? If so, ignore.
-		for entry in _modal_stack:
-			var window = entry.get("window")
-			if is_instance_valid(window) and window.get_node("PanelContainer").get_global_rect().has_point(click_pos):
-				return # The modal's own logic or blocker will handle it.
-		
-		# 2. Is the click inside any inspection window? If so, ignore.
-		for group in _inspection_window_groups:
-			for window in group:
-				if is_instance_valid(window) and window.get_global_rect().has_point(click_pos):
-					return # The inspection window's own STOP filter will handle it.
-		
-		# 3. Is the click on the currently selected view? If so, ignore.
-		var selected_view = InteractionManager.get_selected_view()
-		if is_instance_valid(selected_view) and selected_view.get_global_rect().has_point(click_pos):
-			return
-
-		# 4. If all checks fail, it's a true background click.
-		get_viewport().set_input_as_handled()
-		_global_deselect_and_close_inspections()
+		# This handler is now much simpler. If a mouse click becomes unhandled,
+		# it can only mean the user clicked and/or dragged completely outside
+		# of any interactive area or background detector (e.g., on the grey
+		# bars outside the game window if not in fullscreen).
+		# Its only job now is to cancel a stray drag as a final safety net.
+		if event is InputEventMouseButton and InteractionManager.is_drag_active():
+			InteractionManager.cancel_active_drag()
+			get_viewport().set_input_as_handled()
 
 # --- Public Methods: Window Management ---
 

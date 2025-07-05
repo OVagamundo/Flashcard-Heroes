@@ -21,10 +21,9 @@ func select_view(view: Control) -> void:
 	if not is_instance_valid(view):
 		clear_selection()
 		return
-		
+
+	# If clicking the same view, do nothing to allow for drag operations
 	if _selected_view == view:
-		EventBus.emit_signal("inspection_requested", view)
-		clear_selection()
 		return
 
 	EventBus.emit_signal("selection_context_changed", view)
@@ -34,8 +33,6 @@ func select_view(view: Control) -> void:
 
 	_selected_view = view
 	EventBus.emit_signal("view_selected", _selected_view)
-	
-	return
 
 func clear_selection() -> void:
 	if is_instance_valid(_selected_view):

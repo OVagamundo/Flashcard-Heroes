@@ -55,12 +55,22 @@ func _gui_input(event: InputEvent):
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		if is_selectable:
+			# Handle double-click for inspection
+			if event.double_click:
+				EventBus.emit_signal("inspection_requested", self)
+				# Clear selection after inspection
+				InteractionManager.clear_selection()
+				get_viewport().set_input_as_handled()
+				return
+
 			var selected_view = InteractionManager.get_selected_view()
+			# If another view is selected, this is a merge/swap/equip action
 			if is_instance_valid(selected_view) and selected_view != self:
 				EventBus.emit_signal("inventory_action_requested", selected_view, self)
 			else:
 				InteractionManager.select_view(self)
 		else:
+			# Non-selectable views still use single-click for inspection
 			EventBus.emit_signal("inspection_requested", self)
 
 		get_viewport().set_input_as_handled()
@@ -94,7 +104,7 @@ func _can_drop_data(_at_position, data) -> bool:
 
 func _drop_data(_at_position, data):
 	var source_view = data.source_view as GachaBallView
-	InteractionManager.end_drag(true)
+
 	EventBus.emit_signal("inventory_action_requested", source_view, self)
 
 func _on_view_selected(view: Control):

@@ -1,10 +1,11 @@
 <!-- Original: scenes/Battle.tscn -->
 
 ```ini
-[gd_scene load_steps=3 format=3 uid="uid://uiilu4273ttr"]
+[gd_scene load_steps=4 format=3 uid="uid://uiilu4273ttr"]
 
 [ext_resource type="Script" uid="uid://bwx6ux5t1drf5" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" uid="uid://dp7nlwa5djbf" path="res://scripts/Battle.gd" id="2_abcde"]
+[ext_resource type="Script" uid="uid://b6kwe3wxewufa" path="res://scripts/BackgroundClickDetector.gd" id="3_detector_script"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -15,6 +16,16 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_abcde")
+
+[node name="BackgroundClickDetector" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0)
+script = ExtResource("3_detector_script")
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")

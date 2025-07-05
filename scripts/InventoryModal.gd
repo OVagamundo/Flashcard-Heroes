@@ -62,6 +62,18 @@ func _populate_grids_from_battle_inventory():
 func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 	var grids = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
 	
+	# Build a set of all equipped item UUIDs for quick lookup.
+	var equipped_item_uuids = {} # Using a Dictionary as a HashSet
+	if _is_battle_context:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			var all_units = bm.lineup_data + bm.bench_data
+			for unit in all_units:
+				if is_instance_valid(unit):
+					for uuid in unit.equipped_item_uuids:
+						if not uuid.is_empty():
+							equipped_item_uuids[uuid] = true
+
 	for grid in grids.values():
 		for child in grid.get_children():
 			child.queue_free()
@@ -77,13 +89,18 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 		for i in range(tier_data_array.size()):
 			var instance = tier_data_array[i]
 			
-			if is_instance_valid(instance):
+			# Check if the item is equipped before creating a view.
+			var is_equipped = is_instance_valid(instance) and equipped_item_uuids.has(instance.ball_uuid)
+
+			if is_instance_valid(instance) and not is_equipped:
 				var view = GACHA_BALL_VIEW_SCENE.instantiate()
 				target_grid.add_child(view)
 				view.set_instance_data(instance)
 				view.initialize(tier, i, target_grid.name) # Use the grid's name as the container
 				view.is_selectable = is_interactive
 			elif is_interactive:
+				# This now correctly handles both null slots and equipped items,
+				# showing an empty, interactable slot for both cases.
 				var slot_view = SLOT_VIEW_SCENE.instantiate()
 				target_grid.add_child(slot_view)
 				slot_view.initialize(tier, i, target_grid.name) # Use the grid's name as the container

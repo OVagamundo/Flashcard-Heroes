@@ -11,6 +11,17 @@ const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
 
+var _inspected_unit_uuid: String # We now track the specific unit instance
+
+func _ready():
+	# TDD Compliance: Make this UI component reactive to state changes.
+	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
+
+func _exit_tree():
+	# TDD Compliance: Clean up connections.
+	if EventBus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
+		EventBus.battle_inventory_changed.disconnect(_on_battle_inventory_changed)
+
 func _gui_input(event: InputEvent):
 	# TDD Rule 3: Hierarchical Closing.
 	# When this window is clicked, it tells the WindowManager.
@@ -21,6 +32,9 @@ func _gui_input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):
+	# Store the UUID of the inspected unit so we can find it again on refresh.
+	if context.has("source_view"):
+		_inspected_unit_uuid = context.get("source_view").get_instance_data().ball_uuid
 	var source_view = context.get("source_view") as GachaBallView
 	if not source_view: queue_free(); return
 
@@ -78,5 +92,27 @@ func populate(context: Dictionary):
 			style.set_border_color(Color(0.5, 0.5, 0.5, 0.8))
 			placeholder.add_theme_stylebox_override("panel", style)
 			item_grid.add_child(placeholder)
+
+func _on_battle_inventory_changed():
+	# If this window is open when the inventory changes, re-populate to refresh its state.
+	if self.visible and not _inspected_unit_uuid.is_empty():
+		# Don't use the old context. Find the CURRENT view for our tracked unit.
+		var current_view = _find_view_for_uuid(_inspected_unit_uuid)
+		if is_instance_valid(current_view):
+			populate({"source_view": current_view})
+		else:
+			# The unit we were inspecting no longer exists (e.g., was merged away). Close the window.
+			queue_free()
+
+func _find_view_for_uuid(uuid: String) -> GachaBallView:
+	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+	if not is_instance_valid(battle_manager): return null
+	
+	# Search all active data arrays on the board.
+	var all_board_data = battle_manager.lineup_data + battle_manager.bench_data + battle_manager.item_data
+	for instance in all_board_data:
+		if is_instance_valid(instance) and instance.ball_uuid == uuid and instance.has_meta("view_node"):
+			return instance.get_meta("view_node") as GachaBallView
+	return null
 
 ```
