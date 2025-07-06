@@ -132,4 +132,15 @@ func _apply_selection_feedback():
 		add_theme_stylebox_override("panel", stylebox)
 	else:
 		remove_theme_stylebox_override("panel")
+
+func _notification(what: int) -> void:
+	# This function receives all engine notifications. We only care about NOTIFICATION_DRAG_END.
+	if what == NOTIFICATION_DRAG_END:
+		# This notification is sent to MANY nodes, so we must be specific.
+		# We only act if a drag is active AND we were the source of that drag.
+		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
+			print("--- GachaBallView '", self.name, "': Received DRAG_END notification from the engine.")
+			print("    - This means the drop was unhandled by any other control.")
+			print("    - Forcing cancellation of the drag to restore the view.")
+			InteractionManager.end_drag(false)
 ```

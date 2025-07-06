@@ -226,43 +226,47 @@ func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
 					run_inv[def.tier][idx] = null
 
 # TDD Merge Destination Logic Implementation
+# The result of a merge is always placed in the first available slot of the
+# corresponding inventory grid (Run or Battle) for its tier. This ensures
+# consistent and predictable behavior, removing special cases for the battle bench.
 # TDD Merge Destination Logic Implementation
+# The destination of a merged item depends on the context of the action.
 func _place_merged_instance(merged_instance: GachaBallInstance, _source_view: Control, target_view: Control):
 	var def = merged_instance.get_definition()
 	if not def: return
-	
+
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		var target_loc = target_view.get_meta("location_identifier", {})
 
-		# If the merge target was on the battle board, place the result there.
+		# Check if the merge happened on the battle board itself.
 		if _is_on_battle_board(target_loc):
-			# The parent slots are already cleared. We can place the new instance
-			# in the target's original slot. This is valid because merge recipes
-			# do not change category (UNIT -> UNIT, ITEM -> ITEM).
+			# If so, the new instance takes the place of the target view.
+			# This ensures merges on the bench/lineup feel immediate and correct.
 			_set_instance_at_location(target_loc, merged_instance)
-			return # Action complete.
-
-		# Fallback for merges that happen in the inventory modal.
-		# Prioritize placing a new unit on the bench for immediate feedback.
-		var bench_idx = bm.bench_data.find(null)
-		if def.category == &"UNIT" and bench_idx != -1:
-			bm.bench_data[bench_idx] = merged_instance
-		else: # Fallback to inventory grid if bench is full or it's an item.
-			var battle_inv_grid = bm.get_battle_inventory()[def.tier]
-			var empty_idx = battle_inv_grid.find(null)
-			if empty_idx != -1:
-				battle_inv_grid[empty_idx] = merged_instance
-			else:
-				# This case should be rare, but handles grid growth if needed.
-				printerr("InventoryManager: No space in battle inventory for merged item. It will be lost.")
-	else: # Run Inventory
-		var run_inv_grid = GameManager.run_state.run_inventory[def.tier]
-		var empty_idx = run_inv_grid.find(null)
-		if empty_idx != -1:
-			run_inv_grid[empty_idx] = merged_instance
+			return
 		else:
-			printerr("InventoryManager: No space in run inventory for merged item. It will be lost.")
+			# If the merge happened in the inventory modal, place the result
+			# in the main battle inventory grid.
+			var battle_inv_grid = bm.get_battle_inventory().get(def.tier)
+			if battle_inv_grid is Array:
+				var empty_idx = battle_inv_grid.find(null)
+				if empty_idx != -1:
+					battle_inv_grid[empty_idx] = merged_instance
+				else:
+					printerr("InventoryManager: No space in battle inventory for merged item. It will be lost.")
+			else:
+				printerr("InventoryManager: Invalid tier %d for merged item in battle." % def.tier)
+	else: # Run Inventory (This logic remains the same)
+		var run_inv_grid = GameManager.run_state.run_inventory.get(def.tier)
+		if run_inv_grid is Array:
+			var empty_idx = run_inv_grid.find(null)
+			if empty_idx != -1:
+				run_inv_grid[empty_idx] = merged_instance
+			else:
+				printerr("InventoryManager: No space in run inventory for merged item. It will be lost.")
+		else:
+			printerr("InventoryManager: Invalid tier %d for merged item in run." % def.tier)
 
 
 func _find_battle_location(instance: GachaBallInstance, bm: BattleManager) -> Dictionary:

@@ -133,9 +133,17 @@ No: Proceed to the next check.
 Check for Equip: Is the source an ITEM, the target a UNIT, and are both located on the Battle Board (i.e., their data exists in lineup_data, bench_data, or item_data)?
 Yes: Intent is Equip.
 All other cases: Intent is Swap. (e.g., Unit-Unit with no recipe, Item-Item with no recipe, Unit-Item, Item-Unit in Run Inventory, Item-Unit where one or both are not on the Battle Board).
-Merge Destination Logic
-In Run Inventory: The parent instances are removed. The new merged instance is placed in the first available null slot of its corresponding tier grid in RunState.run_inventory.
-In Battle (via Inventory Modal): The parent instances are removed from the _battle_inventory master list. The new merged instance is placed in the first available null slot of its corresponding tier grid in BattleManager._battle_inventory. It does not go directly to the bench or lineup.
+### Merge Destination Logic
+
+The placement of a merged gachaball is context-dependent, designed to be intuitive based on where the action occurs. The logic is split between actions taken on the main battle board versus those within an inventory screen.
+
+*   **In-Inventory Merges (Run Inventory or Battle Inventory Modal):**
+    *   When a merge is performed within any inventory grid (either the main Run Inventory screen or the pop-up Battle Inventory modal), the resulting new instance is **always** placed into the first available `null` slot of the corresponding inventory grid for its tier (`RunState.run_inventory` or `BattleManager._battle_inventory`). This ensures a consistent and predictable flow for inventory management.
+
+*   **On-Board Merges (Battle Only):**
+    *   When a merge is performed directly on the battle board (i.e., by dragging one gachaball onto another in the lineup or bench), the resulting new instance **immediately replaces the target gachaball** in its slot on the board. This provides direct, immediate feedback and makes modifying the lineup feel fluid and responsive.
+
+This two-pronged approach maintains a clear separation of concerns: inventory management is a deliberate, grid-based activity, while board management is a direct, tactical action.
 Compatibility Rules Table (in InventoryManager.gd)
 These are additional hard-fail checks applied during action handling.
 | Action | Context | Source/Target Location | Compatibility Check | Result |
@@ -159,6 +167,7 @@ The view's click behavior is dictated by this property:
 If is_selectable is true (e.g., for a view in a main inventory grid), a click is routed through the InteractionManager to handle the standard select/inspect/deselect cycle.
 If is_selectable is false (e.g., for a view representing a child item inside an already-open inspection window), a click bypasses the InteractionManager's selection logic and directly emits a global inspection_requested event for that view. This creates a "one-click inspect" behavior for non-selectable, nested items.
 The script also enables a yellow outline on view_selected and plays a "shake" animation on invalid_action_triggered.
+*   The script implements the _notification function to listen for the engine's NOTIFICATION_DRAG_END. This acts as the ultimate safety net. If the engine signals that a drag has ended, but the InteractionManager still considers the drag to be active, it means the drop occurred on an unhandled target (like outside the game window or on a non-interactive UI element). The GachaBallView then takes responsibility for forcing a cancellation of the drag, ensuring the view always reappears in its original slot.
 SlotView.tscn:
 Purpose: Visual representation of a null value in a data grid.
 Scene Tree: A simple PanelContainer.
