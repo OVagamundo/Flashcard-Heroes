@@ -1,7 +1,7 @@
 # res://scripts/DiscardPileModal.gd
 extends Control
 
-const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
+# NOTE: We have removed the const preload from the top of the script.
 
 @onready var discard_grid: GridContainer = %DiscardGrid
 
@@ -11,6 +11,9 @@ func _ready():
 	pass
 
 func populate(context: Dictionary):
+	# FIX: Load the scene at runtime instead of preloading.
+	var gacha_ball_view_scene = load("res://scenes/GachaBallView.tscn")
+
 	var discard_pile_data = context.get("discard_pile", [])
 	
 	for child in discard_grid.get_children():
@@ -18,7 +21,7 @@ func populate(context: Dictionary):
 		
 	for instance_data in discard_pile_data:
 		if is_instance_valid(instance_data):
-			var view = GACHA_BALL_VIEW_SCENE.instantiate()
+			var view = gacha_ball_view_scene.instantiate()
 			discard_grid.add_child(view)
 			view.set_instance_data(instance_data)
 			# TDD: Items in the discard pile are for inspection only, not interaction.

@@ -1,8 +1,7 @@
 # res://scripts/InventoryModal.gd
 extends Control
 
-const GACHA_BALL_VIEW_SCENE = preload("res://scenes/GachaBallView.tscn")
-const SLOT_VIEW_SCENE = preload("res://scenes/SlotView.tscn")
+# NOTE: We have REMOVED the const preloads from here.
 
 @onready var panel_container: PanelContainer = %PanelContainer
 @onready var title_label: Label = %TitleLabel
@@ -40,7 +39,6 @@ func _populate_grids_from_run_inventory():
 	if is_instance_valid(GameManager.run_state):
 		_populate_grids(GameManager.run_state.run_inventory, true)
 
-# This new function is the fix. It mirrors the logic from the test scene.
 func _on_panel_gui_input(event: InputEvent):
 	# If a click reaches this panel, it means it wasn't on a button or an item view.
 	# This is a click on the modal's own "background".
@@ -60,6 +58,10 @@ func _populate_grids_from_battle_inventory():
 		_populate_grids(battle_manager.get_battle_inventory(), true)
 
 func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
+	# FIX: Load scenes at runtime instead of preloading.
+	var gacha_ball_view_scene = load("res://scenes/GachaBallView.tscn")
+	var slot_view_scene = load("res://scenes/SlotView.tscn")
+
 	var grids = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
 	
 	# Build a set of all equipped item UUIDs for quick lookup.
@@ -93,7 +95,7 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 			var is_equipped = is_instance_valid(instance) and equipped_item_uuids.has(instance.ball_uuid)
 
 			if is_instance_valid(instance) and not is_equipped:
-				var view = GACHA_BALL_VIEW_SCENE.instantiate()
+				var view = gacha_ball_view_scene.instantiate()
 				target_grid.add_child(view)
 				view.set_instance_data(instance)
 				view.initialize(tier, i, target_grid.name) # Use the grid's name as the container
@@ -101,6 +103,6 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 			elif is_interactive:
 				# This now correctly handles both null slots and equipped items,
 				# showing an empty, interactable slot for both cases.
-				var slot_view = SLOT_VIEW_SCENE.instantiate()
+				var slot_view = slot_view_scene.instantiate()
 				target_grid.add_child(slot_view)
 				slot_view.initialize(tier, i, target_grid.name) # Use the grid's name as the container

@@ -7,8 +7,5 @@ Database loaded.
  - Recipes: 4
  - Decks: 0
 RunState initialized with TDD-compliant data grids.
---- GachaBallView '@PanelContainer@7': Received DRAG_END notification from the engine.
-    - This means the drop was unhandled by any other control.
-    - Forcing cancellation of the drag to restore the view.
 Merge calculated. Created: unit_t2_c. Parents to remove: 2
 Merge calculated. Created: unit_t3_d. Parents to remove: 2
