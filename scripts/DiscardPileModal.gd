@@ -1,19 +1,24 @@
 # res://scripts/DiscardPileModal.gd
 extends Control
 
-# NOTE: We have removed the const preload from the top of the script.
-
 @onready var discard_grid: GridContainer = %DiscardGrid
+@onready var panel_container: PanelContainer = %PanelContainer
 
 func _ready():
-	# TDD Compliance: This modal uses the standard BackgroundBlocker,
-	# so no special detection logic is needed here.
-	pass
+	# Connect the panel's input signal to our new handler.
+	panel_container.gui_input.connect(_on_panel_gui_input)
+
+func _on_panel_gui_input(event: InputEvent):
+	# If a click reaches this panel, it means it wasn't on an item view.
+	# This is a click on the modal's own "background".
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Tell the global manager to close any open inspection windows.
+		WindowManager.close_all_inspection_windows()
+		# Consume the input so it doesn't also trigger the BackgroundBlocker behind this panel.
+		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):
-	# FIX: Load the scene at runtime instead of preloading.
 	var gacha_ball_view_scene = load("res://scenes/GachaBallView.tscn")
-
 	var discard_pile_data = context.get("discard_pile", [])
 	
 	for child in discard_grid.get_children():
@@ -24,5 +29,4 @@ func populate(context: Dictionary):
 			var view = gacha_ball_view_scene.instantiate()
 			discard_grid.add_child(view)
 			view.set_instance_data(instance_data)
-			# TDD: Items in the discard pile are for inspection only, not interaction.
 			view.is_selectable = false
