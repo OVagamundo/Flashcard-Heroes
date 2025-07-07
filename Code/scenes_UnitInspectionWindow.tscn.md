@@ -36,6 +36,7 @@ theme_override_constants/separation = 8
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 18
 text = "Unit Name"
 horizontal_alignment = 1
@@ -43,15 +44,18 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="DescriptionLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Unit description goes here."
-autowrap_mode = 3
+bbcode_enabled = true
+text = ""
+fit_content = true
+meta_underlined = false
 
 [node name="ItemGridLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 text = "Equipped Items:"
 
 [node name="ItemGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]

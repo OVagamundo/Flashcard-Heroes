@@ -17,24 +17,31 @@ res://
 ├── resources/
 │   ├── units/
 │   ├── items/
+│   ├── abilities/
 │   ├── recipes/
 │   └── decks/
 ├── scenes/
 └── scripts/
+├── localization.csv
 Use code with caution.
 Part 2: Data Schemas & Structures
 2.1 Data Resource Schemas
 GachaBallDefinition.gd: Resource, class_name GachaBallDefinition. The template for a GachaBall.
-Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tier: int, @export var category: StringName, @export var item_slot_count: int
+Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tier: int, @export var category: StringName, @export var item_slot_count: int, @export var base_hp: int = 0, @export var base_pwr: int = 0, @export var bonus_hp: int = 0, @export var bonus_pwr: int = 0, @export var ability_definitions: Array[AbilityDefinition]
 GachaBallInstance.gd: Resource, class_name GachaBallInstance. A unique instance of a GachaBall.
-Properties: definition_id: StringName, ball_uuid: String, origin_uuid: String, equipped_item_uuids: Array[String]
-Method: initialize(def: GachaBallDefinition): Sets definition_id, generates ball_uuid, and resizes equipped_item_uuids to def.item_slot_count, filling it with empty strings ("").
+Properties: definition_id: StringName, ball_uuid: String, origin_uuid: String, equipped_item_uuids: Array[String], current_hp: int, current_pwr: int
+Method: initialize(def: GachaBallDefinition): Sets definition_id, generates ball_uuid, resizes equipped_item_uuids, and initializes current_hp and current_pwr from the definition's base_hp and base_pwr.
 Method: create_battle_copy() -> GachaBallInstance: Creates a new deep copy, assigning a new ball_uuid and setting origin_uuid to the original's ball_uuid.
+Method: recalculate_stats(all_instances_db: Dictionary): Calculates current_hp and current_pwr by starting with base stats from the definition and adding all bonus_hp and bonus_pwr from equipped items.
 MergeRecipe.gd: Resource, class_name MergeRecipe. Defines a valid merge.
 Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName, @export var is_self_merge: bool, @export var merge_type: StringName
 ConditionDefinition.gd: Resource, class_name ConditionDefinition. Defines ability conditions. For MVP, its evaluate() method is a placeholder that always returns true.
 FlashcardDeckDefinition.gd: Resource, class_name FlashcardDeckDefinition.
 Properties: @export var id: StringName, @export var display_name_key: String, @export var card_list: Array[Dictionary]
+AbilityDefinition.gd: Resource, class_name AbilityDefinition. Defines an ability.
+Properties: @export var id: StringName, @export var name_key: String, @export var description_key: String, @export var effect: EffectDefinition.
+EffectDefinition.gd: Resource, class_name EffectDefinition. A base class for all ability effects.
+Method: execute(source: GachaBallInstance, targets: Array[GachaBallInstance], battle_manager: BattleManager).
 2.2 Inventory Data Structures
 This table defines the size, structure, and behavior of every data container in the game.
 Container Name	Data Path	Structure	Initial Size	Growth Logic
@@ -44,157 +51,176 @@ Discard Pile	BattleManager.discard_pile | Data Grid (Array) | 4x4 (16 slots) | G
 Player Lineup	BattleManager.lineup_data	Fixed-Size Array	6 slots	None. Fixed size.
 Player Bench	BattleManager.bench_data	Fixed-Size Array	3 slots	None. Fixed size.
 Item Inventory	BattleManager.item_data	Fixed-Size Array	3 slots	None. Fixed size.
+Enemy Lineup | BattleManager._enemy_lineup_data | Fixed-Size Array | 6 slots | None. Fixed size.
+Enemy Lineup	BattleManager._enemy_lineup_data	Fixed-Size Array	6 slots	None. Fixed size.
 2.3 MVP Data File Manifest
 The following .tres files must be created in their respective res://resources/ subdirectories.
 Units & Hero (res://resources/units/)
-| Filename | id | tier | category | item_slot_count | icon (Path) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Hero.tres | hero | 0 | "UNIT" | 5 | res://assets/sprites/units/Hero.png |
-| UnitTier1A.tres | unit_t1_a | 1 | "UNIT" | 1 | res://assets/sprites/units/UnitTier1A.png|
-| UnitTier1B.tres | unit_t1_b | 1 | "UNIT" | 1 | res://assets/sprites/units/UnitTier1B.png|
-| UnitTier2C.tres | unit_t2_c | 2 | "UNIT" | 2 | res://assets/sprites/units/UnitTier2C.png|
-| UnitTier3D.tres | unit_t3_d | 3 | "UNIT" | 4 | res://assets/sprites/units/UnitTier3D.png|
-Items (res://resources/items/)
-| Filename | id | tier | category | icon (Path) |
+| Filename | id | tier | category | item_slot_count | base_hp | base_pwr | icon (Path) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Hero.tres | hero | 0 | "UNIT" | 5 | 10 | 2 | res://assets/sprites/units/Hero.png |
+| EnemyHero.tres | enemy_hero | 0 | "UNIT" | 5 | 10 | 2 | res://assets/sprites/units/Hero.png |
+| UnitTier1A.tres | unit_t1_a | 1 | "UNIT" | 1 | 1 | 2 | res://assets/sprites/units/UnitTier1A.png|
+| UnitTier1B.tres | unit_t1_b | 1 | "UNIT" | 1 | 2 | 1 | res://assets/sprites/units/UnitTier1B.png|
+| UnitTier2C.tres | unit_t2_c | 2 | "UNIT" | 2 | 3 | 3 | res://assets/sprites/units/UnitTier2C.png|
+| UnitTier3D.tres | unit_t3_d | 3 | "UNIT" | 4 | 6 | 6 | res://assets/sprites/units/UnitTier3D.png|
+
+**Items (res://resources/items/)**
+
+| Filename | id | tier | category | bonus_hp | bonus_pwr | icon (Path) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| ItemTier1A.tres | item_t1_a | 1 | "ITEM" | 1 | 0 | res://assets/sprites/items/ItemTier1A.png|
+| ItemTier1B.tres | item_t1_b | 1 | "ITEM" | 0 | 1 | res://assets/sprites/items/ItemTier1B.png|
+| ItemTier2C.tres | item_t2_c | 2 | "ITEM" | 1 | 1 | res://assets/sprites/items/ItemTier2C.png|
+| ItemTier3D.tres | item_t3_d | 3 | "ITEM" | 2 | 2 | res://assets/sprites/items/ItemTier3D.png|
+
+**Recipes (res://resources/recipes/)**
+*(No changes to this section)*
+
+**Abilities (res://resources/abilities/)**
+
+| Filename | id | name_key | description_key | effect (Resource) |
 | :--- | :--- | :--- | :--- | :--- |
-| ItemTier1A.tres | item_t1_a | 1 | "ITEM" | res://assets/sprites/items/ItemTier1A.png|
-| ItemTier1B.tres | item_t1_b | 1 | "ITEM" | res://assets/sprites/items/ItemTier1B.png|
-| ItemTier2C.tres | item_t2_c | 2 | "ITEM" | res://assets/sprites/items/ItemTier2C.png|
-| ItemTier3D.tres | item_t3_d | 3 | "ITEM" | res://assets/sprites/items/ItemTier3D.png|
-Recipes (res://resources/recipes/)
-| Filename | ingredient_a_id | ingredient_b_id | result_id | is_self_merge | merge_type |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Merge_Unit_A_B_to_C.tres | unit_t1_a | unit_t1_b | unit_t2_c | false | "UNIT" |
-| Merge_Unit_C_C_to_D.tres | unit_t2_c | unit_t2_c | unit_t3_d | true | "UNIT" |
-| Merge_Item_A_B_to_C.tres | item_t1_a | item_t1_b | item_t2_c | false | "ITEM" |
-| Merge_Item_C_C_to_D.tres | item_t2_c | item_t2_c | item_t3_d | true | "ITEM" |
-Part 3: Logic Layer & Managers
-3.1 EventBus Signals
-start_run_requested, loadout_scene_requested, main_scene_requested, battle_start_requested
-inspect_inventory_requested, display_discard_pile_requested, close_modal_requested
-draw_gacha_requested(tier: int)
-inventory_action_requested(source_view: Control, target_view: Control)
-choice_made(choice_id: String)
-inspection_requested(source_view: Control)
-view_selected(view: Control), view_deselected(view: Control)
-invalid_action_triggered(view: Control)
-selection_context_changed(view: Control): Purpose is to announce that the user's selection focus has shifted to a new view, allowing other systems to react before the selection is finalized.
-run_inventory_changed, battle_inventory_changed
-battle_state_changed(is_in_battle: bool)
-3.2 Singleton Managers
-GameManager.gd: Holds the RunState resource and the global is_in_battle: bool flag.
-InventoryManager.gd: Sole listener for inventory_action_requested. It uses the Action Decision Tree and Compatibility Rules Table below to process all inventory logic.
-InteractionManager.gd: This is NOT an input handler. It is a state machine that holds the _selected_view. It does not process raw input. It is instructed to change state by other UI components (like GachaBallView) that handle the raw input themselves. Its primary job is to track the "selected" state and provide that information to other systems. It also manages drag-and-drop state. It must emit the selection_context_changed signal whenever a new view is selected that is different from the currently selected one. This signal must be emitted before the old selection is cleared and the new one is set.
-MergeManager.gd: A stateless helper used by InventoryManager. Its primary method takes two parent instances and the inventory they exist in. It finds a valid recipe, calculates the resulting new instance with its inherited items, and returns a data package containing the new instance and a list of all parent instances that should be removed. It does not modify any inventory data directly.
-Database.gd: Loads all .tres resources on startup for fast access.
-SceneManager.gd: Handles scene transitions.
-AbilityResolver.gd: Manages ability queue and resolution (placeholder logic for MVP).
-UUIDUtils.gd: Provides a generate_uuid() utility function.
-### 3.2 Unified Interaction & Window Management Model
+| BasicAttack.tres | basic_attack | "ability.basic_attack.name" | "ability.basic_attack.desc" | An instance of `BasicAttackEffect.gd`. |
+
+*Note on Enemy Equipping: For the initial battle setup, the enemy lineup will be populated with one of each unit type, including an `EnemyHero`. All available item slots on these enemy units will be filled with a diverse set of appropriate items.*
+
+## Part 3: Logic Layer & Managers
+*   **Run/Scene Signals:** `start_run_requested, loadout_scene_requested, main_scene_requested, battle_start_requested`
+*   **Window/Modal Signals:** `inspect_inventory_requested, display_discard_pile_requested, close_modal_requested`
+*   **Action Signals:** `draw_gacha_requested(tier: int), inventory_action_requested(source_view: Control, target_view: Control), choice_made(choice_id: String), inspection_requested(source_view: Control)`
+*   **Selection Signals:** `view_selected(view: Control), view_deselected(view: Control), invalid_action_triggered(view: Control), selection_context_changed(view: Control)`
+*   **State Change Signals:** `run_inventory_changed, battle_inventory_changed, battle_state_changed(is_in_battle: bool), battle_phase_changed(phase_name: StringName), gacha_tokens_changed(new_amount: int), unit_stats_changed(unit_uuid: String)`
+
+### 3.2 Singleton Managers
+
+*   **`GameManager.gd`**: Holds the `RunState` resource and the global `is_in_battle: bool` flag.
+*   **`InventoryManager.gd`**: Sole listener for `inventory_action_requested`. It uses the Action Decision Tree and Compatibility Rules Table below to process all inventory logic. When handling an Equip action, it must call the unit's `recalculate_stats()` method and emit `unit_stats_changed`.
+*   **`InteractionManager.gd`**: A state machine that holds the `_selected_view`. Manages drag-and-drop state.
+*   **`MergeManager.gd`**: A stateless helper used by `InventoryManager` for merge calculations.
+*   **`Database.gd`**: Loads all `.tres` resources on startup for fast access.
+*   **`SceneManager.gd`**: Handles scene transitions.
+*   **`AbilityResolver.gd`**: Manages ability queue and resolution. For the MVP, it will directly execute the `BasicAttackEffect`.
+*   **`UUIDUtils.gd`**: Provides a `generate_uuid()` utility function.
+*   **`WindowManager.gd`**: The sole authority for the lifecycle of all modal and inspection windows.
+*   **`BattleManager.gd`**: Manages the entire state of a battle.
+    *   **New State Properties**:
+        *   `_enemy_lineup_data: Array[GachaBallInstance]` (6 slots, null-filled)
+        *   `_gacha_tokens: int`
+        *   `_current_battle_phase: StringName`
+    *   **Battle State Machine**: Operates as a state machine with the following phases: `START_OF_TURN`, `MANAGEMENT`, `COMBAT`, `END_OF_TURN`.
+        *   `_enter_start_of_turn_phase()`: Grants the player 5 Gacha Tokens, emits `gacha_tokens_changed`.
+        *   `_enter_management_phase()`: Enables player controls like the "End Turn" button.
+        *   `_enter_combat_phase()`: Disables player controls and calls `_execute_combat_resolution()`.
+        *   `_execute_combat_resolution()`: Iterates through all active units (player then enemy, back-to-front). For each unit, it identifies the frontmost opposing unit and instructs the `AbilityResolver` to execute a basic attack.
+        *   `_enter_end_of_turn_phase()`: Checks for victory/defeat conditions. If none are met, transitions back to `START_OF_TURN`.
+    *   **Updated `_setup_battle()`**: Now also responsible for creating battle copy instances for the enemy lineup, equipping them with items, and populating `_enemy_lineup_data`.
+    *   **Updated `draw_gacha_requested(tier)`**: Now checks if `_gacha_tokens` are sufficient for the draw cost (`cost = tier`). If the `_draw_pools[tier]` is empty, it first automatically reshuffles all items of that tier from the `_discard_pile` back into the pool before drawing.
+
+### 3.2.1 Unified Interaction & Window Management Model
 
 **WindowManager.gd** is the sole authority for the lifecycle of all modal and inspection windows. No other script creates, destroys, or positions these UI elements directly. This centralized control prevents race conditions and ensures a predictable UI state.
 
-#### 3.2.1 Core Principles
+*   **Centralized Window Management**: All modals and inspection windows are children of the main `CanvasLayer` in `Main.tscn`. `WindowManager.gd` manages their `z_index` to ensure the correct window is always on top.
+*   **Dynamic Instantiation**: Windows are loaded and instantiated dynamically using `load()` (not `preload()`) to avoid unnecessary memory consumption and engine loading errors.
+*   **Modal Stack**: `WindowManager.gd` maintains a stack of active modal windows. When a new modal is opened, it's pushed onto the stack. Closing a modal pops it from the stack.
+*   **Background Interaction**: A `BackgroundBlocker.tscn` (a full-screen `ColorRect` that consumes input) is instantiated and added under the `CanvasLayer` whenever a modal is active. This blocker prevents interaction with UI elements behind the modal. Clicking the blocker closes the top-most modal.
 
-1.  **Centralized Authority**: All requests to open or close windows are handled exclusively by `WindowManager`. It manages window instances, positioning, and cleanup.
-2.  **Specialized Window Opening Functions**: To handle different contexts, `WindowManager` uses specialized functions:
-        *   `_open_root_inspection_window(source_view)`: For creating a **new, top-level inspection chain**...
-        *   `open_child_inspection_window(source_view)`: For opening a window from a view that is **already inside another inspection window**...
-        *   `open_grandchild_window(parent_window, ...)`: For opening a tertiary-level window from a clickable link within a parent window (e.g., an `EffectWindow`).
-3.  **Hierarchical Window Groups**: `WindowManager` tracks all open inspection windows in a data structure: `_inspection_window_groups: Array[Array]`. Each inner array represents a single hierarchical chain of windows.
-4.  **Hierarchical Pruning & Sibling Replacement**: Clicking on the background of an already-open inspection window will close all of its descendants in the chain. Clicking on a "sibling" view within a window (e.g., another equipped item) will also close the previously opened chain before creating the new one.
-5.  **Robust Window Positioning**:
-    *   **Anchor Context:** When opening a child window, the positioning anchor **must** be the parent window's global rectangle, not the small source view's rectangle. This prevents the new child window from overlapping its own parent.
-    *   **Prioritized Placement & Clamping:** The window positioning algorithm must attempt to place new windows in a prioritized order (e.g., Right, Left, Below, Above) and **must** clamp the final coordinates to ensure the window is always fully visible within the viewport. This prevents windows from spawning off-screen.
-6.  **Window Context Cleanup**: The opening or closing of any major window (like Inventory or Discard Pile) must trigger `WindowManager` to close all active inspection windows.
+### 3.3 Inventory Action Logic
+*(No changes to this section)*
 
-#### 3.2.2 Critical `mouse_filter` Usage
+## Part 4: Presentation Layer (UI)
 
-The entire system relies on the correct `mouse_filter` properties on UI elements to route input correctly:
+### 4.1 UI Component Blueprints
 
-*   **Inspection Windows** (e.g., `UnitInspectionWindow`): The root `PanelContainer` must have `mouse_filter = STOP`. This is critical for capturing background clicks *on itself* and enabling the hierarchical pruning logic.
-*   **Window Content Panels** (e.g., the main `PanelContainer` in `InventoryWindow`): Must have `mouse_filter = PASS`. This allows clicks on their empty background areas to "pass through" to the `BackgroundBlocker` behind them, correctly triggering the window close event.
-*   **Full-Screen Backgrounds** (e.g., a panel behind the main game UI): Must have `mouse_filter = IGNORE` so they do not consume clicks intended for the global `_unhandled_input` handler.
+*   **`GachaBallView.tscn`**:
+    *   **Scene Tree**: The `VBoxContainer` will be updated to include `%HPLabel` and `%PWRLabel` `Label` nodes to display unit stats.
+    *   **Script (`GachaBallView.gd`)**: Will be updated to listen for the `unit_stats_changed` signal to keep its HP/PWR labels synchronized with the instance data.
 
-#### 3.2.3 Global Input Handling (`_unhandled_input`)
+*   **`SlotView.tscn`**: No changes.
 
-The `WindowManager`'s global input handler is the final authority on clicks that are not consumed by other UI controls. It is responsible for deselection and closing windows when the user clicks on the "background".
+### 4.2 Window & UI Scene Blueprints
 
-1.  **Event**: An unhandled mouse click is detected.
-2.  **Check Primary Windows**: The handler iterates through all active primary windows. If the click is within the rect of any window's content panel, the event is ignored (as the window's own logic or `BackgroundBlocker` will handle it).
-3.  **Check Inspection Windows**: The handler iterates through all active inspection windows (`_inspection_window_groups`). If the click is within the rect of any inspection window, the event is ignored (as the window's own `STOP` filter will handle it for pruning).
-4.  **Global Close/Deselect**: If all checks fail, the click is a true "background" click. `WindowManager` will then:
-    *   Call `InteractionManager.clear_selection()` to deselect any selected view.
-    *   Call its own `close_all_inspection_windows()` method to clear all inspection chains.
+*   **`UnitInspectionWindow.tscn`**: The `DescriptionLabel` will be a `RichTextLabel` to support formatted strings for ability descriptions (e.g., `tr(key).format({"pwr": value})`).
+*   **`ItemInspectionWindow.tscn`**: No changes.
+*   **`ChoiceWindow.tscn`**: No changes.
+*   **`Battle.tscn` UI Elements**:
+    *   An `%EndTurnButton` `Button` will be added.
+    *   A `%GachaTokenLabel` `Label` will be added to display the player's current tokens.
+    *   An `%EnemyLineupContainer` `HBoxContainer` will be added to the scene to hold the enemy's `GachaBallView`s.
+    *   The `%ReshuffleButton` will be **removed**, as its functionality is now automatic.
 
-3.3 Inventory Action Logic
-Action Decision Tree (in InventoryManager.gd)
-This logic is followed strictly in order for any inventory_action_requested event.
-Target is Empty (SlotView): Intent is Move.
-Target is Filled (GachaBallView):
-Check for Merge: Does a valid merge recipe exist between the source and target?
-Yes: Request a ChoiceWindow from WindowManager (Merge/Swap).
-No: Proceed to the next check.
-Check for Equip: Is the source an ITEM, the target a UNIT, and are both located on the Battle Board (i.e., their data exists in lineup_data, bench_data, or item_data)?
-Yes: Intent is Equip.
-All other cases: Intent is Swap. (e.g., Unit-Unit with no recipe, Item-Item with no recipe, Unit-Item, Item-Unit in Run Inventory, Item-Unit where one or both are not on the Battle Board).
-### Merge Destination Logic
+### 4.3 & 4.4 Window Interaction Rules & UI Patterns
+*(No changes to these sections)*
 
-The placement of a merged gachaball is context-dependent, designed to be intuitive based on where the action occurs. The logic is split between actions taken on the main battle board versus those within an inventory window.
+## Part 5: Game Flows
 
-*   **In-Inventory Merges (`InventoryWindow`):**
-    *   When a merge is performed within any inventory grid (either the Run Inventory or the Battle Inventory window), the resulting new instance is **always** placed into the first available `null` slot of the corresponding inventory grid for its tier (`RunState.run_inventory` or `BattleManager._battle_inventory`). This ensures a consistent and predictable flow for inventory management.
+### 5.1 Battle Setup Flow (`BattleManager._setup_battle`)
+*   Retrieves hero_instance, creates a battle copy, and places it in `lineup_data[0]`.
+*   **NEW**: Creates battle copies for a predefined enemy lineup (1 of each unit type + enemy hero), equips them with items, and places them in `_enemy_lineup_data`.
+*   Iterates through `run_inventory`, creates battle copies, and adds them to `_battle_inventory` and `_draw_pools`.
+*   Emits `battle_inventory_changed` to trigger the initial board draw.
 
-*   **On-Board Merges (Battle Only):**
-    *   When a merge is performed directly on the battle board (i.e., by dragging one gachaball onto another in the lineup or bench), the resulting new instance **immediately replaces the target gachaball** in its slot on the board. This provides direct, immediate feedback and makes modifying the lineup feel fluid and responsive.
+### 5.2 Gacha Draw Flow (`BattleManager.gd`)
+*   Receives `draw_gacha_requested(tier)`.
+*   **NEW**: Checks for sufficient `_gacha_tokens` (`cost = tier`).
+*   **NEW**: If the `_draw_pools[tier]` is empty, automatically reshuffles from the discard pile for that tier.
+*   Picks a random instance from `_draw_pools[tier]`, removes it, and places it on the bench/item inventory or in the discard pile if full.
+*   Emits `battle_inventory_changed`.
 
-This two-pronged approach maintains a clear separation of concerns: inventory management is a deliberate, grid-based activity, while board management is a direct, tactical action.
-Compatibility Rules Table (in InventoryManager.gd)
-These are additional hard-fail checks applied during action handling.
-| Action | Context | Source/Target Location | Compatibility Check | Result |
-| :--- | :--- | :--- | :--- | :--- |
-| Move | Any | Hero -> Not in lineup_data | Invalid. Hero is locked to lineup. | Invalid |
-| Move | Any | Any -> Full Fixed-Size Grid | Target grid has no null slots. | Invalid |
-| Swap | Any | Hero <-> Any Unit | Allowed only if target is in lineup_data. | Valid |
-| Equip | Run Inventory | Any -> Any | GameManager.is_in_battle is false. | Invalid (Fallback to Swap) |
-| Equip | Battle | Item or Unit not on Battle Board | Instance not in lineup_data, bench_data, or item_data. | Invalid |
-| Equip | Any | Item -> Unit | Unit has no empty "" in equipped_item_uuids. | Invalid |
-Asynchronous Action Safeguard
-Buttons triggering actions with visual delays (Draw, Reshuffle, Merge) must be disabled immediately on being pressed. They are re-enabled only after the corresponding *_inventory_changed signal is processed and the UI redraw is complete.
-Part 4: Presentation Layer (UI)
-4.1 UI Component Blueprints
-GachaBallView.tscn:
-Purpose: Visual representation of a GachaBallInstance.
-Scene Tree: PanelContainer -> TextureRect (%Icon), Label (%Tier), AnimationPlayer.
-Script (GachaBallView.gd): Holds instance_data. An initialize() method stores its location context. A new public property, is_selectable: bool = true, dictates its behavior.
-The view component must have a public boolean property, is_selectable, which defaults to true.
-The view's click behavior is dictated by this property:
-If is_selectable is true (e.g., for a view in a main inventory grid), a click is routed through the InteractionManager to handle the standard select/inspect/deselect cycle.
-If is_selectable is false (e.g., for a view representing a child item inside an already-open inspection window), a click bypasses the InteractionManager's selection logic and directly emits a global inspection_requested event for that view. This creates a "one-click inspect" behavior for non-selectable, nested items.
-The script also enables a yellow outline on view_selected and plays a "shake" animation on invalid_action_triggered.
-*   The script implements the _notification function to listen for the engine's NOTIFICATION_DRAG_END. This acts as the ultimate safety net. If the engine signals that a drag has ended, but the InteractionManager still considers the drag to be active, it means the drop occurred on an unhandled target (like outside the game window or on a non-interactive UI element). The GachaBallView then takes responsibility for forcing a cancellation of the drag, ensuring the view always reappears in its original slot.
-SlotView.tscn:
-Purpose: Visual representation of a null value in a data grid.
-Scene Tree: A simple PanelContainer.
-Script (SlotView.gd): An initialize() method stores its location context in the node's metadata (`set_meta`). Reports interactions to InteractionManager.
-4.2 Window & UI Scene Blueprints
-UnitInspectionWindow.tscn:
-Scene Tree: PanelContainer -> VBoxContainer -> %NameLabel (Label), %DescriptionLabel (Label), %ItemGrid (GridContainer).
-Scripting Note: Its root PanelContainer must have its `mouse_filter` property set to `STOP` to enable parent-click pruning.
-ItemInspectionWindow.tscn:
-Scene Tree: PanelContainer -> VBoxContainer -> %NameLabel (Label), %DescriptionLabel (Label).
+### 5.3 Reshuffle Flow
+*   The manual `_on_reshuffle_requested` flow is **REMOVED**. Reshuffling is now an automatic process triggered by an attempt to draw from an empty pool.
+
+### 5.4 Battle Turn Flow (New Section)
+This describes the flow for a single turn, managed by the `BattleManager`'s state machine.
+1.  **Transition to `START_OF_TURN`**:
+    *   `BattleManager` grants the player 5 `_gacha_tokens`.
+    *   `gacha_tokens_changed` signal is emitted.
+2.  **Transition to `MANAGEMENT`**:
+    *   The `%EndTurnButton` is enabled.
+    *   Player can spend tokens, deploy units, equip items, and arrange their lineup.
+3.  **Player Action: End Turn**:
+    *   Player clicks the `%EndTurnButton`. The button is disabled.
+4.  **Transition to `COMBAT`**:
+    *   `BattleManager` calls `_execute_combat_resolution`.
+    *   Combat resolves automatically: units act in order (player then enemy, back-to-front).
+    *   Each unit performs a basic attack on the frontmost enemy.
+    *   HP is updated on views. Defeated player units' data is moved to the discard pile; defeated enemy units' data is removed from play.
+    *   The `battle_inventory_changed` signal is emitted after any unit is defeated.
+5.  **Transition to `END_OF_TURN`**:
+    *   `BattleManager` checks for victory (all enemies defeated) or defeat (player hero HP <= 0).
+    *   If the battle is not over, loop back to Step 1 for the next turn.
+
+## Part 6: Architectural Notes & Implementation Guidelines
+
+### 6.1 Guideline: Prefer `load()` over `preload()` for Dynamic UI Instantiation
+*(No changes to this section)*
+
+### 6.2 Localization System (New Section)
+*   **Key-Based System**: All user-facing text must be stored as keys in resource files (e.g., `display_name_key` in `GachaBallDefinition`).
+*   **Central File**: A central `localization.csv` file will be used to store the key-value pairs for each supported language.
+*   **Implementation**: Text will be set in UI scripts using the `tr()` function (e.g., `my_label.text = tr("my.localization.key")`).
+*   **Dynamic Text**: For text that includes variable data (like damage numbers), use formatted strings. The key in the CSV will look like `"ability.basic_attack.desc"`, and the value will be `"Attacks the frontmost enemy for {pwr} damage."`. The code will be `description_label.text = tr("ability.basic_attack.desc").format({"pwr": unit.current_pwr})`
+
 Scripting Note: Its root PanelContainer must have its `mouse_filter` property set to `STOP` to enable parent-click pruning.
 **ChoiceWindow.tscn:**
 Purpose: Prompts user for Merge/Swap choice.
 Scene Tree: PanelContainer -> VBoxContainer -> Label ("What would you like to do?"), HBoxContainer -> %MergeButton (Button), %SwapButton (Button).
 Battle.tscn UI Elements:
-BackgroundBlocker.tscn:
-Purpose: A full-screen, semi-transparent layer that captures all mouse input behind a modal window.
-Scene Tree: A `ColorRect` node covering the entire screen.
-Script (BackgroundBlocker.gd): Emits a `background_clicked` signal on user input, which `WindowManager` uses to close the top-most modal.
-Includes a %ReshuffleButton and a %DiscardPileButton.
+* An %EndTurnButton Button will be added.
+* A %GachaTokenLabel Label will be added to display the player's current tokens.
+* An %EnemyLineupContainer HBoxContainer will be added to the scene to hold the enemy's GachaBallViews.
+* The %ReshuffleButton will be **removed**, as its functionality is now automatic.
 
 ### 4.3 Window Interaction Rules
+
+*   **Modal Exclusivity**: Only one modal window can be open at a time. Opening a new modal automatically closes any currently open modal.
+*   **Inspection Window Stacking**: Multiple inspection windows can be open simultaneously. They stack on top of each other, with the most recently opened window having the highest `z_index`.
+*   **Background Blocker**: A `BackgroundBlocker.tscn` (a full-screen `ColorRect` that consumes input) is instantiated and added under the `CanvasLayer` whenever a modal is active. This blocker prevents interaction with UI elements behind the modal. Clicking the blocker closes the top-most modal.
+*   **Inspection Window Closure**: Inspection windows can be closed individually by clicking their close button, or all inspection windows can be closed at once by clicking the `BackgroundBlocker` (if a modal is not active) or by a `close_all_inspection_windows()` call from `WindowManager.gd`.
+*   **Dynamic Instantiation**: All windows are loaded and instantiated dynamically using `load()` (not `preload()`) to avoid unnecessary memory consumption and engine loading errors.
+
+### 4.4 Definitive UI Interaction Patterns
 
 To ensure a fluid and intuitive user experience, all modal windows that occupy a portion of the screen must adhere to the following architectural rules:
 
@@ -218,33 +244,51 @@ To ensure a fluid and intuitive user experience, all modal windows that occupy a
 3.  **Window Background Interaction**: All primary windows (`InventoryWindow`, `DiscardPileWindow`) must implement `gui_input` handling on their main content panel. A click on this panel's empty background must trigger `WindowManager.close_all_inspection_windows()` without closing the window itself.
 
 
-Part 5: Game Flows
-5.1 Battle Setup Flow (BattleManager._setup_battle)
-Retrieves hero_instance from GameManager, creates a battle copy, and places its data in lineup_data[0].
-Iterates through GameManager.run_state.run_inventory. For each non-null instance, creates a battle copy.
-Each copy is added to both the master _battle_inventory and the consumable _draw_pools for the appropriate tier.
-Emits battle_inventory_changed to trigger the initial board draw.
-5.2 Gacha Draw Flow (BattleManager.gd)
-Receives draw_gacha_requested(tier).
-Picks a random instance from _draw_pools[tier] and removes it from that pool.
-Determines the destination grid based on category (bench_data for Units, item_data for Items).
-Finds the first available null slot in the destination grid.
-If a slot is found, places the instance's data there.
-If no slot is found, the instance's data is added to the _discard_pile grid.
-Emits battle_inventory_changed.
-5.3 Reshuffle Flow (BattleManager._on_reshuffle_requested)
-Triggered by the %ReshuffleButton.
-Iterates through the _discard_pile grid.
-For each non-null instance, moves it from _discard_pile to the correct _draw_pools[tier].
-Clears the _discard_pile grid (fills it with null values).
-Emits battle_inventory_changed.
+## Part 5: Game Flows
 
-### Part 6: Architectural Notes & Implementation Guidelines
+### 5.1 Battle Setup Flow (`BattleManager._setup_battle`)
+*   Retrieves hero_instance, creates a battle copy, and places it in `lineup_data[0]`.
+*   **NEW**: Creates battle copies for a predefined enemy lineup (1 of each unit type + enemy hero), equips them with items, and places them in `_enemy_lineup_data`.
+*   Iterates through `run_inventory`, creates battle copies, and adds them to `_battle_inventory` and `_draw_pools`.
+*   Emits `battle_inventory_changed` to trigger the initial board draw.
 
-This section captures high-level best practices and solutions to non-obvious problems discovered during development.
+### 5.2 Gacha Draw Flow (`BattleManager.gd`)
+*   Receives `draw_gacha_requested(tier)`.
+*   **NEW**: Checks for sufficient `_gacha_tokens` (`cost = tier`).
+*   **NEW**: If the `_draw_pools[tier]` is empty, automatically reshuffles from the discard pile for that tier.
+*   Picks a random instance from `_draw_pools[tier]`, removes it, and places it on the bench/item inventory or in the discard pile if full.
+*   Emits `battle_inventory_changed`.
 
-#### 6.1 Guideline: Prefer `load()` over `preload()` for Dynamic UI Instantiation
+### 5.3 Reshuffle Flow
+*   The manual `_on_reshuffle_requested` flow is **REMOVED**. Reshuffling is now an automatic process triggered by an attempt to draw from an empty pool.
 
-*   **Problem Encountered**: During development, `Failed to instantiate scene state...` errors occurred when scripts like `InventoryWindow.gd` and `UnitInspectionWindow.gd` attempted to instantiate child views (e.g., `GachaBallView.tscn`).
-*   **Analysis**: This indicates a potential script parsing order issue or a latent circular dependency where `preload()` fails silently at engine startup. Using `preload()` creates a hard dependency that is resolved when a script is first loaded. If the resource being preloaded has its own complex dependencies, this can fail.
-*   **Definitive Guideline**: For UI components that dynamically instantiate other UI components (e.g., a modal creating item views in a grid), it is more robust to use `load("path/to/scene.tscn")` at runtime, inside the function where the instantiation occurs. While `preload()` offers a minor performance gain, the stability and reliability gained from using `load()` in these specific UI-to-UI cases is paramount and avoids hard-to-debug engine-level loading errors.
+### 5.4 Battle Turn Flow (New Section)
+This describes the flow for a single turn, managed by the `BattleManager`'s state machine.
+1.  **Transition to `START_OF_TURN`**:
+    *   `BattleManager` grants the player 5 `_gacha_tokens`.
+    *   `gacha_tokens_changed` signal is emitted.
+2.  **Transition to `MANAGEMENT`**:
+    *   The `%EndTurnButton` is enabled.
+    *   Player can spend tokens, deploy units, equip items, and arrange their lineup.
+3.  **Player Action: End Turn**:
+    *   Player clicks the `%EndTurnButton`. The button is disabled.
+4.  **Transition to `COMBAT`**:
+    *   `BattleManager` calls `_execute_combat_resolution`.
+    *   Combat resolves automatically: units act in order (player then enemy, back-to-front).
+    *   Each unit performs a basic attack on the frontmost enemy.
+    *   HP is updated on views. Defeated player units' data is moved to the discard pile; defeated enemy units' data is removed from play.
+    *   The `battle_inventory_changed` signal is emitted after any unit is defeated.
+5.  **Transition to `END_OF_TURN`**:
+    *   `BattleManager` checks for victory (all enemies defeated) or defeat (player hero HP <= 0).
+    *   If the battle is not over, loop back to Step 1 for the next turn.
+
+## Part 6: Architectural Notes & Implementation Guidelines
+
+### 6.1 Guideline: Prefer `load()` over `preload()` for Dynamic UI Instantiation
+*(No changes to this section)*
+
+### 6.2 Localization System (New Section)
+*   **Key-Based System**: All user-facing text must be stored as keys in resource files (e.g., `display_name_key` in `GachaBallDefinition`).
+*   **Central File**: A central `localization.csv` file will be used to store the key-value pairs for each supported language.
+*   **Implementation**: Text will be set in UI scripts using the `tr()` function (e.g., `my_label.text = tr("my.localization.key")`).
+*   **Dynamic Text**: For text that includes variable data (like damage numbers), use formatted strings. The key in the CSV will look like `"ability.basic_attack.desc"`, and the value will be `"Attacks the frontmost enemy for {pwr} damage."` The code will be `description_label.text = tr("ability.basic_attack.desc").format({"pwr": unit.current_pwr})`

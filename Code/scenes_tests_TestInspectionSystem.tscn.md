@@ -56,7 +56,7 @@ alignment = 1
 [node name="OpenInventoryButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Open Inventory Modal"
+text = "Open Inventory Window"
 
 [node name="ItemGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true

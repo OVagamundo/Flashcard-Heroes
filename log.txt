@@ -7,12 +7,7 @@ Database loaded.
  - Recipes: 4
  - Decks: 0
 RunState initialized with TDD-compliant data grids.
---- GachaBallView '@PanelContainer@7': Received DRAG_END notification from the engine.
-    - This means the drop was unhandled by any other control.
-    - Forcing cancellation of the drag to restore the view.
 Merge calculated. Created: unit_t2_c. Parents to remove: 2
---- GachaBallView '@PanelContainer@73': Received DRAG_END notification from the engine.
-    - This means the drop was unhandled by any other control.
-    - Forcing cancellation of the drag to restore the view.
-Merge calculated. Created: item_t2_c. Parents to remove: 2
-Merge calculated. Created: unit_t2_c. Parents to remove: 2
+Merge calculated. Created: unit_t3_d. Parents to remove: 2
+WARNING: 23 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2679)

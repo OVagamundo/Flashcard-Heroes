@@ -5,14 +5,14 @@
 extends Control
 
 const TEST_ITEM_VIEW_SCENE = preload("res://scenes/tests/TestItemView.tscn")
-const TEST_INVENTORY_MODAL_SCENE = preload("res://scenes/tests/TestInventoryModal.tscn")
+const TEST_INVENTORY_WINDOW_SCENE = preload("res://scenes/tests/TestInventoryWindow.tscn")
 
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var modal_layer: CanvasLayer = %ModalLayer
 @onready var test_window_manager: TestWindowManager = $TestWindowManager
 
-var _active_modal = null
+var _active_window = null
 
 var _test_item_db = {
 	"sword": {"id": "sword", "name": "Sword", "desc": "A sharp sword.", "children": [
@@ -61,7 +61,7 @@ func _unhandled_input(event: InputEvent):
 		var click_pos = event.global_position
 		
 		# Ignore if click is inside the modal content area
-		if is_instance_valid(_active_modal) and _active_modal.get_node("PanelContainer").get_global_rect().has_point(click_pos):
+		if is_instance_valid(_active_window) and _active_window.get_node("PanelContainer").get_global_rect().has_point(click_pos):
 			return
 			
 		# Ignore if click is inside any inspection window.
@@ -74,32 +74,32 @@ func _unhandled_input(event: InputEvent):
 		InteractionManager.clear_selection()
 		test_window_manager.close_all_inspection_windows()
 
-func _close_active_modal():
-	if is_instance_valid(_active_modal):
-		# We must disconnect the one-shot signal to prevent an error if the modal
+func _close_active_window():
+	if is_instance_valid(_active_window):
+		# We must disconnect the one-shot signal to prevent an error if the window
 		# is closed by other means (e.g. opening a new one).
-		if EventBus.is_connected("background_clicked", _close_active_modal):
-			EventBus.background_clicked.disconnect(_close_active_modal)
+		if EventBus.is_connected("background_clicked", _close_active_window):
+			EventBus.background_clicked.disconnect(_close_active_window)
 		
-		# Prevent orphaned windows by closing any inspections spawned from the modal.
+		# Prevent orphaned windows by closing any inspections spawned from the window.
 		InteractionManager.clear_selection()
 		test_window_manager.close_all_inspection_windows()
 		
-		_active_modal.queue_free()
-		_active_modal = null
+		_active_window.queue_free()
+		_active_window = null
 
 func _on_open_inventory_pressed():
-	# Prevent orphaned windows by closing any main-screen inspections before opening modal.
+	# Prevent orphaned windows by closing any main-screen inspections before opening a window.
 	InteractionManager.clear_selection()
 	test_window_manager.close_all_inspection_windows()
 	
-	_close_active_modal()
+	_close_active_window()
 		
-	_active_modal = TEST_INVENTORY_MODAL_SCENE.instantiate()
-	modal_layer.add_child(_active_modal)
-	_active_modal.populate(_test_inventory_data, test_window_manager)
+	_active_window = TEST_INVENTORY_WINDOW_SCENE.instantiate()
+	modal_layer.add_child(_active_window)
+	_active_window.populate(_test_inventory_data, test_window_manager)
 	
-	# The background blocker now correctly handles closing its own modal.
-	EventBus.background_clicked.connect(_close_active_modal, CONNECT_ONE_SHOT)
+	# The background blocker now correctly handles closing its own window.
+	EventBus.background_clicked.connect(_close_active_window, CONNECT_ONE_SHOT)
 
 ```

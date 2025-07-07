@@ -1,12 +1,12 @@
-<!-- Original: scenes/InventoryModal.tscn -->
+<!-- Original: scenes/tests/TestInventoryWindow.tscn -->
 
 ```ini
-[gd_scene load_steps=3 format=3 uid="uid://b0fs8lab4tsoa"]
+[gd_scene load_steps=3 format=3 uid="uid://dklv84w6g2wqp"]
 
-[ext_resource type="Script" path="res://scripts/InventoryModal.gd" id="1_yvw8v"]
+[ext_resource type="Script" path="res://scripts/tests/TestInventoryWindow.gd" id="1_abcde"]
 [ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
 
-[node name="InventoryModal" type="Control"]
+[node name="TestInventoryWindow" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +14,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("1_yvw8v")
+script = ExtResource("1_abcde")
 
 [node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
 
@@ -42,10 +42,11 @@ theme_override_constants/separation = 10
 [node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Inventory"
+text = "Test Inventory"
 horizontal_alignment = 1
 
 [node name="GridsArea" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 size_flags_vertical = 3
@@ -69,7 +70,8 @@ size_flags_vertical = 3
 
 [node name="Tier1Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column/ScrollContainer"]
 unique_name_in_owner = true
-name = "Tier1InventoryGrid"
+layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 5
@@ -93,34 +95,12 @@ size_flags_vertical = 3
 
 [node name="Tier2Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column/ScrollContainer"]
 unique_name_in_owner = true
-name = "Tier2InventoryGrid"
+layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/h_separation = 5
 theme_override_constants/v_separation = 5
 columns = 4
 
-[node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column"]
-layout_mode = 2
-text = "Tier 3"
-horizontal_alignment = 1
-
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column"]
-layout_mode = 2
-mouse_filter = 2
-size_flags_vertical = 3
-
-[node name="Tier3Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column/ScrollContainer"]
-unique_name_in_owner = true
-name = "Tier3InventoryGrid"
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/h_separation = 5
-theme_override_constants/v_separation = 5
-columns = 4
 ```
