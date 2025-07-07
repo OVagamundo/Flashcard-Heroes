@@ -1,6 +1,6 @@
-# res://scripts/tests/TestInventoryModal.gd
+# res://scripts/tests/TestInventoryWindow.gd
 extends Control
-class_name TestInventoryModal
+class_name TestInventoryWindow
 
 const TEST_ITEM_VIEW_SCENE = preload("res://scenes/tests/TestItemView.tscn")
 

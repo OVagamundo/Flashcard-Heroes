@@ -1,4 +1,5 @@
-# res://scripts/DiscardPileModal.gd
+# res://scripts/DiscardPileWindow.gd
+class_name DiscardPileWindow
 extends Control
 
 @onready var discard_grid: GridContainer = %DiscardGrid

@@ -1,9 +1,9 @@
 [gd_scene load_steps=3 format=3 uid="uid://b0fs8lab4tsoa"]
 
-[ext_resource type="Script" path="res://scripts/InventoryModal.gd" id="1_yvw8v"]
+[ext_resource type="Script" path="res://scripts/InventoryWindow.gd" id="1_yvw8v"]
 [ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
 
-[node name="InventoryModal" type="Control"]
+[node name="InventoryWindow" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

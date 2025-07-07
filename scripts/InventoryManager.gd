@@ -62,7 +62,7 @@ func _on_inventory_action_requested(source_view: Control, target_view: Control):
 	var recipe = MergeManager.find_recipe(def_a.id, def_b.id)
 	if recipe:
 		_pending_action = {"source_view": view_a, "target_view": view_b}
-		WindowManager.open_dialog_window(&"ChoiceModal")
+		WindowManager.open_dialog_window(&"ChoiceWindow")
 		return
 
 	# 4. Fallback: If it's not Move, Equip, or Merge, the intent is SWAP.

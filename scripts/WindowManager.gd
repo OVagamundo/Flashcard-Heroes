@@ -6,10 +6,10 @@ const INSPECTION_WINDOW_MARGIN = 10.0
 
 # --- Scene Definitions ---
 var _window_scenes: Dictionary = {
-	# Modal Windows
-	&"Inventory": preload("res://scenes/InventoryModal.tscn"),
-	&"DiscardPile": preload("res://scenes/DiscardPileModal.tscn"),
-	&"ChoiceModal": preload("res://scenes/ChoiceModal.tscn"),
+	# Primary Windows
+	&"Inventory": preload("res://scenes/InventoryWindow.tscn"),
+	&"DiscardPile": preload("res://scenes/DiscardPileWindow.tscn"),
+	&"ChoiceWindow": preload("res://scenes/ChoiceWindow.tscn"),
 	# Non-Modal Inspection Windows
 	&"UnitInspection": preload("res://scenes/UnitInspectionWindow.tscn"),	
 	&"ItemInspection": preload("res://scenes/ItemInspectionWindow.tscn"),

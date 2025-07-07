@@ -3,7 +3,7 @@ Part 1: Project Blueprint
 1.1 Architectural Principles
 Data is the Source of Truth: Game state is stored in data structures (Arrays, Dictionaries). The UI is a disposable reflection of this data.
 The Intent-Action Model: User input is translated into a clear "intent" signal before being processed by logic controllers.
-Hierarchical Input Handling: User input is processed in a strict order of priority. An input event is "consumed" at the first level that can handle it, preventing it from propagating further. The order is: 1) Modal Blockers, 2) Individual UI Components (Buttons, Views), 3) Inspection Window Panels, 4) The Global _unhandled_input handler in WindowManager as a final fallback for "background" clicks.
+Hierarchical Input Handling: User input is processed in a strict order of priority. An input event is "consumed" at the first level that can handle it, preventing it from propagating further. The order is: 1) Window Blockers, 2) Individual UI Components (Buttons, Views), 3) Inspection Window Panels, 4) The Global _unhandled_input handler in WindowManager as a final fallback for "background" clicks.
 Visually Consistent Components: UI components representing similar data (e.g., inventory slots, whether full or empty) should maintain a consistent size within their container to ensure a clean, grid-like appearance.
 Centralized, Context-Aware Managers: Singleton managers (e.g., InventoryManager) are the sole authorities for their specific logic domains. InteractionManager is a state machine for UI selection, not a direct input handler.
 Reactive UI: The UI redraws itself in response to global "state changed" signals, ensuring it is always synchronized with the data.
@@ -96,19 +96,24 @@ UUIDUtils.gd: Provides a generate_uuid() utility function.
 
 #### 3.2.1 Core Principles
 
-1.  **Centralized Authority**: All requests to open or close windows (e.g., `inspect_inventory_requested`, `display_discard_pile_requested`) are handled by `WindowManager`. It manages window instances, positioning, and cleanup.
-2.  **Hierarchical Window Groups**: `WindowManager` tracks all open inspection windows in a data structure: `_inspection_window_groups: Array[Array]`. Each inner array represents a single hierarchical chain of windows (e.g., `[UnitInspectWindow, ItemInspectWindow, TooltipWindow]`). This structure is the source of truth for which inspection windows are currently active.
-3.  **Exclusive Inspection Chains**: Only one inspection chain can be active at a time. If a user action requests a "root" inspection (i.e., clicking an item on the main game board or in a modal inventory grid), `WindowManager` will first destroy any and all existing inspection chains before creating the new one. This prevents multiple, unrelated inspection windows from cluttering the screen.
-4.  **Selection Context Invalidation**: The WindowManager must react to a change in the user's selection context. When a new "root" view (a view not contained within an existing inspection window) is selected, the WindowManager must immediately close all open inspection window chains. This provides instant feedback that the previous inspection context is no longer relevant and prevents orphaned windows when the user's focus shifts.
-4.  **Hierarchical Pruning**: Clicking on the background of an already-open inspection window (e.g., clicking the panel of `UnitInspectWindow` while `ItemInspectWindow` is also open) will close all of its descendants in the chain, but leave the clicked window and its ancestors open. This provides an intuitive way for the user to "step back" through an inspection chain.
-5.  **Modal Context Cleanup**: The opening of any major modal window (like the Inventory or Discard Pile) must trigger `WindowManager` to close all active inspection windows. Similarly, when a modal window is closed, any inspection windows that were spawned from it must also be closed.
+1.  **Centralized Authority**: All requests to open or close windows are handled exclusively by `WindowManager`. It manages window instances, positioning, and cleanup.
+2.  **Specialized Window Opening Functions**: To handle different contexts, `WindowManager` uses specialized functions:
+        *   `_open_root_inspection_window(source_view)`: For creating a **new, top-level inspection chain**...
+        *   `open_child_inspection_window(source_view)`: For opening a window from a view that is **already inside another inspection window**...
+        *   `open_grandchild_window(parent_window, ...)`: For opening a tertiary-level window from a clickable link within a parent window (e.g., an `EffectWindow`).
+3.  **Hierarchical Window Groups**: `WindowManager` tracks all open inspection windows in a data structure: `_inspection_window_groups: Array[Array]`. Each inner array represents a single hierarchical chain of windows.
+4.  **Hierarchical Pruning & Sibling Replacement**: Clicking on the background of an already-open inspection window will close all of its descendants in the chain. Clicking on a "sibling" view within a window (e.g., another equipped item) will also close the previously opened chain before creating the new one.
+5.  **Robust Window Positioning**:
+    *   **Anchor Context:** When opening a child window, the positioning anchor **must** be the parent window's global rectangle, not the small source view's rectangle. This prevents the new child window from overlapping its own parent.
+    *   **Prioritized Placement & Clamping:** The window positioning algorithm must attempt to place new windows in a prioritized order (e.g., Right, Left, Below, Above) and **must** clamp the final coordinates to ensure the window is always fully visible within the viewport. This prevents windows from spawning off-screen.
+6.  **Window Context Cleanup**: The opening or closing of any major window (like Inventory or Discard Pile) must trigger `WindowManager` to close all active inspection windows.
 
 #### 3.2.2 Critical `mouse_filter` Usage
 
 The entire system relies on the correct `mouse_filter` properties on UI elements to route input correctly:
 
 *   **Inspection Windows** (e.g., `UnitInspectionWindow`): The root `PanelContainer` must have `mouse_filter = STOP`. This is critical for capturing background clicks *on itself* and enabling the hierarchical pruning logic.
-*   **Modal Content Panels** (e.g., the main `PanelContainer` in `InventoryModal`): Must have `mouse_filter = PASS`. This allows clicks on their empty background areas to "pass through" to the `BackgroundBlocker` behind them, correctly triggering the modal close event.
+*   **Window Content Panels** (e.g., the main `PanelContainer` in `InventoryWindow`): Must have `mouse_filter = PASS`. This allows clicks on their empty background areas to "pass through" to the `BackgroundBlocker` behind them, correctly triggering the window close event.
 *   **Full-Screen Backgrounds** (e.g., a panel behind the main game UI): Must have `mouse_filter = IGNORE` so they do not consume clicks intended for the global `_unhandled_input` handler.
 
 #### 3.2.3 Global Input Handling (`_unhandled_input`)
@@ -116,7 +121,7 @@ The entire system relies on the correct `mouse_filter` properties on UI elements
 The `WindowManager`'s global input handler is the final authority on clicks that are not consumed by other UI controls. It is responsible for deselection and closing windows when the user clicks on the "background".
 
 1.  **Event**: An unhandled mouse click is detected.
-2.  **Check Modals**: The handler iterates through all active modal windows. If the click is within the rect of any modal's content panel, the event is ignored (as the modal's own logic or `BackgroundBlocker` will handle it).
+2.  **Check Primary Windows**: The handler iterates through all active primary windows. If the click is within the rect of any window's content panel, the event is ignored (as the window's own logic or `BackgroundBlocker` will handle it).
 3.  **Check Inspection Windows**: The handler iterates through all active inspection windows (`_inspection_window_groups`). If the click is within the rect of any inspection window, the event is ignored (as the window's own `STOP` filter will handle it for pruning).
 4.  **Global Close/Deselect**: If all checks fail, the click is a true "background" click. `WindowManager` will then:
     *   Call `InteractionManager.clear_selection()` to deselect any selected view.
@@ -128,17 +133,17 @@ This logic is followed strictly in order for any inventory_action_requested even
 Target is Empty (SlotView): Intent is Move.
 Target is Filled (GachaBallView):
 Check for Merge: Does a valid merge recipe exist between the source and target?
-Yes: Request a ChoiceModal from WindowManager (Merge/Swap).
+Yes: Request a ChoiceWindow from WindowManager (Merge/Swap).
 No: Proceed to the next check.
 Check for Equip: Is the source an ITEM, the target a UNIT, and are both located on the Battle Board (i.e., their data exists in lineup_data, bench_data, or item_data)?
 Yes: Intent is Equip.
 All other cases: Intent is Swap. (e.g., Unit-Unit with no recipe, Item-Item with no recipe, Unit-Item, Item-Unit in Run Inventory, Item-Unit where one or both are not on the Battle Board).
 ### Merge Destination Logic
 
-The placement of a merged gachaball is context-dependent, designed to be intuitive based on where the action occurs. The logic is split between actions taken on the main battle board versus those within an inventory screen.
+The placement of a merged gachaball is context-dependent, designed to be intuitive based on where the action occurs. The logic is split between actions taken on the main battle board versus those within an inventory window.
 
-*   **In-Inventory Merges (Run Inventory or Battle Inventory Modal):**
-    *   When a merge is performed within any inventory grid (either the main Run Inventory screen or the pop-up Battle Inventory modal), the resulting new instance is **always** placed into the first available `null` slot of the corresponding inventory grid for its tier (`RunState.run_inventory` or `BattleManager._battle_inventory`). This ensures a consistent and predictable flow for inventory management.
+*   **In-Inventory Merges (`InventoryWindow`):**
+    *   When a merge is performed within any inventory grid (either the Run Inventory or the Battle Inventory window), the resulting new instance is **always** placed into the first available `null` slot of the corresponding inventory grid for its tier (`RunState.run_inventory` or `BattleManager._battle_inventory`). This ensures a consistent and predictable flow for inventory management.
 
 *   **On-Board Merges (Battle Only):**
     *   When a merge is performed directly on the battle board (i.e., by dragging one gachaball onto another in the lineup or bench), the resulting new instance **immediately replaces the target gachaball** in its slot on the board. This provides direct, immediate feedback and makes modifying the lineup feel fluid and responsive.
@@ -179,7 +184,7 @@ Scripting Note: Its root PanelContainer must have its `mouse_filter` property se
 ItemInspectionWindow.tscn:
 Scene Tree: PanelContainer -> VBoxContainer -> %NameLabel (Label), %DescriptionLabel (Label).
 Scripting Note: Its root PanelContainer must have its `mouse_filter` property set to `STOP` to enable parent-click pruning.
-ChoiceModal.tscn:
+**ChoiceWindow.tscn:**
 Purpose: Prompts user for Merge/Swap choice.
 Scene Tree: PanelContainer -> VBoxContainer -> Label ("What would you like to do?"), HBoxContainer -> %MergeButton (Button), %SwapButton (Button).
 Battle.tscn UI Elements:
@@ -189,13 +194,30 @@ Scene Tree: A `ColorRect` node covering the entire screen.
 Script (BackgroundBlocker.gd): Emits a `background_clicked` signal on user input, which `WindowManager` uses to close the top-most modal.
 Includes a %ReshuffleButton and a %DiscardPileButton.
 
-### 4.3 Modal Window Interaction Rules
+### 4.3 Window Interaction Rules
 
 To ensure a fluid and intuitive user experience, all modal windows that occupy a portion of the screen must adhere to the following architectural rules:
 
 1.  **Composition:** A modal consists of two primary nodes: a `BackgroundBlocker` scene instance that covers the full screen, and a primary `PanelContainer` (or similar `Control` node) that contains the modal's actual content and sits visually on top of the blocker.
 2.  **Background Closing:** A click on the `BackgroundBlocker` must close the modal. This is the blocker's primary function.
 3.  **"Pass-Through" Panel Behavior (Designer Mandate):** The modal's primary content `PanelContainer` must have its `mouse_filter` property set to `PASS`. This is a critical rule to ensure that clicks on the panel's empty background area (i.e., not on an interactive child like a button or item grid) are not stopped by the panel. Instead, they "pass through" to the `BackgroundBlocker` behind it, which then correctly interprets the click as an intent to close the modal.
+
+#### 4.4 Definitive UI Interaction Patterns
+
+1.  **Requirement for `RichTextLabel`**: Any `Label` that needs to contain clickable links (e.g., for "EFFECTS") **must** be a `RichTextLabel` with its `bbcode_enabled` property set to `true`.
+
+2.  **The "Clickable Background" Dynamic Mouse Filter Pattern**: For any control that needs to differentiate between clicks on a clickable link and clicks on its own background, the following pattern is mandatory to avoid input conflicts:
+    *   The root `PanelContainer` of the window handles `_gui_input` to catch clicks on its empty borders/padding. This serves as the final backstop for closing the window.
+    *   Purely decorative, non-interactive labels inside the window (e.g., `NameLabel`, `ItemGridLabel`) **must** have their `mouse_filter` set to `PASS` (`2` in the `.tscn` file) so they do not block clicks.
+    *   The interactive `RichTextLabel` must have its `mouse_filter` set to `PASS` by default in its `_ready()` function. This allows clicks on its empty areas to pass through to the parent `PanelContainer`.
+    *   The `RichTextLabel` connects its `meta_hover_started` and `meta_hover_ended` signals to handlers in its script.
+    *   The `_on_meta_hover_started` handler sets the label's `mouse_filter` to `STOP`. This makes the link underneath the mouse cursor interactive.
+    *   The `_on_meta_hover_ended` handler resets the label's `mouse_filter` back to `PASS`. This makes the background of the label transparent to clicks again once the mouse moves away from the link.
+    *   This dynamic switching ensures that only the meta links themselves capture mouse events, while the rest of the label's area correctly allows clicks to pass through.
+
+3.  **Window Background Interaction**: All primary windows (`InventoryWindow`, `DiscardPileWindow`) must implement `gui_input` handling on their main content panel. A click on this panel's empty background must trigger `WindowManager.close_all_inspection_windows()` without closing the window itself.
+
+
 Part 5: Game Flows
 5.1 Battle Setup Flow (BattleManager._setup_battle)
 Retrieves hero_instance from GameManager, creates a battle copy, and places its data in lineup_data[0].
@@ -216,3 +238,13 @@ Iterates through the _discard_pile grid.
 For each non-null instance, moves it from _discard_pile to the correct _draw_pools[tier].
 Clears the _discard_pile grid (fills it with null values).
 Emits battle_inventory_changed.
+
+### Part 6: Architectural Notes & Implementation Guidelines
+
+This section captures high-level best practices and solutions to non-obvious problems discovered during development.
+
+#### 6.1 Guideline: Prefer `load()` over `preload()` for Dynamic UI Instantiation
+
+*   **Problem Encountered**: During development, `Failed to instantiate scene state...` errors occurred when scripts like `InventoryWindow.gd` and `UnitInspectionWindow.gd` attempted to instantiate child views (e.g., `GachaBallView.tscn`).
+*   **Analysis**: This indicates a potential script parsing order issue or a latent circular dependency where `preload()` fails silently at engine startup. Using `preload()` creates a hard dependency that is resolved when a script is first loaded. If the resource being preloaded has its own complex dependencies, this can fail.
+*   **Definitive Guideline**: For UI components that dynamically instantiate other UI components (e.g., a modal creating item views in a grid), it is more robust to use `load("path/to/scene.tscn")` at runtime, inside the function where the instantiation occurs. While `preload()` offers a minor performance gain, the stability and reliability gained from using `load()` in these specific UI-to-UI cases is paramount and avoids hard-to-debug engine-level loading errors.

@@ -1,4 +1,5 @@
-# res://scripts/InventoryModal.gd
+# res://scripts/InventoryWindow.gd
+class_name InventoryWindow
 extends Control
 
 # NOTE: We have REMOVED the const preloads from here.

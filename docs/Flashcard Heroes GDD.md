@@ -122,27 +122,24 @@ This section defines the fundamental collectible entities in Flashcard Heroes: G
 GachaBallDefinition: Refers to the static, predefined template or blueprint for a specific type of GachaBall (e.g., "Warrior Type A," "Healing Potion Type B"). These are stored as game resources (.tres files in Godot) and define all inherent characteristics of that GachaBall type.
 GachaBallInstance: Refers to a live, unique, individual GachaBall existing within the game during a run. Each GachaBallInstance is created based on a GachaBallDefinition template but possesses its own unique identifier (ball_uuid using a unique string generator) and can have dynamic state (like current HP and PWR, equipped items on inventory, status effects, current location slot). Players collect and manage GachaBallInstances.
 GachaBall: The general, player-facing term for these collectible entities, encompassing both Units and Items.
-5.2. GachaBallDefinition (Templates/Definitions)
-Each type of GachaBall in the game is defined by a GachaBallDefinition entry. This data is immutable during gameplay and serves as the blueprint for creating GachaBallInstances.
-Common Attributes for all GachaBallDefinition:
-id: (StringName) A unique programmatic identifier for this GachaBall type (e.g., "unit_warrior_t1", "item_sword_common").
-display_name_key: (String) A localization key for the player-facing name (e.g., "Warrior," "Common Sword").
-description_key: (String) A localization key for the player-facing description, including flavor text and a summary of its function or abilities.
-icon_texture: (Texture2D Resource Path) The visual icon used to represent this GachaBall type in UI elements.
-tier: (Integer, typically 0-3) Indicates its general power level, rarity grouping, and the Gacha Machine tier it primarily belongs to.
-Tier 0: Typically reserved for Hero Units.
-Tier 1: Common GachaBalls.
-Tier 2: Uncommon GachaBalls.
-Tier 3: Rare and Legendary GachaBalls.
-rarity: (Enum: RarityLevel) Specifies its rarity (COMMON, UNCOMMON, RARE, LEGENDARY). This influences acquisition chances and often correlates with power.
-ball_category: (Enum: GachaBallCategory) Defines whether the GachaBall is a UNIT or an ITEM.
-5.3. GachaBallInstance (Live Entities)
-A GachaBallInstance is a specific, unique occurrence of a GachaBall within the game world during a run. Players interact with and manage these instances.
-Common Attributes for all GachaBallInstances:
-definition_id: (StringName) Stores the id of the GachaBallData this instance is based on, allowing lookup of its base properties.
-ball_uuid: (String) A universally unique identifier (UUID) generated when the instance is created, distinguishing it from all other instances, even those of the same type. This is crucial for tracking individual GachaBalls.
-current_location_state: (Enum: LocationState) Tracks the current logical position or status of this instance within the game (e.g., in the RunInventory tier 1 inventory slot 13, on the player's Bench slot 2, equipped on another Unit slot 1, in a Gacha Machine's drawable pool tier 2 inventory slot 6, etc.).
-instance_specific_modifiers: (Data Structure, e.g., Dictionary or Array) Stores any temporary or permanent modifications applied directly to this instance that deviate from its base GachaBallDefinition (e.g., persistent stat increases from certain events, current status effect applications).
+5.2. GachaBall Definition (Templates)
+Each type of GachaBall in the game is defined by a GachaBall Definition. This data is immutable during gameplay and serves as the blueprint for creating GachaBall Instances.
+Common Attributes for all GachaBall Definitions:
+*   `id`: (StringName) A unique programmatic identifier for this GachaBall type.
+*   `display_name_key`: (String) A localization key for the player-facing name.
+*   `description_key`: (String) A localization key for the player-facing description.
+*   `icon`: (Texture2D) The visual icon used to represent this GachaBall type.
+*   `tier`: (Integer) Indicates its general power level (typically 1-3).
+*   `category`: (Enum: GachaBallCategory) Defines whether the GachaBall is a UNIT or an ITEM.
+*   `item_slot_count`: (Integer) For UNITs, defines the number of item slots they possess.
+
+5.3. GachaBall Instance (Live Entities)
+A GachaBall Instance is a specific, unique occurrence of a GachaBall within the game world during a run. Players interact with and manage these instances.
+Common Attributes for all GachaBall Instances:
+*   `definition_id`: (StringName) Stores the ID of the GachaBall Definition this instance is based on.
+*   `ball_uuid`: (String) A universally unique identifier (UUID) for this specific instance.
+*   `origin_uuid`: (String) The UUID of the GachaBall Instance this was merged from, if applicable.
+*   `equipped_item_uuids`: (Array of Strings) Stores the UUIDs of any Item GachaBall Instances currently equipped.
 5.4. Unit GachaBalls
 Unit GachaBalls represent the characters that players deploy in battles.
 Specific GachaBallDefinition Attributes for Units:
@@ -206,16 +203,12 @@ Hero Units have no rarity, since they are unique and can't be obtained after the
 The RunInventory is the player's persistent collection of unique GachaBallInstances (Units and Items) for the current run. It functions as the player's "deck," directly influencing the GachaBalls available to be drawn from Gacha Machines (BattleInventory) during battles and forming the basis for strategic team building throughout the run.
 ### 7.1. Nature and Structure
 
-*   **Persistence**: The RunInventory and its contents (specific `GachaBallInstance`s) exist for the duration of the current run. It is initialized at the start of a new run based on the chosen Hero Unit's starting set of `GachaBall`s.
-*   **Content**: Composed of individual `GachaBallInstance`s, each with a unique `ball_uuid` and its own `current_location_state` (refer to Section 4.5 for `LocationState` enum definitions).
-*   **Structure & Organization**: The RunInventory is logically organized into three distinct inventories, one for each `GachaBallTier` (refer to Section 4.5 for `GachaBallTier` enum definitions):
-    *   **Tier 1 Master Inventory**: Holds all Tier 1 `GachaBallInstance`s.
-    *   **Tier 2 Master Inventory**: Holds all Tier 2 `GachaBallInstance`s.
-    *   **Tier 3 Master Inventory**: Holds all Tier 3 `GachaBallInstance`s.
-    This tiered organization facilitates populating the corresponding Gacha Machines at the start of each battle. It also allows players to inspect the contents of their RunInventory by tier outside of battle (e.g., for planning Permanent Merges or shop interactions).
-*   **Capacity**: There is no hard limit on the number of `GachaBallInstance`s the RunInventory can hold.
-*   **Instance Uniqueness**: Each `GachaBallInstance` within the RunInventory is unique, identified by its `ball_uuid`.
-*   **Primary Interface**: The player's primary interface for viewing and managing the RunInventory outside of battle is through the three persistent Gacha Machines displayed in the UI. By inspecting any Gacha Machine (e.g., the Tier 1 machine), the player is directly viewing the contents of all RunInventory inventories for all tiers.
+*   **Persistence**: The Run Inventory and its contents (specific `GachaBall Instance`s) exist for the duration of the current run. It is initialized at the start of a new run based on the chosen Hero Unit's starting set of `GachaBall`s.
+*   **Content**: Composed of individual `GachaBall Instance`s, each with a unique `ball_uuid`.
+*   **Structure & Organization**: The Run Inventory is visually represented as grids. It is logically organized into distinct inventories, one for each `GachaBallTier`, which facilitates populating Gacha Machines for battle.
+*   **Capacity**: Each inventory grid has a finite capacity that can be expanded through gameplay upgrades or events.
+*   **Instance Uniqueness**: Each `GachaBall Instance` within the Run Inventory is unique, identified by its `ball_uuid`.
+*   **Primary Interface**: The player's primary interface for viewing and managing the Run Inventory outside of battle is the **Run Inventory Window**. Through this window, players can inspect their collection, organize units, and perform Permanent Merges.
 
 ### 7.2. Initial Population
 
@@ -302,13 +295,16 @@ The game maintains a system of Merge Recipes that define all valid combinations 
 Example Recipe: 2x "Warrior Tier 1" GachaBallData type → 1x "Knight Tier 2" GachaBallData type.
 Recipes may need to be discovered or unlocked by the player through meta-progression or in-run events before they can be used.
 The Merge System validates any merge attempt against the available and unlocked recipes.
-9.3. Temporary Merges (In-Battle)
-Context: Occur during the Battle Management Phase.
-Inputs: Involve two Unit GachaBallInstances of the same tier, selected from the player's Bench or Lineup. Item GachaBallInstances can also be merged from the ItemInventory. 
-Outcome: The resulting merged GachaBallInstance is created and placed into the player's control for the current battle at the location of the last instance used in the merge.
-Persistence: This resulting merged GachaBallInstance exists only for the current battle. It is NOT added to the RunInventory after the battle and its input components are consumed for the battle but that does not affect the RunInventory.
-9.4. Permanent Merges (RunInventory)
-Context: Permanent Merges can be performed at any time outside of the Combat Phase. The player initiates a Permanent Merge by inspecting one of the Gacha Machines, selecting two compatible GachaBallInstances from within that machine's inventory, and confirming the action. This is the sole method for performing Permanent Merges.
+### 9.3. Merge Contexts and Outcomes
+Merging is a core strategic element, but its effect depends entirely on *where* it is performed.
+
+#### 9.3.1. Temporary Merges (During Battle)
+Temporary merges occur during the Battle Management Phase and only affect the current battle.
+*   **On-Board Merge:** Dragging one GachaBall onto another on the battle board (Lineup or Bench). The result **replaces the target GachaBall** in its slot.
+*   **In-Inventory Merge:** Dragging one GachaBall onto another within the **Battle Inventory Window** (the view of a Gacha Machine's contents). The result is **placed in the first available empty slot** within that same inventory, ready to be drawn.
+
+#### 9.4. Permanent Merges (Outside Battle)
+Performed at any time via the **Run Inventory Window**. This action **permanently consumes** the two ingredient instances from the **Run Inventory** and adds the new resulting instance back to it.
 9.5. Item Handling During Unit Merges
 When two Unit GachaBallInstances are merged (either temporarily or permanently), any Item GachaBallInstances they had equipped are handled as follows:
 All equipped Item GachaBallInstances from both input units are equipped to the newly merged Unit GachaBallInstance, this only happens on temporary merges since equipped items are not saved to the RunInventory.
@@ -317,7 +313,7 @@ The Battle System governs combat encounters between the player's team of GachaBa
 ### 10.1. Battle Phases & Turn Structure
 
 At the start of battle, only the player's Hero Unit is automatically placed in the lineup. All other player units must be deployed from the bench.
-The Player Bench has a fixed capacity of 3 slots. The ItemInventory also has a fixed capacity of 3 slots. If there is no space on the Player Bench when a new Unit GachaBallInstance is acquired during battle, it will be placed in the next available slot in the player's Lineup. If both the Bench and Lineup are full, the Unit is sent directly to the Discard Pile. Similarly, if the ItemInventory is full when an Item GachaBallInstance is acquired, the Item is sent directly to the Discard Pile.
+The Player Bench has a fixed capacity of 3 slots. The ItemInventory also has a fixed capacity of 3 slots. If a new Unit GachaBall Instance is acquired from a Gacha Machine when the Bench is full, it is sent directly to the **Battle Discard Pile**. Similarly, if the ItemInventory is full when an Item GachaBall Instance is acquired, the Item is also sent to the **Battle Discard Pile**.
 Targeting is dynamic. When a unit is due to perform its action, it determines its target based on the current state of the battlefield at that exact moment.
 Each turn in a battle node proceeds through distinct phases:
 Start of Turn Phase (START_OF_TURN_PHASE):
@@ -384,112 +380,112 @@ Dynamic Evaluation: Synergy bonuses are constantly evaluated and applied/removed
 11. Hero Unit
 The Hero Unit is the player's central character and a special, persistent GachaBallInstance for the duration of a run.
 Selection & Uniqueness: The player selects one Hero Unit at the start of a run from their unlocked pool of Heroes. Each Hero type has unique GachaBallData defining its:
-Distinct starting base_hp and base_pwr.
-One or more unique passive abilities or core mechanics that significantly influence playstyle.
-A specific item_slot_count (e.g., 5 generic item slots).
-A predefined starting set of GachaBallInstances that populate the initial RunInventory.
+-Distinct starting base_hp and base_pwr.
+-One or more unique passive abilities or core mechanics that significantly influence playstyle.
+-A specific item_slot_count (e.g., 5 generic item slots).
+-A predefined starting set of GachaBallInstances that populate the initial RunInventory.
 Persistence in Battle: The Hero Unit automatically participates in every battle of the run, starting in a designated position in the player's Lineup (e.g., backmost available slot).
 Run Lifeline: The Hero Unit's current_hp is the player's overall health for the run. If the Hero's current_hp reaches 0 (either in battle or due to events), the run ends.
 Restrictions:
-While the Hero Unit cannot be moved to the bench, it can be freely rearranged between slots within the Player Lineup during the Management Phase.
-Cannot be used as an ingredient in Merge operations.
-Cannot be sold or removed from the run via Shop services.
+-While the Hero Unit cannot be moved to the bench, it can be freely rearranged between slots within the Player Lineup during the Management Phase.
+-Cannot be used as an ingredient in Merge operations.
+-Cannot be sold or removed from the run via Shop services.
 Progression: The Hero Unit's base_hp or other base stats can be permanently upgraded for the current run through actions at Rest Sites ("Train & Enhance") or specific event outcomes.
 12. Trinkets
 Trinkets are special non-GachaBall entities that provide powerful, run-wide passive bonuses or modify core game mechanics. They are not Units or standard Items equipped in slots but rather global modifiers.
 Nature: Global passive effects active for the duration of the run once acquired.
 Acquisition:
-Typically awarded for defeating Mini-Bosses.
-Can be obtained as outcomes from special Event Nodes.
-May be available as rare purchases in Shops or rewards from high-risk Rest Site gambles.
-New Trinket types are unlocked for future runs via Meta-Progression.
+-Typically awarded for defeating Mini-Bosses.
+-Can be obtained as outcomes from special Event Nodes.
+-May be available as rare purchases in Shops or rewards from high-risk Rest Site gambles.
+-New Trinket types are unlocked for future runs via Meta-Progression.
 Limitations:
-A player can have a maximum of 5 active Trinkets at any one time.
-If a 6th Trinket is acquired, the player must choose one of their current 5 Trinkets to replace (the replaced Trinket is lost for the current run).
-Trinkets cannot be sold or directly removed by the player, only replaced.
+-A player can have a maximum of 5 active Trinkets at any one time.
+-If a 6th Trinket is acquired, the player must choose one of their current 5 Trinkets to replace (the replaced Trinket is lost for the current run).
+-Trinkets cannot be sold or directly removed by the player, only replaced.
 Effects: Trinket effects are diverse and can impact any aspect of the game:
-Resource generation (e.g., "Gain +1 Gacha Token per turn," "25% chance of getting an extra token per correct answer in the Flashcard Mini-Game").
-GachaBall stats or abilities (e.g., "All Warrior GachaBalls gain +1 PWR," "Merged GachaBalls start gain +2 HP").
-Gacha System (e.g., "25% chance to draw an extra GachaBall on every draw").
-Flashcard Mini-Game (e.g., "+2 seconds on Flashcard Mini-Game timer").
-Battle mechanics (e.g., "Player team's first unit to act,  acts twice in a row in Combat Phase").
-Rarity/Power: Trinkets can have different rarities (Common, Uncommon, Rare, Legendary), influencing the magnitude or uniqueness of their effects.
-UI Display: Active Trinkets are displayed in the TopArea of the UI. Players can inspect them to see their effects.
+-Resource generation (e.g., "Gain +1 Gacha Token per turn," "25% chance of getting an extra token per correct answer in the Flashcard Mini-Game").
+-GachaBall stats or abilities (e.g., "All Warrior GachaBalls gain +1 PWR," "Merged GachaBalls start gain +2 HP").
+-Gacha System (e.g., "25% chance to draw an extra GachaBall on every draw").
+-Flashcard Mini-Game (e.g., "+2 seconds on Flashcard Mini-Game timer").
+-Battle mechanics (e.g., "Player team's first unit to act,  acts twice in a row in Combat Phase").
+-Rarity/Power: Trinkets can have different rarities (Common, Uncommon, Rare, Legendary), influencing the magnitude or uniqueness of their effects.
+-UI Display: Active Trinkets are displayed in the TopArea of the UI. Players can inspect them to see their effects.
 
 13. Node Types & Logic
 This section details the specific behaviors and interactions within each type of node the player can encounter on the path.
 13.1. Battle Node
 Behavioral Role: The primary source of combat encounters, GachaBall acquisition, and Gold.
 Sub-Types:
-Common Battle: Standard enemy encounters.
-Elite Battle: More difficult encounters with stronger enemies and better rewards.
-Mini-Boss Battle: Mandatory encounters at progression milestones, featuring unique mechanics and rewarding Trinkets.
-Final Boss Battle: The ultimate encounter of the run, unlocked after all Flashcards in the Main Deck have been introduced.
-Resolution: The node is resolved upon victory (leading to rewards) or defeat (leading to Game Over).
+-Common Battle: Standard enemy encounters.
+-Elite Battle: More difficult encounters with stronger enemies and better rewards.
+-Mini-Boss Battle: Mandatory encounters at progression milestones, featuring unique mechanics and rewarding Trinkets.
+-Final Boss Battle: The ultimate encounter of the run, unlocked after all Flashcards in the Main Deck have been introduced.
+-Resolution: The node is resolved upon victory (leading to rewards) or defeat (leading to Game Over).
 13.2. Shop Node
 Behavioral Role: An economic hub for spending Gold to strategically improve the RunInventory.
 Player Actions:
-Purchase GachaBallInstance: Buy specific GachaBallInstances from a randomly generated stock to add them to the RunInventory.
-Reroll Shop Inventory: Pay Gold to generate a new set of GachaBallInstances for purchase.
-Remove GachaBallInstance: Pay Gold to permanently remove a chosen GachaBallInstance from the RunInventory.
-Transform GachaBallInstance: Pay Gold to replace a chosen GachaBallInstance with another random GachaBallInstance of the same tier.
-Resolution: The node is resolved when the player chooses to leave the shop.
+-Purchase GachaBallInstance: Buy specific GachaBallInstances from a randomly generated stock to add them to the RunInventory.
+-Reroll Shop Inventory: Pay Gold to generate a new set of GachaBallInstances for purchase.
+-Remove GachaBallInstance: Pay Gold to permanently remove a chosen GachaBallInstance from the RunInventory.
+-Transform GachaBallInstance: Pay Gold to replace a chosen GachaBallInstance with another random GachaBallInstance of the same tier.
+-Resolution: The node is resolved when the player chooses to leave the shop.
 13.3. Event Node
 Behavioral Role: Presents narrative scenarios with choices that have risk/reward outcomes.
 Interaction: The player is presented with a text-based scenario and a set of choices usually involving a flashcard mini-game and gacha machines for the rewards.
 Potential Outcomes:
-Gain or lose resources (Gold, Hero HP).
-Acquire or lose a GachaBallInstance.
-Acquire a Trinket.
-Initiate a special battle or challenge.
-Resolution: The node is resolved after the player makes a choice and its outcome is applied.
+-Gain or lose resources (Gold, Hero HP).
+-Acquire or lose a GachaBallInstance.
+-Acquire a Trinket.
+-Initiate a special battle or challenge.
+-Resolution: The node is resolved after the player makes a choice and its outcome is applied.
 13.4. Rest Site Node
 Behavioral Role: A node for recovery and enhancement between battles. The player may only choose one action per visit.
 Player Actions:
-Rest & Recover: Initiates a Flashcard Mini-Game. Earned Gacha Tokens are used on a "Healing Gacha" to draw healing-effect GachaBallInstances that restore the Hero's HP.
-Train & Enhance: Initiates a Flashcard Mini-Game. Earned Gacha Tokens are used on a "Training Gacha" to draw GachaBallInstances that grant permanent stat upgrades to the Hero Unit for the current run.
-Gamble: The player pays Gold to initiate a Flashcard Mini-Game. Earned Gacha Tokens are used on a "Gambling Gacha" to draw prizes in gold gachaballs or negative outcomes like gold loss or useless or even harmful gachaballs.
-Resolution: The node is resolved after the player completes their chosen action.
+-Rest & Recover: Initiates a Flashcard Mini-Game. Earned Gacha Tokens are used on a "Healing Gacha" to draw healing-effect GachaBallInstances that restore the Hero's HP.
+-Train & Enhance: Initiates a Flashcard Mini-Game. Earned Gacha Tokens are used on a "Training Gacha" to draw GachaBallInstances that grant permanent stat upgrades to the Hero Unit for the current run.
+-Gamble: The player pays Gold to initiate a Flashcard Mini-Game. Earned Gacha Tokens are used on a "Gambling Gacha" to draw prizes in gold gachaballs or negative outcomes like gold loss or useless or even harmful gachaballs.
+-Resolution: The node is resolved after the player completes their chosen action.
 13.5. Path Generation Logic
 Structure: The player is always presented with a choice of three nodes to advance.
 Procedural Generation: The types of nodes offered are determined by procedural rules. These rules weigh node types based on the current Day counter and player progression to ensure variety and a scaling challenge.
 Milestones:
-Mini-Boss nodes are guaranteed to appear upon reaching specific Flashcard Deck unlock milestones (e.g., every 20% of the Main Deck unlocked).
-The Final Boss node is guaranteed to appear only when 100% of the Main Deck has been unlocked.
+-Mini-Boss nodes are guaranteed to appear upon reaching specific Flashcard Deck unlock milestones (e.g., every 20% of the Main Deck unlocked).
+-The Final Boss node is guaranteed to appear only when 100% of the Main Deck has been unlocked.
 14. Status Effects
 Status Effects are temporary conditions applied to Unit GachaBallInstances during battle that have effects on them.
 Core Attributes:
-Name: The identifier for the effect (e.g., "Burn", "Weaken").
-Effect Logic: The mechanical function of the effect (e.g., deals damage equal to amount of stacks, reduces PWR by 50% while stacks last).
-Duration: The number of turns the effect lasts. Duration typically decays at the start or end of a turn. Some effects may last until a condition is met (e.g., Affected Unit is damaged).
-Stacks: Some effects can be applied multiple times, with stacks influencing potency and/or duration.
-Visual Indicator: A unique icon displayed on the affected Unit to communicate its state to the player with amount of stacks next to it.
+-Name: The identifier for the effect (e.g., "Burn", "Weaken").
+-Effect Logic: The mechanical function of the effect (e.g., deals damage equal to amount of stacks, reduces PWR by 50% while stacks last).
+-Duration: The number of turns the effect lasts. Duration typically decays at the start or end of a turn. Some effects may last until a condition is met (e.g., Affected Unit is damaged).
+-Stacks: Some effects can be applied multiple times, with stacks influencing potency and/or duration.
+-Visual Indicator: A unique icon displayed on the affected Unit to communicate its state to the player with amount of stacks next to it.
 Example Status Effects:
-Burn: At the start of its turn, the affected unit takes damage equal to the amount of stacks.
-Weaken: The affected unit's PWR is reduced by 50% while the effect lasts (stacks above 0).
+-Burn: At the start of its turn, the affected unit takes damage equal to the amount of stacks.
+-Weaken: The affected unit's PWR is reduced by 50% while the effect lasts (stacks above 0).
 15. Progression Systems
 15.1. Difficulty Scaling (Run Progression)
 Difficulty scales primarily with the Day counter, which increases as the player resolves nodes.
 Encounter Budget System: Each Day is associated with a budget that funds enemy team strength. As the Day counter increases, so does the budget, resulting in:
-Increased base stats (HP, PWR) for enemy units.
-More numerous or higher-tier enemy units in encounters.
-More or higher-tier items equipped on enemy units.
+-Increased base stats (HP, PWR) for enemy units.
+-More numerous or higher-tier enemy units in encounters.
+-More or higher-tier items equipped on enemy units.
 Enemy Team Composition: Enemy teams are built from predefined templates that increase in complexity and strategic threat in later Days.
 Enemy Leaders: Special enemy-only Hero units with powerful, unique abilities designed to disrupt player strategies. The frequency and power of Enemy Leaders increase with the Day counter or Node Battle type, Elite Battles have a guaranteed Enemy Leaders that are only found in Elite Battles.
 Enemy Team Trinkets: Enemy teams may have passive effects similar to player Trinkets, increasing the challenge of the encounter and making every battle feel unique. Enemy teams can have up to 3 active Trinkets, displayed beneath their lineup. These Trinkets and their effects can be inspected by the player in the same manner as their own.
 15.2. Meta-Progression
 Meta-progression involves permanent unlocks that persist between runs, expanding the player's strategic options over time.
 Unlockable Content: Players can permanently unlock:
-New Hero Units.
-New Flashcard Decks.
-New GachaBallDefinitions (Units and Items) to be added to the potential pool of rewards and shop offerings in future runs.
-New Trinkets.
-New Merge Recipes.
+-New Hero Units.
+-New Flashcard Decks.
+-New GachaBallDefinitions (Units and Items) to be added to the potential pool of rewards and shop offerings in future runs.
+-New Trinkets.
+-New Merge Recipes.
 Unlock Mechanism & Achievements:
-Meta-progression is tied to an in-game Achievement system. The "Achievements" screen, accessible from the Title Screen, lists all possible achievements. It will display both completed achievements and the specific requirements for any uncompleted achievements. This is the primary location where players can track what they need to do to unlock new Hero Units, Flashcard Decks, GachaBall Definitions, Trinkets, and Merge Recipes.
+-Meta-progression is tied to an in-game Achievement system. The "Achievements" screen, accessible from the Title Screen, lists all possible achievements. It will display both completed achievements and the specific requirements for any uncompleted achievements. This is the primary location where players can track what they need to do to unlock new Hero Units, Flashcard Decks, GachaBall Definitions, Trinkets, and Merge Recipes.
 
 The Codex (Reference Guide):
-The Codex, accessible from the in-game UI, serves as the player's reference guide to all content they have successfully unlocked. Its purpose is to help with strategic planning by allowing the player to review the details of known content. For example, it will function as a "Recipe Book," showing the specific ingredient-and-result combinations for all unlocked Merge Recipes. It does not display information on how to unlock new content.
+-The Codex, accessible from the in-game UI, serves as the player's reference guide to all content they have successfully unlocked. Its purpose is to help with strategic planning by allowing the player to review the details of known content. For example, it will function as a "Recipe Book," showing the specific ingredient-and-result combinations for all unlocked Merge Recipes. It does not display information on how to unlock new content.
 16. UI/UX Philosophy & Core Components
 16.1. Design Philosophy
 Target Platform: Designed for a 16:9 landscape aspect ratio, with controls and UI elements suitable for both PC (mouse) and mobile (touch).
@@ -501,7 +497,7 @@ The game's interface is built around a persistent view to provide the player wit
 TopArea: Always visible, this area displays the player's Hero HP, current Gold, the Day counter, and active Trinkets. It also provides access to the game Menu.
 BottomArea: Always visible, this area houses the three Gacha Machines (Tier 1, 2, and 3). These machines are the player's constant interaction point for drawing and managing their GachaBall collections.
 ContentArea: This is the large central portion of the screen. Its content changes based on the player's current location or node. It fluidly transitions to show the battleground, the shop interface, the node selection map, or event narratives without ever leaving the main game screen. This creates a seamless, unified experience.
-ModalWindows: Modal windows that appear on top of the entire interface for focused tasks, such as inspecting a Gacha Machine's inventory or confirming a merge. These modal windows do not feature explicit 'close' buttons; they are designed to automatically dismiss if the player clicks anywhere on the screen outside the bounds of the modal window itself or any sub-windows spawned from it.
+Modal Windows: Modal windows appear for focused tasks, such as the **Run Inventory Window**, an **Inspection Window**, or a **Choice Window**. They overlay the current screen and must be dismissed to return to the main view. As a core interaction rule, they are closed by clicking anywhere on the screen outside their bounds.
 16.3 Core Interaction Model
 Single Click/Tap: The primary method for selecting an entity (Unit, Item) or activating a button but also used for tooltips on or even inspection windows for elements that can't be selected like Gacha machines, keywords, Status Effects icons, etc.
 Double click / clicking on the same selected element again / Right-Click / Long Press: Used to open inspection windows for an entity without performing an action.
@@ -514,6 +510,14 @@ Visual: Made easy to navigate and understand.
 Audio: Separate volume sliders for music and effects.
 16.6. Resource Display Conventions
 All player-facing resources (HP, Gold, PWR) will be displayed as rounded integers. Numbers exceeding 999 will be abbreviated (e.g., 1200 becomes 1.2k).
+
+16.7. Core Interaction Rules
+1.  **Window Closing:** All modal windows are closed by clicking anywhere on the screen outside their bounds.
+2.  **Hierarchical Inspection:** Right-clicking (or long-pressing) an entity opens its **Inspection Window**. If that window contains other items (e.g., equipped gear), a single click on a nested item opens its specific inspection window.
+3.  **Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping a GachaBall on another:
+    *   If a **Merge Recipe** exists, a **Choice Window** appears (Merge/Swap).
+    *   If it's an **Item** on a **Unit** on the board, it will **Equip**.
+    *   Otherwise, it will **Swap**.
 
 17. Scene-Specific UI/UX
 17.1. Title Screen: Presents main menu options: New Game, Continue, Achievements (displays all completed and uncompleted achievements and the requirements to unlock new content), Options, Quit.

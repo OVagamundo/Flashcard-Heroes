@@ -1,4 +1,5 @@
-# res://scripts/ChoicePromptUI.gd
+# res://scripts/ChoiceWindow.gd
+class_name ChoiceWindow
 extends Control
 
 @onready var merge_button: Button = %MergeButton
