@@ -1,13 +1,71 @@
 Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
 OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
+WARNING: res://resources/units/EnemyHero.tres:4 - ext_resource, invalid UID: uid://d2k5qgwvj85o7 - using text path instead: res://assets/sprites/units/hero.png
+   at: load (scene/resources/resource_format_text.cpp:447)
+WARNING: res://resources/units/UnitTier2C.tres:4 - ext_resource, invalid UID: uid://dsm8r8v8q8w8x - using text path instead: res://assets/sprites/units/Tier2unitC.png
+   at: load (scene/resources/resource_format_text.cpp:447)
+WARNING: res://resources/units/UnitTier3D.tres:4 - ext_resource, invalid UID: uid://b2s2t2u2v2w2x - using text path instead: res://assets/sprites/units/Tier3unitD.png
+   at: load (scene/resources/resource_format_text.cpp:447)
 Database loaded.
- - Units: 5
+ - Units: 6
  - Items: 4
  - Recipes: 4
  - Decks: 0
+ - Abilities: 1
 RunState initialized with TDD-compliant data grids.
+Entering phase: START_OF_TURN
+Entering phase: MANAGEMENT
 Merge calculated. Created: unit_t2_c. Parents to remove: 2
-Merge calculated. Created: unit_t3_d. Parents to remove: 2
-WARNING: 23 RIDs of type "CanvasItem" were leaked.
-   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2679)
+Not enough tokens to draw tier 1.
+Entering phase: COMBAT
+--- COMBAT PHASE START ---
+Player team acts...
+BasicAttack: hero attacks enemy_hero for 2 damage. Target HP is now 28.
+BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 25.
+Enemy team acts...
+BasicAttack: unit_t3_d attacks unit_t2_c for 6 damage. Target HP is now -2.
+BasicAttack: unit_t2_c attacks hero for 3 damage. Target HP is now 27.
+BasicAttack: unit_t1_b attacks hero for 1 damage. Target HP is now 26.
+BasicAttack: unit_t1_a attacks hero for 2 damage. Target HP is now 24.
+BasicAttack: enemy_hero attacks hero for 2 damage. Target HP is now 22.
+--- COMBAT PHASE END ---
+Entering phase: END_OF_TURN
+Entering phase: START_OF_TURN
+Entering phase: MANAGEMENT
+No items of tier 1 in discard to reshuffle.
+No items of tier 1 in discard to reshuffle.
+No items of tier 1 in discard to reshuffle.
+Entering phase: COMBAT
+--- COMBAT PHASE START ---
+Player team acts...
+BasicAttack: hero attacks enemy_hero for 2 damage. Target HP is now 23.
+BasicAttack: unit_t1_b attacks enemy_hero for 1 damage. Target HP is now 22.
+BasicAttack: unit_t1_a attacks enemy_hero for 2 damage. Target HP is now 20.
+Enemy team acts...
+BasicAttack: unit_t3_d attacks unit_t1_a for 6 damage. Target HP is now -5.
+BasicAttack: unit_t2_c attacks unit_t1_b for 3 damage. Target HP is now -1.
+BasicAttack: unit_t1_b attacks hero for 1 damage. Target HP is now 21.
+BasicAttack: unit_t1_a attacks hero for 2 damage. Target HP is now 19.
+BasicAttack: enemy_hero attacks hero for 2 damage. Target HP is now 17.
+--- COMBAT PHASE END ---
+Entering phase: END_OF_TURN
+Entering phase: START_OF_TURN
+Entering phase: MANAGEMENT
+No items of tier 1 in discard to reshuffle.
+Entering phase: COMBAT
+--- COMBAT PHASE START ---
+Player team acts...
+BasicAttack: hero attacks enemy_hero for 2 damage. Target HP is now 18.
+BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 15.
+BasicAttack: unit_t3_d attacks enemy_hero for 6 damage. Target HP is now 9.
+Enemy team acts...
+BasicAttack: unit_t3_d attacks unit_t3_d for 6 damage. Target HP is now 0.
+BasicAttack: unit_t2_c attacks unit_t2_c for 3 damage. Target HP is now 0.
+BasicAttack: unit_t1_b attacks hero for 1 damage. Target HP is now 16.
+BasicAttack: unit_t1_a attacks hero for 2 damage. Target HP is now 14.
+BasicAttack: enemy_hero attacks hero for 2 damage. Target HP is now 12.
+--- COMBAT PHASE END ---
+Entering phase: END_OF_TURN
+Entering phase: START_OF_TURN
+Entering phase: MANAGEMENT

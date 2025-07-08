@@ -3,6 +3,7 @@ extends Node
 
 # --- Constants and Preloads ---
 const INSPECTION_WINDOW_MARGIN = 10.0
+const EndBattlePopup = preload("res://scripts/EndBattlePopup.gd")
 
 # --- Scene Definitions ---
 var _window_scenes: Dictionary = {
@@ -10,6 +11,7 @@ var _window_scenes: Dictionary = {
 	&"Inventory": preload("res://scenes/InventoryWindow.tscn"),
 	&"DiscardPile": preload("res://scenes/DiscardPileWindow.tscn"),
 	&"ChoiceWindow": preload("res://scenes/ChoiceWindow.tscn"),
+	&"EndBattlePopup": preload("res://scenes/EndBattlePopup.tscn"), # ADD THIS LINE
 	# Non-Modal Inspection Windows
 	&"UnitInspection": preload("res://scenes/UnitInspectionWindow.tscn"),	
 	&"ItemInspection": preload("res://scenes/ItemInspectionWindow.tscn"),
@@ -30,6 +32,7 @@ func _ready():
 	EventBus.inspection_requested.connect(_open_root_inspection_window)
 	EventBus.main_scene_requested.connect(_close_all_windows)
 	EventBus.loadout_scene_requested.connect(_close_all_windows)
+	EventBus.title_scene_requested.connect(_close_all_windows) # ADD THIS LINE
 	EventBus.close_modal_requested.connect(_close_top_modal)
 	EventBus.background_clicked.connect(_on_background_blocker_clicked)
 	EventBus.global_background_clicked.connect(_global_deselect_and_close_inspections)
@@ -58,6 +61,16 @@ func _unhandled_input(event: InputEvent):
 			get_viewport().set_input_as_handled()
 
 # --- Public Methods: Window Management ---
+
+# ADD THIS NEW FUNCTION
+func open_end_battle_popup(is_victory: bool):
+	_close_all_windows() # Close any other open windows first
+	var window_instance = _window_scenes[&"EndBattlePopup"].instantiate()
+	_get_modal_layer().add_child(window_instance)
+	_modal_stack.push_back({"window": window_instance}) # Register it as a modal
+	if window_instance.has_method("populate"):
+		window_instance.populate(is_victory)
+
 
 func _on_selection_context_changed(view: Control):
 	var parent_info = _find_parent_group(view)
@@ -176,6 +189,10 @@ func _open_root_inspection_window(source_view: Control):
 
 func _on_background_blocker_clicked():
 	if not _modal_stack.is_empty():
+		var top_modal = _modal_stack.back().window
+		# Don't close the end battle popup by clicking the background
+		if top_modal is EndBattlePopup:
+			return
 		_close_top_modal()
 
 func _close_top_modal():

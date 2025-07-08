@@ -17,6 +17,12 @@ var origin_uuid: String = ""
 ## An array of UUIDs for the items equipped in this instance's slots.
 var equipped_item_uuids: Array[String]
 
+## The current health of this instance in battle.
+var current_hp: int
+
+## The current power of this instance in battle.
+var current_pwr: int
+
 
 ## TDD: Sets up the instance based on a GachaBallDefinition.
 ## This must be called immediately after creating a new instance.
@@ -26,31 +32,57 @@ func initialize(definition: GachaBallDefinition):
 		return
 
 	self.definition_id = definition.id
-	# The UUIDUtils autoload is required for this to work.
 	self.ball_uuid = UUIDUtils.generate_uuid(definition.id)
 	
-	# TDD: Resize the item array to match the definition and fill with empty strings ("").
 	equipped_item_uuids.resize(definition.item_slot_count)
 	equipped_item_uuids.fill("")
+	
+	# TDD Update: Initialize combat stats from the definition's base values.
+	self.current_hp = definition.base_hp
+	self.current_pwr = definition.base_pwr
 
 
 ## TDD: Creates a temporary, deep copy of this instance for a battle session.
 func create_battle_copy() -> GachaBallInstance:
-	# A true deep copy is required to prevent battle modifications from
-	# affecting the permanent run inventory instance.
 	var copy = GachaBallInstance.new()
+	var definition = get_definition()
+	if not definition:
+		printerr("Cannot create battle copy, definition not found for ID: ", self.definition_id)
+		return null
 	
-	# Manually copy all necessary data.
 	copy.definition_id = self.definition_id
-	copy.equipped_item_uuids = self.equipped_item_uuids.duplicate(true) # Deep copy array
-	
-	# Generate a new, unique UUID for the battle copy.
+	copy.equipped_item_uuids = self.equipped_item_uuids.duplicate(true)
 	copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
-	
-	# Link the copy back to its permanent origin.
 	copy.origin_uuid = self.ball_uuid
+	
+	# TDD Update: Initialize the copy's stats from the definition.
+	copy.current_hp = definition.base_hp
+	copy.current_pwr = definition.base_pwr
 	
 	return copy
 
+## TDD Update: Calculates current stats based on equipped items.
+func recalculate_stats(inventory_context: Dictionary):
+	var definition = get_definition()
+	if not definition: return
+
+	# Start with base stats
+	current_hp = definition.base_hp
+	current_pwr = definition.base_pwr
+
+	# Reuse existing helper to find equipped item instances
+	var equipped_items: Array[GachaBallInstance] = MergeManager._get_equipped_item_instances(self, inventory_context)
+
+	# Add bonuses from each equipped item
+	for item_instance in equipped_items:
+		var item_def = item_instance.get_definition()
+		if item_def:
+			current_hp += item_def.bonus_hp
+			current_pwr += item_def.bonus_pwr
+	
+	# Notify the UI that stats have changed.
+	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
+
 func get_definition() -> GachaBallDefinition:
-	return Database.units.get(definition_id, Database.items.get(definition_id))
+	return Database.get_definition(definition_id)

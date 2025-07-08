@@ -150,15 +150,20 @@ func _handle_equip(item_view: Control, unit_view: Control):
 
 	# Place the item back into the master battle inventory.
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	var def = item_instance.get_definition()
-	if is_instance_valid(bm) and is_instance_valid(def):
-		var inventory_grid = bm.get_battle_inventory().get(def.tier)
-		if inventory_grid is Array:
-			var empty_inv_idx = inventory_grid.find(null)
-			if empty_inv_idx != -1:
-				inventory_grid[empty_inv_idx] = item_instance
-			else:
-				printerr("InventoryManager: CRITICAL - No space in battle inventory for equipped item. Item may be lost.")
+	if is_instance_valid(bm):
+		# RECALCULATE STATS - THIS IS THE FIX
+		var inventory_context = bm.get_full_inventory_context()
+		unit_instance.recalculate_stats(inventory_context)
+		
+		var def = item_instance.get_definition()
+		if is_instance_valid(def):
+			var inventory_grid = bm.get_battle_inventory().get(def.tier)
+			if inventory_grid is Array:
+				var empty_inv_idx = inventory_grid.find(null)
+				if empty_inv_idx != -1:
+					inventory_grid[empty_inv_idx] = item_instance
+				else:
+					printerr("InventoryManager: CRITICAL - No space in battle inventory for equipped item. Item may be lost.")
 
 	InteractionManager.end_drag(true) # Action was valid, end the drag successfully.
 	EventBus.emit_signal("battle_inventory_changed")
@@ -206,7 +211,7 @@ func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
 			if not loc.is_empty():
 				bm.set_slot_data(loc.container, loc.index, null)
 			# Remove from master battle inventory
-			var def = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+			var def = instance.get_definition()
 			if def and bm.get_battle_inventory().has(def.tier):
 				var grid = bm.get_battle_inventory()[def.tier]
 				var idx = grid.find(instance)
@@ -219,7 +224,7 @@ func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
 	else:
 		var run_inv = GameManager.run_state.run_inventory
 		for instance in instances:
-			var def = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+			var def = instance.get_definition()
 			if def and run_inv.has(def.tier):
 				var idx = run_inv[def.tier].find(instance)
 				if idx != -1:
@@ -314,7 +319,8 @@ func _is_on_battle_board(loc: Dictionary) -> bool:
 func _is_valid_placement(instance: GachaBallInstance, target_loc: Dictionary) -> bool:
 	if not is_instance_valid(instance): return true # Moving a null is always valid
 
-	var def = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+	var def = instance.get_definition()
+	if not def: return false # Cannot validate if definition is missing
 	var target_container = target_loc.get("container", "")
 
 	# Rule: Hero can only be in the lineup or swapped with another unit in the lineup.

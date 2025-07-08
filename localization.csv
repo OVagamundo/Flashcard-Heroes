@@ -1,0 +1,3 @@
+key,en
+ability.basic_attack.name,"Basic Attack"
+ability.basic_attack.desc,"Attacks the frontmost enemy for {pwr} damage."

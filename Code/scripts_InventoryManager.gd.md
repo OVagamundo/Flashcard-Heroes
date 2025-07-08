@@ -209,7 +209,7 @@ func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
 			if not loc.is_empty():
 				bm.set_slot_data(loc.container, loc.index, null)
 			# Remove from master battle inventory
-			var def = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+			var def = instance.get_definition()
 			if def and bm.get_battle_inventory().has(def.tier):
 				var grid = bm.get_battle_inventory()[def.tier]
 				var idx = grid.find(instance)
@@ -222,7 +222,7 @@ func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
 	else:
 		var run_inv = GameManager.run_state.run_inventory
 		for instance in instances:
-			var def = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+			var def = instance.get_definition()
 			if def and run_inv.has(def.tier):
 				var idx = run_inv[def.tier].find(instance)
 				if idx != -1:
@@ -317,7 +317,8 @@ func _is_on_battle_board(loc: Dictionary) -> bool:
 func _is_valid_placement(instance: GachaBallInstance, target_loc: Dictionary) -> bool:
 	if not is_instance_valid(instance): return true # Moving a null is always valid
 
-	var def = Database.units.get(instance.definition_id, Database.items.get(instance.definition_id))
+	var def = instance.get_definition()
+	if not def: return false # Cannot validate if definition is missing
 	var target_container = target_loc.get("container", "")
 
 	# Rule: Hero can only be in the lineup or swapped with another unit in the lineup.

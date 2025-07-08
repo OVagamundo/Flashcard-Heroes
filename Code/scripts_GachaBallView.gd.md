@@ -9,6 +9,8 @@ extends PanelContainer
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var tier_label: Label = %TierLabel
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
+@onready var hp_label: Label = %HPLabel
+@onready var pwr_label: Label = %PWRLabel
 
 var instance_data: GachaBallInstance = null
 var is_selectable: bool = true
@@ -18,17 +20,19 @@ func _ready():
 	EventBus.view_selected.connect(_on_view_selected)
 	EventBus.view_deselected.connect(_on_view_deselected)
 	EventBus.invalid_action_triggered.connect(func(v): _on_invalid_action_triggered(v))
+	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
 	_update_visuals()
 
 func _update_visuals():
 	if not is_instance_valid(self): return
 	
 	if instance_data:
-		var definition = Database.units.get(instance_data.definition_id, Database.items.get(instance_data.definition_id))
+		var definition = instance_data.get_definition()
 		if definition:
 			icon_rect.texture = definition.icon
 			tier_label.text = "T%d" % definition.tier
 			self.tooltip_text = tr(definition.display_name_key)
+			_update_stats() # Update stats on visual refresh
 		else:
 			icon_rect.texture = null
 			tier_label.text = "ERR"
@@ -36,6 +40,23 @@ func _update_visuals():
 		visible = true
 	else:
 		visible = false
+
+func _update_stats():
+	if not is_instance_valid(instance_data): return
+	var definition = instance_data.get_definition()
+	if not definition or definition.category != &"UNIT":
+		hp_label.visible = false
+		pwr_label.visible = false
+		return
+		
+	hp_label.visible = true
+	pwr_label.visible = true
+	hp_label.text = "HP: %d" % instance_data.current_hp
+	pwr_label.text = "PWR: %d" % instance_data.current_pwr
+
+func _on_unit_stats_changed(unit_uuid: String):
+	if is_instance_valid(instance_data) and instance_data.ball_uuid == unit_uuid:
+		_update_stats()
 
 func set_instance_data(data: GachaBallInstance):
 	self.instance_data = data
@@ -55,7 +76,6 @@ func _gui_input(event: InputEvent):
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		if is_selectable:
-			# Handle double-click for root inspection
 			if event.double_click:
 				EventBus.emit_signal("inspection_requested", self)
 				InteractionManager.clear_selection()
@@ -68,7 +88,6 @@ func _gui_input(event: InputEvent):
 			else:
 				InteractionManager.select_view(self)
 		else:
-			# Non-selectable views are children. Call the specific child inspection handler.
 			WindowManager.open_grandchild_inspection_window(self)
 
 		get_viewport().set_input_as_handled()
@@ -76,16 +95,13 @@ func _gui_input(event: InputEvent):
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not is_selectable or not instance_data: return null
 
-	# Create a simple, robust preview: just the icon.
 	var preview = TextureRect.new()
 	preview.texture = icon_rect.texture
-	# Make the texture fill a fixed size for a consistent drag look.
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.custom_minimum_size = Vector2(64, 64)
 	
 	set_drag_preview(preview)
 
-	# --- The rest of the logic for the placeholder is unchanged ---
 	var placeholder = Control.new()
 	placeholder.custom_minimum_size = self.size
 	var parent = get_parent()
@@ -102,7 +118,6 @@ func _can_drop_data(_at_position, data) -> bool:
 
 func _drop_data(_at_position, data):
 	var source_view = data.source_view as GachaBallView
-
 	EventBus.emit_signal("inventory_action_requested", source_view, self)
 
 func _on_view_selected(view: Control):
@@ -132,13 +147,7 @@ func _apply_selection_feedback():
 		remove_theme_stylebox_override("panel")
 
 func _notification(what: int) -> void:
-	# This function receives all engine notifications. We only care about NOTIFICATION_DRAG_END.
 	if what == NOTIFICATION_DRAG_END:
-		# This notification is sent to MANY nodes, so we must be specific.
-		# We only act if a drag is active AND we were the source of that drag.
 		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
-			print("--- GachaBallView '", self.name, "': Received DRAG_END notification from the engine.")
-			print("    - This means the drop was unhandled by any other control.")
-			print("    - Forcing cancellation of the drag to restore the view.")
 			InteractionManager.end_drag(false)
 ```

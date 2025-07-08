@@ -3,10 +3,6 @@ extends Node
 
 ## A dedicated, stateless helper to handle all merge logic calculations.
 
-## Calculates the result of a merge attempt.
-## It does NOT modify any inventory data. It only reads the inventory to find
-## equipped items and returns a dictionary with the results of the calculation.
-## Returns: Dictionary{"merged_instance": GachaBallInstance, "parents_to_remove": Array[GachaBallInstance]}
 func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, inventory_context: Dictionary) -> Dictionary:
 	if not instance_a or not instance_b:
 		printerr("MergeManager: Attempted merge with a null instance.")
@@ -17,7 +13,7 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		return {}
 
 	# --- Merge is valid, proceed with calculation ---
-	var result_definition: GachaBallDefinition = Database.units.get(recipe.result_id, Database.items.get(recipe.result_id))
+	var result_definition: GachaBallDefinition = Database.get_definition(recipe.result_id)
 	if not result_definition:
 		printerr("MergeManager: Result ID from recipe not found in Database: ", recipe.result_id)
 		return {}
@@ -37,14 +33,12 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
 		
 	# 4. Create the list of all instances that need to be removed from inventories.
-	# Only the two base instances being merged should be removed, not their equipped items
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
 
 	print("Merge calculated. Created: %s. Parents to remove: %s" % [merged_instance.definition_id, parents_to_remove.size()])
 	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
 
 
-## Finds a matching recipe for two GachaBall definition IDs.
 func find_recipe(id_a: StringName, id_b: StringName) -> MergeRecipe:
 	for recipe_key in Database.recipes:
 		var recipe: MergeRecipe = Database.recipes[recipe_key]
@@ -60,7 +54,6 @@ func find_recipe(id_a: StringName, id_b: StringName) -> MergeRecipe:
 	return null
 
 
-## Helper to find equipped item INSTANCES of a unit within a specific tiered inventory.
 func _get_equipped_item_instances(unit_instance: GachaBallInstance, inventory_context: Dictionary) -> Array[GachaBallInstance]:
 	var equipped_items: Array[GachaBallInstance] = []
 	if unit_instance.equipped_item_uuids.is_empty():
@@ -83,6 +76,6 @@ func _get_equipped_item_instances(unit_instance: GachaBallInstance, inventory_co
 		for entity in full_inventory_list:
 			if is_instance_valid(entity) and entity.ball_uuid == item_uuid:
 				equipped_items.push_back(entity)
-				break # Found the item, move to next UUID
+				break 
 				
 	return equipped_items

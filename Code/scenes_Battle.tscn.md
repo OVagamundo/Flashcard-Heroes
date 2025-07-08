@@ -1,11 +1,10 @@
 <!-- Original: scenes/Battle.tscn -->
 
 ```ini
-[gd_scene load_steps=4 format=3 uid="uid://uiilu4273ttr"]
+[gd_scene load_steps=3 format=3 uid="uid://uiilu4273ttr"]
 
 [ext_resource type="Script" uid="uid://bwx6ux5t1drf5" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
-[ext_resource type="Script" uid="uid://dp7nlwa5djbf" path="res://scripts/Battle.gd" id="2_abcde"]
-[ext_resource type="Script" uid="uid://b6kwe3wxewufa" path="res://scripts/BackgroundClickDetector.gd" id="3_detector_script"]
+[ext_resource type="Script" uid="uid://b6kwe3wxewufa" path="res://scripts/BackgroundClickDetector.gd" id="2_detector_script"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -15,7 +14,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("2_abcde")
 
 [node name="BackgroundClickDetector" type="ColorRect" parent="."]
 layout_mode = 1
@@ -25,7 +23,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(1, 1, 1, 0)
-script = ExtResource("3_detector_script")
+script = ExtResource("2_detector_script")
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")
@@ -160,38 +158,39 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="EnemyLineup" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
+[node name="EnemyLineupContainer" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 alignment = 1
 
-[node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineup"]
+[node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="LineupSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineup"]
+[node name="LineupSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="LineupSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineup"]
+[node name="LineupSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="LineupSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineup"]
+[node name="LineupSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="LineupSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineup"]
+[node name="LineupSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="LineupSlot5" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineup"]
+[node name="LineupSlot5" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
@@ -206,17 +205,21 @@ layout_mode = 2
 mouse_filter = 2
 alignment = 1
 
-[node name="ReshuffleButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 1
-text = "Reshuffle"
-
 [node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 1
 text = "Discard Pile (0)"
+
+[node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "End Turn"
+
+[node name="GachaTokenLabel" type="Label" parent="TeamAreas/EnemyArea/DiscardArea"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Tokens: 0"
 
 [node name="Control3" type="Control" parent="TeamAreas/EnemyArea"]
 layout_mode = 2

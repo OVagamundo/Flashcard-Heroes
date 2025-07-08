@@ -10,6 +10,7 @@ signal loadout_scene_requested
 signal main_scene_requested
 signal battle_start_requested
 signal inspection_test_scene_requested
+signal title_scene_requested # ADD THIS LINE
 signal game_over
 
 # --- UI & Modal Signals ---
@@ -23,6 +24,9 @@ signal inspection_requested(source_view: Control) # Correct generic signal
 signal battle_state_changed(is_in_battle: bool)
 signal run_inventory_changed
 signal battle_inventory_changed # New signal for battle UI refresh
+signal battle_phase_changed(phase_name: StringName) # TDD Update
+signal gacha_tokens_changed(new_amount: int) # TDD Update
+signal unit_stats_changed(unit_uuid: String) # TDD Update
 
 # --- Player Action & Interaction Signals ---
 signal draw_gacha_requested(tier: int)

@@ -1,22 +1,19 @@
 # res://scripts/AbilityResolver.gd
 extends Node
 
-## A global script that processes ability effects and conditions.
-## MVP Scope: This is a placeholder for future implementation.
+const EffectDefinition = preload("res://scripts/EffectDefinition.gd")
 
-var ability_queue: Array = []
 
-## MVP Scope Note: This method's logic is commented out for the MVP.
-func _apply_effect(_effect_data: Dictionary) -> void:
-	# match _effect_data.get("type"):
-	# 	"DAMAGE":
-	# 		pass
-	# 	"HEAL":
-	# 		pass
-	# 	"APPLY_STATUS":
-	# 		pass
-	pass
+## Manages ability queue and resolution.
+## For the MVP, it will directly execute the provided effect.
 
-## MVP Scope Note: This method simply clears the queue for the MVP.
-func resolve_queue() -> void:
-	ability_queue.clear()
+
+## Executes the provided effect with the given source and targets.
+## This is called by the BattleManager during the COMBAT phase.
+## @param effect: The EffectDefinition resource to execute.
+## @param source: The GachaBallInstance initiating the effect.
+## @param targets: An array of GachaBallInstances being targeted.
+## @param battle_manager: A reference to the current BattleManager.
+func execute_effect(effect: EffectDefinition, source: GachaBallInstance, targets: Array[GachaBallInstance], battle_manager):
+	if effect:
+		effect.execute(source, targets, battle_manager)

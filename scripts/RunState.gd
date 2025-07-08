@@ -38,7 +38,7 @@ func start_new_run() -> void:
 	]
 	
 	for id in items_to_add:
-		var definition: GachaBallDefinition = Database.units.get(id, Database.items.get(id))
+		var definition: GachaBallDefinition = Database.get_definition(id)
 		if not definition:
 			printerr("RunState: Could not find definition for id: ", id)
 			continue
@@ -55,7 +55,7 @@ func start_new_run() -> void:
 		else:
 			printerr("RunState: Invalid tier %d for definition %s" % [definition.tier, id])
 
-	var hero_def: GachaBallDefinition = Database.units.get(&"hero")
+	var hero_def: GachaBallDefinition = Database.get_definition(&"hero")
 	if hero_def:
 		self.hero_instance = GachaBallInstance.new()
 		self.hero_instance.initialize(hero_def)

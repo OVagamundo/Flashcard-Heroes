@@ -1,22 +1,22 @@
-<!-- Original: resources/units/UnitTier3D.tres -->
+<!-- Original: resources/units/EnemyHero.tres -->
 
 ```ini
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://b2s2t2u2v2w2x" path="res://assets/sprites/units/Tier3unitD.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://d2k5qgwvj85o7" path="res://assets/sprites/units/hero.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
-id = &"unit_t3_d"
-display_name_key = "unit_t3_d.name"
-description_key = "unit_t3_d.desc"
+id = &"enemy_hero"
+display_name_key = "hero.name"
+description_key = "The enemy's champion."
 icon = ExtResource("2_icon")
-tier = 3
+tier = 0
 category = &"UNIT"
-item_slot_count = 4
-base_hp = 6
-base_pwr = 6
+item_slot_count = 5
+base_hp = 10
+base_pwr = 2
 bonus_hp = 0
 bonus_pwr = 0
 ability_definitions = []
