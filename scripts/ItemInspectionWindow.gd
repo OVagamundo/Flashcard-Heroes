@@ -1,65 +1,44 @@
-# res://scripts/ItemInspectionWindow.gd
 class_name ItemInspectionWindow
 extends PanelContainer
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
 
+var _source_view: Control
+var _instance: GachaBallInstance
+
 func _ready():
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
-	# Set mouse filter to pass to detect background clicks
-	description_label.mouse_filter = MOUSE_FILTER_PASS
-	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
-	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
-
 
 func _gui_input(event: InputEvent):
-	# This now handles clicks on the panel's borders/background only.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_window_click(self)
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
-
 func populate(context: Dictionary):
-	var window_purpose = context.get("window_purpose", "item")
+	_source_view = context.get("source_view")
+	_instance = context.get("instance")
 
-	if window_purpose == "effect":
-		name_label.text = "Effect Details"
-		description_label.text = "description of the effect"
-		return
-
-	var source_view = context.get("source_view") as GachaBallView
-	if not source_view:
+	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
+		printerr("ItemInspectionWindow: Invalid context provided.")
 		queue_free()
 		return
 
-	var item_instance = source_view.get_instance_data()
-	if not item_instance:
+	var item_def = _instance.get_definition()
+	if not is_instance_valid(item_def):
 		queue_free()
 		return
 
-	var item_definition = Database.items.get(item_instance.definition_id)
-	if not item_definition:
-		queue_free()
-		return
-
-	name_label.text = item_definition.id
-	description_label.text = "description of the items [url=effect]EFFECTS[/url]."
-	description_label.set_meta("definition", item_definition)
-
+	name_label.text = tr(item_def.display_name_key)
+	var description_text = tr(item_def.description_key)
+	description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
+	
+	# Store the full definition for the child window to use.
+	description_label.set_meta("effect_definition", item_def)
 
 func _on_description_meta_clicked(meta):
-	# This handler's only job is to open the effects window.
 	if meta == "effect":
-		var definition = description_label.get_meta("definition")
+		var definition = description_label.get_meta("effect_definition")
 		if definition:
-			var context = {"window_purpose": "effect", "parent_definition": definition}
+			var context = {"effect_definition": definition.ability_definitions}
 			WindowManager.open_child_inspection_window(self, &"EffectInspection", context)
-
-
-func _on_description_meta_hover_started(_meta):
-	description_label.mouse_filter = MOUSE_FILTER_STOP
-
-
-func _on_description_meta_hover_ended(_meta):
-	description_label.mouse_filter = MOUSE_FILTER_PASS

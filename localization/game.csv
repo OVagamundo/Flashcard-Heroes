@@ -1,0 +1,17 @@
+keys,en
+hero.name,Hero
+hero.desc,The player's champion.
+enemy_hero.name,Enemy Hero
+enemy_hero.desc,The enemy's champion.
+unit_t1_a.name,Apprentice
+unit_t1_a.desc,A novice unit.
+unit_t1_b.name,Squire
+unit_t1_b.desc,A loyal squire.
+unit_t2_c.name,Knight
+unit_t2_c.desc,A valiant knight.
+item_t1_a.name,Small HP Potion
+item_t1_a.desc,Restores a small amount of HP.
+item_t1_b.name,Small PWR Potion
+item_t1_b.desc,Restores a small amount of PWR.
+item_t2_c.name,Large HP Potion
+item_t2_c.desc,Restores a large amount of HP and PWR.

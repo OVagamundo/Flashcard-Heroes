@@ -15,6 +15,6 @@ extends Resource
 ## Localization key for the ability's description.
 @export var description_key: String
 ## The effect resource that this ability executes.
-@export var effect: Resource
+@export var effect: EffectDefinition
 
 ```

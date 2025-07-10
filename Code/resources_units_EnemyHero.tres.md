@@ -4,13 +4,13 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://d2k5qgwvj85o7" path="res://assets/sprites/units/hero.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Hero.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 id = &"enemy_hero"
-display_name_key = "hero.name"
-description_key = "The enemy's champion."
+display_name_key = "enemy_hero.name"
+description_key = "enemy_hero.desc"
 icon = ExtResource("2_icon")
 tier = 0
 category = &"UNIT"

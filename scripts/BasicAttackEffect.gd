@@ -1,5 +1,5 @@
 # res://scripts/BasicAttackEffect.gd
-extends "res://scripts/EffectDefinition.gd"
+extends EffectDefinition
 
 ## An effect that deals damage equal to the source's power to the first target.
 

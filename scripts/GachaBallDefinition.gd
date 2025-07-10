@@ -1,9 +1,6 @@
-# res://scripts/GachaBallDefinition.gd
 @tool
 class_name GachaBallDefinition
 extends Resource
-
-const AbilityDefinition = preload("res://scripts/AbilityDefinition.gd")
 
 ## The static template for a type of GachaBall (unit or item).
 
@@ -28,14 +25,17 @@ const AbilityDefinition = preload("res://scripts/AbilityDefinition.gd")
 ## The number of item slots this GachaBall has. Only applies to "UNIT" category.
 @export var item_slot_count: int = 0
 
-# --- TDD Update: Combat Stats & Abilities ---
 ## The base health points for a UNIT.
 @export var base_hp: int = 0
+
 ## The base power for a UNIT.
 @export var base_pwr: int = 0
+
 ## The bonus health points provided by an ITEM.
 @export var bonus_hp: int = 0
+
 ## The bonus power provided by an ITEM.
 @export var bonus_pwr: int = 0
+
 ## The abilities this unit possesses.
 @export var ability_definitions: Array[AbilityDefinition]

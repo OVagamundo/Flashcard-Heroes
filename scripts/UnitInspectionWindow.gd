@@ -1,6 +1,8 @@
-# scripts/UnitInspectionWindow.gd
-extends PanelContainer
 class_name UnitInspectionWindow
+extends PanelContainer
+
+const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
+const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -8,51 +10,47 @@ class_name UnitInspectionWindow
 @onready var item_grid_label: Label = %ItemGridLabel
 
 var _inspected_unit_uuid: String
+var _source_view: Control
+var _instance: GachaBallInstance
 
 func _ready():
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
-	# Set mouse filter to pass to detect background clicks
 	description_label.mouse_filter = MOUSE_FILTER_PASS
 	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
 	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
-
 
 func _exit_tree():
 	if EventBus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
 		EventBus.battle_inventory_changed.disconnect(_on_battle_inventory_changed)
 
-
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_window_click(self)
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
-
 func populate(context: Dictionary):
-	if context.has("source_view"):
-		var source_data = context.get("source_view").get_instance_data()
-		if is_instance_valid(source_data):
-			_inspected_unit_uuid = source_data.ball_uuid
+	_source_view = context.get("source_view")
+	_instance = context.get("instance")
 
-	var source_view = context.get("source_view") as GachaBallView
-	if not source_view:
+	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
+		printerr("UnitInspectionWindow: Invalid context provided.")
 		queue_free()
 		return
 
-	var unit_instance = source_view.get_instance_data()
-	if not unit_instance:
+	var unit_definition = _instance.get_definition()
+	if not is_instance_valid(unit_definition):
 		queue_free()
 		return
 
-	var unit_definition = Database.units.get(unit_instance.definition_id)
-	if not unit_definition:
-		queue_free()
-		return
+	_inspected_unit_uuid = _instance.ball_uuid
 
-	name_label.text = unit_definition.id
-	description_label.text = "description of the unit abilities and [url=effect]EFFECTS[/url]."
+	name_label.text = tr(unit_definition.display_name_key)
+	var description_text = tr(unit_definition.description_key)
+	description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
+	# Store the full definition for the child window to use.
 	description_label.set_meta("definition", unit_definition)
+	description_label.set_meta("effect_definition", unit_definition)
 
 	for child in item_grid.get_children():
 		child.queue_free()
@@ -71,26 +69,31 @@ func populate(context: Dictionary):
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		inventory_context = {
 			"battle_inventory": bm.get_battle_inventory(),
-			"lineup_data": bm.lineup_data,
+			"lineup_data": bm.get_container(&"PlayerLineup").get_all_uuids(),
 			"bench_data": bm.bench_data,
 			"item_data": bm.item_data,
 		}
 	else:
-		inventory_context = {"run_inventory": GameManager.run_state.run_inventory}
+		inventory_context = {
+			"run_instances": GameManager.run_state.run_instances,
+			"run_inventory_containers": GameManager.run_state.run_inventory_containers
+		}
 
 	var equipped_items = MergeManager._get_equipped_item_instances(
-		unit_instance, inventory_context
+		_instance, inventory_context
 	)
-	var gacha_ball_view_scene = load("res://scenes/GachaBallView.tscn")
 	for i in range(unit_definition.item_slot_count):
 		var item_instance = equipped_items[i] if i < equipped_items.size() else null
 
 		if is_instance_valid(item_instance):
-			var view = gacha_ball_view_scene.instantiate()
+			var view = _GachaBallView.instantiate()
 			item_grid.add_child(view)
-			view.set_instance_data(item_instance)
-			view.custom_minimum_size = Vector2(32, 32)
-			view.is_selectable = false
+			var loc = LocationIdentifier.new()
+			loc.tier = 0 # Equipped items don't use tiers
+			loc.index = i
+			loc.container = "equipped_item"
+			loc.unit_uuid = _instance.ball_uuid
+			view.populate(loc, item_instance, true)
 		else:
 			var placeholder = PanelContainer.new()
 			placeholder.custom_minimum_size = Vector2(32, 32)
@@ -101,41 +104,36 @@ func populate(context: Dictionary):
 			placeholder.add_theme_stylebox_override("panel", style)
 			item_grid.add_child(placeholder)
 
-
 func _on_battle_inventory_changed():
 	if self.visible and not _inspected_unit_uuid.is_empty():
-		var current_view = _find_view_for_uuid(_inspected_unit_uuid)
-		if is_instance_valid(current_view):
-			populate({"source_view": current_view})
+		var current_location = _find_location_for_uuid(_inspected_unit_uuid)
+		if is_instance_valid(current_location):
+			populate({"source_location": current_location})
 		else:
 			queue_free()
 
-
-func _find_view_for_uuid(uuid: String) -> GachaBallView:
+func _find_location_for_uuid(uuid: String) -> LocationIdentifier:
 	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
 	if not is_instance_valid(battle_manager):
 		return null
 
 	var all_board_data = (
-		battle_manager.lineup_data + battle_manager.bench_data + battle_manager.item_data
+		battle_manager.get_container(&"PlayerLineup").get_all_uuids() + battle_manager.get_container(&"PlayerBench").get_all_uuids() + battle_manager.get_container(&"ItemInventory").get_all_uuids()
 	)
 	for instance in all_board_data:
-		if is_instance_valid(instance) and instance.ball_uuid == uuid and instance.has_meta("view_node"):
-			return instance.get_meta("view_node") as GachaBallView
+		if is_instance_valid(instance) and instance.ball_uuid == uuid and instance.has_meta("location"):
+			return instance.get_meta("location") as LocationIdentifier
 	return null
-
 
 func _on_description_meta_clicked(meta):
 	if meta == "effect":
-		var definition = description_label.get_meta("definition")
+		var definition = description_label.get_meta("effect_definition")
 		if definition:
-			var context = {"window_purpose": "effect", "parent_definition": definition}
+			var context = {"effect_definition": definition.ability_definitions}
 			WindowManager.open_child_inspection_window(self, &"EffectInspection", context)
-
 
 func _on_description_meta_hover_started(_meta):
 	description_label.mouse_filter = MOUSE_FILTER_STOP
-
 
 func _on_description_meta_hover_ended(_meta):
 	description_label.mouse_filter = MOUSE_FILTER_PASS

@@ -5,7 +5,7 @@ extends Node
 
 # --- State ---
 # Stores the context for a pending choice (Merge vs. Swap).
-var _pending_action: Dictionary = {}
+
 
 # --- Engine Callbacks ---
 func _ready():
@@ -13,15 +13,23 @@ func _ready():
 	EventBus.choice_made.connect(_on_choice_made)
 
 # TDD Action Decision Tree Implementation
-func _on_inventory_action_requested(source_view: Control, target_view: Control):
+func _on_inventory_action_requested(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+	var source_view = WindowManager.find_view_by_location(source_loc)
+	var target_view = WindowManager.find_view_by_location(target_loc)
+
+	if not is_instance_valid(source_view) or not is_instance_valid(target_view):
+		printerr("InventoryManager: Could not find views for one or both locations.")
+		InteractionManager.clear_selection()
+		InteractionManager.end_drag(false)
+		return
+
 	InteractionManager.clear_selection()
 
 	if source_view == target_view:
-		# This is a cancelled action. End the drag unsuccessfully to restore the view.
 		InteractionManager.end_drag(false)
 		return
-		
-	var source_instance: GachaBallInstance = source_view.get_instance_data()
+
+	var source_instance = _get_instance_at_location(source_loc)
 	if not is_instance_valid(source_instance):
 		_handle_invalid_action(source_view)
 		return
@@ -34,11 +42,11 @@ func _on_inventory_action_requested(source_view: Control, target_view: Control):
 		return
 
 	# From here on, the target is another GachaBall.
-	var target_instance: GachaBallInstance = target_view.get_instance_data()
+	var target_instance = _get_instance_at_location(target_loc)
 	if not is_instance_valid(target_instance):
 		_handle_invalid_action(source_view)
 		return
-	
+
 	# Create symmetrical variables regardless of drag direction.
 	var view_a = source_view
 	var view_b = target_view
@@ -47,299 +55,315 @@ func _on_inventory_action_requested(source_view: Control, target_view: Control):
 
 	# 2. Check for EQUIP intent (symmetrically).
 	# Is one view a UNIT and the other an ITEM?
-	if (def_a.category == &"UNIT" and def_b.category == &"ITEM") or \
-	   (def_a.category == &"ITEM" and def_b.category == &"UNIT"):
+	if (def_a.category == "UNIT" and def_b.category == "ITEM") or \
+	   (def_a.category == "ITEM" and def_b.category == "UNIT"):
 		
-		# Identify which is which.
-		var unit_view = view_a if def_a.category == &"UNIT" else view_b
-		var item_view = view_b if def_a.category == &"UNIT" else view_a
-		
-		# The _handle_equip function contains the logic to check if they are on the
-		# battle board. If they are not, it will correctly fail and become an
-		# invalid action. If they are, it will equip. This correctly separates
-		# the EQUIP intent from the SWAP intent.
-		_handle_equip(item_view, unit_view)
-		return
+		# TDD: This is the core of being context-aware.
+		# If we are in a battle, the intent is EQUIP.
+		if GameManager.is_in_battle:
+			var unit_view = view_a if def_a.category == "UNIT" else view_b
+			var item_view = view_b if def_a.category == "UNIT" else view_a
+			_handle_equip(item_view, unit_view)
+			return
+		# If we are NOT in a battle, equipping is impossible. The user's intent
+		# in this context can only be to SWAP the two items. The decision tree
+		# will naturally fall through to the _swap call below.
 
 	# 3. If not an Equip action, check for MERGE intent.
 	var recipe = MergeManager.find_recipe(def_a.id, def_b.id)
 	if recipe:
-		_pending_action = {"source_view": view_a, "target_view": view_b}
-		WindowManager.open_dialog_window(&"ChoiceWindow")
+		# TDD: Don't act directly. Ask the user by opening a choice window.
+		# Pass the LOCATIONS, not the views, as context.
+		var context = {
+			"source_location": source_loc,
+			"target_location": target_loc
+		}
+		WindowManager.open_dialog_window("ChoiceWindow", context)
 		return
 
 	# 4. Fallback: If it's not Move, Equip, or Merge, the intent is SWAP.
-	_handle_swap(view_a, view_b)
-
-func _on_choice_made(choice: StringName):
-	var source_view = _pending_action.get("source_view")
-	var target_view = _pending_action.get("target_view")
+	# But first, validate that the containers are compatible for a swap.
+	if not _are_containers_compatible_for_swap(source_loc, target_loc):
+		_handle_invalid_action(source_view)
+		return
 	
-	if not is_instance_valid(source_view) or not is_instance_valid(target_view):
-		_pending_action.clear()
+	_swap(source_loc, target_loc)
+
+func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return
 		
-	if choice == &"MERGE": 
-		_handle_merge(source_view, target_view)
-	elif choice == &"SWAP": 
-		_handle_swap(source_view, target_view)
-		
-	_pending_action.clear()
+	match choice:
+		&"MERGE":
+			_merge(source_loc, target_loc)
+		&"SWAP":
+			_swap(source_loc, target_loc)
+
+# --- Action Handlers ---
+# These functions bridge the gap between UI views and data-layer logic.
 
 func _handle_move(source_view: Control, target_view: Control):
-	var source_loc = source_view.get_meta("location_identifier", {})
-	var target_loc = target_view.get_meta("location_identifier", {})
+	var source_loc = source_view.get_meta("location_identifier")
+	var target_loc = target_view.get_meta("location_identifier")
 	var source_instance = _get_instance_at_location(source_loc)
 
-	# TDD Compatibility Check
 	if not _is_valid_placement(source_instance, target_loc):
 		_handle_invalid_action(source_view)
 		return
 
-	# Action is valid, perform it using generic helpers
-	_set_instance_at_location(target_loc, source_instance)
-	_set_instance_at_location(source_loc, null)
-
-	InteractionManager.end_drag(true) # Action was valid, end the drag successfully.
-	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_inventory_changed"
-	EventBus.emit_signal(signal_name)
-
-func _handle_swap(source_view: Control, target_view: Control):
-	var source_loc = source_view.get_meta("location_identifier", {})
-	var target_loc = target_view.get_meta("location_identifier", {})
-	var source_instance = source_view.get_instance_data()
-	var target_instance = _get_instance_at_location(target_loc)
-
-	# TDD Compatibility Checks
-	# We add metadata here so the compatibility checker knows the original tiers of both items.
-	if is_instance_valid(source_instance):
-		source_instance.set_meta("source_tier", _get_instance_at_location(source_loc).get_definition().tier)
-	if is_instance_valid(target_instance):
-		target_instance.set_meta("source_tier", _get_instance_at_location(target_loc).get_definition().tier)
-	if not _is_valid_placement(source_instance, target_loc) or not _is_valid_placement(target_instance, source_loc):
-		_handle_invalid_action(source_view)
-		return
-
-	# Action is valid
-	_set_instance_at_location(target_loc, source_instance)
-	_set_instance_at_location(source_loc, target_instance)
-
-	InteractionManager.end_drag(true) # Action was valid, end the drag successfully.
-	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_inventory_changed"
-	EventBus.emit_signal(signal_name)
+	_move(source_loc, target_loc)
 
 func _handle_equip(item_view: Control, unit_view: Control):
-	var item_instance = item_view.get_instance_data()
-	var unit_instance = unit_view.get_instance_data()
-	var item_loc = item_view.get_meta("location_identifier", {})
-	var unit_loc = unit_view.get_meta("location_identifier", {})
-
-	# TDD Rule: Unit must have an empty item slot.
-	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
-	
-	var is_valid = GameManager.is_in_battle and \
-					_is_on_battle_board(item_loc) and \
-					_is_on_battle_board(unit_loc) and \
-					empty_slot_idx != -1
-
-	if not is_valid:
-		# Per TDD, if an equip is not possible, it should be a swap instead.
-		_handle_swap(item_view, unit_view)
+	# TDD RULE: Equipping is a battle-only action.
+	if not GameManager.is_in_battle:
+		_handle_invalid_action(item_view)
 		return
 
-	# Action is valid, proceed.
+	var item_loc = item_view.get_meta("location_identifier")
+	var unit_loc = unit_view.get_meta("location_identifier")
+
+	# TDD: Equip is only valid on the player's battle board.
+	if not (item_loc.container == "ItemInventory" and unit_loc.container in ["PlayerLineup", "PlayerBench"]):
+		_handle_invalid_action(item_view)
+		return
+
+	_equip_item(item_loc, unit_loc)
+
+func _handle_merge(source_view: Control, target_view: Control):
+	var source_loc = source_view.get_meta("location_identifier")
+	var target_loc = target_view.get_meta("location_identifier")
+	_merge(source_loc, target_loc)
+
+# --- Core Logic Functions ---
+# These functions perform the data modifications.
+
+func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+	var instance = _get_instance_at_location(source_loc)
+	_set_instance_at_location(source_loc, null)
+	_set_instance_at_location(target_loc, instance)
+	_emit_data_changed_signal()
+
+func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+	var source_instance = _get_instance_at_location(source_loc)
+	var target_instance = _get_instance_at_location(target_loc)
+
+	# Validate that both instances are allowed in the other's location.
+	if not _is_valid_placement(source_instance, target_loc) or not _is_valid_placement(target_instance, source_loc):
+		_handle_invalid_action(WindowManager.find_view_by_location(source_loc))
+		return
+	_set_instance_at_location(source_loc, target_instance)
+	_set_instance_at_location(target_loc, source_instance)
+	_emit_data_changed_signal()
+
+func _equip_item(item_loc: LocationIdentifier, unit_loc: LocationIdentifier):
+	var item_instance = _get_instance_at_location(item_loc)
+	var unit_instance = _get_instance_at_location(unit_loc)
+
+	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
+		return
+
+	# TDD: Find first empty equipment slot on the unit
+	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
+	if empty_slot_idx == -1:
+		# No empty slots, this should ideally be handled by the UI preventing the action
+		# but as a fallback, we do nothing.
+		return
+
+	# First, request the inspection to avoid the view being freed prematurely.
+	var unit_view = WindowManager.find_view_by_location(unit_loc)
+	if is_instance_valid(unit_view):
+		EventBus.emit_signal("inspection_requested", unit_view)
+
+	# Now, modify the data.
 	_set_instance_at_location(item_loc, null)
 	unit_instance.equipped_item_uuids[empty_slot_idx] = item_instance.ball_uuid
 
-	# Place the item back into the master battle inventory.
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	var def = item_instance.get_definition()
-	if is_instance_valid(bm) and is_instance_valid(def):
-		var inventory_grid = bm.get_battle_inventory().get(def.tier)
-		if inventory_grid is Array:
-			var empty_inv_idx = inventory_grid.find(null)
-			if empty_inv_idx != -1:
-				inventory_grid[empty_inv_idx] = item_instance
-			else:
-				printerr("InventoryManager: CRITICAL - No space in battle inventory for equipped item. Item may be lost.")
+	# Finally, signal that data has changed so the UI can react.
+	_emit_data_changed_signal()
 
-	InteractionManager.end_drag(true) # Action was valid, end the drag successfully.
-	EventBus.emit_signal("battle_inventory_changed")
+func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+	# 1. Get instances and calculate merge result.
+	var source_instance = _get_instance_at_location(source_loc)
+	var target_instance = _get_instance_at_location(target_loc)
 
-func _handle_merge(source_view: Control, target_view: Control):
-	var source_instance = source_view.get_instance_data()
-	var target_instance = target_view.get_instance_data()
-	
 	var inventory_context = {}
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		inventory_context = {
-			"is_battle": true,
-			"battle_inventory": bm.get_battle_inventory(),
-			"lineup_data": bm.lineup_data, "bench_data": bm.bench_data, "item_data": bm.item_data
-		}
+		inventory_context["battle_inventory"] = bm.battle_inventory
 	else:
-		inventory_context = {
-			"is_battle": false,
-			"run_inventory": GameManager.run_state.run_inventory
-		}
+		inventory_context["run_instances"] = GameManager.run_state.run_instances
 
-	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, inventory_context)
-	
-	if merge_result:
-		var merged_instance = merge_result.merged_instance
-		var parents_to_remove = merge_result.parents_to_remove
-		
-		_remove_instances_from_inventories(parents_to_remove)
-		_place_merged_instance(merged_instance, source_view, target_view)
-		
-		InteractionManager.end_drag(true) # Action was valid, end the drag successfully.
-		var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_inventory_changed"
-		EventBus.emit_signal(signal_name)
+	var merge_result: Dictionary = MergeManager.calculate_merge_result(source_instance, target_instance, inventory_context)
+
+	# Handle failed merge (e.g., no valid recipe).
+	if merge_result.is_empty():
+		_handle_invalid_action(WindowManager.find_view_by_location(source_loc))
+		return
+
+	var new_instance: GachaBallInstance = merge_result.merged_instance
+	var parents_to_remove: Array[GachaBallInstance] = merge_result.parents_to_remove
+
+	# 2. Remove the parent instances that were consumed in the merge.
+	# This clears them from the master list and their container slots.
+	for parent in parents_to_remove:
+		if is_instance_valid(parent):
+			GameManager.run_state.remove_instance(parent.ball_uuid)
+
+	# 3. Add the new instance and place it according to context.
+	if target_loc.container == &"BattleBoard":
+		# On the battle board, the new instance must be added to the master list
+		# AND placed in the specific slot.
+		GameManager.run_state.run_instances[new_instance.ball_uuid] = new_instance
+		_set_instance_at_location(target_loc, new_instance)
 	else:
-		_handle_invalid_action(source_view)
-		printerr("InventoryManager: Merge calculation failed.")
+		# In inventories, add_instance handles finding the correct slot automatically.
+		# The parent slots are already empty thanks to remove_instance.
+		GameManager.run_state.add_instance(new_instance)
 
-func _remove_instances_from_inventories(instances: Array[GachaBallInstance]):
-	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		for instance in instances:
-			# Remove from battle board
-			var loc = _find_battle_location(instance, bm)
-			if not loc.is_empty():
-				bm.set_slot_data(loc.container, loc.index, null)
-			# Remove from master battle inventory
-			var def = instance.get_definition()
-			if def and bm.get_battle_inventory().has(def.tier):
-				var grid = bm.get_battle_inventory()[def.tier]
-				var idx = grid.find(instance)
-				if idx != -1: grid[idx] = null
-			# CRITICAL FIX: Also remove from the draw pools.
-			if def and bm._draw_pools.has(def.tier):
-				var pool = bm._draw_pools[def.tier]
-				if pool.has(instance):
-					pool.erase(instance)
-	else:
-		var run_inv = GameManager.run_state.run_inventory
-		for instance in instances:
-			var def = instance.get_definition()
-			if def and run_inv.has(def.tier):
-				var idx = run_inv[def.tier].find(instance)
-				if idx != -1:
-					run_inv[def.tier][idx] = null
+	# 4. Notify the system that data has changed so the UI can update.
+	_emit_data_changed_signal()
 
-# TDD Merge Destination Logic Implementation
-# The result of a merge is always placed in the first available slot of the
-# corresponding inventory grid (Run or Battle) for its tier. This ensures
-# consistent and predictable behavior, removing special cases for the battle bench.
-# TDD Merge Destination Logic Implementation
-# The destination of a merged item depends on the context of the action.
-func _place_merged_instance(merged_instance: GachaBallInstance, _source_view: Control, target_view: Control):
-	var def = merged_instance.get_definition()
-	if not def: return
+func _add_item_to_inventory(instance: GachaBallInstance):
+	if not is_instance_valid(instance): return
 
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		var target_loc = target_view.get_meta("location_identifier", {})
-
-		# Check if the merge happened on the battle board itself.
-		if _is_on_battle_board(target_loc):
-			# If so, the new instance takes the place of the target view.
-			# This ensures merges on the bench/lineup feel immediate and correct.
-			_set_instance_at_location(target_loc, merged_instance)
-			return
+		var container = bm.get_container("ItemInventory")
+		var index = container.find_first_empty_slot()
+		if index != -1:
+			container.set_instance_at(index, instance.ball_uuid)
 		else:
-			# If the merge happened in the inventory modal, place the result
-			# in the main battle inventory grid.
-			var battle_inv_grid = bm.get_battle_inventory().get(def.tier)
-			if battle_inv_grid is Array:
-				var empty_idx = battle_inv_grid.find(null)
-				if empty_idx != -1:
-					battle_inv_grid[empty_idx] = merged_instance
-				else:
-					printerr("InventoryManager: No space in battle inventory for merged item. It will be lost.")
-			else:
-				printerr("InventoryManager: Invalid tier %d for merged item in battle." % def.tier)
-	else: # Run Inventory (This logic remains the same)
-		var run_inv_grid = GameManager.run_state.run_inventory.get(def.tier)
-		if run_inv_grid is Array:
-			var empty_idx = run_inv_grid.find(null)
-			if empty_idx != -1:
-				run_inv_grid[empty_idx] = merged_instance
-			else:
-				printerr("InventoryManager: No space in run inventory for merged item. It will be lost.")
+			printerr("InventoryManager: No space in battle item inventory. It will be lost.")
+	else:
+		var loc = _find_empty_slot_for_item(instance)
+		if is_instance_valid(loc):
+			_set_instance_at_location(loc, instance)
 		else:
-			printerr("InventoryManager: Invalid tier %d for merged item in run." % def.tier)
+			printerr("InventoryManager: No space in run inventory for item. It will be lost.")
 
+func _find_empty_slot_for_item(item_instance: GachaBallInstance) -> LocationIdentifier:
+	if not is_instance_valid(item_instance): return null
+	var item_def = item_instance.get_definition()
+	if not item_def or not item_def.has("tier"): return null
 
-func _find_battle_location(instance: GachaBallInstance, bm: BattleManager) -> Dictionary:
-	var idx = bm.lineup_data.find(instance); if idx != -1: return {"container": "PlayerLineup", "index": idx}
-	idx = bm.bench_data.find(instance); if idx != -1: return {"container": "PlayerBench", "index": idx}
-	idx = bm.item_data.find(instance); if idx != -1: return {"container": "ItemInventory", "index": idx}
-	return {}
+	var target_tier = item_def.tier
+	var container_name = "RunInventoryT%d" % target_tier
+	var container = GameManager.run_state.get_container(container_name)
 
-# --- NEW: Centralized Data Access Helpers ---
+	if not is_instance_valid(container): return null
 
-func _get_instance_at_location(loc: Dictionary) -> GachaBallInstance:
-	var container = loc.get("container", "")
-	var index = loc.get("index", -1)
-	var tier = loc.get("tier", -1)
+	var empty_index = container.find_first_empty_slot()
+	if empty_index != -1:
+		var loc = LocationIdentifier.new()
+		loc.tier = target_tier
+		loc.index = empty_index
+		loc.container = container_name
+		return loc
 
-	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if container.begins_with("Tier"): # Battle Inventory Modal
-			return bm.get_battle_inventory()[tier][index]
-		else: # Battle Board (Lineup, Bench, Items)
-			return bm.get_data_array_and_instance(container, index).instance
-	else: # Run Inventory
-		return GameManager.run_state.run_inventory[tier][index]
+	return null
 
-func _set_instance_at_location(loc: Dictionary, instance: GachaBallInstance):
-	var container = loc.get("container", "")
-	var index = loc.get("index", -1)
-	var tier = loc.get("tier", -1)
-	
-	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if container.begins_with("Tier"): # Battle Inventory Modal Grid
-			bm.get_battle_inventory()[tier][index] = instance
-		else: # Battle Board
-			bm.set_slot_data(container, index, instance)
-	else: # Run Inventory
-		GameManager.run_state.run_inventory[tier][index] = instance
+# --- TDD Compatibility & Validation ---
 
-# --- NEW: TDD Compatibility Rule Helpers ---
-
-func _is_on_battle_board(loc: Dictionary) -> bool:
-	var container = loc.get("container", "")
-	return container in ["PlayerLineup", "PlayerBench", "ItemInventory"]
-
-func _is_valid_placement(instance: GachaBallInstance, target_loc: Dictionary) -> bool:
-	if not is_instance_valid(instance): return true # Moving a null is always valid
-
-	var def = instance.get_definition()
-	if not def: return false # Cannot validate if definition is missing
-	var target_container = target_loc.get("container", "")
-
-	# Rule: Hero can only be in the lineup or swapped with another unit in the lineup.
-	if def.id == &"hero" and target_container != "PlayerLineup":
+func _are_containers_compatible_for_swap(loc_a: LocationIdentifier, loc_b: LocationIdentifier) -> bool:
+	if not is_instance_valid(loc_a) or not is_instance_valid(loc_b):
 		return false
 
-	# Rule: Inventory Grids (Run or Battle) must have matching tiers. Battle Board slots don't have tiers.
-	if target_container.begins_with("Tier"):
-		# For swaps, we need to check both items.
-		var source_tier = instance.get_meta("source_tier", def.tier) # Get tier from meta if it's a swap
-		if source_tier != target_loc.get("tier", -1):
+	var data_owner: Object
+	if not GameManager.is_in_battle:
+		data_owner = GameManager.run_state
+	else:
+		data_owner = get_tree().get_first_node_in_group("battle_manager")
+	if not is_instance_valid(data_owner):
+		return false
+
+	var container_a = data_owner.get_container(loc_a.container)
+	var container_b = data_owner.get_container(loc_b.container)
+
+	if not is_instance_valid(container_a) or not is_instance_valid(container_b):
+		return false
+
+	# Rule: Containers must be of the same type (e.g., both UNIT or both ITEM).
+	# Note: We are accessing the properties of the container NODE, not its data script.
+	if "type" in container_a and "type" in container_b and container_a.type != container_b.type:
+		return false
+
+	# Rule: If containers have tiers, they must match.
+	var a_has_tier = "tier" in container_a
+	var b_has_tier = "tier" in container_b
+
+	if a_has_tier and b_has_tier:
+		if container_a.tier != container_b.tier:
 			return false
-	
-	# Rule: Battle Board container type restrictions (applies to move and swap)
-	if not target_container.is_empty() and not target_container.begins_with("Tier"):
-		if def.category == &"UNIT" and target_container == "ItemInventory":
+	elif a_has_tier != b_has_tier:
+		# If one has a tier and the other doesn't, they are not compatible.
+		return false
+
+	return true
+
+
+func _is_valid_placement(instance: GachaBallInstance, target_loc: LocationIdentifier) -> bool:
+	if not is_instance_valid(instance) or not is_instance_valid(target_loc):
+		return false
+
+	var def = instance.get_definition()
+	var target_container = target_loc.container
+
+	# Rule: Hero can only be in the lineup.
+	if def.id == "hero" and target_container != "PlayerLineup":
+		return false
+
+	# Rule: Inventory Grids must have matching tiers.
+	if target_container.begins_with("RunInventoryT"):
+		var target_tier = target_container.substr(len("RunInventoryT")).to_int()
+		if def.tier != target_tier:
 			return false
-		if def.category == &"ITEM" and target_container in ["PlayerLineup", "PlayerBench"]:
+
+	# Rule: Battle Board container type restrictions.
+	if not target_container.begins_with("RunInventory"):
+		if def.category == "UNIT" and target_container == "ItemInventory":
+			return false
+		if def.category == "ITEM" and target_container in ["PlayerLineup", "PlayerBench"]:
 			return false
 
 	return true
+
+# --- DATA ACCESS HELPERS ---
+
+func _get_instance_at_location(loc: LocationIdentifier) -> GachaBallInstance:
+	if not is_instance_valid(loc): return null
+
+	var uuid: String
+	if GameManager.is_in_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		var container = bm.get_container(loc.container)
+		if is_instance_valid(container):
+			uuid = container.get_uuid(loc.index)
+			return bm.get_instance_from_uuid(uuid)
+	else:
+		var container = GameManager.run_state.get_container(loc.container)
+		if is_instance_valid(container):
+			uuid = container.get_uuid(loc.index)
+			return GameManager.run_state.run_instances.get(uuid)
+	return null
+
+func _set_instance_at_location(loc: LocationIdentifier, instance: GachaBallInstance):
+	if not is_instance_valid(loc): return
+
+	var uuid_to_set = "" if not is_instance_valid(instance) else instance.ball_uuid
+
+	if GameManager.is_in_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		var container = bm.get_container(loc.container)
+		if is_instance_valid(container):
+			container.set_uuid(loc.index, uuid_to_set)
+	else:
+		var container = GameManager.run_state.get_container(loc.container)
+		if is_instance_valid(container):
+			container.set_uuid(loc.index, uuid_to_set)
+
+func _emit_data_changed_signal():
+	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_data_changed"
+	EventBus.emit_signal(signal_name)
 
 # --- NEW: Robust Invalid Action Handler ---
 

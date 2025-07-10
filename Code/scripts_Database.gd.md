@@ -54,12 +54,15 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 func get_definition(id: StringName) -> GachaBallDefinition:
 	var definition = units.get(id)
 	if definition:
+		print("Database: Found definition for ID ", id, " in units.")
 		return definition
 	
 	definition = items.get(id)
 	if definition:
+		print("Database: Found definition for ID ", id, " in items.")
 		return definition
 	
+	print("Database: Definition for ID ", id, " not found.")
 	# Return null if not found in any GachaBall category.
 	return null
 

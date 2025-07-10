@@ -2,48 +2,48 @@
 
 ```gdscript
 # res://scripts/EventBus.gd
-extends Node
+extends Node # EventBus for Flashcard Heroes
+
+const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 
 ## A global script containing only signal definitions for the entire game.
 ## All communication between major systems happens through these signals.
 
-# --- Scene & Run Management Signals ---
+# --- Run/Scene Signals ---
 signal start_run_requested
 signal loadout_scene_requested
 signal main_scene_requested
 signal battle_start_requested
 signal inspection_test_scene_requested
-signal game_over
+signal title_scene_requested
 
-# --- UI & Modal Signals ---
+# --- Window/Modal Signals ---
 signal inspect_inventory_requested
 signal display_discard_pile_requested
 signal close_modal_requested
-signal background_clicked
-signal inspection_requested(source_view: Control) # Correct generic signal
+signal background_clicked # For modal background blockers
+signal global_background_clicked # For main content area background
+
+# --- Action Signals ---
+signal draw_gacha_requested(tier: int)
+signal inventory_action_requested(source_loc: LocationIdentifier, target_loc: LocationIdentifier)
+signal choice_made(choice_id: StringName, source_view: Control, target_view: Control)
+signal inspection_requested(loc: LocationIdentifier, source_view: Control)
+
+# --- Selection Signals ---
+signal view_selected(view: Control, location: LocationIdentifier)
+signal view_deselected(view: Control)
+signal invalid_action_triggered(view: Control)
+signal selection_changed(new_location: LocationIdentifier)
 
 # --- State Change Signals ---
+signal run_state_changed
+signal battle_inventory_changed
+signal run_data_changed
 signal battle_state_changed(is_in_battle: bool)
-signal run_inventory_changed
-signal battle_inventory_changed # New signal for battle UI refresh
-signal battle_phase_changed(phase_name: StringName) # TDD Update
-signal gacha_tokens_changed(new_amount: int) # TDD Update
-signal unit_stats_changed(unit_uuid: String) # TDD Update
-
-# --- Player Action & Interaction Signals ---
-signal draw_gacha_requested(tier: int)
-signal inventory_action_requested(source_view: Control, target_view: Control)
-signal choice_made(choice_id: StringName)
-signal reshuffle_discard_pile_requested
-
-# --- View State Signals ---
-signal view_selected(view: Control)
-signal view_deselected(view: Control)
-signal invalid_action_triggered(view: Control) # BUGFIX: This signal was missing.
-signal selection_context_changed(view: Control)
-signal global_background_clicked # Emitted when a main content background is clicked.
-
-
-# Signals have been removed as they were unused
+signal battle_phase_changed(phase_name: StringName)
+signal gacha_tokens_changed(new_amount: int)
+signal unit_stats_changed(unit_uuid: String)
+signal unit_inventory_changed(unit_uuid: String)
 
 ```

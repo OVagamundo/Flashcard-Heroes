@@ -19,6 +19,7 @@ func _ready() -> void:
 	EventBus.loadout_scene_requested.connect(_on_loadout_scene_requested)
 	EventBus.main_scene_requested.connect(_on_main_scene_requested)
 	EventBus.inspection_test_scene_requested.connect(_on_inspection_test_scene_requested)
+	EventBus.title_scene_requested.connect(_on_title_scene_requested) # ADD THIS LINE
 	
 	var root = get_tree().root
 	current_scene = root.get_child(root.get_child_count() - 1)
@@ -31,6 +32,10 @@ func _on_main_scene_requested() -> void:
 
 func _on_inspection_test_scene_requested() -> void:
 	_change_scene_to(scene_paths["TestInspectionSystem"])
+
+# ADD THIS NEW FUNCTION
+func _on_title_scene_requested() -> void:
+	_change_scene_to(scene_paths["Title"])
 func _change_scene_to(path: String) -> void:
 	if is_instance_valid(current_scene):
 		current_scene.queue_free()

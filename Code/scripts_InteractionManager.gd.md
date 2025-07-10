@@ -4,47 +4,60 @@
 # res://scripts/InteractionManager.gd
 extends Node
 
-## Manages the temporary UI state of a user's action (e.g., which
-## GachaBallView is currently selected).
+const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 
-signal drag_operation_started(source_view: Control)
-signal drag_operation_ended(was_handled: bool)
+## Manages the temporary UI state of a user's action, such as the currently
+## selected view/location and any active drag-and-drop operations.
 
+var _selected_location: LocationIdentifier = null
 var _selected_view: Control = null
+
 var _is_drag_active: bool = false
 var _drag_source_view: Control = null
-var _drag_placeholder: Control = null # To hold grid position
+var _drag_placeholder: Control = null
 
-func _ready() -> void:
-	# Connect to modal and scene changes to prevent stale selections.
+func _ready():
 	EventBus.close_modal_requested.connect(clear_selection)
 	EventBus.main_scene_requested.connect(clear_selection)
+	EventBus.battle_start_requested.connect(clear_selection)
 
-func select_view(view: Control) -> void:
-	if not is_instance_valid(view):
+func select_view(view: Control, location: LocationIdentifier):
+	if not is_instance_valid(view) or not is_instance_valid(location):
 		clear_selection()
 		return
 
-	# If clicking the same view, do nothing to allow for drag operations
+	# If clicking the same view again, do nothing to allow drag to start.
 	if _selected_view == view:
 		return
 
-	EventBus.emit_signal("selection_context_changed", view)
-
+	# If a different view was already selected, deselect it first.
 	if is_instance_valid(_selected_view):
 		clear_selection()
 
 	_selected_view = view
-	EventBus.emit_signal("view_selected", _selected_view)
+	_selected_location = location
+	
+	EventBus.emit_signal("view_selected", _selected_view, _selected_location)
+	EventBus.emit_signal("selection_changed", _selected_location)
 
-func clear_selection() -> void:
+func clear_selection():
 	if is_instance_valid(_selected_view):
-		var previously_selected = _selected_view
+		var previously_selected_view = _selected_view
+		var _previously_selected_loc = _selected_location
+		
 		_selected_view = null
-		EventBus.emit_signal("view_deselected", previously_selected)
+		_selected_location = null
+		
+		EventBus.emit_signal("view_deselected", previously_selected_view)
+		EventBus.emit_signal("selection_changed", null)
+
+func get_selected_location() -> LocationIdentifier:
+	return _selected_location
 
 func get_selected_view() -> Control:
 	return _selected_view
+
+# --- Drag & Drop State Management ---
 
 func is_drag_active() -> bool:
 	return _is_drag_active
@@ -54,20 +67,21 @@ func get_drag_source_view() -> Control:
 
 func start_drag(source_view: Control, placeholder: Control):
 	if not is_instance_valid(source_view): return
+	
+	clear_selection() # A drag operation overrides any selection
+	
 	_is_drag_active = true
 	_drag_source_view = source_view
 	_drag_placeholder = placeholder
-	# We manually hide the source view to prevent GridContainer from reflowing.
-	# The placeholder will hold its spot.
+	
+	# The view itself is made invisible, and the placeholder takes its spot
+	# in the layout to prevent reflowing.
 	source_view.visible = false
-	emit_signal("drag_operation_started", source_view)
-	clear_selection()
 
 func end_drag(was_handled: bool):
 	if not _is_drag_active: return
 	
-	# If drag was not handled, the source view needs to be shown again.
-	# If it was handled, it was either moved or deleted, so we don't touch it.
+	# If drag was not handled (e.g., dropped on invalid area), restore visibility.
 	if not was_handled and is_instance_valid(_drag_source_view):
 		_drag_source_view.visible = true
 
@@ -77,13 +91,8 @@ func end_drag(was_handled: bool):
 	_is_drag_active = false
 	_drag_source_view = null
 	_drag_placeholder = null
-	emit_signal("drag_operation_ended", was_handled)
 
-func trigger_invalid_action_feedback(view: Control) -> void:
-	if is_instance_valid(view):
-		EventBus.emit_signal("invalid_action_triggered", view)
-
-func cancel_active_drag() -> void:
+func cancel_active_drag():
 	if _is_drag_active:
 		end_drag(false)
 ```

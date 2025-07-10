@@ -59,28 +59,30 @@ func find_recipe(id_a: StringName, id_b: StringName) -> MergeRecipe:
 
 func _get_equipped_item_instances(unit_instance: GachaBallInstance, inventory_context: Dictionary) -> Array[GachaBallInstance]:
 	var equipped_items: Array[GachaBallInstance] = []
-	if unit_instance.equipped_item_uuids.is_empty():
+	if not is_instance_valid(unit_instance) or unit_instance.equipped_item_uuids.is_empty():
 		return equipped_items
-		
-	var full_inventory_list: Array = []
-	if inventory_context.has("run_inventory"):
-		for tier_array in inventory_context.run_inventory.values():
-			full_inventory_list.append_array(tier_array)
-	elif inventory_context.has("battle_inventory"):
-		for tier_array in inventory_context.battle_inventory.values():
-			full_inventory_list.append_array(tier_array)
-		full_inventory_list.append_array(inventory_context.lineup_data)
-		full_inventory_list.append_array(inventory_context.bench_data)
-		full_inventory_list.append_array(inventory_context.item_data)
+
+	# Determine the context (run vs. battle)
+	var run_instances = inventory_context.get("run_instances")
+	var is_battle_context = inventory_context.has("battle_inventory")
 
 	for item_uuid in unit_instance.equipped_item_uuids:
-		if item_uuid.is_empty(): continue
-		
-		for entity in full_inventory_list:
-			if is_instance_valid(entity) and entity.ball_uuid == item_uuid:
-				equipped_items.push_back(entity)
-				break 
-				
+		if item_uuid.is_empty():
+			continue
+
+		var item_instance: GachaBallInstance = null
+		if run_instances:
+			# In run context, we can look up directly from the master instance list.
+			item_instance = run_instances.get(item_uuid)
+		elif is_battle_context:
+			# In battle context, we need to search the battle manager's data.
+			var bm = get_tree().get_first_node_in_group("battle_manager")
+			if is_instance_valid(bm):
+				item_instance = bm.get_instance_from_uuid(item_uuid)
+
+		if is_instance_valid(item_instance):
+			equipped_items.push_back(item_instance)
+
 	return equipped_items
 
 ```
