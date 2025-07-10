@@ -2,8 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bwx6ux5t1drf5" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" uid="uid://b6kwe3wxewufa" path="res://scripts/BackgroundClickDetector.gd" id="2_detector_script"]
+[ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 
 [node name="Battle" type="Control"]
+script = ExtResource("3_battle_view_script")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

@@ -59,11 +59,20 @@ func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 		return null
 
 	if loc.container == &"equipped_item":
-		var owner_unit = get_instance(loc.get("unit_uuid")) 
-		if is_instance_valid(owner_unit):
-			var item_uuid = owner_unit.get_equipped_item_uuid_at_index(loc.index)
-			return get_instance(item_uuid)
-		return null
+		# For equipped items, we first need the owning unit, then resolve the item by slot index.
+		var owner_uuid := String(loc.get("unit_uuid"))
+		if owner_uuid.is_empty():
+			return null
+
+		var owner_unit = get_instance(owner_uuid)
+		if not is_instance_valid(owner_unit):
+			return null
+
+		var item_uuid := String(owner_unit.get_equipped_item_uuid_at_index(loc.index))
+		if item_uuid.is_empty():
+			return null
+
+		return get_instance(item_uuid)
 
 	if _data_containers.has(loc.container):
 		var container = _data_containers[loc.container]
@@ -125,26 +134,70 @@ func _setup_battle():
 			instance.recalculate_stats(_battle_instances)
 
 func _setup_enemy_lineup():
+	print("=== Setting up enemy lineup ===")
 	var enemy_unit_ids = [&"enemy_hero", &"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d"]
+	print("Enemy unit IDs to create: ", enemy_unit_ids)
+	
 	var all_item_defs = Database.items.values()
+	print("Found ", all_item_defs.size(), " item definitions in database")
+	
+	if not _data_containers.has(&"EnemyLineup"):
+		printerr("CRITICAL: EnemyLineup container not found in _data_containers!")
+		return
+		
 	var enemy_lineup_container = _data_containers[&"EnemyLineup"]
+	# Get the size safely without causing errors
+	var container_size = 0
+	if enemy_lineup_container.has_method("get_all_uuids"):
+		container_size = enemy_lineup_container.get_all_uuids().size()
+	print("Enemy lineup container found with ", container_size, " slots")
 
 	for i in range(min(enemy_unit_ids.size(), 6)):
-		var unit_def = Database.get_definition(enemy_unit_ids[i])
-		if unit_def:
-			var enemy_instance = GachaBallInstance.new()
-			enemy_instance.initialize(unit_def)
-			_battle_instances[enemy_instance.ball_uuid] = enemy_instance
+		var unit_id = enemy_unit_ids[i]
+		print("\nCreating enemy ", i, " with ID: ", unit_id)
+		
+		var unit_def = Database.get_definition(unit_id)
+		if not unit_def:
+			printerr("Failed to find unit definition for ID: ", unit_id)
+			continue
 			
-			for j in range(enemy_instance.equipped_item_uuids.size()):
-				if not all_item_defs.is_empty():
-					var item_def = all_item_defs.pick_random()
-					var item_instance = GachaBallInstance.new()
-					item_instance.initialize(item_def)
-					_battle_instances[item_instance.ball_uuid] = item_instance
-					enemy_instance.equipped_item_uuids[j] = item_instance.ball_uuid
-			
-			enemy_lineup_container.set_uuid(i, enemy_instance.ball_uuid)
+		print("Creating instance of: ", unit_def.id)
+		var enemy_instance = GachaBallInstance.new()
+		enemy_instance.initialize(unit_def)
+		print("Enemy instance created with UUID: ", enemy_instance.ball_uuid)
+		
+		_battle_instances[enemy_instance.ball_uuid] = enemy_instance
+		
+		# Equip items
+		print("Equipping items (slots: ", enemy_instance.equipped_item_uuids.size(), ")")
+		for j in range(enemy_instance.equipped_item_uuids.size()):
+			if not all_item_defs.is_empty():
+				var item_def = all_item_defs.pick_random()
+				print("  Equipping item: ", item_def.id)
+				var item_instance = GachaBallInstance.new()
+				item_instance.initialize(item_def)
+				_battle_instances[item_instance.ball_uuid] = item_instance
+				enemy_instance.equipped_item_uuids[j] = item_instance.ball_uuid
+		
+		# Add to lineup
+		print("Adding enemy to lineup at position ", i)
+		enemy_lineup_container.set_uuid(i, enemy_instance.ball_uuid)
+		print("Enemy added to lineup. Current lineup size: ", enemy_lineup_container.get_all_non_empty_uuids().size())
+	
+	print("=== Enemy lineup setup complete ===")
+	print("Total enemies created: ", enemy_lineup_container.get_all_non_empty_uuids().size())
+	print("Total battle instances: ", _battle_instances.size())
+
+# --- State Machine Logic ---
+# Helper: Find the player's hero UUID regardless of its current slot
+func _get_player_hero_uuid() -> String:
+	for uuid in _data_containers[&"PlayerLineup"].get_all_uuids():
+		if uuid.is_empty():
+			continue
+		var inst = get_instance(uuid)
+		if is_instance_valid(inst) and inst.get_definition().id == &"hero":
+			return uuid
+	return ""
 
 # --- State Machine Logic ---
 func _change_phase(new_phase: Phases):
@@ -175,7 +228,7 @@ func _enter_combat_phase():
 
 func _enter_end_of_turn_phase():
 	var all_enemies_defeated = _data_containers[&"EnemyLineup"].get_all_non_empty_uuids().is_empty()
-	var player_hero_uuid = _data_containers[&"PlayerLineup"].get_uuid(0)
+	var player_hero_uuid = _get_player_hero_uuid()
 	var player_hero_instance = get_instance(player_hero_uuid)
 	var player_hero_defeated = not is_instance_valid(player_hero_instance) or player_hero_instance.current_hp <= 0
 
@@ -190,10 +243,9 @@ func _enter_end_of_turn_phase():
 
 func _execute_combat_resolution():
 	print("--- COMBAT PHASE START ---")
-	var basic_attack_def = Database.abilities.get(&"basic_attack")
-	if not basic_attack_def:
-		printerr("BasicAttack ability not found in Database.")
-		return
+	# We now expect each unit to carry its own ability list; use the first one (basic attack).
+	# Fallback to database lookup only if the list is empty.
+	var db_basic_attack = Database.abilities.get(&"basic_attack")
 
 	var player_lineup_uuids = _data_containers[&"PlayerLineup"].get_all_uuids()
 	var enemy_lineup_uuids = _data_containers[&"EnemyLineup"].get_all_uuids()
@@ -206,25 +258,40 @@ func _execute_combat_resolution():
 
 		var target = _get_frontmost_target(true)
 		if is_instance_valid(target):
-			AbilityResolver.execute_effect(basic_attack_def.effect, attacker, [target], self)
+			var ability_def: AbilityDefinition = attacker.abilities[0] if attacker.abilities.size() > 0 else db_basic_attack
+			if ability_def:
+				AbilityResolver.execute_effect(ability_def.effect, attacker, [target], self)
 			_check_for_deaths()
 			if _is_battle_over(): return
 			await get_tree().create_timer(0.5).timeout
 		else: break
 
 	for i in range(enemy_lineup_uuids.size() - 1, -1, -1):
+		print("--- Processing Enemy Attacker at index ", i, " ---")
 		var attacker_uuid = enemy_lineup_uuids[i]
-		if not attacker_uuid: continue
+		if not attacker_uuid:
+			print("No enemy unit found at index ", i, ". Skipping.")
+			continue
 		var attacker = get_instance(attacker_uuid)
-		if not is_instance_valid(attacker) or attacker.current_hp <= 0: continue
+		if not is_instance_valid(attacker) or attacker.current_hp <= 0:
+			print("Enemy unit at index ", i, " (UUID: ", attacker_uuid, ") is invalid or defeated. Skipping.")
+			continue
 
+		print("Enemy attacker: ", attacker.get_definition().id, " (UUID: ", attacker_uuid, ") at index ", i)
 		var target = _get_frontmost_target(false)
 		if is_instance_valid(target):
-			AbilityResolver.execute_effect(basic_attack_def.effect, attacker, [target], self)
+			print("Enemy attacker ", attacker.get_definition().id, " targeting player unit: ", target.get_definition().id, " (UUID: ", target.ball_uuid, ")")
+			var ability_def: AbilityDefinition = attacker.abilities[0] if attacker.abilities.size() > 0 else db_basic_attack
+			if ability_def:
+				AbilityResolver.execute_effect(ability_def.effect, attacker, [target], self)
 			_check_for_deaths()
-			if _is_battle_over(): return
+			if _is_battle_over():
+				print("Battle is over after enemy attack. Exiting combat resolution.")
+				return
 			await get_tree().create_timer(0.5).timeout
-		else: break
+		else:
+			print("No valid player target found for enemy unit at index ", i, ". Breaking enemy attack loop.")
+			break
 		
 	print("--- COMBAT PHASE END ---")
 
@@ -248,7 +315,7 @@ func _check_for_deaths():
 		EventBus.emit_signal("battle_inventory_changed")
 
 func _is_battle_over() -> bool:
-	return _data_containers[&"EnemyLineup"].get_all_non_empty_uuids().is_empty() or not is_instance_valid(get_instance(_data_containers[&"PlayerLineup"].get_uuid(0)))
+	return _data_containers[&"EnemyLineup"].get_all_non_empty_uuids().is_empty() or not is_instance_valid(get_instance(_get_player_hero_uuid()))
 
 func _on_unit_inventory_changed(unit_uuid: String):
 	if not _battle_instances.has(unit_uuid): return
@@ -352,11 +419,32 @@ func get_discard_pile_inventory() -> Dictionary:
 				inventory[tier].append(instance)
 	return inventory
 
-func _get_frontmost_target(is_player_attacking: bool) -> GachaBallInstance:
-	var target_lineup = _data_containers[&"EnemyLineup"] if is_player_attacking else _data_containers[&"PlayerLineup"]
-	for uuid in target_lineup.get_all_uuids():
-		if uuid.is_empty(): continue
-		var instance = get_instance(uuid)
-		if is_instance_valid(instance) and instance.current_hp > 0:
-			return instance
+func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
+	# When the attacker is the player, the opponent's lineup (EnemyLineup) is scanned
+	# from index 0 ➜ 5, because index 0 is the canonical "front" for that team.
+	# When the attacker is the enemy, the player's lineup needs to be scanned from
+	# index 5 ➜ 0, because the player team is visually facing the opposite
+	# direction. This keeps our data representation canonical while still hitting
+	# the correct frontmost unit on screen.
+	var target_lineup: DataContainer = _data_containers[&"EnemyLineup"] if attacker_is_player else _data_containers[&"PlayerLineup"]
+	var uuids: Array[String] = target_lineup.get_all_uuids()
+
+	if attacker_is_player:
+		# Scan from front (index 0) to back (index 5)
+		for uuid in uuids:
+			if uuid.is_empty():
+				continue
+			var inst := get_instance(uuid)
+			if is_instance_valid(inst) and inst.current_hp > 0:
+				return inst
+	else:
+		# Enemy attacking → scan player lineup from back (index 5) to front (index 0)
+		for i in range(uuids.size() - 1, -1, -1):
+			var uuid := uuids[i]
+			if uuid.is_empty():
+				continue
+			var inst := get_instance(uuid)
+			if is_instance_valid(inst) and inst.current_hp > 0:
+				return inst
+
 	return null

@@ -17,6 +17,9 @@ var origin_uuid: String = ""
 ## An array of UUIDs for the items equipped in this instance's slots.
 var equipped_item_uuids: Array[String] = []
 
+## The list of abilities this instance can use.
+var abilities: Array[AbilityDefinition] = []
+
 ## The current health of this instance in battle.
 var current_hp: int
 
@@ -37,6 +40,9 @@ func initialize(definition: GachaBallDefinition):
 	equipped_item_uuids.resize(definition.item_slot_count)
 	equipped_item_uuids.fill("")
 
+	# Copy abilities from definition
+	abilities = definition.ability_definitions.duplicate()
+
 	self.current_hp = definition.base_hp
 	self.current_pwr = definition.base_pwr
 
@@ -52,6 +58,8 @@ func create_battle_copy() -> GachaBallInstance:
 
 	# Deep copy the array
 	copy.equipped_item_uuids = self.equipped_item_uuids.duplicate(true)
+	# Copy abilities array (resources are shared, so shallow copy OK)
+	copy.abilities = self.abilities.duplicate()
 	# Assign new unique IDs for the battle context
 	copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
 	copy.origin_uuid = self.ball_uuid # Link back to the original

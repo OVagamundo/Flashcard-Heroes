@@ -10,7 +10,8 @@ var _is_victory: bool = false
 func _ready():
     return_button.pressed.connect(_on_return_button_pressed)
 
-func populate(is_victory: bool):
+func populate(context: Dictionary):
+    var is_victory: bool = context.get("is_victory", false)
     _is_victory = is_victory
     if is_victory:
         title_label.text = "VICTORY!"

@@ -51,6 +51,12 @@ Part 2: Data Schemas & Structures
   - `run_instances: Dictionary[String, GachaBallInstance]`
   - `run_inventory_containers: Dictionary[StringName, GridContainer]`
 
+**EffectRequest.gd**: Resource, class_name EffectRequest.
+- Properties:
+  - `@export var source_uuid: String`: The UUID of the unit initiating the effect.
+  - `@export var ability_id: StringName`: The ID of the ability to execute.
+  - `@export var trigger_context: Dictionary`: Stores contextual information about the event that triggered this request. For a basic attack, it could be empty. For a retaliation, it might contain the original attacker's UUID.
+
 GachaBallDefinition.gd: Resource, class_name GachaBallDefinition. The template for a GachaBall.
 Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tier: int, @export var category: StringName, @export var item_slot_count: int, @export var base_hp: int = 0, @export var base_pwr: int = 0, @export var bonus_hp: int = 0, @export var bonus_pwr: int = 0, @export var ability_definitions: Array[AbilityDefinition]
 GachaBallInstance.gd: Resource, class_name GachaBallInstance. A unique instance of a GachaBall.
@@ -138,6 +144,33 @@ Units & Hero (res://resources/units/)
 *   **`WindowManager.gd`**: The sole authority for the lifecycle of all modal and inspection windows.
 *   **`BattleManager.gd`**: The sole authority for the state of a single battle. It is created when a battle begins and destroyed when it ends.
     *   **State Properties**:
+
+### 3.3 Combat System
+
+#### Positional Logic Definition (The Definitive System)
+To ensure universal ability logic and clear action sequencing, the system relies on a consistent data representation that is independent of the visual layout on screen.
+
+**The Core Data Rule**: 
+For both the `PlayerLineup` and `EnemyLineup` arrays, index 0 always corresponds to the leftmost slot of that team's area on the screen, and index 5 corresponds to the rightmost slot.
+
+**Mapping 'Front' and 'Back':**
+- **Player Team** (Visually on the left side of the screen, facing right):
+  - The 'Frontmost' position is the highest occupied index (e.g., `PlayerLineup[5]`).
+  - The 'Backmost' is the lowest occupied index (e.g., `PlayerLineup[0]`).
+- **Enemy Team** (Visually on the right side of the screen, facing left):
+  - The 'Frontmost' position is the lowest occupied index (e.g., `EnemyLineup[0]`).
+  - The 'Backmost' is the highest occupied index (e.g., `EnemyLineup[5]`).
+
+**Combat Action Order (Back-to-Front):**
+The action order is resolved by iterating from the highest index down to the lowest. This is consistent for both teams and translates visually as right-to-left for each side.
+- **Player Turn:** Iterate through `PlayerLineup` from index 5 down to 0.
+- **Enemy Turn:** Iterate through `EnemyLineup` from index 5 down to 0.
+
+**Universal Ability Logic:**
+This consistency is what makes the `TargetingRule` system powerful. An ability like "hit the frontmost unit and the two behind it" uses the same logic for both teams: it finds the unit at the lowest occupied index in the `opponent_lineup` and targets that index, index + 1, and index + 2. No special code is needed to handle the visual mirroring.
+
+**Absolute Coordinates:**
+The logical coordinates (P1-P6 for player, E1-E6 for enemy) remain a valid concept for abilities that need to target specific grid slots. They map directly to the array indices (P1 -> `PlayerLineup[0]`, E1 -> `EnemyLineup[0]`, etc.).
         *   `_battle_instances: Dictionary[String, GachaBallInstance]` (The master registry for temporary battle copies)
         *   `_data_containers: Dictionary[StringName, DataContainer]` (The registry for all temporary battle containers like lineups, benches, and battle inventories)
         *   `_gacha_tokens: int`
@@ -178,10 +211,76 @@ Units & Hero (res://resources/units/)
 *   **`Battle.tscn` UI Elements**:
     *   An `%EndTurnButton` `Button` will be added.
     *   A `%GachaTokenLabel` `Label` will be added to display the player's current tokens.
+    *   **Implementation Note**: The `BattleView.gd` script must be attached to the root node of `Battle.tscn` for the UI to update correctly.
+    *   **Implementation Note**: When `BattleView.gd` is attached to the root node, the `BattleManager` node can be referenced directly as `$"BattleManager"`.
 
 <!-- START OF NEW UI/WINDOW LOGIC -->
 4.3 The Definitive Guide to MVP Player Interactions
 This section provides the exhaustive and authoritative rules for all player interactions within the MVP, replacing all previous interaction logic. It is built on the core principle of context-aware systems.
+### 3.4 The Effect Resolution Queue & Battle Flow (Definitive)
+
+This section details the core loop that governs all actions, effects, and reactions in a battle. It replaces any previous descriptions of the combat phase. The system is built around a LIFO (Last-In, First-Out) stack to manage causality and timing.
+
+#### A. Core Components
+
+**The Effect Queue (`_effect_queue`):** A property in `BattleManager` of type `Array`. It is used as a stack. All actions that happen in a battle are first added to this queue as an `EffectRequest`.
+
+**The Processing Flag (`_is_processing_effect`):** A boolean property in `BattleManager` that prevents the system from trying to resolve multiple effects simultaneously.
+
+#### B. The Battle Flow Step-by-Step
+
+**Start of Turn & Management Phase:** These proceed as previously defined. The player gathers tokens and arranges their board.
+
+**Combat Phase - Population (The "Ready" Button):** When the player clicks "End Turn":
+
+- `BattleManager`'s state machine enters the `COMBAT_PHASE`.
+- The `_enter_combat_phase` function does not execute combat directly.
+- Instead, it iterates through all active units in action order (Player P6->P1, then Enemy E6->E1).
+- For each unit, it creates a new `EffectRequest` resource, setting the `source_uuid` and the `ability_id` (e.g., `basic_attack`).
+- It pushes each of these requests onto the `_effect_queue` stack. The player's last unit to act (P1) will be at the top of the stack.
+
+**Combat Phase - Processing (The Main Loop):** The `BattleManager`'s `_process(delta)` or `_physics_process(delta)` function will contain the following logic loop:
+
+```gdscript
+func _process(delta):
+    # 1. Don't do anything if the queue is empty or an effect is already running.
+    if _effect_queue.is_empty() or _is_processing_effect:
+        return
+
+    # 2. Lock the process and get the next effect.
+    _is_processing_effect = true
+    var current_request = _effect_queue.pop_back() # Get from the top of the stack
+
+    # 3. Asynchronously resolve the effect and wait for it to complete.
+    #    The 'await' keyword is the magic that handles timing.
+    await get_node("AbilityResolver").resolve_effect(current_request)
+
+    # 4. Unlock the process so the next effect can run in the next frame.
+    _is_processing_effect = false
+```
+
+#### C. Handling UI Animations & Timing
+
+The `EffectDefinition.execute()` method for `BasicAttackEffect` must be async.
+Its internal logic will look like this:
+
+- Play a visual animation (e.g., a sword slash tween).
+- `await slash_tween.finished` — The code pauses here.
+- Apply the data change: `target.current_hp -= damage`.
+- Emit the signal to update the UI: `unit_stats_changed`.
+- Play the floating damage number animation.
+- `await damage_number_tween.finished` — The code pauses again.
+- The function ends, and the `await` in the `AbilityResolver` completes.
+
+#### D. Handling Chain Reactions
+
+This architecture natively supports complex chain reactions.
+
+- **An Event Occurs:** An effect resolves and causes a unit to die. The `BattleManager` emits a signal, `unit_died(victim_uuid, killer_uuid)`.
+- **An Ability Listens:** A future `AbilitySystemManager` (or for now, a direct connection in `BattleManager`) catches this signal.
+- **A New Request is Pushed:** The handler for the signal creates a new `EffectRequest` for the triggered ability (e.g., an "Avenger" ability). It pushes this request to the top of the `_effect_queue`.
+- **The Stack Takes Over:** The main processing loop is currently awaiting the completion of the original effect. Once that effect fully finishes, the loop runs again. It sees the new "Avenger" request at the top of the stack and begins processing it before it continues with any other standard attacks that were already in the queue. This correctly models an interruption/reaction.
+
 4.3.1 The Universal Laws of Interaction
 These five laws are the foundational principles governing every player action. All game logic must adhere to them.
 The Law of Action Intent: An action is initiated in one of two ways:
@@ -191,9 +290,9 @@ Both methods must trigger the exact same validation logic and resulting action.
 The Law of Contextual Validity: Every action's possibility is dictated by context. The system must always validate an action based on:
 Game State: Is the game in-battle or out-of-battle? (e.g., Equipping is battle-only, Permanent Merging is out-of-battle only).
 Container Compatibility: Can the target container accept the source GachaBall? (e.g., PlayerBench accepts Units, not Items; ItemInventory accepts Items, not Units).
-Tier Compatibility: Can the target container accept the source GachaBall's tier? (e.g., a Tier 1 GachaBall cannot be moved into a Tier 2 Run Inventory container).
+Tier Compatibility: Can the target container accept the source GachaBall's tier? (e.g., a Tier 1 GachaBall cannot be moved into a Tier 2 Run Inventory container). In battle inventory, units can only be placed in containers matching their tier (e.g., Tier 1 units in BattleInventoryT1, etc.).
 An action that fails any validity check is an Invalid Action.
-The Law of Action Completion: A successful action (Move, Swap, Equip, Merge) or the opening of an Inspection Window immediately clears the player's current selection. The InteractionManager's selection is set to null.
+The Law of Action Completion: A successful action (Move, Swap, Equip, Merge) or the opening of an Inspection Window immediately clears the player's current selection. The InteractionManager's selection is set to null. After any action, the drag state must be properly cleaned up by calling `InteractionManager.end_drag(true)` on success or `InteractionManager.end_drag(false)` on failure to prevent UI state corruption.
 The Law of Emptiness: Empty SlotViews are non-interactive for selection. They serve only as potential drop/click targets for an action initiated from a filled GachaBallView.
 The Law of Indirect Deployment: GachaBalls drawn from a Gacha Machine are placed in their respective holding areas (PlayerBench or ItemInventory). They cannot be moved directly from the Gacha Machine's content view to the player's lineup.
 4.3.2 Detailed Interaction Scenarios
@@ -271,6 +370,7 @@ Hierarchical Input Consumption: The UI will rely on Godot's input propagation sy
 4. For each permanent instance, it creates a `battle_copy()`, adds the copy to its own `_battle_instances` registry, and places the new UUID into the appropriate temporary BattleInventory DataContainer.
 5. It creates a battle copy of the `hero_instance`, adds it to `_battle_instances`, and places its UUID into the PlayerLineup container.
 6. It sets up the enemy lineup, creating new instances, adding them to `_battle_instances`, and placing their UUIDs into the EnemyLineup container.
+    *   **Implementation Note**: When querying the size of a `FixedArrayContainer` for debug or other purposes, use `container.get_all_uuids().size()` as `get_size()` and `get_container_size()` methods do not exist.
 7. Emits `battle_inventory_changed` to trigger the initial board draw.
 
 ### 5.2 Gacha Draw Flow (`BattleManager.gd`)
@@ -333,11 +433,107 @@ This flow describes how merging instances outside of battle correctly modifies t
     *   Reads the `tier` from the `merged_instance`'s definition.
     *   Dynamically determines the target container name (e.g., `StringName("RunInventoryT%d" % result_tier)`).
     *   Removes the ingredient UUIDs from their source `DataContainer`s in `RunState`.
+    *   Places the merged instance in the first available slot of the appropriate tier container.
+    *   Ensures drag state is properly cleaned up with `InteractionManager.end_drag(true)` on success.
     *   Adds the new instance to `RunState.run_instances` and its UUID to the correct target `DataContainer` in `RunState`.
     *   Emits `run_state_changed`.
 5.  **UI Layer**: The Run Inventory window (or relevant UI) listens for `run_state_changed` and redraws itself.
 
-## Part 6: Architectural Notes & Implementation Guidelines
+## Part 6: Sequence Diagrams for Key Operations
+
+### 6.1 Merge Operation Flow
+```mermaid
+sequenceDiagram
+    participant UI as UI Layer
+    participant IM as InventoryManager
+    participant MM as MergeManager
+    participant BM as BattleManager
+    participant RS as RunState
+    participant DC as DataContainer
+    
+    UI->>IM: inventory_action_requested(source_loc, target_loc)
+    IM->>IM: Validate locations and instances
+    IM->>MM: calculate_merge_result(source, target)
+    MM-->>IM: merged_instance or null
+    
+    alt In Battle
+        IM->>BM: Remove source and target instances
+        BM->>DC: Remove instances from containers
+        BM->>DC: Add merged_instance to first available slot
+        BM-->>UI: battle_inventory_changed
+    else Out of Battle
+        IM->>RS: Remove source and target instances
+        RS->>DC: Remove instances from containers
+        RS->>DC: Add merged_instance to first available slot
+        RS-->>UI: run_state_changed
+    end
+    
+    UI->>UI: Update visual representation
+```
+
+### 6.2 Move/Swap Operation Flow
+```mermaid
+sequenceDiagram
+    participant UI as UI Layer
+    participant IM as InventoryManager
+    participant BM as BattleManager
+    participant RS as RunState
+    
+    UI->>IM: inventory_action_requested(source_loc, target_loc)
+    
+    alt In Battle
+        IM->>BM: Validate move/swap
+        BM->>BM: Check container compatibility
+        BM->>BM: Check tier restrictions
+        BM->>BM: Execute move/swap
+        BM-->>UI: battle_inventory_changed
+    else Out of Battle
+        IM->>RS: Validate move/swap
+        RS->>RS: Check container compatibility
+        RS->>RS: Check tier restrictions
+        RS->>RS: Execute move/swap
+        RS-->>UI: run_state_changed
+    end
+    
+    UI->>UI: Update visual representation
+```
+
+## Part 7: Validation Flow Documentation
+
+### 7.1 Action Validation Process
+For any inventory action, the following validation steps occur in order:
+
+1. **Basic Validation**
+   - Check if source and target locations are valid
+   - Verify instances exist at specified locations
+   - Ensure instances are not null and properly initialized
+
+2. **Context Validation**
+   - Verify action is allowed in current game state (battle/run)
+   - Check if containers involved in the action are accessible
+
+3. **Container Compatibility**
+   - Check if source container type matches expected types
+   - Verify target container can accept the source instance type
+   - For swaps, ensure both containers can accept each other's content
+
+4. **Tier Validation**
+   - Verify source instance tier matches target container tier
+   - For battle inventory, enforce strict tier-container matching
+   - For run inventory, allow moving to any container of equal or higher tier
+
+5. **Action-Specific Validation**
+   - For merges: Check if merge recipe exists
+   - For equips: Verify unit has available item slots
+   - For moves: Ensure target slot is empty or can be swapped
+
+### 7.2 Error Handling
+- **Invalid Action**: Clear selection and show feedback without changing game state
+- **Container Full**: Show appropriate message and cancel operation
+- **Tier Mismatch**: Prevent action and show tier requirements
+- **Network/IO Errors**: Rollback any partial changes and notify player
+
+## Part 8: Architectural Notes & Implementation Guidelines
 
 ### 6.1 Guideline: Prefer `load()` over `preload()` for Dynamic UI Instantiation
 

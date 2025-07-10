@@ -19,7 +19,7 @@ const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 var battle_manager: BattleManager
 
 func _ready():
-	battle_manager = get_node("../BattleManager")
+	battle_manager = get_node("BattleManager")
 	if not is_instance_valid(battle_manager):
 		printerr("BattleView CRITICAL: BattleManager node not found!")
 		return
@@ -54,12 +54,17 @@ func _redraw_board():
 		discard_pile_button.text = "Discard Pile (%d)" % discard_count
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool):
-	if not is_instance_valid(battle_manager): return
+	if not is_instance_valid(battle_manager): 
+		print("BattleView: BattleManager is not valid")
+		return
 	
 	var data_container = battle_manager.get_container(container_name)
 	if not is_instance_valid(data_container):
 		printerr("BattleView: Could not find data container named: ", container_name)
 		return
+	
+	print("Populating container: ", container_name, " (enemy: ", is_enemy, ")")
+	print("Container has ", data_container.get_all_non_empty_uuids().size(), " non-empty slots")
 
 	for child in ui_container.get_children():
 		child.queue_free()
