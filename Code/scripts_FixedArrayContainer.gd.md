@@ -7,7 +7,7 @@ extends "res://scripts/DataContainer.gd"
 ## A DataContainer for fixed-size collections like lineups and benches.
 ## It is backed by a simple Array.
 
-var _data: Array[String]
+var _data: Array[String] = []
 
 func _init(size: int):
 	_data.resize(size)

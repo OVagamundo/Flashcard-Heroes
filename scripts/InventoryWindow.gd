@@ -89,7 +89,7 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 		if is_instance_valid(bm):
 			var all_unit_uuids = bm.get_container(&"PlayerLineup").get_all_uuids() + bm.get_container(&"PlayerBench").get_all_uuids()
 			for unit_uuid in all_unit_uuids:
-				var unit_instance = bm.get_instance_from_uuid(unit_uuid)
+				var unit_instance = bm.get_instance(unit_uuid)
 				if is_instance_valid(unit_instance):
 					for item_uuid in unit_instance.equipped_item_uuids:
 						if not item_uuid.is_empty():
@@ -114,8 +114,7 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 			loc.index = i
 			# Use the correct container name based on context
 			if _is_battle_context:
-				# TODO: Battle inventory containers might have different names
-				loc.container = &"Tier%dInventory" % tier # Placeholder
+				loc.container = &"BattleInventoryT%d" % tier
 			else:
 				loc.container = RUN_CONTAINER_NAMES[tier]
 			

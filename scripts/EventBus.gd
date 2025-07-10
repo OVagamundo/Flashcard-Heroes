@@ -24,8 +24,9 @@ signal global_background_clicked # For main content area background
 # --- Action Signals ---
 signal draw_gacha_requested(tier: int)
 signal inventory_action_requested(source_loc: LocationIdentifier, target_loc: LocationIdentifier)
-signal choice_made(choice_id: StringName, source_view: Control, target_view: Control)
+signal choice_made(choice_id: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier)
 signal inspection_requested(loc: LocationIdentifier, source_view: Control)
+signal end_turn_requested
 
 # --- Selection Signals ---
 signal view_selected(view: Control, location: LocationIdentifier)

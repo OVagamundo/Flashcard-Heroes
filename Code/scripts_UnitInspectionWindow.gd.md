@@ -51,7 +51,6 @@ func populate(context: Dictionary):
 	name_label.text = tr(unit_definition.display_name_key)
 	var description_text = tr(unit_definition.description_key)
 	description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
-	# Store the full definition for the child window to use.
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
 
@@ -67,24 +66,17 @@ func populate(context: Dictionary):
 		item_grid.visible = true
 		item_grid.columns = unit_definition.item_slot_count
 
-	var inventory_context = {}
+	# Get the master instance dictionary from the correct data owner.
+	var all_instances_db: Dictionary
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		inventory_context = {
-			"battle_inventory": bm.get_battle_inventory(),
-			"lineup_data": bm.get_container(&"PlayerLineup").get_all_uuids(),
-			"bench_data": bm.bench_data,
-			"item_data": bm.item_data,
-		}
+		all_instances_db = bm.get_all_instances() if is_instance_valid(bm) else {}
 	else:
-		inventory_context = {
-			"run_instances": GameManager.run_state.run_instances,
-			"run_inventory_containers": GameManager.run_state.run_inventory_containers
-		}
+		all_instances_db = GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
+		
+	# Use the helper to get the equipped item instances.
+	var equipped_items = MergeManager._get_equipped_item_instances(_instance, all_instances_db)
 
-	var equipped_items = MergeManager._get_equipped_item_instances(
-		_instance, inventory_context
-	)
 	for i in range(unit_definition.item_slot_count):
 		var item_instance = equipped_items[i] if i < equipped_items.size() else null
 
@@ -92,10 +84,11 @@ func populate(context: Dictionary):
 			var view = _GachaBallView.instantiate()
 			item_grid.add_child(view)
 			var loc = LocationIdentifier.new()
-			loc.tier = 0 # Equipped items don't use tiers
+			loc.tier = -1 # Equipped items don't use tiers
 			loc.index = i
-			loc.container = "equipped_item"
-			loc.unit_uuid = _instance.ball_uuid
+			loc.container = &"equipped_item"
+			# This is crucial for the location to be complete
+			loc.set("unit_uuid", _instance.ball_uuid) 
 			view.populate(loc, item_instance, true)
 		else:
 			var placeholder = PanelContainer.new()
@@ -132,7 +125,7 @@ func _on_description_meta_clicked(meta):
 	if meta == "effect":
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
-			var context = {"window_purpose": "effect", "parent_definition": definition}
+			var context = {"effect_definition": definition.ability_definitions}
 			WindowManager.open_child_inspection_window(self, &"EffectInspection", context)
 
 func _on_description_meta_hover_started(_meta):

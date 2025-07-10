@@ -16,7 +16,7 @@ func _ready() -> void:
 func _on_start_run_requested() -> void:
     run_state = RunState.new()
     run_state.start_new_run()
-    EventBus.emit_signal("run_state_changed") # Use the new signal
+    EventBus.emit_signal("run_data_changed") # Use the new signal
     EventBus.emit_signal("loadout_scene_requested")
 
 func _on_return_to_title() -> void:

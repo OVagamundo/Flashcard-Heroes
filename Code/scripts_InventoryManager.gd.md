@@ -182,43 +182,53 @@ func _equip_item(item_loc: LocationIdentifier, unit_loc: LocationIdentifier):
 	_emit_data_changed_signal()
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
-	# 1. Get instances and calculate merge result.
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 
-	var inventory_context = {}
+	# CORRECTED LOGIC: Get the correct master instance database based on context.
+	var all_instances_db: Dictionary
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		inventory_context["battle_inventory"] = bm.battle_inventory
+		all_instances_db = bm.get_all_instances() if is_instance_valid(bm) else {}
 	else:
-		inventory_context["run_instances"] = GameManager.run_state.run_instances
+		all_instances_db = GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
 
-	var merge_result: Dictionary = MergeManager.calculate_merge_result(source_instance, target_instance, inventory_context)
+	# Pass the correct data to the MergeManager.
+	var merge_result: Dictionary = MergeManager.calculate_merge_result(source_instance, target_instance, all_instances_db)
 
-	# Handle failed merge (e.g., no valid recipe).
 	if merge_result.is_empty():
-		_handle_invalid_action(WindowManager.find_view_by_location(source_loc))
+		# TDD: If there's no valid merge recipe, the behavior depends on context.
+		if GameManager.is_in_battle:
+			_handle_invalid_action(WindowManager.find_view_by_location(source_loc))
+		else:
+			# In the run inventory, a failed merge results in a swap.
+			_swap(source_loc, target_loc)
 		return
 
 	var new_instance: GachaBallInstance = merge_result.merged_instance
 	var parents_to_remove: Array[GachaBallInstance] = merge_result.parents_to_remove
 
-	# 2. Remove the parent instances that were consumed in the merge.
-	# This clears them from the master list and their container slots.
-	for parent in parents_to_remove:
-		if is_instance_valid(parent):
-			GameManager.run_state.remove_instance(parent.ball_uuid)
+	# --- CONTEXT-AWARE MERGE LOGIC ---
+	# 3. Add the new instance to the master database.
+	all_instances_db[new_instance.ball_uuid] = new_instance
 
-	# 3. Add the new instance and place it according to context.
-	if target_loc.container == &"BattleBoard":
-		# On the battle board, the new instance must be added to the master list
-		# AND placed in the specific slot.
-		GameManager.run_state.run_instances[new_instance.ball_uuid] = new_instance
+	# 4. Place the new instance and clear the old slots based on context.
+	if GameManager.is_in_battle:
+		# In battle, the new unit replaces the target.
+		_set_instance_at_location(source_loc, null)
 		_set_instance_at_location(target_loc, new_instance)
 	else:
-		# In inventories, add_instance handles finding the correct slot automatically.
-		# The parent slots are already empty thanks to remove_instance.
-		GameManager.run_state.add_instance(new_instance)
+		# In the run inventory, find a new home for the merged unit.
+		_set_instance_at_location(source_loc, null)
+		_set_instance_at_location(target_loc, null)
+		var new_loc = _find_empty_slot_for_instance(new_instance)
+		if is_instance_valid(new_loc):
+			_set_instance_at_location(new_loc, new_instance)
+
+	# 5. Remove the original ingredient instances from the master database to prevent leaks.
+	for ingredient in parents_to_remove:
+		if all_instances_db.has(ingredient.ball_uuid):
+			all_instances_db.erase(ingredient.ball_uuid)
 
 	# 4. Notify the system that data has changed so the UI can update.
 	_emit_data_changed_signal()
@@ -329,6 +339,29 @@ func _is_valid_placement(instance: GachaBallInstance, target_loc: LocationIdenti
 
 # --- DATA ACCESS HELPERS ---
 
+func _find_empty_slot_for_instance(instance: GachaBallInstance) -> LocationIdentifier:
+	if not is_instance_valid(instance): return null
+
+	var def = instance.get_definition()
+	if not is_instance_valid(def): return null
+
+	var target_tier = def.tier
+	var container_name = "RunInventoryT%d" % target_tier
+	
+	var container = GameManager.run_state.get_container(container_name)
+	if not is_instance_valid(container):
+		return null
+
+	var empty_index = container.find_first_empty_slot()
+	if empty_index != -1:
+		var loc = LocationIdentifier.new()
+		loc.tier = target_tier
+		loc.index = empty_index
+		loc.container = container_name
+		return loc
+
+	return null
+
 func _get_instance_at_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc): return null
 
@@ -338,7 +371,7 @@ func _get_instance_at_location(loc: LocationIdentifier) -> GachaBallInstance:
 		var container = bm.get_container(loc.container)
 		if is_instance_valid(container):
 			uuid = container.get_uuid(loc.index)
-			return bm.get_instance_from_uuid(uuid)
+			return bm._battle_instances.get(uuid)
 	else:
 		var container = GameManager.run_state.get_container(loc.container)
 		if is_instance_valid(container):

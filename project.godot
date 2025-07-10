@@ -18,16 +18,15 @@ config/icon="res://icon.svg"
 [autoload]
 
 EventBus="*res://scripts/EventBus.gd"
-WindowManager="*res://scripts/WindowManager.gd"
 UUIDUtils="*res://scripts/UUIDUtils.gd"
 Database="*res://scripts/Database.gd"
-SceneManager="*res://scripts/SceneManager.gd"
-MergeManager="*res://scripts/MergeManager.gd"
-AbilityResolver="*res://scripts/AbilityResolver.gd"
-InteractionManager="*res://scripts/InteractionManager.gd"
-InventoryManager="*res://scripts/InventoryManager.gd"
 GameManager="*res://scripts/GameManager.gd"
 WindowManager="*res://scripts/WindowManager.gd"
+SceneManager="*res://scripts/SceneManager.gd"
+InteractionManager="*res://scripts/InteractionManager.gd"
+MergeManager="*res://scripts/MergeManager.gd"
+InventoryManager="*res://scripts/InventoryManager.gd"
+AbilityResolver="*res://scripts/AbilityResolver.gd"
 
 [debug]
 

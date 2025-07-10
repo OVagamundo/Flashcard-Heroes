@@ -71,8 +71,10 @@ func remove_instance(uuid: String):
 	if uuid.is_empty() or not run_instances.has(uuid):
 		return
 
-	# 1. Remove from the master instance registry.
-	run_instances.erase(uuid)
+	# 1. DO NOT Remove from the master instance registry.
+	# An instance should only be removed when it's consumed in a merge or sold.
+	# Moving it between containers (including to/from an equipment slot) does not delete it.
+	# run_instances.erase(uuid)
 
 	# 2. Find and remove from any container it might be in.
 	for container in run_inventory_containers.values():
@@ -117,3 +119,9 @@ func start_new_run() -> void:
 			printerr("RunState: Failed to add starting item '%s' to inventory." % item_id)
 	
 	print("RunState initialized with TDD-compliant data grids.")
+
+## Finds an instance by its UUID from the master registry.
+func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
+	# The run_instances dictionary is the single source of truth. All instances,
+	# including equipped ones, must reside here. This function is now a simple, direct lookup.
+	return run_instances.get(uuid, null)

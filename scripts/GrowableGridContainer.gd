@@ -4,7 +4,7 @@ extends DataContainer
 ## A DataContainer for growable collections like inventories.
 ## It is backed by an Array and contains its own internal growth logic.
 
-var _data: Array[String]
+var _data: Array[String] = []
 var _growth_amount: int = 4
 
 func _init(initial_size: int, growth_amount: int = 4):

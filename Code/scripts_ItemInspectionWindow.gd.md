@@ -19,15 +19,6 @@ func _gui_input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):
-	# If this is a child 'effect' window, populate and exit early.
-	if context.get("window_purpose") == "effect":
-		var effect_parent_def = context.get("parent_definition")
-		if effect_parent_def:
-			name_label.text = "Effect: %s" % effect_parent_def.id
-			description_label.text = effect_parent_def.description
-		return
-
-	# Otherwise, proceed as a normal item inspection window.
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
 
@@ -43,7 +34,8 @@ func populate(context: Dictionary):
 
 	name_label.text = tr(item_def.display_name_key)
 	var description_text = tr(item_def.description_key)
-	description_label.text = "%s\n\n[url=effect]EFFECT[/url]" % description_text
+	description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
+	
 	# Store the full definition for the child window to use.
 	description_label.set_meta("effect_definition", item_def)
 
@@ -51,7 +43,7 @@ func _on_description_meta_clicked(meta):
 	if meta == "effect":
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
-			var context = {"window_purpose": "effect", "parent_definition": definition}
+			var context = {"effect_definition": definition.ability_definitions}
 			WindowManager.open_child_inspection_window(self, &"EffectInspection", context)
 
 ```

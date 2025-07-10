@@ -14,18 +14,19 @@ func _gui_input(event: InputEvent):
 func populate(context: Dictionary):
 	var effect_definitions = context.get("effect_definition")
 
-	# This window expects an array of ability definitions.
-	# For now, we just inspect the first one.
+	# If the unit/item has no abilities, show a placeholder instead of closing.
 	if not effect_definitions is Array or effect_definitions.is_empty():
-		queue_free()
+		name_label.text = "Effects"
+		description_label.text = "This unit has no special effects."
 		return
 
+	# If there are abilities, display the first one as before.
 	var effect_def = effect_definitions[0]
 	if not is_instance_valid(effect_def):
 		queue_free()
 		return
 
-	name_label.text = tr(effect_def.display_name_key)
+	name_label.text = tr(effect_def.name_key)
 	description_label.text = tr(effect_def.description_key)
 
 ```

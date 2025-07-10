@@ -18,7 +18,7 @@ var ball_uuid: String
 var origin_uuid: String = ""
 
 ## An array of UUIDs for the items equipped in this instance's slots.
-var equipped_item_uuids: Array[String]
+var equipped_item_uuids: Array[String] = []
 
 ## The current health of this instance in battle.
 var current_hp: int

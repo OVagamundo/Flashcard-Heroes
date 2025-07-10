@@ -152,14 +152,7 @@ Units & Hero (res://resources/units/)
     *   **Updated `_setup_battle()`**: Now also responsible for creating battle copy instances for the enemy lineup, equipping them with items, and populating `_enemy_lineup_data`.
     *   **Updated `draw_gacha_requested(tier)`**: Now checks if `_gacha_tokens` are sufficient for the draw cost (`cost = tier`). If the `_draw_pools[tier]` is empty, it first automatically reshuffles all items of that tier from the `_discard_pile` back into the pool before drawing.
 
-### 3.2.1 Unified Interaction & Window Management Model
 
-**WindowManager.gd** is the sole authority for the lifecycle of all modal and inspection windows. No other script creates, destroys, or positions these UI elements directly. This centralized control prevents race conditions and ensures a predictable UI state.
-
-*   **Centralized Window Management**: All modals and inspection windows are children of the main `CanvasLayer` in `Main.tscn`. `WindowManager.gd` manages their `z_index` to ensure the correct window is always on top.
-*   **Dynamic Instantiation**: Windows are loaded and instantiated dynamically using `load()` (not `preload()`) to avoid unnecessary memory consumption and engine loading errors.
-*   **Modal Stack**: `WindowManager.gd` maintains a stack of active modal windows. When a new modal is opened, it's pushed onto the stack. Closing a modal pops it from the stack.
-*   **Background Interaction**: A `BackgroundBlocker.tscn` (a full-screen `ColorRect` that consumes input) is instantiated and added under the `CanvasLayer` whenever a modal is active. This blocker prevents interaction with UI elements behind the modal. Clicking the blocker closes the top-most modal.
 
 ### 3.3 Inventory Action Logic
 *(No changes to this section)*
@@ -186,32 +179,88 @@ Units & Hero (res://resources/units/)
     *   An `%EndTurnButton` `Button` will be added.
     *   A `%GachaTokenLabel` `Label` will be added to display the player's current tokens.
 
-### 4.3 High-Level Window Interaction Rules
+<!-- START OF NEW UI/WINDOW LOGIC -->
+4.3 The Definitive Guide to MVP Player Interactions
+This section provides the exhaustive and authoritative rules for all player interactions within the MVP, replacing all previous interaction logic. It is built on the core principle of context-aware systems.
+4.3.1 The Universal Laws of Interaction
+These five laws are the foundational principles governing every player action. All game logic must adhere to them.
+The Law of Action Intent: An action is initiated in one of two ways:
+Drag and Drop: Dragging a selected GachaBallView and dropping it onto a valid target.
+Select-then-Click: Having one GachaBallView selected, and then Single Clicking on a second valid target (GachaBallView or empty SlotView).
+Both methods must trigger the exact same validation logic and resulting action.
+The Law of Contextual Validity: Every action's possibility is dictated by context. The system must always validate an action based on:
+Game State: Is the game in-battle or out-of-battle? (e.g., Equipping is battle-only, Permanent Merging is out-of-battle only).
+Container Compatibility: Can the target container accept the source GachaBall? (e.g., PlayerBench accepts Units, not Items; ItemInventory accepts Items, not Units).
+Tier Compatibility: Can the target container accept the source GachaBall's tier? (e.g., a Tier 1 GachaBall cannot be moved into a Tier 2 Run Inventory container).
+An action that fails any validity check is an Invalid Action.
+The Law of Action Completion: A successful action (Move, Swap, Equip, Merge) or the opening of an Inspection Window immediately clears the player's current selection. The InteractionManager's selection is set to null.
+The Law of Emptiness: Empty SlotViews are non-interactive for selection. They serve only as potential drop/click targets for an action initiated from a filled GachaBallView.
+The Law of Indirect Deployment: GachaBalls drawn from a Gacha Machine are placed in their respective holding areas (PlayerBench or ItemInventory). They cannot be moved directly from the Gacha Machine's content view to the player's lineup.
+4.3.2 Detailed Interaction Scenarios
+The outcome of every input is determined by the current game state and context.
+Scenario A: In-Battle Interactions (GameManager.is_in_battle == true)
+Single Click Logic:
+On a GachaBallView in a Drag-and-Drop container*: Selects the GachaBall. If another was already selected, this click initiates an Action Intent.
+On a GachaBallView in a Read-Only container**: Opens Inspection Window and clears any current selection.
+On a selected GachaBallView: Deselects it.
+On a UI Button: Executes the button's action and clears selection.
+Double Click Logic:
+On a GachaBallView in a Drag-and-Drop container*: The first click selects it. A rapid second click Opens the Inspection Window and clears the selection.
+On a GachaBallView in a Read-Only container**: The first click opens the inspection window. The second click, now landing on the window's blocker, will close the window, creating a "flicker" effect.
+This scenario is governed by the context of the containers involved.
 
-This section defines how different window types behave and relate to each other, ensuring a predictable user experience.
+**Table A.1: Battle Board Interactions**
+*These rules apply when the source and/or target are on the `PlayerLineup`, `PlayerBench`, or `ItemInventory`.*
 
-*   **Modal Exclusivity**: General-purpose "modal" windows (e.g., Inventory, Discard Pile, Choice) are exclusive. Only one can be open at a time. The `WindowManager` will automatically close any active modal before opening a new one to maintain player focus.
-*   **Inspection Window Stacking & Grouping**: Multiple "inspection" windows can be open simultaneously, managed in contextual groups.
-    *   **Root Inspection**: Inspecting an item from a primary view (like the battle board or inventory modal) creates a new inspection group and closes all other groups.
-    *   **Child Inspection**: Clicking an item *within* an inspection window (e.g., an equipped item, a clickable effect link) opens a new window as part of the *same group*, stacking it on top.
-*   **Contextual Background Clicks**: The behavior of a click on an "empty" area depends on the context:
-    *   **Global Background Click**: A click on the main game area, not part of any window, closes **all** open inspection windows and clears the current selection.
-    *   **Modal Blocker Click**: A click on the semi-transparent `BackgroundBlocker` behind a modal window closes **only that modal**.
-    *   **Modal Content Background Click**: A click on the empty space *inside* a modal's panel (but not on an interactive element) closes any inspection windows that are open on top of it, but **does not** close the modal itself.
-*   **Window Pruning**: Clicking on the background of a parent inspection window closes all of its children in the stack, but leaves the parent window open.
+| Source GachaBall | Target | Conditions for Validity | Resulting Action |
+| :--- | :--- | :--- | :--- |
+| Unit (from Bench/Lineup) | Unit (on Bench/Lineup) | Merge recipe exists. | Show ChoiceWindow ("Merge" or "Swap"). |
+| Unit (from Bench/Lineup) | Unit (on Bench/Lineup) | No merge recipe. | Swap positions. |
+| Unit (from Bench) | Empty SlotView (in Lineup) | Slot is empty. | Move Unit to Lineup. |
+| Unit (from Lineup) | Empty SlotView (in Bench) | Slot is empty. | Move Unit to Bench. |
+| **Item (from Item Inventory)** | **Unit (on Bench/Lineup)** | **Unit has an empty item slot.** | **Equip Item onto Unit.** |
+| Unit/Item (from Battle Inventory Grid) | Empty SlotView (on Bench/Item Inventory) | Slot is empty and compatible. | Move to Battle Board. |
 
-### 4.4 Definitive UI Implementation Patterns
+**Table A.2: Battle Inventory Grid Interactions**
+*These rules apply when both the source and target are within the `BattleInventoryT*` grids. This logic is identical to the out-of-battle Run Inventory.*
 
-These are the mandatory technical patterns required to implement the interaction rules above.
-
-1.  **The "Dynamic Mouse Filter" Pattern for Clickable Links**: This pattern is required for any `RichTextLabel` that must contain clickable links while allowing its background to be non-interactive.
-    *   The `RichTextLabel` must have `bbcode_enabled = true`.
-    *   By default, its `mouse_filter` property must be set to `MOUSE_FILTER_PASS`.
-    *   The `meta_hover_started` signal must be connected to a handler that sets `mouse_filter = MOUSE_FILTER_STOP`.
-    *   The `meta_hover_ended` signal must be connected to a handler that resets `mouse_filter = MOUSE_FILTER_PASS`.
-    *   This ensures only the links themselves are interactive, while clicks on the label's empty space "pass through" to the panel behind it.
-
-2.  **Hierarchical Input Consumption**: The UI will rely on Godot's input propagation system. A `_gui_input` handler that processes an event **must** call `get_viewport().set_input_as_handled()` to consume the event and prevent it from propagating to controls lower in the visual hierarchy.
+| Source GachaBall | Target | Conditions for Validity | Resulting Action |
+| :--- | :--- | :--- | :--- |
+| GachaBallView | GachaBallView | Merge recipe exists. | Show ChoiceWindow ("Merge" or "Swap"). |
+| GachaBallView | GachaBallView | No merge recipe. Target is in the same container. | Swap positions. |
+| GachaBallView | Empty SlotView | Target slot is in the same container. | Move to empty slot. |
+| Any other combination | Any other target | Fails Contextual Validity checks. | Invalid Action. |
+Scenario B: Out-of-Battle Interactions (GameManager.is_in_battle == false)
+Action Intent Table (Drag-and-Drop or Select-then-Click):
+| Source GachaBall | Target | Conditions for Validity | Resulting Action |
+| :--- | :--- | :--- | :--- |
+| GachaBallView | GachaBallView | Merge recipe exists. | Show ChoiceWindow ("Merge" or "Swap"). |
+| GachaBallView | GachaBallView | No merge recipe. Target is in the same container. | Swap positions. |
+| GachaBallView | Empty SlotView | Target slot is in the same container. | Move to empty slot. |
+| Any other combination | Any other target | Fails Contextual Validity checks. | Invalid Action: Source GachaBall's selection is cleared, and it remains in its original position. |
+*Drag-and-Drop Containers: PlayerLineup, PlayerBench, ItemInventory, RunInventoryWindow.
+**Read-Only Containers: EnemyLineup, DiscardPileWindow, GachaMachineWindow content view.
+4.4 Definitive Window Management & UI Patterns
+This section defines the strict rules for how windows are opened, closed, and layered.
+Window Types & Groups:
+Modal Windows: The root of an interaction tree (e.g., RunInventoryWindow). They take focus and are accompanied by a BackgroundBlocker.
+Inspection Windows: Child windows that display detailed information (GachaBallInspectionWindow). They can stack on top of Modals and other Inspection Windows.
+Inspection Groups (Branches): An action that opens the first Inspection Window in a chain creates a new Inspection Group. Opening a new root inspection closes all other existing Inspection Groups.
+Hierarchical Closure (Pruning):
+Clicking on the empty background of a window closes all windows stacked on top of it within its group, but leaves the clicked window open.
+Example: RunInventory (Modal) -> Unit_Inspect (Inspect) -> Item_Inspect (Inspect).
+A click on Unit_Inspect's background closes Item_Inspect.
+A click on RunInventory's background closes both Unit_Inspect and Item_Inspect.
+Click-Through on Closure (CRITICAL UX RULE):
+The click that closes a window is not consumed. After the window is closed, that same click's screen position is immediately re-evaluated against the now-exposed UI elements.
+Behavior: A single click on the BackgroundBlocker will close the Modal window, and if a GachaBallView was underneath that click position, that GachaBall will be instantly selected or inspected as per the rules above. This creates a seamless, responsive feel where no click is "wasted". The WindowManager is responsible for this two-step process: close window, then re-process input.
+The "Dynamic Mouse Filter" Pattern for Clickable Links: This pattern is required for any RichTextLabel that must contain clickable links while allowing its background to be non-interactive.
+The RichTextLabel must have bbcode_enabled = true.
+By default, its mouse_filter property must be set to MOUSE_FILTER_PASS.
+The meta_hover_started signal must be connected to a handler that sets mouse_filter = MOUSE_FILTER_STOP.
+The meta_hover_ended signal must be connected to a handler that resets mouse_filter = MOUSE_FILTER_PASS.
+This ensures only the links themselves are interactive, while clicks on the label's empty space "pass through" to the panel behind it.
+Hierarchical Input Consumption: The UI will rely on Godot's input propagation system. A _gui_input handler that processes an event must call get_viewport().set_input_as_handled() to consume the event and prevent it from propagating to controls lower in the visual hierarchy.
 
 ## Part 5: Game Flows
 

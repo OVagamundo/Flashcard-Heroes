@@ -301,10 +301,10 @@ Merging is a core strategic element, but its effect depends entirely on *where* 
 #### 9.3.1. Temporary Merges (During Battle)
 Temporary merges occur during the Battle Management Phase and only affect the current battle.
 *   **On-Board Merge:** Dragging one GachaBall onto another on the battle board (Lineup or Bench). The result **replaces the target GachaBall** in its slot.
-*   **In-Inventory Merge:** Dragging one GachaBall onto another within the **Battle Inventory Window** (the view of a Gacha Machine's contents). The result is **placed in the first available empty slot** within that same inventory, ready to be drawn.
+*   **In-Inventory Merge:** Dragging one GachaBall onto another within the **Battle Inventory Window** (the view of a Gacha Machine's contents). The result is **placed in the first available empty slot** within that same inventory but in the appropriate tier container, ready to be drawn.
 
 #### 9.4. Permanent Merges (Outside Battle)
-Performed at any time via the **Run Inventory Window**. This action **permanently consumes** the two ingredient instances from the **Run Inventory** and adds the new resulting instance back to it.
+Performed at any time via the **Run Inventory Window**. This action **permanently consumes** the two ingredient instances from the **Run Inventory** and adds the new resulting instance back to it in the appropriate tier container.
 9.5. Item Handling During Unit Merges
 When two Unit GachaBallInstances are merged (either temporarily or permanently), any Item GachaBallInstances they had equipped are handled as follows:
 All equipped Item GachaBallInstances from both input units are equipped to the newly merged Unit GachaBallInstance, this only happens on temporary merges since equipped items are not saved to the RunInventory.
