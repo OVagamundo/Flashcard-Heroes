@@ -13,12 +13,16 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 
 var _is_battle_context: bool = false
 
-# TDD-compliant container names for the run inventory.
-const RUN_CONTAINER_NAMES = {
-	1: &"RunInventoryT1",
-	2: &"RunInventoryT2",
-	3: &"RunInventoryT3",
+# Container tags used on instances for run inventory tiers (single-source-of-truth model).
+# Canonical container tags for run inventory tiers.
+const RUN_CONTAINER_TAGS = {
+    1: &"RunInventoryT1",
+    2: &"RunInventoryT2",
+    3: &"RunInventoryT3",
 }
+
+# Maximum slots per tier grid as per TDD table 2.2
+const RUN_GRID_CAPACITY = 16
 
 func _ready():
 	panel_container.gui_input.connect(_on_panel_gui_input)
@@ -37,6 +41,10 @@ func populate(context: Dictionary):
 	if _is_battle_context:
 		if not EventBus.is_connected("battle_inventory_changed", _populate_grids_from_battle_inventory):
 			EventBus.battle_inventory_changed.connect(_populate_grids_from_battle_inventory)
+		# Populate immediately with current battle inventory
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			_populate_grids(bm.get_battle_inventory(), true)
 	else: # Run context
 		if not EventBus.is_connected("run_data_changed", _populate_grids_from_run_inventory):
 			EventBus.run_data_changed.connect(_populate_grids_from_run_inventory)
@@ -48,20 +56,18 @@ func _populate_grids_from_run_inventory():
 		return
 
 	var inventory_data = {}
-	for tier in RUN_CONTAINER_NAMES:
-		var container_name = RUN_CONTAINER_NAMES[tier]
-		var container = GameManager.run_state.get_container(container_name)
-		if not is_instance_valid(container):
-			continue
+	for tier in RUN_CONTAINER_TAGS:
+		var container_tag: StringName = RUN_CONTAINER_TAGS[tier]
+		var instances: Array[GachaBallInstance] = GameManager.run_state.get_instances_in_container(container_tag)
 
-		var tier_data_array = []
-		var uuids = container.get_all_uuids()
-		for uuid in uuids:
-			if uuid.is_empty():
-				tier_data_array.append(null)
-			else:
-				var instance = GameManager.run_state.run_instances.get(uuid)
-				tier_data_array.append(instance)
+		var tier_data_array: Array = []
+		tier_data_array.resize(RUN_GRID_CAPACITY)
+		for i in range(RUN_GRID_CAPACITY):
+			tier_data_array[i] = null
+
+		for inst in instances:
+			if inst.location_slot_index < RUN_GRID_CAPACITY:
+				tier_data_array[inst.location_slot_index] = inst
 		
 		inventory_data[tier] = tier_data_array
 
@@ -116,7 +122,7 @@ func _populate_grids(inventory_data: Dictionary, is_interactive: bool):
 			if _is_battle_context:
 				loc.container = &"BattleInventoryT%d" % tier
 			else:
-				loc.container = RUN_CONTAINER_NAMES[tier]
+				loc.container = RUN_CONTAINER_TAGS[tier]
 			
 			var is_equipped = is_instance_valid(instance) and equipped_item_uuids.has(instance.ball_uuid)
 

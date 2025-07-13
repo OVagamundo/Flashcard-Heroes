@@ -131,7 +131,10 @@ func _can_drop_data(_at_position, data) -> bool:
 	return data is Dictionary and data.has("source_loc")
 
 func _drop_data(_at_position, data):
+	# Notify game logic to process the inventory action
 	EventBus.emit_signal("inventory_action_requested", data.source_loc, _location)
+	# Clean up the drag state so the placeholder and transparency are removed
+	InteractionManager.end_drag(true)
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):
 	if view == self:
@@ -166,7 +169,7 @@ func _apply_selection_feedback():
 func _notification(what: int):
 	if what == NOTIFICATION_DRAG_END:
 		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
-			InteractionManager.end_drag(false)
+			InteractionManager.end_drag(true)
 
 func _get_all_instances_db() -> Dictionary:
 	if GameManager.is_in_battle:

@@ -7,9 +7,12 @@ const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 ## All communication between major systems happens through these signals.
 
 # --- Run/Scene Signals ---
+signal new_game_requested
 signal start_run_requested
 signal loadout_scene_requested
 signal main_scene_requested
+signal path_choice_scene_requested
+signal battle_scene_requested
 signal battle_start_requested
 signal inspection_test_scene_requested
 signal title_scene_requested

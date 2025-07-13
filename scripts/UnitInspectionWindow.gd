@@ -63,16 +63,19 @@ func populate(context: Dictionary):
 		item_grid.visible = true
 		item_grid.columns = unit_definition.item_slot_count
 
-	# Get the master instance dictionary from the correct data owner.
-	var all_instances_db: Dictionary
+	var equipped_items: Array[GachaBallInstance] = []
 	if GameManager.is_in_battle:
+		# TODO: Refactor with BattleManager helpers post-Phase 3
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		all_instances_db = bm.get_all_instances() if is_instance_valid(bm) else {}
+		if is_instance_valid(bm):
+			var all_instances_db = bm.get_all_instances()
+			equipped_items = MergeManager._get_equipped_item_instances(_instance, all_instances_db)
 	else:
-		all_instances_db = GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
-		
-	# Use the helper to get the equipped item instances.
-	var equipped_items = MergeManager._get_equipped_item_instances(_instance, all_instances_db)
+		if is_instance_valid(GameManager.run_state):
+			for item_uuid in _instance.equipped_item_uuids:
+				var item_instance = GameManager.run_state.get_instance_by_uuid(item_uuid)
+				if is_instance_valid(item_instance):
+					equipped_items.append(item_instance)
 
 	for i in range(unit_definition.item_slot_count):
 		var item_instance = equipped_items[i] if i < equipped_items.size() else null
