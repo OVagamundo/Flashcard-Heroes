@@ -18,6 +18,24 @@ const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 # --- Node References ---
 var battle_manager: BattleManager
 
+# --- Helper to convert placeholder PanelContainers into SlotView prefabs once ---
+func _initialize_slots(ui_container: HBoxContainer, container_name: StringName):
+	var slots: Array = ui_container.get_children()
+	var SlotViewScene := preload("res://scenes/SlotView.tscn")
+	for i in range(slots.size()):
+		var child = slots[i]
+		if child is PanelContainer and child.get_script() != preload("res://scripts/SlotView.gd"):
+			var loc := LocationIdentifier.new()
+			loc.container = container_name
+			loc.index = i
+			var parent: Node = child.get_parent()
+			var idx: int = child.get_index()
+			child.free()
+			var slot_view: PanelContainer = SlotViewScene.instantiate()
+			parent.add_child(slot_view)
+			parent.move_child(slot_view, idx)
+			slot_view.populate(loc)
+
 func _ready():
 	battle_manager = get_node("BattleManager")
 	if not is_instance_valid(battle_manager):
@@ -33,6 +51,23 @@ func _ready():
 	end_turn_button.pressed.connect(func(): EventBus.emit_signal("end_turn_requested"))
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
 	
+	# Connect draw buttons (named DrawTier1, DrawTier2, DrawTier3) to EventBus
+	var main_node = get_tree().get_root().find_child("Main", true, false)
+	if is_instance_valid(main_node):
+		var btn_parent = main_node.get_node_or_null("VBoxContainer/BottomArea/HBoxContainer")
+		if is_instance_valid(btn_parent):
+			for child in btn_parent.get_children():
+				if child is Button and child.name.begins_with("DrawTier"):
+					var tier_str := child.name.substr(len("DrawTier"))
+					var tier := int(tier_str)
+					child.pressed.connect(func(t=tier): EventBus.emit_signal("draw_gacha_requested", t))
+	
+	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
+	_initialize_slots(player_lineup, &"PlayerLineup")
+	_initialize_slots(player_bench, &"PlayerBench")
+	_initialize_slots(item_inventory, &"ItemInventory")
+	_initialize_slots(enemy_lineup, &"EnemyLineup")
+
 	# The initial draw is now handled directly in _ready to avoid race conditions.
 	# Subsequent updates will be handled by the battle_inventory_changed signal.
 	_redraw_board()
@@ -103,10 +138,16 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			view.set_is_enemy(is_enemy)
 			view.set_meta("location_identifier", loc)
 		else:
-			# Replace placeholder with a proper SlotView instance prefab.
+			# If this slot is already a SlotView instance, simply update its location metadata.
+			if slot.get_script() == preload("res://scripts/SlotView.gd"):
+				slot.populate(loc)
+				slot.set_meta("location_identifier", loc)
+				continue
+			# Otherwise replace placeholder PanelContainer with a proper SlotView prefab.
 			var SlotViewScene := preload("res://scenes/SlotView.tscn")
 			var parent := slot.get_parent()
 			var idx: int = slot.get_index()
+			# Remove placeholder; queue_free so Godot cleans up after this frame.
 			slot.queue_free()
 			var slot_view: PanelContainer = SlotViewScene.instantiate()
 			parent.add_child(slot_view)

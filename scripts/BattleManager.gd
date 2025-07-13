@@ -173,6 +173,34 @@ func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	return get_instance(uuid)
 
 # --- Battle Setup ---
+func _initialize_draw_pool():
+	var draw_container := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL)
+	if not is_instance_valid(draw_container):
+		return
+
+	var slot_index: int = draw_container.get_all_uuids().size()
+
+	var all_defs: Array = []
+	all_defs.append_array(Database.units.values())
+	all_defs.append_array(Database.items.values())
+
+	for def in all_defs:
+		if not is_instance_valid(def):
+			continue
+		var tier_val = def.get("tier")
+		if tier_val == null:
+			continue
+		if tier_val < 1 or tier_val > 3:
+			continue
+		var inst := GachaBallInstance.new()
+		inst.initialize(def)
+		inst.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL
+		inst.location_slot_index = slot_index
+		_battle_instances[inst.ball_uuid] = inst
+		draw_container.set_uuid(slot_index, inst.ball_uuid)
+		slot_index += 1
+
+
 func _setup_battle():
 	# 1. Create battle copies of all instances from the run.
 	var _source_instances: Array = GameManager.run_state.get_all_instances().values()
@@ -203,6 +231,9 @@ func _setup_battle():
 			battle_copy.location_slot_index = permanent_instance.location_slot_index
 		else:
 			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL
+
+	# Initialize the draw pool with one copy of every eligible definition (TDD §5.2)
+	_initialize_draw_pool()
 
 	# 2. Setup the enemy lineup
 	_setup_enemy_lineup()
