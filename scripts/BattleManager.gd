@@ -16,6 +16,7 @@ const BATTLE_CONTAINER_TAGS = {
 	PLAYER_ITEM_INVENTORY = &"ItemInventory",
 	ENEMY_LINEUP = &"EnemyLineup",
 	ENEMY_BENCH = &"EnemyBench",
+
 	BATTLE_DRAW_POOL = &"BattleDrawPool",
 	BATTLE_DISCARD_PILE = &"BattleDiscardPile",
 }
@@ -50,7 +51,72 @@ class ArrayContainer:
 		return _data.duplicate()
 var _gacha_tokens: int = 0
 
-# --- Godot Lifecycle --- 
+# --- Godot Lifecycle ---
+
+# ------------------------------------------------------------------
+# Battle Setup
+# ------------------------------------------------------------------
+# Creates battle-copies of the player's run inventory and places them
+# into the tiered battle-inventory containers (BattleInventoryT1/2/3).
+# Also spawns the enemy lineup.
+func _setup_battle():
+	# Clear any stale data in case this is a retry.
+	_battle_instances.clear()
+	_containers.clear()
+
+	# 1. Copy the player's permanent run inventory into battle instances
+	var run_instances: Array = GameManager.run_state.get_all_instances().values()
+	for perm_inst in run_instances:
+		var battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
+		if not is_instance_valid(battle_copy):
+			printerr("BattleManager: Failed to create battle copy for", perm_inst.ball_uuid)
+			continue
+
+		_battle_instances[battle_copy.ball_uuid] = battle_copy
+
+		# Determine the tiered battle-inventory container for this instance
+		var tier: int = battle_copy.get_definition().tier
+		var tier_container_tag: StringName = StringName("BattleInventoryT%d" % tier)
+		var container := get_container(tier_container_tag)
+		var slot := container.find_first_empty_slot()
+		if slot == -1:
+			slot = container.get_all_uuids().size()
+		container.set_uuid(slot, battle_copy.ball_uuid)
+
+		battle_copy.location_container_tag = tier_container_tag
+		battle_copy.location_slot_index = slot
+
+		# Detect hero instance (supports both new `is_hero` flag and legacy HERO tag)
+		var def := battle_copy.get_definition()
+		var is_hero_unit := false
+		if def != null:
+			is_hero_unit = def.is_hero
+			if not is_hero_unit and def.tags.has("HERO"):
+				is_hero_unit = true
+
+		# If this instance is the hero, also place it into the PlayerLineup by default
+		if is_hero_unit:
+			var lineup_container := get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+			lineup_container.set_uuid(0, battle_copy.ball_uuid)
+			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			battle_copy.location_slot_index = 0
+
+	# 1b. Ensure the player's hero is always present, even if not part of run_instances
+	var hero_run_inst: GachaBallInstance = GameManager.run_state.hero_instance
+	if is_instance_valid(hero_run_inst) and not _battle_instances.has(hero_run_inst.ball_uuid):
+		var hero_copy: GachaBallInstance = hero_run_inst.create_battle_copy()
+		_battle_instances[hero_copy.ball_uuid] = hero_copy
+		# Place hero in PlayerLineup slot 0
+		var lineup_c := get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+		lineup_c.set_uuid(0, hero_copy.ball_uuid)
+		hero_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		hero_copy.location_slot_index = 0
+
+	# 2. Add the enemies defined for this encounter
+	_setup_enemy_lineup()
+
+	# Emit initial inventory populated signal so views can draw immediately
+	EventBus.emit_signal("battle_inventory_changed") 
 func _ready():
 	# Detect and prevent duplicate BattleManager instances which can cause
 	# duplicate signal handling (e.g. double draws per click).
@@ -86,65 +152,8 @@ func _connect_signals():
 	EventBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 
 
-# --- Public API --- 
-func get_instance(uuid: String) -> GachaBallInstance:
-	return _battle_instances.get(uuid)
-
-func get_gacha_tokens() -> int:
-	return _gacha_tokens
-
-func get_current_phase_name() -> StringName:
-	var phase_name: StringName
-	match _current_battle_phase:
-		Phases.START_OF_TURN: phase_name = &"START_OF_TURN"
-		Phases.MANAGEMENT: phase_name = &"MANAGEMENT"
-		Phases.COMBAT: phase_name = &"COMBAT"
-		Phases.END_OF_TURN: phase_name = &"END_OF_TURN"
-		Phases.BATTLE_OVER: phase_name = &"BATTLE_OVER"
-	return phase_name
-
-func get_battle_inventory() -> Dictionary:
-	# Returns dictionary keyed by tier, each an Array[instance|null] of fixed size 16
-	var result := {}
-	for tier in [1, 2, 3]:
-		var container_name: StringName = &"BattleInventoryT%d" % tier
-		var container := get_container(container_name)
-		var tier_array: Array = []
-		tier_array.resize(16)
-		tier_array.fill(null)
-		if is_instance_valid(container):
-			var uuids := container.get_all_uuids()
-			var limit: int = min(uuids.size(), tier_array.size())
-			for i in range(limit):
-				var uuid: String = uuids[i]
-				if not uuid.is_empty() and _battle_instances.has(uuid):
-					tier_array[i] = _battle_instances[uuid]
-		result[tier] = tier_array
-	return result
-
-func get_discard_pile_inventory() -> Dictionary:
-	# Groups discard pile items by tier; array size flexible.
-	var result := {}
-	var discard_container := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-	if not is_instance_valid(discard_container):
-		return result
-	for uuid in discard_container.get_all_uuids():
-		if uuid.is_empty():
-			continue
-		if _battle_instances.has(uuid):
-			var inst: GachaBallInstance = _battle_instances[uuid]
-			var def := inst.get_definition()
-			if not is_instance_valid(def):
-				continue
-			var tier := def.tier
-			if not result.has(tier):
-				result[tier] = []
-			result[tier].append(inst)
-	return result
-
-func get_all_instances() -> Dictionary:
-	return _battle_instances
-
+# --- Public API ---
+# Container helpers restored after accidental deletion
 func get_container(container_name: StringName) -> DataContainer:
 	# Returns a cached container object or lazily creates one.
 	if _containers.has(container_name):
@@ -164,33 +173,33 @@ func get_instances_in_container(container_tag: StringName) -> Array[GachaBallIns
 	for instance in _battle_instances.values():
 		if instance.location_container_tag == container_tag:
 			result.append(instance)
-	
+	# Keep deterministic ordering by slot index
 	result.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
 	return result
+ 
+func get_instance(uuid: String) -> GachaBallInstance:
+	return _battle_instances.get(uuid)
 
+# Returns the instance located at the given LocationIdentifier (tier/index/container)
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc):
 		return null
 
-	# Special-case: equipped item slots are stored inside the parent unit instance, not a container.
+	# Special handling for equipped item slots which are not linked to a normal container
 	if loc.container == &"equipped_item":
 		var parent_uuid: String = loc.unit_uuid
 		if parent_uuid.is_empty():
 			return null
-		if parent_uuid.is_empty():
+		var parent_instance: GachaBallInstance = get_instance(parent_uuid)
+		if not is_instance_valid(parent_instance):
 			return null
-		var parent_inst := get_instance(parent_uuid)
-		if not is_instance_valid(parent_inst):
-			return null
-		var idx: int = loc.index
-		if idx < 0 or idx >= parent_inst.equipped_item_uuids.size():
-			return null
-		var item_uuid: String = parent_inst.equipped_item_uuids[idx]
-		if item_uuid.is_empty():
-			return null
-		return get_instance(item_uuid)
+		if loc.index >= 0 and loc.index < parent_instance.equipped_item_uuids.size():
+			var item_uuid: String = parent_instance.equipped_item_uuids[loc.index]
+			if item_uuid.is_empty():
+				return null
+			return get_instance(item_uuid)
+		return null
 
-	# Standard container lookup path
 	var container := get_container(loc.container)
 	if container == null:
 		return null
@@ -199,97 +208,49 @@ func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 		return null
 	return get_instance(uuid)
 
-# --- Battle Setup ---
-func _initialize_draw_pool():
-	var draw_container := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL)
-	if not is_instance_valid(draw_container):
-		return
+func get_all_instances() -> Dictionary:
+	# Returns the live dictionary of all battle instances keyed by UUID.
+	# Useful for UI windows that need quick look-ups.
+	return _battle_instances
 
-	var slot_index: int = draw_container.get_all_uuids().size()
+func get_gacha_tokens() -> int:
+	return _gacha_tokens
 
-	var all_defs: Array = []
-	all_defs.append_array(Database.units.values())
-	all_defs.append_array(Database.items.values())
+func get_current_phase_name() -> StringName:
+	var phase_name: StringName
+	match _current_battle_phase:
+		Phases.START_OF_TURN: phase_name = &"START_OF_TURN"
+		Phases.MANAGEMENT: phase_name = &"MANAGEMENT"
+		Phases.COMBAT: phase_name = &"COMBAT"
+		Phases.END_OF_TURN: phase_name = &"END_OF_TURN"
+		Phases.BATTLE_OVER: phase_name = &"BATTLE_OVER"
+	return phase_name
 
-	for def in all_defs:
-		if not is_instance_valid(def):
-			continue
-		var tier_val = def.get("tier")
-		if tier_val == null:
-			continue
-		if tier_val < 1 or tier_val > 3:
-			continue
-		var inst := GachaBallInstance.new()
-		inst.initialize(def)
-		inst.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL
-		inst.location_slot_index = slot_index
-		_battle_instances[inst.ball_uuid] = inst
-		draw_container.set_uuid(slot_index, inst.ball_uuid)
-		slot_index += 1
+# ------------------------------------------------------------------
+# Public helper to expose the tiered battle inventory in a view-friendly
+# dictionary structure. The result mirrors the run-inventory structure
+# expected by InventoryWindow, i.e. { 1: Array[16], 2: Array[16], 3: Array[16] }.
+# Empty slots are `null` so callers can rely on array indices matching slot
+# positions in the UI grids.
+func get_battle_inventory() -> Dictionary:
+	var inventory := {}
+	var GRID_CAPACITY := 16 # Matches default container size for BattleInventoryT* per TDD table 2.2
+	for tier in [1, 2, 3]:
+		var container_tag: StringName = StringName("BattleInventoryT%d" % tier)
+		var tier_instances: Array[GachaBallInstance] = get_instances_in_container(container_tag)
 
+		var tier_array: Array = []
+		tier_array.resize(GRID_CAPACITY)
+		for i in range(GRID_CAPACITY):
+			tier_array[i] = null
 
-func _setup_battle():
-	# 1. Create battle copies of all instances from the run.
-	var _source_instances: Array = GameManager.run_state.get_all_instances().values()
-	for permanent_instance in _source_instances:
-		var battle_copy = permanent_instance.create_battle_copy()
-		if not is_instance_valid(battle_copy):
-			printerr("BattleManager: Failed to create battle copy for instance UUID: ", permanent_instance.ball_uuid)
-			continue
-		_battle_instances[battle_copy.ball_uuid] = battle_copy
-		
-		# Translate Run container tags to Battle container tags using linear conditionals (avoid nested match syntax issues)
-		var perm_def: GachaBallDefinition = permanent_instance.get_definition()
-		if is_instance_valid(perm_def) and perm_def.tags.has(&"HERO"):
-			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			battle_copy.location_slot_index = 0
-		elif permanent_instance.location_container_tag == RS.RUN_CONTAINER_TAGS.LINEUP:
-			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			battle_copy.location_slot_index = permanent_instance.location_slot_index if permanent_instance.location_slot_index >= 0 else get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).find_first_empty_slot()
-		elif permanent_instance.location_container_tag == RS.RUN_CONTAINER_TAGS.BENCH:
-			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-			battle_copy.location_slot_index = permanent_instance.location_slot_index if permanent_instance.location_slot_index >= 0 else get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH).find_first_empty_slot()
-		elif permanent_instance.location_container_tag == RS.RUN_CONTAINER_TAGS.ITEM_INVENTORY:
-			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
-			battle_copy.location_slot_index = permanent_instance.location_slot_index
-		elif str(permanent_instance.location_container_tag).begins_with("RunInventoryT"):
-			var tier_num = str(permanent_instance.location_container_tag).substr(len("RunInventoryT")).to_int()
-			battle_copy.location_container_tag = StringName("BattleInventoryT%d" % tier_num)
-			battle_copy.location_slot_index = permanent_instance.location_slot_index
-		else:
-			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL
+		for inst in tier_instances:
+			if inst.location_slot_index >= 0 and inst.location_slot_index < GRID_CAPACITY:
+				tier_array[inst.location_slot_index] = inst
 
-	# Initialize the draw pool with one copy of every eligible definition (TDD §5.2)
-	_initialize_draw_pool()
+		inventory[tier] = tier_array
 
-	# 2. Setup the enemy lineup
-	_setup_enemy_lineup()
-	
-	# 3. Sync container data so UI can display instances
-	_sync_containers_from_instances()
-	
-	# 4. Recalculate stats for all units now that they are all created
-	for instance in _battle_instances.values():
-		if not is_instance_valid(instance):
-			continue
-		var def: GachaBallDefinition = instance.get_definition()
-		if not is_instance_valid(def):
-			continue
-		if def.category == &"UNIT":
-			instance.recalculate_stats(_battle_instances)
-
-func _sync_containers_from_instances():
-	for inst in _battle_instances.values():
-		if not is_instance_valid(inst):
-			continue
-		var container := get_container(inst.location_container_tag)
-		if is_instance_valid(container):
-			# Ensure capacity
-			if inst.location_slot_index >= container.get_all_uuids().size():
-				container.set_uuid(inst.location_slot_index, inst.ball_uuid)
-			else:
-				# Record the uuid in the proper slot – always write, even if within bounds
-				container.set_uuid(inst.location_slot_index, inst.ball_uuid)
+	return inventory
 
 func _setup_enemy_lineup():
 	var enemy_unit_ids = [&"enemy_hero", &"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d"]
@@ -302,6 +263,11 @@ func _setup_enemy_lineup():
 		_battle_instances[enemy_instance.ball_uuid] = enemy_instance
 		enemy_instance.location_container_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 		enemy_instance.location_slot_index = i
+
+		# Record UUID in the EnemyLineup container so UI can discover it
+		var enemy_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+		if is_instance_valid(enemy_container):
+			enemy_container.set_uuid(i, enemy_instance.ball_uuid)
 
 # --- State Machine Logic ---
 func _get_player_hero() -> GachaBallInstance:
@@ -448,13 +414,11 @@ func _on_draw_gacha_requested(tier: int):
 	if _gacha_tokens < cost:
 		return
 
-	var draw_pool = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL)
-	var tier_pool = draw_pool.filter(func(inst): return inst.get_definition().tier == tier)
-
+	var container_tag: StringName = StringName("BattleInventoryT%d" % tier)
+	var tier_pool = get_instances_in_container(container_tag)
 	if tier_pool.is_empty():
 		_reshuffle_discard_pile(tier)
-		draw_pool = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL)
-		tier_pool = draw_pool.filter(func(inst): return inst.get_definition().tier == tier)
+		tier_pool = get_instances_in_container(container_tag)
 		if tier_pool.is_empty():
 			print("Draw failed: No instances of tier %d available even after reshuffle" % tier)
 			EventBus.emit_signal("battle_inventory_changed")
@@ -480,7 +444,7 @@ func _on_draw_gacha_requested(tier: int):
 			EventBus.emit_signal("battle_inventory_changed")
 			return
 
-	# Remove the UUID from the draw pool slot now that the instance is leaving it
+	# Remove the UUID from the inventory slot now that the instance is leaving it
 	var prev_container := get_container(drawn_instance.location_container_tag)
 	var prev_index: int = drawn_instance.location_slot_index
 	if is_instance_valid(prev_container) and prev_index >= 0:
@@ -507,9 +471,10 @@ func _on_draw_gacha_requested(tier: int):
 func _reshuffle_discard_pile(tier_to_reshuffle: int):
 	var discard_pile = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 	var tier_in_discard = discard_pile.filter(func(inst): return inst.get_definition().tier == tier_to_reshuffle)
-	
+		
 	for instance in tier_in_discard:
-		instance.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DRAW_POOL
+		var tier_container_tag := StringName("BattleInventoryT%d" % tier_to_reshuffle)
+		instance.location_container_tag = tier_container_tag
 	
 	if not tier_in_discard.is_empty():
 		EventBus.emit_signal("battle_inventory_changed")

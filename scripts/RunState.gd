@@ -73,6 +73,22 @@ func _ensure_container_populated(container_name: StringName, container: DataCont
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
     if not is_instance_valid(loc):
         return null
+
+    # Special case: equipped item slots on a unit
+    if loc.container == &"equipped_item":
+        var parent_uuid: String = loc.unit_uuid
+        if parent_uuid.is_empty():
+            return null
+        var parent_inst: GachaBallInstance = get_instance_by_uuid(parent_uuid)
+        if not is_instance_valid(parent_inst):
+            return null
+        if loc.index >= 0 and loc.index < parent_inst.equipped_item_uuids.size():
+            var item_uuid: String = parent_inst.equipped_item_uuids[loc.index]
+            if item_uuid.is_empty():
+                return null
+            return get_instance_by_uuid(item_uuid)
+        return null
+
     var container := get_container(loc.container)
     if container == null:
         return null
