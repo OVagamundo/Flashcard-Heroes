@@ -13,6 +13,9 @@ extends Resource
 ## The tier of the container, if applicable (-1 indicates no tier).
 @export var tier: int = -1
 
+## (Optional) When referring to an equipped-item slot, this stores the parent unit's UUID.
+@export var unit_uuid: String = ""
+
 func _to_string() -> String:
 	return "Location(Container: %s, Index: %d, Tier: %d)" % [container, index, tier]
 

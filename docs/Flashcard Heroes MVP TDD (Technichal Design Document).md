@@ -1,368 +1,173 @@
-Flashcard Heroes - Core Mechanics MVP TDD (Definitive Edition)
-Part 1: Project Blueprint
+Flashcard Heroes - Technical Design Document (V5.1 - Definitive)
+Part 1: Core Architecture & Principles
 1.1 Architectural Principles
-Data is the Source of Truth: Game state is stored in data structures (Arrays, Dictionaries). The UI is a disposable reflection of this data.
-The Intent-Action Model: User input is translated into a clear "intent" signal before being processed by logic controllers.
-Hierarchical Input Handling: User input is processed in a strict order of priority. An input event is "consumed" at the first level that can handle it, preventing it from propagating further. The order is: 1) Window Blockers, 2) Individual UI Components (Buttons, Views), 3) Inspection Window Panels, 4) The Global _unhandled_input handler in WindowManager as a final fallback for "background" clicks.
-Visually Consistent Components: UI components representing similar data (e.g., inventory slots, whether full or empty) should maintain a consistent size within their container to ensure a clean, grid-like appearance.
-Centralized, Context-Aware Managers: Singleton managers (e.g., InventoryManager) are the sole authorities for their specific logic domains. InteractionManager is a state machine for UI selection, not a direct input handler.
-Reactive UI: The UI redraws itself in response to global "state changed" signals, ensuring it is always synchronized with the data.
+The Hybrid Architecture: Game logic is built on two pillars:
+The Tag System: An object's identity, status, and location are defined by properties and tags on its GachaBallInstance resource. This defines what a thing is.
+Relational Queries: Managers provide helper functions that understand game rules and context to answer complex questions about the relationships between objects. This defines how things relate to each other.
+Data is the Source of Truth: The state of any game object is defined by the properties within its own data resource. Managers and UI are disposable reflections of this data.
+The Effect Resolution Queue: All combat actions are processed through a LIFO (Last-In, First-Out) stack in BattleManager to ensure causality and interruptions are handled correctly and intuitively.
+Separation of Run vs. Battle State: Persistent RunState data is never directly modified in a battle. Instead, temporary battle_copy() instances are created at the start of a battle and destroyed at the end. This is a critical firewall to protect permanent player progress.
+Reactive UI: The UI listens for granular state change signals (e.g., instance_location_changed) and updates only the specific components affected.
 1.2 Directory Structure
 Generated code
 res://
 ├── assets/
-│   ├── sprites/
-│   │   ├── units/
-│   │   └── items/
 ├── resources/
-│   ├── units/
-│   ├── items/
-│   ├── abilities/
-│   ├── recipes/
-│   └── decks/
+│   ├── units/, items/, abilities/, recipes/
 ├── scenes/
 └── scripts/
 ├── localization.csv
 Use code with caution.
 Part 2: Data Schemas & Structures
-2.1 Data Resource Schemas
+2.1 Core Data Resources
+RunState.gd: Resource, class_name RunState. The persistent state for an entire run.
+Properties: gold: int, run_instances: Dictionary[String, GachaBallInstance] (The master dictionary of all permanent instances for the run.)
+GachaBallDefinition.gd: Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
+Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tags: Array[StringName], @export var item_slot_count: int, @export var base_hp: int = 0, @export var base_pwr: int = 0
+GachaBallInstance.gd: Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall.
+Properties: definition_id: StringName, ball_uuid: String, origin_uuid: String, static_tags: Array[StringName], dynamic_tags: Array[StringName], current_hp: int, current_pwr: int, location_container_tag: StringName, location_slot_index: int, equipped_on_uuid: String, equipped_slot_index: int
+Methods: initialize(def: GachaBallDefinition), add_tag(tag: StringName), remove_tag(tag: StringName), has_tag(tag: StringName) -> bool, recalculate_stats(all_instances_db: Dictionary), create_battle_copy() -> GachaBallInstance
+MergeRecipe.gd: Resource, class_name MergeRecipe.
+Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName
+EffectRequest.gd: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
+Properties: source_uuid: String, ability_id: StringName, trigger_context: Dictionary
+AbilityDefinition.gd & EffectDefinition.gd: Define abilities and their executable effects.
+2.2 Location Container Tags (location_container_tag)
+These StringName values define all possible logical locations for a GachaBallInstance.
+Run State Locations: RUN_INVENTORY_T1, RUN_INVENTORY_T2, RUN_INVENTORY_T3
+Battle State Locations: BATTLE_DRAW_POOL_T1, BATTLE_DRAW_POOL_T2, BATTLE_DRAW_POOL_T3, BATTLE_PLAYER_LINEUP, BATTLE_PLAYER_BENCH, BATTLE_ITEM_INVENTORY, BATTLE_ENEMY_LINEUP, BATTLE_DISCARD_PILE
+Special Location: An item is considered "located" if its equipped_on_uuid property is set, which overrides any container tag.
+Part 3: Logic Layer & Managers
+3.1 Signal Bus
+Action Signals: draw_gacha_requested(tier_tag: StringName), inventory_action_requested(source_uuid: String, target_uuid: String, explicit_action: String = ""), inspection_requested(uuid: String), display_discard_pile_requested
+State Change Signals: instance_data_changed(uuid: String), instance_location_changed(uuid: String), instance_created(uuid: String), instance_destroyed(uuid: String), battle_state_changed(is_in_battle: bool), gacha_tokens_changed(new_amount: int)
+3.2 Singleton Managers
+GameManager.gd: Holds the master run_state and the global is_in_battle flag.
+InventoryManager.gd: Stateless logic controller for all inventory actions.
+InteractionManager.gd: UI state machine holding the source_uuid of the selected instance.
+MergeManager.gd: Stateless helper for merge calculations.
+Database.gd: Loads all .tres resources on startup.
+SceneManager.gd: Handles scene transitions.
+AbilityResolver.gd: Takes an EffectRequest and calls the appropriate EffectDefinition.execute() method.
+UUIDUtils.gd: Provides a generate_uuid() utility function.
+WindowManager.gd: The sole authority for the lifecycle of all modal and inspection windows.
+BattleManager.gd: The authority for a single battle's state.
+State: _battle_instances, _gacha_tokens, _effect_queue: Array[EffectRequest], _is_processing_effect: bool
+Responsibility: Manages the battle lifecycle, the effect queue, and provides relational query functions.
+3.3 The Definitive Hybrid Architecture: The "Why"
+This architecture was chosen to solve the problems of data duplication and complex state management found in traditional container-based models. By making each instance the source of its own truth, we eliminate entire classes of bugs and create a more scalable and debuggable system. The combination of stateful tags and contextual queries provides the best of both worlds: simplicity and power.
+3.4 Positional & Targeting Logic
+This logic is implemented within BattleManager's relational query functions.
+Player Team (Left Side): "Frontmost" corresponds to the unit with the highest location_slot_index (e.g., 5). "Backmost" is the lowest index (e.g., 0).
+Enemy Team (Right Side): "Frontmost" corresponds to the unit with the lowest location_slot_index (e.g., 0). "Backmost" is the highest index (e.g., 5).
+Action Order: The standard combat action order for both teams is back-to-front (index 5 down to 0).
+3.5 The Effect Resolution Queue
+This system, managed by BattleManager, governs the flow of combat. It uses a LIFO (Last-In, First-Out) stack to ensure that interruptions and reactions (like a "retaliate on hit" ability) are processed immediately after the event that caused them, creating an intuitive and predictable chain of events.
+Population: When the COMBAT phase begins, BattleManager creates an EffectRequest for each unit's action and pushes it onto the _effect_queue stack.
+Processing Loop: The BattleManager's _process function contains a loop that pops one request from the stack, awaits its resolution via the AbilityResolver, and then repeats until the queue is empty.
+Chain Reactions: Any ability that triggers another effect creates a new EffectRequest and pushes it to the top of the stack, ensuring it is resolved next.
+Part 4: Presentation Layer (UI)
+4.1 UI Component Blueprints
+GachaBallView.tscn / SlotView.tscn:
+Metadata: Must store the ball_uuid: String of the instance it represents.
+Behavior: Listens for instance_* signals to update its appearance and position.
+DiscardPileWindow.tscn: A modal window opened by WindowManager in response to display_discard_pile_requested.
+4.2 Window Management & UI Patterns
+Hierarchical Closure: Clicking on a window's background closes only the windows stacked on top of it, not the window itself.
+Click-Through on Closure: The click that closes a window is not consumed. This creates a seamless, responsive feel where no click is "wasted," which is a core part of the game's UX philosophy. WindowManager is responsible for this two-step (close, then re-process input) behavior.
+Dynamic Mouse Filter Pattern: For RichTextLabels with clickable links, the mouse_filter must be dynamically changed from PASS to STOP on meta_hover_started and back on meta_hover_ended.
+4.3 Player Interaction Scenarios
+Design Rationale: Interaction rules are separated for "In-Battle" and "Out-of-Battle" states because their consequences are fundamentally different. In-battle actions modify temporary _battle_instances, while out-of-battle actions modify the permanent run_instances. This separation is critical to the game's core loop.
+Table 4.3.1: In-Battle Interactions (is_in_battle == true)
+Player Action	Conditions	Resulting Logic Flow
+Drop Unit on Unit	Merge recipe exists.	InventoryManager shows ChoiceWindow. Player choice re-sends inventory_action_requested with explicit_action: "MERGE" or "SWAP".
+Drop Unit on Unit	No merge recipe.	Swap their location_slot_index properties.
+Drop Item on Unit	Unit has empty item slot.	Change item's equipped_on_uuid and equipped_slot_index.
+Drag Item off Unit	Target is empty Item Inv. slot.	Unequip: Change item's location_container_tag to BATTLE_ITEM_INVENTORY and clear equipped_on_uuid.
+Table 4.3.2: Out-of-Battle Interactions (is_in_battle == false)
+Player Action	Conditions	Resulting Logic Flow
+Drop Instance on Instance	Merge recipe exists.	InventoryManager shows ChoiceWindow. The chosen action is routed to RunState to modify the permanent instances.
+Drop Instance on Instance	No merge recipe.	Swap their location_slot_index within the same RUN_INVENTORY_T* container.
+### 4.4 Inspection Window System: Rules and Behavior
 
+This section defines the precise, authoritative rules for how all inspection windows (Unit, Item, Effects) must behave. These rules ensure a consistent, intuitive, and robust user experience.
 
-**RunState.gd**: Resource, class_name RunState. The persistent state for an entire run.
-Properties: - `gold: int` - `run_instances: Dictionary[String, GachaBallInstance]` (The master list of all permanent instances for the run. Their location is defined by their internal properties.)
+**1. Core Principles:**
 
-**EffectRequest.gd**: Resource, class_name EffectRequest.
-- Properties:
-  - `@export var source_uuid: String`: The UUID of the unit initiating the effect.
-  - `@export var ability_id: StringName`: The ID of the ability to execute.
-  - `@export var trigger_context: Dictionary`: Stores contextual information about the event that triggered this request. For a basic attack, it could be empty. For a retaliation, it might contain the original attacker's UUID.
+*   **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on the screen at any time. Opening a new root-level window (e.g., inspecting a different unit on the board) must close the entire previous group.
+*   **Single Child Per Parent:** A parent window can only have one direct child window open at a time. Requesting a new child window must first close any existing child and its descendants.
+*   **Hierarchical Closing:** Clicking on any window in a group closes all of its children. For example, clicking the background of a `UnitInspectionWindow` must close its child `ItemInspectionWindow` and that window's child `EffectInspectionWindow`.
+*   **Deselection on Open:** The action of opening any inspection window must immediately deselect any currently selected `GachaBallView`.
 
-GachaBallDefinition.gd: Resource, class_name GachaBallDefinition. The template for a GachaBall. Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tags: Array[StringName], @export var item_slot_count: int, @export var base_hp: int = 0, @export var base_pwr: int = 0, @export var bonus_hp: int = 0, @export var bonus_pwr: int = 0, @export var ability_definitions: Array[AbilityDefinition]
-GachaBallInstance.gd: Resource, class_name GachaBallInstance. A unique instance of a GachaBall. Its state is defined by its properties and tags. Properties: - `definition_id: StringName` - `ball_uuid: String` - `origin_uuid: String` - `static_tags: Array[StringName]` (Read-only tags from the definition, e.g., "UNIT", "TIER_1") - `dynamic_tags: Array[StringName]` (Tags added/removed during gameplay, e.g., "POISONED", "HONEY_ARMOR") - `current_hp: int` - `current_pwr: int` - `location_container_tag: StringName` (e.g., "BATTLE_PLAYER_LINEUP", "RUN_INVENTORY_T1") - `location_slot_index: int` (The slot index within the container) - `equipped_on_uuid: String` (If equipped, this holds the host's UUID. `location_container_tag` must be null) - `equipped_slot_index: int` (The item slot this occupies on the host) Methods: - `initialize(def: GachaBallDefinition)`: Sets `definition_id`, generates `ball_uuid`, copies `def.tags` into `static_tags`. - `add_tag(tag: StringName)`: Adds a non-unique tag to `dynamic_tags`. - `remove_tag(tag: StringName)`: Removes a non-unique tag from `dynamic_tags`. - `has_tag(tag: StringName) -> bool`: Checks if a tag exists in either `static_tags` or `dynamic_tags`. - `recalculate_stats(all_instances_db: Dictionary)`: Calculates stats based on its own definition and any equipped items (found by querying the database for items where `equipped_on_uuid` matches this instance's `ball_uuid`). - `create_battle_copy() -> GachaBallInstance`: Creates a deep copy, assigning a new `ball_uuid`, setting `origin_uuid`, and returning the copy to be placed into the battle.
-MergeRecipe.gd: Resource, class_name MergeRecipe. Defines a valid merge.
-Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName, @export var is_self_merge: bool, @export var merge_type: StringName
-ConditionDefinition.gd: Resource, class_name ConditionDefinition. Defines ability conditions. For MVP, its evaluate() method is a placeholder that always returns true.
-FlashcardDeckDefinition.gd: Resource, class_name FlashcardDeckDefinition.
-Properties: @export var id: StringName, @export var display_name_key: String, @export var card_list: Array[Dictionary]
-AbilityDefinition.gd: Resource, class_name AbilityDefinition. Defines an ability.
-Properties: @export var id: StringName, @export var name_key: String, @export var description_key: String, @export var effect: EffectDefinition.
-EffectDefinition.gd: Resource, class_name EffectDefinition. A base class for all ability effects.
-Method: execute(source: GachaBallInstance, targets: Array[GachaBallInstance], battle_manager: BattleManager).
-2.2 Inventory Data Structures
-2.3 MVP Data File Manifest
-The following .tres files must be created in their respective res://resources/ subdirectories.
-Units & Hero (res://resources/units/)
-| Filename | id | tags | item_slot_count | base_hp | base_pwr | icon (Path) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Hero.tres | hero | `["UNIT", "HERO", "TIER_0"]` | 5 | 10 | 2 | res://assets/sprites/units/Hero.png |
-| EnemyHero.tres | enemy_hero | `["UNIT", "HERO", "TIER_0"]` | 5 | 10 | 2 | res://assets/sprites/units/Hero.png |
-| UnitTier1A.tres | unit_t1_a | `["UNIT", "TIER_1"]` | 1 | 1 | 2 | res://assets/sprites/units/UnitTier1A.png|
-| UnitTier1B.tres | unit_t1_b | `["UNIT", "TIER_1"]` | 1 | 2 | 1 | res://assets/sprites/units/UnitTier1B.png|
-| UnitTier2C.tres | unit_t2_c | `["UNIT", "TIER_2"]` | 2 | 3 | 3 | res://assets/sprites/units/UnitTier2C.png|
-| UnitTier3D.tres | unit_t3_d | `["UNIT", "TIER_3"]` | 4 | 6 | 6 | res://assets/sprites/units/UnitTier3D.png|
+**2. Contextual Interaction:**
 
-**Items (res://resources/items/)**
+The method for opening an inspection window is context-dependent:
 
-| Filename | id | tags | bonus_hp | bonus_pwr | icon (Path) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| ItemTier1A.tres | item_t1_a | `["ITEM", "TIER_1"]` | 1 | 0 | res://assets/sprites/items/ItemTier1A.png|
-| ItemTier1B.tres | item_t1_b | `["ITEM", "TIER_1"]` | 0 | 1 | res://assets/sprites/items/ItemTier1B.png|
-| ItemTier2C.tres | item_t2_c | `["ITEM", "TIER_2"]` | 1 | 1 | res://assets/sprites/items/ItemTier2C.png|
-| ItemTier3D.tres | item_t3_d | `["ITEM", "TIER_3"]` | 2 | 2 | res://assets/sprites/items/ItemTier3D.png|
+*   **Double-Click:** Required to open an inspection window from any container where **drag-and-drop is the primary interaction**. This includes:
+    *   The Battle Board (`PlayerLineup`, `PlayerBench`).
+    *   The main Run Inventory and Battle Inventory windows.
+*   **Single-Click:** Required to open an inspection window from any container that is **static and does not support drag-and-drop**. This includes:
+    *   The item grid within a `UnitInspectionWindow`.
+    *   The "EFFECTS" button/link within any inspection window.
 
-**Recipes (res://resources/recipes/)**
-*(No changes to this section)*
+**3. Positioning:**
 
-**Abilities (res://resources/abilities/)**
+*   **No Overlap:** A child window must never overlap the UI element of its direct parent. 
+    *   A root window's anchor is the `SlotView` containing the `GachaBallView`, and the window should appear adjacent to it.
+    *   A child window's anchor is its parent window, and it should be positioned adjacent to its parent.
+*   **Dynamic Tracking:** All windows must dynamically track their anchor's position. If the anchor moves (e.g., a unit is moved on the board), the window must move with it.
 
-| Filename | id | name_key | description_key | effect (Resource) |
-| :--- | :--- | :--- | :--- | :--- |
-| BasicAttack.tres | basic_attack | "ability.basic_attack.name" | "ability.basic_attack.desc" | An instance of `BasicAttackEffect.gd`. |
+**4. Example Flow (Equipped Item Inspection):**
 
-*Note on Enemy Equipping: For the initial battle setup, the enemy lineup will be populated with one of each unit type, including an `EnemyHero`. All available item slots on these enemy units will be filled with a diverse set of appropriate items.*
+1.  User double-clicks a Unit on the battle board. The `UnitInspectionWindow` opens.
+2.  User single-clicks an equipped item inside the `UnitInspectionWindow`. The `ItemInspectionWindow` opens as a child.
+3.  User single-clicks the "EFFECTS" link inside the `ItemInspectionWindow`. The `EffectInspectionWindow` opens as a child of the item window.
+4.  At this point, the group is: `Unit -> Item -> Effect`.
+5.  User now single-clicks the "EFFECTS" link on the original `UnitInspectionWindow`. 
+    *   The `ItemInspectionWindow` and its child `EffectInspectionWindow` are closed.
+    *   A new `EffectInspectionWindow` opens as a direct child of the `UnitInspectionWindow`.
+    *   The group is now: `Unit -> Effect`.
 
-## Part 3: Logic Layer & Managers
-
-### 3.5: The Definitive Hybrid Architecture: Tags and Queries
-Generated code
-This section is the authoritative source for how game state is managed and logic is executed. It supersedes all previous descriptions of data management. The architecture is a hybrid system that uses two core concepts: the Tag System and Relational Queries.
-
-    ### A. The Tag System: The Source of Truth for State
-
-    The state of any `GachaBallInstance` is defined by the properties and tags on the instance itself, not by its inclusion in a manager's container.
-
-    *   **Static Tags:** From the `GachaBallDefinition` (e.g., "UNIT", "TIER_1"). These do not change.
-    *   **Dynamic Tags:** For status effects (e.g., "POISONED"). Added and removed via `add_tag()` and `remove_tag()`.
-    *   **Location Properties:** A set of properties on the instance (`location_container_tag`, `location_slot_index`, `equipped_on_uuid`, `equipped_slot_index`) unambiguously define its single, current location.
-    *   **Systemic Integrity:** This design makes it impossible for an instance to be in two places at once. An action like "Move" does not move a UUID between arrays; it changes the `location_*` properties on the instance itself. The UI listens for `instance_location_changed` signals to redraw views.
-
-    ### B. Relational Queries: The Source of Truth for Context
-
-    The `BattleManager` (and future helper managers like `TargetingManager`) is responsible for understanding the rules of the game and the relationships between instances. It provides helper functions that perform complex, relational queries.
-
-    *   **The Principle:** An ability's effect logic should be "dumb." It should not contain complex positional or comparative logic. Instead, it asks the `BattleManager` for a list of valid targets.
-    *   **Example Query Functions:**
-        *   `get_friend_behind(source_instance)`
-        *   `get_enemies_in_front(source_instance)`
-        *   `get_strongest_enemy()`
-        *   `get_adjacent_friends(source_instance)`
-    *   **Implementation:** These functions take the full `_battle_instances` dictionary as input. They loop through the instances, applying game rules (positioning, stats, etc.) to determine which instances match the query, and return an `Array` of the resulting `GachaBallInstance`s.
-
-    ### C. The Flow: How They Work Together
-
-    1.  **Trigger:** An event occurs (e.g., start of battle, unit faints, player ends turn).
-    2.  **Ability Activation:** An ability on a source unit is set to activate.
-    3.  **Query for Targets:** The ability's effect script calls the appropriate query function on the `BattleManager` (e.g., `get_friend_behind(self.source_instance)`).
-    4.  **Receive Targets:** The `BattleManager` performs its relational logic and returns an array of target instances.
-    5.  **Apply Effect:** The effect script iterates through the returned array and applies its logic (damage, buffs, adding a "POISONED" tag, etc.) to each target instance. Any change to an instance's data (HP, PWR, dynamic tags) must be followed by an `instance_data_changed` signal.
-
-    This hybrid system provides a clean separation of concerns. **Tags define WHAT a thing is. Queries define WHO it relates to.** This creates a robust, scalable, and easy-to-understand foundation for all game mechanics.
-
-**State Change Signals:** `instance_data_changed(uuid: String), instance_location_changed(uuid: String), instance_created(uuid: String), instance_destroyed(uuid: String), battle_state_changed(is_in_battle: bool), battle_phase_changed(phase_name: StringName), gacha_tokens_changed(new_amount: int)`
-
-*   **Run/Scene Signals:** `start_run_requested, loadout_scene_requested, main_scene_requested, battle_start_requested`
-*   **Window/Modal Signals:** `inspect_inventory_requested, display_discard_pile_requested, close_modal_requested`
-*   **Action Signals:** `draw_gacha_requested(tier: int), inventory_action_requested(source_uuid: String, target_uuid: String), choice_made(choice_id: String), inspection_requested(source_view: Control)`
-*   **Selection Signals:** `view_selected(view: Control, location: LocationIdentifier), view_deselected(view: Control), invalid_action_triggered(view: Control), selection_changed(new_location: LocationIdentifier)`
-
-### 3.2 Singleton Managers
-
-*   **`GameManager.gd`**: Holds the master `run_state: RunState` resource for the current run and the global `is_in_battle: bool` flag. It is the central access point for all persistent run data.
-*   **`InventoryManager.gd`**: A stateless logic controller. It listens for `inventory_action_requested` and uses `GameManager.is_in_battle` to determine the correct data owner (`RunState` or `BattleManager`). It then calls the appropriate methods on that owner to modify the properties of the involved `GachaBallInstance`s. After a successful action, it is responsible for ensuring the correct state change signals (e.g., `instance_location_changed`) are emitted.
-*   **`InteractionManager.gd`**: A state machine that holds the `source_uuid` of the currently selected `GachaBallInstance`. Manages drag-and-drop state and selection state for the UI.
-*   **`MergeManager.gd`**: A stateless helper used by `InventoryManager` for merge calculations.
-*   **`Database.gd`**: Loads all `.tres` resources on startup for fast access.
-*   **`SceneManager.gd`**: Handles scene transitions.
-*   **`AbilityResolver.gd`**: Manages ability queue and resolution. For the MVP, it will directly execute the `BasicAttackEffect`.
-*   **`UUIDUtils.gd`**: Provides a `generate_uuid()` utility function.
-*   **`WindowManager.gd`**: The sole authority for the lifecycle of all modal and inspection windows.
-*   **`BattleManager.gd`**: The sole authority for the state of a single battle.
-    * **State Properties**:
-        * `_battle_instances: Dictionary[String, GachaBallInstance]` (The master registry for ALL temporary battle copies.)
-        * `_gacha_tokens: int`
-        * `_current_battle_phase: StringName`
-    * **Responsibility**: Manages the battle lifecycle and provides relational query functions (e.g., `get_friend_behind()`, `get_strongest_enemy()`) for the ability system. It modifies `GachaBallInstance` properties in its `_battle_instances` registry and emits the appropriate state change signals.
-    * **Battle State Machine**: Operates with phases: `START_OF_TURN`, `MANAGEMENT`, `COMBAT`, `END_OF_TURN`. The `COMBAT` phase uses relational queries to determine targets for abilities.
-
-## Part 4: Presentation Layer (UI)
-
-### 4.1 UI Component Blueprints
-
-*   **`GachaBallView.tscn`**:
-    *   Metadata Requirement: Each instance must have the `ball_uuid: String` of the `GachaBallInstance` it represents stored in its metadata. This is essential for all interactions.
-*   **`SlotView.tscn`**:
-    *   Metadata Requirement: Each instance must have the `ball_uuid: String` of the `GachaBallInstance` it represents stored in its metadata. This is essential for all interactions.
-    *   The `RichTextLabel` for the prompt must have `mouse_filter = MOUSE_FILTER_PASS`.
-*   **`Battle.tscn` UI Elements**:
-    *   An `%EndTurnButton` `Button` will be added.
-    *   A `%GachaTokenLabel` `Label` will be added to display the player's current tokens.
-    *   **Implementation Note**: The `BattleView.gd` script must be attached to the root node of `Battle.tscn` for the UI to update correctly.
-    *   **Implementation Note**: When `BattleView.gd` is attached to the root node, the `BattleManager` node can be referenced directly as `$"BattleManager"`.
-
-## Part 5: Game Flows
-
-### 5.1 Battle Setup Flow
-1. `BattleManager` is instantiated.
-2. It accesses `GameManager.run_state.run_instances`.
-3. For each permanent instance, it calls `create_battle_copy()` and adds the copy to its own `_battle_instances`.
-4. It sets the initial battle location properties on each new copy (e.g., `location_container_tag = "BATTLE_DRAW_POOL_T1"`).
-5. For each newly created instance, it emits `instance_created(new_uuid)`.
-
-### 5.2 Gacha Draw Flow
-1. Receives `draw_gacha_requested(tier)`.
-2. Checks for sufficient `_gacha_tokens`.
-3. Queries `_battle_instances` to find all instances with `location_container_tag == "BATTLE_DRAW_POOL_T[tier]"`.
-4. If the pool is empty, it performs the reshuffle logic by finding instances with `location_container_tag == "BATTLE_DISCARD_PILE"` and the correct static tier tag, then changing their location properties.
-5. Picks a random instance from the draw pool.
-6. Changes its `location_container_tag` and `location_slot_index` to an available slot in `BATTLE_PLAYER_BENCH` or `BATTLE_ITEM_INVENTORY` (or `BATTLE_DISCARD_PILE` if full).
-7. Emits `instance_location_changed(drawn_uuid)`.
-
-### 5.3 Battle Turn Flow
-1. `BattleManager` transitions to `START_OF_TURN`.
-2. Sets `_gacha_tokens` to 5 and emits `gacha_tokens_changed(new_amount)`.
-3. Transitions to `MANAGEMENT` phase. Player may deploy units, equip items, and arrange lineup by changing properties on instances.
-4. On End Turn, transitions to `COMBAT` phase. For each unit, uses relational queries (e.g., `get_frontmost_enemy()`) to determine targets and applies ability effects by changing properties (e.g., `current_hp`). Emits `instance_data_changed` and/or `instance_location_changed` as needed.
-5. If a unit is defeated, updates its `location_container_tag` to `BATTLE_DISCARD_PILE` and emits `instance_location_changed` and `instance_destroyed`.
-6. Checks for victory/defeat and transitions accordingly.
-
-### 5.4 Equip & Stat Recalculation Flow
-1. Player initiates an equip action. UI emits `inventory_action_requested(source_uuid, target_uuid)`.
-2. `InventoryManager` determines context and modifies the item's `equipped_on_uuid` and `equipped_slot_index` properties.
-3. Updates the item's `location_container_tag` to `EQUIPPED` and `location_slot_index` to the slot index.
-4. Emits `instance_data_changed(item_uuid)` and `instance_location_changed(item_uuid)`.
-5. Calls `recalculate_stats` on the target unit and emits `instance_data_changed(unit_uuid)`.
-
-### 5.5 Permanent Merge Flow (Out of Battle)
-1. Player merges two instances from `RunState.run_instances`.
-2. `InventoryManager` calls `MergeManager.calculate_merge_result(instance_a, instance_b)`.
-3. Removes the old instances from `run_instances` and adds the merged instance.
-4. Sets the merged instance's properties and emits `instance_created(new_uuid)` and `instance_destroyed(old_uuid)` for each removed instance.
-5. Emits `instance_location_changed(new_uuid)`.
-*All locations and board state are defined by the `location_*` properties on each instance. There are no containers or arrays for board state. The UI queries `_battle_instances` for all instances with a given `location_container_tag` and ordered by `location_slot_index`.*
-
-### 5.2 Gacha Draw Flow (`BattleManager.gd`)
-1. Receives `draw_gacha_requested(tier)`.
-2. Checks if `_gacha_tokens` is sufficient (`cost = tier`).
-3. If the draw pool for the tier is empty, automatically reshuffles by finding all instances in `_battle_instances` with `dynamic_tags` including "DISCARDED" and the matching tier tag, and resets their location to the draw pool.
-4. Picks a random instance from the draw pool (querying `_battle_instances` for `location_container_tag == "DRAW_POOL"` and matching tier).
-5. Sets its `location_container_tag` and `location_slot_index` to the target (e.g., "PLAYER_BENCH", next available slot) or, if full, sets `location_container_tag` to "DISCARD".
-6. Emits `battle_inventory_changed`.
-
-*All movement is performed by updating the `location_*` properties on the instance. The UI redraws by querying for all instances with a given location tag.*
-
-### 5.3 Reshuffle Flow
-*   The manual `_on_reshuffle_requested` flow is **REMOVED**. Reshuffling is now an automatic process triggered by an attempt to draw from an empty pool.
-
-### 5.3 Battle Turn Flow
-This describes the flow for a single turn, managed by the `BattleManager`'s state machine.
-1.  **Transition to `START_OF_TURN`**:
-    *   `BattleManager` sets `_gacha_tokens` to 5.
-    *   Emits `gacha_tokens_changed`.
-2.  **Transition to `MANAGEMENT`**:
-    *   Enables the `%EndTurnButton`.
-    *   Player may spend tokens, deploy units, equip items, and arrange their lineup by changing the `location_*` and `equipped_on_uuid` properties on instances.
-3.  **Player Action: End Turn**:
-    *   Player clicks `%EndTurnButton`.
-    *   Button is disabled.
-4.  **Transition to `COMBAT`**:
-    *   `BattleManager` queries all instances with `location_container_tag == "PLAYER_LINEUP"` and `location_container_tag == "ENEMY_LINEUP"`, ordered by `location_slot_index`.
-    *   Each unit acts in order (player then enemy, back-to-front), using relational queries (e.g., `get_frontmost_enemy()`).
-    *   Each unit performs its ability (e.g., basic attack), applying changes to target instances (e.g., updating `current_hp`).
-    *   If a unit is defeated, its `location_container_tag` is set to "DISCARD" or it is removed from `_battle_instances`.
-    *   Emits `battle_inventory_changed` after any change affecting the board.
-5.  **Transition to `END_OF_TURN`**:
-    *   `BattleManager` checks for victory (all enemies defeated) or defeat (player hero HP <= 0).
-    *   If the battle is not over, loop back to Step 1 for the next turn.
-
-*All board state and effects are managed by property/tag changes and queries on `_battle_instances`.*
-
-### 5.4 Equip & Stat Recalculation Flow (Reactive)
-This flow describes how equipping an item correctly triggers a reactive stat update.
-
-1.  **Intent**: Player initiates an Equip action during a battle.
-2.  **UI Layer**: Emits `inventory_action_requested` with the `LocationIdentifier` for the source item and target unit.
-3.  **`InventoryManager`**:
-    *   Receives the signal. Confirms `GameManager.is_in_battle` is true.
-    *   Uses `BattleManager`'s API to get the unit and item instances from `_battle_instances`.
-    *   Sets the item's `equipped_on_uuid` and `equipped_slot_index` properties to reference the unit and slot.
-    *   Updates the item's `location_container_tag` to "EQUIPPED" and `location_slot_index` to the slot index.
-    *   Emits `unit_inventory_changed(target_unit.ball_uuid)`.
-4.  **`BattleManager`**:
-    *   Receives `unit_inventory_changed`.
-    *   Calls `get_instance(unit_uuid).recalculate_stats(_battle_instances)`.
-    *   Emits `unit_stats_changed(unit_uuid)`.
-5.  **UI Layer**: The `GachaBallView` for the unit receives `unit_stats_changed` and updates its HP/PWR labels.
-
-*All equipment and stat changes are managed by property/tag changes on the relevant instances, with no arrays or containers involved.*
-
-### 5.5 Permanent Merge Flow (Out of Battle)
-This flow describes how merging instances outside of battle correctly modifies the persistent `RunState`.
-
-1.  **Context**: Player is in a non-battle scene (e.g., Shop). `GameManager.is_in_battle` is `false`.
-2.  **Intent**: Player merges two instances from their Run Inventory.
-3.  **UI Layer**: Emits `inventory_action_requested` with `LocationIdentifier`s for both instances.
-4.  **`InventoryManager`**:
-    *   Receives the signal. Confirms `is_in_battle` is `false`.
-    *   Uses `RunState.run_instances` to get the instances by UUID.
-    *   Calls `MergeManager.calculate_merge_result(instance_a, instance_b)` to get the merged instance.
-    *   Updates the merged instance's properties and tags as needed.
-    *   Sets the merged instance's `location_container_tag` and `location_slot_index` to the correct location.
-    *   Removes the old instances from `run_instances`.
-    *   Emits `run_state_changed`.
-5.  **UI Layer**: The Run Inventory window (or relevant UI) listens for `run_state_changed` and redraws itself.
-
-*All merges and inventory changes are performed by updating properties and tags on instances in `run_instances`. There are no container arrays or direct array manipulation.*
-4.  **`InventoryManager`**:
-    *   Receives the signal. Confirms `is_in_battle` is `false`.
-    *   Communicates with `GameManager.run_state` to perform data operations.
-    *   Calls `MergeManager.calculate_merge_result` to get the `merged_instance`.
-    *   Reads the `tier` from the `merged_instance`'s definition.
-    *   Dynamically determines the target container name (e.g., `StringName("RunInventoryT%d" % result_tier)`).
-    *   Removes the ingredient UUIDs from their source `DataContainer`s in `RunState`.
-    *   Places the merged instance in the first available slot of the appropriate tier container.
-    *   Ensures drag state is properly cleaned up with `InteractionManager.end_drag(true)` on success.
-    *   Adds the new instance to `RunState.run_instances` and its UUID to the correct target `DataContainer` in `RunState`.
-    *   Emits `run_state_changed`.
-5.  **UI Layer**: The Run Inventory window (or relevant UI) listens for `run_state_changed` and redraws itself.
-
-## Part 6: Sequence Diagrams for Key Operations
-
-### 6.1 Merge Operation Flow
-```mermaid
+Part 5: Game Flows
+5.1 Battle Setup Flow
+BattleManager creates battle_copy() instances from GameManager.run_state.run_instances and adds them to its _battle_instances dictionary.
+It sets the initial location properties on each new copy (e.g., location_container_tag = "BATTLE_DRAW_POOL_T1").
+For each new instance, it emits instance_created(new_uuid).
+5.2 Gacha Draw Flow
+BattleManager receives draw_gacha_requested(tier_tag).
+It queries _battle_instances for instances with location_container_tag == "BATTLE_DRAW_POOL_[tier_tag]".
+If the pool is empty, it reshuffles by finding instances in the BATTLE_DISCARD_PILE and changing their location properties back to the draw pool.
+It picks a random instance and changes its location properties to an available slot in BATTLE_PLAYER_BENCH or BATTLE_ITEM_INVENTORY.
+It emits instance_location_changed(drawn_uuid).
+5.3 Merge Flow
+InventoryManager receives inventory_action_requested for a merge.
+It instructs the appropriate data owner (RunState or BattleManager) to:
+Create a new result_instance.
+Item Handling (In-Battle Only): Re-assign equipped items from ingredients to the new result_instance.
+Set the location properties on the new instance.
+Destroy the two ingredient instances.
+It emits instance_created(result_uuid) and instance_destroyed(uuid) for both ingredients.
+Part 6: Localization & Sequence Diagrams
+6.1 Localization System
+Key-Based System: All user-facing text must be stored as keys in resource files.
+Central File: A central localization.csv file will be used to store the key-value pairs.
+Implementation: Text will be set in UI scripts using the tr() function.
+6.2 Sequence Diagrams
+Merge Operation Flow (In-Battle)
+Generated mermaid
 sequenceDiagram
-    participant UI as UI Layer
-    participant IM as InventoryManager
-    participant MM as MergeManager
-    participant BM as BattleManager
-    participant RS as RunState
+    participant UI
+    participant InventoryManager as IM
+    participant BattleManager as BM
+    participant MergeManager as MM
 
     UI->>IM: inventory_action_requested(source_uuid, target_uuid)
-    alt Out of Battle
-        IM->>RS: Get instances by UUID from run_instances
-        IM->>MM: calculate_merge_result(instance_a, instance_b)
-        MM-->>IM: merged_instance
-        IM->>RS: Remove old instances from dictionary
-        IM->>RS: Add merged_instance to dictionary
-        IM->>RS: Update instance properties
-        IM->>UI: instance_location_changed(new_uuid), instance_destroyed(old_uuid)
-    else In Battle
-        IM->>BM: Get instances by UUID from _battle_instances
-        IM->>MM: calculate_merge_result(instance_a, instance_b)
-        MM-->>IM: merged_instance
-        IM->>BM: Remove old instances from dictionary
-        IM->>BM: Add merged_instance to dictionary
-        IM->>BM: Update instance properties
-        IM->>UI: instance_location_changed(new_uuid), instance_destroyed(old_uuid)
-    end
-    UI->>UI: Update visual representation
-```
-
-### 6.2 Move/Swap Operation Flow
-```mermaid
-sequenceDiagram
-    participant UI as UI Layer
-    participant IM as InventoryManager
-    participant BM as BattleManager
-    participant RS as RunState
-
-    UI->>IM: inventory_action_requested(source_uuid, target_uuid)
-    alt In Battle
-        IM->>BM: Get instances by UUID from _battle_instances
-        IM->>BM: Update location_* properties on affected instances
-        IM->>UI: instance_location_changed(updated_uuid)
-    else Out of Battle
-        IM->>RS: Get instances by UUID from run_instances
-        IM->>RS: Update location_* properties on affected instances
-        IM->>UI: instance_location_changed(updated_uuid)
-    end
-    UI->>UI: Update visual representation
-```
-
-
-
-{{ ... }}
-For any inventory action, the following validation steps occur in order:
-
-1. **Basic Validation**
-   - Check if source and target locations are valid
-   - Verify instances exist at specified locations
-   - Ensure instances are not null and properly initialized
-
-2. **Context Validation**
-   - Verify action is allowed in current game state (battle/run)
-   - Check if containers involved in the action are accessible
-
-3. **Container Compatibility**
-   - Check if source container type matches expected types
-   - Verify target container can accept the source instance type
-   - For swaps, ensure both containers can accept each other's content
-
-4. **Tier Validation**
-   - Verify source instance tier matches target container tier
-   - For battle inventory, enforce strict tier-container matching
-   - For run inventory, allow moving to any container of equal or higher tier
-
-5. **Action-Specific Validation**
-   - For merges: Check if merge recipe exists
-   - For equips: Verify unit has available item slots
-   - For moves: Ensure target slot is empty or can be swapped
+    IM->>BM: Get instances by UUID
+    IM->>MM: calculate_merge_result(instance_a, instance_b)
+    MM-->>IM: result_definition
+    IM->>BM: Create new instance from definition
+    IM->>BM: Re-assign equipped items to new instance
+    IM->>BM: Destroy old instances from _battle_instances
+    IM->>BM: Set location properties on new instance
+    BM-->>UI: instance_created(new_uuid), instance_destroyed(old_uuid), instance_location_changed(item_uuids)
+    UI-->>UI: Redraw relevant views

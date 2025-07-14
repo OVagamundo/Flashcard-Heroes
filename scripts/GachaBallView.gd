@@ -15,6 +15,7 @@ var _location: LocationIdentifier
 var _instance_uuid: String
 var _is_selected: bool = false
 var _is_inspectable: bool = true
+var _single_click_inspect: bool = false
 
 func _ready():
 	EventBus.view_selected.connect(_on_view_selected)
@@ -22,10 +23,11 @@ func _ready():
 	EventBus.invalid_action_triggered.connect(func(v): _on_invalid_action_triggered(v))
 	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
 
-func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true):
+func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false):
 	self._location = loc
 	self._instance_uuid = instance.ball_uuid
 	self._is_inspectable = is_inspectable
+	self._single_click_inspect = single_click_inspect
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 	var definition = instance.get_definition()
@@ -82,6 +84,16 @@ func _update_item_slots(instance: GachaBallInstance):
 				icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		item_grid.add_child(slot_panel)
 
+# Helper: climb the tree to find the nearest SlotView for correct window anchoring.
+func _find_slot_anchor() -> Control:
+	var node: Node = self.get_parent()
+	while node and node != get_tree().root:
+		# Use class name string to avoid hard dependency.
+		if "SlotView" in node.get_class():
+			return node as Control
+		node = node.get_parent()
+	return self # fallback if none found
+
 func _on_unit_stats_changed(unit_uuid: String):
 	if _instance_uuid == unit_uuid:
 		var instance = _get_instance_by_uuid(unit_uuid)
@@ -95,9 +107,14 @@ func _gui_input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 		
 		if _is_inspectable:
+			var open_inspect := false
 			if event.double_click:
-				# Pass the stable parent (SlotView) for positioning and the location for data.
-				EventBus.emit_signal("inspection_requested", _location, self)
+				open_inspect = true
+			elif _single_click_inspect:
+				# Make sure we are not in the middle of a drag start
+				open_inspect = true
+			if open_inspect:
+				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
 				InteractionManager.clear_selection()
 				return
 
@@ -108,7 +125,7 @@ func _gui_input(event: InputEvent):
 				InteractionManager.select_view(self, _location)
 		else: # Not inspectable, but might be part of another window
 			# Pass the stable parent (SlotView) for positioning and the location for data.
-			EventBus.emit_signal("inspection_requested", _location, self)
+			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not _is_inspectable or not is_instance_valid(_location): return null

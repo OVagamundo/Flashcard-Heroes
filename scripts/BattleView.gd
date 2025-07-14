@@ -37,6 +37,14 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName):
 			slot_view.populate(loc)
 
 func _ready():
+	# Guard against duplicate BattleView instances which would cause multiple
+	# emissions of draw_gacha_requested per click.
+	add_to_group("battle_view")
+	var views := get_tree().get_nodes_in_group("battle_view")
+	if views.size() > 1:
+		printerr("BattleView: Duplicate instance detected – self-terminating to avoid duplicate draw emissions.")
+		queue_free()
+		return
 	battle_manager = get_node("BattleManager")
 	if not is_instance_valid(battle_manager):
 		printerr("BattleView CRITICAL: BattleManager node not found!")
@@ -60,7 +68,16 @@ func _ready():
 				if child is Button and child.name.begins_with("DrawTier"):
 					var tier_str := child.name.substr(len("DrawTier"))
 					var tier := int(tier_str)
-					child.pressed.connect(func(t=tier): EventBus.emit_signal("draw_gacha_requested", t))
+					# Only connect once per button by checking a meta flag
+					# Ensure exactly one pressed connection – remove all existing, then connect.
+					var existing_connections: Array = child.pressed.get_connections()
+					for conn_dict in existing_connections:
+						var existing_callable: Callable = conn_dict["callable"]
+						child.pressed.disconnect(existing_callable)
+					child.pressed.connect(func(t=tier):
+						print("--- BUTTON-PRESS EMIT --- tier=", t)
+						EventBus.emit_signal("draw_gacha_requested", t)
+					)
 	
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")

@@ -43,6 +43,50 @@ Database: Found definition for ID item_t3_d in items.
 Database: Found definition for ID item_t3_d in items.
 Database: Found definition for ID item_t3_d in items.
 RunState: New run initialised (single-source-of-truth mode).
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID item_t3_d in items.
+Database: Found definition for ID item_t3_d in items.
+Database: Found definition for ID item_t3_d in items.
+Database: Found definition for ID item_t3_d in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t2_c in items.
 Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
 Database: Found definition for ID unit_t1_a in units.
@@ -150,390 +194,7 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t1_b in items.
-Populating container: PlayerLineup (enemy: false)
-Container has 1 non-empty slots
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
-Container has 0 non-empty slots
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t1_a in items.
-Populating container: PlayerLineup (enemy: false)
-Container has 1 non-empty slots
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
-Container has 0 non-empty slots
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Populating container: PlayerLineup (enemy: false)
-Container has 1 non-empty slots
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
-Container has 0 non-empty slots
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Populating container: PlayerLineup (enemy: false)
-Container has 1 non-empty slots
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
-Container has 0 non-empty slots
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Merge calculated. Created: unit_t2_c. Parents to remove: 2
-Database: Found definition for ID unit_t2_c in units.
-Populating container: PlayerLineup (enemy: false)
-Container has 1 non-empty slots
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
-Container has 0 non-empty slots
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID item_t2_c in items.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID item_t3_d in items.
-Database: Found definition for ID hero in units.
-Populating container: PlayerLineup (enemy: false)
-Container has 1 non-empty slots
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
-Container has 0 non-empty slots
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
+--- BUTTON-PRESS EMIT --- tier=1
 --- Draw Gacha Requested ---
 Tier: 1 | Current Tokens: 5
 Database: Found definition for ID unit_t1_a in units.
@@ -544,17 +205,17 @@ Database: Found definition for ID item_t3_d in items.
 Database: Found definition for ID item_t2_c in items.
 Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID unit_t1_a in units.
 Populating container: PlayerLineup (enemy: false)
 Container has 1 non-empty slots
 Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
 Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
 Container has 1 non-empty slots
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Populating container: ItemInventory (enemy: false)
+Container has 0 non-empty slots
 Populating container: EnemyLineup (enemy: true)
 Container has 5 non-empty slots
 Database: Found definition for ID enemy_hero in units.
@@ -567,24 +228,25 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
+--- BUTTON-PRESS EMIT --- tier=1
 --- Draw Gacha Requested ---
 Tier: 1 | Current Tokens: 4
-Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID item_t3_d in items.
 Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID item_t1_b in items.
 Populating container: PlayerLineup (enemy: false)
 Container has 1 non-empty slots
 Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
 Populating container: PlayerBench (enemy: false)
 Container has 1 non-empty slots
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
 Populating container: ItemInventory (enemy: false)
 Container has 1 non-empty slots
 Database: Found definition for ID item_t1_b in items.
@@ -601,25 +263,26 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
+--- BUTTON-PRESS EMIT --- tier=1
 --- Draw Gacha Requested ---
 Tier: 1 | Current Tokens: 3
-Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID item_t3_d in items.
 Database: Found definition for ID item_t2_c in items.
 Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
 Populating container: PlayerLineup (enemy: false)
 Container has 1 non-empty slots
 Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
 Populating container: PlayerBench (enemy: false)
 Container has 2 non-empty slots
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
 Populating container: ItemInventory (enemy: false)
 Container has 1 non-empty slots
 Database: Found definition for ID item_t1_b in items.
@@ -636,6 +299,7 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
+--- BUTTON-PRESS EMIT --- tier=1
 --- Draw Gacha Requested ---
 Tier: 1 | Current Tokens: 2
 Database: Found definition for ID unit_t2_c in units.
@@ -650,10 +314,10 @@ Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
 Populating container: PlayerBench (enemy: false)
 Container has 2 non-empty slots
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
 Populating container: ItemInventory (enemy: false)
 Container has 2 non-empty slots
 Database: Found definition for ID item_t1_b in items.
@@ -672,15 +336,26 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_a in units.
+--- BUTTON-PRESS EMIT --- tier=1
+--- Draw Gacha Requested ---
+Tier: 1 | Current Tokens: 1
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID item_t3_d in items.
+Database: Found definition for ID item_t2_c in items.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID item_t3_d in items.
+Database: Found definition for ID item_t2_c in items.
+Draw failed: No instances of tier 1 available even after reshuffle
 Populating container: PlayerLineup (enemy: false)
-Container has 2 non-empty slots
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Populating container: PlayerBench (enemy: false)
 Container has 1 non-empty slots
+Database: Found definition for ID hero in units.
+Database: Found definition for ID hero in units.
+Populating container: PlayerBench (enemy: false)
+Container has 2 non-empty slots
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t1_b in units.
 Populating container: ItemInventory (enemy: false)
@@ -701,52 +376,23 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID unit_t1_a in units.
 Populating container: PlayerLineup (enemy: false)
-Container has 3 non-empty slots
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
+Container has 1 non-empty slots
 Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
 Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
-Populating container: ItemInventory (enemy: false)
 Container has 2 non-empty slots
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID item_t1_a in items.
-Populating container: EnemyLineup (enemy: true)
-Container has 5 non-empty slots
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID enemy_hero in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t1_a in items.
-Database: Found definition for ID unit_t1_b in units.
-Populating container: PlayerLineup (enemy: false)
-Container has 3 non-empty slots
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID unit_t1_a in units.
-Database: Found definition for ID hero in units.
-Database: Found definition for ID hero in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID unit_t1_b in units.
-Database: Found definition for ID item_t1_a in items.
-Populating container: PlayerBench (enemy: false)
-Container has 0 non-empty slots
 Populating container: ItemInventory (enemy: false)
 Container has 1 non-empty slots
-Database: Found definition for ID item_t1_b in items.
-Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
 Populating container: EnemyLineup (enemy: true)
 Container has 5 non-empty slots
 Database: Found definition for ID enemy_hero in units.
@@ -759,18 +405,79 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
-Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID unit_t1_b in units.
 Populating container: PlayerLineup (enemy: false)
-Container has 3 non-empty slots
+Container has 2 non-empty slots
+Database: Found definition for ID hero in units.
+Database: Found definition for ID hero in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Populating container: PlayerBench (enemy: false)
+Container has 1 non-empty slots
 Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID item_t1_b in items.
+Populating container: ItemInventory (enemy: false)
+Container has 1 non-empty slots
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Populating container: EnemyLineup (enemy: true)
+Container has 5 non-empty slots
+Database: Found definition for ID enemy_hero in units.
+Database: Found definition for ID enemy_hero in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID unit_t1_b in units.
+Populating container: PlayerLineup (enemy: false)
+Container has 2 non-empty slots
 Database: Found definition for ID hero in units.
 Database: Found definition for ID hero in units.
 Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID item_t1_a in items.
+Populating container: PlayerBench (enemy: false)
+Container has 1 non-empty slots
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID item_t1_b in items.
+Populating container: ItemInventory (enemy: false)
+Container has 0 non-empty slots
+Populating container: EnemyLineup (enemy: true)
+Container has 5 non-empty slots
+Database: Found definition for ID enemy_hero in units.
+Database: Found definition for ID enemy_hero in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t1_a in units.
+Populating container: PlayerLineup (enemy: false)
+Container has 3 non-empty slots
+Database: Found definition for ID hero in units.
+Database: Found definition for ID hero in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID unit_t1_a in units.
+Database: Found definition for ID item_t1_b in items.
 Populating container: PlayerBench (enemy: false)
 Container has 0 non-empty slots
 Populating container: ItemInventory (enemy: false)
@@ -787,6 +494,12 @@ Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t2_c in units.
 Database: Found definition for ID unit_t3_d in units.
 Database: Found definition for ID unit_t3_d in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID unit_t1_b in units.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
 Database: Found definition for ID unit_t1_a in units.
 Database: Found definition for ID unit_t1_b in units.
 Database: Found definition for ID unit_t1_a in units.
@@ -833,10 +546,17 @@ Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID item_t1_a in items.
 Database: Found definition for ID item_t1_a in items.
-WindowManager: Could not find instance for location: Location(Container: equipped_item, Index: 0, Tier: -1)
-Database: Found definition for ID unit_t2_c in units.
-Database: Found definition for ID unit_t2_c in units.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
 Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID item_t1_b in items.
 Database: Found definition for ID item_t1_a in items.
 Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_b in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID item_t1_a in items.
+Database: Found definition for ID hero in units.
+Database: Found definition for ID hero in units.
+Database: Found definition for ID hero in units.
+Database: Found definition for ID hero in units.

@@ -1,7 +1,6 @@
 class_name UnitInspectionWindow
-extends PanelContainer
+extends "res://scripts/windows/InspectionWindow.gd"
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 
 @onready var name_label: Label = %NameLabel
@@ -12,6 +11,7 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 var _inspected_unit_uuid: String
 var _source_view: Control
 var _instance: GachaBallInstance
+var _location: LocationIdentifier
 
 func _ready():
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
@@ -32,6 +32,7 @@ func _gui_input(event: InputEvent):
 func populate(context: Dictionary):
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
+	_location = context.get("location")
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
 		printerr("UnitInspectionWindow: Invalid context provided.")
@@ -89,7 +90,7 @@ func populate(context: Dictionary):
 			loc.container = &"equipped_item"
 			# This is crucial for the location to be complete
 			loc.set("unit_uuid", _instance.ball_uuid) 
-			view.populate(loc, item_instance, true)
+			view.populate(loc, item_instance, true, true)
 		else:
 			var placeholder = PanelContainer.new()
 			placeholder.custom_minimum_size = Vector2(32, 32)
@@ -126,7 +127,9 @@ func _on_description_meta_clicked(meta):
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
 			var context = {"effect_definition": definition.ability_definitions}
-			WindowManager.open_child_inspection_window(self, &"EffectInspection", context)
+			var child_context = context.duplicate()
+			child_context["source_view"] = _source_view
+			WindowManager.open_child_inspection_window(self, &"EffectInspection", child_context)
 
 func _on_description_meta_hover_started(_meta):
 	description_label.mouse_filter = MOUSE_FILTER_STOP

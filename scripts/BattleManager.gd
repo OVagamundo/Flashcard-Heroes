@@ -52,6 +52,13 @@ var _gacha_tokens: int = 0
 
 # --- Godot Lifecycle --- 
 func _ready():
+	# Detect and prevent duplicate BattleManager instances which can cause
+	# duplicate signal handling (e.g. double draws per click).
+	var existing := get_tree().get_nodes_in_group("battle_manager")
+	if existing.size() > 0:
+		printerr("BattleManager: Duplicate instance detected – self-terminating.")
+		queue_free()
+		return
 	add_to_group("battle_manager")
 	_setup_battle()
 	_connect_signals()
@@ -164,6 +171,26 @@ func get_instances_in_container(container_tag: StringName) -> Array[GachaBallIns
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc):
 		return null
+
+	# Special-case: equipped item slots are stored inside the parent unit instance, not a container.
+	if loc.container == &"equipped_item":
+		var parent_uuid: String = loc.unit_uuid
+		if parent_uuid.is_empty():
+			return null
+		if parent_uuid.is_empty():
+			return null
+		var parent_inst := get_instance(parent_uuid)
+		if not is_instance_valid(parent_inst):
+			return null
+		var idx: int = loc.index
+		if idx < 0 or idx >= parent_inst.equipped_item_uuids.size():
+			return null
+		var item_uuid: String = parent_inst.equipped_item_uuids[idx]
+		if item_uuid.is_empty():
+			return null
+		return get_instance(item_uuid)
+
+	# Standard container lookup path
 	var container := get_container(loc.container)
 	if container == null:
 		return null

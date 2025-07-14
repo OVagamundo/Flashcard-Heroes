@@ -107,12 +107,28 @@ TopArea: Always visible. Displays Hero HP, Gold, Day counter, and Trinkets.
 BottomArea: Always visible. Houses the three Gacha Machines.
 ContentArea: The large central portion of the screen that changes to show the battleground, shop, map, etc.
 11.2. Core Interaction Rules
-Window Closing: All modal windows (e.g., Inspection Window, Run Inventory) are closed by clicking anywhere on the screen outside their bounds.
-Inspection: Right-clicking or long-pressing an entity opens its detailed Inspection Window.
-Drag-and-Drop Intent: The game automatically determines the player's intent when dropping a GachaBall on another:
-If a Merge Recipe exists, a Choice Window appears (Merge/Swap).
-If it's an Item on a Unit on the board, it will Equip.
-Otherwise, it will Swap.
+
+**Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping a GachaBall on another:
+*   If a Merge Recipe exists, a Choice Window appears (Merge/Swap).
+*   If it's an Item on a Unit on the board, it will Equip.
+*   Otherwise, it will Swap positions.
+
+**Inspection Window System:**
+The system for inspecting units, items, and their effects follows a strict set of hierarchical rules to ensure clarity and prevent UI clutter. These rules apply globally, whether in battle, in the run inventory, or elsewhere.
+
+*   **Contextual Opening:** The method for opening an inspection window depends on the context:
+    *   **Single-Click:** In static, view-only contexts (e.g., the Run Inventory, Discard Pile, a unit's equipped items), a single click on an entity immediately opens its inspection window.
+    *   **Double-Click/Long-Press:** In interactive contexts where single-clicking is used for selection (e.g., the battle board), a double-click or long-press is required to open the inspection window.
+
+*   **Hierarchical Behavior:**
+    *   **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on screen at a time. Opening a new root-level window (e.g., inspecting a different unit on the board) closes the entire previous group.
+    *   **Single Child Per Parent:** A parent window can only have one direct child window open. Requesting a new child (e.g., inspecting a second item on the same unit) will first close the existing child and any of its descendants.
+    *   **Hierarchical Closing:** Clicking on any window in a group closes all of its children. For example, clicking the background of a `UnitInspectionWindow` closes its child `ItemInspectionWindow` and that window's child `EffectInspectionWindow`.
+
+*   **System Interactions:**
+    *   **Deselection on Open:** The action of opening any inspection window immediately deselects any currently selected GachaBall on the board.
+    *   **Dynamic Positioning:** Inspection windows are anchored to the specific slot view of the entity being inspected. They will dynamically track this anchor, repositioning themselves if the entity moves on the board to ensure they never become disconnected or lost.
+    *   **Global Closing:** Clicking anywhere on the screen that is not part of an active inspection window will close the entire inspection window group.
 11.3. Scene-Specific UI
 Title Screen: Main menu with New Game, Continue, Achievements, Options, Quit.
 Loadout Scene: Carousels for selecting a Hero and a Flashcard Deck.

@@ -1,11 +1,15 @@
-extends PanelContainer
+class_name EffectInspectionWindow
+extends "res://scripts/windows/InspectionWindow.gd"
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
 
+func _ready():
+	pass
+
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		EventBus.emit_signal("background_clicked", self)
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):

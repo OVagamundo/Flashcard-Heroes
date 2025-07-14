@@ -32,4 +32,4 @@ func populate(context: Dictionary):
 			loc.tier = 0 # Discard pile doesn't use tiers
 			loc.index = i
 			loc.container = DISCARD_PILE_CONTAINER_TAG
-			view.populate(loc, instance_data, false)
+			view.populate(loc, instance_data, true, true)

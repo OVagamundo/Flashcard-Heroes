@@ -28,7 +28,9 @@ func _gui_input(event: InputEvent):
 		if is_instance_valid(selected_loc) and selected_loc != _location:
 			EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
 		
-		# If nothing is selected, clicking an empty slot now does nothing.
+		# If nothing is selected, select this empty slot to update selection context.
+		else:
+			InteractionManager.select_view(self, _location)
 
 func _can_drop_data(_at_position, data) -> bool:
 	return data is Dictionary and data.has("source_loc")
