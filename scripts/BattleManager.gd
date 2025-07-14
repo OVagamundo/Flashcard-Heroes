@@ -3,11 +3,13 @@ class_name BattleManager
 
 const RS = preload("res://scripts/RunState.gd")
 
-
-
 # --- TDD: Battle State Machine ---
 enum Phases { START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER }
 var _current_battle_phase: Phases
+
+# --- TDD: Effect Resolution Queue ---
+var _effect_queue: Array[EffectRequest] = []
+var _is_processing_effect: bool = false
 
 # --- TDD: Single Source of Truth ---
 const BATTLE_CONTAINER_TAGS = {
@@ -63,6 +65,8 @@ func _setup_battle():
 	# Clear any stale data in case this is a retry.
 	_battle_instances.clear()
 	_containers.clear()
+	_effect_queue.clear()
+	_gacha_tokens = 5
 
 	# 1. Copy the player's permanent run inventory into battle instances
 	var run_instances: Array = GameManager.run_state.get_all_instances().values()
@@ -117,23 +121,32 @@ func _setup_battle():
 
 	# Emit initial inventory populated signal so views can draw immediately
 	EventBus.emit_signal("battle_inventory_changed") 
+
 func _ready():
 	# Detect and prevent duplicate BattleManager instances which can cause
 	# duplicate signal handling (e.g. double draws per click).
 	var existing := get_tree().get_nodes_in_group("battle_manager")
 	if existing.size() > 0:
-		printerr("BattleManager: Duplicate instance detected – self-terminating.")
-		queue_free()
-		return
+		# This is a simple way to ensure only one manager is active.
+		# The first one to _ready() wins.
+		var is_first = true
+		for node in existing:
+			if node != self:
+				is_first = false
+				break
+		if not is_first:
+			queue_free()
+			return
 	add_to_group("battle_manager")
 	_setup_battle()
+	_change_phase(Phases.MANAGEMENT)
+
 	_connect_signals()
 
 	GameManager.is_in_battle = true
 	EventBus.emit_signal("battle_state_changed", true)
 	EventBus.emit_signal("battle_inventory_changed")
 
-	_change_phase(Phases.START_OF_TURN)
 
 func _exit_tree():
 	GameManager.is_in_battle = false
@@ -159,21 +172,19 @@ func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
 		return _containers[container_name]
 	var default_size := 6
-	var name_str: String = String(container_name)
-	if name_str in ["ItemInventory", "PlayerItemInventory"]:
+	if container_name.begins_with("BattleInventoryT") or container_name == BATTLE_CONTAINER_TAGS.PLAYER_BENCH or container_name == BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
 		default_size = 3
-	elif name_str.begins_with("BattleInventoryT"):
-		default_size = 16
-	var c := ArrayContainer.new(default_size)
-	_containers[container_name] = c
-	return c
+	
+	var new_container = ArrayContainer.new(default_size)
+	_containers[container_name] = new_container
+	return new_container
 
 func get_instances_in_container(container_tag: StringName) -> Array[GachaBallInstance]:
 	var result: Array[GachaBallInstance] = []
 	for instance in _battle_instances.values():
 		if instance.location_container_tag == container_tag:
 			result.append(instance)
-	# Keep deterministic ordering by slot index
+	# Sort by slot index for predictable order
 	result.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
 	return result
  
@@ -187,25 +198,17 @@ func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 
 	# Special handling for equipped item slots which are not linked to a normal container
 	if loc.container == &"equipped_item":
-		var parent_uuid: String = loc.unit_uuid
-		if parent_uuid.is_empty():
-			return null
-		var parent_instance: GachaBallInstance = get_instance(parent_uuid)
-		if not is_instance_valid(parent_instance):
-			return null
-		if loc.index >= 0 and loc.index < parent_instance.equipped_item_uuids.size():
-			var item_uuid: String = parent_instance.equipped_item_uuids[loc.index]
-			if item_uuid.is_empty():
-				return null
+		var item_owner = get_instance(loc.unit_uuid)
+		if is_instance_valid(item_owner):
+			var item_uuid = item_owner.get_equipped_item_uuid(loc.index)
 			return get_instance(item_uuid)
 		return null
 
-	var container := get_container(loc.container)
-	if container == null:
+	var container = get_container(loc.container)
+	if not is_instance_valid(container):
 		return null
-	var uuid := container.get_uuid(loc.index)
-	if uuid.is_empty():
-		return null
+	
+	var uuid = container.get_uuid(loc.index)
 	return get_instance(uuid)
 
 func get_all_instances() -> Dictionary:
@@ -233,41 +236,40 @@ func get_current_phase_name() -> StringName:
 # Empty slots are `null` so callers can rely on array indices matching slot
 # positions in the UI grids.
 func get_battle_inventory() -> Dictionary:
-	var inventory := {}
-	var GRID_CAPACITY := 16 # Matches default container size for BattleInventoryT* per TDD table 2.2
-	for tier in [1, 2, 3]:
-		var container_tag: StringName = StringName("BattleInventoryT%d" % tier)
-		var tier_instances: Array[GachaBallInstance] = get_instances_in_container(container_tag)
+	var inventory := {
+		1: [],
+		2: [],
+		3: []
+	}
+	for i in range(1, 4):
+		inventory[i].resize(16)
+		inventory[i].fill(null)
 
-		var tier_array: Array = []
-		tier_array.resize(GRID_CAPACITY)
-		for i in range(GRID_CAPACITY):
-			tier_array[i] = null
-
-		for inst in tier_instances:
-			if inst.location_slot_index >= 0 and inst.location_slot_index < GRID_CAPACITY:
-				tier_array[inst.location_slot_index] = inst
-
-		inventory[tier] = tier_array
-
+	for instance in _battle_instances.values():
+		var container_tag = instance.location_container_tag
+		if container_tag.begins_with("BattleInventoryT"):
+			var tier = instance.get_definition().tier
+			var slot = instance.location_slot_index
+			if inventory.has(tier) and slot >= 0 and slot < inventory[tier].size():
+				inventory[tier][slot] = instance
+		
 	return inventory
 
 func _setup_enemy_lineup():
-	var enemy_unit_ids = [&"enemy_hero", &"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d"]
+	# Order: front (0) -> back (4). Place hero at the rear.
+	var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
 	for i in range(min(enemy_unit_ids.size(), 6)):
 		var unit_def = Database.get_definition(enemy_unit_ids[i])
-		if not unit_def: continue
-
-		var enemy_instance := GachaBallInstance.new()
-		enemy_instance.initialize(unit_def)
-		_battle_instances[enemy_instance.ball_uuid] = enemy_instance
-		enemy_instance.location_container_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		enemy_instance.location_slot_index = i
-
-		# Record UUID in the EnemyLineup container so UI can discover it
-		var enemy_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-		if is_instance_valid(enemy_container):
-			enemy_container.set_uuid(i, enemy_instance.ball_uuid)
+		if not is_instance_valid(unit_def):
+			printerr("Failed to find enemy definition: ", enemy_unit_ids[i])
+			continue
+		var enemy_inst = GachaBallInstance.new()
+		enemy_inst.initialize(unit_def)
+		_battle_instances[enemy_inst.ball_uuid] = enemy_inst
+		var lineup_c = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+		lineup_c.set_uuid(i, enemy_inst.ball_uuid)
+		enemy_inst.location_container_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		enemy_inst.location_slot_index = i
 
 # --- State Machine Logic ---
 func _get_player_hero() -> GachaBallInstance:
@@ -287,117 +289,121 @@ func _change_phase(new_phase: Phases):
 		Phases.BATTLE_OVER: phase_name = &"BATTLE_OVER"
 	EventBus.emit_signal("battle_phase_changed", phase_name)
 
+	# Execute logic for the new phase
 	match _current_battle_phase:
-		Phases.START_OF_TURN: _enter_start_of_turn_phase()
-		Phases.MANAGEMENT: pass
-		Phases.COMBAT: await _enter_combat_phase()
-		Phases.END_OF_TURN: _enter_end_of_turn_phase()
+		Phases.START_OF_TURN:
+			_gacha_tokens += 5
+			EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+			_populate_effect_queue()
+			_process_effect_queue()
+		Phases.END_OF_TURN:
+			# The turn is over. The game will now wait in the MANAGEMENT phase for the player
+			# to press the 'End Turn' button.
+			pass
 
-func _enter_start_of_turn_phase():
-	_gacha_tokens = 5
-	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
-	_change_phase(Phases.MANAGEMENT)
-	return
-
-func _enter_combat_phase():
-	await _execute_combat_resolution()
-	_change_phase(Phases.END_OF_TURN)
-
-func _enter_end_of_turn_phase():
+func _check_for_battle_end():
 	if _is_battle_over():
 		_current_battle_phase = Phases.BATTLE_OVER
 		var did_player_win = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).is_empty()
 		WindowManager.open_end_battle_popup(did_player_win)
 	else:
-		_change_phase(Phases.START_OF_TURN)
+		# After checking for battle end, if the battle is not over, we should be in the MANAGEMENT phase.
+		# The _process_effect_queue already handles this transition, so we don't need to do anything here.
+		pass
 
-func _execute_combat_resolution():
-	# --- Player attacks ---
-	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	for attacker in player_lineup:
-		var target = _get_frontmost_target(true)
-		if is_instance_valid(attacker) and is_instance_valid(target):
-			var ability_def = attacker.get_ability(0)
-			if ability_def: AbilityResolver.execute_effect(ability_def.effect, attacker, [target], self)
-			_check_for_deaths()
-			if _is_battle_over(): return
-			await get_tree().create_timer(0.5).timeout
-		else:
-			break # No more valid targets
-
-	if _is_battle_over(): return
-
+func _populate_effect_queue():
+	_effect_queue.clear()
 	# --- Enemy attacks ---
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	for attacker in enemy_lineup:
 		var target = _get_frontmost_target(false)
-		if is_instance_valid(attacker) and is_instance_valid(target):
-			var ability_def = attacker.get_ability(0)
-			if ability_def: AbilityResolver.execute_effect(ability_def.effect, attacker, [target], self)
-			_check_for_deaths()
-			if _is_battle_over(): return
-			await get_tree().create_timer(0.5).timeout
-		else:
-			break # No more valid targets
+		if is_instance_valid(target):
+			var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", {"target_uuid": target.ball_uuid})
+			_effect_queue.append(request)
 
-func _check_for_deaths():
-	var dead_uuids = []
-	for instance in _battle_instances.values():
-		if instance.current_hp <= 0:
-			dead_uuids.append(instance.ball_uuid)
-	
-	for uuid in dead_uuids:
-		var instance = get_instance(uuid)
-		if is_instance_valid(instance):
-			instance.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-			instance.location_slot_index = -1 # Slot index is irrelevant in discard
-			
-	EventBus.emit_signal("battle_inventory_changed")
+	# --- Player attacks ---
+	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	for attacker in player_lineup:
+		var target = _get_frontmost_target(true)
+		if is_instance_valid(target):
+			var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", {"target_uuid": target.ball_uuid})
+			_effect_queue.append(request)
 
-func _is_battle_over() -> bool:
-	var player_hero = _get_player_hero()
-	var player_hero_defeated = not is_instance_valid(player_hero) or player_hero.current_hp <= 0
-	var all_enemies_defeated = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).is_empty()
-	return all_enemies_defeated or player_hero_defeated
 
-func _on_inventory_action_requested(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
-	print("--- Inventory Action Requested ---")
-	print("Source: ", source_loc.container, "[", source_loc.index, "]")
-	print("Target: ", target_loc.container, "[", target_loc.index, "]")
-	var source_container = get_container(source_loc.container)
-	var target_container = get_container(target_loc.container)
-	
-	if not is_instance_valid(source_container) or not is_instance_valid(target_container):
-		printerr("BattleManager: Invalid container in inventory action request.")
+func _process_effect_queue() -> void:
+	if _is_processing_effect: return
+	if _effect_queue.is_empty():
+		_change_phase(Phases.MANAGEMENT)
 		return
 
-	var source_uuid = source_container.get_uuid(source_loc.index)
-	var target_uuid = target_container.get_uuid(target_loc.index)
+	_is_processing_effect = true
 
-	# Swap the UUIDs in the data containers
-	source_container.set_uuid(source_loc.index, target_uuid)
-	target_container.set_uuid(target_loc.index, source_uuid)
+	while not _effect_queue.is_empty():
+		var request: EffectRequest = _effect_queue.pop_back()
+		var source = get_instance(request.source_uuid)
+		var target = get_instance(request.trigger_context.get("target_uuid"))
 
-	# Update the instance locations
-	var source_instance = get_instance(source_uuid)
-	var target_instance = get_instance(target_uuid)
+		# If original target is missing or already dead, pick a new front-most living target.
+		if not is_instance_valid(target) or target.current_hp <= 0:
+			var attacker_is_player: bool = source.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			target = _get_frontmost_target(attacker_is_player)
+			# If no valid target remains, skip this request.
+			if not is_instance_valid(target):
+				continue
 
-	if is_instance_valid(source_instance):
-		source_instance.location_container_tag = target_loc.container
-		source_instance.location_slot_index = target_loc.index
+		if not is_instance_valid(source):
+			continue
 
-	if is_instance_valid(target_instance):
-		target_instance.location_container_tag = source_loc.container
-		target_instance.location_slot_index = source_loc.index
+		var ability_def = Database.get_ability_definition(request.ability_id)
+		if not is_instance_valid(ability_def):
+			printerr("Could not find ability definition for: ", request.ability_id)
+			continue
 
-	# Tell the view to redraw everything
-	EventBus.emit_signal("battle_inventory_changed")
+		var message = "[b]%s[/b] uses [b]%s[/b] on [b]%s[/b]" % [tr(source.get_definition().display_name_key), tr(ability_def.name_key), tr(target.get_definition().display_name_key)]
+		EventBus.emit_signal("battle_log_event", message)
+
+		ability_def.effect.execute(source, [target], self)
+
+		_check_for_deaths()
+		EventBus.emit_signal("battle_inventory_changed")
+
+		if _is_battle_over():
+			break
+
+		await get_tree().create_timer(0.8).timeout
+
+	_is_processing_effect = false
+	_change_phase(Phases.END_OF_TURN)
+	await get_tree().create_timer(0.1).timeout
+	_change_phase(Phases.MANAGEMENT)
+
+# Helper to remove a uuid from its current container array
+func _remove_instance_from_container(instance: GachaBallInstance) -> void:
+	var container = get_container(instance.location_container_tag)
+	if is_instance_valid(container):
+		var uuids = container.get_all_uuids()
+		var idx := uuids.find(instance.ball_uuid)
+		if idx != -1:
+			container.set_uuid(idx, "")
+
+func _check_for_deaths():
+	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	for unit in all_units:
+		if unit.current_hp <= 0:
+			_remove_instance_from_container(unit)
+			unit.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+			EventBus.emit_signal("battle_inventory_changed")
+
+func _is_battle_over() -> bool:
+	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	return player_lineup.is_empty() or enemy_lineup.is_empty()
 
 
 	# --- EventBus Signal Handlers ---
 func _on_end_turn_requested():
 	if _current_battle_phase == Phases.MANAGEMENT:
-		_change_phase(Phases.COMBAT)
+		_change_phase(Phases.START_OF_TURN)
 
 func _on_unit_inventory_changed():
 	for instance in _battle_instances.values():
@@ -408,8 +414,6 @@ func _on_unit_inventory_changed():
 			instance.recalculate_stats(_battle_instances)
 
 func _on_draw_gacha_requested(tier: int):
-	print("--- Draw Gacha Requested ---")
-	print("Tier: ", tier, " | Current Tokens: ", _gacha_tokens)
 	var cost = tier
 	if _gacha_tokens < cost:
 		return
@@ -420,7 +424,6 @@ func _on_draw_gacha_requested(tier: int):
 		_reshuffle_discard_pile(tier)
 		tier_pool = get_instances_in_container(container_tag)
 		if tier_pool.is_empty():
-			print("Draw failed: No instances of tier %d available even after reshuffle" % tier)
 			EventBus.emit_signal("battle_inventory_changed")
 			return
 
@@ -482,16 +485,16 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int):
 func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
 	var target_lineup_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if attacker_is_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	var target_lineup = get_instances_in_container(target_lineup_tag)
-	
+
+	# Filter out dead units first
+	var living_targets = target_lineup.filter(func(unit): return unit.current_hp > 0)
+
+	if living_targets.is_empty():
+		return null
+
+	# TDD: Player attacks front-most enemy (lowest index).
+	# TDD: Enemy attacks front-most player unit (which is the highest index in the player lineup array).
 	if attacker_is_player:
-		# Player attacks enemy, scan 0 -> N
-		for unit in target_lineup:
-			if unit.current_hp > 0: return unit
+		return living_targets[0]
 	else:
-		# Enemy attacks player, scan N -> 0
-		var reversed_lineup = target_lineup.duplicate()
-		reversed_lineup.reverse()
-		for unit in reversed_lineup:
-			if unit.current_hp > 0: return unit
-	
-	return null
+		return living_targets[-1]

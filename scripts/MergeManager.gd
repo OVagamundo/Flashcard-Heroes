@@ -32,7 +32,6 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
 
-	print("Merge calculated. Created: %s. Parents to remove: %s" % [merged_instance.definition_id, parents_to_remove.size()])
 	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
 
 

@@ -218,4 +218,4 @@ func start_new_run() -> void:
         if not add_instance(inst):
             printerr("RunState: Failed to add starter instance '%s'." % id)
 
-    print("RunState: New run initialised (single-source-of-truth mode).")
+    # New run initialized

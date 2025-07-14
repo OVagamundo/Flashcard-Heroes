@@ -115,9 +115,6 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		printerr("BattleView: Could not find data container named: ", container_name)
 		return
 	
-	print("Populating container: ", container_name, " (enemy: ", is_enemy, ")")
-	print("Container has ", data_container.get_all_non_empty_uuids().size(), " non-empty slots")
-
 	# 1. Get all PanelContainer nodes (the slots) from the UI container.
 	var slots: Array[PanelContainer] = []
 	for child in ui_container.get_children():

@@ -113,6 +113,14 @@ func has_tag(tag: StringName) -> bool:
     # Then check dynamic tags on this instance.
     return dynamic_tags.has(tag)
 
+# --- Equipment Helpers ---
+# Returns the UUID of the item equipped in the given slot (0-2). Returns an
+# empty string if the slot is out of range or empty.
+func get_equipped_item_uuid(slot_index: int) -> String:
+    if slot_index >= 0 and slot_index < equipped_item_uuids.size():
+        return equipped_item_uuids[slot_index]
+    return ""
+
 # --- Abilities Helpers ---
 # Safely retrieve an ability definition by index. Returns null if the index is
 # out of bounds or the slot is empty.
