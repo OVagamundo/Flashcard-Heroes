@@ -19,6 +19,12 @@ extends Resource
 ## The visual representation for this GachaBall.
 @export var icon: Texture2D
 
+## Static tags that define the GachaBall's inherent nature (e.g., "UNIT", "HERO", "TIER_1").
+@export var tags: Array[StringName]
+
+## Whether this GachaBall is the special hero unit controlled by the player.
+@export var is_hero: bool = false
+
 ## The power level or tier of this GachaBall (0-3).
 @export_range(0, 3) var tier: int
 

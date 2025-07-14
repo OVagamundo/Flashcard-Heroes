@@ -20,12 +20,20 @@ func _ready() -> void:
 	_load_resources_from_path("res://resources/recipes/", recipes)
 	_load_resources_from_path("res://resources/decks/", decks)
 	_load_resources_from_path("res://resources/abilities/", abilities)
-	print("Database loaded.")
-	print(" - Units: ", units.size())
-	print(" - Items: ", items.size())
-	print(" - Recipes: ", recipes.size())
-	print(" - Decks: ", decks.size())
-	print(" - Abilities: ", abilities.size())
+
+# -----------------------------
+# Public API
+# -----------------------------
+
+
+
+# Returns an AbilityDefinition by id, or null.
+func get_ability_definition(id: StringName) -> AbilityDefinition:
+	var def = abilities.get(id)
+	if def:
+		return def
+	printerr("Database: Ability definition for ID %s not found." % id)
+	return null
 
 ## A helper function that iterates through a directory, loads each `.tres` file,
 ## and stores it in the provided dictionary, using the resource's `id` property as the key.
@@ -54,16 +62,14 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 func get_definition(id: StringName) -> GachaBallDefinition:
 	var definition = units.get(id)
 	if definition:
-		print("Database: Found definition for ID ", id, " in units.")
 		return definition
 	
 	definition = items.get(id)
 	if definition:
-		print("Database: Found definition for ID ", id, " in items.")
 		return definition
 	
-	print("Database: Definition for ID ", id, " not found.")
-	# Return null if not found in any GachaBall category.
+
+	printerr("Database: Definition for ID ", id, " not found in units/items.")
 	return null
 
 ```

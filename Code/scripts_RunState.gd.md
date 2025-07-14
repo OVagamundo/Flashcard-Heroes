@@ -1,132 +1,226 @@
 <!-- Original: scripts/RunState.gd -->
 
 ```gdscript
-# res://scripts/RunState.gd
+
 class_name RunState
 extends Resource
 
-## The player's current run state, including all persistent progress.
-## TDD-Compliant Version.
-
-const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
+## Persistent state for a run using the single-source-of-truth data model.
 
 @export var gold: int = 0
 @export var hero_instance: GachaBallInstance
 
-# The master registry for all permanent instances in the run.
-@export var run_instances: Dictionary = {} # Key: ball_uuid (String), Value: GachaBallInstance
+# Master registry of all permanent instances in this run.
+@export var run_instances: Dictionary = {} # key = uuid (String), value = GachaBallInstance
 
-# The registry for all persistent data containers.
-@export var run_inventory_containers: Dictionary = {} # Key: container_name (StringName), Value: GrowableGridContainer
+# Inventory containers indexed by name (e.g., "RunInventoryT1").
+var run_inventory_containers: Dictionary = {} # key = StringName, value = DataContainer
+# Additional containers (lineup, bench, etc.) cached here
+var _other_containers: Dictionary = {}
 
+static var RUN_CONTAINER_TAGS: Dictionary = {
+	HERO = &"Hero",
+	LINEUP = &"Lineup",
+	BENCH = &"Bench",
+	ITEM_INVENTORY = &"ItemInventory",
+	STARTER_PACK = &"StarterPack"
+}
 
-func _init():
-	# Initialize containers as specified in TDD table 2.2
-	if not run_inventory_containers.has(&"RunInventoryT1"):
-		run_inventory_containers[&"RunInventoryT1"] = GrowableGridContainer.new(16)
-	if not run_inventory_containers.has(&"RunInventoryT2"):
-		run_inventory_containers[&"RunInventoryT2"] = GrowableGridContainer.new(16)
-	if not run_inventory_containers.has(&"RunInventoryT3"):
-		run_inventory_containers[&"RunInventoryT3"] = GrowableGridContainer.new(16)
+# ------------------------------------------------------------------
+# Query helpers
+# ------------------------------------------------------------------
 
-## Finds the appropriate container for a given instance.
-func get_container_for_instance(instance: GachaBallInstance) -> GrowableGridContainer:
-	if not is_instance_valid(instance): return null
-	var def = instance.get_definition()
-	if not is_instance_valid(def): return null
-	
-	var container_name = &"RunInventoryT%d" % def.tier
-	return run_inventory_containers.get(container_name)
+func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
+    return run_instances.get(uuid)
 
-## Retrieves a container by its name.
-func get_container(container_name: StringName) -> GrowableGridContainer:
-	return run_inventory_containers.get(container_name)
+func _normalize_container_tag(tag: StringName) -> StringName:
+    var s := String(tag)
+    if s.begins_with("RUN_INVENTORY_T"):
+        var suffix := s.substr(len("RUN_INVENTORY_T"))
+        return &"RunInventoryT%s" % suffix
+    return tag
 
+func get_instances_in_container(container_tag: StringName) -> Array[GachaBallInstance]:
+    var norm_tag := _normalize_container_tag(container_tag)
+    var results: Array[GachaBallInstance] = []
+    for instance in run_instances.values():
+        var inst_tag := _normalize_container_tag(instance.location_container_tag)
+        if inst_tag == norm_tag:
+            results.append(instance)
+    results.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
+    return results
+
+func get_all_instances() -> Dictionary:
+    return run_instances
+
+# Internal helper to backfill container UUIDs from run_instances
+func _ensure_container_populated(container_name: StringName, container: DataContainer):
+    if container == null:
+        return
+    for inst in run_instances.values():
+        var inst_tag := _normalize_container_tag(inst.location_container_tag)
+        var target_tag := _normalize_container_tag(container_name)
+        if inst_tag == target_tag:
+            var idx: int = inst.location_slot_index
+            if idx >= 0:
+                # Resize if needed
+                var fixed = container as FixedArrayContainer
+                if fixed != null and idx >= fixed._data.size():
+                    fixed._data.resize(idx + 1)
+                    while fixed._data.size() < idx + 1:
+                        fixed._data.append("")
+                if container.get_uuid(idx).is_empty():
+                    container.set_uuid(idx, inst.ball_uuid)
+
+# Returns the instance located at the given LocationIdentifier (tier/index/container)
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
-	if not is_instance_valid(loc) or not run_inventory_containers.has(loc.container):
-		return null
-	var container = run_inventory_containers[loc.container]
-	var uuid = container.get_uuid(loc.index)
-	if uuid and run_instances.has(uuid):
-		return run_instances[uuid]
-	return null
+    if not is_instance_valid(loc):
+        return null
 
-## Adds a new instance to the run, placing it in the correct container.
+    # Special case: equipped item slots on a unit
+    if loc.container == &"equipped_item":
+        var parent_uuid: String = loc.unit_uuid
+        if parent_uuid.is_empty():
+            return null
+        var parent_inst: GachaBallInstance = get_instance_by_uuid(parent_uuid)
+        if not is_instance_valid(parent_inst):
+            return null
+        if loc.index >= 0 and loc.index < parent_inst.equipped_item_uuids.size():
+            var item_uuid: String = parent_inst.equipped_item_uuids[loc.index]
+            if item_uuid.is_empty():
+                return null
+            return get_instance_by_uuid(item_uuid)
+        return null
+
+    var container := get_container(loc.container)
+    if container == null:
+        return null
+    var uuid := container.get_uuid(loc.index)
+    if uuid.is_empty():
+        return null
+    return get_instance_by_uuid(uuid)
+
+func get_container(container_name: StringName) -> DataContainer:
+    # 1. Inventory containers (tiered storage)
+    if run_inventory_containers.has(container_name):
+        var existing = run_inventory_containers[container_name]
+        _ensure_container_populated(container_name, existing)
+        return existing
+
+    var cname := String(container_name)
+
+    # Alias support: handle legacy uppercase "RUN_INVENTORY_T#" names.
+    if cname.begins_with("RUN_INVENTORY_T"):
+        var tier_str := cname.substr(len("RUN_INVENTORY_T"))
+        var official_name := "RunInventoryT%s" % tier_str
+        # Recursively fetch the official container (this will create it if needed)
+        return get_container(official_name)
+
+    if cname.begins_with("RunInventoryT"):
+        var c := preload("res://scripts/FixedArrayContainer.gd").new(16)
+        run_inventory_containers[container_name] = c
+        return c
+
+    # 2. Other permanent run containers (lineup, bench, item inventory, hero)
+    if _other_containers.has(container_name):
+        var ex = _other_containers[container_name]
+        _ensure_container_populated(container_name, ex)
+        return ex
+
+    var default_size := 1
+    if container_name == RUN_CONTAINER_TAGS.LINEUP or container_name == RUN_CONTAINER_TAGS.BENCH:
+        default_size = 3
+    elif container_name == RUN_CONTAINER_TAGS.ITEM_INVENTORY:
+        default_size = 3
+
+    # Lazily create misc container
+    var new_c := preload("res://scripts/FixedArrayContainer.gd").new(default_size)
+    _other_containers[container_name] = new_c
+    _ensure_container_populated(container_name, new_c)
+    return new_c
+
+# ------------------------------------------------------------------
+# Mutation helpers
+# ------------------------------------------------------------------
+
 func add_instance(instance: GachaBallInstance) -> bool:
-	if not is_instance_valid(instance): return false
-	
-	var container = get_container_for_instance(instance)
-	if not is_instance_valid(container):
-		printerr("RunState: No valid container for instance tier.")
-		return false
-		
-	var empty_idx = container.find_first_empty_slot()
-	if empty_idx == -1:
-		printerr("RunState: Container is full.")
-		return false
-	
-	run_instances[instance.ball_uuid] = instance
-	container.set_uuid(empty_idx, instance.ball_uuid)
-	return true
+    if not is_instance_valid(instance):
+        return false
 
-## Removes an instance from the run, deleting it from the master list and its container.
-func remove_instance(uuid: String):
-	if uuid.is_empty() or not run_instances.has(uuid):
-		return
+    var def: GachaBallDefinition = instance.get_definition()
+    if not is_instance_valid(def):
+        return false
 
-	# 1. DO NOT Remove from the master instance registry.
-	# An instance should only be removed when it's consumed in a merge or sold.
-	# Moving it between containers (including to/from an equipment slot) does not delete it.
-	# run_instances.erase(uuid)
+    var container_tag: StringName = StringName("RunInventoryT%d" % def.tier)
 
-	# 2. Find and remove from any container it might be in.
-	for container in run_inventory_containers.values():
-		# This requires GrowableGridContainer to have a find_uuid method.
-		var index = container.find_uuid(uuid)
-		if index != -1:
-			container.set_uuid(index, "") # Clear the slot.
-			return # Exit once found, as it can only be in one place.
+    # Determine first free slot in the target container.
+    var occupied: Array[int] = []
+    for other in get_instances_in_container(container_tag):
+        occupied.append(other.location_slot_index)
+
+    var slot_index := 0
+    while slot_index in occupied:
+        slot_index += 1
+
+    # Ensure container exists
+    var container = get_container(container_tag)
+    if container == null:
+        return false
+
+    instance.location_container_tag = container_tag
+    instance.location_slot_index = slot_index
+
+    run_instances[instance.ball_uuid] = instance
+    # Record uuid in container
+    container.set_uuid(slot_index, instance.ball_uuid)
+    return true
+
+func remove_instance_by_uuid(uuid: String) -> void:
+    run_instances.erase(uuid)
+
+# ------------------------------------------------------------------
+# Run lifecycle
+# ------------------------------------------------------------------
 
 func start_new_run() -> void:
-	gold = 10
-	run_instances.clear()
-	for container in run_inventory_containers.values():
-		container.clear()
+    gold = 10
+    run_instances.clear()
+    run_inventory_containers.clear()
+    # Create fresh empty inventory containers for tiers 1-3
+    for t in [1,2,3]:
+        var name := StringName("RunInventoryT%d" % t)
+        run_inventory_containers[name] = preload("res://scripts/FixedArrayContainer.gd").new(16)
 
-	var hero_def: GachaBallDefinition = Database.get_definition(&"hero")
-	if hero_def:
-		hero_instance = GachaBallInstance.new()
-		hero_instance.initialize(hero_def)
-		# The hero instance itself is not in the inventory, just held separately.
-	else:
-		printerr("RunState: CRITICAL - Could not find 'hero' definition in Database.")
+    # --- Create hero instance ---
+    var hero_def: GachaBallDefinition = Database.get_definition(&"hero")
+    if hero_def:
+        hero_instance = GachaBallInstance.new()
+        hero_instance.initialize(hero_def)
+        # Manually place hero in the lineup and register it.
+        hero_instance.location_container_tag = RUN_CONTAINER_TAGS.LINEUP
+        hero_instance.location_slot_index = 0
+        run_instances[hero_instance.ball_uuid] = hero_instance
+    else:
+        printerr("RunState: CRITICAL – could not find hero definition in Database.")
 
-	# Add starting items to the run inventory as per the restored original script.
-	var items_to_add: Array[StringName] = [
-		&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
-		&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
-		&"unit_t2_c", &"unit_t2_c", &"item_t2_c", &"item_t2_c",
-		&"unit_t3_d", &"unit_t3_d", &"item_t3_d", &"item_t3_d"
-	]
-	
-	for item_id in items_to_add:
-		var definition: GachaBallDefinition = Database.get_definition(item_id)
-		if not is_instance_valid(definition):
-			printerr("RunState: Could not find definition for starting item '%s'." % item_id)
-			continue
-		
-		var instance = GachaBallInstance.new()
-		instance.initialize(definition)
-		
-		if not add_instance(instance):
-			printerr("RunState: Failed to add starting item '%s' to inventory." % item_id)
-	
-	print("RunState initialized with TDD-compliant data grids.")
+    # --- Add starter units/items to inventory ---
+    var starters: Array[StringName] = [
+        &"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
+        &"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
+        &"unit_t2_c", &"unit_t2_c", &"item_t2_c", &"item_t2_c",
+        &"unit_t3_d", &"unit_t3_d", &"item_t3_d", &"item_t3_d"
+    ]
 
-## Finds an instance by its UUID from the master registry.
-func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
-	# The run_instances dictionary is the single source of truth. All instances,
-	# including equipped ones, must reside here. This function is now a simple, direct lookup.
-	return run_instances.get(uuid, null)
+    for id in starters:
+        var def: GachaBallDefinition = Database.get_definition(id)
+        if not def:
+            printerr("RunState: Missing definition '%s' while starting new run." % id)
+            continue
+        var inst := GachaBallInstance.new()
+        inst.initialize(def)
+        if not add_instance(inst):
+            printerr("RunState: Failed to add starter instance '%s'." % id)
+
+    # New run initialized
 
 ```

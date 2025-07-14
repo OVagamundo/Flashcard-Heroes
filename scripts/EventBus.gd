@@ -14,7 +14,6 @@ signal main_scene_requested
 signal path_choice_scene_requested
 signal battle_scene_requested
 signal battle_start_requested
-signal inspection_test_scene_requested
 signal title_scene_requested
 
 # --- Window/Modal Signals ---

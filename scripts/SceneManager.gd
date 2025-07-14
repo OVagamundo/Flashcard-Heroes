@@ -8,8 +8,7 @@ const SCENE_PATHS = {
 	"Loadout": "res://scenes/Loadout.tscn",
 	"Main": "res://scenes/Main.tscn",
 	"PathChoiceContent": "res://scenes/PathChoice.tscn",
-	"BattleContent": "res://scenes/Battle.tscn",
-	"TestInspectionSystem": "res://scenes/tests/TestInspectionSystem.tscn"
+	"BattleContent": "res://scenes/Battle.tscn"
 }
 
 var current_scene: Node = null
@@ -22,9 +21,6 @@ func _ready() -> void:
 	EventBus.loadout_scene_requested.connect(_on_loadout_scene_requested)
 	EventBus.main_scene_requested.connect(_on_main_scene_requested)
 
-
-	EventBus.inspection_test_scene_requested.connect(_on_inspection_test_scene_requested)
-
 func _on_title_scene_requested() -> void:
 	_change_scene_to(SCENE_PATHS["Title"])
 
@@ -34,8 +30,7 @@ func _on_loadout_scene_requested() -> void:
 func _on_main_scene_requested() -> void:
 	_change_scene_to(SCENE_PATHS["Main"])
 
-func _on_inspection_test_scene_requested() -> void:
-	_change_scene_to(SCENE_PATHS["TestInspectionSystem"])
+
 
 func _load_content_scene(path: String) -> void:
 	# Ensure Main is the active root; if not, switch to it first.

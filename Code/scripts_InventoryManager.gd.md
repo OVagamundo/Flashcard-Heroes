@@ -32,9 +32,10 @@ func _on_inventory_action_requested(source_loc: LocationIdentifier, target_loc: 
 	if not is_instance_valid(target_instance):
 		if _is_valid_placement(source_instance, target_loc):
 			_move(source_loc, target_loc)
+			InteractionManager.end_drag(true) # successful move
 		else:
 			_handle_invalid_action(WindowManager.find_view_by_location(source_loc))
-		InteractionManager.end_drag(false)
+			InteractionManager.end_drag(false)
 		return
 
 	# --- All actions below this line assume target_instance is VALID. ---
@@ -395,6 +396,11 @@ func _set_instance_at_location(loc: LocationIdentifier, instance: GachaBallInsta
 		var container = GameManager.run_state.get_container(loc.container)
 		if is_instance_valid(container):
 			container.set_uuid(loc.index, uuid_to_set)
+
+	# Also update the instance's own location fields so data and UI remain in sync.
+	if is_instance_valid(instance):
+		instance.location_container_tag = loc.container
+		instance.location_slot_index = loc.index
 
 func _emit_data_changed_signal():
 	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_data_changed"

@@ -2,9 +2,8 @@
 
 ```gdscript
 class_name UnitInspectionWindow
-extends PanelContainer
+extends "res://scripts/windows/InspectionWindow.gd"
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 
 @onready var name_label: Label = %NameLabel
@@ -15,6 +14,7 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 var _inspected_unit_uuid: String
 var _source_view: Control
 var _instance: GachaBallInstance
+var _location: LocationIdentifier
 
 func _ready():
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
@@ -35,6 +35,7 @@ func _gui_input(event: InputEvent):
 func populate(context: Dictionary):
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
+	_location = context.get("location")
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
 		printerr("UnitInspectionWindow: Invalid context provided.")
@@ -66,16 +67,19 @@ func populate(context: Dictionary):
 		item_grid.visible = true
 		item_grid.columns = unit_definition.item_slot_count
 
-	# Get the master instance dictionary from the correct data owner.
-	var all_instances_db: Dictionary
+	var equipped_items: Array[GachaBallInstance] = []
 	if GameManager.is_in_battle:
+		# TODO: Refactor with BattleManager helpers post-Phase 3
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		all_instances_db = bm.get_all_instances() if is_instance_valid(bm) else {}
+		if is_instance_valid(bm):
+			var all_instances_db = bm.get_all_instances()
+			equipped_items = MergeManager._get_equipped_item_instances(_instance, all_instances_db)
 	else:
-		all_instances_db = GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
-		
-	# Use the helper to get the equipped item instances.
-	var equipped_items = MergeManager._get_equipped_item_instances(_instance, all_instances_db)
+		if is_instance_valid(GameManager.run_state):
+			for item_uuid in _instance.equipped_item_uuids:
+				var item_instance = GameManager.run_state.get_instance_by_uuid(item_uuid)
+				if is_instance_valid(item_instance):
+					equipped_items.append(item_instance)
 
 	for i in range(unit_definition.item_slot_count):
 		var item_instance = equipped_items[i] if i < equipped_items.size() else null
@@ -89,7 +93,7 @@ func populate(context: Dictionary):
 			loc.container = &"equipped_item"
 			# This is crucial for the location to be complete
 			loc.set("unit_uuid", _instance.ball_uuid) 
-			view.populate(loc, item_instance, true)
+			view.populate(loc, item_instance, true, true)
 		else:
 			var placeholder = PanelContainer.new()
 			placeholder.custom_minimum_size = Vector2(32, 32)
@@ -126,7 +130,9 @@ func _on_description_meta_clicked(meta):
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
 			var context = {"effect_definition": definition.ability_definitions}
-			WindowManager.open_child_inspection_window(self, &"EffectInspection", context)
+			var child_context = context.duplicate()
+			child_context["source_view"] = _source_view
+			WindowManager.open_child_inspection_window(self, &"EffectInspection", child_context)
 
 func _on_description_meta_hover_started(_meta):
 	description_label.mouse_filter = MOUSE_FILTER_STOP

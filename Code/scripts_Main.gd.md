@@ -22,13 +22,14 @@ func _ready():
 	draw_tier3_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier3_button, 3))
 	
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
+	EventBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
 	EventBus.battle_state_changed.connect(_on_battle_state_changed)
 	# TDD Safeguard: Re-enable draw buttons after the UI has redrawn.
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	content_area.gui_input.connect(_on_content_area_gui_input)
 	
 	_on_battle_state_changed(false)
-	_load_content(PATH_CHOICE_SCENE)
+	EventBus.emit_signal("path_choice_scene_requested")
 
 func _on_content_area_gui_input(event: InputEvent):
 	# This acts as a backstop for drops on the background of the game area.
@@ -48,6 +49,9 @@ func _load_content(scene_resource: PackedScene):
 
 func _on_battle_start_requested():
 	_load_content(BATTLE_SCENE)
+
+func _on_path_choice_scene_requested():
+	_load_content(PATH_CHOICE_SCENE)
 
 func _on_inspect_inventory_pressed():
 	# This is a bit of a hack for now, but the WindowManager is

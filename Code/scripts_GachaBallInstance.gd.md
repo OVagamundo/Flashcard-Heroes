@@ -5,102 +5,136 @@
 class_name GachaBallInstance
 extends Resource
 
-## A unique, individual instance of a GachaBall.
+## A unique, individual instance of a GachaBall. Its state is defined by its properties.
 
-## The ID of the GachaBallDefinition this instance is based on.
+# --- Core Properties ---
 var definition_id: StringName
-
-## A universally unique identifier for this specific instance.
 var ball_uuid: String
+var origin_uuid: String = "" # UUID of the permanent instance this battle copy was created from.
 
-## The UUID of the permanent instance this battle copy was created from.
-## Remains an empty string for permanent instances in the RunInventory.
-var origin_uuid: String = ""
-
-## An array of UUIDs for the items equipped in this instance's slots.
-var equipped_item_uuids: Array[String] = []
-
-## The list of abilities this instance can use.
-var abilities: Array[AbilityDefinition] = []
-
-## The current health of this instance in battle.
+# --- State Properties ---
 var current_hp: int
-
-## The current power of this instance in battle.
 var current_pwr: int
 
+# --- Location & Relationship Properties (The Single Source of Truth per TDD 3.5.A) ---
+var location_container_tag: StringName
+var location_slot_index: int = -1
+var equipped_on_uuid: String = ""
+var equipped_slot_index: int = -1
+# Up to 3 equipped items (by UUID). Empty string indicates empty slot.
+var equipped_item_uuids: Array[String] = ["", "", ""]
 
-## Sets up the instance based on a GachaBallDefinition.
-## This must be called immediately after creating a new instance.
+# --- Dynamic State Properties ---
+var dynamic_tags: Array[StringName] = [] # For status effects like "POISONED", "HONEY_ARMOR"
+
+# --- Abilities ---
+var abilities: Array[AbilityDefinition] = []
+
+# --- Initialization ---
 func initialize(definition: GachaBallDefinition):
-	if not is_instance_valid(definition):
-		printerr("GachaBallInstance.initialize() was called with a null definition.")
-		return
+    if not is_instance_valid(definition):
+        printerr("GachaBallInstance.initialize() called with a null definition.")
+        return
 
-	self.definition_id = definition.id
-	self.ball_uuid = UUIDUtils.generate_uuid(definition.id)
+    self.definition_id = definition.id
+    self.ball_uuid = UUIDUtils.generate_uuid(definition.id)
+    self.abilities = definition.ability_definitions.duplicate(true) # Deep copy
+    self.current_hp = definition.base_hp
+    self.current_pwr = definition.base_pwr
 
-	equipped_item_uuids.resize(definition.item_slot_count)
-	equipped_item_uuids.fill("")
+    # Initialize location to a non-existent state
+    self.location_container_tag = StringName()
+    self.location_slot_index = -1
+    self.equipped_on_uuid = ""
+    self.equipped_slot_index = -1
+    self.equipped_item_uuids = ["", "", ""]
 
-	# Copy abilities from definition
-	abilities = definition.ability_definitions.duplicate()
-
-	self.current_hp = definition.base_hp
-	self.current_pwr = definition.base_pwr
-
-
-## Creates a temporary, deep copy of this instance for a battle session.
+# --- Cloning ---
 func create_battle_copy() -> GachaBallInstance:
-	var copy = self.duplicate(false) # Create a shallow copy of properties
-	copy.definition_id = self.definition_id # Explicitly copy the definition ID
-	var definition = get_definition()
-	if not is_instance_valid(definition):
-		printerr("Cannot create battle copy, definition not found for ID: ", self.definition_id)
-		return null
+    var copy = self.duplicate(false) # Shallow copy of value types
+    var definition = get_definition()
+    if not is_instance_valid(definition):
+        printerr("Cannot create battle copy, definition not found for ID: ", self.definition_id)
+        return null
 
-	# Deep copy the array
-	copy.equipped_item_uuids = self.equipped_item_uuids.duplicate(true)
-	# Copy abilities array (resources are shared, so shallow copy OK)
-	copy.abilities = self.abilities.duplicate()
-	# Assign new unique IDs for the battle context
-	copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
-	copy.origin_uuid = self.ball_uuid # Link back to the original
+    # Deep copy mutable types
+    copy.abilities = self.abilities.duplicate(true)
+    copy.dynamic_tags = self.dynamic_tags.duplicate(true)
+    
+    # Assign new unique ID for the battle context
+    copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
+    copy.origin_uuid = self.ball_uuid # Link back to the original
 
-	# Initialize the copy's stats directly from the definition.
-	copy.current_hp = definition.base_hp
-	copy.current_pwr = definition.base_pwr
+    # CRITICAL: Explicitly copy the definition ID.
+    copy.definition_id = self.definition_id
 
-	return copy
+    # Copy stats and location properties
+    copy.current_hp = self.current_hp
+    copy.current_pwr = self.current_pwr
+    copy.location_container_tag = self.location_container_tag
+    copy.location_slot_index = self.location_slot_index
+    copy.equipped_on_uuid = self.equipped_on_uuid
+    copy.equipped_slot_index = self.equipped_slot_index
 
-## Calculates current stats based on equipped items.
+    return copy
+
+# --- Stat Recalculation ---
 func recalculate_stats(all_instances_db: Dictionary):
-	var definition = get_definition()
-	if not is_instance_valid(definition): return
+    var definition = get_definition()
+    if not is_instance_valid(definition):
+        return
 
-	# Start with base stats
-	var new_hp = definition.base_hp
-	var new_pwr = definition.base_pwr
+    var new_hp = definition.base_hp
+    var new_pwr = definition.base_pwr
 
-	# Add bonuses from each equipped item
-	for item_uuid in equipped_item_uuids:
-		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
-			var item_instance: GachaBallInstance = all_instances_db[item_uuid]
-			var item_def = item_instance.get_definition()
-			if is_instance_valid(item_def):
-				new_hp += item_def.bonus_hp
-				new_pwr += item_def.bonus_pwr
+    # Add bonuses from each equipped item by querying the database for children.
+    for key in all_instances_db:
+        var instance: GachaBallInstance = all_instances_db[key]
+        if is_instance_valid(instance) and instance.equipped_on_uuid == self.ball_uuid:
+            var item_def = instance.get_definition()
+            if is_instance_valid(item_def):
+                new_hp += item_def.bonus_hp
+                new_pwr += item_def.bonus_pwr
 
-	self.current_hp = new_hp
-	self.current_pwr = new_pwr
+    self.current_hp = new_hp
+    self.current_pwr = new_pwr
 
+# --- Tag Helpers ---
+func add_tag(tag: StringName):
+    if not dynamic_tags.has(tag):
+        dynamic_tags.append(tag)
 
+func remove_tag(tag: StringName):
+    if dynamic_tags.has(tag):
+        dynamic_tags.erase(tag)
+
+func has_tag(tag: StringName) -> bool:
+    # Check static tags on the definition first.
+    var def = get_definition()
+    if is_instance_valid(def) and def.tags.has(tag):
+        return true
+    # Then check dynamic tags on this instance.
+    return dynamic_tags.has(tag)
+
+# --- Equipment Helpers ---
+# Returns the UUID of the item equipped in the given slot (0-2). Returns an
+# empty string if the slot is out of range or empty.
+func get_equipped_item_uuid(slot_index: int) -> String:
+    if slot_index >= 0 and slot_index < equipped_item_uuids.size():
+        return equipped_item_uuids[slot_index]
+    return ""
+
+# --- Abilities Helpers ---
+# Safely retrieve an ability definition by index. Returns null if the index is
+# out of bounds or the slot is empty.
+func get_ability(index: int) -> AbilityDefinition:
+    if abilities == null:
+        return null
+    if index >= 0 and index < abilities.size():
+        return abilities[index]
+    return null
+
+# --- Utilities ---
 func get_definition() -> GachaBallDefinition:
-	return Database.get_definition(definition_id)
-
-## Returns the UUID of an equipped item at a specific index.
-func get_equipped_item_uuid_at_index(index: int) -> String:
-	if index >= 0 and index < equipped_item_uuids.size():
-		return equipped_item_uuids[index]
-	return ""
+    return Database.get_definition(definition_id)
 ```

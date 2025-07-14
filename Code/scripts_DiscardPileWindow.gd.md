@@ -10,6 +10,8 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 @onready var discard_grid: GridContainer = %DiscardGrid
 @onready var panel_container: PanelContainer = %PanelContainer
 
+const DISCARD_PILE_CONTAINER_TAG = &"DISCARD_PILE"
+
 func _ready():
 	panel_container.gui_input.connect(_on_panel_gui_input)
 
@@ -32,7 +34,7 @@ func populate(context: Dictionary):
 			var loc = LocationIdentifier.new()
 			loc.tier = 0 # Discard pile doesn't use tiers
 			loc.index = i
-			loc.container = "discard_pile"
-			view.populate(loc, instance_data, false)
+			loc.container = DISCARD_PILE_CONTAINER_TAG
+			view.populate(loc, instance_data, true, true)
 
 ```
