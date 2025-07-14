@@ -113,6 +113,16 @@ func has_tag(tag: StringName) -> bool:
     # Then check dynamic tags on this instance.
     return dynamic_tags.has(tag)
 
+# --- Abilities Helpers ---
+# Safely retrieve an ability definition by index. Returns null if the index is
+# out of bounds or the slot is empty.
+func get_ability(index: int) -> AbilityDefinition:
+    if abilities == null:
+        return null
+    if index >= 0 and index < abilities.size():
+        return abilities[index]
+    return null
+
 # --- Utilities ---
 func get_definition() -> GachaBallDefinition:
     return Database.get_definition(definition_id)
