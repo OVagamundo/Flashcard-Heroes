@@ -16,9 +16,9 @@ var _is_battle_context: bool = false
 # Container tags used on instances for run inventory tiers (single-source-of-truth model).
 # Canonical container tags for run inventory tiers.
 const RUN_CONTAINER_TAGS = {
-    1: &"RunInventoryT1",
-    2: &"RunInventoryT2",
-    3: &"RunInventoryT3",
+	1: &"RunInventoryT1",
+	2: &"RunInventoryT2",
+	3: &"RunInventoryT3",
 }
 
 # Maximum slots per tier grid as per TDD table 2.2

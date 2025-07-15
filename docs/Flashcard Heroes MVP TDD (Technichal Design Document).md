@@ -1,9 +1,10 @@
 Flashcard Heroes - Technical Design Document (V5.1 - Definitive)
 Part 1: Core Architecture & Principles
 1.1 Architectural Principles
-The Hybrid Architecture: Game logic is built on two pillars:
+The Hybrid Architecture: Game logic is built on three pillars:
 The Tag System: An object's identity, status, and location are defined by properties and tags on its GachaBallInstance resource. This defines what a thing is.
-Relational Queries: Managers provide helper functions that understand game rules and context to answer complex questions about the relationships between objects. This defines how things relate to each other.
+The Container Index: For performance and clarity, managers maintain DataContainer objects that act as a fast, location-based index to the master instance dictionaries. These containers are disposable and can be rebuilt from the instance data, but provide O(1) access to slots.
+Relational Queries: Managers provide helper functions that understand game rules and context to answer complex questions about the relationships between objects. These queries operate on the DataContainer index for performance, not by iterating through the master dictionary.
 Data is the Source of Truth: The state of any game object is defined by the properties within its own data resource. Managers and UI are disposable reflections of this data.
 The Effect Resolution Queue: All combat actions are processed through a LIFO (Last-In, First-Out) stack in BattleManager to ensure causality and interruptions are handled correctly and intuitively.
 Separation of Run vs. Battle State: Persistent RunState data is never directly modified in a battle. Instead, temporary battle_copy() instances are created at the start of a battle and destroyed at the end. This is a critical firewall to protect permanent player progress.
@@ -37,6 +38,15 @@ These StringName values define all possible logical locations for a GachaBallIns
 Run State Locations: RUN_INVENTORY_T1, RUN_INVENTORY_T2, RUN_INVENTORY_T3
 Battle State Locations: BATTLE_DRAW_POOL_T1, BATTLE_DRAW_POOL_T2, BATTLE_DRAW_POOL_T3, BATTLE_PLAYER_LINEUP, BATTLE_PLAYER_BENCH, BATTLE_ITEM_INVENTORY, BATTLE_ENEMY_LINEUP, BATTLE_DISCARD_PILE
 Special Location: An item is considered "located" if its equipped_on_uuid property is set, which overrides any container tag.
+
+### 2.3 Data Containers
+To solve the performance and complexity issues of querying scattered instance data, the architecture uses a layer of `DataContainer` objects to act as a fast, location-based index.
+
+*   **`DataContainer.gd`:** An abstract base class defining the interface for all containers (e.g., `get_uuid(index)`, `set_uuid(index)`, `find_first_empty_slot()`).
+*   **`FixedArrayContainer.gd`:** A concrete implementation for collections with a fixed, predefined size, such as the player/enemy lineups and benches.
+*   **`GrowableGridContainer.gd`:** A concrete implementation for collections that can expand when full, such as the tiered battle inventories and the discard pile.
+
+Both `RunState` and `BattleManager` use an internal dictionary of these containers to manage their respective instances efficiently.
 Part 3: Logic Layer & Managers
 3.1 Signal Bus
 Action Signals: draw_gacha_requested(tier_tag: StringName), inventory_action_requested(source_uuid: String, target_uuid: String, explicit_action: String = ""), inspection_requested(uuid: String), display_discard_pile_requested
@@ -55,7 +65,16 @@ BattleManager.gd: The authority for a single battle's state.
 State: _battle_instances, _gacha_tokens, _effect_queue: Array[EffectRequest], _is_processing_effect: bool
 Responsibility: Manages the battle lifecycle, the effect queue, and provides relational query functions.
 3.3 The Definitive Hybrid Architecture: The "Why"
-This architecture was chosen to solve the problems of data duplication and complex state management found in traditional container-based models. By making each instance the source of its own truth, we eliminate entire classes of bugs and create a more scalable and debuggable system. The combination of stateful tags and contextual queries provides the best of both worlds: simplicity and power.
+This architecture was chosen to solve the problems of data duplication and complex state management found in traditional container-based models. The original "pure" data-centric model, where all queries directly accessed the master instance dictionaries, was inefficient for common access patterns like finding empty slots or iterating through specific locations.
+
+The true hybrid model combines three essential pillars:
+1. The "single source of truth" on the instance data
+2. The "performant index" in the DataContainers
+3. The "contextual understanding" in the managers' relational queries
+
+This gives us the debuggability of the former (data is never duplicated) while providing the necessary speed for a responsive UI through the DataContainer index layer. The DataContainers act as disposable, fast-access indices that can be rebuilt from the instance data when needed, but provide O(1) access to slots and locations.
+
+This architecture prevents data duplication while providing the necessary speed for a responsive UI, ensuring that the game remains performant while maintaining data integrity and ease of debugging.
 3.4 Positional & Targeting Logic
 This logic is implemented within BattleManager's relational query functions.
 Player Team (Left Side): "Frontmost" corresponds to the unit with the highest location_slot_index (e.g., 5). "Backmost" is the lowest index (e.g., 0).
@@ -65,6 +84,7 @@ Action Order: The standard combat action order for both teams is back-to-front (
 This system, managed by BattleManager, governs the flow of combat. It uses a LIFO (Last-In, First-Out) stack to ensure that interruptions and reactions (like a "retaliate on hit" ability) are processed immediately after the event that caused them, creating an intuitive and predictable chain of events.
 Population: When the COMBAT phase begins, BattleManager creates an EffectRequest for each unit's action and pushes it onto the _effect_queue stack.
 Processing Loop: The BattleManager's _process function contains a loop that pops one request from the stack, awaits its resolution via the AbilityResolver, and then repeats until the queue is empty.
+    *   The system must re-validate that the source unit is still alive (HP > 0) at the moment its action is popped from the queue. If the source is no longer alive, its action is skipped.
 Chain Reactions: Any ability that triggers another effect creates a new EffectRequest and pushes it to the top of the stack, ensuring it is resolved next.
 Part 4: Presentation Layer (UI)
 4.1 UI Component Blueprints

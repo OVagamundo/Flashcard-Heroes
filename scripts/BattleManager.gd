@@ -341,6 +341,11 @@ func _process_effect_queue() -> void:
 	while not _effect_queue.is_empty():
 		var request: EffectRequest = _effect_queue.pop_back()
 		var source = get_instance(request.source_uuid)
+
+		# Skip if the source is dead or invalid before its turn.
+		if not is_instance_valid(source) or source.current_hp <= 0:
+			continue
+
 		var target = get_instance(request.trigger_context.get("target_uuid"))
 
 		# If original target is missing or already dead, pick a new front-most living target.

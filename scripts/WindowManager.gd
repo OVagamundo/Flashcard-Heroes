@@ -85,7 +85,7 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 					if type == &"Inventory":
 						population_context["inventory"] = bm.get_battle_inventory()
 					else: # DiscardPile
-						population_context["inventory"] = bm.get_discard_pile_inventory()
+						population_context["inventory"] = bm.get_instances_in_container(&"BattleDiscardPile")
 			else: # Run context
 				var run_state = GameManager.run_state
 				if is_instance_valid(run_state):
