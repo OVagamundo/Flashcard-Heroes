@@ -322,7 +322,11 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int):
 		func(inst): return inst.get_definition().tier == tier_to_reshuffle
 	)
 	if instances_to_move.is_empty(): return
+	EventBus.emit_signal("battle_log_event", "Reshuffling Tier %d discard pile..." % tier_to_reshuffle)
 	for instance in instances_to_move:
+		# Restore stats to base values before moving back to draw pool
+		instance.reset_battle_stats()
+		
 		_remove_instance_from_container(instance)
 		var new_index = dest_container.find_first_empty_slot()
 		if new_index == -1: new_index = dest_container.get_all_uuids().size()
@@ -346,7 +350,7 @@ func _on_end_turn_requested():
 	if _current_battle_phase == Phases.MANAGEMENT:
 		_change_phase(Phases.START_OF_TURN)
 
-func _on_unit_inventory_changed():
+func _on_unit_inventory_changed(unit_uuid: String):
 	for instance in _battle_instances.values():
 		var def: GachaBallDefinition = instance.get_definition()
 		if not is_instance_valid(def) or def.category != &"UNIT": continue

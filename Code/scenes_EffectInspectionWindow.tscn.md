@@ -56,7 +56,7 @@ layout_mode = 2
 [node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 1
 bbcode_enabled = true
 text = "This is the detailed description of the effect."
 fit_content = true

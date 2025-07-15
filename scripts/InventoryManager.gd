@@ -37,9 +37,14 @@ func _on_inventory_action_requested(source_loc: LocationIdentifier, target_loc: 
 
 	# --- Case 2: One is an Item, the other is a Unit (EQUIP) ---
 	if source_def.category == &"ITEM" and target_def.category == &"UNIT":
-		_equip_item(source_loc, target_loc)
-		InteractionManager.end_drag(true)
-		return
+		# Only allow equipping to units on the battle board (lineup or bench)
+		if target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
+			_equip_item(source_loc, target_loc)
+			InteractionManager.end_drag(true)
+			return
+		else:
+			_handle_invalid_action(WindowManager.find_view_by_location(source_loc))
+			return
 
 	# --- Case 3: Both are Units or both are Items (MERGE or SWAP) ---
 	var all_instances_db = _get_current_instance_db()
@@ -239,14 +244,19 @@ func _is_valid_placement(instance: GachaBallInstance, target_loc: LocationIdenti
 	var target_container = target_loc.container
 	var target_instance = _get_instance_at_location(target_loc)
 
-	if not is_instance_valid(target_instance):
-		if target_container.begins_with("RunInventoryT"):
-			var container_tier = target_container.substr(len("RunInventoryT")).to_int()
-			if def.tier != container_tier: return false
-		if target_container.begins_with("BattleInventoryT"):
-			var container_tier_b = target_container.substr(len("BattleInventoryT")).to_int()
-			if def.tier != container_tier_b: return false
+	# Check tier compatibility first
+	if target_container.begins_with("RunInventoryT"):
+		var container_tier = target_container.substr(len("RunInventoryT")).to_int()
+		if def.tier != container_tier: return false
+	if target_container.begins_with("BattleInventoryT"):
+		var container_tier_b = target_container.substr(len("BattleInventoryT")).to_int()
+		if def.tier != container_tier_b: return false
 
+	# Check if target is empty slot
+	if not is_instance_valid(target_instance):
+		return true
+
+	# Check category compatibility
 	if target_container in [&"PlayerLineup", &"PlayerBench"] and def.category == &"ITEM":
 		return false
 	if target_container == &"ItemInventory" and def.category == &"UNIT":
