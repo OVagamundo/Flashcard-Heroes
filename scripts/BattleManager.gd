@@ -15,32 +15,14 @@ const BATTLE_CONTAINER_TAGS = {
 	PLAYER_ITEM_INVENTORY = &"ItemInventory",
 	ENEMY_LINEUP = &"EnemyLineup",
 	ENEMY_BENCH = &"EnemyBench",
-	BATTLE_DISCARD_PILE = &"BattleDiscardPile",
+	BATTLE_DISCARD_PILE = &"DiscardPile",
 }
 
 var _battle_instances: Dictionary = {}
 var _containers: Dictionary = {}
 
-class ArrayContainer:
-	extends "res://scripts/DataContainer.gd"
-	var _data: Array[String] = []
-	func _init(size: int = 6):
-		_data.resize(size)
-		_data.fill("")
-	func get_uuid(index: int) -> String:
-		if index >= 0 and index < _data.size(): return _data[index]
-		return ""
-	func set_uuid(index: int, uuid: String) -> void:
-		if index < 0: return
-		if index >= _data.size():
-			_data.resize(index + 1)
-			for i in range(_data.size()):
-				if _data[i] == null: _data[i] = ""
-		_data[index] = uuid
-	func find_first_empty_slot() -> int:
-		return _data.find("")
-	func get_all_uuids() -> Array[String]:
-		return _data.duplicate()
+const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
+const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
 var _gacha_tokens: int = 0
 
 func _ready():
@@ -128,11 +110,26 @@ func _setup_enemy_lineup():
 		enemy_inst.location_slot_index = i
 
 func get_container(container_name: StringName) -> DataContainer:
-	if _containers.has(container_name): return _containers[container_name]
-	var default_size := 6
-	if container_name.begins_with("BattleInventoryT") or container_name == BATTLE_CONTAINER_TAGS.PLAYER_BENCH or container_name == BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-		default_size = 3
-	var new_container = ArrayContainer.new(default_size)
+	if _containers.has(container_name):
+		return _containers[container_name]
+
+	var new_container: DataContainer
+
+	match container_name:
+		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+			new_container = FixedArrayContainer.new(6)
+		BATTLE_CONTAINER_TAGS.PLAYER_BENCH, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
+			new_container = FixedArrayContainer.new(3)
+		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
+			new_container = GrowableGridContainer.new(16, 8)
+		_: # Default case for BattleInventoryT*
+			if container_name.begins_with("BattleInventoryT"):
+				new_container = GrowableGridContainer.new(8, 4)
+			else:
+				# Failsafe for unknown container types
+				printerr("BattleManager: Unknown container type requested: ", container_name)
+				new_container = FixedArrayContainer.new(1)
+
 	_containers[container_name] = new_container
 	return new_container
 

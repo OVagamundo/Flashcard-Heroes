@@ -194,7 +194,7 @@ func _apply_selection_feedback():
 func _notification(what: int):
 	if what == NOTIFICATION_DRAG_END:
 		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
-			InteractionManager.end_drag(true)
+			InteractionManager.end_drag(false)
 
 func _get_all_instances_db() -> Dictionary:
 	if GameManager.is_in_battle:
