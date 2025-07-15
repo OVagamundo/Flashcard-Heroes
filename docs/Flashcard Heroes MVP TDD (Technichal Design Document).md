@@ -78,6 +78,11 @@ This architecture prevents data duplication while providing the necessary speed 
 3.4 Positional & Targeting Logic
 This logic is implemented within BattleManager's relational query functions.
 Player Team (Left Side): "Frontmost" corresponds to the unit with the highest location_slot_index (e.g., 5). "Backmost" is the lowest index (e.g., 0).
+
+The Golden Rule of State Synchronization: Every time an instance's location is changed, a two-step process is mandatory:
+Update the Containers: The instance's UUID must be removed from the source DataContainer and added to the destination DataContainer.
+Update the Instance: The instance's own location_container_tag and location_slot_index properties must be updated to reflect its new location.
+Failing to perform both steps will de-synchronize the game state and lead to bugs where instances are not displayed correctly. This two-step process is the fundamental contract of the hybrid architecture.
 Enemy Team (Right Side): "Frontmost" corresponds to the unit with the lowest location_slot_index (e.g., 0). "Backmost" is the highest index (e.g., 5).
 Action Order: The standard combat action order for both teams is back-to-front (index 5 down to 0).
 3.5 The Effect Resolution Queue
@@ -149,6 +154,15 @@ The method for opening an inspection window is context-dependent:
     *   The group is now: `Unit -> Effect`.
 
 Part 5: Game Flows
+### 3.6 In-Battle Instance Lifecycle
+To ensure data integrity and prevent unnecessary object creation, the following rules govern how GachaBall instances are handled during a battle after the initial setup:
+
+**No New Copies:** After the initial `battle_copy()` creation at the start of a battle, no further copies or clones of `GachaBall` instances are made. All subsequent operations manipulate the existing battle instances.
+
+**Movement is a State Change:** "Moving" an instance (e.g., from bench to lineup, or inventory to discard) is achieved by changing the `location_container_tag` and `location_slot_index` properties on the instance itself, and updating the relevant `DataContainer` objects. The instance's `ball_uuid` remains the same for the duration of the battle.
+
+**Item Salvage and Inheritance:** When a unit is defeated or used as a merge ingredient, its equipped items are not copied. The exact same item instances are transferred. Their `equipped_on_uuid` and `location` properties are updated to reflect their new state (either moved to the discard pile or re-equipped on a newly merged unit).
+
 5.1 Battle Setup Flow
 BattleManager creates battle_copy() instances from GameManager.run_state.run_instances and adds them to its _battle_instances dictionary.
 It sets the initial location properties on each new copy (e.g., location_container_tag = "BATTLE_DRAW_POOL_T1").
@@ -156,7 +170,7 @@ For each new instance, it emits instance_created(new_uuid).
 5.2 Gacha Draw Flow
 BattleManager receives draw_gacha_requested(tier_tag).
 It queries _battle_instances for instances with location_container_tag == "BATTLE_DRAW_POOL_[tier_tag]".
-If the pool is empty, it reshuffles by finding instances in the BATTLE_DISCARD_PILE and changing their location properties back to the draw pool.
+If a draw or merge action causes a tiered battle inventory pool to become empty, it is automatically and immediately replenished with all corresponding GachaBalls from the BATTLE_DISCARD_PILE. This ensures a player never attempts to draw from a visibly empty pool if matching items exist in the discard pile.
 It picks a random instance and changes its location properties to an available slot in BATTLE_PLAYER_BENCH or BATTLE_ITEM_INVENTORY.
 It emits instance_location_changed(drawn_uuid).
 5.3 Merge Flow

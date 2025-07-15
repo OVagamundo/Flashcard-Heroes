@@ -28,7 +28,13 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	# Equip the gathered items onto the new unit by copying their UUIDs.
 	for i in range(min(all_parent_items.size(), merged_instance.equipped_item_uuids.size())):
 		var item_to_equip: GachaBallInstance = all_parent_items[i]
+		# Unequip from old parent
+		item_to_equip.equipped_on_uuid = ""
+		item_to_equip.equipped_slot_index = -1
 		merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
+		# Re-equip to new parent
+		item_to_equip.equipped_on_uuid = merged_instance.ball_uuid
+		item_to_equip.equipped_slot_index = i
 		
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
 

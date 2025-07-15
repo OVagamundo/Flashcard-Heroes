@@ -187,6 +187,21 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	# Pass the correct data to the MergeManager.
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 
+# Check if the consumed ingredients' pools need reshuffling
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm):
+		var tier_a = source_instance.get_definition().tier
+		var tier_b = target_instance.get_definition().tier
+
+		var pool_a = bm.get_instances_in_container("BattleInventoryT%d" % tier_a)
+		if pool_a.is_empty():
+			bm._reshuffle_discard_pile(tier_a)
+
+		if tier_a != tier_b:
+			var pool_b = bm.get_instances_in_container("BattleInventoryT%d" % tier_b)
+			if pool_b.is_empty():
+				bm._reshuffle_discard_pile(tier_b)
+
 	if merge_result.is_empty():
 		# TDD: If there's no valid merge recipe, the behavior depends on context.
 		# For storage grids (Run or Battle), a failed merge should attempt a swap.
