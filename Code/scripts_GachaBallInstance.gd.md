@@ -47,7 +47,9 @@ func initialize(definition: GachaBallDefinition):
     self.location_slot_index = -1
     self.equipped_on_uuid = ""
     self.equipped_slot_index = -1
-    self.equipped_item_uuids = ["", "", ""]
+    self.equipped_item_uuids.clear()
+    self.equipped_item_uuids.resize(definition.item_slot_count)
+    self.equipped_item_uuids.fill("")
 
 # --- Cloning ---
 func create_battle_copy() -> GachaBallInstance:

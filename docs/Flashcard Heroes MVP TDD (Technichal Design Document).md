@@ -107,7 +107,7 @@ Table 4.3.1: In-Battle Interactions (is_in_battle == true)
 Player Action	Conditions	Resulting Logic Flow
 Drop Unit on Unit	Merge recipe exists.	InventoryManager shows ChoiceWindow. Player choice re-sends inventory_action_requested with explicit_action: "MERGE" or "SWAP".
 Drop Unit on Unit	No merge recipe.	Swap their location_slot_index properties.
-Drop Item on Unit	Unit has empty item slot.	Change item's equipped_on_uuid and equipped_slot_index.
+Drop Item on Unit	Unit has empty item slot.	Change item's equipped_on_uuid and equipped_slot_index. Emit unit_inventory_changed(unit_uuid) to trigger stat recalculation.
 Drag Item off Unit	Target is empty Item Inv. slot.	Unequip: Change item's location_container_tag to BATTLE_ITEM_INVENTORY and clear equipped_on_uuid.
 Table 4.3.2: Out-of-Battle Interactions (is_in_battle == false)
 Player Action	Conditions	Resulting Logic Flow
@@ -170,7 +170,7 @@ For each new instance, it emits instance_created(new_uuid).
 5.2 Gacha Draw Flow
 BattleManager receives draw_gacha_requested(tier_tag).
 It queries _battle_instances for instances with location_container_tag == "BATTLE_DRAW_POOL_[tier_tag]".
-If a draw or merge action causes a tiered battle inventory pool to become empty, it is automatically and immediately replenished with all corresponding GachaBalls from the BATTLE_DISCARD_PILE. This ensures a player never attempts to draw from a visibly empty pool if matching items exist in the discard pile.
+If a draw or merge action causes a tiered battle inventory pool to become empty, it is automatically and immediately replenished with all corresponding GachaBalls from the BATTLE_DISCARD_PILE. When a reshuffle occurs, any GachaBall instance being moved from the BATTLE_DISCARD_PILE to a BATTLE_DRAW_POOL must have its current_hp and current_pwr stats reset to the base_hp and base_pwr values from its GachaBallDefinition. This ensures a player never attempts to draw from a visibly empty pool if matching items exist in the discard pile.
 It picks a random instance and changes its location properties to an available slot in BATTLE_PLAYER_BENCH or BATTLE_ITEM_INVENTORY.
 It emits instance_location_changed(drawn_uuid).
 5.3 Merge Flow

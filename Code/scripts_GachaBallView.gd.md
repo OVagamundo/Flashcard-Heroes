@@ -69,14 +69,22 @@ func _update_item_slots(instance: GachaBallInstance):
 	for child in item_grid.get_children():
 		child.queue_free()
 	
-	var all_instances = _get_all_instances_db()
-	if all_instances.is_empty(): return
-		
-	for item_uuid in instance.equipped_item_uuids:
+	var definition = instance.get_definition()
+	if not is_instance_valid(definition) or definition.item_slot_count == 0:
+		return
+
+	var all_instances_db = _get_all_instances_db()
+	if all_instances_db.is_empty(): return
+
+	# Loop based on the DEFINITION's slot count, not the instance's data array.
+	for i in range(definition.item_slot_count):
 		var slot_panel = Panel.new()
 		slot_panel.custom_minimum_size = Vector2(12, 12)
-		if not item_uuid.is_empty() and all_instances.has(item_uuid):
-			var item_instance = all_instances[item_uuid]
+		
+		var item_uuid = instance.get_equipped_item_uuid(i)
+
+		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
+			var item_instance = all_instances_db[item_uuid]
 			var item_def = item_instance.get_definition()
 			if is_instance_valid(item_def):
 				var icon = TextureRect.new()
