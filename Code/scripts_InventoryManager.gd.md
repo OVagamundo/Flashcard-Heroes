@@ -40,9 +40,14 @@ func _on_inventory_action_requested(source_loc: LocationIdentifier, target_loc: 
 
 	# --- Case 2: One is an Item, the other is a Unit (EQUIP) ---
 	if source_def.category == &"ITEM" and target_def.category == &"UNIT":
-		_equip_item(source_loc, target_loc)
-		InteractionManager.end_drag(true)
-		return
+		# This is a potential equip action. Check if it's valid.
+		if target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
+			# It's a valid equip on the battle board.
+			_equip_item(source_loc, target_loc)
+			InteractionManager.end_drag(true)
+			return # The action is complete, so we exit the function.
+		# If not on the battle board, we do nothing here and let the code
+		# fall through to the merge/swap logic below.
 
 	# --- Case 3: Both are Units or both are Items (MERGE or SWAP) ---
 	var all_instances_db = _get_current_instance_db()
@@ -242,14 +247,19 @@ func _is_valid_placement(instance: GachaBallInstance, target_loc: LocationIdenti
 	var target_container = target_loc.container
 	var target_instance = _get_instance_at_location(target_loc)
 
-	if not is_instance_valid(target_instance):
-		if target_container.begins_with("RunInventoryT"):
-			var container_tier = target_container.substr(len("RunInventoryT")).to_int()
-			if def.tier != container_tier: return false
-		if target_container.begins_with("BattleInventoryT"):
-			var container_tier_b = target_container.substr(len("BattleInventoryT")).to_int()
-			if def.tier != container_tier_b: return false
+	# Check tier compatibility first for all placements
+	if target_container.begins_with("RunInventoryT"):
+		var container_tier = target_container.substr(len("RunInventoryT")).to_int()
+		if def.tier != container_tier: return false
+	if target_container.begins_with("BattleInventoryT"):
+		var container_tier_b = target_container.substr(len("BattleInventoryT")).to_int()
+		if def.tier != container_tier_b: return false
 
+	# Check if target is empty slot (for move operations)
+	if not is_instance_valid(target_instance):
+		pass
+
+	# Check category compatibility
 	if target_container in [&"PlayerLineup", &"PlayerBench"] and def.category == &"ITEM":
 		return false
 	if target_container == &"ItemInventory" and def.category == &"UNIT":

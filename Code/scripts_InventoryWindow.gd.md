@@ -42,17 +42,21 @@ func populate(context: Dictionary):
 	_is_battle_context = context.get("is_battle_context", false)
 	
 	if _is_battle_context:
+		# BATTLE CONTEXT
 		if not EventBus.is_connected("battle_inventory_changed", _populate_grids_from_battle_inventory):
 			EventBus.battle_inventory_changed.connect(_populate_grids_from_battle_inventory)
-		# Populate immediately with current battle inventory
+		
+		# Populate immediately with the current battle state
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		if is_instance_valid(bm):
-			_populate_grids(bm.get_battle_inventory(), true)
-	else: # Run context
+			_populate_grids(bm.get_battle_inventory(), is_interactive)
+	else:
+		# RUN CONTEXT
 		if not EventBus.is_connected("run_data_changed", _populate_grids_from_run_inventory):
 			EventBus.run_data_changed.connect(_populate_grids_from_run_inventory)
-	
-	_populate_grids(context.get("inventory", {}), is_interactive)
+		
+		# Populate immediately with the provided run inventory data
+		_populate_grids(context.get("inventory", {}), is_interactive)
 
 func _populate_grids_from_run_inventory():
 	if not is_instance_valid(GameManager.run_state):

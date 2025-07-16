@@ -206,3 +206,7 @@ func _get_all_instances_db() -> Dictionary:
 func _get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	var db = _get_all_instances_db()
 	return db.get(uuid)
+
+func shake() -> void:
+	if animation_player.has_animation("shake"):
+		animation_player.play("shake")

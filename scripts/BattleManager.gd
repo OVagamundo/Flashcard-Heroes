@@ -177,18 +177,7 @@ func get_current_phase_name() -> StringName:
 	return phase_name
 
 func get_battle_inventory() -> Dictionary:
-	var inventory := { 1: [], 2: [], 3: [] }
-	for i in range(1, 4):
-		inventory[i].resize(16)
-		inventory[i].fill(null)
-	for instance in _battle_instances.values():
-		var container_tag = instance.location_container_tag
-		if container_tag.begins_with("BattleInventoryT"):
-			var tier = instance.get_definition().tier
-			var slot = instance.location_slot_index
-			if inventory.has(tier) and slot >= 0 and slot < inventory[tier].size():
-				inventory[tier][slot] = instance
-	return inventory
+	return _containers
 
 func get_discard_pile_inventory() -> Array[GachaBallInstance]:
 	var result: Array[GachaBallInstance] = []

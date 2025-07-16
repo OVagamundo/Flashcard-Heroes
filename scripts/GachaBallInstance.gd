@@ -15,9 +15,7 @@ var origin_uuid: String = "" # UUID of the permanent instance this battle copy w
 var current_hp: int
 var current_pwr: int
 
-# --- Location & Relationship Properties (The Single Source of Truth per TDD 3.5.A) ---
-var location_container_tag: StringName
-var location_slot_index: int = -1
+# --- Relationship Properties ---
 var equipped_on_uuid: String = ""
 var equipped_slot_index: int = -1
 # Up to 3 equipped items (by UUID). Empty string indicates empty slot.
@@ -41,9 +39,7 @@ func initialize(definition: GachaBallDefinition):
     self.current_hp = definition.base_hp
     self.current_pwr = definition.base_pwr
 
-    # Initialize location to a non-existent state
-    self.location_container_tag = StringName()
-    self.location_slot_index = -1
+    # Initialize equipment state
     self.equipped_on_uuid = ""
     self.equipped_slot_index = -1
     self.equipped_item_uuids.clear()
@@ -69,13 +65,16 @@ func create_battle_copy() -> GachaBallInstance:
     # CRITICAL: Explicitly copy the definition ID.
     copy.definition_id = self.definition_id
 
-    # Copy stats and location properties
+    # Copy stats 
     copy.current_hp = self.current_hp
     copy.current_pwr = self.current_pwr
-    copy.location_container_tag = self.location_container_tag
-    copy.location_slot_index = self.location_slot_index
+    # Copy equipment state
     copy.equipped_on_uuid = self.equipped_on_uuid
     copy.equipped_slot_index = self.equipped_slot_index
+    
+    # Initialize temporary location properties for battle copy
+    copy.location_container_tag = ""
+    copy.location_slot_index = -1
 
     return copy
 

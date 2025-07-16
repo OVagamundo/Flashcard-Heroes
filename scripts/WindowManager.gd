@@ -76,33 +76,20 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 	if window_instance.has_method("populate"):
 		# Pass a simplified context. The window is responsible for fetching its own data.
 		var population_context = context
-		if type == &"Inventory" or type == &"DiscardPile":
-			var is_battle = GameManager.is_in_battle
-			population_context["is_battle_context"] = is_battle
-			if is_battle:
-				var bm = get_tree().get_first_node_in_group("battle_manager")
-				if is_instance_valid(bm):
-					if type == &"Inventory":
-						population_context["inventory"] = bm.get_battle_inventory()
-					else: # DiscardPile
-						population_context["inventory"] = bm.get_discard_pile_inventory()
-			else: # Run context
-				var run_state = GameManager.run_state
-				if is_instance_valid(run_state):
-					var inventory_data = {}
-					for tier in [1, 2, 3]:
-						var container_name = &"RunInventoryT%d" % tier
-						if run_state.run_inventory_containers.has(container_name):
-							var container = run_state.run_inventory_containers[container_name]
-							var tier_instances = []
-							for uuid in container.get_all_uuids():
-								if uuid and run_state.run_instances.has(uuid):
-									tier_instances.append(run_state.run_instances[uuid])
-								else:
-									tier_instances.append(null)
-							inventory_data[tier] = tier_instances
-					population_context["inventory"] = inventory_data
-		
+		var is_battle = GameManager.is_in_battle
+		population_context["is_battle_context"] = is_battle
+		if is_battle:
+			var bm = get_tree().get_first_node_in_group("battle_manager")
+			if is_instance_valid(bm):
+				if type == &"Inventory":
+					population_context["inventory"] = bm.get_battle_inventory()
+				else: # DiscardPile
+					population_context["inventory"] = bm.get_discard_pile_inventory()
+		else: # Run context
+			var run_state = GameManager.run_state
+			if is_instance_valid(run_state):
+				# Pass the REAL container dictionary directly, just like in battle.
+				population_context["inventory"] = run_state.run_inventory_containers
 		window_instance.populate(population_context)
 
 func open_end_battle_popup(is_victory: bool):
