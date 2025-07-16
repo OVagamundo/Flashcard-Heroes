@@ -28,7 +28,6 @@ func populate(context: Dictionary):
 		var instance = discard_pile_data[i]
 		
 		var loc = LocationIdentifier.new()
-		loc.tier = 0 # Discard pile doesn't use tiers
 		loc.index = i
 		loc.container = DISCARD_PILE_CONTAINER_TAG
 

@@ -85,7 +85,6 @@ func populate(context: Dictionary):
 			var view = _GachaBallView.instantiate()
 			item_grid.add_child(view)
 			var loc = LocationIdentifier.new()
-			loc.tier = -1 # Equipped items don't use tiers
 			loc.index = i
 			loc.container = &"equipped_item"
 			# This is crucial for the location to be complete

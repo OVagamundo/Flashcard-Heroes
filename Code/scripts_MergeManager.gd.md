@@ -44,24 +44,26 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
 
 
-func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
+func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, _source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
 	# --- CONTEXT-AWARE VALIDATION ---
 	# Merging is not allowed on the battle board itself.
 	if target_loc.container == "battle_board":
 		return null
 
+	# Get definitions for both instances
+	var def_a = instance_a.get_definition()
+	var def_b = instance_b.get_definition()
+	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
+		return null
+
 	# Merging across different tiers is not allowed.
-	if source_loc.tier != target_loc.tier:
+	if def_a.tier != def_b.tier:
 		return null
 
 	for recipe_key in Database.recipes:
 		var recipe: MergeRecipe = Database.recipes[recipe_key]
 		
 		# For a valid merge, the categories of the ingredients must match.
-		var def_a = instance_a.get_definition()
-		var def_b = instance_b.get_definition()
-		if not is_instance_valid(def_a) or not is_instance_valid(def_b):
-			continue
 		if def_a.category != def_b.category:
 			continue
 

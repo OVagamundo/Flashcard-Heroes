@@ -20,6 +20,8 @@ const BATTLE_CONTAINER_TAGS = {
 
 var _battle_instances: Dictionary = {}
 var _containers: Dictionary = {}
+# Key: instance UUID, Value: LocationIdentifier
+var _instance_locations: Dictionary = {}
 
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
@@ -62,52 +64,59 @@ func _setup_battle():
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
+	_instance_locations.clear()
 	_gacha_tokens = 5
-	var run_instances: Array = GameManager.run_state.get_all_instances().values()
-	for perm_inst in run_instances:
+	
+	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
+	
+	for perm_inst in run_state_instances:
 		var battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
 		if not is_instance_valid(battle_copy): continue
+		
 		_battle_instances[battle_copy.ball_uuid] = battle_copy
-		var tier: int = battle_copy.get_definition().tier
-		var tier_container_tag: StringName = "BattleInventoryT%d" % tier
-		var container := get_container(tier_container_tag)
-		var slot := container.find_first_empty_slot()
-		if slot == -1: slot = container.get_all_uuids().size()
-		container.set_uuid(slot, battle_copy.ball_uuid)
-		battle_copy.location_container_tag = tier_container_tag
-		battle_copy.location_slot_index = slot
-		var def := battle_copy.get_definition()
-		var is_hero_unit := false
-		if def != null:
-			is_hero_unit = def.is_hero
-			if not is_hero_unit and def.tags.has("HERO"): is_hero_unit = true
-		if is_hero_unit:
-			var lineup_container := get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-			lineup_container.set_uuid(0, battle_copy.ball_uuid)
-			battle_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			battle_copy.location_slot_index = 0
-	var hero_run_inst: GachaBallInstance = GameManager.run_state.hero_instance
-	if is_instance_valid(hero_run_inst) and not _battle_instances.has(hero_run_inst.ball_uuid):
-		var hero_copy: GachaBallInstance = hero_run_inst.create_battle_copy()
-		_battle_instances[hero_copy.ball_uuid] = hero_copy
-		var lineup_c := get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-		lineup_c.set_uuid(0, hero_copy.ball_uuid)
-		hero_copy.location_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-		hero_copy.location_slot_index = 0
+		
+		var perm_loc = GameManager.run_state.get_location_for_uuid(perm_inst.ball_uuid)
+		if not is_instance_valid(perm_loc): continue
+
+		var target_container_name: StringName
+		if perm_loc.container.begins_with("RunInventoryT"):
+			var tier = perm_inst.get_definition().tier
+			target_container_name = &"BattleInventoryT%d" % tier
+		else:
+			# Map RunState container names to BattleManager container names
+			match perm_loc.container:
+				RS.RUN_CONTAINER_TAGS.PLAYER_LINEUP:
+					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+				RS.RUN_CONTAINER_TAGS.PLAYER_BENCH:
+					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+				RS.RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
+					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
+				_:
+					target_container_name = perm_loc.container
+
+		var container = get_container(target_container_name)
+		var index = container.find_first_empty_slot()
+		if index == -1: index = container.get_all_uuids().size() # For growable containers
+		
+		container.set_uuid(index, battle_copy.ball_uuid)
+		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
+
 	_setup_enemy_lineup()
 
 func _setup_enemy_lineup():
 	var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
+	var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	
 	for i in range(min(enemy_unit_ids.size(), 6)):
 		var unit_def = Database.get_definition(enemy_unit_ids[i])
 		if not is_instance_valid(unit_def): continue
+		
 		var enemy_inst = GachaBallInstance.new()
 		enemy_inst.initialize(unit_def)
 		_battle_instances[enemy_inst.ball_uuid] = enemy_inst
-		var lineup_c = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-		lineup_c.set_uuid(i, enemy_inst.ball_uuid)
-		enemy_inst.location_container_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		enemy_inst.location_slot_index = i
+		
+		lineup_container.set_uuid(i, enemy_inst.ball_uuid)
+		_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
 
 func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
@@ -141,24 +150,63 @@ func get_instances_in_container(container_tag: StringName) -> Array[GachaBallIns
 	for uuid in uuids:
 		var instance = get_instance(uuid)
 		if is_instance_valid(instance): result.append(instance)
-	result.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
+	
+	# Sort by location index using the _instance_locations dictionary
+	result.sort_custom(func(a, b):
+		var loc_a = get_location_for_uuid(a.ball_uuid)
+		var loc_b = get_location_for_uuid(b.ball_uuid)
+		if not loc_a or not loc_b: return false
+		return loc_a.index < loc_b.index
+	)
 	return result
+
+func get_inventory_tier_instances(tier: int) -> Array[GachaBallInstance]:
+	var instances: Array[GachaBallInstance] = []
+	var container_name = &"BattleInventoryT%d" % tier
+	var container = get_container(container_name)
+	if is_instance_valid(container):
+		var uuids = container.get_all_non_empty_uuids()
+		for uuid in uuids:
+			var instance = get_instance(uuid)
+			if is_instance_valid(instance):
+				instances.append(instance)
+	return instances
 
 func get_instance(uuid: String) -> GachaBallInstance:
 	return _battle_instances.get(uuid)
 
+func get_location_for_uuid(uuid: String) -> LocationIdentifier:
+	return _instance_locations.get(uuid)
+
+func _update_instance_location(uuid: String, container_name: StringName, index: int):
+	if not _battle_instances.has(uuid): return
+	
+	var loc = LocationIdentifier.new()
+	loc.set_values(container_name, index)
+	_instance_locations[uuid] = loc
+	
+	# This is where we set the temporary, battle-only properties.
+	var instance = _battle_instances[uuid]
+	instance.set("location_container_tag", container_name)
+	instance.set("location_slot_index", index)
+
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc): return null
+	
+	# Handle equipped items
 	if loc.container == &"equipped_item":
 		var item_owner = get_instance(loc.unit_uuid)
 		if is_instance_valid(item_owner):
 			var item_uuid = item_owner.get_equipped_item_uuid(loc.index)
-			return get_instance(item_uuid)
+			return get_instance(item_uuid) if not item_uuid.is_empty() else null
 		return null
+	
+	# Handle regular container lookups
 	var container = get_container(loc.container)
 	if not is_instance_valid(container): return null
+	
 	var uuid = container.get_uuid(loc.index)
-	return get_instance(uuid)
+	return get_instance(uuid) if not uuid.is_empty() else null
 
 func get_all_instances() -> Dictionary:
 	return _battle_instances
@@ -248,13 +296,14 @@ func _move_instance_to_discard(instance: GachaBallInstance):
 	var discard_container = get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 	var index = discard_container.find_first_empty_slot()
 	if index == -1: index = discard_container.get_all_uuids().size()
-	instance.location_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-	instance.location_slot_index = index
 	discard_container.set_uuid(index, instance.ball_uuid)
+	_update_instance_location(instance.ball_uuid, BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, index)
 
 func _remove_instance_from_container(instance: GachaBallInstance):
 	if not is_instance_valid(instance): return
-	var container = get_container(instance.location_container_tag)
+	var loc = get_location_for_uuid(instance.ball_uuid)
+	if not is_instance_valid(loc): return
+	var container = get_container(loc.container)
 	if is_instance_valid(container):
 		var uuids = container.get_all_uuids()
 		var idx := uuids.find(instance.ball_uuid)
@@ -327,6 +376,16 @@ func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
 	var target_lineup_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if attacker_is_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	var living_targets = get_instances_in_container(target_lineup_tag).filter(func(unit): return unit.current_hp > 0)
 	if living_targets.is_empty(): return null
+	
+	# Sort by location index to ensure consistent targeting
+	living_targets.sort_custom(func(a, b):
+		var loc_a = get_location_for_uuid(a.ball_uuid)
+		var loc_b = get_location_for_uuid(b.ball_uuid)
+		if not loc_a or not loc_b: return false
+		return loc_a.index < loc_b.index
+	)
+	
+	# Player attacks from left to right (0 to n), enemies from right to left (n to 0)
 	return living_targets[0] if attacker_is_player else living_targets[-1]
 
 func _on_end_turn_requested():
@@ -334,10 +393,10 @@ func _on_end_turn_requested():
 		_change_phase(Phases.START_OF_TURN)
 
 func _on_unit_inventory_changed(unit_uuid: String):
-	for instance in _battle_instances.values():
-		var def: GachaBallDefinition = instance.get_definition()
-		if not is_instance_valid(def) or def.category != &"UNIT": continue
-		instance.recalculate_stats(_battle_instances)
+	# Only recalculate stats for the specific unit that changed
+	var unit_instance = get_instance(unit_uuid)
+	if is_instance_valid(unit_instance):
+		unit_instance.recalculate_stats(_battle_instances)
 
 func _on_draw_gacha_requested(tier: int):
 	var cost = tier
@@ -365,9 +424,8 @@ func _on_draw_gacha_requested(tier: int):
 	var target_container := get_container(target_container_tag)
 	var empty_slot := target_container.find_first_empty_slot()
 	if empty_slot != -1 and empty_slot < target_container_capacity:
-		drawn_instance.location_container_tag = target_container_tag
-		drawn_instance.location_slot_index = empty_slot
-		target_container.set_uuid(empty_slot, drawn_instance.ball_uuid)
+			target_container.set_uuid(empty_slot, drawn_instance.ball_uuid)
+			_update_instance_location(drawn_instance.ball_uuid, target_container_tag, empty_slot)
 	else:
 		_move_instance_to_discard(drawn_instance)
 	EventBus.emit_signal("battle_inventory_changed")

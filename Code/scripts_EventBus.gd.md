@@ -49,5 +49,6 @@ signal gacha_tokens_changed(new_amount: int)
 signal unit_stats_changed(unit_uuid: String)
 signal unit_inventory_changed(unit_uuid: String)
 signal battle_log_event(message: String)
+signal inventory_ui_refresh_requested
 
 ```

@@ -135,10 +135,6 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		var loc := LocationIdentifier.new()
 		loc.container = container_name
 		loc.index = i
-		if container_name.begins_with("BattleInventoryT"):
-			loc.tier = int(container_name.substr(len("BattleInventoryT")))
-		else:
-			loc.tier = -1
 
 		var instance = null
 		if i < uuids.size():

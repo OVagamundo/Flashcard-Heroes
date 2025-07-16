@@ -30,24 +30,15 @@ func _on_return_to_title() -> void:
 ## Retrieves a GachaBallInstance from any location, whether in battle or not.
 ## Returns null if the location is invalid or the instance cannot be found.
 func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
-	if not is_instance_valid(loc): return null
+	if not is_instance_valid(loc):
+		return null
 
 	if is_in_battle:
-		# TODO: Refactor with BattleManager helpers post-Phase 3
 		var battle_manager = get_tree().get_first_node_in_group("battle_manager")
-		if not is_instance_valid(battle_manager): return null
-		# This part still uses old container logic and will need to be refactored
-		var container = battle_manager.get_container(loc.container)
-		if not is_instance_valid(container): return null
-		var uuid = container.get_uuid(loc.index)
-		if uuid.is_empty(): return null
-		return battle_manager.get_instance(uuid)
+		if is_instance_valid(battle_manager) and battle_manager.has_method("get_instance_by_location"):
+			return battle_manager.get_instance_by_location(loc)
 	else: # Run context
-		if not is_instance_valid(run_state): return null
-		
-		var instances_in_container = run_state.get_instances_in_container(loc.container)
-		for instance in instances_in_container:
-			if instance.location_slot_index == loc.index:
-				return instance
+		if is_instance_valid(run_state) and run_state.has_method("get_instance_by_location"):
+			return run_state.get_instance_by_location(loc)
 
 	return null

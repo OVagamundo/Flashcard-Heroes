@@ -23,8 +23,8 @@ var _tracked_windows: Dictionary = {} # Stores info about tracked windows for cl
 var _modal_layer: CanvasLayer = null
 
 func _ready():
-	EventBus.inspect_inventory_requested.connect(func(): open_modal_window(&"Inventory"))
-	EventBus.display_discard_pile_requested.connect(func(): open_modal_window(&"DiscardPile"))
+	EventBus.inspect_inventory_requested.connect(_on_inspect_inventory_requested)
+	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
 	EventBus.inspection_requested.connect(_open_root_inspection_window)
 	EventBus.close_modal_requested.connect(_close_top_modal)
 	EventBus.background_clicked.connect(_on_background_blocker_clicked)
@@ -64,7 +64,8 @@ func open_dialog_window(type: StringName, context: Dictionary = {}):
 		window_instance.populate(context)
 
 func open_modal_window(type: StringName, context: Dictionary = {}):
-	if not _window_scenes.has(type): return
+	if not _window_scenes.has(type): 
+		return
 	
 	# TDD Rule: General-purpose modals are exclusive. Close any active one first.
 	_close_all_windows()
@@ -74,26 +75,58 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 	_modal_stack.push_back(window_instance)
 	
 	if window_instance.has_method("populate"):
-		# Pass a simplified context. The window is responsible for fetching its own data.
-		var population_context = context
-		var is_battle = GameManager.is_in_battle
-		population_context["is_battle_context"] = is_battle
-		if is_battle:
-			var bm = get_tree().get_first_node_in_group("battle_manager")
-			if is_instance_valid(bm):
-				if type == &"Inventory":
-					population_context["inventory"] = bm.get_battle_inventory()
-				else: # DiscardPile
-					population_context["inventory"] = bm.get_discard_pile_inventory()
-		else: # Run context
-			var run_state = GameManager.run_state
-			if is_instance_valid(run_state):
-				# Pass the REAL container dictionary directly, just like in battle.
-				population_context["inventory"] = run_state.run_inventory_containers
-		window_instance.populate(population_context)
+		window_instance.populate(context)
 
 func open_end_battle_popup(is_victory: bool):
 	open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
+
+func _on_inspect_inventory_requested():
+	var is_battle = GameManager.is_in_battle
+	var inventory_data = {}
+	var title = ""
+	
+	if is_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			inventory_data = bm.get_battle_inventory()
+		title = "Battle Inventory"
+	else:
+		var run_state = GameManager.run_state
+		if is_instance_valid(run_state):
+			inventory_data = run_state.run_inventory_containers
+		title = "Run Inventory"
+	
+	var context = {
+		"inventory": inventory_data,
+		"is_battle_context": is_battle,
+		"title": title,
+		"is_interactive": true
+	}
+	
+	open_modal_window(&"Inventory", context)
+
+func _on_display_discard_pile_requested():
+	var is_battle = GameManager.is_in_battle
+	var inventory_data = {}
+	var title = "Discard Pile"
+	
+	if is_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			inventory_data = bm.get_discard_pile_inventory()
+	else:
+		var run_state = GameManager.run_state
+		if is_instance_valid(run_state):
+			inventory_data = run_state.discard_pile_containers
+	
+	var context = {
+		"inventory": inventory_data,
+		"is_battle_context": is_battle,
+		"title": title,
+		"is_interactive": true
+	}
+	
+	open_modal_window(&"DiscardPile", context)
 
 func handle_inspection_background_click(clicked_window: Control):
 	var window_index = _active_inspection_group.find(clicked_window)
@@ -201,13 +234,10 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 	var context: Dictionary
 
 	if is_instance_valid(loc):
-		var data_owner = get_tree().get_first_node_in_group("battle_manager") as Object if GameManager.is_in_battle else GameManager.run_state as Object
-		instance = data_owner.get_instance_by_location(loc)
+		instance = GameManager.get_instance_from_location(loc)
 		if not is_instance_valid(instance):
 			return {}
 		var def = instance.get_definition()
-		if not is_instance_valid(def):
-			return {}
 
 		if def.category == &"UNIT":
 			window_type = &"UnitInspection"
@@ -269,10 +299,9 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	# TDD-Compliant Logic:
 	# Case 1: The request has a LocationIdentifier. This is the primary, decoupled way to inspect a GachaBall.
 	if is_instance_valid(loc):
-		var data_owner = get_tree().get_first_node_in_group("battle_manager") as Object if GameManager.is_in_battle else GameManager.run_state as Object
-		instance = data_owner.get_instance_by_location(loc)
+		instance = GameManager.get_instance_from_location(loc)
 		if not is_instance_valid(instance):
-			printerr("WindowManager: Could not find instance for location: %s" % loc)
+			# This is not an error if the slot is empty.
 			return
 
 		var def = instance.get_definition()
