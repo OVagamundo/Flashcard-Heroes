@@ -1,32 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://l5mhu3dnclc4"]
+[gd_scene load_steps=3 format=3 uid="uid://l5mhu3dnclc4"]
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5h8t7"]
 bg_color = Color(0.2, 0.2, 0.2, 0)
 border_color = Color(0.376471, 0.376471, 0.376471, 1)
-
-[sub_resource type="Animation" id="Animation_shake"]
-resource_name = "shake"
-length = 0.4
-step = 0.05
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("..:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
-"update": 0,
-"values": [Vector2(0, 0), Vector2(-5, 0), Vector2(5, 0), Vector2(-5, 0), Vector2(0, 0)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
-_data = {
-"shake": SubResource("Animation_shake")
-}
 
 [node name="GachaBallView" type="PanelContainer"]
 offset_right = 40.0
@@ -76,9 +54,3 @@ size_flags_vertical = 3
 theme_override_constants/h_separation = 2
 theme_override_constants/v_separation = 2
 columns = 2
-
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-unique_name_in_owner = true
-libraries = {
-&"": SubResource("AnimationLibrary_main")
-}

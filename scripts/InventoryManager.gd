@@ -329,8 +329,6 @@ func _emit_data_changed_signal():
 	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_data_changed"
 	EventBus.emit_signal(signal_name)
 
-func _handle_invalid_action(view: Control = null):
-	if is_instance_valid(view):
-		view.shake()
+func _handle_invalid_action(_view: Control = null):
 	InteractionManager.end_drag(false)
 	InteractionManager.clear_selection()

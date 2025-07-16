@@ -45,6 +45,7 @@ To solve the performance and complexity issues of querying scattered instance da
 *   **`DataContainer.gd`:** An abstract base class defining the interface for all containers (e.g., `get_uuid(index)`, `set_uuid(index)`, `find_first_empty_slot()`).
 *   **`FixedArrayContainer.gd`:** A concrete implementation for collections with a fixed, predefined size, such as the player/enemy lineups and benches.
 *   **`GrowableGridContainer.gd`:** A concrete implementation for collections that can expand when full, such as the tiered battle inventories and the discard pile.
+    *   **Initial Size Rule:** To ensure a consistent player experience, all tiered inventory containers (RunInventoryT* and BattleInventoryT*) must be instantiated with an initial size of 16.
 
 Both `RunState` and `BattleManager` use an internal dictionary of these containers to manage their respective instances efficiently.
 Part 3: Logic Layer & Managers
@@ -152,6 +153,24 @@ The method for opening an inspection window is context-dependent:
     *   The `ItemInspectionWindow` and its child `EffectInspectionWindow` are closed.
     *   A new `EffectInspectionWindow` opens as a direct child of the `UnitInspectionWindow`.
     *   The group is now: `Unit -> Effect`.
+
+### 4.5 UI Population Pattern: Persistent Slots
+
+To ensure a stable, performant, and bug-free UI, views that display collections of items in a grid (such as `InventoryWindow` or `DiscardPileWindow`) must adhere to the "Persistent Slots" pattern.
+
+#### The Problem to Avoid:
+Constantly destroying (`queue_free()`) and recreating UI nodes for every data change is inefficient and leads to visual bugs, such as `GridContainer` reflowing, loss of state, and desynchronization between the view and the data model.
+
+#### The Correct Pattern:
+1. **One-Time Initialization**: When the window is first created, it should programmatically instantiate and add the required number of "slot" nodes (e.g., `SlotView.tscn`) to its `GridContainer`. These slot nodes are now persistent for the lifetime of the window.
+
+2. **Content Update on Refresh**: When a UI refresh is required (e.g., after an inventory action), the window must not destroy the persistent slot nodes. Instead, it should:
+   a. Iterate through its existing slot nodes.
+   b. For each slot, clear any old content (e.g., a `GachaBallView` child).
+   c. Look up the corresponding data for that slot's index in the data model.
+   d. If the data slot contains an item, instantiate a new content view (e.g., `GachaBallView`) and add it as a child to the persistent slot node.
+
+This pattern ensures that the UI's structure remains stable, preventing visual glitches and correctly reflecting the underlying data state at all times.
 
 Part 5: Game Flows
 ### 3.6 In-Battle Instance Lifecycle

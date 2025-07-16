@@ -15,6 +15,10 @@ var origin_uuid: String = "" # UUID of the permanent instance this battle copy w
 var current_hp: int
 var current_pwr: int
 
+# --- Location Properties (for temporary battle state) ---
+var location_container_tag: StringName = &""
+var location_slot_index: int = -1
+
 # --- Relationship Properties ---
 var equipped_on_uuid: String = ""
 var equipped_slot_index: int = -1

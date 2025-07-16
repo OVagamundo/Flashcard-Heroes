@@ -8,7 +8,7 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 @onready var discard_grid: GridContainer = %DiscardGrid
 @onready var panel_container: PanelContainer = %PanelContainer
 
-const DISCARD_PILE_CONTAINER_TAG = &"BattleDiscardPile"
+const DISCARD_PILE_CONTAINER_TAG = &"DiscardPile"
 
 func _ready():
 	panel_container.gui_input.connect(_on_panel_gui_input)

@@ -133,7 +133,7 @@ func get_container(container_name: StringName) -> DataContainer:
 			new_container = GrowableGridContainer.new(16, 8)
 		_: # Default case for BattleInventoryT*
 			if container_name.begins_with("BattleInventoryT"):
-				new_container = GrowableGridContainer.new(8, 4)
+				new_container = GrowableGridContainer.new(16, 4)
 			else:
 				# Failsafe for unknown container types
 				printerr("BattleManager: Unknown container type requested: ", container_name)
@@ -187,8 +187,8 @@ func _update_instance_location(uuid: String, container_name: StringName, index: 
 	
 	# This is where we set the temporary, battle-only properties.
 	var instance = _battle_instances[uuid]
-	instance.set("location_container_tag", container_name)
-	instance.set("location_slot_index", index)
+	instance.location_container_tag = container_name
+	instance.location_slot_index = index
 
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc): return null
@@ -363,8 +363,7 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int):
 		var new_index = dest_container.find_first_empty_slot()
 		if new_index == -1: new_index = dest_container.get_all_uuids().size()
 		dest_container.set_uuid(new_index, instance.ball_uuid)
-		instance.location_container_tag = dest_container_tag
-		instance.location_slot_index = new_index
+		_update_instance_location(instance.ball_uuid, dest_container_tag, new_index)
 
 func _check_and_trigger_reshuffles():
 	for tier in [1, 2, 3]:

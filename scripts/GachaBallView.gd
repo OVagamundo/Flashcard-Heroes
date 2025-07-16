@@ -9,7 +9,6 @@ const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 @onready var tier_label: Label = %TierLabel
 @onready var hp_label: Label = %HPLabel
 @onready var pwr_label: Label = %PWRLabel
-@onready var animation_player: AnimationPlayer = %AnimationPlayer
 
 var _location: LocationIdentifier
 var _instance_uuid: String
@@ -20,7 +19,6 @@ var _single_click_inspect: bool = false
 func _ready():
 	EventBus.view_selected.connect(_on_view_selected)
 	EventBus.view_deselected.connect(_on_view_deselected)
-	EventBus.invalid_action_triggered.connect(func(v): _on_invalid_action_triggered(v))
 	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
 
 func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false):
@@ -171,9 +169,6 @@ func _on_view_deselected(view: Control):
 		_is_selected = false
 		_apply_selection_feedback()
 
-func _on_invalid_action_triggered(view: Control):
-	if view == self and animation_player.has_animation("shake"):
-		animation_player.play("shake")
 
 func _apply_selection_feedback():
 	if not is_inside_tree(): return
@@ -206,7 +201,3 @@ func _get_all_instances_db() -> Dictionary:
 func _get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	var db = _get_all_instances_db()
 	return db.get(uuid)
-
-func shake() -> void:
-	if animation_player.has_animation("shake"):
-		animation_player.play("shake")
