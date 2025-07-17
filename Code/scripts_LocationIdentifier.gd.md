@@ -1,3 +1,6 @@
+<!-- Original: scripts/LocationIdentifier.gd -->
+
+```gdscript
 class_name LocationIdentifier
 extends Resource
 
@@ -5,7 +8,6 @@ extends Resource
 
 @export var container: StringName = &""
 @export var index: int = -1
-@export var unit_uuid: String = "" # UUID of the unit an item is equipped to.
 
 ## Creates a new LocationIdentifier with the given container and index.
 func _init(p_container: StringName = &"", p_index: int = -1) -> void:
@@ -21,4 +23,6 @@ func set_values(p_container: StringName = &"", p_index: int = -1) -> void:
 func is_equal(other: LocationIdentifier) -> bool:
 	if not is_instance_valid(other):
 		return false
-	return container == other.container and index == other.index and unit_uuid == other.unit_uuid
+	return container == other.container and index == other.index
+
+```

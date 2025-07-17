@@ -1,3 +1,6 @@
+<!-- Original: scenes/EffectInspectionWindow.tscn -->
+
+```ini
 [gd_scene load_steps=4 format=3 uid="uid://c1w8nqy5cqrct"]
 
 [ext_resource type="Script" path="res://scripts/EffectInspectionWindow.gd" id="1_v452y"]
@@ -18,6 +21,7 @@ corner_radius_bottom_left = 8
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_t340j")
 
 [node name="EffectInspectionWindow" type="PanelContainer"]
+custom_minimum_size = Vector2(250, 150)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -51,9 +55,10 @@ layout_mode = 2
 
 [node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_vertical = 1
 bbcode_enabled = true
 text = "This is the detailed description of the effect."
 fit_content = true
+
+```
