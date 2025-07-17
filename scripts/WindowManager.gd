@@ -388,15 +388,25 @@ func _register_window(window_instance: Control, is_modal: bool) -> void:
 		window_instance.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
 func _on_window_freed(window_id: int, was_modal: bool) -> void:
-	var window_instance := instance_from_id(window_id)
-	if not is_instance_valid(window_instance):
-		return
-	# Erase stale references from our arrays to prevent invalid object errors.
+	# This function is now robust against race conditions. It finds the window
+	# to remove by its ID, which is always valid, instead of its object
+	# reference, which might be stale.
 	if was_modal:
-		_modal_stack.erase(window_instance)
+		for i in range(_modal_stack.size() - 1, -1, -1):
+			var window = _modal_stack[i]
+			if not is_instance_valid(window) or window.get_instance_id() == window_id:
+				_modal_stack.remove_at(i)
 	else:
-		_active_inspection_group.erase(window_instance)
-		stop_tracking_window(window_instance)
+		for i in range(_active_inspection_group.size() - 1, -1, -1):
+			var window = _active_inspection_group[i]
+			if not is_instance_valid(window) or window.get_instance_id() == window_id:
+				_active_inspection_group.remove_at(i)
+		
+		# We still need to call stop_tracking_window for the specific window
+		# that was freed, if it can be found by ID.
+		var window_instance = instance_from_id(window_id)
+		if is_instance_valid(window_instance):
+			stop_tracking_window(window_instance)
 
 
 
@@ -484,23 +494,30 @@ func find_view_by_location(loc: LocationIdentifier) -> Control:
 	
 	# 1) Search inside the top-most modal window (if any).
 	if not _modal_stack.is_empty():
-		var found = _find_view_in_node(_modal_stack.back(), loc)
-		if is_instance_valid(found):
-			return found
-	
-	# 2) Search inside the currently active inspection window chain (root first).
-	if not _active_inspection_group.is_empty():
-		for window in _active_inspection_group:
-			var found = _find_view_in_node(window, loc)
+		var top_modal = _modal_stack.back()
+		# Defensive check: Ensure the node is valid before searching inside it.
+		if is_instance_valid(top_modal):
+			var found = _find_view_in_node(top_modal, loc)
 			if is_instance_valid(found):
 				return found
 	
-	# 3) Search the main scene content (which may be in a SubViewport)
-	var main_scene = get_tree().get_root().find_child("Main", true, false)
+	# 2) Search inside the currently active inspection window chain (root first).
+	if not _active_inspection_group.is_empty():
+		# Iterate over a copy in case the array is modified during the search.
+		for window in _active_inspection_group.duplicate():
+			# Defensive check: Ensure the node is valid before searching inside it.
+			if is_instance_valid(window):
+				var found = _find_view_in_node(window, loc)
+				if is_instance_valid(found):
+					return found
+	
+	# 3) As a last resort, search the main scene content. This is necessary
+	# for finding root-level views like those on the battle board.
+	var main_scene = get_tree().root.find_child("Main", true, false)
 	if is_instance_valid(main_scene):
-		var content_area = main_scene.get_node_or_null("VBoxContainer/ContentArea/SubViewport/MarginContainer")
-		if is_instance_valid(content_area):
-			var found = _find_view_in_node(content_area, loc)
+		var content_holder = main_scene.get_node_or_null("VBoxContainer/ContentArea/SubViewport/MarginContainer")
+		if is_instance_valid(content_holder):
+			var found = _find_view_in_node(content_holder, loc)
 			if is_instance_valid(found):
 				return found
 
