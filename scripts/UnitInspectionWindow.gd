@@ -1,5 +1,5 @@
 class_name UnitInspectionWindow
-extends "res://scripts/windows/InspectionWindow.gd"
+extends "res://scripts/InspectionWindow.gd"
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 

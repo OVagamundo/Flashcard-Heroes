@@ -75,7 +75,7 @@ func create_battle_copy() -> GachaBallInstance:
 	# Copy equipment state
 	copy.equipped_on_uuid = self.equipped_on_uuid
 	copy.equipped_slot_index = self.equipped_slot_index
-	
+	copy.equipped_item_uuids = self.equipped_item_uuids.duplicate()
 
 	return copy
 
