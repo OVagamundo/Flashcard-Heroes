@@ -5,7 +5,7 @@
 class_name ChoiceWindow
 extends Control
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
+const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 
 @onready var merge_button: Button = %MergeButton
 @onready var swap_button: Button = %SwapButton

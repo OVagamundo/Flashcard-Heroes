@@ -4,7 +4,6 @@
 class_name DiscardPileWindow
 extends Control
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
 

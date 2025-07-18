@@ -7,3 +7,23 @@ WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard He
 --- BUTTON-PRESS EMIT --- tier=1
 --- BUTTON-PRESS EMIT --- tier=1
 --- BUTTON-PRESS EMIT --- tier=1
+--- BUTTON-PRESS EMIT --- tier=1
+BasicAttack: unit_t2_c attacks unit_t1_a for 4 damage. Target HP is now 0.
+BasicAttack: hero attacks unit_t1_b for 2 damage. Target HP is now 0.
+BasicAttack: unit_t1_b attacks unit_t2_c for 1 damage. Target HP is now 2.
+BasicAttack: enemy_hero attacks unit_t2_c for 2 damage. Target HP is now 1.
+BasicAttack: unit_t3_d attacks unit_t2_c for 6 damage. Target HP is now 0.
+BasicAttack: unit_t2_c attacks hero for 3 damage. Target HP is now 8.
+--- BUTTON-PRESS EMIT --- tier=1
+--- BUTTON-PRESS EMIT --- tier=1
+--- BUTTON-PRESS EMIT --- tier=2
+--- BUTTON-PRESS EMIT --- tier=1
+BasicAttack: unit_t2_c attacks unit_t2_c for 3 damage. Target HP is now 0.
+BasicAttack: hero attacks unit_t3_d for 3 damage. Target HP is now 3.
+BasicAttack: unit_t1_b attacks unit_t3_d for 1 damage. Target HP is now 2.
+BasicAttack: unit_t1_a attacks unit_t3_d for 2 damage. Target HP is now 0.
+BasicAttack: enemy_hero attacks unit_t2_c for 2 damage. Target HP is now 1.
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)
+ERROR: 3 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:614)

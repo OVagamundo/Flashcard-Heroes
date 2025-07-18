@@ -18,7 +18,7 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="UnitInspectionWindow" type="PanelContainer"]
-mouse_filter = 0
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_abcde")
 script = ExtResource("1_qwert")
 

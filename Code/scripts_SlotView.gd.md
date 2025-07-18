@@ -4,7 +4,6 @@
 class_name SlotView
 extends PanelContainer
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 
 var _location: LocationIdentifier
 
@@ -24,6 +23,14 @@ func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Prune any child inspection windows first (standard inspection behavior).
+		var win: Node = self
+		while win and win != get_tree().root:
+			if win is InspectionWindow:
+				WindowManager.handle_inspection_background_click(win as Control)
+				break
+			win = win.get_parent()
+
 		get_viewport().set_input_as_handled()
 		var selected_loc = InteractionManager.get_selected_location()
 		

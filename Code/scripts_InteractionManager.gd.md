@@ -4,7 +4,6 @@
 # res://scripts/InteractionManager.gd
 extends Node
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 
 ## Manages the temporary UI state of a user's action, such as the currently
 ## selected view/location and any active drag-and-drop operations.
