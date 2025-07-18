@@ -4,7 +4,6 @@ extends Control
 
 const GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const SlotView = preload("res://scenes/SlotView.tscn")
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup

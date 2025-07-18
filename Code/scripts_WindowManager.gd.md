@@ -31,7 +31,6 @@ func _ready():
 	EventBus.inspection_requested.connect(_open_root_inspection_window)
 	EventBus.close_modal_requested.connect(_close_top_modal)
 	EventBus.background_clicked.connect(_on_background_blocker_clicked)
-	EventBus.global_background_clicked.connect(_on_global_background_clicked)
 	EventBus.selection_changed.connect(_on_selection_changed)
 	
 	# Scene changes should close all windows
@@ -159,11 +158,6 @@ func _on_background_blocker_clicked():
 		if top_modal is EndBattlePopup:
 			return
 		_close_top_modal()
-
-func _on_global_background_clicked():
-	InteractionManager.clear_selection()
-	close_all_inspection_windows()
-
 
 
 
@@ -490,6 +484,24 @@ func _calculate_window_position(source_view: Control, new_window: Control) -> Ve
 		return pos_up
 	
 	return Vector2(INSPECTION_WINDOW_MARGIN, INSPECTION_WINDOW_MARGIN)
+
+func _input(event: InputEvent) -> void:
+	if not event is InputEventMouseButton:
+		return
+	if not event.button_index == MOUSE_BUTTON_LEFT or not event.is_pressed():
+		return
+
+	if not _active_inspection_group.is_empty():
+		var click_is_inside_a_window = false
+		for window in _active_inspection_group:
+			if is_instance_valid(window) and window.get_global_rect().has_point(event.position):
+				click_is_inside_a_window = true
+				break
+		
+		if not click_is_inside_a_window:
+			close_all_inspection_windows()
+			# We DO NOT consume the input here, allowing it to "click through".
+
 
 func find_view_by_location(loc: LocationIdentifier) -> Control:
 	if not is_instance_valid(loc):

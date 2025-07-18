@@ -2,8 +2,6 @@
 class_name GachaBallView
 extends PanelContainer
 
-const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
-
 @onready var icon_rect: TextureRect = %Icon
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var tier_label: Label = %TierLabel
@@ -38,7 +36,6 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 	tier_label.text = "T%d" % definition.tier
 	tooltip_text = tr(definition.display_name_key)
 	
-	# Update stats and item slots
 	_update_stats(instance)
 	_update_item_slots(instance)
 	_apply_selection_feedback()
@@ -71,7 +68,6 @@ func _update_item_slots(instance: GachaBallInstance):
 	var all_instances_db = _get_all_instances_db()
 	if all_instances_db.is_empty(): return
 
-	# Loop based on the DEFINITION's slot count, not the instance's data array.
 	for i in range(definition.item_slot_count):
 		var slot_panel = Panel.new()
 		slot_panel.custom_minimum_size = Vector2(12, 12)
@@ -90,15 +86,13 @@ func _update_item_slots(instance: GachaBallInstance):
 				icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		item_grid.add_child(slot_panel)
 
-# Helper: climb the tree to find the nearest SlotView for correct window anchoring.
 func _find_slot_anchor() -> Control:
 	var node: Node = self.get_parent()
 	while node and node != get_tree().root:
-		# Use class name string to avoid hard dependency.
 		if "SlotView" in node.get_class():
 			return node as Control
 		node = node.get_parent()
-	return self # fallback if none found
+	return self
 
 func _on_unit_stats_changed(unit_uuid: String):
 	if _instance_uuid == unit_uuid:
@@ -110,16 +104,23 @@ func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Ensure clicking an equipped item inside a UnitInspectionWindow prunes any child windows first.
+		var win: Node = self
+		while win and win != get_tree().root:
+			if win is InspectionWindow:
+				WindowManager.handle_inspection_background_click(win as Control)
+				break
+			win = win.get_parent()
+
 		get_viewport().set_input_as_handled()
 		
 		if _is_inspectable:
-			var open_inspect := false
 			if event.double_click:
-				open_inspect = true
-			elif _single_click_inspect:
-				# Make sure we are not in the middle of a drag start
-				open_inspect = true
-			if open_inspect:
+				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
+				InteractionManager.clear_selection()
+				return
+			
+			if _single_click_inspect:
 				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
 				InteractionManager.clear_selection()
 				return
@@ -129,8 +130,7 @@ func _gui_input(event: InputEvent):
 				EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
 			else:
 				InteractionManager.select_view(self, _location)
-		else: # Not inspectable, but might be part of another window
-			# Pass the stable parent (SlotView) for positioning and the location for data.
+		else:
 			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
@@ -154,9 +154,7 @@ func _can_drop_data(_at_position, data) -> bool:
 	return data is Dictionary and data.has("source_loc")
 
 func _drop_data(_at_position, data):
-	# Notify game logic to process the inventory action
 	EventBus.emit_signal("inventory_action_requested", data.source_loc, _location)
-	# Clean up the drag state so the placeholder and transparency are removed
 	InteractionManager.end_drag(true)
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):

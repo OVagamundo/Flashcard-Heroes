@@ -2,6 +2,7 @@ class_name UnitInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
+const _SlotView = preload("res://scenes/SlotView.tscn")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -14,20 +15,33 @@ var _instance: GachaBallInstance
 var _location: LocationIdentifier
 
 func _ready():
-	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
+	EventBus.battle_inventory_changed.connect(_on_inventory_changed)
+	EventBus.run_data_changed.connect(_on_inventory_changed)
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	description_label.mouse_filter = MOUSE_FILTER_PASS
 	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
 	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
 
 func _exit_tree():
-	if EventBus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
-		EventBus.battle_inventory_changed.disconnect(_on_battle_inventory_changed)
+	if EventBus.is_connected("battle_inventory_changed", _on_inventory_changed):
+		EventBus.battle_inventory_changed.disconnect(_on_inventory_changed)
+	if EventBus.is_connected("run_data_changed", _on_inventory_changed):
+		EventBus.run_data_changed.disconnect(_on_inventory_changed)
 
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
+
+# Fallback: if a child Control consumes the event before it reaches _gui_input,
+# this unhandled_input ensures we still prune child windows when the user
+# clicks anywhere inside the unit window background.
+func _unhandled_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Only act if the click occurred inside this window's rect.
+		if get_global_rect().has_point(event.position):
+			WindowManager.handle_inspection_background_click(self)
+			get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):
 	_source_view = context.get("source_view")
@@ -52,8 +66,27 @@ func populate(context: Dictionary):
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
 
-	for child in item_grid.get_children():
-		child.queue_free()
+	# --- Core UI Population Logic ---
+	_rebuild_item_grid()
+
+
+func _rebuild_item_grid():
+	# This function now handles the complete lifecycle of the item grid UI.
+	# It ensures that slots are persistent and correctly represent the data model.
+	if not is_instance_valid(_instance): return
+	var unit_definition = _instance.get_definition()
+	if not is_instance_valid(unit_definition): return
+
+	# Clear existing content from slots, but don't delete the slots themselves.
+	for slot_view in item_grid.get_children():
+		for content in slot_view.get_children():
+			content.queue_free()
+
+	# Ensure the correct number of persistent SlotViews exist.
+	while item_grid.get_child_count() < unit_definition.item_slot_count:
+		item_grid.add_child(_SlotView.instantiate())
+	while item_grid.get_child_count() > unit_definition.item_slot_count:
+		item_grid.get_child(item_grid.get_child_count() - 1).queue_free()
 
 	if unit_definition.item_slot_count == 0:
 		item_grid_label.visible = false
@@ -64,62 +97,48 @@ func populate(context: Dictionary):
 		item_grid.visible = true
 		item_grid.columns = unit_definition.item_slot_count
 
-	var equipped_items: Array[GachaBallInstance] = []
-	if GameManager.is_in_battle:
-		# TODO: Refactor with BattleManager helpers post-Phase 3
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			var all_instances_db = bm.get_all_instances()
-			equipped_items = MergeManager._get_equipped_item_instances(_instance, all_instances_db)
-	else:
-		if is_instance_valid(GameManager.run_state):
-			for item_uuid in _instance.equipped_item_uuids:
-				var item_instance = GameManager.run_state.get_instance_by_uuid(item_uuid)
-				if is_instance_valid(item_instance):
-					equipped_items.append(item_instance)
+	var all_instances_db = _get_all_instances_db()
+	if all_instances_db.is_empty(): return
 
+	# Iterate through all defined slots and populate them.
 	for i in range(unit_definition.item_slot_count):
-		var item_instance = equipped_items[i] if i < equipped_items.size() else null
+		var slot_view = item_grid.get_child(i)
+		
+		# CRITICAL: Create a valid LocationIdentifier for EVERY slot, empty or not.
+		var loc = LocationIdentifier.new()
+		loc.container = &"equipped_item"
+		loc.index = i
+		loc.unit_uuid = _instance.ball_uuid
+		slot_view.populate(loc) # This makes the empty slot a valid drop target.
 
-		if is_instance_valid(item_instance):
-			var view = _GachaBallView.instantiate()
-			item_grid.add_child(view)
-			var loc = LocationIdentifier.new()
-			loc.index = i
-			loc.container = &"equipped_item"
-			# This is crucial for the location to be complete
-			loc.set("unit_uuid", _instance.ball_uuid) 
-			view.populate(loc, item_instance, true, true)
-		else:
-			var placeholder = PanelContainer.new()
-			placeholder.custom_minimum_size = Vector2(32, 32)
-			var style = StyleBoxFlat.new()
-			style.set_bg_color(Color(0, 0, 0, 0.4))
-			style.set_border_width_all(1)
-			style.set_border_color(Color(0.5, 0.5, 0.5, 0.8))
-			placeholder.add_theme_stylebox_override("panel", style)
-			item_grid.add_child(placeholder)
+		var item_uuid = _instance.get_equipped_item_uuid(i)
 
-func _on_battle_inventory_changed():
-	if self.visible and not _inspected_unit_uuid.is_empty():
-		var current_location = _find_location_for_uuid(_inspected_unit_uuid)
-		if is_instance_valid(current_location):
-			populate({"source_location": current_location})
-		else:
-			queue_free()
+		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
+			var item_instance = all_instances_db[item_uuid]
+			var gacha_view = _GachaBallView.instantiate()
+			slot_view.add_child(gacha_view)
+			# The GachaBallView gets the same location data as its parent slot.
+			# Pass false for single_click_inspect to enable drag-and-drop
+			gacha_view.populate(loc, item_instance, true, false)
 
-func _find_location_for_uuid(uuid: String) -> LocationIdentifier:
-	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
-	if not is_instance_valid(battle_manager):
-		return null
+func _on_inventory_changed():
+	if not is_instance_valid(self): return
+	# Check if the inspected unit still exists. If not, the window should close.
+	var current_instance = _get_all_instances_db().get(_inspected_unit_uuid)
+	if not is_instance_valid(current_instance):
+		queue_free()
+		return
+	
+	# The unit still exists, so we just need to refresh the item grid.
+	_instance = current_instance # Ensure we have the latest data
+	_rebuild_item_grid()
 
-	var all_board_data = (
-		battle_manager.get_container(&"PlayerLineup").get_all_uuids() + battle_manager.get_container(&"PlayerBench").get_all_uuids() + battle_manager.get_container(&"ItemInventory").get_all_uuids()
-	)
-	for instance in all_board_data:
-		if is_instance_valid(instance) and instance.ball_uuid == uuid and instance.has_meta("location"):
-			return instance.get_meta("location") as LocationIdentifier
-	return null
+func _get_all_instances_db() -> Dictionary:
+	if GameManager.is_in_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		return bm.get_all_instances() if is_instance_valid(bm) else {}
+	else:
+		return GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
 
 func _on_description_meta_clicked(meta):
 	if meta == "effect":
@@ -127,7 +146,7 @@ func _on_description_meta_clicked(meta):
 		if definition:
 			var context = {"effect_definition": definition.ability_definitions}
 			var child_context = context.duplicate()
-			child_context["source_view"] = _source_view
+			child_context["source_view"] = self # Pass the window itself as the anchor
 			WindowManager.open_child_inspection_window(self, &"EffectInspection", child_context)
 
 func _on_description_meta_hover_started(_meta):

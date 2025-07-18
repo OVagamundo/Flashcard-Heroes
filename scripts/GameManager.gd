@@ -28,17 +28,51 @@ func _on_return_to_title() -> void:
 	run_state = null
 
 ## Retrieves a GachaBallInstance from any location, whether in battle or not.
+## This is the central, authoritative function for resolving a LocationIdentifier to an instance.
 ## Returns null if the location is invalid or the instance cannot be found.
 func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc):
 		return null
 
+	# Step 1: Determine the current context (battle or run) to get the right data source.
+	var data_owner: Object
 	if is_in_battle:
-		var battle_manager = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(battle_manager) and battle_manager.has_method("get_instance_by_location"):
-			return battle_manager.get_instance_by_location(loc)
-	else: # Run context
-		if is_instance_valid(run_state) and run_state.has_method("get_instance_by_location"):
-			return run_state.get_instance_by_location(loc)
+		data_owner = get_tree().get_first_node_in_group("battle_manager")
+	else:
+		data_owner = run_state
 
+	if not is_instance_valid(data_owner):
+		printerr("GameManager: Could not determine a valid data owner.")
+		return null
+
+	# Step 2: Apply contextual understanding based on the location type.
+	# This is the core fix that adheres to the TDD.
+	
+	# Case A: The location is for an equipped item (a conceptual location).
+	if loc.container == &"equipped_item":
+		if loc.unit_uuid.is_empty():
+			printerr("GameManager: LocationIdentifier for equipped_item is missing a unit_uuid.")
+			return null
+		
+		var all_instances_db = data_owner.get_all_instances()
+		var parent_unit: GachaBallInstance = all_instances_db.get(loc.unit_uuid)
+		
+		if not is_instance_valid(parent_unit):
+			printerr("GameManager: Could not find parent unit with UUID: ", loc.unit_uuid)
+			return null
+		
+		var item_uuid = parent_unit.get_equipped_item_uuid(loc.index)
+		if item_uuid.is_empty():
+			return null # The slot is empty.
+		
+		return all_instances_db.get(item_uuid)
+
+	# Case B: The location is a standard physical container.
+	# Delegate the simple lookup to the appropriate data owner.
+	else:
+		if data_owner.has_method("get_instance_by_location"):
+			return data_owner.get_instance_by_location(loc)
+
+	# Fallback if no valid case is met.
+	printerr("GameManager: Unhandled location type in get_instance_from_location for container: ", loc.container)
 	return null
