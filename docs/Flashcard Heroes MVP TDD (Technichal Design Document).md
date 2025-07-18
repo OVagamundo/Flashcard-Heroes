@@ -107,10 +107,24 @@ GachaBallView.tscn / SlotView.tscn:
 Metadata: Must store the ball_uuid: String of the instance it represents.
 Behavior: Listens for instance_* signals to update its appearance and position.
 DiscardPileWindow.tscn: A modal window opened by WindowManager in response to display_discard_pile_requested.
-4.2 Window Management & UI Patterns
-Hierarchical Closure: Clicking on a window's background closes only the windows stacked on top of it, not the window itself.
-Click-Through on Closure: The click that closes a window is not consumed. This creates a seamless, responsive feel where no click is "wasted," which is a core part of the game's UX philosophy. WindowManager is responsible for this two-step (close, then re-process input) behavior.
-Dynamic Mouse Filter Pattern: For RichTextLabels with clickable links, the mouse_filter must be dynamically changed from PASS to STOP on meta_hover_started and back on meta_hover_ended.
+### 4.2 Window Management & UI Patterns
+
+#### Global Input Interception for Window Closure
+To ensure a consistent and responsive user experience, the `WindowManager` singleton employs a global input interception strategy. This is the authoritative pattern for closing non-modal inspection windows.
+
+1.  **`WindowManager` as the First Responder:** The `WindowManager` uses the `_input` lifecycle method to inspect all mouse clicks *before* they are passed to any UI control's `_gui_input` method.
+
+2.  **Out-of-Bounds Detection:** If any inspection windows are currently open, the `WindowManager` checks if the click's position is outside the global rectangle of all open inspection windows.
+
+3.  **Closure without Consumption (The "Click-Through" Rule):** If the click is determined to be outside, the `WindowManager` calls `close_all_inspection_windows()`. Crucially, it **does not** consume the input event (`set_input_as_handled()`). This allows the event to continue propagating to the UI element that was actually clicked (e.g., another `GachaBallView` or an empty `SlotView`).
+
+This pattern creates a seamless "click-through" feel, where a single click can both close an open window and initiate a new action, preventing any "wasted" clicks. This is a core part of the game's UX philosophy.
+
+#### Modal Window Closure
+Modal windows (e.g., `InventoryWindow`, `ChoiceWindow`) are accompanied by a `BackgroundBlocker` node. A click on this blocker is consumed and explicitly closes only the top-most modal window via the `background_clicked` signal. This provides clear, expected behavior for modal dialogs.
+
+#### Dynamic Mouse Filter Pattern
+For RichTextLabels with clickable links (like the "EFFECTS" link), the `mouse_filter` must be dynamically changed from `PASS` to `STOP` on `meta_hover_started` and back to `PASS` on `meta_hover_ended`. This ensures that the link is clickable while still allowing clicks on the rest of the label's area to fall through to the window's background for closure logic.
 4.3 Player Interaction Scenarios
 Design Rationale: Interaction rules are separated for "In-Battle" and "Out-of-Battle" states because their consequences are fundamentally different. In-battle actions modify temporary _battle_instances, while out-of-battle actions modify the permanent run_instances. This separation is critical to the game's core loop.
 Table 4.3.1: In-Battle Interactions (is_in_battle == true)
@@ -129,10 +143,12 @@ This section defines the precise, authoritative rules for how all inspection win
 
 **1. Core Principles:**
 
+*   **Global Click-to-Close:** Clicking anywhere on the screen that is *not* part of the active inspection window group will immediately close the entire group. This is handled globally by the `WindowManager`'s input interception logic.
 *   **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on the screen at any time. Opening a new root-level window (e.g., inspecting a different unit on the board) must close the entire previous group.
 *   **Single Child Per Parent:** A parent window can only have one direct child window open at a time. Requesting a new child window must first close any existing child and its descendants.
-*   **Hierarchical Closing:** Clicking on any window in a group closes all of its children. For example, clicking the background of a `UnitInspectionWindow` must close its child `ItemInspectionWindow` and that window's child `EffectInspectionWindow`.
+*   **Hierarchical Click-to-Close:** Clicking on the background of any window in a group (e.g., the panel of a `UnitInspectionWindow`) closes all of its children, but not itself.
 *   **Deselection on Open:** The action of opening any inspection window must immediately deselect any currently selected `GachaBallView`.
+*   **Empty Slot Interaction:** An empty `SlotView` cannot be the source of an interaction. A click on an empty slot, with nothing else selected, must result in clearing the current selection state in the `InteractionManager`. This prevents the system from entering an invalid state where "emptiness" is selected.
 
 **2. Contextual Interaction:**
 

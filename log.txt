@@ -8,8 +8,3 @@ WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard He
 --- BUTTON-PRESS EMIT --- tier=1
 --- BUTTON-PRESS EMIT --- tier=1
 --- BUTTON-PRESS EMIT --- tier=1
-BattleManager: Unknown container type requested: equipped_item
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2378)
-ERROR: 3 resources still in use at exit (run with --verbose for details).
-   at: clear (core/io/resource.cpp:614)

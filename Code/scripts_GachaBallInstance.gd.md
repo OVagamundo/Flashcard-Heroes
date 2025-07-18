@@ -139,6 +139,24 @@ func has_tag(tag: StringName) -> bool:
 	# Then check dynamic tags on this instance.
 	return dynamic_tags.has(tag)
 
+# --- Location Helpers ---
+# Assembles the definitive location of this instance based on its state.
+# This is the single source of truth for an instance's location.
+func get_location() -> LocationIdentifier:
+	var loc = LocationIdentifier.new()
+	
+	# If an item is equipped, its location is defined by its parent unit.
+	if not equipped_on_uuid.is_empty():
+		loc.container = &"equipped_item"
+		loc.unit_uuid = equipped_on_uuid
+		loc.index = equipped_slot_index
+	# Otherwise, its location is defined by the container it's in.
+	else:
+		loc.container = location_container_tag
+		loc.index = location_slot_index
+		
+	return loc
+
 # --- Equipment Helpers ---
 # Returns the UUID of the item equipped in the given slot (0-2). Returns an
 # empty string if the slot is out of range or empty.

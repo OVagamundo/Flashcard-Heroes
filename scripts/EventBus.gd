@@ -21,7 +21,6 @@ signal inspect_inventory_requested
 signal display_discard_pile_requested
 signal close_modal_requested
 signal background_clicked # For modal background blockers
-signal global_background_clicked # For main content area background
 
 # --- Action Signals ---
 signal draw_gacha_requested(tier: int)
