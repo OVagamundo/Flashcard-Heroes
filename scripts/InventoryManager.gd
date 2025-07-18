@@ -122,6 +122,12 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		_handle_invalid_action()
 		return
 
+	# Restrict: If the item is already equipped on a unit, it may only be
+	# re-equipped on THE SAME unit (i.e., moving between slots). Otherwise block.
+	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
+		_handle_invalid_action()
+		return
+
 	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
 	if empty_slot_idx == -1:
 		_handle_invalid_action()
@@ -251,14 +257,33 @@ func _is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locat
 	var def = instance_to_check.get_definition()
 	var target_container_name = target_loc.container
 
-	# Allow moving between equipped item slots on the same unit
+	# ------------------------------------------------------------------
+	# HERO RESTRICTION: Heroes may only reside in PlayerLineup.
+	var is_hero := String(def.id).to_lower() == "hero"
+	if not is_hero:
+		for tag in def.tags:
+			if String(tag).to_lower() == "hero":
+				is_hero = true
+				break
+	if is_hero:
+		return target_container_name == &"PlayerLineup"
+
+	# ------------------------------------------------------------------
+	# EQUIPPED ITEM RESTRICTIONS
+	var source_loc := instance_to_check.get_location()
+
+	# 1. If the item is currently equipped, it cannot be moved anywhere except
+	#    another slot on the SAME parent unit.
+	if source_loc and source_loc.container == &"equipped_item":
+		return target_container_name == &"equipped_item" and target_loc.unit_uuid == source_loc.unit_uuid
+
+	# 2. If the target is an equipped_item container, only allow if the source
+	#    item is NOT equipped and we're equipping it onto that unit (handled
+	#    elsewhere), so ensure it's a different container.
 	if target_container_name == &"equipped_item":
-		# If we're moving from an equipped slot to another equipped slot on the same unit, allow it
-		var source_loc = instance_to_check.get_location()
-		if source_loc and source_loc.container == &"equipped_item" and source_loc.unit_uuid == target_loc.unit_uuid:
-			return true
-		# Otherwise, use the default behavior (which is to disallow)
-		return false
+		# Only allowed when moving from non-equipped to equipped of SAME unit.
+		return source_loc.container != &"equipped_item" and target_loc.unit_uuid == target_loc.unit_uuid # always true, but keeps symmetry
+
 
 	if target_container_name.begins_with("RunInventoryT"):
 		var container_tier = target_container_name.substr(len("RunInventoryT")).to_int()
