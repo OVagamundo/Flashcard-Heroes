@@ -1,4 +1,4 @@
-<!-- Original: scripts/windows/InspectionWindow.gd -->
+<!-- Original: scripts/InspectionWindow.gd -->
 
 ```gdscript
 class_name InspectionWindow

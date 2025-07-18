@@ -20,8 +20,6 @@ const BATTLE_CONTAINER_TAGS = {
 
 var _battle_instances: Dictionary = {}
 var _containers: Dictionary = {}
-# Key: instance UUID, Value: LocationIdentifier
-var _instance_locations: Dictionary = {}
 
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
@@ -64,7 +62,6 @@ func _setup_battle():
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
-	_instance_locations.clear()
 	_gacha_tokens = 5
 	
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
@@ -211,32 +208,28 @@ func get_instance(uuid: String) -> GachaBallInstance:
 	return _battle_instances.get(uuid)
 
 func get_location_for_uuid(uuid: String) -> LocationIdentifier:
-	return _instance_locations.get(uuid)
+	var instance = get_instance(uuid)
+	if is_instance_valid(instance):
+		return instance.get_location()
+	return null
 
 func _update_instance_location(uuid: String, container_name: StringName, index: int):
-	if not _battle_instances.has(uuid): return
+	var instance = get_instance(uuid)
+	if not is_instance_valid(instance): return
 	
-	var loc = LocationIdentifier.new()
-	loc.set_values(container_name, index)
-	_instance_locations[uuid] = loc
-	
-	# This is where we set the temporary, battle-only properties.
-	var instance = _battle_instances[uuid]
+	# Directly update the instance's properties, making it the source of truth.
 	instance.location_container_tag = container_name
 	instance.location_slot_index = index
+	instance.equipped_on_uuid = ""
+	instance.equipped_slot_index = -1
 
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc): return null
 	
-	# Handle equipped items
-	if loc.container == &"equipped_item":
-		var item_owner = get_instance(loc.unit_uuid)
-		if is_instance_valid(item_owner):
-			var item_uuid = item_owner.get_equipped_item_uuid(loc.index)
-			return get_instance(item_uuid) if not item_uuid.is_empty() else null
-		return null
-	
-	# Handle regular container lookups
+	# This function now ONLY handles direct container lookups.
+	# The logic for resolving an equipped item's location is now handled by
+	# the caller by checking the LocationIdentifier first. This change is
+	# mandated by the new architecture to avoid ambiguity.
 	var container = get_container(loc.container)
 	if not is_instance_valid(container): return null
 	

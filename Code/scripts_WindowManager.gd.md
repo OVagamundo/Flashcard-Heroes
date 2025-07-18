@@ -168,23 +168,29 @@ func _on_global_background_clicked():
 
 
 
+func _deferred_position_and_track(window_id: int, anchor_id: int, loc: LocationIdentifier = null):
+	var window_instance = instance_from_id(window_id)
+	var anchor = instance_from_id(anchor_id)
+	
+	if not is_instance_valid(window_instance) or not is_instance_valid(anchor):
+		if is_instance_valid(window_instance):
+			window_instance.queue_free()
+		return
+
+	window_instance.global_position = _calculate_window_position(anchor, window_instance)
+	
+	if is_instance_valid(loc):
+		_track_inspection_anchor(window_instance, anchor, loc)
+
 func open_child_inspection_window(parent_window: Control, window_type: StringName, context: Dictionary):
 	if not _window_scenes.has(window_type):
 		printerr("WindowManager: Window scene not found for type: %s" % window_type)
 		return
 
-	# TDD Rule: A parent can only have one direct child. Close existing children.
 	_close_children_of(parent_window)
 
 	var window_instance = _window_scenes[window_type].instantiate()
-
-	# Add to the inspection group and parent it to the parent window, not the global modal layer.
-	# Make the child top_level so it does not participate in the parent's size
-	# calculation. This stops the visual redraw/resize of the parent window when
-	# a child inspection is opened, while still keeping the logical parent→child
-	# relationship required by the TDD.
 	window_instance.set_as_top_level(true)
-
 	_active_inspection_group.append(window_instance)
 	parent_window.add_child(window_instance)
 	_register_window(window_instance, false)
@@ -192,15 +198,9 @@ func open_child_inspection_window(parent_window: Control, window_type: StringNam
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 
-	# Wait a frame for the window to get its size, then position it.
-	await get_tree().process_frame
-	if not is_instance_valid(window_instance) or not is_instance_valid(parent_window):
-		return
-
-	# Child windows are positioned relative to their parent and do not track an anchor.
-	window_instance.global_position = _calculate_window_position(parent_window, window_instance)
-	# A second deferred reposition guards against a race condition where the size
-	# finalises one more frame later (observed when complex UI content loads).
+	# Use call_deferred to position the window on the next idle frame. This
+	# guarantees the window has been added to the tree and its final size
+	# has been calculated, solving the race condition robustly.
 	window_instance.call_deferred("set_global_position", _calculate_window_position(parent_window, window_instance))
 
 func _close_children_of(parent_window: Control):
@@ -264,8 +264,6 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 	return payload
 
 func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control):
-	# If the inspection is requested from within an existing inspection window,
-	# treat it as a child inspection instead of starting a new chain.
 	var parent_window := _find_ancestor_inspection_window(source_view)
 	if parent_window != null:
 		var payload := _derive_window_payload(loc, source_view)
@@ -274,7 +272,6 @@ func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control)
 		open_child_inspection_window(parent_window, payload["window_type"], payload["context"])
 		return
 	
-	# Otherwise, this is a new root inspection. Close previous chain.
 	close_all_inspection_windows()
 	_open_inspection_window(loc, source_view)
 
@@ -294,25 +291,19 @@ func _on_selection_changed(new_location: LocationIdentifier):
 
 
 func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
-	# This function handles opening ANY inspection window, which can be for a unit/item or a child (like an effect).
 	var window_type: StringName
 	var context: Dictionary
 	var instance: GachaBallInstance
 
-	# TDD-Compliant Logic:
-	# Case 1: The request has a LocationIdentifier. This is the primary, decoupled way to inspect a GachaBall.
 	if is_instance_valid(loc):
 		instance = GameManager.get_instance_from_location(loc)
 		if not is_instance_valid(instance):
-			# This is not an error if the slot is empty.
 			return
 
 		var def = instance.get_definition()
 		window_type = &"UnitInspection" if def.category == &"UNIT" else &"ItemInspection"
 		context = {"source_view": source_view, "instance": instance, "location": loc}
 
-	# Case 2: The source view itself has metadata for an inspection (e.g., an effect icon inside another window).
-	# This view does not have a LocationIdentifier.
 	elif source_view.has_meta("effect_definition"):
 		var effect_def = source_view.get_meta("effect_definition")
 		if effect_def == null: return
@@ -321,7 +312,6 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 		context = {"source_view": source_view, "effect_definition": effect_def}
 
 	else:
-		# This is not a valid source for an inspection window.
 		printerr("WindowManager: Inspection requested from an invalid source.")
 		return
 	
@@ -334,22 +324,12 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 	
-	await get_tree().process_frame
-	# Guard: source_view may have been freed during frame (e.g., board refresh). Resolve a stable anchor.
-	if is_instance_valid(window_instance):
-		var anchor = source_view
-		if not is_instance_valid(anchor):
-			anchor = find_view_by_location(loc)
-		if anchor == null:
-			anchor = window_instance # fallback – place at default corner
-		window_instance.global_position = _calculate_window_position(anchor, window_instance)
-
-		# Dynamic tracking of the anchor as it moves or is replaced
-		_track_inspection_anchor(window_instance, anchor, loc)
-
-		# Finalise the position one more idle frame later to catch any late size
-		# adjustments, then leave the window in place permanently.
-		self.call_deferred("_finalize_inspection_position", window_instance, anchor)
+	# Use call_deferred for robust positioning.
+	window_instance.call_deferred("set_global_position", _calculate_window_position(source_view, window_instance))
+	
+	# Dynamic tracking of the anchor as it moves or is replaced.
+	# We can do this immediately; it doesn't need to be deferred.
+	_track_inspection_anchor(window_instance, source_view, loc)
 
 
 
@@ -411,35 +391,42 @@ func _register_window(window_instance: Control, is_modal: bool) -> void:
 		window_instance.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
 func _on_window_freed(window_id: int, was_modal: bool) -> void:
-	var window_instance := instance_from_id(window_id)
-	if not is_instance_valid(window_instance):
-		return
-	# Erase stale references from our arrays to prevent invalid object errors.
+	# This function is now robust against race conditions. It finds the window
+	# to remove by its ID, which is always valid, instead of its object
+	# reference, which might be stale.
 	if was_modal:
-		_modal_stack.erase(window_instance)
+		for i in range(_modal_stack.size() - 1, -1, -1):
+			var window = _modal_stack[i]
+			if not is_instance_valid(window) or window.get_instance_id() == window_id:
+				_modal_stack.remove_at(i)
 	else:
-		_active_inspection_group.erase(window_instance)
-		stop_tracking_window(window_instance)
+		for i in range(_active_inspection_group.size() - 1, -1, -1):
+			var window = _active_inspection_group[i]
+			if not is_instance_valid(window) or window.get_instance_id() == window_id:
+				_active_inspection_group.remove_at(i)
+		
+		# We still need to call stop_tracking_window for the specific window
+		# that was freed, if it can be found by ID.
+		var window_instance = instance_from_id(window_id)
+		if is_instance_valid(window_instance):
+			stop_tracking_window(window_instance)
 
-func _finalize_inspection_position(window_instance: Control, anchor: Control) -> void:
-	if is_instance_valid(window_instance) and is_instance_valid(anchor):
-		window_instance.global_position = _calculate_window_position(anchor, window_instance)
 
-func _on_inspection_anchor_freed(window_instance_id: int, old_anchor_id: int, loc: LocationIdentifier, geom_callable: Callable) -> void:
+
+func _on_inspection_anchor_freed(window_instance_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable) -> void:
 	var old_anchor = instance_from_id(old_anchor_id)
 	var window_instance = instance_from_id(window_instance_id)
-	if not is_instance_valid(window_instance):
-		return
+
 	# The old anchor is being freed. We MUST disconnect signals from it to prevent
 	# deferred calls on an invalid object, which would cause a crash.
 	if is_instance_valid(old_anchor):
 		if old_anchor.is_connected("item_rect_changed", geom_callable):
 			old_anchor.item_rect_changed.disconnect(geom_callable)
-
-	var new_anchor := find_view_by_location(loc)
-	if is_instance_valid(new_anchor) and is_instance_valid(window_instance):
-		window_instance.global_position = _calculate_window_position(new_anchor, window_instance)
-		_track_inspection_anchor(window_instance, new_anchor, loc)
+	
+	# SAFE BEHAVIOR: If the anchor is gone, the inspection window is no longer
+	# relevant and must be closed to prevent crashes and orphaned UI.
+	if is_instance_valid(window_instance):
+		window_instance.queue_free()
 
 
 func _close_top_modal():
@@ -475,10 +462,14 @@ func _calculate_window_position(source_view: Control, new_window: Control) -> Ve
 		return Vector2.ZERO # Or some other safe default
 
 	var viewport_rect = get_viewport().get_visible_rect()
-	var source_rect = source_view.get_global_rect()
+	# This is the canonical way to get the true, absolute on-screen position
+	# of a Control node, correctly resolving all parent and viewport transforms.
+	var source_pos = source_view.get_global_transform().origin
+	var source_size = source_view.size
+	var source_rect = Rect2(source_pos, source_size)
 	var window_size = new_window.size
 	
-	# Prefer positioning to the RIGHT of the source. If there isn’t enough room,
+	# Prefer positioning to the RIGHT of the source. If there isn't enough room,
 	# try LEFT, then BELOW, and finally ABOVE as a last resort. This follows the
 	# user-requested priority and the TDD rule that the child must not overlap
 	# its parent.
@@ -506,17 +497,33 @@ func find_view_by_location(loc: LocationIdentifier) -> Control:
 	
 	# 1) Search inside the top-most modal window (if any).
 	if not _modal_stack.is_empty():
-		var found = _find_view_in_node(_modal_stack.back(), loc)
-		if is_instance_valid(found):
-			return found
-	
-	# 2) Search inside the currently active inspection window chain (root first).
-	if not _active_inspection_group.is_empty():
-		for window in _active_inspection_group:
-			var found = _find_view_in_node(window, loc)
+		var top_modal = _modal_stack.back()
+		# Defensive check: Ensure the node is valid before searching inside it.
+		if is_instance_valid(top_modal):
+			var found = _find_view_in_node(top_modal, loc)
 			if is_instance_valid(found):
 				return found
 	
+	# 2) Search inside the currently active inspection window chain (root first).
+	if not _active_inspection_group.is_empty():
+		# Iterate over a copy in case the array is modified during the search.
+		for window in _active_inspection_group.duplicate():
+			# Defensive check: Ensure the node is valid before searching inside it.
+			if is_instance_valid(window):
+				var found = _find_view_in_node(window, loc)
+				if is_instance_valid(found):
+					return found
+	
+	# 3) As a last resort, search the main scene content. This is necessary
+	# for finding root-level views like those on the battle board.
+	var main_scene = get_tree().root.find_child("Main", true, false)
+	if is_instance_valid(main_scene):
+		var content_holder = main_scene.get_node_or_null("VBoxContainer/ContentArea/SubViewport/MarginContainer")
+		if is_instance_valid(content_holder):
+			var found = _find_view_in_node(content_holder, loc)
+			if is_instance_valid(found):
+				return found
+
 	return null
 
 func _find_view_in_node(node: Node, loc: LocationIdentifier) -> Control:

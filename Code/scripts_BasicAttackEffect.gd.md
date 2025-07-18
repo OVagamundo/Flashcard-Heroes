@@ -13,7 +13,6 @@ func execute(source, targets, _battle_manager):
 	var target = targets[0]
 	var damage = source.current_pwr
 	target.current_hp = max(0, target.current_hp - damage)
-	EventBus.emit_signal("unit_stats_changed", target.ball_uuid)
 
 	# Inform UI and log systems
 	if Engine.has_singleton("EventBus"):

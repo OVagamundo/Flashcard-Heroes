@@ -63,26 +63,14 @@ func get_all_instances() -> Dictionary:
 	return run_instances
 
 func get_location_for_uuid(uuid: String) -> LocationIdentifier:
-	if uuid.is_empty(): return null
+	if uuid.is_empty():
+		return null
 	
-	for container_name in run_inventory_containers:
-		var container: DataContainer = run_inventory_containers[container_name]
-		var all_uuids = container.get_all_uuids()
-		var index = all_uuids.find(uuid)
-		if index != -1:
-			var loc = LocationIdentifier.new()
-			loc.set_values(container_name, index)
-			return loc
-
-	for container_name in _other_containers:
-		var container: DataContainer = _other_containers[container_name]
-		var all_uuids = container.get_all_uuids()
-		var index = all_uuids.find(uuid)
-		if index != -1:
-			var loc = LocationIdentifier.new()
-			loc.set_values(container_name, index)
-			return loc
+	var instance = get_instance_by_uuid(uuid)
+	if is_instance_valid(instance):
+		return instance.get_location()
 	
+	printerr("RunState: Could not find instance with UUID %s to get location." % uuid)
 	return null
 
 func get_container(container_name: StringName) -> DataContainer:
@@ -108,25 +96,32 @@ func get_container(container_name: StringName) -> DataContainer:
 # Mutation helpers
 # ------------------------------------------------------------------
 
-func add_instance(instance: GachaBallInstance) -> bool:
+func add_instance(instance: GachaBallInstance, container_tag: StringName, slot_index: int = -1) -> bool:
 	if not is_instance_valid(instance): return false
-	var def: GachaBallDefinition = instance.get_definition()
-	if not is_instance_valid(def): 
-		return false
-
-	var container_tag = &"RunInventoryT%d" % def.tier
+	
 	var container = get_container(container_tag)
-	if container == null: 
-		printerr("RunState: Could not find container for tag: ", container_tag)
+	if not is_instance_valid(container):
+		printerr("RunState: Could not find or create container for tag: ", container_tag)
 		return false
 
-	var slot_index = container.find_first_empty_slot()
-	if slot_index == -1: 
+	var target_slot = slot_index
+	if target_slot == -1:
+		target_slot = container.find_first_empty_slot()
+	
+	if target_slot == -1:
 		printerr("RunState: No empty slot in container: ", container_tag)
 		return false
 
+	# The Golden Rule of State Synchronization
+	# 1. Update the Index
+	container.set_uuid(target_slot, instance.ball_uuid)
+	# 2. Update the Truth
+	instance.location_container_tag = container_tag
+	instance.location_slot_index = target_slot
+	
+	# Add to master dictionary
 	run_instances[instance.ball_uuid] = instance
-	container.set_uuid(slot_index, instance.ball_uuid)
+	
 	return true
 
 func remove_instance_by_uuid(uuid: String) -> void:
@@ -144,25 +139,16 @@ func start_new_run() -> void:
 	
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
-		var container_name: StringName = StringName("RunInventoryT%d" % t)
+		var container_name: StringName = &"RunInventoryT%d" % t
 		run_inventory_containers[container_name] = preload("res://scripts/GrowableGridContainer.gd").new(16, 4)
-	
-	# Create standard game containers with correct sizes
-	# These will be created on-demand by get_container if needed, but we'll create them here explicitly
-	_other_containers[RUN_CONTAINER_TAGS.HERO] = preload("res://scripts/FixedArrayContainer.gd").new(1)
-	_other_containers[RUN_CONTAINER_TAGS.PLAYER_LINEUP] = preload("res://scripts/FixedArrayContainer.gd").new(6)
-	_other_containers[RUN_CONTAINER_TAGS.PLAYER_BENCH] = preload("res://scripts/FixedArrayContainer.gd").new(3)
-	_other_containers[RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY] = preload("res://scripts/FixedArrayContainer.gd").new(3)
 
 	# --- Create hero instance ---
 	var hero_def: GachaBallDefinition = Database.get_definition(&"hero")
 	if hero_def:
 		hero_instance = GachaBallInstance.new()
 		hero_instance.initialize(hero_def)
-		
-		# Add hero to lineup at position 0
-		get_container(RUN_CONTAINER_TAGS.PLAYER_LINEUP).set_uuid(0, hero_instance.ball_uuid)
-		run_instances[hero_instance.ball_uuid] = hero_instance
+		# Correctly add hero and set its location truth
+		add_instance(hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
 	else:
 		printerr("RunState: CRITICAL – could not find hero definition in Database.")
 
@@ -183,18 +169,11 @@ func start_new_run() -> void:
 		var inst := GachaBallInstance.new()
 		inst.initialize(def)
 		
-		# Add to the appropriate container based on type
-		if inst.has_tag(&"Item"):
-			# Try to add to item inventory first
-			var item_container = get_container(RUN_CONTAINER_TAGS.ITEM_INVENTORY)
-			var slot = item_container.find_first_empty_slot()
-			if slot != -1:
-				item_container.set_uuid(slot, inst.ball_uuid)
-				run_instances[inst.ball_uuid] = inst
-				continue
-				
-		# For units or if item inventory is full, add to regular inventory
-		if not add_instance(inst):
+		var container_name: StringName
+		if def.category == &"ITEM":
+			container_name = &"RunInventoryT%d" % def.tier # Items go in tiered inventory for now
+		else: # UNIT
+			container_name = &"RunInventoryT%d" % def.tier
+		
+		if not add_instance(inst, container_name):
 			printerr("RunState: Failed to add starter instance '%s'." % id)
-
-	# New run initialized

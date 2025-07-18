@@ -2,7 +2,7 @@
 
 ```gdscript
 class_name EffectInspectionWindow
-extends "res://scripts/windows/InspectionWindow.gd"
+extends "res://scripts/InspectionWindow.gd"
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel

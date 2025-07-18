@@ -21,7 +21,6 @@ corner_radius_bottom_left = 8
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_t340j")
 
 [node name="EffectInspectionWindow" type="PanelContainer"]
-custom_minimum_size = Vector2(250, 150)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -55,6 +54,7 @@ layout_mode = 2
 
 [node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_vertical = 1
 bbcode_enabled = true

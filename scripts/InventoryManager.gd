@@ -91,56 +91,71 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 
 # --- Core Logic Functions ---
 
-func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
-	var data_owner: Object
-	if not GameManager.is_in_battle:
-		data_owner = GameManager.run_state
+func _get_data_owner() -> Object:
+	if GameManager.is_in_battle:
+		return get_tree().get_first_node_in_group("battle_manager")
 	else:
-		data_owner = get_tree().get_first_node_in_group("battle_manager")
+		return GameManager.run_state
+
+func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+	var data_owner = _get_data_owner()
+	if not is_instance_valid(data_owner): return
+
 	var source_container = data_owner.get_container(source_loc.container)
 	var target_container = data_owner.get_container(target_loc.container)
-	
+	var all_instances = data_owner.get_all_instances()
+
+	# 1. Update the Index
 	var uuid = source_container.get_uuid(source_loc.index)
 	source_container.set_uuid(source_loc.index, "")
 	target_container.set_uuid(target_loc.index, uuid)
-	
-	if GameManager.is_in_battle:
-		data_owner._update_instance_location(uuid, target_loc.container, target_loc.index)
-	
+
+	# 2. Update the Truth
+	var instance = all_instances.get(uuid)
+	if is_instance_valid(instance):
+		instance.location_container_tag = target_loc.container
+		instance.location_slot_index = target_loc.index
+		# Ensure equip state is cleared on move
+		instance.equipped_on_uuid = ""
+		instance.equipped_slot_index = -1
+
 	_emit_data_changed_signal()
 	EventBus.emit_signal("inventory_ui_refresh_requested")
 
 func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
-	var data_owner: Object
-	if not GameManager.is_in_battle:
-		data_owner = GameManager.run_state
-	else:
-		data_owner = get_tree().get_first_node_in_group("battle_manager")
+	var data_owner = _get_data_owner()
+	if not is_instance_valid(data_owner): return
+
 	var source_container = data_owner.get_container(source_loc.container)
 	var target_container = data_owner.get_container(target_loc.container)
+	var all_instances = data_owner.get_all_instances()
 
 	var source_uuid = source_container.get_uuid(source_loc.index)
 	var target_uuid = target_container.get_uuid(target_loc.index)
 
+	# 1. Update the Index
 	source_container.set_uuid(source_loc.index, target_uuid)
 	target_container.set_uuid(target_loc.index, source_uuid)
 
-	if GameManager.is_in_battle:
-		if not source_uuid.is_empty():
-			data_owner._update_instance_location(source_uuid, target_loc.container, target_loc.index)
-		if not target_uuid.is_empty():
-			data_owner._update_instance_location(target_uuid, source_loc.container, source_loc.index)
+	# 2. Update the Truth
+	if not source_uuid.is_empty():
+		var source_instance = all_instances.get(source_uuid)
+		if is_instance_valid(source_instance):
+			source_instance.location_container_tag = target_loc.container
+			source_instance.location_slot_index = target_loc.index
+	
+	if not target_uuid.is_empty():
+		var target_instance = all_instances.get(target_uuid)
+		if is_instance_valid(target_instance):
+			target_instance.location_container_tag = source_loc.container
+			target_instance.location_slot_index = source_loc.index
 
 	_emit_data_changed_signal()
 	EventBus.emit_signal("inventory_ui_refresh_requested")
 
 func _equip_item(item_loc: LocationIdentifier, unit_loc: LocationIdentifier):
-	var data_owner: Object
-	if not GameManager.is_in_battle:
-		data_owner = GameManager.run_state
-	else:
-		data_owner = get_tree().get_first_node_in_group("battle_manager")
-	var _all_instances_db = data_owner.get_all_instances()
+	var data_owner = _get_data_owner()
+	if not is_instance_valid(data_owner): return
 	
 	var item_instance = _get_instance_at_location(item_loc)
 	var unit_instance = _get_instance_at_location(unit_loc)
@@ -149,48 +164,45 @@ func _equip_item(item_loc: LocationIdentifier, unit_loc: LocationIdentifier):
 		_handle_invalid_action(WindowManager.find_view_by_location(item_loc))
 		return
 
-	var _unit_def = unit_instance.get_definition()
 	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
-	
 	if empty_slot_idx == -1:
 		_handle_invalid_action(WindowManager.find_view_by_location(item_loc))
 		return
 
+	# 1. Update the Index (remove from old container)
 	var item_container = data_owner.get_container(item_loc.container)
 	item_container.set_uuid(item_loc.index, "")
 	
+	# 2. Update the Truth (on the item instance itself)
 	item_instance.equipped_on_uuid = unit_instance.ball_uuid
 	item_instance.equipped_slot_index = empty_slot_idx
+	item_instance.location_container_tag = &"" # No longer in a container
+	item_instance.location_slot_index = -1     # No longer in a container
+	
+	# Also update the unit's list of equipped items
 	unit_instance.equipped_item_uuids[empty_slot_idx] = item_instance.ball_uuid
-
-	if GameManager.is_in_battle:
-		data_owner._instance_locations.erase(item_instance.ball_uuid)
 
 	EventBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
 	_emit_data_changed_signal()
 	EventBus.emit_signal("inventory_ui_refresh_requested")
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
-	var data_owner: Object
-	if not GameManager.is_in_battle:
-		data_owner = GameManager.run_state
-	else:
-		data_owner = get_tree().get_first_node_in_group("battle_manager")
+	var data_owner = _get_data_owner()
+	if not is_instance_valid(data_owner): return
+
 	var all_instances_db = data_owner.get_all_instances()
 	
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
-	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): 
-		return
+	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
 	var recipe: MergeRecipe = Database.recipes.get(recipe_id)
-	if not is_instance_valid(recipe): 
-		return
+	if not is_instance_valid(recipe): return
 
 	var result_def = Database.get_definition(recipe.result_id)
-	if not is_instance_valid(result_def): 
-		return
+	if not is_instance_valid(result_def): return
 
+	# --- Create new instance and handle item inheritance ---
 	var new_instance = GachaBallInstance.new()
 	new_instance.initialize(result_def)
 	all_instances_db[new_instance.ball_uuid] = new_instance
@@ -200,39 +212,56 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	for i in range(min(all_parent_items.size(), new_instance.equipped_item_uuids.size())):
 		var item_to_equip = all_parent_items[i]
+		# Update the Truth for the inherited item
 		item_to_equip.equipped_on_uuid = new_instance.ball_uuid
 		item_to_equip.equipped_slot_index = i
+		item_to_equip.location_container_tag = &""
+		item_to_equip.location_slot_index = -1
 		new_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
-		if GameManager.is_in_battle: 
-			data_owner._instance_locations.erase(item_to_equip.ball_uuid)
 
+	# --- Remove parent instances from their containers (Update Index) ---
 	var source_container = data_owner.get_container(source_loc.container)
 	source_container.set_uuid(source_loc.index, "")
 	var target_container = data_owner.get_container(target_loc.container)
+	target_container.set_uuid(target_loc.index, "")
 
-	if source_loc.container == target_loc.container and result_def.tier == source_instance.get_definition().tier:
-		target_container.set_uuid(target_loc.index, new_instance.ball_uuid)
-		if GameManager.is_in_battle: 
-			data_owner._update_instance_location(new_instance.ball_uuid, target_loc.container, target_loc.index)
+	# --- Place the new instance (Update Index and Truth) ---
+	var final_container_name: StringName
+	var final_container: DataContainer
+	var final_slot: int
+
+	# Determine where the new instance should go
+	if result_def.tier == source_instance.get_definition().tier:
+		final_container_name = target_loc.container
+		final_container = target_container
+		final_slot = target_loc.index
 	else:
-		target_container.set_uuid(target_loc.index, "")
-		var new_container_name = ("RunInventoryT%d" if not GameManager.is_in_battle else "BattleInventoryT%d") % result_def.tier
-		var new_container = data_owner.get_container(new_container_name)
-		var new_slot = new_container.find_first_empty_slot()
-		if new_slot != -1:
-			new_container.set_uuid(new_slot, new_instance.ball_uuid)
-			if GameManager.is_in_battle: 
-				data_owner._update_instance_location(new_instance.ball_uuid, new_container_name, new_slot)
-		elif GameManager.is_in_battle:
-			data_owner._move_instance_to_discard(new_instance)
+		final_container_name = ("RunInventoryT%d" if not GameManager.is_in_battle else "BattleInventoryT%d") % result_def.tier
+		final_container = data_owner.get_container(final_container_name)
+		final_slot = final_container.find_first_empty_slot()
 
+	if final_slot != -1:
+		# 1. Update Index
+		final_container.set_uuid(final_slot, new_instance.ball_uuid)
+		# 2. Update Truth
+		new_instance.location_container_tag = final_container_name
+		new_instance.location_slot_index = final_slot
+	elif GameManager.is_in_battle: # No space, discard if in battle
+		var discard_container = data_owner.get_container(&"DiscardPile")
+		var discard_slot = discard_container.find_first_empty_slot()
+		# 1. Update Index
+		discard_container.set_uuid(discard_slot, new_instance.ball_uuid)
+		# 2. Update Truth
+		new_instance.location_container_tag = &"DiscardPile"
+		new_instance.location_slot_index = discard_slot
+
+	# --- Final Cleanup: Remove parent instances from the master DB ---
 	all_instances_db.erase(source_instance.ball_uuid)
 	all_instances_db.erase(target_instance.ball_uuid)
-	if GameManager.is_in_battle:
-		data_owner._instance_locations.erase(source_instance.ball_uuid)
-		data_owner._instance_locations.erase(target_instance.ball_uuid)
 
 	EventBus.emit_signal("unit_inventory_changed", new_instance.ball_uuid)
+	_emit_data_changed_signal()
+	EventBus.emit_signal("inventory_ui_refresh_requested")
 	_emit_data_changed_signal()
 	EventBus.emit_signal("inventory_ui_refresh_requested")
 

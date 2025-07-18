@@ -1,14 +1,13 @@
 Flashcard Heroes - Technical Design Document (V5.1 - Definitive)
 Part 1: Core Architecture & Principles
-1.1 Architectural Principles
-The Hybrid Architecture: Game logic is built on three pillars:
-The Tag System: An object's identity, status, and location are defined by properties and tags on its GachaBallInstance resource. This defines what a thing is.
-The Container Index: For performance and clarity, managers maintain DataContainer objects that act as a fast, location-based index to the master instance dictionaries. These containers are disposable and can be rebuilt from the instance data, but provide O(1) access to slots.
-Relational Queries: Managers provide helper functions that understand game rules and context to answer complex questions about the relationships between objects. These queries operate on the DataContainer index for performance, not by iterating through the master dictionary.
-Data is the Source of Truth: The state of any game object is defined by the properties within its own data resource. Managers and UI are disposable reflections of this data.
-The Effect Resolution Queue: All combat actions are processed through a LIFO (Last-In, First-Out) stack in BattleManager to ensure causality and interruptions are handled correctly and intuitively.
-Separation of Run vs. Battle State: Persistent RunState data is never directly modified in a battle. Instead, temporary battle_copy() instances are created at the start of a battle and destroyed at the end. This is a critical firewall to protect permanent player progress.
-Reactive UI: The UI listens for granular state change signals (e.g., instance_location_changed) and updates only the specific components affected.
+### 1.1 Architectural Principles
+The game's logic is built upon a definitive **Hybrid Architecture** to guarantee data integrity while maintaining performance. This architecture is not optional; it is the required implementation pattern for all game state management. It consists of three pillars:
+
+1.  **The Instance is the Source of Truth:** The `GachaBallInstance` resource is the single, undeniable source of truth for all of its own data, including its stats, status, and location (`location_container_tag`, `location_slot_index`, `equipped_on_uuid`). There are no other sources of truth. Caching this data in managers is strictly forbidden.
+
+2.  **The Container is a Performant Index:** `DataContainer` objects (e.g., `FixedArrayContainer`) are used by managers (`RunState`, `BattleManager`) to provide fast, location-based lookups. These containers hold only UUIDs and act as a disposable index into the master instance dictionary. They are not a source of truth for any data besides the ordering of UUIDs in a location. If a container's index were to become corrupted, it could be rebuilt from the instance data, ensuring the game's state is never permanently lost.
+
+3.  **Managers are Authoritative Operators:** Managers like `InventoryManager` contain the stateless logic (the "verbs") that operates on the data. They are responsible for correctly executing the **Golden Rule of State Synchronization**: any operation that moves an instance *must* update both the `DataContainer` (the index) and the `GachaBallInstance`'s properties (the truth) in a single, atomic operation.
 1.2 Directory Structure
 Generated code
 res://
@@ -25,19 +24,22 @@ RunState.gd: Resource, class_name RunState. The persistent state for an entire r
 Properties: gold: int, run_instances: Dictionary[String, GachaBallInstance] (The master dictionary of all permanent instances for the run.)
 GachaBallDefinition.gd: Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
 Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tags: Array[StringName], @export var item_slot_count: int, @export var base_hp: int = 0, @export var base_pwr: int = 0
-GachaBallInstance.gd: Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall.
-Properties: definition_id: StringName, ball_uuid: String, origin_uuid: String, static_tags: Array[StringName], dynamic_tags: Array[StringName], current_hp: int, current_pwr: int, location_container_tag: StringName, location_slot_index: int, equipped_on_uuid: String, equipped_slot_index: int
-Methods: initialize(def: GachaBallDefinition), add_tag(tag: StringName), remove_tag(tag: StringName), has_tag(tag: StringName) -> bool, recalculate_stats(all_instances_db: Dictionary), create_battle_copy() -> GachaBallInstance
+**GachaBallInstance.gd:** Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall. This resource is the single source of truth for all of its own data.
+*   **Properties:** `definition_id: StringName`, `ball_uuid: String`, `origin_uuid: String`, `current_hp: int`, `current_pwr: int`
+*   **Location Properties (The Single Source of Truth):** `location_container_tag: StringName`, `location_slot_index: int`, `equipped_on_uuid: String`, `equipped_slot_index: int`
+*   **Methods:** `initialize(def: GachaBallDefinition)`, `add_tag(tag: StringName)`, `remove_tag(tag: StringName)`, `has_tag(tag: StringName) -> bool`, `recalculate_stats(all_instances_db: Dictionary)`, `create_battle_copy() -> GachaBallInstance`, `get_location() -> LocationIdentifier` (A helper that correctly assembles the location data into a `LocationIdentifier` resource, properly accounting for equipped items.)
 MergeRecipe.gd: Resource, class_name MergeRecipe.
 Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName
 EffectRequest.gd: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
 Properties: source_uuid: String, ability_id: StringName, trigger_context: Dictionary
 AbilityDefinition.gd & EffectDefinition.gd: Define abilities and their executable effects.
-2.2 Location Container Tags (location_container_tag)
+### 2.2 Location Container Tags (location_container_tag)
 These StringName values define all possible logical locations for a GachaBallInstance.
-Run State Locations: RUN_INVENTORY_T1, RUN_INVENTORY_T2, RUN_INVENTORY_T3
-Battle State Locations: BATTLE_DRAW_POOL_T1, BATTLE_DRAW_POOL_T2, BATTLE_DRAW_POOL_T3, BATTLE_PLAYER_LINEUP, BATTLE_PLAYER_BENCH, BATTLE_ITEM_INVENTORY, BATTLE_ENEMY_LINEUP, BATTLE_DISCARD_PILE
-Special Location: An item is considered "located" if its equipped_on_uuid property is set, which overrides any container tag.
+
+*   **Run State Locations:** `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`
+*   **Battle State Locations:** `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`, `EnemyLineup`, `DiscardPile`
+
+An item's location is determined by its `equipped_on_uuid` property. If this property is set, the item is considered to be located on its parent unit. If it is empty, the item is located in the container specified by its `location_container_tag` and `location_slot_index`. The `GachaBallInstance.get_location()` helper method formalizes this logic and is the standard way to query an instance's location.
 
 ### 2.3 Data Containers
 To solve the performance and complexity issues of querying scattered instance data, the architecture uses a layer of `DataContainer` objects to act as a fast, location-based index.
@@ -76,17 +78,24 @@ The true hybrid model combines three essential pillars:
 This gives us the debuggability of the former (data is never duplicated) while providing the necessary speed for a responsive UI through the DataContainer index layer. The DataContainers act as disposable, fast-access indices that can be rebuilt from the instance data when needed, but provide O(1) access to slots and locations.
 
 This architecture prevents data duplication while providing the necessary speed for a responsive UI, ensuring that the game remains performant while maintaining data integrity and ease of debugging.
-3.4 Positional & Targeting Logic
-This logic is implemented within BattleManager's relational query functions.
-Player Team (Left Side): "Frontmost" corresponds to the unit with the highest location_slot_index (e.g., 5). "Backmost" is the lowest index (e.g., 0).
+### 3.4 The Golden Rule of State Synchronization
+This rule is the fundamental contract of the hybrid architecture and must be adhered to by all game logic that modifies an instance's location.
 
-The Golden Rule of State Synchronization: Every time an instance's location is changed, a two-step process is mandatory:
-Update the Containers: The instance's UUID must be removed from the source DataContainer and added to the destination DataContainer.
-Update the Instance: The instance's own location_container_tag and location_slot_index properties must be updated to reflect its new location.
-Failing to perform both steps will de-synchronize the game state and lead to bugs where instances are not displayed correctly. This two-step process is the fundamental contract of the hybrid architecture.
-Enemy Team (Right Side): "Frontmost" corresponds to the unit with the lowest location_slot_index (e.g., 0). "Backmost" is the highest index (e.g., 5).
-Action Order: The standard combat action order for both teams is back-to-front (index 5 down to 0).
-3.5 The Effect Resolution Queue
+**The Rule:** To move an instance, a two-step process is mandatory:
+1.  **Update the Index:** The instance's UUID must be removed from the source `DataContainer` and added to the destination `DataContainer`.
+2.  **Update the Truth:** The instance's own `location_container_tag` and `location_slot_index` properties must be updated to reflect its new location.
+
+Failing to perform both steps will de-synchronize the game state (specifically, the performant index will not match the data truth) and is considered a critical bug. Caching location data in managers is strictly forbidden as it violates the principle of having a single source of truth.
+### 3.5 Positional & Targeting Logic
+This logic is implemented within BattleManager's relational query functions.
+
+**Player Team (Left Side):** "Frontmost" corresponds to the unit with the highest location_slot_index (e.g., 5). "Backmost" is the lowest index (e.g., 0).
+
+**Enemy Team (Right Side):** "Frontmost" corresponds to the unit with the lowest location_slot_index (e.g., 0). "Backmost" is the highest index (e.g., 5).
+
+**Action Order:** The standard combat action order for both teams is back-to-front (index 5 down to 0).
+
+### 3.6 The Effect Resolution Queue
 This system, managed by BattleManager, governs the flow of combat. It uses a LIFO (Last-In, First-Out) stack to ensure that interruptions and reactions (like a "retaliate on hit" ability) are processed immediately after the event that caused them, creating an intuitive and predictable chain of events.
 Population: When the COMBAT phase begins, BattleManager creates an EffectRequest for each unit's action and pushes it onto the _effect_queue stack.
 Processing Loop: The BattleManager's _process function contains a loop that pops one request from the stack, awaits its resolution via the AbilityResolver, and then repeats until the queue is empty.
@@ -173,7 +182,7 @@ Constantly destroying (`queue_free()`) and recreating UI nodes for every data ch
 This pattern ensures that the UI's structure remains stable, preventing visual glitches and correctly reflecting the underlying data state at all times.
 
 Part 5: Game Flows
-### 3.6 In-Battle Instance Lifecycle
+### 5.1 In-Battle Instance Lifecycle
 To ensure data integrity and prevent unnecessary object creation, the following rules govern how GachaBall instances are handled during a battle after the initial setup:
 
 **No New Copies:** After the initial `battle_copy()` creation at the start of a battle, no further copies or clones of `GachaBall` instances are made. All subsequent operations manipulate the existing battle instances.
@@ -182,24 +191,25 @@ To ensure data integrity and prevent unnecessary object creation, the following 
 
 **Item Salvage and Inheritance:** When a unit is defeated or used as a merge ingredient, its equipped items are not copied. The exact same item instances are transferred. Their `equipped_on_uuid` and `location` properties are updated to reflect their new state (either moved to the discard pile or re-equipped on a newly merged unit).
 
-5.1 Battle Setup Flow
+### 5.2 Battle Setup Flow
 BattleManager creates battle_copy() instances from GameManager.run_state.run_instances and adds them to its _battle_instances dictionary.
 It sets the initial location properties on each new copy (e.g., location_container_tag = "BATTLE_DRAW_POOL_T1").
 For each new instance, it emits instance_created(new_uuid).
-5.2 Gacha Draw Flow
+### 5.3 Gacha Draw Flow
 BattleManager receives draw_gacha_requested(tier_tag).
 It queries _battle_instances for instances with location_container_tag == "BATTLE_DRAW_POOL_[tier_tag]".
 If a draw or merge action causes a tiered battle inventory pool to become empty, it is automatically and immediately replenished with all corresponding GachaBalls from the BATTLE_DISCARD_PILE. When a reshuffle occurs, any GachaBall instance being moved from the BATTLE_DISCARD_PILE to a BATTLE_DRAW_POOL must have its current_hp and current_pwr stats reset to the base_hp and base_pwr values from its GachaBallDefinition. This ensures a player never attempts to draw from a visibly empty pool if matching items exist in the discard pile.
 It picks a random instance and changes its location properties to an available slot in BATTLE_PLAYER_BENCH or BATTLE_ITEM_INVENTORY.
 It emits instance_location_changed(drawn_uuid).
-5.3 Merge Flow
-InventoryManager receives inventory_action_requested for a merge.
-It instructs the appropriate data owner (RunState or BattleManager) to:
-Create a new result_instance.
-Item Handling (In-Battle Only): Re-assign equipped items from ingredients to the new result_instance.
-Set the location properties on the new instance.
-Destroy the two ingredient instances.
-It emits instance_created(result_uuid) and instance_destroyed(uuid) for both ingredients.
+### 5.4 Merge Flow
+1.  `InventoryManager` receives `inventory_action_requested` for a merge.
+2.  It instructs the appropriate data owner (`RunState` or `BattleManager`) to perform the following atomic operation:
+    a. Create a new `result_instance` from the merge recipe.
+    b. Update the `result_instance`'s location properties to place it in the correct destination container and slot.
+    c. Add the new instance's UUID to the master instance dictionary and the destination `DataContainer` (the index).
+    d. For each ingredient, remove its UUID from its `DataContainer` and the master instance dictionary.
+    e. For all inherited items, update their `equipped_on_uuid` property to point to the new `result_instance`.
+3.  The data owner emits the necessary state change signals (`battle_inventory_changed` or `run_data_changed`).
 Part 6: Localization & Sequence Diagrams
 6.1 Localization System
 Key-Based System: All user-facing text must be stored as keys in resource files.
@@ -218,9 +228,6 @@ sequenceDiagram
     IM->>BM: Get instances by UUID
     IM->>MM: calculate_merge_result(instance_a, instance_b)
     MM-->>IM: result_definition
-    IM->>BM: Create new instance from definition
-    IM->>BM: Re-assign equipped items to new instance
-    IM->>BM: Destroy old instances from _battle_instances
-    IM->>BM: Set location properties on new instance
+    IM->>BM: perform_merge_operation(source_uuid, target_uuid, recipe_id)
     BM-->>UI: instance_created(new_uuid), instance_destroyed(old_uuid), instance_location_changed(item_uuids)
     UI-->>UI: Redraw relevant views
