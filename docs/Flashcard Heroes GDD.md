@@ -59,19 +59,33 @@ Player Team (Left Side): The action order is from right to left (slot 6 acts bef
 Enemy Team (Right Side): The action order is also from their back to their front, which visually is right to left.
 Default Attack: A unit's basic attack deals physical damage equal to its current Power to the single frontmost enemy unit.
 7.3. Item Interactions
-Equipping: Items are dragged from the player's Item Inventory onto a Unit on the bench or lineup.
-Unequipping: Equipped items cannot be manually unequipped. An item is only removed from a unit if the unit is used as a merge ingredient or is defeated.
-Consumables: Consumable items are used by dragging them from the Item Inventory onto a valid target unit. If the item has a random or global effect, it can be dropped on any player unit to activate.
+[UPDATED] This section has been updated to reflect the new, more complex item interaction rules.
+
+Equipping: Items are dragged from the player's Item Inventory onto a Unit on the bench or lineup. If the unit has an available item slot, the item will be equipped.
+
+Intra-Unit Management: Once an item is equipped on a unit, it can be freely managed on that same unit. The player can:
+- Move: Drag an item to an empty slot on the same unit.
+- Swap: Drag an item onto another equipped item on the same unit to swap their positions.
+- Merge: Drag two identical, same-tier items together on the same unit to perform a merge. The resulting upgraded item will appear in the target slot.
+
+Unequipping and Restrictions:
+- Equipped items cannot be manually moved back to the Item Inventory or to a different unit.
+- An item is only unequipped from a unit if the unit is used as a merge ingredient or is defeated in combat. In these cases, the salvaged item is sent to the Discard Pile.
 8. Merge System
+[UPDATED] This section has been updated to include merges originating from equipped items.
+
 Merge Recipes: All valid merge combinations are defined by recipes.
+
 Temporary Merge (In-Battle): Consumes two temporary GachaBalls and creates a new temporary GachaBall for the current battle only.
-Placement: If merged on the board, the result replaces the target. If merged in the Battle Inventory, the result is placed in the first available slot of the appropriate tier.
-Item Inheritance: All items equipped on the two ingredient units are automatically transferred to the newly merged unit.
+- Placement: If merged on the board, the result replaces the target. If two items are merged on a unit, the result replaces the target item. If merged in the Battle Inventory, the result is placed in the first available slot of the appropriate tier.
+- Item Inheritance: All items equipped on the two ingredient units are automatically transferred to the newly merged unit, filling its available slots.
+
 Permanent Merge (Out-of-Battle): Performed in the Run Inventory window. Permanently consumes two GachaBalls from the Run Inventory and adds the new, resulting GachaBall back into it.
+
 Merge Choice: If a player attempts an action that could be either a Merge or a Swap, a ChoiceWindow will appear, allowing the player to confirm their intent.
 9. Core Entities & Systems
 9.1. Hero Unit
-The player's central character. Its health is the run's health. It participates in every battle and cannot be benched or removed, though it can be rearranged within the lineup.
+The player's central character. Its health is the run's health. It participates in every battle. [UPDATED] The Hero unit is restricted and may only be placed in the main PlayerLineup; it cannot be moved to the bench or any inventory.
 9.2. Trinkets
 Special non-GachaBall items that provide powerful, run-wide passive bonuses. Players can have up to 5 active Trinkets. They are typically awarded for defeating Mini-Bosses.
 9.3. Node Types & Logic
@@ -107,28 +121,29 @@ TopArea: Always visible. Displays Hero HP, Gold, Day counter, and Trinkets.
 BottomArea: Always visible. Houses the three Gacha Machines.
 ContentArea: The large central portion of the screen that changes to show the battleground, shop, map, etc.
 11.2. Core Interaction Rules
+[UPDATED] This entire section has been rewritten to reflect the more robust and nuanced interaction model that has been implemented.
 
-**Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping a GachaBall on another:
-*   If a Merge Recipe exists, a Choice Window appears (Merge/Swap).
-*   If it's an Item on a Unit on the board, it will Equip.
-*   Otherwise, it will Swap positions.
+**Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping one entity onto another. The logic is resolved in the following priority:
+1. **Merge:** If a valid MergeRecipe exists for the two entities, a Choice Window appears (Merge/Swap). This applies to units on the board, items in inventory, and items equipped on the same unit.
+2. **Equip:** If an Item from the ItemInventory is dropped on a Unit with an empty slot, it will Equip.
+3. **Move/Swap:** If none of the above conditions are met, the game will attempt to Swap the positions of the two entities. This is only valid if both entities can legally occupy the other's starting position (e.g., a Hero cannot be swapped into the bench).
 
 **Inspection Window System:**
-The system for inspecting units, items, and their effects follows a strict set of hierarchical rules to ensure clarity and prevent UI clutter. These rules apply globally, whether in battle, in the run inventory, or elsewhere.
+The system for inspecting units, items, and their effects follows a strict set of hierarchical rules to ensure clarity and prevent UI clutter. These rules apply globally.
 
-*   **Contextual Opening:** The method for opening an inspection window depends on the context:
-    *   **Single-Click:** In static, view-only contexts (e.g., the Run Inventory, Discard Pile, a unit's equipped items), a single click on an entity immediately opens its inspection window.
-    *   **Double-Click/Long-Press:** In interactive contexts where single-clicking is used for selection (e.g., the battle board), a double-click or long-press is required to open the inspection window.
+**Contextual Opening:** The method for opening an inspection window depends on the interaction model of its container:
+- **Double-Click:** Required in interactive contexts where single-clicking is for selection and dragging (e.g., the battle board, the main inventory window). This prevents accidental openings.
+- **Single-Click:** Used in contexts that are primarily for viewing (e.g., inspecting an item that is already equipped on a unit inside its inspection window, or viewing the discard pile).
 
-*   **Hierarchical Behavior:**
-    *   **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on screen at a time. Opening a new root-level window (e.g., inspecting a different unit on the board) closes the entire previous group.
-    *   **Single Child Per Parent:** A parent window can only have one direct child window open. Requesting a new child (e.g., inspecting a second item on the same unit) will first close the existing child and any of its descendants.
-    *   **Hierarchical Closing:** Clicking on any window in a group closes all of its children. For example, clicking the background of a `UnitInspectionWindow` closes its child `ItemInspectionWindow` and that window's child `EffectInspectionWindow`.
+**Hierarchical Behavior:**
+- **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on screen at a time. Opening a new root-level window (e.g., inspecting a different unit on the board) closes the entire previous group.
+- **Single Child Per Parent:** A parent window can only have one direct child window open. Requesting a new child (e.g., inspecting a second item on the same unit) will first close the existing child and any of its descendants.
+- **Hierarchical Closing:** Clicking on the background of any window in a group closes all of its children, but not itself.
 
-*   **System Interactions:**
-    *   **Deselection on Open:** The action of opening any inspection window immediately deselects any currently selected GachaBall on the board.
-    *   **Dynamic Positioning:** Inspection windows are anchored to the specific slot view of the entity being inspected. They will dynamically track this anchor, repositioning themselves if the entity moves on the board to ensure they never become disconnected or lost.
-    *   **Global Closing:** Clicking anywhere on the screen that is not part of an active inspection window will close the entire inspection window group.
+**System Interactions:**
+- **Deselection on Open:** The action of opening any inspection window immediately deselects any currently selected GachaBall.
+- **Dynamic Positioning:** Inspection windows are anchored to the UI element of the entity being inspected. They will dynamically track this anchor, repositioning themselves if the entity moves on the board.
+- **Global Closing:** Clicking anywhere on the screen that is not part of an active inspection window will close the entire inspection window group.
 11.3. Scene-Specific UI
 Title Screen: Main menu with New Game, Continue, Achievements, Options, Quit.
 Loadout Scene: Carousels for selecting a Hero and a Flashcard Deck.

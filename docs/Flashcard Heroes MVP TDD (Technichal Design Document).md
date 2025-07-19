@@ -22,24 +22,49 @@ Part 2: Data Schemas & Structures
 2.1 Core Data Resources
 RunState.gd: Resource, class_name RunState. The persistent state for an entire run.
 Properties: gold: int, run_instances: Dictionary[String, GachaBallInstance] (The master dictionary of all permanent instances for the run.)
-GachaBallDefinition.gd: Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
-Properties: @export var id: StringName, @export var display_name_key: String, @export var description_key: String, @export var icon: Texture2D, @export var tags: Array[StringName], @export var item_slot_count: int, @export var base_hp: int = 0, @export var base_pwr: int = 0
+**GachaBallDefinition.gd:** Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
+*   **Properties:** 
+    - `@export var id: StringName` - Unique identifier for this definition
+    - `@export var display_name_key: String` - Localization key for display name
+    - `@export var description_key: String` - Localization key for description
+    - `@export var icon: Texture2D` - Display icon
+    - `@export var tags: Array[StringName]` - Array of tags that define special properties. Common tags include "hero" for hero units, "consumable" for one-time use items, etc.
+    - `@export var item_slot_count: int` - Number of equipment slots (for units)
+    - `@export var base_hp: int = 0` - Base health points
+    - `@export var base_pwr: int = 0` - Base power/attack
 **GachaBallInstance.gd:** Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall. This resource is the single source of truth for all of its own data.
-*   **Properties:** `definition_id: StringName`, `ball_uuid: String`, `origin_uuid: String`, `current_hp: int`, `current_pwr: int`
-*   **Location Properties (The Single Source of Truth):** `location_container_tag: StringName`, `location_slot_index: int`, `equipped_on_uuid: String`, `equipped_slot_index: int`
-*   **Methods:** `initialize(def: GachaBallDefinition)`, `add_tag(tag: StringName)`, `remove_tag(tag: StringName)`, `has_tag(tag: StringName) -> bool`, `recalculate_stats(all_instances_db: Dictionary)`, `create_battle_copy() -> GachaBallInstance`, `get_location() -> LocationIdentifier` (A helper that correctly assembles the location data into a `LocationIdentifier` resource, properly accounting for equipped items.)
+*   **Core Properties:** `definition_id: StringName`, `ball_uuid: String`, `origin_uuid: String`, `current_hp: int`, `current_pwr: int`
+*   **Location Properties (The Single Source of Truth):** 
+    - `location_container_tag: StringName` - The container tag when not equipped
+    - `location_slot_index: int` - The slot index when not equipped
+    - `equipped_on_uuid: String` - UUID of the unit this item is equipped on (empty if not equipped)
+    - `equipped_slot_index: int` - The slot index on the unit where this item is equipped (-1 if not equipped)
+    - `equipped_item_uuids: Array[String]` - For units: array of UUIDs of equipped items (empty strings for empty slots)
+*   **Methods:** 
+    - `initialize(def: GachaBallInstance)`
+    - `add_tag(tag: StringName)`, `remove_tag(tag: StringName)`, `has_tag(tag: StringName) -> bool`
+    - `recalculate_stats(all_instances_db: Dictionary)`
+    - `create_battle_copy() -> GachaBallInstance`
+    - `get_location() -> LocationIdentifier` - Returns a LocationIdentifier that represents the instance's current location. For equipped items, returns a location with container="equipped_item", unit_uuid set to the parent unit's UUID, and index set to the equipped slot index. For unequipped items, returns a location with the appropriate container tag and slot index.
 MergeRecipe.gd: Resource, class_name MergeRecipe.
 Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName
 EffectRequest.gd: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
 Properties: source_uuid: String, ability_id: StringName, trigger_context: Dictionary
 AbilityDefinition.gd & EffectDefinition.gd: Define abilities and their executable effects.
 ### 2.2 Location Container Tags (location_container_tag)
+
 These StringName values define all possible logical locations for a GachaBallInstance.
 
 *   **Run State Locations:** `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`
 *   **Battle State Locations:** `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`, `EnemyLineup`, `DiscardPile`
+*   **Special Location:** `equipped_item` - A conceptual location indicating an item is equipped on a unit. Used in LocationIdentifier but not stored directly.
 
-An item's location is determined by its `equipped_on_uuid` property. If this property is set, the item is considered to be located on its parent unit. If it is empty, the item is located in the container specified by its `location_container_tag` and `location_slot_index`. The `GachaBallInstance.get_location()` helper method formalizes this logic and is the standard way to query an instance's location.
+An item's location is determined by its `equipped_on_uuid` property. If this property is set, the item is considered to be located in the special "equipped_item" container on the parent unit. The `LocationIdentifier` for an equipped item will have:
+- `container = "equipped_item"`
+- `unit_uuid` = the UUID of the parent unit
+- `index` = the slot index on the unit where the item is equipped
+
+If `equipped_on_uuid` is empty, the item is located in the container specified by its `location_container_tag` and `location_slot_index`. The `GachaBallInstance.get_location()` helper method formalizes this logic and is the standard way to query an instance's location.
 
 ### 2.3 Data Containers
 To solve the performance and complexity issues of querying scattered instance data, the architecture uses a layer of `DataContainer` objects to act as a fast, location-based index.
