@@ -15,3 +15,8 @@ item_t1_b.name,Small PWR Potion
 item_t1_b.desc,Restores a small amount of PWR.
 item_t2_c.name,Large HP Potion
 item_t2_c.desc,Restores a large amount of HP and PWR.
+ability.basic_attack.name,Basic Attack
+ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.
+item.effect.hp,Add (HP) HP to the unit.
+item.effect.pwr,Add (PWR) PWR to the unit.
+item.effect.both,Add (HP) HP and (PWR) PWR to the unit.

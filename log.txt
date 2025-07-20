@@ -1,11 +1,11 @@
 Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
 OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
+Database: Successfully loaded translations
+Database: Testing translation - hero.name = Hero
 WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/Hero.png.import', stored as '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/hero.png.import' in the filesystem. This file will not open when exported to other case-sensitive platforms.
    at: open_internal (drivers/unix/file_access_unix.cpp:113)
-BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
-BasicAttack: unit_t1_b attacks unit_t1_b for 2 damage. Target HP is now 0.
-BasicAttack: hero attacks unit_t2_c for 2 damage. Target HP is now 1.
-BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 1.
-BasicAttack: unit_t3_d attacks unit_t1_b for 6 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks unit_t1_b for 3 damage. Target HP is now 0.
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)
+ERROR: 3 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:614)

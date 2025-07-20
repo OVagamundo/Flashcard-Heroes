@@ -18,6 +18,7 @@ func _ready():
 	EventBus.battle_inventory_changed.connect(_on_inventory_changed)
 	EventBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 	EventBus.run_data_changed.connect(_on_inventory_changed)
+	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	description_label.mouse_filter = MOUSE_FILTER_PASS
 	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
@@ -30,6 +31,8 @@ func _exit_tree():
 		EventBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
 	if EventBus.is_connected("run_data_changed", _on_inventory_changed):
 		EventBus.run_data_changed.disconnect(_on_inventory_changed)
+	if EventBus.is_connected("unit_stats_changed", _on_unit_stats_changed):
+		EventBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
 
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
@@ -66,9 +69,13 @@ func populate(context: Dictionary):
 
 	name_label.text = tr(unit_definition.display_name_key)
 	var description_text = tr(unit_definition.description_key)
-	description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
-	description_label.set_meta("definition", unit_definition)
-	description_label.set_meta("effect_definition", unit_definition)
+	
+	# Add basic attack description for units
+	var basic_attack_desc = tr("ability.basic_attack.desc")
+	# Replace (PWR) with the actual power value
+	basic_attack_desc = basic_attack_desc.replace("(PWR)", str(_instance.current_pwr))
+	
+	_update_description()
 
 	# --- Core UI Population Logic ---
 	_rebuild_item_grid()
@@ -129,6 +136,34 @@ func _rebuild_item_grid():
 			gacha_view.populate(loc, item_instance, true, false)
 	
 
+func _update_description():
+	if not is_instance_valid(_instance):
+		return
+	
+	var unit_definition = _instance.get_definition()
+	if not is_instance_valid(unit_definition):
+		return
+	
+	var description_text = tr(unit_definition.description_key)
+	
+	# Add basic attack description for units
+	var basic_attack_desc = tr("ability.basic_attack.desc")
+	# Replace (PWR) with the actual power value
+	basic_attack_desc = basic_attack_desc.replace("(PWR)", str(_instance.current_pwr))
+	
+	description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, basic_attack_desc]
+	description_label.set_meta("definition", unit_definition)
+	description_label.set_meta("effect_definition", unit_definition)
+
+func _on_unit_stats_changed(unit_uuid: String):
+	if unit_uuid == _inspected_unit_uuid:
+		# Update the instance reference and refresh the description
+		var all_instances = _get_all_instances_db()
+		var current_instance = all_instances.get(_inspected_unit_uuid)
+		if is_instance_valid(current_instance):
+			_instance = current_instance
+			_update_description()
+
 func _on_inventory_changed():
 	if not is_instance_valid(self): 
 		return
@@ -141,6 +176,7 @@ func _on_inventory_changed():
 	
 	# The unit still exists, so we just need to refresh the item grid.
 	_instance = current_instance # Ensure we have the latest data
+	_update_description()
 	_rebuild_item_grid()
 
 func _on_unit_inventory_changed(unit_uuid: String):
@@ -160,6 +196,7 @@ func _on_unit_inventory_changed(unit_uuid: String):
 	
 	# The unit still exists, so we just need to refresh the item grid.
 	_instance = current_instance # Ensure we have the latest data
+	_update_description()
 	_rebuild_item_grid()
 
 func _get_all_instances_db() -> Dictionary:

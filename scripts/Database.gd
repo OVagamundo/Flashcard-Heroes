@@ -11,6 +11,9 @@ var decks: Dictionary = {} # Key: StringName(id), Value: FlashcardDeckDefinition
 var abilities: Dictionary = {} # Key: StringName(id), Value: AbilityDefinition
 
 func _ready() -> void:
+	# Load translations first
+	_load_translations()
+	
 	# Populate all data dictionaries at startup.
 	_load_resources_from_path("res://resources/units/", units)
 	_load_resources_from_path("res://resources/items/", items)
@@ -54,6 +57,38 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 			else:
 				printerr("Database: Failed to load resource at path: ", resource_path)
 		file_name = dir.get_next()
+
+## Loads the translation CSV file and adds it to the TranslationServer
+func _load_translations() -> void:
+	# Create a new Translation resource
+	var translation = Translation.new()
+	translation.locale = "en"
+	
+	# Load the CSV file
+	var csv_file = FileAccess.open("res://localization/game.csv", FileAccess.READ)
+	if not csv_file:
+		printerr("Database: Failed to open translation file: res://localization/game.csv")
+		return
+	
+	# Skip the header line
+	var header = csv_file.get_csv_line()
+	
+	# Read all translation pairs
+	while not csv_file.eof_reached():
+		var line = csv_file.get_csv_line()
+		if line.size() >= 2:
+			var key = line[0]
+			var value = line[1]
+			translation.add_message(key, value)
+	
+	csv_file.close()
+	
+	# Add the translation to the server
+	TranslationServer.add_translation(translation)
+	TranslationServer.set_locale("en")
+	
+	print("Database: Successfully loaded translations")
+	print("Database: Testing translation - hero.name = ", tr("hero.name"))
 
 ## A central helper to find any GachaBallDefinition by its ID, regardless of category.
 func get_definition(id: StringName) -> GachaBallDefinition:

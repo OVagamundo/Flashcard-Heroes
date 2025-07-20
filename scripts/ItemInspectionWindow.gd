@@ -40,7 +40,20 @@ func populate(context: Dictionary):
 
 	name_label.text = tr(item_def.display_name_key)
 	var description_text = tr(item_def.description_key)
-	description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
+	
+	# Add item effect description
+	var effect_desc = ""
+	if item_def.bonus_hp > 0 and item_def.bonus_pwr > 0:
+		effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
+	elif item_def.bonus_hp > 0:
+		effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
+	elif item_def.bonus_pwr > 0:
+		effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
+	
+	if not effect_desc.is_empty():
+		description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, effect_desc]
+	else:
+		description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
 	
 	# Store the full definition for the child window to use.
 	description_label.set_meta("effect_definition", item_def)
