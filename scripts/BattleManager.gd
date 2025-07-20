@@ -428,14 +428,10 @@ func _on_end_turn_requested():
 		_change_phase(Phases.START_OF_TURN)
 
 func _on_unit_inventory_changed(unit_uuid: String):
-	print("BattleManager: Received unit_inventory_changed for UUID: ", unit_uuid)
 	# Only recalculate stats for the specific unit that changed
 	var unit_instance = get_instance(unit_uuid)
 	if is_instance_valid(unit_instance):
-		print("BattleManager: Calling recalculate_stats for unit: ", unit_uuid)
 		unit_instance.recalculate_stats(_battle_instances)
-	else:
-		print("BattleManager: Could not find unit instance for UUID: ", unit_uuid)
 
 func _on_draw_gacha_requested(tier: int):
 	var cost = tier
