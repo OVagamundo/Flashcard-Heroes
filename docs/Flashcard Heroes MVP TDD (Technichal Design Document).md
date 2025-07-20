@@ -256,7 +256,106 @@ Part 6: Localization & Sequence Diagrams
 Key-Based System: All user-facing text must be stored as keys in resource files.
 Central File: A central localization.csv file will be used to store the key-value pairs.
 Implementation: Text will be set in UI scripts using the tr() function.
-6.2 Sequence Diagrams
+
+### 6.2 Complex System Interactions & Architectural Insights
+
+This section documents the complex relationships between different systems in the game architecture, based on deep debugging experiences. Understanding these interactions is crucial for maintaining and extending the codebase.
+
+#### 6.2.1 Window Management System Architecture
+
+**System Components:**
+- **WindowManager:** Central authority for all modal and inspection window lifecycle
+- **Modal Stack:** Manages modal windows (InventoryWindow, ChoiceWindow, EndBattlePopup)
+- **Inspection Group:** Manages inspection windows (UnitInspectionWindow, ItemInspectionWindow)
+- **Global Input Handler:** Intercepts all mouse clicks to manage window closure
+
+**Key Relationships:**
+- **Modal vs Inspection Windows:** Modal windows can exist alongside inspection windows, but their lifecycle affects inspection windows
+- **Input Event Flow:** Global input handling must account for modal window states to prevent premature inspection window closure
+- **Window Anchoring:** Inspection windows are anchored to UI elements and must track their anchor's lifecycle
+
+**Architectural Patterns:**
+- **Stable vs Volatile Anchors:** Inspection windows must anchor to stable UI elements (SlotView, PanelContainer) that persist across redraws, never to volatile elements (GachaBallView) that get destroyed/recreated
+- **Modal Window Classification:** Not all modal windows should trigger inspection window closure. Dialog windows (choice prompts) preserve UI state, while true modals (inventory windows) clear the UI
+- **Input Guarding:** When modal windows are active, global input handling should not close inspection windows, as the user might be legitimately interacting with modals
+
+#### 6.2.2 Signal System Architecture
+
+**Signal Types and Flow:**
+- **battle_inventory_changed:** General signal emitted for any battle inventory modification
+- **unit_inventory_changed:** Specific signal emitted when a particular unit's inventory changes
+- **run_data_changed:** Signal for run state modifications (out of battle)
+- **selection_changed:** Signal for UI selection state changes
+
+**Signal Emission Patterns:**
+- **Move Operations:** Emit general signals (battle_inventory_changed)
+- **Swap/Merge Operations:** Emit both specific (unit_inventory_changed) and general signals
+- **Equip/Unequip:** Emit unit-specific signals for stat recalculation
+- **Modal Interactions:** Emit selection_changed signals that can trigger window management
+
+**Signal Reception Patterns:**
+- **Inspection Windows:** Must listen to multiple signal types to handle all inventory change scenarios
+- **UI Views:** Listen to instance-specific signals for targeted updates
+- **WindowManager:** Listens to selection_changed to manage window lifecycle
+
+#### 6.2.3 UI Element Lifecycle and Volatility
+
+**UI Element Categories:**
+- **Stable Elements:** SlotView, PanelContainer - persist across UI redraws, safe to anchor to
+- **Volatile Elements:** GachaBallView - destroyed and recreated during UI updates, never anchor to these
+- **Container Elements:** GridContainer, VBoxContainer - structural elements that persist
+
+**Lifecycle Patterns:**
+- **UI Redraws:** BattleView redraws destroy and recreate GachaBallView children but preserve container structure
+- **Modal Window Creation:** Adds windows to modal stack, may affect inspection window lifecycle
+- **Inspection Window Anchoring:** Must use stable anchors to prevent premature closure
+
+**Volatility Rules:**
+- **Never Anchor to GachaBallView:** These are content elements that get recreated
+- **Always Anchor to Containers:** SlotView and PanelContainer provide stable reference points
+- **Hierarchical Anchor Search:** If original anchor is volatile, search up the tree for stable containers
+
+#### 6.2.4 Inventory Operation Architecture
+
+**Operation Types and Signal Flow:**
+- **Move Operations:** Simple location changes, emit general signals
+- **Swap Operations:** Exchange positions, emit unit-specific signals for affected units
+- **Merge Operations:** Create new instances, emit signals for all affected units
+- **Equip/Unequip:** Modify unit-item relationships, emit unit-specific signals for stat updates
+
+**Manager Responsibilities:**
+- **InventoryManager:** Stateless logic controller, emits appropriate signals based on operation type
+- **BattleManager/RunState:** Data owners that maintain instance dictionaries and containers
+- **WindowManager:** Responds to signals to manage UI window lifecycle
+
+**Signal Coordination:**
+- **Atomic Operations:** Each inventory operation must emit all relevant signals atomically
+- **Signal Granularity:** Use specific signals (unit_inventory_changed) for targeted updates, general signals (battle_inventory_changed) for broad UI refresh
+- **Timing Considerations:** Signals are emitted at different points in operation flow, requiring robust handling
+
+#### 6.2.5 Debugging System Interactions
+
+**Systematic Debugging Approach:**
+1. **Identify Operation Context:** Determine if the issue occurs during move, swap, merge, or modal interactions
+2. **Trace Signal Flow:** Monitor signal emission and reception to ensure proper communication
+3. **Check Window State:** Verify modal stack and inspection group states
+4. **Validate Anchors:** Ensure inspection windows are anchored to stable elements
+5. **Monitor Input Events:** Check if global input handling is interfering with legitimate interactions
+
+**Common System Interaction Points:**
+- **Modal Window Closure:** Can trigger inspection window closure depending on modal type
+- **UI Redraws:** Can destroy volatile anchors, causing inspection window closure
+- **Signal Mismatches:** Different operations emit different signals, requiring multiple listeners
+- **Input Event Timing:** Global input handling must account for modal window states
+- **Window Lifecycle:** Inspection windows must handle anchor destruction gracefully
+
+**Architectural Principles:**
+- **Single Responsibility:** Each system has clear boundaries and responsibilities
+- **Loose Coupling:** Systems communicate through signals, not direct references
+- **Stable Interfaces:** UI elements provide stable anchoring points for windows
+- **Defensive Programming:** Systems must handle unexpected state changes gracefully
+
+6.3 Sequence Diagrams
 Merge Operation Flow (In-Battle)
 Generated mermaid
 sequenceDiagram

@@ -74,7 +74,6 @@ func _ready():
 						var existing_callable: Callable = conn_dict["callable"]
 						child.pressed.disconnect(existing_callable)
 					child.pressed.connect(func(t=tier):
-						print("--- BUTTON-PRESS EMIT --- tier=", t)
 						EventBus.emit_signal("draw_gacha_requested", t)
 					)
 	
@@ -90,7 +89,8 @@ func _ready():
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
 
 func _redraw_board():
-	if not is_instance_valid(battle_manager): return
+	if not is_instance_valid(battle_manager): 
+		return
 	
 	_update_gacha_token_label(battle_manager.get_gacha_tokens())
 
@@ -106,7 +106,6 @@ func _redraw_board():
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool):
 	if not is_instance_valid(battle_manager): 
-		print("BattleView: BattleManager is not valid")
 		return
 	
 	var data_container = battle_manager.get_container(container_name)

@@ -16,6 +16,7 @@ var _location: LocationIdentifier
 
 func _ready():
 	EventBus.battle_inventory_changed.connect(_on_inventory_changed)
+	EventBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 	EventBus.run_data_changed.connect(_on_inventory_changed)
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	description_label.mouse_filter = MOUSE_FILTER_PASS
@@ -25,12 +26,15 @@ func _ready():
 func _exit_tree():
 	if EventBus.is_connected("battle_inventory_changed", _on_inventory_changed):
 		EventBus.battle_inventory_changed.disconnect(_on_inventory_changed)
+	if EventBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
+		EventBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
 	if EventBus.is_connected("run_data_changed", _on_inventory_changed):
 		EventBus.run_data_changed.disconnect(_on_inventory_changed)
 
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
+		InteractionManager.clear_selection()
 		get_viewport().set_input_as_handled()
 
 # Fallback: if a child Control consumes the event before it reaches _gui_input,
@@ -73,9 +77,11 @@ func populate(context: Dictionary):
 func _rebuild_item_grid():
 	# This function now handles the complete lifecycle of the item grid UI.
 	# It ensures that slots are persistent and correctly represent the data model.
-	if not is_instance_valid(_instance): return
+	if not is_instance_valid(_instance): 
+		return
 	var unit_definition = _instance.get_definition()
-	if not is_instance_valid(unit_definition): return
+	if not is_instance_valid(unit_definition): 
+		return
 
 	# Clear existing content from slots, but don't delete the slots themselves.
 	for slot_view in item_grid.get_children():
@@ -98,7 +104,8 @@ func _rebuild_item_grid():
 		item_grid.columns = unit_definition.item_slot_count
 
 	var all_instances_db = _get_all_instances_db()
-	if all_instances_db.is_empty(): return
+	if all_instances_db.is_empty(): 
+		return
 
 	# Iterate through all defined slots and populate them.
 	for i in range(unit_definition.item_slot_count):
@@ -120,11 +127,33 @@ func _rebuild_item_grid():
 			# The GachaBallView gets the same location data as its parent slot.
 			# Pass false for single_click_inspect to enable drag-and-drop
 			gacha_view.populate(loc, item_instance, true, false)
+	
 
 func _on_inventory_changed():
-	if not is_instance_valid(self): return
+	if not is_instance_valid(self): 
+		return
 	# Check if the inspected unit still exists. If not, the window should close.
-	var current_instance = _get_all_instances_db().get(_inspected_unit_uuid)
+	var all_instances = _get_all_instances_db()
+	var current_instance = all_instances.get(_inspected_unit_uuid)
+	if not is_instance_valid(current_instance):
+		queue_free()
+		return
+	
+	# The unit still exists, so we just need to refresh the item grid.
+	_instance = current_instance # Ensure we have the latest data
+	_rebuild_item_grid()
+
+func _on_unit_inventory_changed(unit_uuid: String):
+	if not is_instance_valid(self): 
+		return
+	
+	# Only update if the changed unit is the one we're inspecting
+	if unit_uuid != _inspected_unit_uuid:
+		return
+	
+	# Check if the inspected unit still exists. If not, the window should close.
+	var all_instances = _get_all_instances_db()
+	var current_instance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
 		queue_free()
 		return
@@ -134,11 +163,14 @@ func _on_inventory_changed():
 	_rebuild_item_grid()
 
 func _get_all_instances_db() -> Dictionary:
+	var result: Dictionary
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		return bm.get_all_instances() if is_instance_valid(bm) else {}
+		result = bm.get_all_instances() if is_instance_valid(bm) else {}
 	else:
-		return GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
+		result = GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
+	
+	return result
 
 func _on_description_meta_clicked(meta):
 	if meta == "effect":

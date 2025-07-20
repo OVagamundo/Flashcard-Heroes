@@ -12,6 +12,12 @@ func _ready():
 	style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
 	add_theme_stylebox_override("panel", style)
 
+func _exit_tree():
+	pass
+
+func _notification(what):
+	pass
+
 func populate(loc: LocationIdentifier):
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager

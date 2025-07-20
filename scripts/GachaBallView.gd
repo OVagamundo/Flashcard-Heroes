@@ -19,6 +19,9 @@ func _ready():
 	EventBus.view_deselected.connect(_on_view_deselected)
 	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
 
+func _exit_tree():
+	pass
+
 func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false):
 	self._location = loc
 	self._instance_uuid = instance.ball_uuid
@@ -87,11 +90,28 @@ func _update_item_slots(instance: GachaBallInstance):
 		item_grid.add_child(slot_panel)
 
 func _find_slot_anchor() -> Control:
+	# First, try to find a SlotView parent (the most stable anchor)
 	var node: Node = self.get_parent()
 	while node and node != get_tree().root:
 		if "SlotView" in node.get_class():
 			return node as Control
 		node = node.get_parent()
+	
+	# If we can't find a SlotView parent, this might be a GachaBallView in an inspection window
+	# or some other context. In that case, we should find a stable container.
+	# Look for the immediate parent container that holds this view.
+	var parent = self.get_parent()
+	if is_instance_valid(parent):
+		# If the parent is a container type, use it as the anchor
+		if parent.get_class() in ["HBoxContainer", "GridContainer", "VBoxContainer", "PanelContainer"]:
+			return parent as Control
+	
+	# Last resort: use the modal layer to prevent crashes
+	var modal_layer = get_tree().get_first_node_in_group("modal_layer")
+	if is_instance_valid(modal_layer):
+		return modal_layer
+	
+	# If all else fails, return self as Control (this should never happen in normal operation)
 	return self
 
 func _on_unit_stats_changed(unit_uuid: String):

@@ -72,8 +72,6 @@ Unequipping and Restrictions:
 - Equipped items cannot be manually moved back to the Item Inventory or to a different unit.
 - An item is only unequipped from a unit if the unit is used as a merge ingredient or is defeated in combat. In these cases, the salvaged item is sent to the Discard Pile.
 8. Merge System
-[UPDATED] This section has been updated to include merges originating from equipped items.
-
 Merge Recipes: All valid merge combinations are defined by recipes.
 
 Temporary Merge (In-Battle): Consumes two temporary GachaBalls and creates a new temporary GachaBall for the current battle only.
@@ -85,7 +83,7 @@ Permanent Merge (Out-of-Battle): Performed in the Run Inventory window. Permanen
 Merge Choice: If a player attempts an action that could be either a Merge or a Swap, a ChoiceWindow will appear, allowing the player to confirm their intent.
 9. Core Entities & Systems
 9.1. Hero Unit
-The player's central character. Its health is the run's health. It participates in every battle. [UPDATED] The Hero unit is restricted and may only be placed in the main PlayerLineup; it cannot be moved to the bench or any inventory.
+The player's central character. Its health is the run's health. It participates in every battle. The Hero unit is restricted and may only be placed in the main PlayerLineup; it cannot be moved to the bench or any inventory.
 9.2. Trinkets
 Special non-GachaBall items that provide powerful, run-wide passive bonuses. Players can have up to 5 active Trinkets. They are typically awarded for defeating Mini-Bosses.
 9.3. Node Types & Logic
@@ -121,7 +119,6 @@ TopArea: Always visible. Displays Hero HP, Gold, Day counter, and Trinkets.
 BottomArea: Always visible. Houses the three Gacha Machines.
 ContentArea: The large central portion of the screen that changes to show the battleground, shop, map, etc.
 11.2. Core Interaction Rules
-[UPDATED] This entire section has been rewritten to reflect the more robust and nuanced interaction model that has been implemented.
 
 **Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping one entity onto another. The logic is resolved in the following priority:
 1. **Merge:** If a valid MergeRecipe exists for the two entities, a Choice Window appears (Merge/Swap). This applies to units on the board, items in inventory, and items equipped on the same unit.
