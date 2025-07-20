@@ -8,14 +8,18 @@ func _ready():
 # --- Main Action Handler ---
 
 func _on_inventory_action_requested(source_loc, target_loc):
+	print("InventoryManager: _on_inventory_action_requested called - source: ", source_loc.container, " target: ", target_loc.container)
 	InteractionManager.clear_selection()
 
 	if source_loc.is_equal(target_loc):
+		print("InventoryManager: Same location, ignoring")
 		InteractionManager.end_drag(false)
 		return
 
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
+
+	print("InventoryManager: Source instance: ", source_instance.ball_uuid if source_instance else "null", " Target instance: ", target_instance.ball_uuid if target_instance else "null")
 
 	# --- ACTION ROUTER ---
 	if not is_instance_valid(source_instance):
@@ -35,6 +39,7 @@ func _on_inventory_action_requested(source_loc, target_loc):
 
 	if source_def.category == &"ITEM" and target_def.category == &"UNIT":
 		if target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
+			print("InventoryManager: Item to unit equipping detected - calling _equip_item")
 			_equip_item(source_instance, target_instance)
 			InteractionManager.end_drag(true)
 			return
@@ -118,21 +123,26 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	_emit_data_changed_signal()
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
+	print("InventoryManager: _equip_item called for item: ", item_instance.ball_uuid, " to unit: ", unit_instance.ball_uuid)
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): 
+		print("InventoryManager: Invalid instances, handling invalid action")
 		_handle_invalid_action()
 		return
 
 	# Restrict: If the item is already equipped on a unit, it may only be
 	# re-equipped on THE SAME unit (i.e., moving between slots). Otherwise block.
 	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
+		print("InventoryManager: Item already equipped on different unit, handling invalid action")
 		_handle_invalid_action()
 		return
 
 	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
 	if empty_slot_idx == -1:
+		print("InventoryManager: No empty slot found, handling invalid action")
 		_handle_invalid_action()
 		return
 
+	print("InventoryManager: Calling _remove_from_location and _perform_equip")
 	_remove_from_location(item_instance.get_location())
 	_perform_equip(item_instance, unit_instance, empty_slot_idx)
 	_emit_data_changed_signal()
@@ -197,6 +207,18 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, target_item_slot: int):
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): return
 
+	# If the item was previously equipped on another unit, unequip its bonus from that unit
+	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
+		var data_owner = _get_data_owner()
+		if is_instance_valid(data_owner):
+			var prev_unit = data_owner.get_all_instances().get(item_instance.equipped_on_uuid)
+			if is_instance_valid(prev_unit):
+				prev_unit.unequip_item_bonus(item_instance)
+
+	# If the item was previously equipped on this unit, unequip from old slot
+	if item_instance.equipped_on_uuid == unit_instance.ball_uuid:
+		unit_instance.unequip_item_bonus(item_instance)
+
 	item_instance.equipped_on_uuid = unit_instance.ball_uuid
 	item_instance.equipped_slot_index = target_item_slot
 	item_instance.location_container_tag = &""
@@ -204,7 +226,11 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 
 	if target_item_slot < unit_instance.equipped_item_uuids.size():
 		unit_instance.equipped_item_uuids[target_item_slot] = item_instance.ball_uuid
-	
+
+	# Equip the bonus to the new unit
+	unit_instance.equip_item_bonus(item_instance)
+
+	print("InventoryManager: Emitting unit_inventory_changed for unit UUID: ", unit_instance.ball_uuid)
 	EventBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
 
 func _perform_unequip(item_instance: GachaBallInstance):

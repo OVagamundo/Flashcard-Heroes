@@ -39,16 +39,19 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 	tier_label.text = "T%d" % definition.tier
 	tooltip_text = tr(definition.display_name_key)
 	
-	_update_stats(instance)
-	_update_item_slots(instance)
+	_update_stats()
+	_update_item_slots()
 	_apply_selection_feedback()
 
 func set_is_enemy(is_enemy: bool):
 	if is_instance_valid(icon_rect):
 		icon_rect.flip_h = is_enemy
 
-func _update_stats(instance: GachaBallInstance):
-	if not is_instance_valid(instance): return
+func _update_stats():
+	var instance = _get_instance_by_uuid(_instance_uuid)
+	if not is_instance_valid(instance): 
+		print("GachaBallView: _update_stats - no valid instance found for UUID: ", _instance_uuid)
+		return
 	var definition = instance.get_definition()
 	if not definition or definition.category != &"UNIT":
 		hp_label.visible = false
@@ -57,10 +60,15 @@ func _update_stats(instance: GachaBallInstance):
 	
 	hp_label.visible = true
 	pwr_label.visible = true
+	
+	print("GachaBallView: Before setting - HP label text: '", hp_label.text, "' PWR label text: '", pwr_label.text, "'")
 	hp_label.text = "HP: %d" % instance.current_hp
 	pwr_label.text = "PWR: %d" % instance.current_pwr
+	print("GachaBallView: After setting - HP label text: '", hp_label.text, "' PWR label text: '", pwr_label.text, "'")
+	print("GachaBallView: Updated labels - HP: ", hp_label.text, " PWR: ", pwr_label.text)
 
-func _update_item_slots(instance: GachaBallInstance):
+func _update_item_slots():
+	var instance = _get_instance_by_uuid(_instance_uuid)
 	for child in item_grid.get_children():
 		child.queue_free()
 	
@@ -115,10 +123,16 @@ func _find_slot_anchor() -> Control:
 	return self
 
 func _on_unit_stats_changed(unit_uuid: String):
+	print("GachaBallView: Received unit_stats_changed for UUID: ", unit_uuid, " (my UUID: ", _instance_uuid, ")")
 	if _instance_uuid == unit_uuid:
 		var instance = _get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
-			_update_stats(instance)
+			print("GachaBallView: Updating stats for unit ", unit_uuid, " - HP: ", instance.current_hp, " PWR: ", instance.current_pwr)
+			_update_stats()
+		else:
+			print("GachaBallView: Could not find instance for UUID: ", unit_uuid)
+	else:
+		print("GachaBallView: UUID mismatch, ignoring signal")
 
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
@@ -154,7 +168,10 @@ func _gui_input(event: InputEvent):
 			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	if not _is_inspectable or not is_instance_valid(_location): return null
+	print("GachaBallView: _get_drag_data called for UUID: ", _instance_uuid)
+	if not _is_inspectable or not is_instance_valid(_location): 
+		print("GachaBallView: Drag not allowed - not inspectable or invalid location")
+		return null
 
 	var preview = TextureRect.new()
 	preview.texture = icon_rect.texture
@@ -168,12 +185,15 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	get_parent().move_child(placeholder, get_index())
 
 	InteractionManager.start_drag(self, placeholder)
+	print("GachaBallView: Drag started for UUID: ", _instance_uuid)
 	return { "source_loc": _location }
 
 func _can_drop_data(_at_position, data) -> bool:
+	print("GachaBallView: _can_drop_data called - data: ", data)
 	return data is Dictionary and data.has("source_loc")
 
 func _drop_data(_at_position, data):
+	print("GachaBallView: _drop_data called - source: ", data.source_loc.container, " target: ", _location.container)
 	EventBus.emit_signal("inventory_action_requested", data.source_loc, _location)
 	InteractionManager.end_drag(true)
 

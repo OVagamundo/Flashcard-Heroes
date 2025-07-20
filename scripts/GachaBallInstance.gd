@@ -79,27 +79,51 @@ func create_battle_copy() -> GachaBallInstance:
 
 	return copy
 
+# --- Equipment Stat Modification ---
+func equip_item_bonus(item_instance: GachaBallInstance):
+	if not is_instance_valid(item_instance): return
+	var item_def = item_instance.get_definition()
+	if not is_instance_valid(item_def): return
+	self.current_hp += item_def.bonus_hp
+	self.current_pwr += item_def.bonus_pwr
+	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
+func unequip_item_bonus(item_instance: GachaBallInstance):
+	if not is_instance_valid(item_instance): return
+	var item_def = item_instance.get_definition()
+	if not is_instance_valid(item_def): return
+	self.current_hp -= item_def.bonus_hp
+	self.current_pwr -= item_def.bonus_pwr
+	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
 # --- Stat Management ---
+func set_current_hp(new_hp: int):
+	if self.current_hp != new_hp:
+		self.current_hp = new_hp
+		EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
 func reset_battle_stats():
 	var definition = get_definition()
 	if not is_instance_valid(definition):
 		printerr("GachaBallInstance: Could not reset stats, definition not found for ID: ", self.definition_id)
 		return
-	
 	self.current_hp = definition.base_hp
 	self.current_pwr = definition.base_pwr
 
 # --- Stat Recalculation ---
 func recalculate_stats(all_instances_db: Dictionary):
+	print("GachaBallInstance: recalculate_stats called for UUID: ", ball_uuid)
 	var definition = get_definition()
 	if not is_instance_valid(definition):
+		print("GachaBallInstance: No valid definition found")
 		return
 
 	var previous_hp = self.current_hp
 	var previous_pwr = self.current_pwr
 
-	var new_hp = definition.base_hp
-	var new_pwr = definition.base_pwr
+	# Calculate new effective maximum stats (base + item bonuses)
+	var effective_max_hp = definition.base_hp
+	var effective_max_pwr = definition.base_pwr
 
 	# Add bonuses from each equipped item by looking up its UUID in the provided database.
 	for item_uuid in equipped_item_uuids:
@@ -108,16 +132,24 @@ func recalculate_stats(all_instances_db: Dictionary):
 			if is_instance_valid(item_instance):
 				var item_def = item_instance.get_definition()
 				if is_instance_valid(item_def):
-					new_hp += item_def.bonus_hp
-					new_pwr += item_def.bonus_pwr
+					effective_max_hp += item_def.bonus_hp
+					effective_max_pwr += item_def.bonus_pwr
+
+	# Preserve current HP/PWR, but clamp to new effective maximum
+	var new_hp = min(previous_hp, effective_max_hp)
+	var new_pwr = min(previous_pwr, effective_max_pwr)
 
 	var stats_did_change = (new_hp != previous_hp or new_pwr != previous_pwr)
 
 	self.current_hp = new_hp
 	self.current_pwr = new_pwr
 
-	if stats_did_change:
-		EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	print("GachaBallInstance: Stats recalculated - Previous HP: ", previous_hp, " PWR: ", previous_pwr, " -> New HP: ", new_hp, " PWR: ", new_pwr)
+	print("GachaBallInstance: Emitting unit_stats_changed for UUID: ", ball_uuid)
+
+	# Always emit unit_stats_changed when recalculating stats (equipment changes)
+	# because the effective maximum has changed, even if current values are preserved
+	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 # --- Tag Helpers ---
 func add_tag(tag: StringName):

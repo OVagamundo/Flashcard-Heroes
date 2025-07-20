@@ -119,11 +119,10 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		if child is PanelContainer:
 			slots.append(child)
 
-	# 2. Unconditionally clear all content from every slot. This is the crucial step
-	#    to ensure no old or duplicate views remain before repopulating.
+	# 2. Remove all children from every slot, including any pre-existing GachaBallView or other nodes.
 	for slot in slots:
 		for content in slot.get_children():
-			content.free()
+			content.queue_free() # Use queue_free to ensure Godot cleans up after this frame
 
 	var uuids = data_container.get_all_uuids()
 

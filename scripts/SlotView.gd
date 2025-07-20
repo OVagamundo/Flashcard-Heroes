@@ -45,6 +45,16 @@ func _gui_input(event: InputEvent):
 		# Clicking it with nothing else selected should just clear the context.
 		else:
 			InteractionManager.clear_selection()
+			# Only close inspection windows if not inside one
+			var node = self.get_parent()
+			var inside_inspection_window = false
+			while node and node != get_tree().root:
+				if node is InspectionWindow:
+					inside_inspection_window = true
+					break
+				node = node.get_parent()
+			if not inside_inspection_window:
+				WindowManager.close_all_inspection_windows()
 
 func _can_drop_data(_at_position, data) -> bool:
 	return data is Dictionary and data.has("source_loc")
