@@ -22,6 +22,9 @@ func _ready():
 	EventBus.view_deselected.connect(_on_view_deselected)
 	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
 
+func _exit_tree():
+	pass
+
 func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false):
 	self._location = loc
 	self._instance_uuid = instance.ball_uuid
@@ -39,16 +42,18 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 	tier_label.text = "T%d" % definition.tier
 	tooltip_text = tr(definition.display_name_key)
 	
-	_update_stats(instance)
-	_update_item_slots(instance)
+	_update_stats()
+	_update_item_slots()
 	_apply_selection_feedback()
 
 func set_is_enemy(is_enemy: bool):
 	if is_instance_valid(icon_rect):
 		icon_rect.flip_h = is_enemy
 
-func _update_stats(instance: GachaBallInstance):
-	if not is_instance_valid(instance): return
+func _update_stats():
+	var instance = _get_instance_by_uuid(_instance_uuid)
+	if not is_instance_valid(instance): 
+		return
 	var definition = instance.get_definition()
 	if not definition or definition.category != &"UNIT":
 		hp_label.visible = false
@@ -60,7 +65,8 @@ func _update_stats(instance: GachaBallInstance):
 	hp_label.text = "HP: %d" % instance.current_hp
 	pwr_label.text = "PWR: %d" % instance.current_pwr
 
-func _update_item_slots(instance: GachaBallInstance):
+func _update_item_slots():
+	var instance = _get_instance_by_uuid(_instance_uuid)
 	for child in item_grid.get_children():
 		child.queue_free()
 	
@@ -90,18 +96,37 @@ func _update_item_slots(instance: GachaBallInstance):
 		item_grid.add_child(slot_panel)
 
 func _find_slot_anchor() -> Control:
+	# First, try to find a SlotView parent (the most stable anchor)
 	var node: Node = self.get_parent()
 	while node and node != get_tree().root:
 		if "SlotView" in node.get_class():
 			return node as Control
 		node = node.get_parent()
+	
+	# If we can't find a SlotView parent, this might be a GachaBallView in an inspection window
+	# or some other context. In that case, we should find a stable container.
+	# Look for the immediate parent container that holds this view.
+	var parent = self.get_parent()
+	if is_instance_valid(parent):
+		# If the parent is a container type, use it as the anchor
+		if parent.get_class() in ["HBoxContainer", "GridContainer", "VBoxContainer", "PanelContainer"]:
+			return parent as Control
+	
+	# Last resort: use the modal layer to prevent crashes
+	var modal_layer = get_tree().get_first_node_in_group("modal_layer")
+	if is_instance_valid(modal_layer):
+		return modal_layer
+	
+	# If all else fails, return self as Control (this should never happen in normal operation)
 	return self
 
 func _on_unit_stats_changed(unit_uuid: String):
 	if _instance_uuid == unit_uuid:
 		var instance = _get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
-			_update_stats(instance)
+			_update_stats()
+	else:
+		pass
 
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return

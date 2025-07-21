@@ -331,23 +331,41 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 # --- Private: Helper Methods ---
 
 func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: LocationIdentifier) -> void:
-	if not is_instance_valid(window_instance) or not is_instance_valid(anchor):
+	# Find a stable anchor instead of using the volatile GachaBallView
+	var stable_anchor = _find_stable_anchor(anchor)
+	
+	if not is_instance_valid(window_instance) or not is_instance_valid(stable_anchor):
 		return
 	# Connect geometry change using bound callable (avoid capturing freed references)
-	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_instance, anchor)
-	if not anchor.is_connected("item_rect_changed", geom_callable):
-		anchor.item_rect_changed.connect(geom_callable, CONNECT_DEFERRED)
+	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_instance, stable_anchor)
+	if not stable_anchor.is_connected("item_rect_changed", geom_callable):
+		stable_anchor.item_rect_changed.connect(geom_callable, CONNECT_DEFERRED)
 	# Connect anchor freed using bound callable. Pass the anchor itself so we can
 	# disconnect its signals reliably when it's freed.
-	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_instance.get_instance_id(), anchor.get_instance_id(), loc, geom_callable)
-	if not anchor.is_connected("tree_exited", freed_callable):
-		anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
+	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_instance.get_instance_id(), stable_anchor.get_instance_id(), loc, geom_callable)
+	if not stable_anchor.is_connected("tree_exited", freed_callable):
+		stable_anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
 	_tracked_windows[window_instance] = {
-		"anchor": anchor,
+		"anchor": stable_anchor,
 		"geom_callable": geom_callable,
 		"freed_callable": freed_callable
 	}
+
+func _find_stable_anchor(original_anchor: Control) -> Control:
+	# If the original anchor is already a stable container, use it
+	if original_anchor.get_class() == "SlotView" or original_anchor.get_class() == "PanelContainer":
+		return original_anchor
+	
+	# Otherwise, find the nearest stable container parent
+	var current = original_anchor
+	while is_instance_valid(current) and current != get_tree().root:
+		if current.get_class() == "SlotView" or current.get_class() == "PanelContainer":
+			return current
+		current = current.get_parent()
+	
+	# If no stable container found, fall back to the original anchor
+	return original_anchor
 
 func stop_tracking_window(window_instance: Control) -> void:
 	if not _tracked_windows.has(window_instance):
@@ -411,8 +429,6 @@ func _on_inspection_anchor_freed(window_instance_id: int, old_anchor_id: int, _l
 	var old_anchor = instance_from_id(old_anchor_id)
 	var window_instance = instance_from_id(window_instance_id)
 
-	# The old anchor is being freed. We MUST disconnect signals from it to prevent
-	# deferred calls on an invalid object, which would cause a crash.
 	if is_instance_valid(old_anchor):
 		if old_anchor.is_connected("item_rect_changed", geom_callable):
 			old_anchor.item_rect_changed.disconnect(geom_callable)
@@ -427,9 +443,12 @@ func _close_top_modal():
 	if not _modal_stack.is_empty():
 		var window = _modal_stack.pop_back()
 		if is_instance_valid(window):
+			# Only close inspection windows when true modal windows close, not dialog windows
+			# Check if it's a ChoiceWindow by looking at the script class name
+			var should_close_inspections = window.get_script() == null or window.get_script().get_global_name() != "ChoiceWindow"
+			if should_close_inspections:
+				close_all_inspection_windows()
 			window.queue_free()
-		# Closing a modal should also close any inspections on top of it.
-		close_all_inspection_windows()
 
 func _close_all_windows():
 	while not _modal_stack.is_empty():
@@ -489,6 +508,11 @@ func _input(event: InputEvent) -> void:
 	if not event is InputEventMouseButton:
 		return
 	if not event.button_index == MOUSE_BUTTON_LEFT or not event.is_pressed():
+		return
+
+	# Don't close inspection windows if there are modal windows active
+	# The user might be legitimately interacting with the modal window
+	if not _modal_stack.is_empty():
 		return
 
 	if not _active_inspection_group.is_empty():

@@ -15,6 +15,12 @@ func _ready():
 	style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
 	add_theme_stylebox_override("panel", style)
 
+func _exit_tree():
+	pass
+
+func _notification(what):
+	pass
+
 func populate(loc: LocationIdentifier):
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
@@ -42,6 +48,16 @@ func _gui_input(event: InputEvent):
 		# Clicking it with nothing else selected should just clear the context.
 		else:
 			InteractionManager.clear_selection()
+			# Only close inspection windows if not inside one
+			var node = self.get_parent()
+			var inside_inspection_window = false
+			while node and node != get_tree().root:
+				if node is InspectionWindow:
+					inside_inspection_window = true
+					break
+				node = node.get_parent()
+			if not inside_inspection_window:
+				WindowManager.close_all_inspection_windows()
 
 func _can_drop_data(_at_position, data) -> bool:
 	return data is Dictionary and data.has("source_loc")

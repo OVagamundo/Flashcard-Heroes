@@ -70,30 +70,34 @@ func _setup_battle():
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 	var permanent_to_battle_uuid_map: Dictionary = {}
 
-	# First pass: Create all battle copies and map their new UUIDs.
+	# First pass: Create all battle copies and map their new UUIDs, except for the hero (use persistent instance for hero)
+	var hero_instance = null
 	for perm_inst in run_state_instances:
+		var def = perm_inst.get_definition()
+		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
+		if is_hero:
+			hero_instance = perm_inst
+			# Add the hero instance to _battle_instances so UI can find it during battle
+			_battle_instances[perm_inst.ball_uuid] = perm_inst
+			continue # Don't create a battle copy for the hero
 		var battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
 		if not is_instance_valid(battle_copy): continue
-		
 		_battle_instances[battle_copy.ball_uuid] = battle_copy
 		permanent_to_battle_uuid_map[perm_inst.ball_uuid] = battle_copy.ball_uuid
 
-	# Second pass: Remap equipped item UUIDs on all battle copies.
+	# Second pass: Remap equipped item UUIDs on all battle copies (skip hero)
 	for battle_uuid in _battle_instances:
 		var battle_inst = _battle_instances[battle_uuid]
 		if battle_inst.get_definition().category != &"UNIT": continue
-		
 		var original_equipped_uuids = battle_inst.equipped_item_uuids.duplicate()
 		battle_inst.equipped_item_uuids.clear()
 		battle_inst.equipped_item_uuids.resize(original_equipped_uuids.size())
 		battle_inst.equipped_item_uuids.fill("")
-
 		for i in range(original_equipped_uuids.size()):
 			var permanent_item_uuid = original_equipped_uuids[i]
 			if not permanent_item_uuid.is_empty() and permanent_to_battle_uuid_map.has(permanent_item_uuid):
 				var battle_item_uuid = permanent_to_battle_uuid_map[permanent_item_uuid]
 				battle_inst.equipped_item_uuids[i] = battle_item_uuid
-				
 				# Also update the item's own state
 				var item_instance = _battle_instances.get(battle_item_uuid)
 				if is_instance_valid(item_instance):
@@ -102,18 +106,22 @@ func _setup_battle():
 
 	# Third pass: Place all instances in their correct, stable locations.
 	for perm_inst in run_state_instances:
+		var def = perm_inst.get_definition()
+		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
 		var perm_loc = GameManager.run_state.get_location_for_uuid(perm_inst.ball_uuid)
 		if not is_instance_valid(perm_loc): continue
-
+		if is_hero:
+			# Place the persistent hero instance directly in the PlayerLineup
+			var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+			container.set_uuid(perm_loc.index, perm_inst.ball_uuid)
+			_update_instance_location(perm_inst.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, perm_loc.index)
+			continue
 		var battle_uuid = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
 		if not battle_uuid: continue
-
 		var battle_copy = _battle_instances[battle_uuid]
-		
 		# An item's location is determined by what it's equipped to. Skip direct placement.
 		if not battle_copy.equipped_on_uuid.is_empty():
 			continue
-
 		var target_container_name: StringName
 		if perm_loc.container.begins_with("RunInventoryT"):
 			var tier = perm_inst.get_definition().tier
@@ -127,7 +135,8 @@ func _setup_battle():
 				RS.RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
 					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
 				_:
-					target_container_name = perm_loc.container
+					# If it's not a recognized container, skip this instance
+					continue
 
 		var container = get_container(target_container_name)
 		var index = perm_loc.index
@@ -135,7 +144,6 @@ func _setup_battle():
 		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
 	_setup_enemy_lineup()
-
 	_setup_enemy_lineup()
 
 func _setup_enemy_lineup():

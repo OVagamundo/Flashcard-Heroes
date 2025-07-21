@@ -6,7 +6,7 @@ Resource generation is intrinsically linked to player performance in fast-paced 
 2.1. Run Structure
 A single "run" is a complete playthrough attempt, from start to finish.
 Loadout: The player selects a Hero and a Flashcard Deck. The Run Inventory is initialized.
-Path Selection: The player is presented with a choice of three nodes on a map.
+Path Selection: The player is presented with a choice of three nodes, each representing a potential encounter.
 Node Resolution: The player selects and resolves one node (e.g., Battle, Shop, Event, Rest Site).
 Progression & Iteration: After resolving a node, the game's "Day" counter advances, increasing difficulty. The player returns to Path Selection.
 Boss Encounters: At specific progression milestones, mandatory boss battle nodes appear.
@@ -92,11 +92,18 @@ Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the 
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
 Rest Site Node: A recovery node where the player chooses one action: Rest (heal Hero), Train (upgrade Hero), or Gamble.
 9.4. Event-Driven Ability System
-Abilities are defined by a combination of a Trigger, optional Conditions, and one or more Effects.
-Triggers: Specific moments when an ability can activate (e.g., ON_BATTLE_START, ON_FAINT).
-Conditions: Optional checks that must be true for an ability to activate (e.g., HEALTH_BELOW_50%).
-Effects: The actual outcomes of the abilities (e.g., DEAL_DAMAGE, APPLY_STATUS_EFFECT).
-Targeting Rules: Define who is affected (e.g., SELF, RANDOM_ENEMY, ADJACENT_ALLIES).
+Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
+
+**Triggers**: The specific gameplay moments when an ability can activate. Examples include ON_DEATH (when the unit is defeated), ON_ATTACK (when the unit initiates an attack), or ON_HURT (when the unit takes damage).
+
+**Conditions (Optional)**: A set of rules that must be true for the ability to activate. This allows for more strategic depth. For example, an ability might only trigger if "the enemy team has more units" or if "the slot in front is empty."
+
+**Effects**: The actual outcomes of the abilities. These are the "verbs" of the system, such as DEAL_DAMAGE, MODIFY_STAT (to heal or buff), or SUMMON_UNIT.
+
+**Targeting**: Rules that define who is affected by the effect, such as SELF, RANDOM_ENEMY, ADJACENT_ALLIES, or the specific TRIGGERING_ENTITY (e.g., the unit that just attacked this one).
+
+**Default Attack Fallback Rule:**
+A unit's primary action during the Combat Phase is determined by its ON_ATTACK abilities. If a unit has one or more abilities tied to the ON_ATTACK trigger, the game will check their conditions. If any condition is met, that ability will execute as the unit's action. However, if a unit has no ON_ATTACK abilities, or if none of their conditions are met, the unit will perform a Default Basic Attack. This standard attack deals damage equal to the unit's current PWR to the single frontmost enemy unit. This ensures every unit always has a valid action to take on its turn.
 9.5. Status Effects
 Temporary conditions applied to units during battle that have positive or negative effects, such as "Burn" (damage over time) or "Weaken" (reduced Power).
 9.6. Synergy System
@@ -144,7 +151,7 @@ The system for inspecting units, items, and their effects follows a strict set o
 11.3. Scene-Specific UI
 Title Screen: Main menu with New Game, Continue, Achievements, Options, Quit.
 Loadout Scene: Carousels for selecting a Hero and a Flashcard Deck.
-Path Choice Scene: A map displaying three selectable nodes.
+Path Choice Scene: A screen displaying three selectable nodes for the next encounter.
 Shop Scene: A grid displaying items for sale and panels for services.
 Event Scene: A central panel for narrative text with choice buttons below.
 Rest Site Scene: Displays the three distinct action choices as large buttons.

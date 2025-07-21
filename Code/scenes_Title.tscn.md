@@ -3,7 +3,7 @@
 ```ini
 [gd_scene load_steps=2 format=3 uid="uid://cvorou27dlts"]
 
-[ext_resource type="Script" uid="uid://6d52omscjhhr" path="res://scripts/Title.gd" id="1_abcde"]
+[ext_resource type="Script" path="res://scripts/Title.gd" id="1_abcde"]
 
 [node name="Title" type="Control"]
 layout_mode = 3
@@ -19,10 +19,6 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 63.0
-offset_top = 9.0
-offset_right = 63.0
-offset_bottom = 9.0
 grow_horizontal = 2
 grow_vertical = 2
 

@@ -34,9 +34,14 @@ func populate(context: Dictionary):
 		loc.container = DISCARD_PILE_CONTAINER_TAG
 
 		if is_instance_valid(instance):
-			var view = _GachaBallView.instantiate()
-			discard_grid.add_child(view)
-			view.populate(loc, instance, true, true)
+			# Create a SlotView to wrap the GachaBallView, similar to InventoryWindow
+			var slot_view = _SlotView.instantiate()
+			discard_grid.add_child(slot_view)
+			slot_view.populate(loc)
+			
+			var gacha_view = _GachaBallView.instantiate()
+			slot_view.add_child(gacha_view)
+			gacha_view.populate(loc, instance, true, true)
 		else:
 			var slot_view = _SlotView.instantiate()
 			discard_grid.add_child(slot_view)

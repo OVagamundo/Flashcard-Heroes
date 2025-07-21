@@ -200,6 +200,18 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, target_item_slot: int):
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): return
 
+	# If the item was previously equipped on another unit, unequip its bonus from that unit
+	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
+		var data_owner = _get_data_owner()
+		if is_instance_valid(data_owner):
+			var prev_unit = data_owner.get_all_instances().get(item_instance.equipped_on_uuid)
+			if is_instance_valid(prev_unit):
+				prev_unit.unequip_item_bonus(item_instance)
+
+	# If the item was previously equipped on this unit, unequip from old slot
+	if item_instance.equipped_on_uuid == unit_instance.ball_uuid:
+		unit_instance.unequip_item_bonus(item_instance)
+
 	item_instance.equipped_on_uuid = unit_instance.ball_uuid
 	item_instance.equipped_slot_index = target_item_slot
 	item_instance.location_container_tag = &""
@@ -207,7 +219,10 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 
 	if target_item_slot < unit_instance.equipped_item_uuids.size():
 		unit_instance.equipped_item_uuids[target_item_slot] = item_instance.ball_uuid
-	
+
+	# Equip the bonus to the new unit
+	unit_instance.equip_item_bonus(item_instance)
+
 	EventBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
 
 func _perform_unequip(item_instance: GachaBallInstance):

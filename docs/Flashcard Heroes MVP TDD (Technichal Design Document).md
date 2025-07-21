@@ -21,7 +21,10 @@ Use code with caution.
 Part 2: Data Schemas & Structures
 2.1 Core Data Resources
 RunState.gd: Resource, class_name RunState. The persistent state for an entire run.
-Properties: gold: int, run_instances: Dictionary[String, GachaBallInstance] (The master dictionary of all permanent instances for the run.)
+Properties: 
+- gold: int - The player's current gold count
+- day: int - The current day of the run, used for difficulty scaling and node generation
+- run_instances: Dictionary[String, GachaBallInstance] - The master dictionary of all permanent instances for the run, keyed by instance UUID
 **GachaBallDefinition.gd:** Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
 *   **Properties:** 
     - `@export var id: StringName` - Unique identifier for this definition
@@ -32,6 +35,7 @@ Properties: gold: int, run_instances: Dictionary[String, GachaBallInstance] (The
     - `@export var item_slot_count: int` - Number of equipment slots (for units)
     - `@export var base_hp: int = 0` - Base health points
     - `@export var base_pwr: int = 0` - Base power/attack
+    - `@export var abilities: Array[AbilityDefinition]` - A list of all abilities this GachaBall type possesses.
 **GachaBallInstance.gd:** Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall. This resource is the single source of truth for all of its own data.
 *   **Core Properties:** `definition_id: StringName`, `ball_uuid: String`, `origin_uuid: String`, `current_hp: int`, `current_pwr: int`
 *   **Location Properties (The Single Source of Truth):** 
@@ -40,12 +44,16 @@ Properties: gold: int, run_instances: Dictionary[String, GachaBallInstance] (The
     - `equipped_on_uuid: String` - UUID of the unit this item is equipped on (empty if not equipped)
     - `equipped_slot_index: int` - The slot index on the unit where this item is equipped (-1 if not equipped)
     - `equipped_item_uuids: Array[String]` - For units: array of UUIDs of equipped items (empty strings for empty slots)
+*   **Status Effect Properties:**
+    - `status_effects: Dictionary[StringName, int]` - Stores active status effects and their stacks (e.g., {"poison": 5, "strength": 2}).
+    - `temporary_multipliers: Dictionary[StringName, float]` - Stores temporary multiplicative modifiers from abilities (e.g., {"rage_ability": 1.5}). This dictionary is cleared at the end of each turn.
 *   **Methods:** 
     - `initialize(def: GachaBallInstance)`
     - `add_tag(tag: StringName)`, `remove_tag(tag: StringName)`, `has_tag(tag: StringName) -> bool`
-    - `recalculate_stats(all_instances_db: Dictionary)`
     - `create_battle_copy() -> GachaBallInstance`
     - `get_location() -> LocationIdentifier` - Returns a LocationIdentifier that represents the instance's current location. For equipped items, returns a location with container="equipped_item", unit_uuid set to the parent unit's UUID, and index set to the equipped slot index. For unequipped items, returns a location with the appropriate container tag and slot index.
+    - `get_current_pwr() -> int` - Calculates and returns the final, effective Power using the Stat Calculation Order of Operations (see Section 7.9).
+    - `get_current_hp() -> int` - Calculates and returns the final, effective Health using the Stat Calculation Order of Operations (see Section 7.9).
 MergeRecipe.gd: Resource, class_name MergeRecipe.
 Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName
 EffectRequest.gd: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
@@ -75,23 +83,72 @@ To solve the performance and complexity issues of querying scattered instance da
     *   **Initial Size Rule:** To ensure a consistent player experience, all tiered inventory containers (RunInventoryT* and BattleInventoryT*) must be instantiated with an initial size of 16.
 
 Both `RunState` and `BattleManager` use an internal dictionary of these containers to manage their respective instances efficiently.
+
+### 2.4 Game Loop Data Structures
+To manage the meta-game loop, the following data-driven resources are introduced.
+
+**PathNodeDefinition.gd**: Resource, class_name PathNodeDefinition. Defines a single selectable node from a set of choices.
+*   **Properties:**
+    - `node_type: StringName` - The primary type of the node (e.g., "BATTLE", "SHOP", "EVENT", "REST").
+    - `subtype: StringName` - A variant of the node type (e.g., "COMMON", "ELITE", "BOSS").
+    - `display_name_key: String` - Localization key for the node's name.
+    - `icon: Texture2D` - The icon representing the node on the choice screen.
+    - `encounter_id: StringName` - For "BATTLE" nodes, this links to a specific EncounterDefinition.
+
+**EncounterDefinition.gd**: Resource, class_name EncounterDefinition. Defines the composition of an enemy team.
+*   **Properties:**
+    - `id: StringName` - Unique identifier for this encounter.
+    - `enemy_placements: Array[Dictionary]` - An array defining which units to place and where. Each dictionary contains: `{"id": StringName, "position": int}`.
+
+**LootTable.gd**: Resource, class_name LootTable. Defines a weighted pool of potential rewards.
+*   **Properties:**
+    - `id: StringName` - Unique identifier for this loot table (e.g., "common_battle_rewards").
+    - `rewards: Array[Dictionary]` - A weighted list of GachaBallDefinition IDs. Each dictionary contains: `{"definition_id": StringName, "weight": int}`.
+
 Part 3: Logic Layer & Managers
-3.1 Signal Bus
-Action Signals: draw_gacha_requested(tier_tag: StringName), inventory_action_requested(source_uuid: String, target_uuid: String, explicit_action: String = ""), inspection_requested(uuid: String), display_discard_pile_requested
-State Change Signals: instance_data_changed(uuid: String), instance_location_changed(uuid: String), instance_created(uuid: String), instance_destroyed(uuid: String), battle_state_changed(is_in_battle: bool), gacha_tokens_changed(new_amount: int)
-3.2 Singleton Managers
-GameManager.gd: Holds the master run_state and the global is_in_battle flag.
-InventoryManager.gd: Stateless logic controller for all inventory actions.
-InteractionManager.gd: UI state machine holding the source_uuid of the selected instance.
-MergeManager.gd: Stateless helper for merge calculations.
-Database.gd: Loads all .tres resources on startup.
-SceneManager.gd: Handles scene transitions.
-AbilityResolver.gd: Takes an EffectRequest and calls the appropriate EffectDefinition.execute() method.
-UUIDUtils.gd: Provides a generate_uuid() utility function.
-WindowManager.gd: The sole authority for the lifecycle of all modal and inspection windows.
-BattleManager.gd: The authority for a single battle's state.
-State: _battle_instances, _gacha_tokens, _effect_queue: Array[EffectRequest], _is_processing_effect: bool
-Responsibility: Manages the battle lifecycle, the effect queue, and provides relational query functions.
+### 3.1 Signal Bus
+All global signals are defined in `SignalBus.gd` to decouple systems. Key signals include:
+- `inspection_requested(target_uuid: String, context_uuid: String = "")` - Emitted when a GachaBallInstance should be inspected.
+  - `target_uuid`: The UUID of the instance being inspected.
+  - `context_uuid`: An optional UUID of the instance providing the stats for calculation.
+- `inspection_closed(uuid: String)` - Emitted when an inspection is closed.
+- `instance_moved(instance_uuid: String, from_location: LocationIdentifier, to_location: LocationIdentifier)` - Emitted when an instance changes location.
+- `instance_merged(ingredient_uuids: Array[String], result_instance: GachaBallInstance)` - Emitted when instances are merged.
+- `draw_gacha_requested(tier_tag: StringName)` - Emitted when a gacha draw is requested.
+- `inventory_action_requested(source_uuid: String, target_uuid: String, explicit_action: String = "")` - Emitted when an inventory action is requested.
+- `display_discard_pile_requested` - Emitted when the discard pile should be displayed.
+- `instance_data_changed(uuid: String)` - Emitted when an instance's data changes.
+- `instance_location_changed(uuid: String)` - Emitted when an instance's location changes.
+- `instance_created(uuid: String)` - Emitted when an instance is created.
+- `instance_destroyed(uuid: String)` - Emitted when an instance is destroyed.
+- `battle_state_changed(is_in_battle: bool)` - Emitted when the battle state changes.
+- `gacha_tokens_changed(new_amount: int)` - Emitted when the gacha tokens change.
+- `battle_victory_acknowledged` - Emitted by EndBattlePopup when the player clicks "Continue" after a victory.
+- `reward_scene_requested(context: Dictionary)` - Emitted by GameManager to request the display of the reward screen. The context contains the generated reward choices.
+- `node_selected(node_def: PathNodeDefinition)` - Emitted by the UI when the player chooses a path.
+- `reward_chosen(reward_data: Dictionary)` - Emitted by the reward UI. The reward_data contains the chosen reward (e.g., {"type": "gachaball", "def_id": "..."} or {"type": "gold", "amount": 5}).
+### 3.2 Singleton Managers
+
+#### Core Game Managers
+- `GameManager.gd`: Holds the master run_state, the global is_in_battle flag, and orchestrates the meta-game loop. Manages the day counter, generates path choices, and processes post-battle rewards.
+- `Database.gd`: Loads all .tres resources on startup.
+- `SceneManager.gd`: Handles scene transitions.
+
+#### Gameplay Logic & State
+- `BattleManager.gd`: The authority for a single battle's state. Manages the battle lifecycle, the effect queue, and provides relational query functions.
+- `InventoryManager.gd`: Stateless logic controller for all inventory actions.
+- `MergeManager.gd`: Stateless helper for merge calculations.
+- `AbilityResolver.gd`: Takes an EffectRequest and calls the appropriate EffectDefinition.execute() method.
+
+#### UI & Presentation
+- `WindowManager.gd`: The sole authority for the lifecycle of all modal and inspection windows.
+- `InteractionManager.gd`: UI state machine holding the source_uuid of the selected instance for drag-and-drop actions.
+- `StatTooltipGenerator.gd`: A stateless utility service for creating formatted tooltip strings that break down a unit's stat calculations.
+
+#### Utilities
+- `UUIDUtils.gd`: Provides a `generate_uuid()` utility function.
+- `AudioManager.gd`: Central controller for all sound effects and music.
+- `SaveManager.gd`: Handles saving and loading game state.
 3.3 The Definitive Hybrid Architecture: The "Why"
 This architecture was chosen to solve the problems of data duplication and complex state management found in traditional container-based models. The original "pure" data-centric model, where all queries directly accessed the master instance dictionaries, was inefficient for common access patterns like finding empty slots or iterating through specific locations.
 
@@ -233,9 +290,11 @@ To ensure data integrity and prevent unnecessary object creation, the following 
 **Item Salvage and Inheritance:** When a unit is defeated or used as a merge ingredient, its equipped items are not copied. The exact same item instances are transferred. Their `equipped_on_uuid` and `location` properties are updated to reflect their new state (either moved to the discard pile or re-equipped on a newly merged unit).
 
 ### 5.2 Battle Setup Flow
-BattleManager creates battle_copy() instances from GameManager.run_state.run_instances and adds them to its _battle_instances dictionary.
-It sets the initial location properties on each new copy (e.g., location_container_tag = "BATTLE_DRAW_POOL_T1").
-For each new instance, it emits instance_created(new_uuid).
+1.  `BattleManager` creates `battle_copy()` instances from `GameManager.run_state.run_instances` for all units participating in the battle, **including the Hero**. These are added to its `_battle_instances` dictionary.
+2.  For each new battle instance, its `current_hp` and `current_pwr` are initialized directly from the `base_hp` and `base_pwr` values of its definition. This ensures all units, including the Hero, start every battle with their full base stats.
+3.  The `BattleManager` sets the initial location properties on each new copy (e.g., `location_container_tag = "PlayerLineup"`).
+4.  For each new instance, it emits `instance_created(new_uuid)`.
+
 ### 5.3 Gacha Draw Flow
 BattleManager receives draw_gacha_requested(tier_tag).
 It queries _battle_instances for instances with location_container_tag == "BATTLE_DRAW_POOL_[tier_tag]".
@@ -371,3 +430,238 @@ sequenceDiagram
     IM->>BM: perform_merge_operation(source_uuid, target_uuid, recipe_id)
     BM-->>UI: instance_created(new_uuid), instance_destroyed(old_uuid), instance_location_changed(item_uuids)
     UI-->>UI: Redraw relevant views
+
+# Part 7: Event-Driven Ability System Architecture
+
+This section defines the complete architecture for the game's event-driven ability system. This system is data-driven, using .tres resources to define all gameplay logic, and event-driven, reacting to specific gameplay moments (Triggers) to create a dynamic and extensible combat model.
+
+## 7.1 Core Data-Driven Components
+
+The system is composed of three primary resource types that work in concert: AbilityDefinition, ConditionDefinition, and EffectDefinition.
+
+### Resource: class_name AbilityDefinition
+**Purpose:** The central "glue" resource that links a Trigger to one or more Effects, gated by an optional Condition. This is what is attached to a GachaBallDefinition's list of abilities.
+
+**Properties:**
+- `@export var id: StringName` - Unique identifier for the ability (e.g., "last_wish_cricket").
+- `@export var trigger: StringName` - The specific gameplay event that can activate this ability (e.g., "on_death"). See Section 7.6 for the canonical list of triggers.
+- `@export var condition: ConditionDefinition` - An optional resource. If present, this condition must be met for the ability to activate.
+- `@export var effects: Array[EffectDefinition]` - An array of one or more effects to execute when the ability is successfully triggered.
+- `@export var description_key: String` - The localization key for the ability's description text.
+
+### Resource: class_name ConditionDefinition
+**Purpose:** A reusable, self-contained check that determines if an ability is allowed to proceed.
+
+**Properties:**
+- `@export var id: StringName` - Unique identifier for the condition (e.g., "cond_team_size_less_than_enemy").
+- `@export var condition_type: StringName` - The specific type of check to perform. This is interpreted by BattleManager. See Section 7.6 for the canonical list.
+- `@export var parameters: Dictionary` - A flexible dictionary containing any values needed for the check. For example, a RELATIVE_HP check might use `{"comparison": "greater_than"}`.
+- `@export var invert_result: bool = false` - If true, the result of the condition check is inverted. (e.g., "if NOT front slot is empty").
+
+### Resource: class_name EffectDefinition
+**Purpose:** An abstract base class for any action that can occur in the game. Concrete effects (e.g., `EffectModifyStat`, `EffectDealDamage`) must inherit from this class and implement its `execute` method.
+
+**Properties:**
+- `@export var parameters: Dictionary` - A dictionary containing the specific parameters for this effect's execution. This supports both flat values (e.g., `{"damage": 3}`) and stat-scaling values. See Section 7.7 for the stat-scaling structure.
+
+**Abstract Methods:**
+- `execute(source_uuid: String, targets: Array[String], battle_manager: BattleManager, context: Dictionary) -> void`: The core method that all concrete effect scripts must implement. It receives all necessary information to perform its action.
+
+## 7.2 System Responsibilities & Logic Flow
+
+The logic is orchestrated by the AbilityResolver and BattleManager singletons, which work with EffectRequest objects on the LIFO queue.
+
+The EffectRequest resource is updated to carry the necessary data for the full system.
+
+**Properties:**
+- `source_uuid: String` - The UUID of the GachaBallInstance whose ability is being processed.
+- `ability_id: StringName` - The ID of the AbilityDefinition being executed.
+- `effect_definition: EffectDefinition` - A direct reference to the concrete effect to be executed.
+- `resolved_targets: Array[String]` - The pre-calculated list of target UUIDs for the effect.
+- `trigger_context: Dictionary` - The original context of the event that started this chain (e.g., `{"attacker_uuid": "...", "damage_taken": 5}`).
+
+The AbilityResolver is a stateless service that acts as the central coordinator. Its primary responsibility is to translate game events into EffectRequests.
+
+**Core Method: process_trigger(trigger: StringName, context: Dictionary)**
+1. Receives a trigger and context from BattleManager.
+2. Queries BattleManager for all live instances that have an ability matching the trigger.
+3. For each found ability on each instance:
+   a. **Check Condition:** If the AbilityDefinition has a condition, it calls `BattleManager.check_condition(ability.condition, source_uuid, context)`. If this returns false, it stops processing this ability.
+   b. **Resolve Targets:** For each EffectDefinition in the ability's effects array, it calls `BattleManager.resolve_target(source_uuid, effect.target_type, context)` to get a list of target UUIDs.
+   c. **Create Requests:** It creates a new EffectRequest for each effect, populating it with the source UUID, the effect definition, the resolved targets, and the original context.
+   d. **Enqueue:** It pushes each new EffectRequest onto the BattleManager's LIFO effect queue.
+
+The BattleManager is extended to become the "query engine" for the ability system.
+
+- **Event Emitter:** Throughout its combat logic, BattleManager is responsible for calling `AbilityResolver.process_trigger()` at the correct moments (e.g., after damage calculation, after a unit's death).
+- **Condition Evaluator:** Implements `check_condition(condition_def: ConditionDefinition, source_uuid: String, context: Dictionary) -> bool`. This method contains a match statement on `condition_def.condition_type` to execute the appropriate check.
+- **Target Resolver:** Implements `resolve_target(source_uuid: String, target_type: StringName, context: Dictionary) -> Array[String]`. This method contains a match statement on `target_type` to query its internal data containers and return the correct list of UUIDs.
+
+## 7.3 Combat Action Resolution & Default Attack Fallback
+
+The standard flow for a unit's action during the Combat Phase is governed by the ability system to allow for custom attack behaviors.
+
+1. **Action Determination:** When a unit's turn begins, the BattleManager will first check if the unit has any abilities linked to the `on_attack` trigger.
+2. **Condition Pre-check:** It will iterate through these `on_attack` abilities and use AbilityResolver (or a helper function) to determine if any of their conditions are met in the current game state.
+3. **Branching Logic:**
+   - If a valid `on_attack` ability exists (i.e., its conditions are met): The BattleManager will call `AbilityResolver.process_trigger("on_attack", ...)` for that unit. The resulting EffectRequest(s) will be executed as the unit's turn.
+   - If no valid `on_attack` ability exists (either none are defined or no conditions are met): The BattleManager will manually create and enqueue a single EffectRequest for a Default Basic Attack. This effect deals damage equal to the unit's `current_pwr` to the `FRONTMOST_ENEMY`.
+
+This logic ensures that a unit's special attack abilities take precedence, but it will always fall back to a standard, reliable action if its special conditions are not met.
+
+## 7.4 Example Resolution Flow: "Giant Slayer Mantis"
+
+1. **Attack:** The "Giant Slayer Mantis" instance (`mantis_uuid`) attacks a "Stone Whelp" instance (`whelp_uuid`).
+2. **Event Emission:** BattleManager's combat loop identifies it's the Mantis's turn and checks for `on_attack` abilities. It finds one.
+3. **Condition Check:** The ability has a ConditionDefinition with `condition_type = TARGET_HP_GREATER_THAN_SELF_HP`. The BattleManager evaluates this. If `whelp.hp > mantis.hp`, it returns true.
+4. **Action Execution:** The condition passed. The BattleManager proceeds by calling `AbilityResolver.process_trigger("on_attack", {"source_uuid": "mantis_uuid", "target_uuid": "whelp_uuid"})`.
+5. **Target Resolution:** The ability's EffectDefinition has `target_type = ATTACK_TARGET`. AbilityResolver calls `BattleManager.resolve_target(...)`.
+6. **Target Evaluation:** BattleManager looks at the context dictionary, finds the `target_uuid`, and returns `["whelp_uuid"]`.
+7. **Enqueue:** AbilityResolver creates an EffectRequest with `source_uuid="mantis_uuid"`, `effect_definition` pointing to the "Deal +3 Damage" effect, `resolved_targets=["whelp_uuid"]`, and the original context. It pushes this request onto BattleManager's `_effect_queue`.
+8. **Execution:** BattleManager's processing loop pops this request. It calls `effect_definition.execute(...)`, passing all the resolved data. The EffectDealDamage script then tells the BattleManager to reduce the HP of `whelp_uuid` by 3.
+
+## 7.5 Canonical System Enums (StringName)
+
+The following StringName values are the definitive list of types for the ability system.
+
+| **Trigger** | **Fired When...** |
+|-------------|-------------------|
+| on_battle_start | Once for every unit at the very start of combat. |
+| on_attack | The unit initiates its attack action. This is the primary trigger for a unit's turn. |
+| on_hurt | The unit receives damage. |
+| on_kill | The unit's attack or ability defeats another unit. |
+| on_death | The unit's HP is reduced to 0 or less. |
+| on_ally_death | Any allied unit on the board dies. |
+| on_summon | The unit's ability successfully summons a new unit. |
+| on_turn_end | After all combat actions for the turn have resolved. |
+| passive | Not a trigger. Denotes a constant stat modification from an item. |
+
+| **Target** | **Resolves To...** |
+|------------|-------------------|
+| SELF | The unit with the ability. |
+| HOLDER | The unit equipping the item with the ability. |
+| ATTACK_TARGET | The direct target of an on_attack trigger. |
+| TRIGGERING_ENTITY | The external entity from the trigger's context (e.g., the attacker in an on_hurt event). |
+| FRONTMOST_ENEMY | The enemy unit in the frontmost position. |
+| RANDOM_ENEMY | One randomly selected enemy unit. |
+| RANDOM_ALLY | One randomly selected allied unit (can include self). |
+| ALLY_BEHIND | The allied unit in the slot directly behind this one. |
+| ALLY_SLOT_AHEAD | The empty slot directly in front of this one (for summoning). |
+| ADJACENT_ALLIES | Allies in slots directly in front of and behind this one. |
+| ALL_ALLIES | All allied units currently on the board. |
+
+| **Condition Type** | **Checks If...** |
+|-------------------|------------------|
+| TEAM_SIZE_LESS_THAN_ENEMY | The number of allied units is less than the number of enemy units. |
+| SLOT_AHEAD_IS_EMPTY | The combat slot directly in front of the source unit is unoccupied. |
+| TARGET_HP_GREATER_THAN_SELF_HP | The HP of the target (from context) is greater than the source's HP. |
+
+## 7.7 Stat-Scaling Effects
+
+To allow effects to scale with unit stats, the parameters dictionary within an EffectDefinition supports a structured format for values.
+
+**Parameter Structure:** Any value (e.g., damage, hp_gain) can be a Dictionary with the following keys:
+- `base_value`: int - A flat amount. Defaults to 0.
+- `pwr_multiplier`: float - A multiplier for the source unit's final, calculated current_pwr. Defaults to 0.0.
+- `hp_multiplier`: float - A multiplier for the source unit's final, calculated current_hp. Defaults to 0.0.
+- `base_hp_multiplier`: float - A multiplier for the source unit's base_hp. Defaults to 0.0.
+
+**Calculation:** The final value is calculated as `floor(base_value + (stat * multiplier))`. An effect's `execute()` method is responsible for parsing this structure and using the source unit's stat getters to calculate the final outcome.
+
+## 7.8 Status Effect System
+
+Status effects are conditions applied to units that modify their behavior or stats over time. They are tracked in the `GachaBallInstance.status_effects` dictionary.
+
+- `EffectApplyStatus.gd`: A concrete `EffectDefinition` is required to apply these effects. Its parameters are `{"status_id": StringName, "stacks": int}`.
+
+**Status Effect Logic:** The `BattleManager` is responsible for processing the logic for each status effect at the appropriate phase.
+
+1. **Additive Stats (Strength, Weaken):** These are factored into the dynamic stat calculation as defined in the Order of Operations.
+2. **Damage Over Time (Poison):** At the start of a unit's turn (or end of turn, TBD), `BattleManager` deals damage equal to the number of Poison stacks, then reduces the stacks by 1.
+3. **Decaying Stacks:** For statuses like Strength and Weaken, `BattleManager` decrements their stack count by 1 at the end of each turn.
+
+## 7.9 Stat Calculation Order of Operations
+
+To ensure consistent and predictable stat values, all current stats are calculated dynamically using a strict order of operations. This logic is encapsulated within getter methods in `GachaBallInstance.gd` (e.g., `get_current_pwr()`).
+
+**The Definitive Formula:**
+```
+Final_Stat = floor( (Base_Stat + Sum_of_Additive_Modifiers) * Product_of_Multiplicative_Modifiers )
+```
+
+**Step-by-Step Calculation Process:**
+1. **Start with the Base Stat:** Begin with the `base_hp` or `base_pwr`.
+2. **Sum All Additive Modifiers:** Sum the stacks from all relevant `status_effects` (e.g., Strength - Weaken).
+3. **Calculate the Final Multiplier:** Calculate the product of all values in the `temporary_multipliers` dictionary (e.g., 1.0 * 1.5 * 0.75).
+4. **Apply Final Calculation:** Multiply the result from Step 2 by the result from Step 3 and apply `floor()` to get the final integer value.
+
+## 7.10 Dynamic Stat Tooltip Architecture
+
+To provide players with transparent feedback on complex stat interactions, the UI will display a detailed breakdown of how a stat is calculated, rather than attempting to show the contribution of each individual modifier.
+
+**StatTooltipGenerator.gd:** This singleton service is responsible for creating the formatted breakdown.
+
+**Core Method:** `generate_pwr_tooltip(instance: GachaBallInstance) -> String`:
+1. Calls `instance.get_current_pwr()` to get the final stat value.
+2. Reads the instance's `base_pwr`, `status_effects`, and `temporary_multipliers` to build a multi-line string.
+3. The string lists each component separately: the base value, each additive modifier, each multiplicative modifier, and the final calculated value.
+
+**UI Implementation:** When a player hovers over a stat display (e.g., a "PWR: 14" label), this tooltip is generated and shown, providing a clear and mathematically honest breakdown of all active effects.
+
+**Example Tooltip Display:**
+```
+Power: 14
+------------------
+Base: 10
+Strength: +3
+Rage Ability: x1.5
+------------------
+Final: 14
+```
+
+## 7.6 Concrete Effect Implementation Examples
+
+The following snippets illustrate the final implementation pattern for concrete effects.
+
+### EffectModifyStat.gd
+
+```gdscript
+# res://scripts/effects/EffectModifyStat.gd
+@tool
+class_name EffectModifyStat extends EffectDefinition
+
+func execute(source_uuid: String, targets: Array[String], battle_manager: BattleManager, context: Dictionary) -> void:
+    var hp_change: int = parameters.get("hp_gain", 0)
+    var pwr_change: int = parameters.get("pwr_gain", 0)
+    var is_permanent: bool = parameters.get("is_permanent", false) # In-battle, "permanent" means "for the rest of combat".
+
+    for target_uuid in targets:
+        var target_instance = battle_manager.get_instance(target_uuid)
+        if is_instance_valid(target_instance):
+            target_instance.current_hp += hp_change
+            target_instance.current_pwr += pwr_change
+            # Ensure HP doesn't go below 1 from a stat mod, unless it's damage.
+            if target_instance.current_hp < 1:
+                target_instance.current_hp = 1
+```
+
+### EffectSummonUnit.gd
+
+```gdscript
+# res://scripts/effects/EffectSummonUnit.gd
+@tool
+class_name EffectSummonUnit extends EffectDefinition
+
+func execute(source_uuid: String, targets: Array[String], battle_manager: BattleManager, context: Dictionary) -> void:
+    var definition_to_summon: GachaBallDefinition = parameters.get("definition")
+    var power: int = parameters.get("power", 1)
+    var health: int = parameters.get("health", 1)
+
+    if not definition_to_summon:
+        push_error("EffectSummonUnit is missing a GachaBallDefinition in its parameters.")
+        return
+
+    # Assuming target is a slot index or a location to summon at
+    # This part of the logic will need careful implementation in BattleManager
+    battle_manager.summon_unit_to_location(definition_to_summon, power, health, targets[0]) # Assuming target is a location identifier
+```
