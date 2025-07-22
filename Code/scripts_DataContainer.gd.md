@@ -2,7 +2,7 @@
 
 ```gdscript
 class_name DataContainer
-extends Object
+extends Resource
 
 ## The abstract base class for all data collections (inventories, lineups, etc.).
 ## Defines the public interface for interacting with any container, hiding

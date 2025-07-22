@@ -25,13 +25,9 @@ func populate(context: Dictionary):
 
 func _on_return_button_pressed():
     if _is_victory:
-        # Correctly returns to the main scene which shows the path choice.
-        EventBus.emit_signal("main_scene_requested")
+        EventBus.emit_signal("battle_victory_acknowledged")
     else:
-        # On defeat, returning to the title screen is correct.
         EventBus.emit_signal("title_scene_requested")
-    
-    # Close the popup itself.
     queue_free()
 
 ```

@@ -5,3 +5,16 @@ Database: Successfully loaded translations
 Database: Testing translation - hero.name = Hero
 WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/Hero.png.import', stored as '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/hero.png.import' in the filesystem. This file will not open when exported to other case-sensitive platforms.
    at: open_internal (drivers/unix/file_access_unix.cpp:113)
+BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
+BasicAttack: unit_t1_b attacks unit_t1_b for 1 damage. Target HP is now 1.
+BasicAttack: unit_t1_a attacks unit_t1_b for 2 damage. Target HP is now 0.
+BasicAttack: hero attacks unit_t2_c for 3 damage. Target HP is now 0.
+BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 1.
+BasicAttack: unit_t3_d attacks unit_t1_b for 6 damage. Target HP is now 0.
+BasicAttack: unit_t1_b attacks unit_t3_d for 1 damage. Target HP is now 5.
+BasicAttack: unit_t1_a attacks unit_t3_d for 2 damage. Target HP is now 3.
+BasicAttack: unit_t2_c attacks unit_t3_d for 3 damage. Target HP is now 0.
+BasicAttack: unit_t3_d attacks enemy_hero for 6 damage. Target HP is now 4.
+BasicAttack: hero attacks enemy_hero for 3 damage. Target HP is now 1.
+BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 0.
+BasicAttack: unit_t1_a attacks enemy_hero for 2 damage. Target HP is now 0.

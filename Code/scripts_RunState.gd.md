@@ -8,6 +8,7 @@ extends Resource
 ## Persistent state for a run using the single-source-of-truth data model.
 
 @export var gold: int = 0
+@export var day: int = 1
 @export var hero_instance: GachaBallInstance
 
 # Master registry of all permanent instances in this run.

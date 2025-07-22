@@ -15,6 +15,9 @@ signal path_choice_scene_requested
 signal battle_scene_requested
 signal battle_start_requested
 signal title_scene_requested
+signal reward_scene_requested(context)
+signal battle_victory_acknowledged
+signal reward_chosen(payload)
 
 # --- Window/Modal Signals ---
 signal inspect_inventory_requested

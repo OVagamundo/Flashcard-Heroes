@@ -106,7 +106,7 @@ To manage the meta-game loop, the following data-driven resources are introduced
     - `rewards: Array[Dictionary]` - A weighted list of GachaBallDefinition IDs. Each dictionary contains: `{"definition_id": StringName, "weight": int}`.
 
 Part 3: Logic Layer & Managers
-### 3.1 Signal Bus
+### 3.1 Signal Bus (Updated)
 All global signals are defined in `SignalBus.gd` to decouple systems. Key signals include:
 - `inspection_requested(target_uuid: String, context_uuid: String = "")` - Emitted when a GachaBallInstance should be inspected.
   - `target_uuid`: The UUID of the instance being inspected.
@@ -126,11 +126,12 @@ All global signals are defined in `SignalBus.gd` to decouple systems. Key signal
 - `battle_victory_acknowledged` - Emitted by EndBattlePopup when the player clicks "Continue" after a victory.
 - `reward_scene_requested(context: Dictionary)` - Emitted by GameManager to request the display of the reward screen. The context contains the generated reward choices.
 - `node_selected(node_def: PathNodeDefinition)` - Emitted by the UI when the player chooses a path.
-- `reward_chosen(reward_data: Dictionary)` - Emitted by the reward UI. The reward_data contains the chosen reward (e.g., {"type": "gachaball", "def_id": "..."} or {"type": "gold", "amount": 5}).
+- `reward_chosen(reward_data: Dictionary)` - Emitted by the reward UI. The reward_data contains the chosen reward. The payload will be {"type": "gachaball", "instance_uuid": "..."} or {"type": "gold", "amount": ...}.
+- `selection_changed(new_location: LocationIdentifier) - Emitted by InteractionManager when the selected view changes. UI scenes like Reward.tscn will listen to this to manage the state of their controls (e.g., enabling a confirm button).
 ### 3.2 Singleton Managers
 
 #### Core Game Managers
-- `GameManager.gd`: Holds the master run_state, the global is_in_battle flag, and orchestrates the meta-game loop. Manages the day counter, generates path choices, and processes post-battle rewards.
+- `GameManager.gd`: Holds the master run_state, the global is_in_battle flag, and orchestrates the meta-game loop, including managing the day counter, generating path choices, creating and managing temporary reward instances, and processing post-battle rewards.
 - `Database.gd`: Loads all .tres resources on startup.
 - `SceneManager.gd`: Handles scene transitions.
 
@@ -189,6 +190,13 @@ GachaBallView.tscn / SlotView.tscn:
 Metadata: Must store the ball_uuid: String of the instance it represents.
 Behavior: Listens for instance_* signals to update its appearance and position.
 DiscardPileWindow.tscn: A modal window opened by WindowManager in response to display_discard_pile_requested.
+Reward.tscn: The content scene for displaying post-battle reward choices.
+Structure: This scene follows the "Persistent Slots" pattern (Sec 4.5). It must contain a HBoxContainer (%RewardChoicesContainer) which, at design time, holds three empty PanelContainer nodes that act as persistent slots. It also contains the %ConfirmSelectionButton and %TakeGoldButton.
+Logic: The Reward.gd script is responsible for populating the persistent slots. It will instantiate RewardChoiceView scenes and add them as children to the slots. It also manages the enabled/disabled state of the %ConfirmSelectionButton by listening to the selection_changed signal.
+
+RewardChoiceView.tscn: This scene is now simplified, as the complexity is handled by existing systems.
+Structure: The root node is a PanelContainer containing a single SlotView.tscn instance.
+Logic: The RewardChoiceView.gd script's primary role is to populate its child SlotView and the GachaBallView within it using the real GachaBallInstance and LocationIdentifier it receives from the Reward.gd script. All selection and inspection logic is automatically handled by the SlotView, GachaBallView, and InteractionManager.
 ### 4.2 Window Management & UI Patterns
 
 #### Global Input Interception for Window Closure
@@ -310,6 +318,61 @@ It emits instance_location_changed(drawn_uuid).
     d. For each ingredient, remove its UUID from its `DataContainer` and the master instance dictionary.
     e. For all inherited items, update their `equipped_on_uuid` property to point to the new `result_instance`.
 3.  The data owner emits the necessary state change signals (`battle_inventory_changed` or `run_data_changed`).
+
+### 5.6 Post-Battle Reward Flow
+
+#### Design Rationale: Instance-Based Rewards
+To ensure architectural consistency and maximum feature reuse, the reward system uses real GachaBallInstance objects instead of temporary representations. This approach treats the reward choice screen as a temporary inventory, allowing all existing systems (inspection, selection, tooltips) to function without special-case logic. When a choice is made, the selected instance is simply moved to the permanent RunState, while the unchosen instances are discarded. This maintains the "single source of truth" principle and creates a more robust and extensible system.
+
+#### Authoritative Flow
+1. **Victory & Acknowledgement**: The flow begins after the player acknowledges a battle victory by clicking "Continue" on the EndBattlePopup, which emits battle_victory_acknowledged.
+
+2. **Reward Instance Generation**: GameManager receives the signal and performs the following setup:
+   a. Increments RunState.day.
+   b. Clears any existing temporary reward instances from the `_temporary_reward_instances` dictionary.
+   c. Selects three GachaBallDefinitions from the appropriate LootTable.
+   d. For each definition, it creates a real, new GachaBallInstance.
+   e. It stores each new instance in the `_temporary_reward_instances` dictionary using the instance's UUID as the key. This ensures the instances persist until the player makes a choice and maintains a single source of truth for the reward instances.
+
+3. **Display**: 
+   - GameManager emits `reward_scene_requested(context)`. The context dictionary now contains only the `gold_amount`.
+   - `Main.gd` loads `Reward.tscn` and calls its `populate` method with the context.
+   - The `Reward.gd` script's `populate` method retrieves the reward instances directly from `GameManager` using the new `get_temporary_reward_instances()` method, ensuring it always has access to the most up-to-date instances.
+   - The %ConfirmSelectionButton is initially disabled until the player makes a selection.
+
+4. **Player Interaction & State Change (The Selection Loop)**:
+   - **To Select/Deselect a GachaBall**: The player single-clicks a RewardChoiceView (or its child GachaBallView). The interaction is handled by the InteractionManager, which emits selection_changed. The Reward.gd script listens for this signal and enables/disables the %ConfirmSelectionButton.
+   - **To Inspect a GachaBall**: The player double-clicks the GachaBallView within the RewardChoiceView. The view emits inspection_requested.
+
+5. **Final Choice & Signal Emission (The Confirmation Action)**: The player finalizes their choice in one of two ways:
+   - **Confirming a GachaBall**: The player clicks the enabled %ConfirmSelectionButton. The Reward.gd script gets the selected LocationIdentifier from InteractionManager, finds the corresponding instance's UUID from the `_temporary_reward_instances` dictionary, and emits reward_chosen with the payload: 
+     ```gdscript
+     {
+         "type": "gachaball",
+         "instance_uuid": "..."  # The UUID of the selected GachaBallInstance
+     }
+     ```
+   - **Choosing Gold**: The player clicks the %TakeGoldButton. It emits reward_chosen with the payload:
+     ```gdscript
+     {
+         "type": "gold",
+         "amount": 5  # The amount of gold awarded (example value)
+     }
+     ```
+
+6. **State Update & Cleanup**: GameManager receives reward_chosen and performs the final state modification:
+   a. If a GachaBall was chosen:
+      - It retrieves the chosen instance from the `_temporary_reward_instances` dictionary using the provided UUID.
+      - If found, it adds the instance to the permanent `RunState.run_instances` dictionary and places it in the appropriate tier-based container (e.g., `RunInventoryT1`, `RunInventoryT2`, etc.).
+      - Emits `run_data_changed` to notify the UI of the state update.
+   b. If gold was chosen:
+      - It adds the specified gold amount to `RunState.gold`.
+      - Emits `run_data_changed` to notify the UI of the state update.
+   c. **Cleanup**: The `_temporary_reward_instances` dictionary is cleared, allowing the garbage collector to clean up any unselected reward instances.
+   d. **Error Handling**: If an invalid UUID is provided for a GachaBall reward, an error is logged, and the game continues without adding any rewards.
+
+7. **Loop Continuation**: After processing the reward, GameManager initiates the Path Choice & Encounter Flow (Section 5.5).
+
 Part 6: Localization & Sequence Diagrams
 6.1 Localization System
 Key-Based System: All user-facing text must be stored as keys in resource files.

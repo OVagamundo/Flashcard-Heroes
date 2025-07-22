@@ -48,7 +48,7 @@ func set_is_enemy(is_enemy: bool):
 		icon_rect.flip_h = is_enemy
 
 func _update_stats():
-	var instance = _get_instance_by_uuid(_instance_uuid)
+	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance): 
 		return
 	var definition = instance.get_definition()
@@ -63,7 +63,10 @@ func _update_stats():
 	pwr_label.text = "PWR: %d" % instance.current_pwr
 
 func _update_item_slots():
-	var instance = _get_instance_by_uuid(_instance_uuid)
+	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
+	if not is_instance_valid(instance):
+		return
+		
 	for child in item_grid.get_children():
 		child.queue_free()
 	
@@ -71,25 +74,23 @@ func _update_item_slots():
 	if not is_instance_valid(definition) or definition.item_slot_count == 0:
 		return
 
-	var all_instances_db = _get_all_instances_db()
-	if all_instances_db.is_empty(): return
-
 	for i in range(definition.item_slot_count):
 		var slot_panel = Panel.new()
 		slot_panel.custom_minimum_size = Vector2(12, 12)
 		
 		var item_uuid = instance.get_equipped_item_uuid(i)
 
-		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
-			var item_instance = all_instances_db[item_uuid]
-			var item_def = item_instance.get_definition()
-			if is_instance_valid(item_def):
-				var icon = TextureRect.new()
-				icon.texture = item_def.icon
-				icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				slot_panel.add_child(icon)
-				icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		if not item_uuid.is_empty():
+			var item_instance = GameManager.get_instance_by_uuid(item_uuid)
+			if is_instance_valid(item_instance):
+				var item_def = item_instance.get_definition()
+				if is_instance_valid(item_def):
+					var icon = TextureRect.new()
+					icon.texture = item_def.icon
+					icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					slot_panel.add_child(icon)
+					icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		item_grid.add_child(slot_panel)
 
 func _find_slot_anchor() -> Control:
@@ -119,11 +120,9 @@ func _find_slot_anchor() -> Control:
 
 func _on_unit_stats_changed(unit_uuid: String):
 	if _instance_uuid == unit_uuid:
-		var instance = _get_instance_by_uuid(unit_uuid)
+		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			_update_stats()
-	else:
-		pass
 
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
@@ -213,14 +212,3 @@ func _notification(what: int):
 	if what == NOTIFICATION_DRAG_END:
 		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
 			InteractionManager.end_drag(false)
-
-func _get_all_instances_db() -> Dictionary:
-	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		return bm.get_all_instances() if is_instance_valid(bm) else {}
-	else:
-		return GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
-
-func _get_instance_by_uuid(uuid: String) -> GachaBallInstance:
-	var db = _get_all_instances_db()
-	return db.get(uuid)

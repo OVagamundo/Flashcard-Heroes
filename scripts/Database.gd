@@ -20,6 +20,7 @@ func _ready() -> void:
 	_load_resources_from_path("res://resources/recipes/", recipes)
 	_load_resources_from_path("res://resources/decks/", decks)
 	_load_resources_from_path("res://resources/abilities/", abilities)
+	_load_reward_pool_definitions()
 
 # -----------------------------
 # Public API
@@ -103,3 +104,22 @@ func get_definition(id: StringName) -> GachaBallDefinition:
 
 	printerr("Database: Definition for ID ", id, " not found in units/items.")
 	return null
+
+## Loads all GachaBallDefinitions from the reward pool and adds them to the units/items dictionaries
+## This ensures all possible reward definitions are properly registered with the database
+func _load_reward_pool_definitions() -> void:
+	var reward_pool = load("res://resources/reward_pool.tres")
+	if not is_instance_valid(reward_pool):
+		printerr("Database: Could not load or parse res://resources/reward_pool.tres")
+		return
+
+	for definition in reward_pool.definitions:
+		if not is_instance_valid(definition):
+			continue
+		
+		if definition.category == &"UNIT":
+			if not units.has(definition.id):
+				units[definition.id] = definition
+		elif definition.category == &"ITEM":
+			if not items.has(definition.id):
+				items[definition.id] = definition

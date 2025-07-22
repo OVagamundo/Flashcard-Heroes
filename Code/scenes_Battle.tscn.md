@@ -1,10 +1,10 @@
 <!-- Original: scenes/Battle.tscn -->
 
 ```ini
-[gd_scene load_steps=4 format=3 uid="uid://uiilu4273ttr"]
+[gd_scene load_steps=4 format=3 uid="uid://ccwelqtvctrxe"]
 
-[ext_resource type="Script" uid="uid://bwx6ux5t1drf5" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
-[ext_resource type="Script" uid="uid://ciaajpc58it6p" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
+[ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
+[ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 [ext_resource type="PackedScene" uid="uid://bdsj2fjaq3w5c" path="res://scenes/BattleLog.tscn" id="4_battle_log"]
 
 [node name="Battle" type="Control"]
@@ -16,7 +16,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("3_battle_view_script")
-
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")

@@ -12,6 +12,7 @@ extends Control
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
+const REWARD_SCENE = preload("res://scenes/Reward.tscn")
 
 var _current_content_node: Node = null
 
@@ -24,6 +25,7 @@ func _ready():
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
 	EventBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
 	EventBus.battle_state_changed.connect(_on_battle_state_changed)
+	EventBus.reward_scene_requested.connect(_on_reward_scene_requested)
 	# TDD Safeguard: Re-enable draw buttons after the UI has redrawn.
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	content_area.gui_input.connect(_on_content_area_gui_input)
@@ -52,6 +54,16 @@ func _on_battle_start_requested():
 
 func _on_path_choice_scene_requested():
 	_load_content(PATH_CHOICE_SCENE)
+
+func _on_reward_scene_requested():
+	_clear_content_area()
+	var instance = REWARD_SCENE.instantiate()
+	_current_content_node = instance
+	# Correctly parent the new scene inside the MarginContainer
+	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	# Call populate AFTER the node is in the tree. Do NOT pass a context.
+	if instance.has_method("populate"):
+		instance.populate()
 
 func _on_inspect_inventory_pressed():
 	# This is a bit of a hack for now, but the WindowManager is

@@ -9,6 +9,22 @@ extends Node
 
 var run_state: RunState
 var is_in_battle: bool = false # The global authority on whether a battle is active.
+var _temporary_reward_master_dict: Dictionary = {}
+var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer
+var _temporary_gold_reward: int = 0
+var _is_processing_victory: bool = false # Prevents multiple reward processing
+
+# This is the function that gets the reward instance.
+func get_temporary_reward_instance(uuid: String) -> GachaBallInstance:
+	return _temporary_reward_master_dict.get(uuid)
+
+# Returns the current gold reward amount
+func get_temporary_gold_reward() -> int:
+	return _temporary_gold_reward
+
+# Returns the current temporary reward container
+func get_temporary_reward_container() -> DataContainer:
+	return _temporary_reward_container
 
 func _ready() -> void:
 	# Connect to signals to manage the run and battle state.
@@ -16,6 +32,8 @@ func _ready() -> void:
 	EventBus.battle_state_changed.connect(func(in_battle): is_in_battle = in_battle)
 	EventBus.title_scene_requested.connect(_on_return_to_title)
 	EventBus.new_game_requested.connect(_on_new_game_requested)
+	EventBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
+	EventBus.reward_chosen.connect(_on_reward_chosen)
 
 func _on_start_run_requested() -> void:
 	run_state = RunState.new()
@@ -29,6 +47,61 @@ func _on_new_game_requested() -> void:
 func _on_return_to_title() -> void:
 	# Clear the run state when returning to the title screen
 	run_state = null
+
+func _on_battle_victory_acknowledged():
+	if _is_processing_victory: 
+		return # Debounce guard
+	_is_processing_victory = true
+
+	run_state.day += 1
+	
+	_temporary_reward_master_dict.clear()
+	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
+	
+	var reward_pool = load("res://resources/reward_pool.tres")
+	var all_defs = reward_pool.definitions.duplicate()
+	all_defs.shuffle()
+	
+	for i in range(3):
+		var inst = GachaBallInstance.new()
+		inst.initialize(all_defs[i])
+		_temporary_reward_master_dict[inst.ball_uuid] = inst
+		_temporary_reward_container.set_uuid(i, inst.ball_uuid)
+	
+	# Debug logging for reward creation
+	print("--- GameManager: Rewards CREATED ---")
+	print("Master Dict Keys: ", _temporary_reward_master_dict.keys())
+	print("Container UUIDs: ", _temporary_reward_container.get_all_uuids())
+	print("------------------------------------")
+
+	var sum_tiers = 0
+	for uuid in _temporary_reward_container.get_all_uuids():
+		if not uuid.is_empty():
+			sum_tiers += _temporary_reward_master_dict[uuid].get_definition().tier
+	_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
+	
+	EventBus.emit_signal("reward_scene_requested")
+
+func _on_reward_chosen(payload):
+	if payload.type == "gachaball":
+		var chosen_uuid = payload.get("instance_uuid")
+		if chosen_uuid and _temporary_reward_master_dict.has(chosen_uuid):
+			var selected_instance = _temporary_reward_master_dict[chosen_uuid]
+			var def = selected_instance.get_definition()
+			var container_name = &"RunInventoryT%d" % def.tier
+			run_state.add_instance(selected_instance, container_name)
+	elif payload.type == "gold":
+		run_state.gold += payload.get("amount", 0)
+
+	_temporary_reward_master_dict.clear()
+	_temporary_reward_container = null
+	EventBus.emit_signal("run_data_changed")
+	EventBus.emit_signal("path_choice_scene_requested")
+	_is_processing_victory = false
+
+## Temporary debug function to inspect the master dictionary
+func get_temporary_reward_master_dict_for_debug() -> Dictionary:
+	return _temporary_reward_master_dict.duplicate()
 
 ## Retrieves a GachaBallInstance from any location, whether in battle or not.
 ## This is the central, authoritative function for resolving a LocationIdentifier to an instance.
