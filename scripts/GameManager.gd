@@ -80,20 +80,50 @@ func _on_battle_victory_acknowledged():
 	EventBus.emit_signal("reward_scene_requested")
 
 func _on_reward_chosen(payload):
+	# --- STALE SELECTION FIX ---
+	# The action is complete. Clear the interaction state immediately.
+	InteractionManager.clear_selection()
+
 	if payload.type == "gachaball":
 		var chosen_uuid = payload.get("instance_uuid")
 		if chosen_uuid and _temporary_reward_master_dict.has(chosen_uuid):
 			var selected_instance = _temporary_reward_master_dict[chosen_uuid]
 			var def = selected_instance.get_definition()
+			
 			var container_name = &"RunInventoryT%d" % def.tier
-			run_state.add_instance(selected_instance, container_name)
+			var container = run_state.get_container(container_name)
+			if not is_instance_valid(container):
+				printerr("GameManager: Could not find run container for tag: ", container_name)
+				return
+
+			var target_slot = container.find_first_empty_slot()
+			
+			container.set_uuid(target_slot, selected_instance.ball_uuid)
+			
+			selected_instance.location_container_tag = container_name
+			selected_instance.location_slot_index = target_slot
+			selected_instance.equipped_on_uuid = ""
+			selected_instance.equipped_slot_index = -1
+			
+			run_state.run_instances[selected_instance.ball_uuid] = selected_instance
+			
+			# --- Debug Output ---
+			print("--- REWARD CHOSEN ---")
+			print("Instance UUID: ", selected_instance.ball_uuid)
+			print("Set Location To: ", selected_instance.location_container_tag, " [", selected_instance.location_slot_index, "]")
+			print("--------------------")
+			
 	elif payload.type == "gold":
 		run_state.gold += payload.get("amount", 0)
 
+	# --- TRANSITION LOGIC REMOVED ---
+	# The scene transition is now handled by the new button in Reward.gd.
+	# We still need to clean up the temporary data and signal that the run data has changed.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
 	EventBus.emit_signal("run_data_changed")
-	EventBus.emit_signal("path_choice_scene_requested")
+	# DO NOT emit path_choice_scene_requested here anymore.
+	
 	_is_processing_victory = false
 
 ## Temporary debug function to inspect the pending reward master dictionary

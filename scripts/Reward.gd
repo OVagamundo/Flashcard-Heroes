@@ -5,6 +5,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
 @onready var confirm_button: Button = %ConfirmSelectionButton
 @onready var gold_button: Button = %TakeGoldButton
+@onready var back_to_path_button: Button = %BackToPathButton
 
 var _reward_uuids: Array[String] = []
 var _gold_amount: int = 0
@@ -14,6 +15,7 @@ func _ready():
 	confirm_button.disabled = true
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	gold_button.pressed.connect(_on_gold_pressed)
+	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
 
 # This is a public function called by Main.gd at the correct time.
 func populate(context: Dictionary):
@@ -67,8 +69,21 @@ func _on_confirm_pressed():
 	if selected_loc and selected_loc.container == &"Rewards":
 		var uuid = _reward_uuids[selected_loc.index]
 		EventBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
-		queue_free()
+		
+		# Hide old buttons, show the new one
+		confirm_button.visible = false
+		gold_button.visible = false
+		back_to_path_button.visible = true
 
 func _on_gold_pressed():
 	EventBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
+	
+	# Hide old buttons, show the new one
+	confirm_button.visible = false
+	gold_button.visible = false
+	back_to_path_button.visible = true
+
+func _on_back_to_path_pressed():
+	EventBus.emit_signal("path_choice_scene_requested")
+	# The reward scene has served its purpose and should be removed.
 	queue_free()
