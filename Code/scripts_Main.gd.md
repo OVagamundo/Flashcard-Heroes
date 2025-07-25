@@ -61,9 +61,14 @@ func _on_reward_scene_requested():
 	_current_content_node = instance
 	# Correctly parent the new scene inside the MarginContainer
 	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
-	# Call populate AFTER the node is in the tree. Do NOT pass a context.
+	
+	# The context dictionary is now required as per the TDD.
+	var context = {
+		"reward_instances": GameManager._temporary_reward_master_dict.values(),
+		"gold_amount": GameManager._temporary_gold_reward
+	}
 	if instance.has_method("populate"):
-		instance.populate()
+		instance.populate(context)
 
 func _on_inspect_inventory_pressed():
 	# This is a bit of a hack for now, but the WindowManager is

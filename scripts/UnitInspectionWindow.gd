@@ -37,7 +37,7 @@ func _exit_tree():
 func _gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
-		InteractionManager.clear_selection()
+		EventBus.emit_signal("selection_clear_requested")
 		get_viewport().set_input_as_handled()
 
 # Fallback: if a child Control consumes the event before it reaches _gui_input,

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bxqaqcpm8j051" path="res://scripts/InteractionManager.gd" id="1_mgrwt"]
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
+[ext_resource type="Script" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
 bg_color = Color(0.1, 0.1, 0.2, 1)
@@ -17,6 +18,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_cdefg")
+
+[node name="SelectionClearArea" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_selclear")
 
 [node name="InteractionManager" type="Node" parent="."]
 script = ExtResource("1_mgrwt")

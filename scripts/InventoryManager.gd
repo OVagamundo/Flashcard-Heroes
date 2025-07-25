@@ -8,7 +8,7 @@ func _ready():
 # --- Main Action Handler ---
 
 func _on_inventory_action_requested(source_loc, target_loc):
-	InteractionManager.clear_selection()
+	EventBus.emit_signal("selection_clear_requested")
 
 	if source_loc.is_equal(target_loc):
 		InteractionManager.end_drag(false)
@@ -330,4 +330,4 @@ func _emit_data_changed_signal():
 
 func _handle_invalid_action():
 	InteractionManager.end_drag(false)
-	InteractionManager.clear_selection()
+	EventBus.emit_signal("selection_clear_requested")

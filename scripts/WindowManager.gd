@@ -45,7 +45,7 @@ func _unhandled_input(event: InputEvent):
 		elif not _active_inspection_group.is_empty():
 			close_all_inspection_windows()
 		else:
-			InteractionManager.clear_selection()
+			EventBus.emit_signal("selection_clear_requested")
 
 # --- Public API ---
 
@@ -80,6 +80,7 @@ func open_end_battle_popup(is_victory: bool):
 	open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
 func _on_inspect_inventory_requested():
+	EventBus.emit_signal("selection_clear_requested")
 	var is_battle = GameManager.is_in_battle
 	var inventory_data = {}
 	var title = ""
@@ -105,6 +106,7 @@ func _on_inspect_inventory_requested():
 	open_modal_window(&"Inventory", context)
 
 func _on_display_discard_pile_requested():
+	EventBus.emit_signal("selection_clear_requested")
 	var is_battle = GameManager.is_in_battle
 	var inventory_data = {}
 	var title = "Discard Pile"
@@ -445,6 +447,7 @@ func _close_top_modal():
 			var should_close_inspections = window.get_script() == null or window.get_script().get_global_name() != "ChoiceWindow"
 			if should_close_inspections:
 				close_all_inspection_windows()
+			EventBus.emit_signal("selection_clear_requested")
 			window.queue_free()
 
 func _close_all_windows():
@@ -521,6 +524,7 @@ func _input(event: InputEvent) -> void:
 		
 		if not click_is_inside_a_window:
 			close_all_inspection_windows()
+			EventBus.emit_signal("selection_clear_requested")
 			# We DO NOT consume the input here, allowing it to "click through".
 
 

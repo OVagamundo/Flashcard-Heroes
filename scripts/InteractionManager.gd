@@ -16,6 +16,7 @@ func _ready():
 	EventBus.close_modal_requested.connect(clear_selection)
 	EventBus.main_scene_requested.connect(clear_selection)
 	EventBus.battle_start_requested.connect(clear_selection)
+	EventBus.selection_clear_requested.connect(clear_selection)
 
 func select_view(view: Control, location: LocationIdentifier):
 	if not is_instance_valid(view) or not is_instance_valid(location):
@@ -37,15 +38,13 @@ func select_view(view: Control, location: LocationIdentifier):
 	EventBus.emit_signal("selection_changed", _selected_location)
 
 func clear_selection():
-	if is_instance_valid(_selected_view):
-		var previously_selected_view = _selected_view
-		var _previously_selected_loc = _selected_location
-		
-		_selected_view = null
-		_selected_location = null
-		
+	var previously_selected_view = _selected_view
+	var _previously_selected_loc = _selected_location
+	_selected_view = null
+	_selected_location = null
+	if is_instance_valid(previously_selected_view):
 		EventBus.emit_signal("view_deselected", previously_selected_view)
-		EventBus.emit_signal("selection_changed", null)
+	EventBus.emit_signal("selection_changed", null)
 
 func get_selected_location() -> LocationIdentifier:
 	return _selected_location

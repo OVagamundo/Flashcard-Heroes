@@ -69,11 +69,15 @@ func _on_confirm_pressed():
 	if selected_loc and selected_loc.container == &"Rewards":
 		var uuid = _reward_uuids[selected_loc.index]
 		EventBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
-		
 		# Hide old buttons, show the new one
 		confirm_button.visible = false
 		gold_button.visible = false
 		back_to_path_button.visible = true
+		# Clear selection and remove all reward GachaBalls
+		EventBus.emit_signal("selection_clear_requested")
+		for slot_view in choices_container.get_children():
+			for child in slot_view.get_children():
+				child.queue_free()
 
 func _on_gold_pressed():
 	EventBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})

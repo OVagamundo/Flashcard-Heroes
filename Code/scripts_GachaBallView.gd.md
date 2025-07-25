@@ -16,11 +16,13 @@ var _instance_uuid: String
 var _is_selected: bool = false
 var _is_inspectable: bool = true
 var _single_click_inspect: bool = false
+var _is_interactive_context: bool = true
 
 func _ready():
 	EventBus.view_selected.connect(_on_view_selected)
 	EventBus.view_deselected.connect(_on_view_deselected)
 	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
+	_apply_selection_feedback()
 
 func _exit_tree():
 	pass
@@ -51,7 +53,7 @@ func set_is_enemy(is_enemy: bool):
 		icon_rect.flip_h = is_enemy
 
 func _update_stats():
-	var instance = _get_instance_by_uuid(_instance_uuid)
+	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance): 
 		return
 	var definition = instance.get_definition()
@@ -66,7 +68,10 @@ func _update_stats():
 	pwr_label.text = "PWR: %d" % instance.current_pwr
 
 func _update_item_slots():
-	var instance = _get_instance_by_uuid(_instance_uuid)
+	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
+	if not is_instance_valid(instance):
+		return
+		
 	for child in item_grid.get_children():
 		child.queue_free()
 	
@@ -74,25 +79,23 @@ func _update_item_slots():
 	if not is_instance_valid(definition) or definition.item_slot_count == 0:
 		return
 
-	var all_instances_db = _get_all_instances_db()
-	if all_instances_db.is_empty(): return
-
 	for i in range(definition.item_slot_count):
 		var slot_panel = Panel.new()
 		slot_panel.custom_minimum_size = Vector2(12, 12)
 		
 		var item_uuid = instance.get_equipped_item_uuid(i)
 
-		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
-			var item_instance = all_instances_db[item_uuid]
-			var item_def = item_instance.get_definition()
-			if is_instance_valid(item_def):
-				var icon = TextureRect.new()
-				icon.texture = item_def.icon
-				icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				slot_panel.add_child(icon)
-				icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		if not item_uuid.is_empty():
+			var item_instance = GameManager.get_instance_by_uuid(item_uuid)
+			if is_instance_valid(item_instance):
+				var item_def = item_instance.get_definition()
+				if is_instance_valid(item_def):
+					var icon = TextureRect.new()
+					icon.texture = item_def.icon
+					icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					slot_panel.add_child(icon)
+					icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		item_grid.add_child(slot_panel)
 
 func _find_slot_anchor() -> Control:
@@ -122,17 +125,21 @@ func _find_slot_anchor() -> Control:
 
 func _on_unit_stats_changed(unit_uuid: String):
 	if _instance_uuid == unit_uuid:
-		var instance = _get_instance_by_uuid(unit_uuid)
+		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			_update_stats()
-	else:
-		pass
 
 func _gui_input(event: InputEvent):
-	if not is_instance_valid(_location): return
+	if not is_instance_valid(_location): 
+		return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Ensure clicking an equipped item inside a UnitInspectionWindow prunes any child windows first.
+		# This guard prevents interaction with non-interactive views like enemies.
+		if not _is_inspectable:
+			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
+			return
+
+		# This block preserves window management behavior.
 		var win: Node = self
 		while win and win != get_tree().root:
 			if win is InspectionWindow:
@@ -142,24 +149,17 @@ func _gui_input(event: InputEvent):
 
 		get_viewport().set_input_as_handled()
 		
-		if _is_inspectable:
-			if event.double_click:
-				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-				InteractionManager.clear_selection()
-				return
-			
-			if _single_click_inspect:
-				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-				InteractionManager.clear_selection()
-				return
-
-			var selected_loc = InteractionManager.get_selected_location()
-			if is_instance_valid(selected_loc) and selected_loc != _location:
-				EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
-			else:
-				InteractionManager.select_view(self, _location)
-		else:
+		if event.double_click:
 			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
+			InteractionManager.clear_selection()
+			return
+		
+		if _single_click_inspect:
+			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
+			InteractionManager.clear_selection()
+			return
+
+		InteractionManager.handle_click(self, _location, _is_interactive_context)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not _is_inspectable or not is_instance_valid(_location): return null
@@ -186,8 +186,9 @@ func _drop_data(_at_position, data):
 	InteractionManager.end_drag(true)
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):
-	if view == self:
-		_is_selected = true
+	var should_be_selected = (view == self)
+	if _is_selected != should_be_selected:
+		_is_selected = should_be_selected
 		_apply_selection_feedback()
 
 func _on_view_deselected(view: Control):
@@ -216,16 +217,5 @@ func _notification(what: int):
 	if what == NOTIFICATION_DRAG_END:
 		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
 			InteractionManager.end_drag(false)
-
-func _get_all_instances_db() -> Dictionary:
-	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		return bm.get_all_instances() if is_instance_valid(bm) else {}
-	else:
-		return GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
-
-func _get_instance_by_uuid(uuid: String) -> GachaBallInstance:
-	var db = _get_all_instances_db()
-	return db.get(uuid)
 
 ```

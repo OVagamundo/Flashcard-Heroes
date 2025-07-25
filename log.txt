@@ -6,72 +6,120 @@ Database: Testing translation - hero.name = Hero
 WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/Hero.png.import', stored as '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/hero.png.import' in the filesystem. This file will not open when exported to other case-sensitive platforms.
    at: open_internal (drivers/unix/file_access_unix.cpp:113)
 --- BATTLE SETUP: PASS 3 ---
-Processing permanent instance: unit_t1_a_1753249865_9486 with location: RunInventoryT1 [0]
-Processing permanent instance: unit_t1_a_1753249865_4952 with location: RunInventoryT1 [1]
-Processing permanent instance: unit_t1_b_1753249865_0061 with location: RunInventoryT1 [2]
-Processing permanent instance: unit_t1_b_1753249865_3370 with location: RunInventoryT1 [3]
-Processing permanent instance: item_t1_a_1753249865_3062 with location: RunInventoryT1 [4]
-Processing permanent instance: item_t1_a_1753249865_1548 with location: RunInventoryT1 [5]
-Processing permanent instance: item_t1_b_1753249865_4650 with location: RunInventoryT1 [6]
-Processing permanent instance: item_t1_b_1753249865_8256 with location: RunInventoryT1 [7]
-Processing permanent instance: unit_t2_c_1753249865_9966 with location: RunInventoryT2 [0]
-Processing permanent instance: unit_t2_c_1753249865_8194 with location: RunInventoryT2 [1]
-Processing permanent instance: item_t2_c_1753249865_3263 with location: RunInventoryT2 [2]
-Processing permanent instance: item_t2_c_1753249865_2722 with location: RunInventoryT2 [3]
-Processing permanent instance: unit_t3_d_1753249865_0056 with location: RunInventoryT3 [0]
-Processing permanent instance: unit_t3_d_1753249865_9617 with location: RunInventoryT3 [1]
-Processing permanent instance: item_t3_d_1753249865_7321 with location: RunInventoryT3 [2]
-Processing permanent instance: item_t3_d_1753249865_7070 with location: RunInventoryT3 [3]
-BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
+Processing permanent instance: unit_t1_a_1753434736_3833 with location: RunInventoryT1 [0]
+Processing permanent instance: unit_t1_a_1753434736_4435 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t1_b_1753434736_1085 with location: RunInventoryT1 [2]
+Processing permanent instance: unit_t1_b_1753434736_8646 with location: RunInventoryT1 [3]
+Processing permanent instance: item_t1_a_1753434736_0712 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_a_1753434736_1486 with location: RunInventoryT1 [5]
+Processing permanent instance: item_t1_b_1753434736_4727 with location: RunInventoryT1 [6]
+Processing permanent instance: item_t1_b_1753434736_7857 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753434736_4074 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753434736_5250 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753434736_9773 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753434736_4598 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753434736_7142 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753434736_0600 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753434736_4972 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753434736_7984 with location: RunInventoryT3 [3]
+BasicAttack: unit_t1_b attacks unit_t1_a for 2 damage. Target HP is now 0.
 BasicAttack: unit_t1_a attacks unit_t1_b for 2 damage. Target HP is now 0.
 BasicAttack: unit_t1_a attacks unit_t2_c for 2 damage. Target HP is now 1.
-BasicAttack: hero attacks unit_t2_c for 3 damage. Target HP is now 0.
-BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 1.
+BasicAttack: hero attacks unit_t2_c for 2 damage. Target HP is now 0.
+BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 0.
+BasicAttack: unit_t3_d attacks unit_t1_a for 6 damage. Target HP is now 0.
+BasicAttack: unit_t1_a attacks unit_t3_d for 2 damage. Target HP is now 4.
+BasicAttack: hero attacks unit_t3_d for 5 damage. Target HP is now 0.
+BasicAttack: enemy_hero attacks unit_t1_a for 2 damage. Target HP is now 0.
+BasicAttack: unit_t2_c attacks enemy_hero for 5 damage. Target HP is now 5.
+BasicAttack: hero attacks enemy_hero for 5 damage. Target HP is now 0.
+--- REWARD CHOSEN ---
+Instance UUID: unit_t1_b_1753434746_1562
+Set Location To: RunInventoryT1 [0]
+--------------------
+--- BATTLE SETUP: PASS 3 ---
+Processing permanent instance: unit_t1_a_1753434736_3833 with location: RunInventoryT1 [9]
+Processing permanent instance: unit_t1_a_1753434736_4435 with location: RunInventoryT1 [10]
+Processing permanent instance: unit_t1_b_1753434736_1085 with location: RunInventoryT1 [8]
+Processing permanent instance: unit_t1_b_1753434736_8646 with location: RunInventoryT1 [11]
+Processing permanent instance: item_t1_a_1753434736_0712 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_b_1753434736_7857 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753434736_4074 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753434736_5250 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753434736_9773 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753434736_4598 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753434736_7142 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753434736_0600 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753434736_4972 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753434736_7984 with location: RunInventoryT3 [3]
+Processing permanent instance: unit_t1_b_1753434746_1562 with location: RunInventoryT1 [0]
+Processing permanent instance: item_t2_c_1753434895_4723 with location: RunInventoryT2 [4]
+BasicAttack: unit_t1_b attacks unit_t1_a for 2 damage. Target HP is now 0.
+BasicAttack: unit_t1_b attacks unit_t1_b for 1 damage. Target HP is now 1.
+BasicAttack: unit_t1_a attacks unit_t1_b for 2 damage. Target HP is now 0.
+BasicAttack: hero attacks unit_t2_c for 5 damage. Target HP is now 0.
+BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 0.
 BasicAttack: unit_t3_d attacks unit_t1_b for 6 damage. Target HP is now 0.
 BasicAttack: unit_t1_a attacks unit_t3_d for 2 damage. Target HP is now 4.
-BasicAttack: unit_t1_a attacks unit_t3_d for 2 damage. Target HP is now 2.
-BasicAttack: unit_t2_c attacks unit_t3_d for 3 damage. Target HP is now 0.
-BasicAttack: unit_t3_d attacks enemy_hero for 6 damage. Target HP is now 4.
-BasicAttack: hero attacks enemy_hero for 3 damage. Target HP is now 1.
+BasicAttack: unit_t3_d attacks unit_t3_d for 7 damage. Target HP is now 0.
+BasicAttack: hero attacks enemy_hero for 5 damage. Target HP is now 5.
 BasicAttack: enemy_hero attacks unit_t1_a for 2 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 0.
+BasicAttack: unit_t3_d attacks enemy_hero for 7 damage. Target HP is now 0.
 --- REWARD CHOSEN ---
-Instance UUID: unit_t1_a_1753249866_7372
+Instance UUID: unit_t1_a_1753434898_6690
 Set Location To: RunInventoryT1 [1]
 --------------------
 --- BATTLE SETUP: PASS 3 ---
-Processing permanent instance: unit_t1_a_1753249865_9486 with location: RunInventoryT1 [14]
-Processing permanent instance: unit_t1_a_1753249865_4952 with location: RunInventoryT1 [13]
-Processing permanent instance: unit_t1_b_1753249865_0061 with location: RunInventoryT1 [2]
-Processing permanent instance: unit_t1_b_1753249865_3370 with location: RunInventoryT1 [0]
-Processing permanent instance: item_t1_a_1753249865_3062 with location: RunInventoryT1 [12]
-Processing permanent instance: item_t1_a_1753249865_1548 with location: RunInventoryT1 [15]
-Processing permanent instance: item_t1_b_1753249865_4650 with location: RunInventoryT1 [5]
-Processing permanent instance: item_t1_b_1753249865_8256 with location: RunInventoryT1 [7]
-Processing permanent instance: unit_t2_c_1753249865_9966 with location: RunInventoryT2 [0]
-Processing permanent instance: unit_t2_c_1753249865_8194 with location: RunInventoryT2 [1]
-Processing permanent instance: item_t2_c_1753249865_3263 with location: RunInventoryT2 [2]
-Processing permanent instance: item_t2_c_1753249865_2722 with location: RunInventoryT2 [3]
-Processing permanent instance: unit_t3_d_1753249865_0056 with location: RunInventoryT3 [0]
-Processing permanent instance: unit_t3_d_1753249865_9617 with location: RunInventoryT3 [1]
-Processing permanent instance: item_t3_d_1753249865_7321 with location: RunInventoryT3 [2]
-Processing permanent instance: item_t3_d_1753249865_7070 with location: RunInventoryT3 [3]
-Processing permanent instance: unit_t1_a_1753249866_7372 with location: RunInventoryT1 [9]
-BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
-BasicAttack: unit_t1_b attacks unit_t1_b for 1 damage. Target HP is now 1.
-BasicAttack: unit_t1_a attacks unit_t1_b for 2 damage. Target HP is now 0.
-BasicAttack: unit_t1_a attacks unit_t2_c for 2 damage. Target HP is now 1.
-BasicAttack: unit_t1_a attacks unit_t2_c for 2 damage. Target HP is now 0.
-BasicAttack: hero attacks unit_t3_d for 3 damage. Target HP is now 3.
+Processing permanent instance: unit_t1_a_1753434736_3833 with location: RunInventoryT1 [9]
+Processing permanent instance: unit_t1_a_1753434736_4435 with location: RunInventoryT1 [10]
+Processing permanent instance: unit_t1_b_1753434736_1085 with location: RunInventoryT1 [8]
+Processing permanent instance: unit_t1_b_1753434736_8646 with location: RunInventoryT1 [11]
+Processing permanent instance: item_t1_a_1753434736_0712 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_b_1753434736_7857 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753434736_4074 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753434736_5250 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753434736_9773 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753434736_4598 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753434736_7142 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753434736_0600 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753434736_4972 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753434736_7984 with location: RunInventoryT3 [3]
+Processing permanent instance: unit_t1_b_1753434746_1562 with location: RunInventoryT1 [0]
+Processing permanent instance: item_t2_c_1753434895_4723 with location: RunInventoryT2 [4]
+Processing permanent instance: unit_t1_a_1753434898_6690 with location: RunInventoryT1 [1]
+BasicAttack: unit_t1_a attacks unit_t1_a for 2 damage. Target HP is now 0.
+BasicAttack: unit_t2_c attacks unit_t1_b for 4 damage. Target HP is now 0.
+BasicAttack: hero attacks unit_t2_c for 5 damage. Target HP is now 0.
+BasicAttack: enemy_hero attacks unit_t1_a for 2 damage. Target HP is now 0.
+BasicAttack: unit_t3_d attacks unit_t2_c for 6 damage. Target HP is now 0.
+BasicAttack: hero attacks unit_t3_d for 5 damage. Target HP is now 1.
+BasicAttack: enemy_hero attacks hero for 2 damage. Target HP is now 11.
+BasicAttack: unit_t3_d attacks hero for 6 damage. Target HP is now 5.
+BasicAttack: unit_t1_b attacks unit_t3_d for 2 damage. Target HP is now 0.
+BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 7.
+BasicAttack: hero attacks enemy_hero for 5 damage. Target HP is now 2.
 BasicAttack: enemy_hero attacks unit_t1_b for 2 damage. Target HP is now 0.
-BasicAttack: unit_t3_d attacks unit_t1_b for 6 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks unit_t3_d for 3 damage. Target HP is now 0.
-BasicAttack: unit_t1_a attacks enemy_hero for 2 damage. Target HP is now 8.
-BasicAttack: unit_t1_a attacks enemy_hero for 2 damage. Target HP is now 6.
-BasicAttack: hero attacks enemy_hero for 5 damage. Target HP is now 1.
-BasicAttack: enemy_hero attacks unit_t2_c for 2 damage. Target HP is now 1.
-BasicAttack: unit_t3_d attacks enemy_hero for 7 damage. Target HP is now 0.
+BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 0.
 --- REWARD CHOSEN ---
-Instance UUID: item_t2_c_1753249987_3896
-Set Location To: RunInventoryT2 [0]
+Instance UUID: unit_t2_c_1753434999_9261
+Set Location To: RunInventoryT2 [5]
 --------------------
+--- BATTLE SETUP: PASS 3 ---
+Processing permanent instance: unit_t1_a_1753434736_3833 with location: RunInventoryT1 [9]
+Processing permanent instance: unit_t1_a_1753434736_4435 with location: RunInventoryT1 [10]
+Processing permanent instance: unit_t1_b_1753434736_1085 with location: RunInventoryT1 [8]
+Processing permanent instance: unit_t1_b_1753434736_8646 with location: RunInventoryT1 [11]
+Processing permanent instance: item_t1_a_1753434736_0712 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_b_1753434736_7857 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753434736_4074 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753434736_5250 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753434736_9773 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753434736_4598 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753434736_7142 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753434736_0600 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753434736_4972 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753434736_7984 with location: RunInventoryT3 [3]
+Processing permanent instance: unit_t1_b_1753434746_1562 with location: RunInventoryT1 [0]
+Processing permanent instance: item_t2_c_1753434895_4723 with location: RunInventoryT2 [4]
+Processing permanent instance: unit_t1_a_1753434898_6690 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t2_c_1753434999_9261 with location: RunInventoryT2 [5]

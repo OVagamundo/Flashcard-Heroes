@@ -37,6 +37,7 @@ signal view_selected(view: Control, location: LocationIdentifier)
 signal view_deselected(view: Control)
 signal invalid_action_triggered(view: Control)
 signal selection_changed(new_location: LocationIdentifier)
+signal selection_clear_requested
 
 # --- State Change Signals ---
 signal run_state_changed

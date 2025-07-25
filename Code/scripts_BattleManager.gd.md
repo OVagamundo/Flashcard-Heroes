@@ -105,6 +105,7 @@ func _setup_battle():
 					item_instance.equipped_slot_index = i
 
 	# Third pass: Place all instances in their correct, stable locations.
+	print("--- BATTLE SETUP: PASS 3 ---")
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
@@ -119,6 +120,7 @@ func _setup_battle():
 		var battle_uuid = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
 		if not battle_uuid: continue
 		var battle_copy = _battle_instances[battle_uuid]
+		print("Processing permanent instance: ", perm_inst.ball_uuid, " with location: ", perm_inst.location_container_tag, " [", perm_inst.location_slot_index, "]")
 		# An item's location is determined by what it's equipped to. Skip direct placement.
 		if not battle_copy.equipped_on_uuid.is_empty():
 			continue

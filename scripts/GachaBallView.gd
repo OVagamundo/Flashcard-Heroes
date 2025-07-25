@@ -141,21 +141,25 @@ func _gui_input(event: InputEvent):
 		if _is_inspectable:
 			if event.double_click:
 				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-				InteractionManager.clear_selection()
+				EventBus.emit_signal("selection_clear_requested")
 				return
 			
 			if _single_click_inspect:
 				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-				InteractionManager.clear_selection()
+				EventBus.emit_signal("selection_clear_requested")
 				return
 
 			var selected_loc = InteractionManager.get_selected_location()
 			if is_instance_valid(selected_loc) and selected_loc != _location:
 				EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
+				# If no action is possible, clear selection and select this one
+				# (Assume inventory_action_requested will not select if invalid)
+				InteractionManager.select_view(self, _location)
 			else:
 				InteractionManager.select_view(self, _location)
 		else:
 			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
+			EventBus.emit_signal("selection_clear_requested")
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not _is_inspectable or not is_instance_valid(_location): return null

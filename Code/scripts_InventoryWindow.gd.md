@@ -70,33 +70,40 @@ func _populate_grids():
 	if not _data_source:
 		return
 
-	# This will create the 16 SlotViews per grid, but only on the first run.
 	_initialize_grids_if_needed()
 
-	var data_owner = get_tree().get_first_node_in_group("battle_manager") if _is_battle_context else GameManager.run_state
+	# Use Variant type to handle both BattleManager and RunState types
+	var data_owner = null
+	if _is_battle_context:
+		data_owner = get_tree().get_first_node_in_group("battle_manager")
+	else:
+		data_owner = GameManager.run_state
+
 	if not is_instance_valid(data_owner):
 		return
 
-	# --- Step 1: Correctly identify all equipped items ---
+	# Track which items are currently equipped
 	var equipped_item_uuids := {}
 	var unit_container_names: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	
 	for container_name in unit_container_names:
 		var unit_container = data_owner.get_container(container_name)
 		if is_instance_valid(unit_container):
-			var all_uuids_in_container = unit_container.get_all_uuids()
-			for i in range(all_uuids_in_container.size()):
-				var loc = LocationIdentifier.new(container_name, i)
-				var unit_instance = GameManager.get_instance_from_location(loc)
+			for uuid in unit_container.get_all_non_empty_uuids():
+				var unit_instance = GameManager.get_instance_by_uuid(uuid)
 				if is_instance_valid(unit_instance):
 					for item_uuid in unit_instance.equipped_item_uuids:
 						if not item_uuid.is_empty():
 							equipped_item_uuids[item_uuid] = true
 
-	# --- Step 2: Iterate through the persistent slots and update their content ---
+	# Set up the grid containers
 	var grids = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
+	var newly_created_views: Dictionary = {}
+
+	# Populate each grid
 	for tier in grids:
 		var grid_node = grids[tier]
-		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
+		var container_name: StringName = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
 		var container = _data_source.get(container_name)
 		if not is_instance_valid(container):
 			continue
@@ -106,23 +113,39 @@ func _populate_grids():
 
 		for i in range(slot_views.size()):
 			var slot_view: SlotView = slot_views[i]
-			# Clear any previous content (like a GachaBallView) from the slot.
+			# Clear any existing content
 			for child in slot_view.get_children():
 				child.queue_free()
 
+			# Create location and populate the slot
 			var loc = LocationIdentifier.new(container_name, i)
-			slot_view.populate(loc) # Always update the location data on the slot
+			slot_view.populate(loc)
 
-			if i >= all_uuids.size(): continue # Should not happen with growable containers
+			# Skip if beyond current data
+			if i >= all_uuids.size():
+				continue
 
 			var uuid_at_slot = all_uuids[i]
-			if uuid_at_slot.is_empty() or equipped_item_uuids.has(uuid_at_slot):
-				continue # Leave the slot empty
 
+			# Skip empty or equipped items
+			if uuid_at_slot.is_empty() or equipped_item_uuids.has(uuid_at_slot):
+				continue
+
+			# Create and populate the GachaBallView
 			var instance = GameManager.get_instance_from_location(loc)
 			if is_instance_valid(instance):
 				var gacha_view = _GachaBallView.instantiate()
 				slot_view.add_child(gacha_view)
 				gacha_view.populate(loc, instance, true)
+				newly_created_views[str(loc.container) + str(loc.index)] = gacha_view
+
+	# Re-sync selection highlight after redraw
+	var selected_loc = InteractionManager.get_selected_location()
+	if is_instance_valid(selected_loc):
+		var loc_key = str(selected_loc.container) + str(selected_loc.index)
+		if newly_created_views.has(loc_key):
+			var view_to_highlight = newly_created_views[loc_key]
+			EventBus.emit_signal("view_selected", view_to_highlight, selected_loc)
+			InteractionManager._selected_view = view_to_highlight
 
 ```

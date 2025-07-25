@@ -143,7 +143,7 @@ All global signals are defined in `SignalBus.gd` to decouple systems. Key signal
 
 #### UI & Presentation
 - `WindowManager.gd`: The sole authority for the lifecycle of all modal and inspection windows.
-- `InteractionManager.gd`: UI state machine holding the source_uuid of the selected instance for drag-and-drop actions.
+- `InteractionManager.gd`: UI state machine holding the source_uuid of the selected instance. It is the single authority for processing all gameplay-related clicks on views and slots. It contains the master logic for determining whether a click results in a selection, an action, or a deselection, based on the current state and context. View scripts (GachaBallView, SlotView) must not contain their own complex interaction logic; they must simply report clicks to this manager.
 - `StatTooltipGenerator.gd`: A stateless utility service for creating formatted tooltip strings that break down a unit's stat calculations.
 
 #### Utilities
@@ -227,6 +227,85 @@ Table 4.3.2: Out-of-Battle Interactions (is_in_battle == false)
 Player Action	Conditions	Resulting Logic Flow
 Drop Instance on Instance	Merge recipe exists.	InventoryManager shows ChoiceWindow. The chosen action is routed to RunState to modify the permanent instances.
 Drop Instance on Instance	No merge recipe.	Swap their location_slot_index within the same RUN_INVENTORY_T* container.
+
+#### 4.3.3 The Definitive Click Interaction Cycle
+
+To ensure consistent behavior and eliminate duplicate code, all `_gui_input` events from `GachaBallView` and `SlotView` must be delegated to a single authoritative function: `InteractionManager.handle_click(view, location, context)`. This function is responsible for executing the following state machine, which governs all selection and deselection logic.
+
+**The Golden Rule of Interaction:** A user's click must result in immediate and clear feedback. The system must never remain in a "ghost selection" state where the UI and the `InteractionManager` are desynchronized.
+
+**The Interaction Flow:**
+
+1. A click occurs on a `GachaBallView` or an empty `SlotView`. The view's `_gui_input` function must immediately delegate to `InteractionManager.handle_click`, passing a reference to itself, its `LocationIdentifier`, and its interaction context (`is_interactive`).
+
+2. The `InteractionManager` executes the following logic:
+
+   **Case A: No item is currently selected.**
+   - If the click was on an interactive `GachaBallView` (e.g., a player unit), that view becomes the new selection.
+   - If the click was on a non-interactive view (e.g., an enemy unit), an `inspection_requested` signal is emitted. Nothing is selected.
+   - If the click was on an empty `SlotView` or the background, nothing happens.
+
+   **Case B: An item is currently selected.**
+   - If the click is on the original selected item: Do nothing (to allow for double-click inspection).
+   - If the click is on a valid action target (e.g., a mergeable unit, an empty slot compatible with the selected instance): The `InteractionManager` emits `inventory_action_requested` and immediately clears its own selection state.
+   - If the click is on another interactive `GachaBallView` that is NOT a valid action target (e.g., selecting an item when a unit is selected on the battle board, this would trigger a swap in the other mixed type inventories): The `InteractionManager` clears the old selection and then selects the new target. This creates a seamless "change selection" flow.
+   - If the click is on any other target (a non-interactive view like an enemy, an invalid empty slot, a UI button, the background): The selection is immediately cleared, and no further action is taken.
+
+#### 4.3.4 Centralized Selection State Management
+
+**1. Core Principles:**
+- The `InteractionManager` is the sole authority for selection state management.
+- All selection clearing is done through the `selection_clear_requested` signal, emitted by UI elements when appropriate.
+
+**2. When Selection Is Cleared:**
+- Any click on a non-actionable area (background, grid container, scroll container, etc.) emits `selection_clear_requested`.
+- Clicking on an enemy unit (inspection-only) both clears selection and opens the inspection window for that unit.
+- Clicking on a slot or `GachaBallView` performs the normal action (select, move, etc.) and updates selection accordingly.
+- Clicking the background in the battle board (handled by the root Battle node) clears selection.
+- Clicking the grid background in inventory windows (handled by grid containers) clears selection.
+- Clicking the modal window's `BackgroundBlocker` closes the modal and clears selection.
+
+**3. Implementation Details:**
+- All relevant UI containers (inventory grids, scroll containers, battle board background, etc.) have `_gui_input` handlers that emit `selection_clear_requested` on mouse button press, unless the click is on an actionable child.
+- The modal `BackgroundBlocker` is only present when a modal is open and is responsible for closing the modal and clearing selection.
+- The system uses a "click-through" pattern where clicks can both close a window (or clear selection) and trigger an action on the element under the mouse, if appropriate.
+
+**4. Interaction Table:**
+| Click Target | Resulting Behavior |
+|--------------|-------------------|
+| Empty slot | Clears selection |
+| GachaBallView (player/item) | Selects or acts as normal |
+| GachaBallView (enemy) | Clears selection and opens inspection window |
+| Inventory grid background | Clears selection |
+| Battle board background | Clears selection |
+| Modal BackgroundBlocker | Closes modal and clears selection |
+| UI Button | Button action, selection cleared if not actionable |
+
+**5. Key Lessons:**
+- In Godot, input events are only received by the topmost node under the mouse; background nodes cannot clear selection if covered by UI.
+- Explicit `_gui_input` handlers are required on all "dead zone" UI containers for robust selection clearing.
+- Centralizing selection logic in the `InteractionManager` and using signals ensures maintainability and prevents ghost selection bugs.
+
+#### 4.3.5 In-Battle Container and Placement Rules
+
+To ensure game logic integrity, all inventory actions must be validated against these placement rules. The `InventoryManager.is_action_valid()` function is the authority for enforcing these rules. An "invalid action" results in the cancellation of the action and the clearing of any selection.
+
+**PlayerLineup:**
+- Can only contain instances with the "hero" tag or instances with the "unit" tag.
+- Cannot contain instances with the "item" tag.
+
+**PlayerBench:**
+- Can only contain instances with the "unit" tag.
+- Cannot contain instances with the "hero" tag or the "item" tag.
+
+**ItemInventory:**
+- Can only contain instances with the "item" tag.
+- Cannot contain instances with the "hero" tag or the "unit" tag.
+
+**Hero Instance:** An instance with the "hero" tag can only exist in the PlayerLineup container. Any attempt to move or swap it to PlayerBench, ItemInventory, or any other container is an invalid action.
+
+**EnemyLineup:** This container is strictly read-only for the player. No player-initiated move, swap, or drop action can target this container or any instance within it.
+
 ### 4.4 Inspection Window System: Rules and Behavior
 
 This section defines the precise, authoritative rules for how all inspection windows (Unit, Item, Effects) must behave. These rules ensure a consistent, intuitive, and robust user experience.
@@ -248,7 +327,10 @@ The method for opening an inspection window is context-dependent:
     *   The Battle Board (`PlayerLineup`, `PlayerBench`).
     *   The main Run Inventory and Battle Inventory windows.
 *   **Single-Click:** Required to open an inspection window from any container that is **static and does not support drag-and-drop**. This includes:
-    *   The item grid within a `UnitInspectionWindow`.
+
+*   **Enemy Units:** The enemy units are just regular units that are using enemy lineup slots. The enemy slot is an inspection-only type of container, so the selection and double-click for inspection are not available - only a single click to inspect that opens the inspection window. If a player unit is selected, a single-click on an enemy will first deselect the player's unit and then inspect the enemy in the same click.
+
+*   The item grid within a `UnitInspectionWindow`.
     *   The "EFFECTS" button/link within any inspection window.
 
 **3. Positioning:**
@@ -325,51 +407,48 @@ It emits instance_location_changed(drawn_uuid).
 To ensure architectural consistency and maximum feature reuse, the reward system uses real GachaBallInstance objects instead of temporary representations. This approach treats the reward choice screen as a temporary inventory, allowing all existing systems (inspection, selection, tooltips) to function without special-case logic. When a choice is made, the selected instance is simply moved to the permanent RunState, while the unchosen instances are discarded. This maintains the "single source of truth" principle and creates a more robust and extensible system.
 
 #### Authoritative Flow
-1. **Victory & Acknowledgement**: The flow begins after the player acknowledges a battle victory by clicking "Continue" on the EndBattlePopup, which emits battle_victory_acknowledged.
+1. **Victory & Acknowledgement**: The flow begins after the player acknowledges a battle victory, which emits `battle_victory_acknowledged`.
 
-2. **Reward Instance Generation**: GameManager receives the signal and performs the following setup:
-   a. Increments RunState.day.
-   b. Clears any existing temporary reward instances from the `_temporary_reward_instances` dictionary.
-   c. Selects three GachaBallDefinitions from the appropriate LootTable.
-   d. For each definition, it creates a real, new GachaBallInstance.
-   e. It stores each new instance in the `_temporary_reward_instances` dictionary using the instance's UUID as the key. This ensures the instances persist until the player makes a choice and maintains a single source of truth for the reward instances.
+2. **Reward Instance Generation**: 
+   - `GameManager` receives the signal, generates the temporary reward instances, and stores them in its `_temporary_reward_master_dict`.
+   - The reward instances are created with proper location information in a temporary container.
 
 3. **Display**: 
-   - GameManager emits `reward_scene_requested(context)`. The context dictionary now contains only the `gold_amount`.
-   - `Main.gd` loads `Reward.tscn` and calls its `populate` method with the context.
-   - The `Reward.gd` script's `populate` method retrieves the reward instances directly from `GameManager` using the new `get_temporary_reward_instances()` method, ensuring it always has access to the most up-to-date instances.
-   - The %ConfirmSelectionButton is initially disabled until the player makes a selection.
+   - `GameManager` emits `reward_scene_requested`. 
+   - The `Reward.tscn` scene is displayed. Its `GachaBallViews` and `SlotViews` are configured for a selection-only context (`is_interactive: false`). 
+   - Double-click to inspect remains functional.
 
-4. **Player Interaction & State Change (The Selection Loop)**:
-   - **To Select/Deselect a GachaBall**: The player single-clicks a RewardChoiceView (or its child GachaBallView). The interaction is handled by the InteractionManager, which emits selection_changed. The Reward.gd script listens for this signal and enables/disables the %ConfirmSelectionButton.
-   - **To Inspect a GachaBall**: The player double-clicks the GachaBallView within the RewardChoiceView. The view emits inspection_requested.
+4. **Player Interaction**: 
+   - The player interacts with the rewards. 
+   - The UI follows the **Definitive Click Interaction Cycle** (Sec 4.3.3), allowing for seamless one-click selection changes.
+   - The player can inspect rewards by double-clicking.
 
-5. **Final Choice & Signal Emission (The Confirmation Action)**: The player finalizes their choice in one of two ways:
-   - **Confirming a GachaBall**: The player clicks the enabled %ConfirmSelectionButton. The Reward.gd script gets the selected LocationIdentifier from InteractionManager, finds the corresponding instance's UUID from the `_temporary_reward_instances` dictionary, and emits reward_chosen with the payload: 
-     ```gdscript
-     {
-         "type": "gachaball",
-         "instance_uuid": "..."  # The UUID of the selected GachaBallInstance
-     }
-     ```
-   - **Choosing Gold**: The player clicks the %TakeGoldButton. It emits reward_chosen with the payload:
-     ```gdscript
-     {
-         "type": "gold",
-         "amount": 5  # The amount of gold awarded (example value)
-     }
-     ```
+5. **Final Choice & State Change**: 
+   - The player clicks either the `%ConfirmSelectionButton` or `%TakeGoldButton`.
+   - The `Reward.gd` script emits the `reward_chosen` signal with the appropriate payload.
+   - The script then changes the UI state: it hides the `Confirm` and `Gold` buttons and makes a new `%BackToPathButton` visible. 
+   - The reward scene itself does not close yet.
 
-6. **State Update & Cleanup**: GameManager receives reward_chosen and performs the final state modification:
-   a. If a GachaBall was chosen:
-      - It retrieves the chosen instance from the `_temporary_reward_instances` dictionary using the provided UUID.
-      - If found, it adds the instance to the permanent `RunState.run_instances` dictionary and places it in the appropriate tier-based container (e.g., `RunInventoryT1`, `RunInventoryT2`, etc.).
-      - Emits `run_data_changed` to notify the UI of the state update.
-   b. If gold was chosen:
-      - It adds the specified gold amount to `RunState.gold`.
-      - Emits `run_data_changed` to notify the UI of the state update.
-   c. **Cleanup**: The `_temporary_reward_instances` dictionary is cleared, allowing the garbage collector to clean up any unselected reward instances.
-   d. **Error Handling**: If an invalid UUID is provided for a GachaBall reward, an error is logged, and the game continues without adding any rewards.
+6. **State Update & Cleanup**: 
+   - `GameManager` receives `reward_chosen` and performs the final state modification:
+     - It immediately calls `InteractionManager.clear_selection()` to prevent a stale state.
+     - It adds the chosen GachaBall or gold to the `RunState`, correctly setting all location properties according to the **Golden Rule of State Synchronization**.
+     - It emits `run_data_changed`.
+     - It clears its internal temporary reward data (`_temporary_reward_master_dict`).
+
+7. **Manual Scene Transition**: 
+   - The player is now on the reward screen with their new item added to their inventory (visible if they open the inventory window). 
+   - The screen shows the "Back to the Path" button.
+   - When the player clicks `%BackToPathButton`, the `Reward.gd` script emits `path_choice_scene_requested`.
+   - Immediately after emitting the signal, the `Reward.gd` script must call `queue_free()` on itself to ensure it is properly destroyed and removed from the scene tree.
+
+8. **Loop Continuation**: 
+   - `SceneManager` receives `path_choice_scene_requested` and displays the path choice content, completing the loop.
+
+#### Key Implementation Details
+- **Selection State Management**: The `InteractionManager` is cleared at critical points to prevent ghost selections.
+- **UI State Transitions**: The reward scene remains active until the player explicitly chooses to return to the path, providing visual feedback that their choice was successful.
+- **Memory Management**: All temporary reward instances are properly cleaned up after use.
 
 7. **Loop Continuation**: After processing the reward, GameManager initiates the Path Choice & Encounter Flow (Section 5.5).
 

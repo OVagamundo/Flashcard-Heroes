@@ -17,6 +17,9 @@ var _grids_initialized: bool = false
 func _ready():
 	panel_container.gui_input.connect(_on_panel_gui_input)
 	EventBus.inventory_ui_refresh_requested.connect(_on_ui_refresh)
+	tier_1_grid.gui_input.connect(_on_grid_gui_input)
+	tier_2_grid.gui_input.connect(_on_grid_gui_input)
+	tier_3_grid.gui_input.connect(_on_grid_gui_input)
 
 func _exit_tree():
 	if EventBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):
@@ -43,6 +46,13 @@ func _on_panel_gui_input(event: InputEvent):
 			return
 		WindowManager.close_all_inspection_windows()
 		get_viewport().set_input_as_handled()
+
+func _on_grid_gui_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Only clear selection if the click is not on a SlotView
+		var target = get_viewport().gui_get_focus_owner()
+		if not (target and target is SlotView):
+			EventBus.emit_signal("selection_clear_requested")
 
 func _initialize_grids_if_needed():
 	if _grids_initialized:

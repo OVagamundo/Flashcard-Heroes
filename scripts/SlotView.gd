@@ -44,7 +44,7 @@ func _gui_input(event: InputEvent):
 		# An empty slot should never be the source of an action.
 		# Clicking it with nothing else selected should just clear the context.
 		else:
-			InteractionManager.clear_selection()
+			EventBus.emit_signal("selection_clear_requested")
 			# Only close inspection windows if not inside one
 			var node = self.get_parent()
 			var inside_inspection_window = false

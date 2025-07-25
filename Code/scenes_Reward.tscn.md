@@ -1,9 +1,10 @@
 <!-- Original: scenes/Reward.tscn -->
 
 ```ini
-[gd_scene load_steps=2 format=3 uid="uid://dvjmlqxnk7wqd"]
+[gd_scene load_steps=3 format=3 uid="uid://dvjmlqxnk7wqd"]
 
 [ext_resource type="Script" uid="uid://b3av4xdg8f56s" path="res://scripts/Reward.gd" id="1_reward_script"]
+[ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
 
 [node name="Reward" type="VBoxContainer"]
 anchors_preset = 15
@@ -27,15 +28,15 @@ layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="RewardSlot0" type="PanelContainer" parent="RewardChoicesContainer"]
+[node name="RewardSlot0" parent="RewardChoicesContainer" instance=ExtResource("2_slot_view")]
 custom_minimum_size = Vector2(120, 150)
 layout_mode = 2
 
-[node name="RewardSlot1" type="PanelContainer" parent="RewardChoicesContainer"]
+[node name="RewardSlot1" parent="RewardChoicesContainer" instance=ExtResource("2_slot_view")]
 custom_minimum_size = Vector2(120, 150)
 layout_mode = 2
 
-[node name="RewardSlot2" type="PanelContainer" parent="RewardChoicesContainer"]
+[node name="RewardSlot2" parent="RewardChoicesContainer" instance=ExtResource("2_slot_view")]
 custom_minimum_size = Vector2(120, 150)
 layout_mode = 2
 
@@ -54,5 +55,11 @@ text = "Confirm Selection"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Take Gold Instead"
+
+[node name="BackToPathButton" type="Button" parent="ActionButtonsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Back to the Path"
+visible = false
 
 ```
