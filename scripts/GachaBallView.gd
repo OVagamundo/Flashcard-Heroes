@@ -152,9 +152,10 @@ func _gui_input(event: InputEvent):
 			var selected_loc = InteractionManager.get_selected_location()
 			if is_instance_valid(selected_loc) and selected_loc != _location:
 				EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
-				# If no action is possible, clear selection and select this one
-				# (Assume inventory_action_requested will not select if invalid)
-				InteractionManager.select_view(self, _location)
+				# Defer: if nothing is selected after the action, select this one (fallback for invalid action)
+				await get_tree().process_frame
+				if not is_instance_valid(InteractionManager.get_selected_location()):
+					InteractionManager.select_view(self, _location)
 			else:
 				InteractionManager.select_view(self, _location)
 		else:

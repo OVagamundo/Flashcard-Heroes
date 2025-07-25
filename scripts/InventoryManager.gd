@@ -115,6 +115,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	else:
 		_place_in_container_slot(target_instance, source_loc.container, source_loc.index)
 
+	EventBus.emit_signal("selection_clear_requested")
 	_emit_data_changed_signal()
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
