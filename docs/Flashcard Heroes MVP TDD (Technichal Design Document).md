@@ -106,7 +106,84 @@ To manage the meta-game loop, the following data-driven resources are introduced
     - `rewards: Array[Dictionary]` - A weighted list of GachaBallDefinition IDs. Each dictionary contains: `{"definition_id": StringName, "weight": int}`.
 
 Part 3: Logic Layer & Managers
-### 3.1 Signal Bus (Updated)
+### 3.1 Shop Node Implementation
+
+#### 1. Architectural Fit & Data Flow
+The Shop Node leverages the temporary instance pattern established by the Post-Battle Reward Flow (Reward.tscn) to ensure architectural consistency and code reuse.
+
+- **State Authority**: GameManager serves as the authority for the Shop's state during a node visit.
+- **Data Flow**: 
+  - On purchase: GameManager moves the selected GachaBallInstance from temporary storage to RunState.run_instances
+  - Follows the Golden Rule of State Synchronization for all state changes
+- **UI Responsibility**: Shop.tscn acts as a "dumb" view, only rendering state and emitting user intents
+
+#### 2. Data Structures & State Management
+
+**GameManager.gd - New Member Variables**:
+```gdscript
+# Temporary shop state
+var _temporary_shop_master_dict: Dictionary  # Holds GachaBallInstances for current shop stock
+var _temporary_shop_container: DataContainer  # FixedArrayContainer of size 3 for slot UUIDs
+var _reroll_cost: int = 1  # Current cost to reroll, resets on new shop visit
+```
+
+#### 3. New Scenes & UI Components
+
+**Shop.tscn (New Scene)**:
+- **Structure**:
+  - %ShopSlotsContainer (HBoxContainer): Contains three SlotView.tscn instances
+  - %ActionButtonsContainer (HBoxContainer): Holds Buy, Reroll, and Leave buttons
+
+**Shop.gd**:
+- **Responsibilities**:
+  - Renders UI based on GameManager state
+  - Connects to EventBus.selection_changed
+  - Emits user intent signals (shop_purchase_requested, shop_reroll_requested)
+  - Listens for shop_stock_refreshed to update view
+
+#### 4. Signal & API Modifications
+
+**New Signals in EventBus.gd**:
+```gdscript
+# Shop Flow
+signal shop_scene_requested(context: Dictionary)  # Context: {instances: Array[GachaBallInstance], reroll_cost: int}
+signal shop_purchase_requested(instance_uuid: String, cost: int)
+signal shop_reroll_requested()
+signal shop_stock_refreshed(context: Dictionary)  # Context: {instances: Array[GachaBallInstance], reroll_cost: int}
+```
+
+#### 5. Manager & System Responsibilities
+
+**GameManager.gd**:
+- **New Functions**:
+  - `_enter_shop()`: Initializes shop state
+  - `_generate_shop_stock()`: Creates 3 random GachaBallInstances
+  - Signal handlers for shop-related events
+
+**Main.gd/SceneManager.gd**:
+- Loads and displays Shop.tscn on shop_scene_requested
+
+**InteractionManager.gd**:
+- Handles selection state within shop UI (reuses existing functionality)
+
+#### 6. Key Logic Flows
+
+**A. Entering a Shop**:
+1. Player clicks "SHOP" node in PathChoice.tscn
+2. GameManager initializes shop state and generates stock
+3. UI is populated with available items and reroll cost
+
+**B. Purchasing an Item**:
+1. Player selects item and confirms purchase
+2. GameManager validates and processes transaction
+3. UI updates to reflect new inventory and empty slot
+
+**C. Rerolling Stock**:
+1. Player pays to refresh shop stock
+2. GameManager generates new items and updates reroll cost
+3. UI refreshes to show new items
+
+### 3.2 Signal Bus (Updated)
 All global signals are defined in `SignalBus.gd` to decouple systems. Key signals include:
 - `inspection_requested(target_uuid: String, context_uuid: String = "")` - Emitted when a GachaBallInstance should be inspected.
   - `target_uuid`: The UUID of the instance being inspected.

@@ -182,4 +182,8 @@ func _on_battle_phase_changed(phase_name: StringName):
 			if button is Button and button.name.begins_with("DrawTier"):
 				button.disabled = not is_management_phase
 
+func _gui_input(event):
+	if event is InputEventMouseButton and event.is_pressed():
+		EventBus.emit_signal("selection_clear_requested")
+
 ```

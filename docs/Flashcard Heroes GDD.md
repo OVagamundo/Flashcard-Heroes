@@ -87,7 +87,22 @@ The player's central character. Its health is the run's health. It participates 
 9.2. Trinkets
 Special non-GachaBall items that provide powerful, run-wide passive bonuses. Players can have up to 5 active Trinkets. They are typically awarded for defeating Mini-Bosses.
 9.3. Node Types & Logic
-Battle Node: Standard combat encounters. Includes Common, Elite, and Boss variants.
+
+**Battle Node:** Standard combat encounters. Includes Common, Elite, and Boss variants.
+
+**Shop Node:** An economic hub where players can spend Gold to acquire new GachaBalls.
+- **Stock:** Presents 3 randomly generated GachaBalls for purchase when the node is entered
+- **Purchasing:** 
+  - Players can purchase any GachaBall if they have sufficient Gold
+  - Cost is displayed clearly for each GachaBall
+  - Purchased GachaBalls are added to the player's Run Inventory
+  - Empty slots remain for the duration of the shop visit
+- **Rerolling:**
+  - Players can pay to refresh the shop's stock
+  - Base reroll cost starts at 1 Gold
+  - Cost increases by 1 Gold per reroll during the same shop visit
+  - Reroll cost resets when entering a new Shop Node
+- **Leaving:** Players can exit the shop at any time to return to Path Selection
 Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
 Rest Site Node: A recovery node where the player chooses one action: Rest (heal Hero), Train (upgrade Hero), or Gamble.

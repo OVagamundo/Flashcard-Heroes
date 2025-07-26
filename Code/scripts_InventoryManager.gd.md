@@ -4,38 +4,6 @@
 # res://scripts/InventoryManager.gd
 extends Node
 
-func is_action_valid(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
-	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
-		return false # Cannot act on invalid locations
-
-	var source_instance = _get_instance_at_location(source_loc)
-	var target_instance = _get_instance_at_location(target_loc)
-
-	# Case 1: Moving to an empty slot
-	if is_instance_valid(source_instance) and not is_instance_valid(target_instance):
-		return _is_valid_placement(source_instance, target_loc)
-
-	# Case 2: Interacting with another instance
-	if is_instance_valid(source_instance) and is_instance_valid(target_instance):
-		# Check for equipping
-		var source_def = source_instance.get_definition()
-		var target_def = target_instance.get_definition()
-		if source_def.category == &"ITEM" and target_def.category == &"UNIT":
-			return true # Assume equip is always a potential action
-
-		# Check for merge
-		var data_owner = _get_data_owner()
-		if is_instance_valid(data_owner):
-			var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, data_owner.get_all_instances())
-			if is_instance_valid(recipe):
-				return true
-
-		# Check for swap
-		if _is_valid_placement(source_instance, target_loc) and _is_valid_placement(target_instance, source_loc):
-			return true
-	
-	return false
-
 func _ready():
 	EventBus.inventory_action_requested.connect(_on_inventory_action_requested)
 	EventBus.choice_made.connect(_on_choice_made)
@@ -43,7 +11,7 @@ func _ready():
 # --- Main Action Handler ---
 
 func _on_inventory_action_requested(source_loc, target_loc):
-	InteractionManager.clear_selection()
+	EventBus.emit_signal("selection_clear_requested")
 
 	if source_loc.is_equal(target_loc):
 		InteractionManager.end_drag(false)
@@ -150,6 +118,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	else:
 		_place_in_container_slot(target_instance, source_loc.container, source_loc.index)
 
+	EventBus.emit_signal("selection_clear_requested")
 	_emit_data_changed_signal()
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
@@ -365,6 +334,6 @@ func _emit_data_changed_signal():
 
 func _handle_invalid_action():
 	InteractionManager.end_drag(false)
-	InteractionManager.clear_selection()
+	EventBus.emit_signal("selection_clear_requested")
 
 ```

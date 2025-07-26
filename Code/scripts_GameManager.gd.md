@@ -85,7 +85,7 @@ func _on_battle_victory_acknowledged():
 func _on_reward_chosen(payload):
 	# --- STALE SELECTION FIX ---
 	# The action is complete. Clear the interaction state immediately.
-	InteractionManager.clear_selection()
+	EventBus.emit_signal("selection_clear_requested")
 
 	if payload.type == "gachaball":
 		var chosen_uuid = payload.get("instance_uuid")

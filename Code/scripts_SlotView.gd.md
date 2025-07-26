@@ -26,11 +26,10 @@ func populate(loc: LocationIdentifier):
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 func _gui_input(event: InputEvent):
-	if not is_instance_valid(_location): 
-		return
+	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# This block is essential for correctly closing child inspection windows.
+		# Prune any child inspection windows first (standard inspection behavior).
 		var win: Node = self
 		while win and win != get_tree().root:
 			if win is InspectionWindow:
@@ -39,9 +38,26 @@ func _gui_input(event: InputEvent):
 			win = win.get_parent()
 
 		get_viewport().set_input_as_handled()
-
-		# For slots, we always want to allow interactions when something is selected
-		InteractionManager.handle_click(null, _location, true)
+		var selected_loc = InteractionManager.get_selected_location()
+		
+		# Only emit a signal if something is already selected and this slot is the target.
+		if is_instance_valid(selected_loc) and selected_loc != _location:
+			EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
+		
+		# An empty slot should never be the source of an action.
+		# Clicking it with nothing else selected should just clear the context.
+		else:
+			EventBus.emit_signal("selection_clear_requested")
+			# Only close inspection windows if not inside one
+			var node = self.get_parent()
+			var inside_inspection_window = false
+			while node and node != get_tree().root:
+				if node is InspectionWindow:
+					inside_inspection_window = true
+					break
+				node = node.get_parent()
+			if not inside_inspection_window:
+				WindowManager.close_all_inspection_windows()
 
 func _can_drop_data(_at_position, data) -> bool:
 	return data is Dictionary and data.has("source_loc")
