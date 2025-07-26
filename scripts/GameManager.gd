@@ -11,6 +11,11 @@ var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayCo
 var _temporary_gold_reward: int = 0
 var _is_processing_victory: bool = false # Prevents multiple reward processing
 
+# Temporary shop state
+var _temporary_shop_master_dict: Dictionary = {}
+var _temporary_shop_container: DataContainer = null
+var _reroll_cost: int = 1
+
 # These functions are deprecated - use get_instance_from_location instead
 
 func _ready() -> void:
@@ -21,6 +26,9 @@ func _ready() -> void:
 	EventBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
 	EventBus.reward_chosen.connect(_on_reward_chosen)
+	EventBus.node_selected.connect(_on_node_selected)
+	EventBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
+	EventBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 
 func _on_start_run_requested() -> void:
 	run_state = RunState.new()
@@ -66,7 +74,7 @@ func _on_battle_victory_acknowledged():
 		return # Debounce guard
 	_is_processing_victory = true
 
-	run_state.day += 1
+	# Day should only increment when path choice scene loads, not here
 	
 	# Rewards are already generated. We just need to calculate the gold.
 	var sum_tiers = 0
@@ -115,6 +123,7 @@ func _on_reward_chosen(payload):
 			
 	elif payload.type == "gold":
 		run_state.gold += payload.get("amount", 0)
+		EventBus.emit_signal("gold_changed", run_state.gold)
 
 	# --- TRANSITION LOGIC REMOVED ---
 	# The scene transition is now handled by the new button in Reward.gd.
@@ -167,6 +176,14 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 				return _temporary_reward_master_dict.get(uuid)
 		return null # Return null if the reward context is not active or slot is empty.
 
+	# NEW: Check for the temporary shop context.
+	if loc.container == &"Shop":
+		if _temporary_shop_container and _temporary_shop_master_dict:
+			var uuid = _temporary_shop_container.get_uuid(loc.index)
+			if not uuid.is_empty():
+				return _temporary_shop_master_dict.get(uuid)
+		return null # Return null if the shop context is not active or slot is empty.
+
 	# Step 1: Determine the current context (battle or run) to get the right data source.
 	var data_owner: Object
 	if is_in_battle:
@@ -208,3 +225,77 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	# Fallback if no valid case is met.
 	printerr("GameManager: Unhandled location type in get_instance_from_location for container: ", loc.container)
 	return null
+
+func _on_node_selected(node_def: PathNodeDefinition):
+	match node_def.node_type:
+		"BATTLE":
+			EventBus.emit_signal("battle_start_requested")
+		"SHOP":
+			_enter_shop()
+
+func _enter_shop():
+	_reroll_cost = 1
+	_generate_shop_stock()
+	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	EventBus.emit_signal("shop_scene_requested", context)
+
+func _generate_shop_stock():
+	_temporary_shop_master_dict.clear()
+	_temporary_shop_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
+	
+	var reward_pool = load("res://resources/reward_pool.tres")
+	if not is_instance_valid(reward_pool): return
+
+	var all_defs = reward_pool.definitions.duplicate()
+	all_defs.shuffle()
+	
+	for i in range(3):
+		var def = all_defs[i]
+		var inst = GachaBallInstance.new()
+		inst.initialize(def)
+		
+		inst.location_container_tag = &"Shop"
+		inst.location_slot_index = i
+		
+		_temporary_shop_master_dict[inst.ball_uuid] = inst
+		_temporary_shop_container.set_uuid(i, inst.ball_uuid)
+
+func _on_shop_purchase_requested(instance_uuid: String, cost: int):
+	if not _temporary_shop_master_dict.has(instance_uuid): return
+	if run_state.gold < cost: return
+
+	run_state.gold -= cost
+	EventBus.emit_signal("gold_changed", run_state.gold)
+
+	var purchased_instance = _temporary_shop_master_dict[instance_uuid]
+	var def = purchased_instance.get_definition()
+	var container_name = &"RunInventoryT%d" % def.tier
+	var container = run_state.get_container(container_name)
+	var target_slot = container.find_first_empty_slot()
+
+	container.set_uuid(target_slot, purchased_instance.ball_uuid)
+	purchased_instance.location_container_tag = container_name
+	purchased_instance.location_slot_index = target_slot
+	run_state.run_instances[purchased_instance.ball_uuid] = purchased_instance
+
+	_temporary_shop_master_dict.erase(instance_uuid)
+	var temp_slot = _temporary_shop_container.get_all_uuids().find(instance_uuid)
+	if temp_slot != -1:
+		_temporary_shop_container.set_uuid(temp_slot, "")
+
+	EventBus.emit_signal("run_data_changed")
+	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	EventBus.emit_signal("shop_stock_refreshed", context)
+
+func _on_shop_reroll_requested():
+	if run_state.gold < _reroll_cost: return
+
+	run_state.gold -= _reroll_cost
+	EventBus.emit_signal("gold_changed", run_state.gold)
+	_reroll_cost += 1
+
+	_generate_shop_stock()
+	
+	EventBus.emit_signal("run_data_changed")
+	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	EventBus.emit_signal("shop_stock_refreshed", context)

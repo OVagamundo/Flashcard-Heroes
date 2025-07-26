@@ -16,6 +16,9 @@ func _ready():
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	gold_button.pressed.connect(_on_gold_pressed)
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
+	
+	# Add global input handling for closing inspection windows
+	gui_input.connect(_on_gui_input)
 
 # This is a public function called by Main.gd at the correct time.
 func populate(context: Dictionary):
@@ -91,3 +94,10 @@ func _on_back_to_path_pressed():
 	EventBus.emit_signal("path_choice_scene_requested")
 	# The reward scene has served its purpose and should be removed.
 	queue_free()
+
+func _on_gui_input(event: InputEvent):
+	# Close inspection windows when clicking on background
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# If we clicked on this scene's background, close inspection windows
+		WindowManager.close_all_inspection_windows()
+		EventBus.emit_signal("selection_clear_requested")

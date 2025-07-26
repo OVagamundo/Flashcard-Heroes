@@ -25,6 +25,17 @@ signal display_discard_pile_requested
 signal close_modal_requested
 signal background_clicked # For modal background blockers
 
+signal gold_changed(new_amount: int)
+
+# --- Shop Signals ---
+signal shop_scene_requested(context: Dictionary)
+signal shop_purchase_requested(instance_uuid: String, cost: int)
+signal shop_reroll_requested
+signal shop_stock_refreshed(context: Dictionary)
+
+# --- Path/Node Signals ---
+signal node_selected(node_def: PathNodeDefinition)
+
 # --- Action Signals ---
 signal draw_gacha_requested(tier: int)
 signal inventory_action_requested(source_loc: LocationIdentifier, target_loc: LocationIdentifier)

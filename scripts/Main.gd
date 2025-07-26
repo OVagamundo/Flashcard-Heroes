@@ -6,10 +6,13 @@ extends Control
 @onready var draw_tier1_button: Button = %DrawTier1Button
 @onready var draw_tier2_button: Button = %DrawTier2Button
 @onready var draw_tier3_button: Button = %DrawTier3Button
+@onready var gold_label: Label = $VBoxContainer/TopArea/HBoxContainer/GoldLabel
+@onready var days_label: Label = $VBoxContainer/TopArea/HBoxContainer/DaysLabel
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
+const SHOP_SCENE = preload("res://scenes/Shop.tscn")
 
 var _current_content_node: Node = null
 
@@ -26,9 +29,17 @@ func _ready():
 	# TDD Safeguard: Re-enable draw buttons after the UI has redrawn.
 	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	content_area.gui_input.connect(_on_content_area_gui_input)
-	
+
+	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.shop_scene_requested.connect(_on_shop_scene_requested)
+	EventBus.run_data_changed.connect(_on_run_data_changed)
+
 	_on_battle_state_changed(false)
 	EventBus.emit_signal("path_choice_scene_requested")
+
+	if is_instance_valid(GameManager.run_state):
+		_on_gold_changed(GameManager.run_state.gold)
+		_update_day_label(GameManager.run_state.day)
 
 func _on_content_area_gui_input(event: InputEvent):
 	# This acts as a backstop for drops on the background of the game area.
@@ -51,6 +62,8 @@ func _on_battle_start_requested():
 
 func _on_path_choice_scene_requested():
 	_load_content(PATH_CHOICE_SCENE)
+	if is_instance_valid(GameManager.run_state):
+		_update_day_label(GameManager.run_state.day)
 
 func _on_reward_scene_requested():
 	_clear_content_area()
@@ -88,3 +101,25 @@ func _on_battle_state_changed(is_in_battle: bool):
 	draw_tier1_button.visible = is_in_battle
 	draw_tier2_button.visible = is_in_battle
 	draw_tier3_button.visible = is_in_battle
+
+func _on_gold_changed(new_amount: int):
+	if is_instance_valid(gold_label):
+		gold_label.text = "Gold: %d" % new_amount
+
+func _on_shop_scene_requested(context: Dictionary):
+	_clear_content_area()
+	var instance = SHOP_SCENE.instantiate()
+	_current_content_node = instance
+	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	
+	if instance.has_method("populate"):
+		instance.populate(context)
+
+func _update_day_label(day: int):
+	if is_instance_valid(days_label):
+		days_label.text = "Day %d" % day
+
+func _on_run_data_changed():
+	if is_instance_valid(GameManager.run_state):
+		_update_day_label(GameManager.run_state.day)
+		_on_gold_changed(GameManager.run_state.gold)
