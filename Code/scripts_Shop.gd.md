@@ -1,3 +1,6 @@
+<!-- Original: scripts/Shop.gd -->
+
+```gdscript
 # res://scripts/Shop.gd
 extends VBoxContainer
 
@@ -109,3 +112,5 @@ func _on_gui_input(event: InputEvent):
 		# If we clicked on this scene's background, close inspection windows
 		WindowManager.close_all_inspection_windows()
 		EventBus.emit_signal("selection_clear_requested") 
+
+```

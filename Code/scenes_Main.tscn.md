@@ -1,11 +1,11 @@
 <!-- Original: scenes/Main.tscn -->
 
 ```ini
-[gd_scene load_steps=5 format=3 uid="uid://crndwktdbp0rc"]
+[gd_scene load_steps=6 format=3 uid="uid://crndwktdbp0rc"]
 
 [ext_resource type="Script" uid="uid://bxqaqcpm8j051" path="res://scripts/InteractionManager.gd" id="1_mgrwt"]
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
-[ext_resource type="Script" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
+[ext_resource type="Script" uid="uid://ban2qfgbvx5bs" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
 bg_color = Color(0.1, 0.1, 0.2, 1)
@@ -23,7 +23,7 @@ grow_vertical = 2
 script = ExtResource("2_cdefg")
 
 [node name="SelectionClearArea" type="Control" parent="."]
-anchors_preset = 15
+anchors_preset = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -49,12 +49,35 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_top")
 
-[node name="Label" type="Label" parent="VBoxContainer/TopArea"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TopArea"]
+layout_mode = 2
+alignment = 1
+
+[node name="Control" type="Control" parent="VBoxContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GoldLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Gold: 0"
+vertical_alignment = 1
+
+[node name="Control2" type="Control" parent="VBoxContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DaysLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 1
-text = "Top Area (Placeholder)"
+text = "Day 1"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Control3" type="Control" parent="VBoxContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="ContentArea" type="SubViewportContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
@@ -64,7 +87,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/ContentArea"]
 handle_input_locally = false
-size = Vector2i(2, 2)
+size = Vector2i(1920, 992)
 render_target_update_mode = 4
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/ContentArea/SubViewport"]

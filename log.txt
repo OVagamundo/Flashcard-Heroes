@@ -6,59 +6,22 @@ Database: Testing translation - hero.name = Hero
 WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/Hero.png.import', stored as '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/hero.png.import' in the filesystem. This file will not open when exported to other case-sensitive platforms.
    at: open_internal (drivers/unix/file_access_unix.cpp:113)
 --- BATTLE SETUP: PASS 3 ---
-Processing permanent instance: unit_t1_a_1753547050_2813 with location: RunInventoryT1 [0]
-Processing permanent instance: unit_t1_a_1753547050_8836 with location: RunInventoryT1 [1]
-Processing permanent instance: unit_t1_b_1753547050_4016 with location: RunInventoryT1 [2]
-Processing permanent instance: unit_t1_b_1753547050_4492 with location: RunInventoryT1 [3]
-Processing permanent instance: item_t1_a_1753547050_4735 with location: RunInventoryT1 [4]
-Processing permanent instance: item_t1_a_1753547050_2566 with location: RunInventoryT1 [5]
-Processing permanent instance: item_t1_b_1753547050_8486 with location: RunInventoryT1 [6]
-Processing permanent instance: item_t1_b_1753547050_3227 with location: RunInventoryT1 [7]
-Processing permanent instance: unit_t2_c_1753547050_7705 with location: RunInventoryT2 [0]
-Processing permanent instance: unit_t2_c_1753547050_6097 with location: RunInventoryT2 [1]
-Processing permanent instance: item_t2_c_1753547050_4041 with location: RunInventoryT2 [2]
-Processing permanent instance: item_t2_c_1753547050_7439 with location: RunInventoryT2 [3]
-Processing permanent instance: unit_t3_d_1753547050_1487 with location: RunInventoryT3 [0]
-Processing permanent instance: unit_t3_d_1753547050_2698 with location: RunInventoryT3 [1]
-Processing permanent instance: item_t3_d_1753547050_4995 with location: RunInventoryT3 [2]
-Processing permanent instance: item_t3_d_1753547050_0487 with location: RunInventoryT3 [3]
-Processing permanent instance: unit_t2_c_1753547051_8913 with location: RunInventoryT2 [4]
-BasicAttack: unit_t1_a attacks unit_t1_a for 2 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks unit_t1_b for 3 damage. Target HP is now 0.
-BasicAttack: hero attacks unit_t2_c for 3 damage. Target HP is now 0.
-BasicAttack: enemy_hero attacks unit_t1_a for 2 damage. Target HP is now 0.
-BasicAttack: unit_t3_d attacks unit_t2_c for 6 damage. Target HP is now 0.
-BasicAttack: hero attacks unit_t3_d for 6 damage. Target HP is now 0.
-BasicAttack: enemy_hero attacks hero for 2 damage. Target HP is now 12.
-BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 7.
-BasicAttack: unit_t3_d attacks enemy_hero for 6 damage. Target HP is now 1.
-BasicAttack: hero attacks enemy_hero for 6 damage. Target HP is now 0.
---- BATTLE SETUP: PASS 3 ---
-Processing permanent instance: unit_t1_a_1753547050_2813 with location: RunInventoryT1 [0]
-Processing permanent instance: unit_t1_b_1753547050_4492 with location: RunInventoryT1 [3]
-Processing permanent instance: unit_t2_c_1753547050_7705 with location: RunInventoryT2 [0]
-Processing permanent instance: unit_t2_c_1753547050_6097 with location: RunInventoryT2 [1]
-Processing permanent instance: unit_t3_d_1753547050_1487 with location: RunInventoryT3 [0]
-Processing permanent instance: unit_t3_d_1753547050_2698 with location: RunInventoryT3 [1]
-Processing permanent instance: item_t3_d_1753547050_4995 with location: RunInventoryT3 [2]
-Processing permanent instance: item_t3_d_1753547050_0487 with location: RunInventoryT3 [3]
-Processing permanent instance: unit_t2_c_1753547051_8913 with location: RunInventoryT2 [4]
-Processing permanent instance: item_t3_d_1753547175_7532 with location: RunInventoryT3 [4]
-Processing permanent instance: item_t3_d_1753547178_1786 with location: RunInventoryT3 [5]
-Processing permanent instance: unit_t2_c_1753547186_8614 with location: RunInventoryT2 [2]
-BasicAttack: unit_t1_a attacks unit_t1_a for 2 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks unit_t1_b for 3 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks unit_t2_c for 3 damage. Target HP is now 0.
-BasicAttack: hero attacks unit_t3_d for 6 damage. Target HP is now 0.
-BasicAttack: enemy_hero attacks unit_t1_a for 2 damage. Target HP is now 0.
-BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 7.
-BasicAttack: unit_t3_d attacks enemy_hero for 6 damage. Target HP is now 1.
-BasicAttack: unit_t2_c attacks enemy_hero for 3 damage. Target HP is now 0.
---- REWARD CHOSEN ---
-Instance UUID: unit_t2_c_1753547189_0445
-Set Location To: RunInventoryT2 [3]
---------------------
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2378)
-ERROR: 1 resources still in use at exit (run with --verbose for details).
-   at: clear (core/io/resource.cpp:614)
+Processing permanent instance: unit_t1_a_1753548012_9122 with location: RunInventoryT1 [0]
+Processing permanent instance: unit_t1_a_1753548012_1275 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t1_b_1753548012_6788 with location: RunInventoryT1 [2]
+Processing permanent instance: unit_t1_b_1753548012_6573 with location: RunInventoryT1 [3]
+Processing permanent instance: item_t1_a_1753548012_7764 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_a_1753548012_3895 with location: RunInventoryT1 [5]
+Processing permanent instance: item_t1_b_1753548012_9601 with location: RunInventoryT1 [6]
+Processing permanent instance: item_t1_b_1753548012_5191 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753548012_4463 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753548012_8193 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753548012_5442 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753548012_6437 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753548012_1993 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753548012_9893 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753548012_5951 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753548012_0464 with location: RunInventoryT3 [3]
+Processing permanent instance: item_t1_a_1753548014_1484 with location: RunInventoryT1 [8]
+Processing permanent instance: item_t1_b_1753548014_6089 with location: RunInventoryT1 [9]
+Processing permanent instance: unit_t1_b_1753548020_0157 with location: RunInventoryT1 [10]

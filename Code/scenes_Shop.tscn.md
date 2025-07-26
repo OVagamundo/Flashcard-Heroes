@@ -1,0 +1,64 @@
+<!-- Original: scenes/Shop.tscn -->
+
+```ini
+[gd_scene load_steps=3 format=3 uid="uid://shop_scene_uid"]
+
+[ext_resource type="Script" path="res://scripts/Shop.gd" id="1_shop_script"]
+[ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+
+[node name="Shop" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
+alignment = 1
+script = ExtResource("1_shop_script")
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "Shop"
+horizontal_alignment = 1
+
+[node name="ShopSlotsContainer" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="ShopSlot0" parent="ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(120, 150)
+layout_mode = 2
+
+[node name="ShopSlot1" parent="ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(120, 150)
+layout_mode = 2
+
+[node name="ShopSlot2" parent="ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(120, 150)
+layout_mode = 2
+
+[node name="ActionButtonsContainer" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="BuyButton" type="Button" parent="ActionButtonsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+disabled = true
+text = "Buy"
+
+[node name="RerollButton" type="Button" parent="ActionButtonsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reroll (1 Gold)"
+
+[node name="LeaveButton" type="Button" parent="ActionButtonsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Back to the Path" 
+```

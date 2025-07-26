@@ -58,8 +58,8 @@ text = "Take Gold Instead"
 
 [node name="BackToPathButton" type="Button" parent="ActionButtonsContainer"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "Back to the Path"
-visible = false
 
 ```

@@ -108,7 +108,8 @@ func remove_instance_by_uuid(uuid: String) -> void:
 # ------------------------------------------------------------------
 
 func start_new_run() -> void:
-	gold = 10
+	gold = 5 # Set starting gold
+	day = 0
 	run_instances.clear()
 	run_inventory_containers.clear()
 	_other_containers.clear()

@@ -132,7 +132,8 @@ var _reroll_cost: int = 1  # Current cost to reroll, resets on new shop visit
 **Shop.tscn (New Scene)**:
 - **Structure**:
   - %ShopSlotsContainer (HBoxContainer): Contains three SlotView.tscn instances
-  - %ActionButtonsContainer (HBoxContainer): Holds Buy, Reroll, and Leave buttons
+  - Buy, Reroll, and Leave buttons as direct children of the VBoxContainer
+  - Price labels container (HBoxContainer): Displays cost labels below each GachaBall
 
 **Shop.gd**:
 - **Responsibilities**:
@@ -140,6 +141,8 @@ var _reroll_cost: int = 1  # Current cost to reroll, resets on new shop visit
   - Connects to EventBus.selection_changed
   - Emits user intent signals (shop_purchase_requested, shop_reroll_requested)
   - Listens for shop_stock_refreshed to update view
+  - Manages price label display and positioning
+  - Handles global input for closing inspection windows on background clicks
 
 #### 4. Signal & API Modifications
 
@@ -159,6 +162,8 @@ signal shop_stock_refreshed(context: Dictionary)  # Context: {instances: Array[G
   - `_enter_shop()`: Initializes shop state
   - `_generate_shop_stock()`: Creates 3 random GachaBallInstances
   - Signal handlers for shop-related events
+- **Enhanced Functions**:
+  - `get_instance_from_location()`: Extended to support `&"Shop"` container for inspection windows
 
 **Main.gd/SceneManager.gd**:
 - Loads and displays Shop.tscn on shop_scene_requested
@@ -172,16 +177,41 @@ signal shop_stock_refreshed(context: Dictionary)  # Context: {instances: Array[G
 1. Player clicks "SHOP" node in PathChoice.tscn
 2. GameManager initializes shop state and generates stock
 3. UI is populated with available items and reroll cost
+4. Price labels are displayed below each GachaBall
 
 **B. Purchasing an Item**:
 1. Player selects item and confirms purchase
 2. GameManager validates and processes transaction
 3. UI updates to reflect new inventory and empty slot
+4. Price label is removed for the purchased item
 
 **C. Rerolling Stock**:
 1. Player pays to refresh shop stock
 2. GameManager generates new items and updates reroll cost
-3. UI refreshes to show new items
+3. UI refreshes to show new items with updated price labels
+
+**D. Inspection and Background Interaction**:
+1. Double-click on GachaBalls opens inspection windows (enabled by `&"Shop"` container support)
+2. Clicking on background closes inspection windows
+3. Price labels are positioned to not interfere with GachaBall interactions
+
+#### 7. UI Enhancement Features
+
+**Price Label System**:
+- Dynamic price labels displayed below each GachaBall
+- Labels show cost based on item tier
+- Positioned in separate container to avoid interference with clickable areas
+- Automatically updated when shop stock refreshes
+
+**Global Input Handling**:
+- Background clicks close inspection windows
+- Maintains consistent UX with other game scenes
+- Prevents ghost selection states
+
+**Shop Container Support**:
+- `&"Shop"` container recognized by location system
+- Enables double-click inspection functionality
+- Integrates with existing WindowManager and InteractionManager systems
 
 ### 3.2 Signal Bus (Updated)
 All global signals are defined in `SignalBus.gd` to decouple systems. Key signals include:
