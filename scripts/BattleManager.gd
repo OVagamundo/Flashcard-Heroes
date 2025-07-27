@@ -38,6 +38,7 @@ func _ready():
 	_connect_signals()
 
 func _exit_tree():
+	print("BattleManager: _exit_tree called")
 	GameManager.is_in_battle = false
 	EventBus.emit_signal("battle_state_changed", false)
 	if EventBus.is_connected("end_turn_requested", _on_end_turn_requested):
