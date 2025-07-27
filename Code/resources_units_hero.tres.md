@@ -13,6 +13,7 @@ display_name_key = "hero.name"
 description_key = "hero.desc"
 icon = ExtResource("2_icon")
 tier = 0
+cost = 0
 category = &"UNIT"
 item_slot_count = 5
 base_hp = 10

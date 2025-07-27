@@ -13,6 +13,7 @@ var _inspected_unit_uuid: String
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
+var _is_enemy_context: bool = false
 
 func _ready():
 	EventBus.battle_inventory_changed.connect(_on_inventory_changed)
@@ -54,6 +55,7 @@ func populate(context: Dictionary):
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
 	_location = context.get("location")
+	_is_enemy_context = context.get("is_enemy_context", false)
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
 		printerr("UnitInspectionWindow: Invalid context provided.")
@@ -132,8 +134,9 @@ func _rebuild_item_grid():
 			var gacha_view = _GachaBallView.instantiate()
 			slot_view.add_child(gacha_view)
 			# The GachaBallView gets the same location data as its parent slot.
-			# Pass false for single_click_inspect to enable drag-and-drop
-			gacha_view.populate(loc, item_instance, true, false)
+			var is_interactive = not _is_enemy_context
+			var single_click_inspect = _is_enemy_context
+			gacha_view.populate(loc, item_instance, is_interactive, single_click_inspect)
 	
 
 func _update_description():
@@ -223,3 +226,6 @@ func _on_description_meta_hover_started(_meta):
 
 func _on_description_meta_hover_ended(_meta):
 	description_label.mouse_filter = MOUSE_FILTER_PASS
+
+func get_location() -> LocationIdentifier:
+	return _location

@@ -366,8 +366,8 @@ To ensure consistent behavior and eliminate duplicate code, all `_gui_input` eve
 
 **2. When Selection Is Cleared:**
 - Any click on a non-actionable area (background, grid container, scroll container, etc.) emits `selection_clear_requested`.
-- Clicking on an enemy unit (inspection-only) both clears selection and opens the inspection window for that unit.
-- Clicking on a slot or `GachaBallView` performs the normal action (select, move, etc.) and updates selection accordingly.
+- Clicking on an enemy unit (inspection-only) opens the inspection window for that unit without changing the current selection. This is handled by a single-click interaction.
+- Clicking on a player-controlled `GachaBallView` or slot performs the normal action (select, move, etc.) and updates selection accordingly. A double-click is required to open the inspection window for player-controlled units.
 - Clicking the background in the battle board (handled by the root Battle node) clears selection.
 - Clicking the grid background in inventory windows (handled by grid containers) clears selection.
 - Clicking the modal window's `BackgroundBlocker` closes the modal and clears selection.
@@ -381,8 +381,9 @@ To ensure consistent behavior and eliminate duplicate code, all `_gui_input` eve
 | Click Target | Resulting Behavior |
 |--------------|-------------------|
 | Empty slot | Clears selection |
-| GachaBallView (player/item) | Selects or acts as normal |
-| GachaBallView (enemy) | Clears selection and opens inspection window |
+| GachaBallView (player/item) - Single Click | Selects the unit/item |
+| GachaBallView (player/item) - Double Click | Opens inspection window without changing selection |
+| GachaBallView (enemy) - Single Click | Opens inspection window without changing selection |
 | Inventory grid background | Clears selection |
 | Battle board background | Clears selection |
 | Modal BackgroundBlocker | Closes modal and clears selection |
@@ -420,6 +421,18 @@ This section defines the precise, authoritative rules for how all inspection win
 **1. Core Principles:**
 
 *   **Global Click-to-Close:** Clicking anywhere on the screen that is *not* part of the active inspection window group will immediately close the entire group. This is handled globally by the `WindowManager`'s input interception logic.
+
+**2. Contextual Interaction:**
+
+The method for opening an inspection window and the interactivity of its contents are context-dependent, based on whether the target is player-controlled or an enemy.
+
+**Player-Controlled Units & Items (Interactive Mode):**
+- **Opening:** A double-click is required to open an inspection window from any container where drag-and-drop is the primary interaction. This includes the Battle Board (PlayerLineup, PlayerBench), all inventory windows, and the shop.
+- **Contents:** When inspecting a player-controlled unit, its equipped item grid is a fully interactive container. Items can be dragged, dropped, swapped, and merged. To prevent conflicts with drag-and-drop, inspecting an equipped item from this view also requires a double-click.
+
+**Enemy Units (Read-Only Mode):**
+- **Opening:** A single-click on an enemy unit on the battle board opens its inspection window. This is because enemy units are not interactive; their only function is to be inspected.
+- **Contents:** When inspecting an enemy unit, the window is strictly read-only. All drag-and-drop functionality is disabled for its equipped items and slots. To inspect an enemy's equipped item further, the player uses a single-click.
 *   **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on the screen at any time. Opening a new root-level window (e.g., inspecting a different unit on the board) must close the entire previous group.
 *   **Single Child Per Parent:** A parent window can only have one direct child window open at a time. Requesting a new child window must first close any existing child and its descendants.
 *   **Hierarchical Click-to-Close:** Clicking on the background of any window in a group (e.g., the panel of a `UnitInspectionWindow`) closes all of its children, but not itself.
@@ -466,13 +479,14 @@ To ensure a stable, performant, and bug-free UI, views that display collections 
 Constantly destroying (`queue_free()`) and recreating UI nodes for every data change is inefficient and leads to visual bugs, such as `GridContainer` reflowing, loss of state, and desynchronization between the view and the data model.
 
 #### The Correct Pattern:
-1. **One-Time Initialization**: When the window is first created, it should programmatically instantiate and add the required number of "slot" nodes (e.g., `SlotView.tscn`) to its `GridContainer`. These slot nodes are now persistent for the lifetime of the window.
+1. **One-Time Initialization**: When the window is first created, it should programmatically instantiate and add the required number of "slot" nodes (e.g., `SlotView.tscn`) to its `GridContainer`. These slot nodes are now persistent for the lifetime of the window. The window should also set its interaction mode based on context (interactive for player-controlled units, read-only for enemy units).
 
 2. **Content Update on Refresh**: When a UI refresh is required (e.g., after an inventory action), the window must not destroy the persistent slot nodes. Instead, it should:
    a. Iterate through its existing slot nodes.
    b. For each slot, clear any old content (e.g., a `GachaBallView` child).
    c. Look up the corresponding data for that slot's index in the data model.
    d. If the data slot contains an item, instantiate a new content view (e.g., `GachaBallView`) and add it as a child to the persistent slot node.
+   e. For read-only windows (e.g., enemy inspection), disable drag-and-drop functionality and set appropriate visual styling to indicate the non-interactive state.
 
 This pattern ensures that the UI's structure remains stable, preventing visual glitches and correctly reflecting the underlying data state at all times.
 

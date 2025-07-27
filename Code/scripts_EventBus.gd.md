@@ -5,6 +5,7 @@
 extends Node # EventBus for Flashcard Heroes
 
 const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
+const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
 
 ## A global script containing only signal definitions for the entire game.
 ## All communication between major systems happens through these signals.
@@ -16,7 +17,7 @@ signal loadout_scene_requested
 signal main_scene_requested
 signal path_choice_scene_requested
 signal battle_scene_requested
-signal battle_start_requested
+signal battle_start_requested(encounter_def: EncounterDefinition)
 signal title_scene_requested
 signal reward_scene_requested(context)
 signal battle_victory_acknowledged

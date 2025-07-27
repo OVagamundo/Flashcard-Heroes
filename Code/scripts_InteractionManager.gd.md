@@ -16,14 +16,13 @@ var _drag_source_view: Control = null
 var _drag_placeholder: Control = null
 
 func _ready():
-	EventBus.close_modal_requested.connect(clear_selection)
-	EventBus.main_scene_requested.connect(clear_selection)
-	EventBus.battle_start_requested.connect(clear_selection)
-	EventBus.selection_clear_requested.connect(clear_selection)
+	EventBus.close_modal_requested.connect(func(): clear_selection(null))
+	EventBus.main_scene_requested.connect(func(): clear_selection(null))
+	EventBus.selection_clear_requested.connect(func(): clear_selection(null))
 
 func select_view(view: Control, location: LocationIdentifier):
 	if not is_instance_valid(view) or not is_instance_valid(location):
-		clear_selection()
+		clear_selection(null)
 		return
 
 	# If clicking the same view again, do nothing to allow drag to start.
@@ -32,7 +31,7 @@ func select_view(view: Control, location: LocationIdentifier):
 
 	# If a different view was already selected, deselect it first.
 	if is_instance_valid(_selected_view):
-		clear_selection()
+		clear_selection(null)
 
 	_selected_view = view
 	_selected_location = location
@@ -40,7 +39,7 @@ func select_view(view: Control, location: LocationIdentifier):
 	EventBus.emit_signal("view_selected", _selected_view, _selected_location)
 	EventBus.emit_signal("selection_changed", _selected_location)
 
-func clear_selection():
+func clear_selection(encounter_def = null):
 	var previously_selected_view = _selected_view
 	var _previously_selected_loc = _selected_location
 	_selected_view = null
@@ -66,7 +65,7 @@ func get_drag_source_view() -> Control:
 func start_drag(source_view: Control, placeholder: Control):
 	if not is_instance_valid(source_view): return
 	
-	clear_selection() # A drag operation overrides any selection
+	clear_selection(null) # A drag operation overrides any selection
 	
 	_is_drag_active = true
 	_drag_source_view = source_view

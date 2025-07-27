@@ -58,25 +58,6 @@ func _ready():
 	end_turn_button.pressed.connect(func(): EventBus.emit_signal("end_turn_requested"))
 	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
 	
-	# Connect draw buttons (named DrawTier1, DrawTier2, DrawTier3) to EventBus
-	var main_node = get_tree().get_root().find_child("Main", true, false)
-	if is_instance_valid(main_node):
-		var btn_parent = main_node.get_node_or_null("VBoxContainer/BottomArea/HBoxContainer")
-		if is_instance_valid(btn_parent):
-			for child in btn_parent.get_children():
-				if child is Button and child.name.begins_with("DrawTier"):
-					var tier_str := child.name.substr(len("DrawTier"))
-					var tier := int(tier_str)
-					# Only connect once per button by checking a meta flag
-					# Ensure exactly one pressed connection – remove all existing, then connect.
-					var existing_connections: Array = child.pressed.get_connections()
-					for conn_dict in existing_connections:
-						var existing_callable: Callable = conn_dict["callable"]
-						child.pressed.disconnect(existing_callable)
-					child.pressed.connect(func(t=tier):
-						EventBus.emit_signal("draw_gacha_requested", t)
-					)
-	
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")
 	_initialize_slots(player_bench, &"PlayerBench")

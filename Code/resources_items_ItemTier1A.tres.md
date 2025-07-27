@@ -13,6 +13,7 @@ display_name_key = "item_t1_a.name"
 description_key = "item_t1_a.desc"
 icon = ExtResource("2_icon")
 tier = 1
+cost = 1
 category = &"ITEM"
 item_slot_count = 0
 base_hp = 0

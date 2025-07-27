@@ -30,6 +30,7 @@ InteractionManager="*res://scripts/InteractionManager.gd"
 MergeManager="*res://scripts/MergeManager.gd"
 InventoryManager="*res://scripts/InventoryManager.gd"
 AbilityResolver="*res://scripts/AbilityResolver.gd"
+EncounterGenerator="*res://scripts/EncounterGenerator.gd"
 
 [debug]
 

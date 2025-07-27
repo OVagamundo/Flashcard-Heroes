@@ -233,8 +233,8 @@ func _close_children_of(parent_window: Control):
 		for i in range(child_count):
 			var child_window = _active_inspection_group.pop_back()
 			if is_instance_valid(child_window):
-				# Child windows are not tracked, but good practice to call this anyway.
-				stop_tracking_window(child_window)
+				# The window is about to be freed. We must stop tracking it by its ID.
+				stop_tracking_window(child_window.get_instance_id())
 				child_window.queue_free()
 
 
@@ -286,9 +286,10 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control):
 	# Check if a window already exists for this location
 	for window in _active_inspection_group:
+		# Check if the window has a location and if it matches.
 		if is_instance_valid(window) and window.has_method("get_location"):
 			var window_loc = window.get_location()
-			if window_loc != null and window_loc.container_tag == loc.container_tag and window_loc.slot_index == loc.slot_index:
+			if is_instance_valid(window_loc) and window_loc.is_equal(loc):
 				# Window already exists for this location, don't create another one
 				return
 	
@@ -332,6 +333,9 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 		var def = instance.get_definition()
 		window_type = &"UnitInspection" if def.category == &"UNIT" else &"ItemInspection"
 		context = {"source_view": source_view, "instance": instance, "location": loc}
+		
+		if loc.container == &"EnemyLineup":
+			context["is_enemy_context"] = true
 		print("WindowManager: Opening ", window_type, " window for ", def.category, " instance")
 
 	elif source_view.has_meta("effect_definition"):
@@ -372,6 +376,9 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	
 	if not is_instance_valid(window_instance) or not is_instance_valid(stable_anchor):
 		return
+	# Use the window's instance ID as the key for tracking.
+	var window_id = window_instance.get_instance_id()
+
 	# Connect geometry change using bound callable (avoid capturing freed references)
 	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_instance, stable_anchor)
 	if not stable_anchor.is_connected("item_rect_changed", geom_callable):
@@ -382,7 +389,8 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	if not stable_anchor.is_connected("tree_exited", freed_callable):
 		stable_anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
-	_tracked_windows[window_instance] = {
+	# Store tracking info using the instance ID.
+	_tracked_windows[window_id] = {
 		"anchor": stable_anchor,
 		"geom_callable": geom_callable,
 		"freed_callable": freed_callable
@@ -403,22 +411,24 @@ func _find_stable_anchor(original_anchor: Control) -> Control:
 	# If no stable container found, fall back to the original anchor
 	return original_anchor
 
-func stop_tracking_window(window_instance: Control) -> void:
-	if not _tracked_windows.has(window_instance):
+func stop_tracking_window(window_id: int) -> void:
+	if not _tracked_windows.has(window_id):
 		return
 
-	var tracking_info = _tracked_windows[window_instance]
+	var tracking_info = _tracked_windows[window_id]
 	var anchor = tracking_info["anchor"]
 	var geom_callable = tracking_info["geom_callable"]
 	var freed_callable = tracking_info["freed_callable"]
 
+	# The anchor might have already been freed, so we must check if it's valid
+	# before trying to disconnect signals from it.
 	if is_instance_valid(anchor):
 		if anchor.is_connected("item_rect_changed", geom_callable):
 			anchor.item_rect_changed.disconnect(geom_callable)
 		if anchor.is_connected("tree_exited", freed_callable):
 			anchor.tree_exited.disconnect(freed_callable)
 	
-	_tracked_windows.erase(window_instance)
+	_tracked_windows.erase(window_id)
 
 func _on_inspection_anchor_moved(window_instance: Control, anchor: Control) -> void:
 	# Guard against operating on an object that was freed since the signal was emitted.
@@ -439,6 +449,11 @@ func _register_window(window_instance: Control, is_modal: bool) -> void:
 		window_instance.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
 func _on_window_freed(window_id: int, was_modal: bool) -> void:
+	# CRITICAL FIX: The window is being freed. We MUST clean up its tracking data
+	# to prevent dangling signal connections. This is now possible because we use the ID.
+	if not was_modal:
+		stop_tracking_window(window_id)
+	
 	# This function is now robust against race conditions. It finds the window
 	# to remove by its ID, which is always valid, instead of its object
 	# reference, which might be stale.
@@ -452,12 +467,6 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 			var window = _active_inspection_group[i]
 			if not is_instance_valid(window) or window.get_instance_id() == window_id:
 				_active_inspection_group.remove_at(i)
-		
-		# We still need to call stop_tracking_window for the specific window
-		# that was freed, if it can be found by ID.
-		var window_instance = instance_from_id(window_id)
-		if is_instance_valid(window_instance):
-			stop_tracking_window(window_instance)
 
 
 

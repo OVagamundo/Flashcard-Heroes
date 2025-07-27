@@ -19,9 +19,9 @@ var _current_content_node: Node = null
 
 func _ready():
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
-	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
-	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
-	draw_tier3_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier3_button, 3))
+	draw_tier1_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 1))
+	draw_tier2_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 2))
+	draw_tier3_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 3))
 	
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
 	EventBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
