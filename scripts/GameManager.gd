@@ -1,6 +1,8 @@
 # res://scripts/GameManager.gd
 extends Node
 
+
+
 ## Manages the persistent state of the current run by holding a RunState resource.
 ## Also acts as the single source of truth for the game's battle state.
 
@@ -25,6 +27,7 @@ func _ready() -> void:
 	EventBus.title_scene_requested.connect(_on_return_to_title)
 	EventBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
+
 	EventBus.reward_chosen.connect(_on_reward_chosen)
 	EventBus.node_selected.connect(_on_node_selected)
 	EventBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
@@ -43,14 +46,7 @@ func _on_battle_ended() -> void:
 	# Handle battle end logic here
 	pass
 
-func _on_return_to_title() -> void:
-	# Clear the run state and any pending rewards when returning to the title screen
-	run_state = null
-	# Clear any temporary rewards if the player quits or loses.
-	_temporary_reward_master_dict.clear()
-	_temporary_reward_container = null
-
-func _on_battle_start_requested():
+func _on_battle_start_requested(encounter_def: EncounterDefinition):
 	# Pre-generate rewards for the upcoming battle and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
@@ -66,8 +62,21 @@ func _on_battle_start_requested():
 	for i in range(3):
 		var inst = GachaBallInstance.new()
 		inst.initialize(all_defs[i])
+		inst.location_container_tag = &"Rewards"
+		inst.location_slot_index = i
 		_temporary_reward_master_dict[inst.ball_uuid] = inst
 		_temporary_reward_container.set_uuid(i, inst.ball_uuid)
+	
+	print("GameManager: Generated ", _temporary_reward_master_dict.size(), " reward instances")
+
+func _on_return_to_title() -> void:
+	# Clear the run state and any pending rewards when returning to the title screen
+	run_state = null
+	# Clear any temporary rewards if the player quits or loses.
+	_temporary_reward_master_dict.clear()
+	_temporary_reward_container = null
+
+
 
 func _on_battle_victory_acknowledged():
 	if _is_processing_victory: 
@@ -229,7 +238,13 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 func _on_node_selected(node_def: PathNodeDefinition):
 	match node_def.node_type:
 		"BATTLE":
-			EventBus.emit_signal("battle_start_requested")
+			var budget = run_state.day * 5
+			if node_def.subtype == "ELITE":
+				budget = int(floor(budget * 1.5))
+			
+			print("GameManager: Day: ", run_state.day, ", Budget: ", budget, ", Node subtype: ", node_def.subtype)
+			var encounter_def = EncounterGenerator.generate_encounter(budget)
+			EventBus.emit_signal("battle_start_requested", encounter_def)
 		"SHOP":
 			_enter_shop()
 

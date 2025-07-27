@@ -25,6 +25,9 @@ extends Resource
 ## The power level or tier of this GachaBall (0-3).
 @export_range(0, 3) var tier: int
 
+## The cost to purchase this GachaBall in the shop or for encounter generation.
+@export var cost: int = 1
+
 ## The category of the GachaBall, must be "UNIT" or "ITEM".
 @export var category: StringName
 

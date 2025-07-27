@@ -914,3 +914,112 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Battle
     # This part of the logic will need careful implementation in BattleManager
     battle_manager.summon_unit_to_location(definition_to_summon, power, health, targets[0]) # Assuming target is a location identifier
 ```
+
+# Part 8: Dynamic Encounter Generation System
+
+This section details the technical implementation of the budget-based system responsible for generating enemy teams for COMMON and ELITE battle nodes.
+
+## 8.1 System Goals & Responsibilities
+
+**Goal:** To programmatically generate a complete and valid enemy encounter, including units and their equipped items, based on a given "gold" budget.
+
+**Inputs:** 
+- `day: int` - The current day of the run
+- `node_subtype: StringName` - Either "COMMON" or "ELITE"
+
+**Output:** An in-memory `EncounterDefinition` resource that can be directly consumed by the `BattleManager`.
+
+**Core Responsibility:** A new stateless service, `EncounterGenerator.gd`, will contain the generation algorithm. `GameManager` will be responsible for calculating the total budget and invoking this service when a player selects a dynamic battle node.
+
+## 8.2 Data Schema Modifications
+
+### GachaBallDefinition.gd
+A new property is required to define the purchase cost.
+
+```gdscript
+# res://resources/gachaball/GachaBallDefinition.gd
+extends Resource
+class_name GachaBallDefinition
+
+# ... existing properties ...
+
+# The cost to purchase this GachaBall in the shop or for encounter generation
+@export var cost: int = 1
+```
+
+**Rule:** The cost of a GachaBall must be explicitly set in its .tres file. While it will typically equal its tier, this explicit field allows for future design exceptions.
+
+### PathNodeDefinition.gd
+The existing `subtype` property will be used to differentiate battle difficulties.
+
+**Usage:**
+- `subtype = "COMMON"` for standard battles.
+- `subtype = "ELITE"` for battles with a 1.5x budget multiplier.
+
+## 8.3 The "Constrained Random Build" Algorithm
+
+The core of this system is an algorithm designed to spend a budget under several constraints (max 6 units, items must fit in slots, budget must be fully spent). A simple greedy approach is insufficient as it can lead to unspent budget. The following robust, multi-pass algorithm will be implemented in `EncounterGenerator.gd`.
+
+### Function Signature
+```gdscript
+# Generates a complete encounter based on the given budget
+# Returns: An EncounterDefinition resource with enemy placements
+func generate_encounter(budget: int) -> EncounterDefinition
+```
+
+### Algorithm Steps
+
+#### Phase 1: Setup & Data Pooling
+1. Retrieve all non-hero `GachaBallDefinition` resources from `Database.gd`.
+2. Separate them into two pools: `available_units` and `available_items`.
+3. Initialize:
+   ```gdscript
+   var purchased_units: Array[GachaBallDefinition] = []
+   var purchased_items: Array[GachaBallDefinition] = []
+   var spent_budget: int = 0
+   ```
+
+#### Phase 2: Mandatory Unit Spending
+1. Calculate `min_unit_spend = floor(budget / 2)`.
+2. Enter a loop that continues as long as `spent_budget < min_unit_spend` and `len(purchased_units) < 6`:
+   - Filter `available_units` to find all units that can be afforded with the remaining budget (`budget - spent_budget`).
+   - If the list of affordable units is empty, break the loop.
+   - Select a random unit from the affordable list, add it to `purchased_units`, and add its cost to `spent_budget`.
+
+#### Phase 3: Optimized Flexible Spending (Backtracking Heuristic)
+This phase spends the remaining budget. To ensure the full budget is used, it will employ a limited backtracking strategy.
+
+1. Start an outer loop with a maximum of 10 attempts. This prevents infinite loops in edge-case scenarios.
+2. Inside the attempt loop:
+   - Create temporary copies of `purchased_units`, `purchased_items`, and `spent_budget` from the state after Phase 2.
+   - **Inner Loop:** While `temp_spent_budget < budget`:
+     - Calculate current `total_item_slots` on the `temp_purchased_units`.
+     - Create a `possible_purchases` list.
+     - If `len(temp_purchased_units) < 6`, add all affordable units to the list.
+     - If `len(temp_purchased_items) < total_item_slots`, add all affordable items to the list.
+     - If `possible_purchases` is empty, the build is stuck. Break the inner loop.
+     - Select a random definition from `possible_purchases`, add it to the appropriate temporary list (`_units` or `_items`), and update `temp_spent_budget`.
+   - **Check for Success:** After the inner loop, if `temp_spent_budget == budget`, the build is perfect. Return the results from the temporary lists.
+   - If the attempt failed (the inner loop broke and budget is unspent), discard the temporary lists and the outer loop will try again with a different random seed.
+
+#### Phase 4: Final Assembly
+1. If after 10 attempts a perfect-budget team was not found, the system will use the result from the attempt that got closest to the target budget without exceeding it.
+2. Create a new `EncounterDefinition` resource in memory.
+3. Iterate through the final `purchased_units` list and add them to the `encounter.enemy_placements` array at random, unoccupied positions (0-5).
+4. For each item in the final `purchased_items` list, randomly assign it to an available item slot on one of the purchased units.
+5. Return the completed `EncounterDefinition`.
+
+## 8.4 Manager & System Responsibilities
+
+### GameManager.gd
+- When a BATTLE node is selected via `_on_node_selected`, it will inspect the `node_def.subtype`.
+- It calculates the `total_budget = (run_state.day * 5)`. If `subtype == "ELITE"`, it applies the `total_budget *= 1.5` multiplier.
+- It calls `EncounterGenerator.generate_encounter(total_budget)`.
+- It passes the resulting `EncounterDefinition` to the `BattleManager` during the battle setup process.
+
+### EncounterGenerator.gd (New Script)
+- A new autoload singleton script.
+- Contains the `generate_encounter` method and the logic from section 8.3. It is a stateless service.
+
+### BattleManager.gd
+- Its `_setup_enemy_lineup` function will be modified to accept an optional `EncounterDefinition`. If one is provided, it builds the enemy team from that definition instead of its old hard-coded logic. If no definition is provided, it can fall back to a default or error state.

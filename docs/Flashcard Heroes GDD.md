@@ -90,6 +90,13 @@ Special non-GachaBall items that provide powerful, run-wide passive bonuses. Pla
 
 **Battle Node:** Standard combat encounters. Includes Common, Elite, and Boss variants.
 
+**Encounter Budget System:**
+To ensure varied and scaling challenges, COMMON and ELITE battle nodes do not use pre-defined enemy formations. Instead, they dynamically generate an enemy team using a budget-based system.
+- **Daily Budget:** At the start of each new "Day," the encounter budget increases. The base budget is calculated as Day * 5 Gold.
+- **Budget Allocation:** The system uses its gold budget to "purchase" a team of up to 6 units and a corresponding set of items from a pool of all available GachaBalls. The algorithm is designed to spend at least half of its budget on units first, ensuring a solid team composition, before spending the remainder on additional units or items.
+- **Optimization:** The generation algorithm is optimized to spend its entire budget, ensuring that the challenge level is as close as possible to the day's intended difficulty. It will attempt to construct a full team that uses every last point of gold.
+- **Elite Encounters:** ELITE battle nodes use the same dynamic generation system but with a significant advantage: their total gold budget is multiplied by 1.5, resulting in much tougher opponents with higher-tier units and more items.
+
 **Shop Node:** An economic hub where players can spend Gold to acquire new GachaBalls.
 - **Stock:** Presents 3 randomly generated GachaBalls for purchase when the node is entered
 - **Purchasing:** 

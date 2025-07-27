@@ -50,17 +50,22 @@ func set_is_enemy(is_enemy: bool):
 func _update_stats():
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance): 
+		print("GachaBallView: _update_stats - No instance found for UUID: ", _instance_uuid)
 		return
 	var definition = instance.get_definition()
 	if not definition or definition.category != &"UNIT":
 		hp_label.visible = false
 		pwr_label.visible = false
+		print("GachaBallView: _update_stats - Not a unit, hiding stats")
 		return
 	
 	hp_label.visible = true
 	pwr_label.visible = true
-	hp_label.text = "HP: %d" % instance.current_hp
-	pwr_label.text = "PWR: %d" % instance.current_pwr
+	var new_hp_text = "HP: %d" % instance.current_hp
+	var new_pwr_text = "PWR: %d" % instance.current_pwr
+	hp_label.text = new_hp_text
+	pwr_label.text = new_pwr_text
+	print("GachaBallView: _update_stats - Updated labels to HP: ", new_hp_text, ", PWR: ", new_pwr_text)
 
 func _update_item_slots():
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
@@ -119,10 +124,18 @@ func _find_slot_anchor() -> Control:
 	return self
 
 func _on_unit_stats_changed(unit_uuid: String):
+	print("GachaBallView: Received unit_stats_changed for UUID: ", unit_uuid, ", my UUID: ", _instance_uuid)
 	if _instance_uuid == unit_uuid:
 		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
+			print("GachaBallView: Updating stats for unit: ", unit_uuid)
+			print("GachaBallView: Current stats before update - HP: ", instance.current_hp, ", PWR: ", instance.current_pwr)
 			_update_stats()
+			print("GachaBallView: Stats updated")
+		else:
+			print("GachaBallView: Could not find instance for UUID: ", unit_uuid)
+	else:
+		print("GachaBallView: UUID mismatch, ignoring signal")
 
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return

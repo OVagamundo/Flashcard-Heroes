@@ -13,6 +13,7 @@ const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
+const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
 
 var _current_content_node: Node = null
 
@@ -57,8 +58,10 @@ func _load_content(scene_resource: PackedScene):
 	_current_content_node = instance
 	content_area.get_node("SubViewport").add_child(instance)
 
-func _on_battle_start_requested():
+func _on_battle_start_requested(encounter_def: EncounterDefinition):
 	_load_content(BATTLE_SCENE)
+	# Use call_deferred to ensure the BattleManager is ready before calling it
+	call_deferred("_start_battle_with_encounter", encounter_def)
 
 func _on_path_choice_scene_requested():
 	_load_content(PATH_CHOICE_SCENE)
@@ -123,3 +126,14 @@ func _on_run_data_changed():
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 		_on_gold_changed(GameManager.run_state.gold)
+
+func _start_battle_with_encounter(encounter_def: EncounterDefinition):
+	# Find the BattleManager in the loaded scene and start the battle
+	var battle_manager = _current_content_node.get_node_or_null("BattleManager")
+	if battle_manager and battle_manager.has_method("start_battle"):
+		print("Main: Starting battle with encounter_def: ", encounter_def != null)
+		battle_manager.start_battle(encounter_def)
+	else:
+		print("Main: Could not find BattleManager or start_battle method")
+
+

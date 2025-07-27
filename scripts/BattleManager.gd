@@ -23,6 +23,7 @@ var _containers: Dictionary = {}
 
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
+const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
 var _gacha_tokens: int = 0
 
 func _ready():
@@ -33,12 +34,8 @@ func _ready():
 			if node != self: is_first = false; break
 		if not is_first: queue_free(); return
 	add_to_group("battle_manager")
-	_setup_battle()
 	_change_phase(Phases.MANAGEMENT)
 	_connect_signals()
-	GameManager.is_in_battle = true
-	EventBus.emit_signal("battle_state_changed", true)
-	EventBus.emit_signal("battle_inventory_changed")
 
 func _exit_tree():
 	GameManager.is_in_battle = false
@@ -58,7 +55,21 @@ func _connect_signals():
 	EventBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 	EventBus.battle_inventory_changed.connect(_check_and_trigger_reshuffles)
 
-func _setup_battle():
+
+
+func start_battle(encounter_def: EncounterDefinition):
+	print("BattleManager: Starting battle with encounter_def: ", encounter_def != null)
+	# Clear any existing selection when entering battle
+	EventBus.emit_signal("selection_clear_requested")
+	_setup_battle(encounter_def)
+	GameManager.is_in_battle = true
+	EventBus.emit_signal("battle_state_changed", true)
+	EventBus.emit_signal("battle_inventory_changed")
+	
+	# Emit unit_stats_changed for all units that have equipped items after UI is populated
+	call_deferred("_emit_stats_changed_for_equipped_units")
+
+func _setup_battle(encounter_def: EncounterDefinition = null):
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
@@ -69,11 +80,13 @@ func _setup_battle():
 
 	# First pass: Create all battle copies and map their new UUIDs, except for the hero (use persistent instance for hero)
 	var hero_instance = null
+	print("BattleManager: Processing ", run_state_instances.size(), " run state instances")
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
 		if is_hero:
 			hero_instance = perm_inst
+			print("BattleManager: Found hero instance: ", perm_inst.ball_uuid)
 			# Add the hero instance to _battle_instances so UI can find it during battle
 			_battle_instances[perm_inst.ball_uuid] = perm_inst
 			continue # Don't create a battle copy for the hero
@@ -103,6 +116,7 @@ func _setup_battle():
 
 	# Third pass: Place all instances in their correct, stable locations.
 	print("--- BATTLE SETUP: PASS 3 ---")
+	print("BattleManager: Hero instance found: ", hero_instance != null)
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
@@ -110,6 +124,7 @@ func _setup_battle():
 		if not is_instance_valid(perm_loc): continue
 		if is_hero:
 			# Place the persistent hero instance directly in the PlayerLineup
+			print("BattleManager: Placing hero at index ", perm_loc.index)
 			var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 			container.set_uuid(perm_loc.index, perm_inst.ball_uuid)
 			_update_instance_location(perm_inst.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, perm_loc.index)
@@ -142,23 +157,57 @@ func _setup_battle():
 		container.set_uuid(index, battle_copy.ball_uuid)
 		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
-	_setup_enemy_lineup()
-	_setup_enemy_lineup()
+	_setup_enemy_lineup(encounter_def)
 
-func _setup_enemy_lineup():
-	var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
-	var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	
-	for i in range(min(enemy_unit_ids.size(), 6)):
-		var unit_def = Database.get_definition(enemy_unit_ids[i])
-		if not is_instance_valid(unit_def): continue
+func _setup_enemy_lineup(encounter_def: EncounterDefinition = null):
+	print("BattleManager: Setting up enemy lineup with encounter_def: ", encounter_def != null)
+	if encounter_def:
+		# Use the provided encounter definition
+		print("BattleManager: Encounter has ", encounter_def.enemy_placements.size(), " placements")
+		var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 		
-		var enemy_inst = GachaBallInstance.new()
-		enemy_inst.initialize(unit_def)
-		_battle_instances[enemy_inst.ball_uuid] = enemy_inst
+		for placement in encounter_def.enemy_placements:
+			var unit_def = Database.get_definition(placement.id)
+			if not is_instance_valid(unit_def): continue
+			
+			var enemy_inst = GachaBallInstance.new()
+			enemy_inst.initialize(unit_def)
+			_battle_instances[enemy_inst.ball_uuid] = enemy_inst
+			
+			# Equip items
+			for item_id in placement.get("items", []):
+				var item_def = Database.get_definition(item_id)
+				if not is_instance_valid(item_def): continue
+				
+				var item_inst = GachaBallInstance.new()
+				item_inst.initialize(item_def)
+				_battle_instances[item_inst.ball_uuid] = item_inst
+				
+				_perform_equip(item_inst, enemy_inst)
+			
+			lineup_container.set_uuid(placement.position, enemy_inst.ball_uuid)
+			_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, placement.position)
+			
+			print("BattleManager: Created enemy unit at position ", placement.position, " with ", placement.get("items", []).size(), " items")
+			
+			# Note: unit_stats_changed will be emitted after UI is populated
+			if placement.get("items", []).size() > 0:
+				print("BattleManager: Enemy unit ", enemy_inst.ball_uuid, " has ", placement.get("items", []).size(), " equipped items")
+	else:
+		# Fallback to hardcoded enemy lineup
+		var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
+		var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 		
-		lineup_container.set_uuid(i, enemy_inst.ball_uuid)
-		_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
+		for i in range(min(enemy_unit_ids.size(), 6)):
+			var unit_def = Database.get_definition(enemy_unit_ids[i])
+			if not is_instance_valid(unit_def): continue
+			
+			var enemy_inst = GachaBallInstance.new()
+			enemy_inst.initialize(unit_def)
+			_battle_instances[enemy_inst.ball_uuid] = enemy_inst
+			
+			lineup_container.set_uuid(i, enemy_inst.ball_uuid)
+			_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
 
 func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
@@ -466,3 +515,35 @@ func _on_draw_gacha_requested(tier: int):
 	else:
 		_move_instance_to_discard(drawn_instance)
 	EventBus.emit_signal("battle_inventory_changed")
+
+# Helper function to equip an item on a unit
+func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
+	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
+	if empty_slot_idx != -1:
+		unit_instance.equipped_item_uuids[empty_slot_idx] = item_instance.ball_uuid
+		item_instance.equipped_on_uuid = unit_instance.ball_uuid
+		item_instance.equipped_slot_index = empty_slot_idx
+		
+		# Apply the item's stat bonuses to the unit
+		unit_instance.equip_item_bonus(item_instance)
+
+func _emit_stats_changed_for_equipped_units():
+	print("BattleManager: _emit_stats_changed_for_equipped_units called")
+	# Emit unit_stats_changed for all units that have equipped items
+	for instance in _battle_instances.values():
+		if is_instance_valid(instance) and instance.get_definition().category == &"UNIT":
+			var has_equipped_items = false
+			var equipped_count = 0
+			for item_uuid in instance.equipped_item_uuids:
+				if not item_uuid.is_empty():
+					has_equipped_items = true
+					equipped_count += 1
+			if has_equipped_items:
+				var def = instance.get_definition()
+				print("BattleManager: Unit ", instance.ball_uuid, " has ", equipped_count, " equipped items")
+				print("BattleManager: Base stats - HP: ", def.base_hp, ", PWR: ", def.base_pwr)
+				print("BattleManager: Current stats - HP: ", instance.current_hp, ", PWR: ", instance.current_pwr)
+				print("BattleManager: Emitting unit_stats_changed for unit: ", instance.ball_uuid)
+				EventBus.emit_signal("unit_stats_changed", instance.ball_uuid)
+			else:
+				print("BattleManager: Unit ", instance.ball_uuid, " has no equipped items")

@@ -2,7 +2,7 @@
 extends Node
 
 
-const INSPECTION_WINDOW_MARGIN = 10.0
+const INSPECTION_WINDOW_MARGIN = 20.0
 
 # Using preload for scenes that are fundamental to the UI.
 var _window_scenes: Dictionary = {
@@ -23,6 +23,9 @@ var _tracked_windows: Dictionary = {} # Stores info about tracked windows for cl
 var _modal_layer: CanvasLayer = null
 
 func _ready():
+	# Ensure this node can process input events
+	set_process_input(true)
+	
 	EventBus.inspect_inventory_requested.connect(_on_inspect_inventory_requested)
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
 	EventBus.inspection_requested.connect(_open_root_inspection_window)
@@ -35,7 +38,8 @@ func _ready():
 	EventBus.loadout_scene_requested.connect(_close_all_windows)
 	EventBus.title_scene_requested.connect(_close_all_windows)
 
-func _unhandled_input(event: InputEvent):
+func _input(event: InputEvent):
+	# Handle escape key for closing windows
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		if InteractionManager.is_drag_active():
@@ -46,6 +50,30 @@ func _unhandled_input(event: InputEvent):
 			close_all_inspection_windows()
 		else:
 			EventBus.emit_signal("selection_clear_requested")
+		return
+	
+	# Handle mouse clicks for closing inspection windows
+	if not event is InputEventMouseButton:
+		return
+	if not event.button_index == MOUSE_BUTTON_LEFT or not event.is_pressed():
+		return
+
+	# Don't close inspection windows if there are modal windows active
+	# The user might be legitimately interacting with the modal window
+	if not _modal_stack.is_empty():
+		return
+
+	if not _active_inspection_group.is_empty():
+		var click_is_inside_a_window = false
+		for window in _active_inspection_group:
+			if is_instance_valid(window) and window.get_global_rect().has_point(event.position):
+				click_is_inside_a_window = true
+				break
+		
+		if not click_is_inside_a_window:
+			close_all_inspection_windows()
+			EventBus.emit_signal("selection_clear_requested")
+			# We DO NOT consume the input here, allowing it to "click through".
 
 # --- Public API ---
 
@@ -183,18 +211,17 @@ func open_child_inspection_window(parent_window: Control, window_type: StringNam
 	_close_children_of(parent_window)
 
 	var window_instance = _window_scenes[window_type].instantiate()
-	window_instance.set_as_top_level(true)
 	_active_inspection_group.append(window_instance)
-	parent_window.add_child(window_instance)
+	_get_modal_layer().add_child(window_instance)
 	_register_window(window_instance, false)
 
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 
-	# Use call_deferred to position the window on the next idle frame. This
-	# guarantees the window has been added to the tree and its final size
-	# has been calculated, solving the race condition robustly.
-	window_instance.call_deferred("set_global_position", _calculate_window_position(parent_window, window_instance))
+	# Position the child window in global coordinates relative to its parent
+	# This ensures proper positioning without overlapping
+	# Use call_deferred to ensure the window is fully set up before positioning
+	window_instance.call_deferred("_position_child_window", parent_window)
 
 func _close_children_of(parent_window: Control):
 	var parent_index = _find_window_in_group(parent_window)
@@ -257,6 +284,14 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 	return payload
 
 func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control):
+	# Check if a window already exists for this location
+	for window in _active_inspection_group:
+		if is_instance_valid(window) and window.has_method("get_location"):
+			var window_loc = window.get_location()
+			if window_loc != null and window_loc.container_tag == loc.container_tag and window_loc.slot_index == loc.slot_index:
+				# Window already exists for this location, don't create another one
+				return
+	
 	var parent_window := _find_ancestor_inspection_window(source_view)
 	if parent_window != null:
 		var payload := _derive_window_payload(loc, source_view)
@@ -265,7 +300,6 @@ func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control)
 		open_child_inspection_window(parent_window, payload["window_type"], payload["context"])
 		return
 	
-	close_all_inspection_windows()
 	_open_inspection_window(loc, source_view)
 
 func _on_selection_changed(new_location: LocationIdentifier):
@@ -284,6 +318,7 @@ func _on_selection_changed(new_location: LocationIdentifier):
 
 
 func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
+	print("WindowManager: Opening inspection window for location: ", loc.container, " [", loc.index, "]")
 	var window_type: StringName
 	var context: Dictionary
 	var instance: GachaBallInstance
@@ -291,11 +326,13 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	if is_instance_valid(loc):
 		instance = GameManager.get_instance_from_location(loc)
 		if not is_instance_valid(instance):
+			print("WindowManager: No instance found for location")
 			return
 
 		var def = instance.get_definition()
 		window_type = &"UnitInspection" if def.category == &"UNIT" else &"ItemInspection"
 		context = {"source_view": source_view, "instance": instance, "location": loc}
+		print("WindowManager: Opening ", window_type, " window for ", def.category, " instance")
 
 	elif source_view.has_meta("effect_definition"):
 		var effect_def = source_view.get_meta("effect_definition")
@@ -317,8 +354,8 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 	
-	# Use call_deferred for robust positioning.
-	window_instance.call_deferred("set_global_position", _calculate_window_position(source_view, window_instance))
+	# Use call_deferred for robust positioning after the window is fully set up
+	window_instance.call_deferred("_position_root_window", source_view)
 	
 	# Dynamic tracking of the anchor as it moves or is replaced.
 	# We can do this immediately; it doesn't need to be deferred.
@@ -432,7 +469,7 @@ func _on_inspection_anchor_freed(window_instance_id: int, old_anchor_id: int, _l
 		if old_anchor.is_connected("item_rect_changed", geom_callable):
 			old_anchor.item_rect_changed.disconnect(geom_callable)
 	
-	# SAFE BEHAVIOR: If the anchor is gone, the inspection window is no longer
+		# SAFE BEHAVIOR: If the anchor is gone, the inspection window is no longer
 	# relevant and must be closed to prevent crashes and orphaned UI.
 	if is_instance_valid(window_instance):
 		window_instance.queue_free()
@@ -482,50 +519,118 @@ func _calculate_window_position(source_view: Control, new_window: Control) -> Ve
 	var source_rect = Rect2(source_pos, source_size)
 	var window_size = new_window.size
 	
-	# Prefer positioning to the RIGHT of the source. If there isn't enough room,
-	# try LEFT, then BELOW, and finally ABOVE as a last resort. This follows the
-	# user-requested priority and the TDD rule that the child must not overlap
-	# its parent.
-	var pos_right = Vector2(source_rect.end.x + INSPECTION_WINDOW_MARGIN, source_rect.position.y)
-	if viewport_rect.encloses(Rect2(pos_right, window_size)):
-		return pos_right
-
-	var pos_left = Vector2(source_rect.position.x - window_size.x - INSPECTION_WINDOW_MARGIN, source_rect.position.y)
-	if viewport_rect.encloses(Rect2(pos_left, window_size)):
-		return pos_left
-
-	var pos_down = Vector2(source_rect.position.x, source_rect.end.y + INSPECTION_WINDOW_MARGIN)
-	if viewport_rect.encloses(Rect2(pos_down, window_size)):
-		return pos_down
-
-	var pos_up = Vector2(source_rect.position.x, source_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN)
-	if viewport_rect.encloses(Rect2(pos_up, window_size)):
-		return pos_up
+	# Determine if the source is on the left or right side of the screen
+	var viewport_center_x = viewport_rect.size.x / 2
+	var source_center_x = source_pos.x + (source_size.x / 2)
+	var is_source_on_right_side = source_center_x > viewport_center_x
 	
+	# Screen-aware positioning: prefer opposite side of source's screen position
+	if is_source_on_right_side:
+		# Source is on the right side, try positioning window to the left first
+		var pos_left = Vector2(source_rect.position.x - window_size.x - INSPECTION_WINDOW_MARGIN, source_rect.position.y)
+		if viewport_rect.encloses(Rect2(pos_left, window_size)):
+			return pos_left
+		
+		# If not enough room on the left, try below
+		var pos_down = Vector2(source_rect.position.x, source_rect.end.y + INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_down, window_size)):
+			return pos_down
+		
+		# If not enough room below, try above
+		var pos_up = Vector2(source_rect.position.x, source_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_up, window_size)):
+			return pos_up
+		
+		# Last resort: try to the right
+		var pos_right = Vector2(source_rect.end.x + INSPECTION_WINDOW_MARGIN, source_rect.position.y)
+		if viewport_rect.encloses(Rect2(pos_right, window_size)):
+			return pos_right
+	else:
+		# Source is on the left side, try positioning window to the right first
+		var pos_right = Vector2(source_rect.end.x + INSPECTION_WINDOW_MARGIN, source_rect.position.y)
+		if viewport_rect.encloses(Rect2(pos_right, window_size)):
+			return pos_right
+		
+		# If not enough room on the right, try below
+		var pos_down = Vector2(source_rect.position.x, source_rect.end.y + INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_down, window_size)):
+			return pos_down
+		
+		# If not enough room below, try above
+		var pos_up = Vector2(source_rect.position.x, source_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_up, window_size)):
+			return pos_up
+		
+		# Last resort: try to the left
+		var pos_left = Vector2(source_rect.position.x - window_size.x - INSPECTION_WINDOW_MARGIN, source_rect.position.y)
+		if viewport_rect.encloses(Rect2(pos_left, window_size)):
+			return pos_left
+	
+	# Fallback: position in the top-left corner
 	return Vector2(INSPECTION_WINDOW_MARGIN, INSPECTION_WINDOW_MARGIN)
 
-func _input(event: InputEvent) -> void:
-	if not event is InputEventMouseButton:
-		return
-	if not event.button_index == MOUSE_BUTTON_LEFT or not event.is_pressed():
-		return
-
-	# Don't close inspection windows if there are modal windows active
-	# The user might be legitimately interacting with the modal window
-	if not _modal_stack.is_empty():
-		return
-
-	if not _active_inspection_group.is_empty():
-		var click_is_inside_a_window = false
-		for window in _active_inspection_group:
-			if is_instance_valid(window) and window.get_global_rect().has_point(event.position):
-				click_is_inside_a_window = true
-				break
+func _calculate_child_window_position(parent_window: Control, child_window: Control) -> Vector2:
+	# Position child windows in global coordinates relative to their parent
+	# This ensures they don't overlap and are properly positioned
+	var parent_global_pos = parent_window.get_global_transform().origin
+	var parent_size = parent_window.size
+	var child_size = child_window.size
+	
+	# Get the viewport to check bounds
+	var viewport_rect = get_viewport().get_visible_rect()
+	var viewport_center_x = viewport_rect.size.x / 2
+	
+	# Determine if the parent is on the left or right side of the screen
+	var parent_center_x = parent_global_pos.x + (parent_size.x / 2)
+	var is_parent_on_right_side = parent_center_x > viewport_center_x
+	
+	# Screen-aware positioning: prefer opposite side of parent's screen position
+	if is_parent_on_right_side:
+		print("WindowManager: Parent is on right side, trying left first")
+		# Parent is on the right side, try positioning child to the left first
+		var pos_left = Vector2(parent_global_pos.x - child_size.x - INSPECTION_WINDOW_MARGIN, parent_global_pos.y)
+		if viewport_rect.encloses(Rect2(pos_left, child_size)):
+			return pos_left
 		
-		if not click_is_inside_a_window:
-			close_all_inspection_windows()
-			EventBus.emit_signal("selection_clear_requested")
-			# We DO NOT consume the input here, allowing it to "click through".
+		# If not enough room on the left, try below
+		var pos_below = Vector2(parent_global_pos.x, parent_global_pos.y + parent_size.y + INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_below, child_size)):
+			return pos_below
+		
+		# If not enough room below, try above
+		var pos_above = Vector2(parent_global_pos.x, parent_global_pos.y - child_size.y - INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_above, child_size)):
+			return pos_above
+		
+		# Last resort: try to the right
+		var pos_right = Vector2(parent_global_pos.x + parent_size.x + INSPECTION_WINDOW_MARGIN, parent_global_pos.y)
+		if viewport_rect.encloses(Rect2(pos_right, child_size)):
+			return pos_right
+	else:
+		# Parent is on the left side, try positioning child to the right first
+		var pos_right = Vector2(parent_global_pos.x + parent_size.x + INSPECTION_WINDOW_MARGIN, parent_global_pos.y)
+		if viewport_rect.encloses(Rect2(pos_right, child_size)):
+			return pos_right
+		
+		# If not enough room on the right, try below
+		var pos_below = Vector2(parent_global_pos.x, parent_global_pos.y + parent_size.y + INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_below, child_size)):
+			return pos_below
+		
+		# If not enough room below, try above
+		var pos_above = Vector2(parent_global_pos.x, parent_global_pos.y - child_size.y - INSPECTION_WINDOW_MARGIN)
+		if viewport_rect.encloses(Rect2(pos_above, child_size)):
+			return pos_above
+		
+		# Last resort: try to the left
+		var pos_left = Vector2(parent_global_pos.x - child_size.x - INSPECTION_WINDOW_MARGIN, parent_global_pos.y)
+		if viewport_rect.encloses(Rect2(pos_left, child_size)):
+			return pos_left
+	
+	# Fallback: position in the top-right corner of the parent
+	return Vector2(parent_global_pos.x + parent_size.x - child_size.x - INSPECTION_WINDOW_MARGIN, parent_global_pos.y + INSPECTION_WINDOW_MARGIN)
+
+
 
 
 func find_view_by_location(loc: LocationIdentifier) -> Control:

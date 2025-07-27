@@ -5,23 +5,405 @@ Database: Successfully loaded translations
 Database: Testing translation - hero.name = Hero
 WARNING: Case mismatch opening requested file '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/Hero.png.import', stored as '/Users/danhh/Desktop/Flashcard Heroes/assets/sprites/units/hero.png.import' in the filesystem. This file will not open when exported to other case-sensitive platforms.
    at: open_internal (drivers/unix/file_access_unix.cpp:113)
+GameManager: Day: 1, Budget: 5, Node subtype: 
+EncounterGenerator: Generating encounter with budget: 5
+EncounterGenerator: Total definitions found: 10
+EncounterGenerator: Database.units size: 6
+EncounterGenerator: Database.items size: 4
+EncounterGenerator: Available units: 4, Available items: 4
+EncounterGenerator: Final build - Units: 3, Items: 1, Spent: 5
+GameManager: Generated 3 reward instances
+Main: Starting battle with encounter_def: true
+BattleManager: Starting battle with encounter_def: true
+BattleManager: Processing 17 run state instances
+BattleManager: Found hero instance: hero_1753571135_5657
 --- BATTLE SETUP: PASS 3 ---
-Processing permanent instance: unit_t1_a_1753548012_9122 with location: RunInventoryT1 [0]
-Processing permanent instance: unit_t1_a_1753548012_1275 with location: RunInventoryT1 [1]
-Processing permanent instance: unit_t1_b_1753548012_6788 with location: RunInventoryT1 [2]
-Processing permanent instance: unit_t1_b_1753548012_6573 with location: RunInventoryT1 [3]
-Processing permanent instance: item_t1_a_1753548012_7764 with location: RunInventoryT1 [4]
-Processing permanent instance: item_t1_a_1753548012_3895 with location: RunInventoryT1 [5]
-Processing permanent instance: item_t1_b_1753548012_9601 with location: RunInventoryT1 [6]
-Processing permanent instance: item_t1_b_1753548012_5191 with location: RunInventoryT1 [7]
-Processing permanent instance: unit_t2_c_1753548012_4463 with location: RunInventoryT2 [0]
-Processing permanent instance: unit_t2_c_1753548012_8193 with location: RunInventoryT2 [1]
-Processing permanent instance: item_t2_c_1753548012_5442 with location: RunInventoryT2 [2]
-Processing permanent instance: item_t2_c_1753548012_6437 with location: RunInventoryT2 [3]
-Processing permanent instance: unit_t3_d_1753548012_1993 with location: RunInventoryT3 [0]
-Processing permanent instance: unit_t3_d_1753548012_9893 with location: RunInventoryT3 [1]
-Processing permanent instance: item_t3_d_1753548012_5951 with location: RunInventoryT3 [2]
-Processing permanent instance: item_t3_d_1753548012_0464 with location: RunInventoryT3 [3]
-Processing permanent instance: item_t1_a_1753548014_1484 with location: RunInventoryT1 [8]
-Processing permanent instance: item_t1_b_1753548014_6089 with location: RunInventoryT1 [9]
-Processing permanent instance: unit_t1_b_1753548020_0157 with location: RunInventoryT1 [10]
+BattleManager: Hero instance found: true
+BattleManager: Placing hero at index 0
+Processing permanent instance: unit_t1_a_1753571135_5111 with location: RunInventoryT1 [0]
+Processing permanent instance: unit_t1_a_1753571135_9146 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t1_b_1753571135_3210 with location: RunInventoryT1 [2]
+Processing permanent instance: unit_t1_b_1753571135_4030 with location: RunInventoryT1 [3]
+Processing permanent instance: item_t1_a_1753571135_5132 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_a_1753571135_6960 with location: RunInventoryT1 [5]
+Processing permanent instance: item_t1_b_1753571135_4604 with location: RunInventoryT1 [6]
+Processing permanent instance: item_t1_b_1753571135_2403 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753571135_3185 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753571135_4730 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753571135_7885 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753571135_8998 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753571135_9848 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753571135_2481 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753571135_2946 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753571135_5090 with location: RunInventoryT3 [3]
+BattleManager: Setting up enemy lineup with encounter_def: true
+BattleManager: Encounter has 3 placements
+BattleManager: Created enemy unit at position 0 with 0 items
+BattleManager: Created enemy unit at position 4 with 1 items
+BattleManager: Enemy unit unit_t2_c_1753571137_9140 has 1 equipped items
+BattleManager: Created enemy unit at position 3 with 0 items
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+BattleManager: _emit_stats_changed_for_equipped_units called
+BattleManager: Unit hero_1753571135_5657 has no equipped items
+BattleManager: Unit unit_t1_a_1753571137_4956 has no equipped items
+BattleManager: Unit unit_t1_a_1753571137_5005 has no equipped items
+BattleManager: Unit unit_t1_b_1753571137_8496 has no equipped items
+BattleManager: Unit unit_t1_b_1753571137_0404 has no equipped items
+BattleManager: Unit unit_t2_c_1753571137_9816 has no equipped items
+BattleManager: Unit unit_t2_c_1753571137_0258 has no equipped items
+BattleManager: Unit unit_t3_d_1753571137_5697 has no equipped items
+BattleManager: Unit unit_t3_d_1753571137_9575 has no equipped items
+BattleManager: Unit unit_t1_a_1753571137_7403 has no equipped items
+BattleManager: Unit unit_t2_c_1753571137_9140 has 1 equipped items
+BattleManager: Base stats - HP: 3, PWR: 3
+BattleManager: Current stats - HP: 3, PWR: 4
+BattleManager: Emitting unit_stats_changed for unit: unit_t2_c_1753571137_9140
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t1_a_1753571137_7403
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: Updating stats for unit: unit_t2_c_1753571137_9140
+GachaBallView: Current stats before update - HP: 3, PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: Stats updated
+BattleManager: Unit unit_t1_b_1753571137_7120 has no equipped items
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: Updating stats for unit: unit_t1_a_1753571137_5005
+GachaBallView: Current stats before update - HP: 1, PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: item_t1_a_1753571137_9930
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: item_t1_b_1753571137_6967
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_a_1753571137_7403
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: Updating stats for unit: unit_t1_a_1753571137_5005
+GachaBallView: Current stats before update - HP: 1, PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: item_t1_a_1753571137_9930
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: item_t1_b_1753571137_6967
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_a_1753571137_7403
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_5005, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: Updating stats for unit: unit_t1_b_1753571137_8496
+GachaBallView: Current stats before update - HP: 3, PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 1
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: item_t1_a_1753571137_9930
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_a_1753571137_7403
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: Updating stats for unit: unit_t1_b_1753571137_8496
+GachaBallView: Current stats before update - HP: 3, PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 1
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: item_t1_a_1753571137_9930
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_a_1753571137_7403
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: unit_t1_a_1753571137_7403
+GachaBallView: Updating stats for unit: unit_t1_a_1753571137_7403
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1753571137_7403, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_7120, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_7120, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_7120, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_7120, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_7120, my UUID: unit_t1_b_1753571137_7120
+GachaBallView: Updating stats for unit: unit_t1_b_1753571137_7120
+GachaBallView: Current stats before update - HP: 0, PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 1
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_7120, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+BasicAttack: unit_t1_a attacks unit_t1_b for 3 damage. Target HP is now 0.
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 4
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: Updating stats for unit: unit_t2_c_1753571137_9140
+GachaBallView: Current stats before update - HP: 1, PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 4
+GachaBallView: Stats updated
+BasicAttack: hero attacks unit_t2_c for 2 damage. Target HP is now 1.
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t1_b_1753571137_8496
+GachaBallView: Updating stats for unit: unit_t1_b_1753571137_8496
+GachaBallView: Current stats before update - HP: 0, PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 1
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1753571137_8496, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: UUID mismatch, ignoring signal
+BasicAttack: unit_t2_c attacks unit_t1_b for 4 damage. Target HP is now 0.
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 4
+WindowManager: Opening inspection window for location: PlayerLineup [3]
+WindowManager: Opening UnitInspection window for UNIT instance
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t1_a_1753571137_5005
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: item_t1_a_1753571137_5367
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571137_9140, my UUID: unit_t2_c_1753571137_9140
+GachaBallView: Updating stats for unit: unit_t2_c_1753571137_9140
+GachaBallView: Current stats before update - HP: 0, PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 4
+GachaBallView: Stats updated
+BasicAttack: unit_t1_a attacks unit_t2_c for 3 damage. Target HP is now 0.
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 3
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GameManager: Day: 2, Budget: 10, Node subtype: 
+EncounterGenerator: Generating encounter with budget: 10
+EncounterGenerator: Total definitions found: 10
+EncounterGenerator: Database.units size: 6
+EncounterGenerator: Database.items size: 4
+EncounterGenerator: Available units: 4, Available items: 4
+EncounterGenerator: Final build - Units: 3, Items: 2, Spent: 10
+GameManager: Generated 3 reward instances
+Main: Starting battle with encounter_def: true
+BattleManager: Starting battle with encounter_def: true
+BattleManager: Processing 17 run state instances
+BattleManager: Found hero instance: hero_1753571135_5657
+--- BATTLE SETUP: PASS 3 ---
+BattleManager: Hero instance found: true
+BattleManager: Placing hero at index 0
+Processing permanent instance: unit_t1_a_1753571135_5111 with location: RunInventoryT1 [0]
+Processing permanent instance: unit_t1_a_1753571135_9146 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t1_b_1753571135_3210 with location: RunInventoryT1 [2]
+Processing permanent instance: unit_t1_b_1753571135_4030 with location: RunInventoryT1 [3]
+Processing permanent instance: item_t1_a_1753571135_5132 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_a_1753571135_6960 with location: RunInventoryT1 [5]
+Processing permanent instance: item_t1_b_1753571135_4604 with location: RunInventoryT1 [6]
+Processing permanent instance: item_t1_b_1753571135_2403 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1753571135_3185 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1753571135_4730 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1753571135_7885 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1753571135_8998 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1753571135_9848 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1753571135_2481 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1753571135_2946 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1753571135_5090 with location: RunInventoryT3 [3]
+BattleManager: Setting up enemy lineup with encounter_def: true
+BattleManager: Encounter has 3 placements
+BattleManager: Created enemy unit at position 0 with 1 items
+BattleManager: Enemy unit unit_t2_c_1753571167_1548 has 1 equipped items
+BattleManager: Created enemy unit at position 3 with 1 items
+BattleManager: Enemy unit unit_t2_c_1753571167_1061 has 1 equipped items
+BattleManager: Created enemy unit at position 5 with 0 items
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 5, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+BattleManager: _emit_stats_changed_for_equipped_units called
+BattleManager: Unit hero_1753571135_5657 has no equipped items
+BattleManager: Unit unit_t1_a_1753571167_3212 has no equipped items
+BattleManager: Unit unit_t1_a_1753571167_5495 has no equipped items
+BattleManager: Unit unit_t1_b_1753571167_9343 has no equipped items
+BattleManager: Unit unit_t1_b_1753571167_1061 has no equipped items
+BattleManager: Unit unit_t2_c_1753571167_2842 has no equipped items
+BattleManager: Unit unit_t2_c_1753571167_2591 has no equipped items
+BattleManager: Unit unit_t3_d_1753571167_3325 has no equipped items
+BattleManager: Unit unit_t3_d_1753571167_9478 has no equipped items
+BattleManager: Unit unit_t2_c_1753571167_1548 has 1 equipped items
+BattleManager: Base stats - HP: 3, PWR: 3
+BattleManager: Current stats - HP: 4, PWR: 4
+BattleManager: Emitting unit_stats_changed for unit: unit_t2_c_1753571167_1548
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1548, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1548, my UUID: unit_t2_c_1753571167_1548
+GachaBallView: Updating stats for unit: unit_t2_c_1753571167_1548
+GachaBallView: Current stats before update - HP: 4, PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 4
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1548, my UUID: unit_t2_c_1753571167_1061
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1548, my UUID: unit_t1_a_1753571167_5796
+GachaBallView: UUID mismatch, ignoring signal
+BattleManager: Unit unit_t2_c_1753571167_1061 has 1 equipped items
+BattleManager: Base stats - HP: 3, PWR: 3
+BattleManager: Current stats - HP: 5, PWR: 5
+BattleManager: Emitting unit_stats_changed for unit: unit_t2_c_1753571167_1061
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1061, my UUID: hero_1753571135_5657
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1061, my UUID: unit_t2_c_1753571167_1548
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1061, my UUID: unit_t2_c_1753571167_1061
+GachaBallView: Updating stats for unit: unit_t2_c_1753571167_1061
+GachaBallView: Current stats before update - HP: 5, PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 5, PWR: PWR: 5
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1753571167_1061, my UUID: unit_t1_a_1753571167_5796
+GachaBallView: UUID mismatch, ignoring signal
+BattleManager: Unit unit_t1_a_1753571167_5796 has no equipped items
+WindowManager: Opening inspection window for location: EnemyLineup [3]
+WindowManager: Opening UnitInspection window for UNIT instance
+GachaBallView: _update_stats - Not a unit, hiding stats
+WindowManager: Opening inspection window for location: EnemyLineup [3]
+WindowManager: Opening UnitInspection window for UNIT instance
+GachaBallView: _update_stats - Not a unit, hiding stats
+WindowManager: Parent is on right side, trying left first
