@@ -25,6 +25,7 @@ const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
 const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
 var _gacha_tokens: int = 0
+var _last_minigame_results: Dictionary = {}
 
 func _ready():
 	var existing := get_tree().get_nodes_in_group("battle_manager")
@@ -39,6 +40,7 @@ func _ready():
 	_connect_signals()
 	# Connect to flashcard completion signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
+	EventBus.results_acknowledged.connect(_on_results_acknowledged)
 
 func _exit_tree():
 	print("BattleManager: _exit_tree called")
@@ -55,6 +57,8 @@ func _exit_tree():
 		EventBus.battle_inventory_changed.disconnect(_check_and_trigger_reshuffles)
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
+	if EventBus.is_connected("results_acknowledged", _on_results_acknowledged):
+		EventBus.results_acknowledged.disconnect(_on_results_acknowledged)
 
 func _connect_signals():
 	EventBus.end_turn_requested.connect(_on_end_turn_requested)
@@ -84,7 +88,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
-	_gacha_tokens = 5
+	_gacha_tokens = 0
 	print("BattleManager: Initial gacha_tokens set to: ", _gacha_tokens)
 	
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
@@ -342,6 +346,9 @@ func _change_phase(new_phase: Phases):
 	EventBus.emit_signal("battle_phase_changed", get_current_phase_name())
 	match _current_battle_phase:
 		Phases.START_OF_TURN:
+			# Grant base 5 tokens for the turn
+			_gacha_tokens += 5
+			EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 			# The flashcard mini-game is the first event of the turn.
 			# TDD Section 9.4: Battle Flow
 			if is_instance_valid(GameManager.run_state):
@@ -351,6 +358,8 @@ func _change_phase(new_phase: Phases):
 			# Re-enable draw buttons when entering management phase
 			print("BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed")
 			EventBus.emit_signal("battle_inventory_changed")
+		Phases.COMBAT:
+			pass
 		Phases.END_OF_TURN:
 			pass
 
@@ -388,12 +397,13 @@ func _process_effect_queue() -> void:
 		EventBus.emit_signal("battle_log_event", message)
 		ability_def.effect.execute(source, [target], self)
 		_check_for_deaths()
-		if _is_battle_over(): break
+		if _is_battle_over():
+			return
 		await get_tree().create_timer(0.8).timeout
 	_is_processing_effect = false
 	_change_phase(Phases.END_OF_TURN)
 	await get_tree().create_timer(0.1).timeout
-	_change_phase(Phases.MANAGEMENT)
+	_change_phase(Phases.START_OF_TURN)
 
 func _move_instance_to_discard(instance: GachaBallInstance):
 	if not is_instance_valid(instance): return
@@ -445,6 +455,8 @@ func _is_battle_over() -> bool:
 	if player_lineup.is_empty() or enemy_lineup.is_empty():
 		_current_battle_phase = Phases.BATTLE_OVER
 		var did_player_win = enemy_lineup.is_empty()
+		if did_player_win:
+			EventBus.emit_signal("battle_won_rewards_pending")
 		WindowManager.open_end_battle_popup(did_player_win)
 		return true
 	return false
@@ -493,7 +505,9 @@ func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
 
 func _on_end_turn_requested():
 	if _current_battle_phase == Phases.MANAGEMENT:
-		_change_phase(Phases.START_OF_TURN)
+		_populate_effect_queue()
+		_change_phase(Phases.COMBAT)
+		_process_effect_queue()
 
 func _on_unit_inventory_changed(unit_uuid: String):
 	# Only recalculate stats for the specific unit that changed
@@ -573,28 +587,28 @@ func _on_flashcard_completed(results: Dictionary):
 		print("BattleManager: Early return from _on_flashcard_completed - no battle found")
 		return
 
+	_last_minigame_results = results
+
 	var correct_answers = results.get("correct_answers", 0)
 	var gacha_gain = 5 + correct_answers  # TDD: gacha_gain = 5 (base) + results.correct_answers
 	
 	# Display ResultsPopup
-	WindowManager.open_modal_window(&"ResultsPopup", {
-		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % gacha_gain, "Okay"]
+	var popup = WindowManager.open_modal_window(&"ResultsPopup", {
+		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % correct_answers, "Okay"]
 	})
-	
-	# Connect to results_acknowledged to proceed with combat
-	EventBus.results_acknowledged.connect(_on_results_acknowledged, CONNECT_ONE_SHOT)
 
 func _on_results_acknowledged():
 	"""Called when player acknowledges the results popup"""
-	var correct_answers = 0  # We need to get this from the results, but it's not stored
-	# For now, we'll use a simple approach - just add the base amount
-	var gacha_gain = 5
+	_change_phase(Phases.MANAGEMENT)
+	
+	var correct_answers = _last_minigame_results.get("correct_answers", 0)
+	var gacha_gain = correct_answers
 	
 	print("BattleManager: Adding ", gacha_gain, " tokens. Current tokens: ", _gacha_tokens)
 	_gacha_tokens += gacha_gain
 	print("BattleManager: New token count: ", _gacha_tokens)
 	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
-	# After the minigame, proceed with the combat phase
-	_populate_effect_queue()
-	_process_effect_queue()
+	_last_minigame_results.clear()
+	
+	EventBus.emit_signal("close_modal_requested")

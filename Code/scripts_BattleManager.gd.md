@@ -37,6 +37,7 @@ func _ready():
 			if node != self: is_first = false; break
 		if not is_first: queue_free(); return
 	add_to_group("battle_manager")
+	GameManager.register_battle_manager(self) # ADD THIS LINE
 	_change_phase(Phases.MANAGEMENT)
 	_connect_signals()
 	# Connect to flashcard completion signal
@@ -44,6 +45,7 @@ func _ready():
 
 func _exit_tree():
 	print("BattleManager: _exit_tree called")
+	GameManager.unregister_battle_manager() # ADD THIS LINE
 	GameManager.is_in_battle = false
 	EventBus.emit_signal("battle_state_changed", false)
 	if EventBus.is_connected("end_turn_requested", _on_end_turn_requested):

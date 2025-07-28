@@ -61,7 +61,7 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 		return # Game already in progress
 	
 	self._run_state_ref = run_state
-	self._active_deck_ids = active_deck
+	self._active_deck_ids = active_deck.duplicate()
 	
 	# Open the flashcard minigame modal window
 	_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {

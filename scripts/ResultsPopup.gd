@@ -27,5 +27,5 @@ func populate(context: Dictionary) -> void:
 
 func _on_confirm_pressed() -> void:
 	"""Handles confirm button press"""
-	emit_signal("results_acknowledged")
+	EventBus.emit_signal("results_acknowledged")
 	queue_free() 

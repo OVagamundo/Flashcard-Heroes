@@ -8,6 +8,8 @@ The game's logic is built upon a definitive **Hybrid Architecture** to guarantee
 2.  **The Container is a Performant Index:** `DataContainer` objects (e.g., `FixedArrayContainer`) are used by managers (`RunState`, `BattleManager`) to provide fast, location-based lookups. These containers hold only UUIDs and act as a disposable index into the master instance dictionary. They are not a source of truth for any data besides the ordering of UUIDs in a location. If a container's index were to become corrupted, it could be rebuilt from the instance data, ensuring the game's state is never permanently lost.
 
 3.  **Managers are Authoritative Operators:** Managers like `InventoryManager` contain the stateless logic (the "verbs") that operates on the data. They are responsible for correctly executing the **Golden Rule of State Synchronization**: any operation that moves an instance *must* update both the `DataContainer` (the index) and the `GachaBallInstance`'s properties (the truth) in a single, atomic operation.
+
+4.  **Inversion of Control for Transient Dependencies:** To prevent circular preload dependencies, transient objects (like `BattleManager`) must register themselves with persistent objects (like `GameManager`) rather than persistent objects searching for transient objects. This follows the principle that persistent Autoload singletons should not query the scene tree during preload validation, as this can create unresolvable dependency loops.
 1.2 Directory Structure
 Generated code
 res://
@@ -248,19 +250,19 @@ All global signals are defined in `SignalBus.gd` to decouple systems. Key signal
 ### 3.2 Manager Roles
 
 #### Core Game Managers
-- `GameManager.gd`: Holds the master run_state. Orchestrates the meta-game loop, including run initialization from the Loadout scene, managing temporary reward/shop instances, and processing post-battle rewards.
+- `GameManager.gd`: Holds the master run_state. Orchestrates the meta-game loop, including run initialization from the Loadout scene, managing temporary reward/shop instances, and processing post-battle rewards. Maintains a direct reference to the active BattleManager to avoid circular preload dependencies.
 - `Database.gd`: Loads all .tres resources and .json deck files on startup. Provides public methods to query all game data.
 - `SceneManager.gd`: Handles scene transitions.
 
 #### Gameplay Logic & State
-- `BattleManager.gd`: This manager is implemented as a node within Battle.tscn and added to the battle_manager group. Its lifecycle is tied to the battle scene, ensuring all its state is automatically created and destroyed. This prevents state-leakage bugs. It is accessed via `get_tree().get_first_node_in_group("battle_manager")`.
+- `BattleManager.gd`: This manager is implemented as a node within Battle.tscn and added to the battle_manager group. Its lifecycle is tied to the battle scene, ensuring all its state is automatically created and destroyed. This prevents state-leakage bugs. **It registers itself with GameManager when entering the scene tree and unregisters when exiting, allowing GameManager to maintain a direct reference to the active BattleManager. This eliminates the need for scene tree queries that can cause circular preload dependencies.**
 - `FlashcardManager.gd`: Manages the flashcard mini-game UI, SRS logic, and reports results via signals.
 - `InventoryManager.gd`: Stateless logic controller for all inventory actions.
 - `MergeManager.gd`: Stateless helper for merge calculations.
 - `AbilityResolver.gd`: Takes an EffectRequest and calls the appropriate EffectDefinition.execute() method.
 
 #### UI & Presentation
-- `WindowManager.gd`: The sole authority for the lifecycle of all modal and inspection windows.
+- `WindowManager.gd`: The sole authority for the lifecycle of all modal and inspection windows. **Uses `load()` instead of `preload()` for scene resources to prevent circular preload dependencies.**
 - `InteractionManager.gd`: UI state machine holding the source_uuid of the selected instance. It is the single authority for processing all gameplay-related clicks on views and slots. It contains the master logic for determining whether a click results in a selection, an action, or a deselection, based on the current state and context. View scripts (GachaBallView, SlotView) must not contain their own complex interaction logic; they must simply report clicks to this manager.
 - `StatTooltipGenerator.gd`: A stateless utility service for creating formatted tooltip strings that break down a unit's stat calculations.
 
@@ -279,7 +281,70 @@ The true hybrid model combines three essential pillars:
 This gives us the debuggability of the former (data is never duplicated) while providing the necessary speed for a responsive UI through the DataContainer index layer. The DataContainers act as disposable, fast-access indices that can be rebuilt from the instance data when needed, but provide O(1) access to slots and locations.
 
 This architecture prevents data duplication while providing the necessary speed for a responsive UI, ensuring that the game remains performant while maintaining data integrity and ease of debugging.
-### 3.4 The Golden Rule of State Synchronization
+
+### 3.4 Circular Preload Dependency Prevention
+
+**Critical Architectural Rule:** To prevent game crashes caused by circular preload dependencies, the following pattern must be strictly followed:
+
+#### The Problem
+When Autoload singletons (like `GameManager`) use `get_tree().get_first_node_in_group()` or similar scene tree queries during preload validation, they can create circular dependencies. For example:
+1. `WindowManager` (Autoload) preloads scenes that depend on `GameManager`
+2. `GameManager` (Autoload) queries the scene tree for `BattleManager`
+3. This creates a dependency loop that fails during preload, causing crashes
+
+#### The Solution: Inversion of Control
+Instead of persistent objects searching for transient objects, transient objects must register themselves with persistent objects:
+
+**Implementation Pattern:**
+```gdscript
+# In GameManager.gd (persistent Autoload)
+var _active_battle_manager: BattleManager = null
+
+func register_battle_manager(bm: BattleManager):
+    _active_battle_manager = bm
+
+func unregister_battle_manager():
+    _active_battle_manager = null
+
+# In BattleManager.gd (transient scene node)
+func _ready():
+    add_to_group("battle_manager")
+    GameManager.register_battle_manager(self)
+
+func _exit_tree():
+    GameManager.unregister_battle_manager()
+```
+
+**Benefits:**
+- Eliminates circular preload dependencies
+- Improves performance by avoiding repeated scene tree searches
+- Provides better architectural separation
+- Maintains the same functionality as scene tree queries
+
+**Rule:** All persistent Autoload singletons must use direct references rather than scene tree queries for accessing transient objects.
+
+#### WindowManager Scene Loading Pattern
+**Additional Rule:** When Autoload singletons need to preload scene resources, use `load()` instead of `preload()` to break circular dependencies:
+
+```gdscript
+# CORRECT: Use load() to prevent circular dependencies
+var _window_scenes: Dictionary = {
+    &"Inventory": load("res://scenes/InventoryWindow.tscn"),
+    &"DiscardPile": load("res://scenes/DiscardPileWindow.tscn"),
+    # ... other scenes
+}
+
+# INCORRECT: preload() can cause circular dependencies
+var _window_scenes: Dictionary = {
+    &"Inventory": preload("res://scenes/InventoryWindow.tscn"),
+    &"DiscardPile": preload("res://scenes/DiscardPileWindow.tscn"),
+    # ... other scenes
+}
+```
+
+**Why:** `preload()` resolves dependencies during script parsing, which can create circular dependency loops. `load()` defers resolution until first access, breaking the dependency cycle.
+
+### 3.5 The Golden Rule of State Synchronization
 This rule is the fundamental contract of the hybrid architecture and must be adhered to by all game logic that modifies an instance's location.
 
 **The Rule:** To move an instance, a two-step process is mandatory:
@@ -287,7 +352,7 @@ This rule is the fundamental contract of the hybrid architecture and must be adh
 2.  **Update the Truth:** The instance's own `location_container_tag` and `location_slot_index` properties must be updated to reflect its new location.
 
 Failing to perform both steps will de-synchronize the game state (specifically, the performant index will not match the data truth) and is considered a critical bug. Caching location data in managers is strictly forbidden as it violates the principle of having a single source of truth.
-### 3.5 Positional & Targeting Logic
+### 3.6 Positional & Targeting Logic
 This logic is implemented within BattleManager's relational query functions.
 
 **Player Team (Left Side):** "Frontmost" corresponds to the unit with the highest location_slot_index (e.g., 5). "Backmost" is the lowest index (e.g., 0).
@@ -296,7 +361,7 @@ This logic is implemented within BattleManager's relational query functions.
 
 **Action Order:** The standard combat action order for both teams is back-to-front (index 5 down to 0).
 
-### 3.6 The Effect Resolution Queue
+### 3.7 The Effect Resolution Queue
 This system, managed by BattleManager, governs the flow of combat. It uses a LIFO (Last-In, First-Out) stack to ensure that interruptions and reactions (like a "retaliate on hit" ability) are processed immediately after the event that caused them, creating an intuitive and predictable chain of events.
 Population: When the COMBAT phase begins, BattleManager creates an EffectRequest for each unit's action and pushes it onto the _effect_queue stack.
 Processing Loop: The BattleManager's _process function contains a loop that pops one request from the stack, awaits its resolution via the AbilityResolver, and then repeats until the queue is empty.

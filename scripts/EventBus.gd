@@ -18,6 +18,7 @@ signal battle_start_requested(encounter_def: EncounterDefinition)
 signal title_scene_requested
 signal reward_scene_requested(context)
 signal battle_victory_acknowledged
+signal battle_won_rewards_pending
 signal reward_chosen(payload)
 
 # --- Window/Modal Signals ---

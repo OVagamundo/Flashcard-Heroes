@@ -80,10 +80,7 @@ func _on_reward_scene_requested():
 	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
 	
 	# The context dictionary is now required as per the TDD.
-	var context = {
-		"reward_instances": GameManager._temporary_reward_master_dict.values(),
-		"gold_amount": GameManager._temporary_gold_reward
-	}
+	var context = GameManager.get_pending_rewards()
 	if instance.has_method("populate"):
 		instance.populate(context)
 

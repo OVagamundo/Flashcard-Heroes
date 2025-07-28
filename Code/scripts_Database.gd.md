@@ -27,7 +27,7 @@ func _ready() -> void:
 	_load_reward_pool_definitions()
 	
 	# Load flashcard definitions from JSON
-	# _load_flashcard_definitions()  # Temporarily disabled for testing
+	_load_flashcard_definitions()
 
 # -----------------------------
 # Public API

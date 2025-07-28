@@ -7,17 +7,19 @@ extends Node
 
 const INSPECTION_WINDOW_MARGIN = 20.0
 
-# Using preload for scenes that are fundamental to the UI.
+# Using load for scenes to avoid circular preload dependencies.
 var _window_scenes: Dictionary = {
 	# Modal Windows
-	&"Inventory": preload("res://scenes/InventoryWindow.tscn"),
-	&"DiscardPile": preload("res://scenes/DiscardPileWindow.tscn"),
-	&"ChoiceWindow": preload("res://scenes/ChoiceWindow.tscn"),
-	&"EndBattlePopup": preload("res://scenes/EndBattlePopup.tscn"),
+	&"Inventory": load("res://scenes/InventoryWindow.tscn"),
+	&"DiscardPile": load("res://scenes/DiscardPileWindow.tscn"),
+	&"ChoiceWindow": load("res://scenes/ChoiceWindow.tscn"),
+	&"EndBattlePopup": load("res://scenes/EndBattlePopup.tscn"),
+	&"FlashcardMinigame": load("res://scenes/FlashcardMinigame.tscn"),
+	&"ResultsPopup": load("res://scenes/ResultsPopup.tscn"),
 	# Non-Modal Inspection Windows
-	&"UnitInspection": preload("res://scenes/UnitInspectionWindow.tscn"),
-	&"ItemInspection": preload("res://scenes/ItemInspectionWindow.tscn"),
-	&"EffectInspection": preload("res://scenes/EffectInspectionWindow.tscn"),
+	&"UnitInspection": load("res://scenes/UnitInspectionWindow.tscn"),
+	&"ItemInspection": load("res://scenes/ItemInspectionWindow.tscn"),
+	&"EffectInspection": load("res://scenes/EffectInspectionWindow.tscn"),
 }
 
 var _modal_stack: Array[Control] = []

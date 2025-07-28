@@ -29,6 +29,7 @@ func _ready() -> void:
 	EventBus.title_scene_requested.connect(_on_return_to_title)
 	EventBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
+	EventBus.battle_won_rewards_pending.connect(_on_battle_won_rewards_pending)
 
 	EventBus.reward_chosen.connect(_on_reward_chosen)
 	EventBus.node_selected.connect(_on_node_selected)
@@ -41,6 +42,12 @@ func register_battle_manager(bm: BattleManager):
 
 func unregister_battle_manager():
 	_active_battle_manager = null
+
+func get_pending_rewards() -> Dictionary:
+	return {
+		"reward_instances": _temporary_reward_master_dict.values(),
+		"gold_amount": _temporary_gold_reward
+	}
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
 	run_state = RunState.new()
@@ -62,7 +69,10 @@ func _on_battle_ended() -> void:
 	pass
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition):
-	# Pre-generate rewards for the upcoming battle and store them.
+	pass
+
+func _on_battle_won_rewards_pending():
+	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	

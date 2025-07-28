@@ -12,6 +12,7 @@ const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 
 var run_state: RunState
 var is_in_battle: bool = false # The global authority on whether a battle is active.
+var _active_battle_manager: BattleManager = null # ADD THIS LINE
 var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
@@ -36,6 +37,13 @@ func _ready() -> void:
 	EventBus.node_selected.connect(_on_node_selected)
 	EventBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	EventBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
+
+# ADD THESE TWO FUNCTIONS
+func register_battle_manager(bm: BattleManager):
+	_active_battle_manager = bm
+
+func unregister_battle_manager():
+	_active_battle_manager = null
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
 	run_state = RunState.new()
@@ -171,10 +179,8 @@ func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 		return _temporary_reward_master_dict[uuid]
 
 	# 2. Check battle or run context
-	if is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			return bm.get_instance(uuid)
+	if is_in_battle and is_instance_valid(_active_battle_manager):
+		return _active_battle_manager.get_instance(uuid)
 	else:
 		if is_instance_valid(run_state):
 			return run_state.get_instance_by_uuid(uuid)
@@ -206,7 +212,7 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	# Step 1: Determine the current context (battle or run) to get the right data source.
 	var data_owner: Object
 	if is_in_battle:
-		data_owner = get_tree().get_first_node_in_group("battle_manager")
+		data_owner = _active_battle_manager
 	else:
 		data_owner = run_state
 

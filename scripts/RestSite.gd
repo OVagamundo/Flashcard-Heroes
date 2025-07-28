@@ -7,6 +7,7 @@ extends VBoxContainer
 
 enum TrainingType { NONE, HP, PWR }
 var _current_training: TrainingType = TrainingType.NONE
+var _last_minigame_results: Dictionary = {}
 
 func _ready():
 	train_hp_button.pressed.connect(_on_train_pressed.bind(TrainingType.HP))
@@ -15,6 +16,7 @@ func _ready():
 	
 	# Connect to flashcard completion signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
+	EventBus.results_acknowledged.connect(_on_results_acknowledged)
 
 func _on_train_pressed(type: TrainingType):
 	_current_training = type
@@ -30,6 +32,8 @@ func _on_flashcard_completed(results: Dictionary):
 	if _current_training == TrainingType.NONE:
 		return
 	
+	_last_minigame_results = results
+	
 	var correct_answers = results.get("correct_answers", 0)
 	var stat_gain = floori(correct_answers / 2.0)  # TDD: stat_gain = floor(results.correct_answers / 2.0)
 	
@@ -37,18 +41,15 @@ func _on_flashcard_completed(results: Dictionary):
 	var stat_type = "HP" if _current_training == TrainingType.HP else "PWR"
 	
 	# Display ResultsPopup
-	WindowManager.open_modal_window(&"ResultsPopup", {
+	var popup = WindowManager.open_modal_window(&"ResultsPopup", {
 		"populate_args": ["Training Complete!", "Your Hero gained +%d %s." % [stat_gain, stat_type], "Continue"]
 	})
-	
-	# Connect to results_acknowledged to apply the stat gain
-	EventBus.results_acknowledged.connect(_on_results_acknowledged, CONNECT_ONE_SHOT)
 
 func _on_results_acknowledged():
 	"""Called when player acknowledges the training results"""
 	if _current_training == TrainingType.NONE: return
 	
-	var correct_answers = 0  # We need to get this from the results, but it's not stored
+	var correct_answers = _last_minigame_results.get("correct_answers", 0)
 	var stat_gain = floori(correct_answers / 2.0)
 	
 	if stat_gain > 0 and is_instance_valid(GameManager.run_state):
@@ -61,6 +62,7 @@ func _on_results_acknowledged():
 			EventBus.emit_signal("run_data_changed")
 			EventBus.emit_signal("unit_stats_changed", hero_instance.ball_uuid)
 	
+	_last_minigame_results.clear()
 	_current_training = TrainingType.NONE
 	train_hp_button.disabled = false
 	train_pwr_button.disabled = false
@@ -71,4 +73,6 @@ func _on_leave_pressed():
 
 func _exit_tree():
 	if EventBus.flashcard_minigame_completed.is_connected(_on_flashcard_completed):
-		EventBus.flashcard_minigame_completed.disconnect(_on_flashcard_completed) 
+		EventBus.flashcard_minigame_completed.disconnect(_on_flashcard_completed)
+	if EventBus.is_connected("results_acknowledged", _on_results_acknowledged):
+		EventBus.results_acknowledged.disconnect(_on_results_acknowledged) 
