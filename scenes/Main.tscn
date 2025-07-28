@@ -65,6 +65,17 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="TokensLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Tokens: 5"
+vertical_alignment = 1
+
+[node name="Control3" type="Control" parent="VBoxContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="DaysLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 1
@@ -126,6 +137,8 @@ text = "Draw Tier 2"
 unique_name_in_owner = true
 layout_mode = 2
 text = "Draw Tier 3"
+
+
 
 [node name="ModalLayer" type="CanvasLayer" parent="." groups=["modal_layer"]]
 unique_name_in_owner = true

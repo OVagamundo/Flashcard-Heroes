@@ -8,7 +8,7 @@ func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
 		# WindowManager might not exist if the game is shutting down.
 		if WindowManager:
-			WindowManager.stop_tracking_window(self)
+			WindowManager.stop_tracking_window(self.get_instance_id())
 
 func _position_child_window(parent_window: Control):
 	# This method is called by WindowManager to position child windows

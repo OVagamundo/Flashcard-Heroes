@@ -48,3 +48,5 @@ extends Resource
 
 ## The abilities this unit possesses.
 @export var ability_definitions: Array[AbilityDefinition]
+
+

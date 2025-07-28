@@ -16,15 +16,41 @@ The game fluidly transitions between states (e.g., Path Choice ↔ Battle) while
 3. Player Resources
 Hero Health (HP): The current health of the player's Hero Unit serves as the overall health for the entire run. If it reaches 0, the run ends. It persists between all encounters.
 Gold: The primary transactional currency for a run, used at Shop nodes. It is lost at the end of a run.
-Gacha Tokens: A temporary, encounter-focused currency used to activate Gacha Machines. It is primarily earned from the Flashcard Mini-Game and resets to zero after each node is resolved.
-4. Flashcard System
-This system is the core mechanic for generating Gacha Tokens.
-Flashcard Decks: At the start of a run, the player selects a large Main Deck. A smaller Active Deck is created, which grows over the run as new cards are introduced from the Main Deck.
-Mini-Game Mechanics:
-Trigger: Automatically at the start of the player's turn during the Management Phase in battles, and at Rest Sites.
-Gameplay Flow: When a new card is introduced, it is first shown to the player. The mini-game begins when the player confirms. A short session timer of 3 seconds begins. A flashcard from the Active Deck is displayed with multiple-choice answers. The selection of which card to show is governed by a Spaced Repetition System (SRS), prioritizing cards the player has struggled with. The player answers as many questions as possible before the timer expires.
-Outcome: The player earns 1 Gacha Token for each correct answer.
-Progression Link: The appearance of Mini-Bosses and the Final Boss is gated by the percentage of cards introduced from the Main Deck into the Active Deck during the run.
+Gacha Tokens: A temporary, encounter-focused currency used to activate Gacha Machines. It is primarily earned from the Flashcard Mini-Game during a battle and resets to zero after each encounter is resolved.
+#### 4. Flashcard System (Updated)
+
+This system is the core mechanic for generating Gacha Tokens and driving player progression. It is designed as a high-speed, high-reward mini-game that tests the player's recall under pressure.
+
+**4.1. Decks and Card Progression**
+*   **Main Deck:** At the start of a run, the player selects a large deck of flashcards.
+*   **Active Deck:** The run begins with the first 10 cards from the Main Deck forming the initial Active Deck.
+*   **Card Introduction:** Each time the flashcard mini-game is triggered (in battle or at a Rest Site), one new card is drawn in order from the Main Deck and added to the Active Deck for the remainder of the run. This new card is first presented to the player on an information screen showing its question, answer, and a brief explanation. The player must click a "Got It!" button to dismiss this screen and begin the mini-game.
+
+**4.2. Mini-Game Mechanics**
+*   **Trigger:** The mini-game is automatically triggered at the start of the player's turn during the Management Phase in battles, and when choosing to "Train" at a Rest Site.
+*   **UI:** The mini-game appears as a large modal pop-up window, disabling all other game interactions until it is complete.
+*   **Gameplay Flow:**
+    1.  If a new card is being introduced, it is shown first.
+    2.  When the player clicks "Got It!" (or immediately, if no new card is shown), a session timer of **3 seconds** begins. This timer is for the entire session, not per question. The duration can be increased by Trinkets or other bonuses.
+    3.  A question is displayed with 9 multiple-choice answers. These answers are the correct answers from 9 other random cards in the Active Deck.
+    4.  The player clicks an answer.
+        *   **Correct:** The answer flashes white, mastery level for that card increases by 1 (clamped at 5), and the next question appears instantly.
+        *   **Incorrect:** The answer flashes red, mastery level for that card decreases by 1 (clamped at 1), and the next question appears instantly. There is no other penalty.
+    5.  This continues until the 3-second timer expires, at which point the mini-game window closes and reports the results.
+*   **Goal:** The primary goal is to answer as many questions correctly as possible within the short time limit, averaging about one correct answer per second for a proficient player.
+
+**4.3. Spaced Repetition System (SRS) & Card Selection**
+To optimize learning, the card chosen for each question is not completely random. The system uses a weighted random selection algorithm designed to be effective but not predictable.
+*   **Weighted Factors:** The probability of a card being chosen is determined by:
+    1.  **Mastery Level (High Weight):** Cards with a lower mastery level (1-5) are significantly more likely to be chosen.
+    2.  **Time Since Last Review (Medium Weight):** Cards that haven't been seen for a while are more likely to appear.
+    3.  **Randomness (Low Weight):** A small random factor ensures any card can still appear, keeping the player engaged.
+*   **Rule:** The same card will never be presented twice in a row during a single mini-game session.
+
+**4.4. Reward Context**
+The rewards from the mini-game are **context-sensitive and do not carry over between scenes.**
+*   **In Battle:** Each correct answer awards 1 Gacha Token. These tokens are added to the player's pool for the current battle and persist between turns, but are reset to zero after the battle encounter is resolved.
+*   **At Rest Sites:** When "Training," the mini-game does **not** award Gacha Tokens. Instead, every two correct answers permanently increases the Hero's chosen stat (HP or PWR) by 1 for the rest of the run.
 5. GachaBall System: Units & Items
 "GachaBalls" are the collectible entities that form the player's team and arsenal.
 GachaBall Definition: The immutable template or blueprint for a GachaBall type (e.g., "Warrior Type A"), defining its base stats, abilities, and tags.
@@ -112,7 +138,7 @@ To ensure varied and scaling challenges, COMMON and ELITE battle nodes do not us
 - **Leaving:** Players can exit the shop at any time to return to Path Selection
 Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
-Rest Site Node: A recovery node where the player chooses one action: Rest (heal Hero), Train (upgrade Hero), or Gamble.
+Rest Site Node: A recovery node where the player chooses one action: Rest (heal Hero), Train (triggers the flashcard mini-game where every two correct answers permanently increases a chosen stat by 1), or Gamble.
 9.4. Event-Driven Ability System
 Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
 

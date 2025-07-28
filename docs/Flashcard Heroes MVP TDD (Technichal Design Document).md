@@ -21,21 +21,28 @@ Use code with caution.
 Part 2: Data Schemas & Structures
 2.1 Core Data Resources
 RunState.gd: Resource, class_name RunState. The persistent state for an entire run.
-Properties: 
-- gold: int - The player's current gold count
-- day: int - The current day of the run, used for difficulty scaling and node generation
-- run_instances: Dictionary[String, GachaBallInstance] - The master dictionary of all permanent instances for the run, keyed by instance UUID
+*   **Properties:**
+    *   `gold: int` - The player's current gold count.
+    *   `day: int` - The current day of the run.
+    *   `run_instances: Dictionary[String, GachaBallInstance]` - The master dictionary of all permanent instances for the run.
+    *   `flashcard_progress: Dictionary[StringName, FlashcardProgress]` - Master dictionary of progress for every card in the loaded deck.
+    *   `active_deck_ids: Array[StringName]` - The list of card IDs currently available in the mini-game.
 **GachaBallDefinition.gd:** Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
-*   **Properties:** 
-    - `@export var id: StringName` - Unique identifier for this definition
-    - `@export var display_name_key: String` - Localization key for display name
-    - `@export var description_key: String` - Localization key for description
-    - `@export var icon: Texture2D` - Display icon
-    - `@export var tags: Array[StringName]` - Array of tags that define special properties. Common tags include "hero" for hero units, "consumable" for one-time use items, etc.
-    - `@export var item_slot_count: int` - Number of equipment slots (for units)
-    - `@export var base_hp: int = 0` - Base health points
-    - `@export var base_pwr: int = 0` - Base power/attack
-    - `@export var abilities: Array[AbilityDefinition]` - A list of all abilities this GachaBall type possesses.
+*   **Properties:**
+    *   `@export var id: StringName` - Unique identifier.
+    *   `@export var display_name_key: String` - Localization key.
+    *   `@export var description_key: String` - Localization key.
+    *   `@export var icon: Texture2D` - Display icon.
+    *   `@export var tags: Array[StringName]` - Tags like "hero", "unit".
+    *   `@export var tier: int` - Power level (0-3).
+    *   `@export var cost: int` - Gold cost for shops and encounter generation.
+    *   `@export var category: StringName` - Must be "UNIT" or "ITEM".
+    *   `@export var item_slot_count: int` - For "UNIT" category.
+    *   `@export var base_hp: int` - For "UNIT" category.
+    *   `@export var base_pwr: int` - For "UNIT" category.
+    *   `@export var bonus_hp: int` - For "ITEM" category.
+    *   `@export var bonus_pwr: int` - For "ITEM" category.
+    *   `@export var ability_definitions: Array[AbilityDefinition]`
 **GachaBallInstance.gd:** Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall. This resource is the single source of truth for all of its own data.
 *   **Core Properties:** `definition_id: StringName`, `ball_uuid: String`, `origin_uuid: String`, `current_hp: int`, `current_pwr: int`
 *   **Location Properties (The Single Source of Truth):** 
@@ -56,6 +63,13 @@ Properties:
     - `get_current_hp() -> int` - Calculates and returns the final, effective Health using the Stat Calculation Order of Operations (see Section 7.9).
 MergeRecipe.gd: Resource, class_name MergeRecipe.
 Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName
+
+**FlashcardDefinition.gd**: Resource, class_name `FlashcardDefinition`. An in-memory resource created from a JSON deck file.
+*   **Properties:** `id: StringName`, `question: String`, `answer: String`, `explanation: String`.
+
+**FlashcardProgress.gd**: Resource, class_name `FlashcardProgress`. Tracks run-specific progress for a single flashcard.
+*   **Properties:** `definition_id: StringName`, `mastery_level: int`, `last_review_day: int`.
+
 EffectRequest.gd: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
 Properties: source_uuid: String, ability_id: StringName, trigger_context: Dictionary
 AbilityDefinition.gd & EffectDefinition.gd: Define abilities and their executable effects.
@@ -99,11 +113,6 @@ To manage the meta-game loop, the following data-driven resources are introduced
 *   **Properties:**
     - `id: StringName` - Unique identifier for this encounter.
     - `enemy_placements: Array[Dictionary]` - An array defining which units to place and where. Each dictionary contains: `{"id": StringName, "position": int}`.
-
-**LootTable.gd**: Resource, class_name LootTable. Defines a weighted pool of potential rewards.
-*   **Properties:**
-    - `id: StringName` - Unique identifier for this loot table (e.g., "common_battle_rewards").
-    - `rewards: Array[Dictionary]` - A weighted list of GachaBallDefinition IDs. Each dictionary contains: `{"definition_id": StringName, "weight": int}`.
 
 Part 3: Logic Layer & Managers
 ### 3.1 Shop Node Implementation
@@ -235,15 +244,17 @@ All global signals are defined in `SignalBus.gd` to decouple systems. Key signal
 - `node_selected(node_def: PathNodeDefinition)` - Emitted by the UI when the player chooses a path.
 - `reward_chosen(reward_data: Dictionary)` - Emitted by the reward UI. The reward_data contains the chosen reward. The payload will be {"type": "gachaball", "instance_uuid": "..."} or {"type": "gold", "amount": ...}.
 - `selection_changed(new_location: LocationIdentifier) - Emitted by InteractionManager when the selected view changes. UI scenes like Reward.tscn will listen to this to manage the state of their controls (e.g., enabling a confirm button).
-### 3.2 Singleton Managers
+- `results_acknowledged` - Emitted by ResultsPopup when the player clicks its confirm button.
+### 3.2 Manager Roles
 
 #### Core Game Managers
-- `GameManager.gd`: Holds the master run_state, the global is_in_battle flag, and orchestrates the meta-game loop, including managing the day counter, generating path choices, creating and managing temporary reward instances, and processing post-battle rewards.
-- `Database.gd`: Loads all .tres resources on startup.
+- `GameManager.gd`: Holds the master run_state. Orchestrates the meta-game loop, including run initialization from the Loadout scene, managing temporary reward/shop instances, and processing post-battle rewards.
+- `Database.gd`: Loads all .tres resources and .json deck files on startup. Provides public methods to query all game data.
 - `SceneManager.gd`: Handles scene transitions.
 
 #### Gameplay Logic & State
-- `BattleManager.gd`: The authority for a single battle's state. Manages the battle lifecycle, the effect queue, and provides relational query functions.
+- `BattleManager.gd`: This manager is implemented as a node within Battle.tscn and added to the battle_manager group. Its lifecycle is tied to the battle scene, ensuring all its state is automatically created and destroyed. This prevents state-leakage bugs. It is accessed via `get_tree().get_first_node_in_group("battle_manager")`.
+- `FlashcardManager.gd`: Manages the flashcard mini-game UI, SRS logic, and reports results via signals.
 - `InventoryManager.gd`: Stateless logic controller for all inventory actions.
 - `MergeManager.gd`: Stateless helper for merge calculations.
 - `AbilityResolver.gd`: Takes an EffectRequest and calls the appropriate EffectDefinition.execute() method.
@@ -293,13 +304,20 @@ Processing Loop: The BattleManager's _process function contains a loop that pops
 Chain Reactions: Any ability that triggers another effect creates a new EffectRequest and pushes it to the top of the stack, ensuring it is resolved next.
 Part 4: Presentation Layer (UI)
 4.1 UI Component Blueprints
-GachaBallView.tscn / SlotView.tscn:
-Metadata: Must store the ball_uuid: String of the instance it represents.
-Behavior: Listens for instance_* signals to update its appearance and position.
-DiscardPileWindow.tscn: A modal window opened by WindowManager in response to display_discard_pile_requested.
-Reward.tscn: The content scene for displaying post-battle reward choices.
-Structure: This scene follows the "Persistent Slots" pattern (Sec 4.5). It must contain a HBoxContainer (%RewardChoicesContainer) which, at design time, holds three empty PanelContainer nodes that act as persistent slots. It also contains the %ConfirmSelectionButton and %TakeGoldButton.
-Logic: The Reward.gd script is responsible for populating the persistent slots. It will instantiate RewardChoiceView scenes and add them as children to the slots. It also manages the enabled/disabled state of the %ConfirmSelectionButton by listening to the selection_changed signal.
+
+**ResultsPopup.tscn**: A modal popup used to display the outcome of an event, like the flashcard mini-game.
+*   **Structure:** A `PanelContainer` with a `VBoxContainer` holding a `%TitleLabel`, a `%MessageLabel`, and a `%ConfirmButton`. It must also include a `BackgroundBlocker`.
+*   **Logic (`ResultsPopup.gd`):** The script will have a `populate(title: String, message: String, button_text: String)` method. When the `%ConfirmButton` is pressed, the popup emits a `results_acknowledged` signal and then calls `queue_free()` on itself.
+
+**GachaBallView.tscn / SlotView.tscn**:
+*   **Metadata:** Must store the ball_uuid: String of the instance it represents.
+*   **Behavior:** Listens for instance_* signals to update its appearance and position.
+
+**DiscardPileWindow.tscn**: A modal window opened by WindowManager in response to display_discard_pile_requested.
+
+**Reward.tscn**: The content scene for displaying post-battle reward choices.
+*   **Structure:** This scene follows the "Persistent Slots" pattern (Sec 4.5). It must contain a HBoxContainer (%RewardChoicesContainer) which, at design time, holds three empty PanelContainer nodes that act as persistent slots. It also contains the %ConfirmSelectionButton and %TakeGoldButton.
+*   **Logic:** The Reward.gd script is responsible for populating the persistent slots. It will instantiate RewardChoiceView scenes and add them as children to the slots. It also manages the enabled/disabled state of the %ConfirmSelectionButton by listening to the selection_changed signal.
 
 RewardChoiceView.tscn: This scene is now simplified, as the complexity is handled by existing systems.
 Structure: The root node is a PanelContainer containing a single SlotView.tscn instance.
@@ -501,10 +519,12 @@ To ensure data integrity and prevent unnecessary object creation, the following 
 **Item Salvage and Inheritance:** When a unit is defeated or used as a merge ingredient, its equipped items are not copied. The exact same item instances are transferred. Their `equipped_on_uuid` and `location` properties are updated to reflect their new state (either moved to the discard pile or re-equipped on a newly merged unit).
 
 ### 5.2 Battle Setup Flow
-1.  `BattleManager` creates `battle_copy()` instances from `GameManager.run_state.run_instances` for all units participating in the battle, **including the Hero**. These are added to its `_battle_instances` dictionary.
-2.  For each new battle instance, its `current_hp` and `current_pwr` are initialized directly from the `base_hp` and `base_pwr` values of its definition. This ensures all units, including the Hero, start every battle with their full base stats.
-3.  The `BattleManager` sets the initial location properties on each new copy (e.g., `location_container_tag = "PlayerLineup"`).
-4.  For each new instance, it emits `instance_created(new_uuid)`.
+1.  `BattleManager` receives a generated `EncounterDefinition`.
+2.  It creates `battle_copy()` instances from `run_state.run_instances` for all player units and items. It stores a map of permanent-to-battle UUIDs.
+3.  It iterates through the new battle copies and remaps their `equipped_item_uuids` to the new battle-specific UUIDs.
+4.  The Hero is a special case; the persistent `GachaBallInstance` from `RunState` is used directly in battle without being copied.
+5.  It creates new instances for all enemies and their items as defined in the `EncounterDefinition`.
+6.  It places all instances into the correct `DataContainer` indices according to their original locations or the encounter definition.
 
 ### 5.3 Gacha Draw Flow
 BattleManager receives draw_gacha_requested(tier_tag).
@@ -844,6 +864,7 @@ Status effects are conditions applied to units that modify their behavior or sta
 3. **Decaying Stacks:** For statuses like Strength and Weaken, `BattleManager` decrements their stack count by 1 at the end of each turn.
 
 ## 7.9 Stat Calculation Order of Operations
+Note: The current implementation uses a simpler direct additive model for item bonuses. This section describes the target architecture for when status effects and multiplicative abilities are introduced.
 
 To ensure consistent and predictable stat values, all current stats are calculated dynamically using a strict order of operations. This logic is encapsulated within getter methods in `GachaBallInstance.gd` (e.g., `get_current_pwr()`).
 
@@ -881,6 +902,114 @@ Rage Ability: x1.5
 ------------------
 Final: 14
 ```
+
+## 7.11 Critical Window Management Fixes & Architectural Insights
+
+This section documents critical fixes and architectural insights discovered during deep debugging of the window management system. These learnings are essential for maintaining and extending the codebase.
+
+### 7.11.1 Modal Window Persistence Bug
+
+**Problem:** Inspection windows stopped responding to background clicks after the first battle in subsequent battles.
+
+**Root Cause:** Modal windows (InventoryWindow, ChoiceWindow, EndBattlePopup) were being freed but not properly removed from the `WindowManager._modal_stack`. This left invalid references that prevented the global input handler from working.
+
+**Symptoms:**
+- First battle: `Modal stack size: 0` - Background clicks work perfectly
+- Subsequent battles: `Modal stack size: 1` - Background clicks ignored due to invalid modal references
+
+**The Fix:** Implemented proactive cleanup in `_cleanup_invalid_windows()`:
+```gdscript
+# Remove any invalid windows from the modal stack
+i = 0
+while i < _modal_stack.size():
+    var modal = _modal_stack[i]
+    if not is_instance_valid(modal):
+        print("WindowManager: Removing invalid modal from modal stack")
+        _modal_stack.remove_at(i)
+        # Don't increment i since we removed an element
+    else:
+        i += 1
+```
+
+**Key Insight:** Window management systems must proactively clean up invalid references rather than relying on perfect cleanup during window destruction, as windows can be freed through various paths (scene transitions, user actions, etc.).
+
+### 7.11.2 Instance ID-Based Window Tracking
+
+**Problem:** Window tracking was using object references that could become stale, leading to dangling signal connections and memory leaks.
+
+**Root Cause:** The original system used `Control` object references as dictionary keys, but these references could become invalid when objects were freed.
+
+**The Fix:** Refactored to use `instance_id` (int) as tracking keys:
+```gdscript
+# Use the window's instance ID as the key for tracking
+var window_id = window_instance.get_instance_id()
+_tracked_windows[window_id] = {
+    "anchor": stable_anchor,
+    "geom_callable": geom_callable,
+    "freed_callable": freed_callable
+}
+```
+
+**Benefits:**
+- Robust tracking even when object references become invalid
+- Proper cleanup of signal connections using instance IDs
+- Prevention of memory leaks and desynchronization
+
+### 7.11.3 Signal Ownership Correction
+
+**Problem:** Dangling signal connections caused crashes between battles.
+
+**Root Cause:** The transient `BattleView` script was connecting signals on persistent `Main` scene buttons, creating dangling connections when the battle scene was freed.
+
+**The Fix:** Moved signal ownership to the correct persistent owner:
+```gdscript
+# In Main.gd _ready()
+draw_tier1_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 1))
+draw_tier2_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 2))
+draw_tier3_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 3))
+```
+
+**Key Principle:** Signal connections must be owned by persistent objects that outlive the connected objects.
+
+### 7.11.4 Contextual UI Interaction Model
+
+**Implementation:** Added support for different interaction models based on context (player vs. enemy units).
+
+**Technical Details:**
+- `WindowManager` sets `context["is_enemy_context"] = true` for enemy units
+- `UnitInspectionWindow` uses this flag to make enemy unit inspection read-only
+- Single-click inspection enabled for equipped items on enemy units
+- Double-click inspection required for player units (drag-and-drop containers)
+
+**Architecture:** This demonstrates how the window management system can support nuanced UI behavior while maintaining the core inspection window rules.
+
+### 7.11.5 Proactive Cleanup Pattern
+
+**Pattern:** Implement proactive cleanup functions that run before critical operations to ensure data structures are in a valid state.
+
+**Implementation:**
+```gdscript
+func _cleanup_invalid_windows():
+    # Remove invalid inspection windows
+    # Remove invalid modal windows
+    # Called before every input event
+```
+
+**Benefits:**
+- Prevents cascading failures from invalid references
+- Makes the system robust against imperfect cleanup during object destruction
+- Provides clear debugging information about cleanup operations
+
+### 7.11.6 Window Lifecycle Management Rules
+
+**Critical Rules Discovered:**
+1. **Modal Stack Integrity:** Invalid modal windows must be proactively removed to prevent input handler blocking
+2. **Instance ID Tracking:** Use instance IDs, not object references, for robust window tracking
+3. **Signal Ownership:** Persistent objects must own signals connected to transient objects
+4. **Proactive Cleanup:** Clean up invalid references before processing input events
+5. **Contextual Behavior:** Window behavior can vary based on context while maintaining core rules
+
+**Architectural Impact:** These fixes ensure the window management system is robust, debuggable, and extensible for future features.
 
 ## 7.6 Concrete Effect Implementation Examples
 
@@ -1037,3 +1166,69 @@ This phase spends the remaining budget. To ensure the full budget is used, it wi
 
 ### BattleManager.gd
 - Its `_setup_enemy_lineup` function will be modified to accept an optional `EncounterDefinition`. If one is provided, it builds the enemy team from that definition instead of its old hard-coded logic. If no definition is provided, it can fall back to a default or error state.
+
+# Part 9: Flashcard System & Resource Generation
+
+This section details the technical architecture of the flashcard mini-game.
+
+## 9.1 Data Schemas
+The necessary schemas (`FlashcardDefinition.gd`, `FlashcardProgress.gd`) and property additions (`RunState.flashcard_progress`, `RunState.active_deck_ids`) are defined in Part 2. `BattleManager` also contains a temporary `gacha_tokens: int` property for the duration of a battle.
+
+## 9.2 Singleton Manager: `FlashcardManager.gd`
+A singleton responsible for the mini-game's lifecycle.
+*   **Public API:** `start_minigame(run_state: RunState, active_deck: Array[StringName])`
+*   **Signal:** `minigame_finished(results: Dictionary)` where `results` is `{"correct_answers": int, "incorrect_answers": int}`.
+
+## 9.3 The Weighted SRS Algorithm
+`FlashcardManager` selects questions using a weighted random algorithm:
+1.  **Calculate Weight:** For each card, `weight = pow(6 - mastery_level, 2) + (current_day - last_review_day)`.
+2.  **Select:** Perform a weighted random roll on the candidate pool.
+3.  **Rule:** The same card is never shown twice in a row.
+
+## 9.4 System Integration & Results Feedback Flow
+
+To provide clear feedback, the result of the mini-game is displayed in a dedicated `ResultsPopup` before the game state proceeds. The flow is managed by the context-specific caller (`BattleManager` or `RestSite`).
+
+### A. Battle Flow
+1.  **Trigger:** At the start of the turn, `BattleManager` calls `FlashcardManager.start_minigame(...)`.
+2.  **Connection:** `BattleManager` connects its handler function to `FlashcardManager.minigame_finished`.
+3.  **Execution:** The mini-game runs.
+4.  **Results Calculation:** When `minigame_finished` is emitted, the `BattleManager`'s handler receives the `results` dictionary. It calculates the rewards: `gacha_gain = 5 (base) + results.correct_answers`.
+5.  **Display Popup:** `BattleManager` immediately calls `WindowManager.open_modal_window("ResultsPopup", ...)`, passing the following context:
+    *   `title`: "Turn Start!"
+    *   `message`: "You earned %d Gacha Tokens." % gacha_gain
+    *   `button_text`: "Okay"
+6.  **Acknowledgement:** The player clicks "Okay". The `ResultsPopup` emits `results_acknowledged` and closes.
+7.  **State Update & Progression:** `BattleManager` listens for the `results_acknowledged` signal. Its handler then updates its internal state (`self.gacha_tokens += gacha_gain`), emits `gacha_tokens_changed`, and proceeds with the combat phase logic (`_populate_effect_queue`, etc.).
+
+### B. Rest Site "Train" Flow
+1.  **Trigger:** The player clicks a "Train" button in the `RestSite.tscn` scene. The `RestSite.gd` script calls `FlashcardManager.start_minigame(...)`.
+2.  **Connection:** The `RestSite.gd` script connects its handler to `FlashcardManager.minigame_finished`.
+3.  **Execution:** The mini-game runs.
+4.  **Results Calculation:** The `RestSite.gd` handler receives the `results` and calculates the reward: `stat_gain = floor(results.correct_answers / 2.0)`.
+5.  **Display Popup:** The script calls `WindowManager.open_modal_window("ResultsPopup", ...)`, passing the context:
+    *   `title`: "Training Complete!"
+    *   `message`: "Your Hero gained +%d %s." % [stat_gain, stat_type]
+    *   `button_text`: "Continue"
+6.  **Acknowledgement:** The player clicks "Continue". The popup emits `results_acknowledged` and closes.
+7.  **State Update:** The `RestSite.gd` script listens for `results_acknowledged`. Its handler then modifies the Hero's stats in `RunState` and emits the `run_data_changed` signal. The Rest Site buttons are re-enabled.
+
+# Part 10: Pre-Run Setup & Data Pipeline
+
+## 10.1 Deck Data Pipeline
+*   **File Location:** `res://decks/`
+*   **Format:** JSON object containing `deck_id`, `display_name`, and a `cards` array with `id`, `question`, `answer`, `explanation`.
+*   **Loading Authority:** `Database.gd` loads all `.json` files from this directory at startup.
+
+## 10.2 Loadout Scene & Run Initialization Flow
+1.  **UI:** `Loadout.tscn` populates its UI by calling `Database.get_hero_definitions()` and `Database.get_all_deck_metadata()`.
+2.  **Signal:** On "Start Run" press, it emits `start_run_requested(hero_def_id, deck_id)`.
+3.  **Initialization:** `GameManager` receives the signal and creates a new `RunState`, calling its `initialize_run(hero_def_id, deck_id)` method.
+4.  **`RunState.initialize_run` Logic:**
+    *   Creates the Hero instance and places it in the lineup.
+    *   Iterates through the chosen deck's card list from the `Database`.
+    *   For each card, creates a `FlashcardProgress` resource and stores it in `run_state.flashcard_progress`.
+    *   Populates the `active_deck_ids` array with the first 10 cards.
+    *   Adds any defined starter units/items to the inventory.
+    *   Sets `day = 1`.
+5.  **Transition:** `GameManager` transitions to the `Main.tscn` and requests the `PathChoice` content scene.

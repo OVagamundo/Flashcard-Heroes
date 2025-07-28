@@ -4,17 +4,19 @@ extends Node
 
 const INSPECTION_WINDOW_MARGIN = 20.0
 
-# Using preload for scenes that are fundamental to the UI.
+# Using load for scenes to avoid circular preload dependencies.
 var _window_scenes: Dictionary = {
 	# Modal Windows
-	&"Inventory": preload("res://scenes/InventoryWindow.tscn"),
-	&"DiscardPile": preload("res://scenes/DiscardPileWindow.tscn"),
-	&"ChoiceWindow": preload("res://scenes/ChoiceWindow.tscn"),
-	&"EndBattlePopup": preload("res://scenes/EndBattlePopup.tscn"),
+	&"Inventory": load("res://scenes/InventoryWindow.tscn"),
+	&"DiscardPile": load("res://scenes/DiscardPileWindow.tscn"),
+	&"ChoiceWindow": load("res://scenes/ChoiceWindow.tscn"),
+	&"EndBattlePopup": load("res://scenes/EndBattlePopup.tscn"),
+	&"FlashcardMinigame": load("res://scenes/FlashcardMinigame.tscn"),
+	&"ResultsPopup": load("res://scenes/ResultsPopup.tscn"),
 	# Non-Modal Inspection Windows
-	&"UnitInspection": preload("res://scenes/UnitInspectionWindow.tscn"),
-	&"ItemInspection": preload("res://scenes/ItemInspectionWindow.tscn"),
-	&"EffectInspection": preload("res://scenes/EffectInspectionWindow.tscn"),
+	&"UnitInspection": load("res://scenes/UnitInspectionWindow.tscn"),
+	&"ItemInspection": load("res://scenes/ItemInspectionWindow.tscn"),
+	&"EffectInspection": load("res://scenes/EffectInspectionWindow.tscn"),
 }
 
 var _modal_stack: Array[Control] = []
@@ -119,7 +121,7 @@ func open_dialog_window(type: StringName, context: Dictionary = {}):
 
 func open_modal_window(type: StringName, context: Dictionary = {}):
 	if not _window_scenes.has(type): 
-		return
+		return null
 	
 	# TDD Rule: General-purpose modals are exclusive. Close any active one first.
 	_close_all_windows()
@@ -130,6 +132,8 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 	
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
+	
+	return window_instance
 
 func open_end_battle_popup(is_victory: bool):
 	open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})

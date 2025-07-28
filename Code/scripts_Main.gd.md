@@ -9,8 +9,10 @@ extends Control
 @onready var draw_tier1_button: Button = %DrawTier1Button
 @onready var draw_tier2_button: Button = %DrawTier2Button
 @onready var draw_tier3_button: Button = %DrawTier3Button
+
 @onready var gold_label: Label = $VBoxContainer/TopArea/HBoxContainer/GoldLabel
 @onready var days_label: Label = $VBoxContainer/TopArea/HBoxContainer/DaysLabel
+@onready var tokens_label: Label = $VBoxContainer/TopArea/HBoxContainer/TokensLabel
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
@@ -22,9 +24,10 @@ var _current_content_node: Node = null
 
 func _ready():
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
-	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
-	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
-	draw_tier3_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier3_button, 3))
+	draw_tier1_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 1))
+	draw_tier2_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 2))
+	draw_tier3_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 3))
+
 	
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
 	EventBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
@@ -35,6 +38,7 @@ func _ready():
 	content_area.gui_input.connect(_on_content_area_gui_input)
 
 	EventBus.gold_changed.connect(_on_gold_changed)
+	EventBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
 	EventBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	EventBus.run_data_changed.connect(_on_run_data_changed)
 
@@ -92,12 +96,15 @@ func _on_inspect_inventory_pressed():
 	EventBus.emit_signal("inspect_inventory_requested")
 	inspect_inventory_button.release_focus()
 
+
+
 func _on_draw_button_pressed(button: Button, tier: int):
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
 	EventBus.emit_signal("draw_gacha_requested", tier)
 
 func _on_battle_inventory_changed():
+	print("Main: _on_battle_inventory_changed called, re-enabling draw buttons")
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
 	draw_tier1_button.disabled = false
 	draw_tier2_button.disabled = false
@@ -111,6 +118,14 @@ func _on_battle_state_changed(is_in_battle: bool):
 func _on_gold_changed(new_amount: int):
 	if is_instance_valid(gold_label):
 		gold_label.text = "Gold: %d" % new_amount
+
+func _on_gacha_tokens_changed(new_amount: int):
+	print("Main: _on_gacha_tokens_changed called with amount: ", new_amount)
+	if is_instance_valid(tokens_label):
+		tokens_label.text = "Tokens: %d" % new_amount
+		print("Main: Updated tokens label to: ", tokens_label.text)
+	else:
+		print("Main: tokens_label is not valid!")
 
 func _on_shop_scene_requested(context: Dictionary):
 	_clear_content_area()
@@ -138,7 +153,5 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition):
 		battle_manager.start_battle(encounter_def)
 	else:
 		print("Main: Could not find BattleManager or start_battle method")
-
-
 
 ```

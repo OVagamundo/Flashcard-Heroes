@@ -3,7 +3,7 @@
 ```ini
 [gd_scene load_steps=2 format=3 uid="uid://dsgh5wwasg7xe"]
 
-[ext_resource type="Script" uid="uid://bfplyre8ei412" path="res://scripts/Loadout.gd" id="1_bcdef"]
+[ext_resource type="Script" path="res://scripts/Loadout.gd" id="1_bcdef"]
 
 [node name="Loadout" type="Control"]
 layout_mode = 3
@@ -14,13 +14,44 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bcdef")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="HeroLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Choose Hero"
+horizontal_alignment = 1
+
+[node name="HeroOptionButton" type="OptionButton" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DeckLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Choose Deck"
+horizontal_alignment = 1
+
+[node name="DeckOptionButton" type="OptionButton" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="StartRunButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Start Run"
 
 [node name="BeginButton" type="Button" parent="CenterContainer"]
 layout_mode = 2

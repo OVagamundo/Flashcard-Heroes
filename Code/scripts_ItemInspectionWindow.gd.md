@@ -70,4 +70,7 @@ func _on_description_meta_clicked(meta):
 			child_context["source_view"] = _source_view
 			WindowManager.open_child_inspection_window(self, &"EffectInspection", child_context)
 
+func get_location() -> LocationIdentifier:
+	return _location
+
 ```

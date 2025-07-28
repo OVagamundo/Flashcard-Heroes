@@ -7,12 +7,18 @@ extends Resource
 
 ## Persistent state for a run using the single-source-of-truth data model.
 
+const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
+
 @export var gold: int = 0
 @export var day: int = 1
 @export var hero_instance: GachaBallInstance
 
 # Master registry of all permanent instances in this run.
 @export var run_instances: Dictionary = {} # key = uuid (String), value = GachaBallInstance
+
+# Flashcard learning progress - key = card_id (StringName), value = FlashcardProgress
+@export var flashcard_progress: Dictionary = {} # key = StringName, value = FlashcardProgress
+@export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
 
 # Inventory containers indexed by name (e.g., "RunInventoryT1").
 var run_inventory_containers: Dictionary = {} # key = StringName, value = DataContainer
@@ -113,6 +119,32 @@ func start_new_run() -> void:
 	run_instances.clear()
 	run_inventory_containers.clear()
 	_other_containers.clear()
+	flashcard_progress.clear()
+	active_deck_ids.clear()
+
+func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
+	start_new_run()
+	
+	# Create hero instance from the selected hero definition
+	var hero_def = Database.get_definition(hero_def_id)
+	if hero_def:
+		self.hero_instance = GachaBallInstance.new()
+		self.hero_instance.initialize(hero_def)
+		self.run_instances[self.hero_instance.ball_uuid] = self.hero_instance
+	else:
+		printerr("Failed to find hero definition for ID: ", hero_def_id)
+	
+	# Initialize flashcard progress for the selected deck
+	var deck_card_ids = Database.flashcard_definitions.keys()
+	for card_id in deck_card_ids:
+		if not flashcard_progress.has(card_id):
+			var progress = FlashcardProgress.new()
+			flashcard_progress[card_id] = progress
+	
+	# Populate the initial active deck with the first 10 cards
+	var all_card_ids = flashcard_progress.keys()
+	for i in range(min(10, all_card_ids.size())):
+		active_deck_ids.append(all_card_ids[i])
 	
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
@@ -120,11 +152,7 @@ func start_new_run() -> void:
 		run_inventory_containers[container_name] = preload("res://scripts/GrowableGridContainer.gd").new(16, 4)
 
 	# --- Create hero instance ---
-	var hero_def: GachaBallDefinition = Database.get_definition(&"hero")
 	if hero_def:
-		hero_instance = GachaBallInstance.new()
-		hero_instance.initialize(hero_def)
-		
 		# --- Inlined logic from the deleted add_instance function ---
 		var hero_container = get_container(RUN_CONTAINER_TAGS.PLAYER_LINEUP)
 		var hero_slot = 0 # Hero always goes in the first slot

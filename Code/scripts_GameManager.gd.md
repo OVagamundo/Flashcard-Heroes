@@ -4,7 +4,8 @@
 # res://scripts/GameManager.gd
 extends Node
 
-
+const SHOP_SCENE = preload("res://scenes/Shop.tscn")
+const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 
 ## Manages the persistent state of the current run by holding a RunState resource.
 ## Also acts as the single source of truth for the game's battle state.
@@ -36,14 +37,20 @@ func _ready() -> void:
 	EventBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	EventBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 
-func _on_start_run_requested() -> void:
+func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
 	run_state = RunState.new()
-	run_state.start_new_run()
-	EventBus.emit_signal("run_data_changed") # Use the new signal
-	EventBus.emit_signal("loadout_scene_requested")
+	run_state.initialize_run(hero_def_id, deck_id)
+	EventBus.emit_signal("run_data_changed")
+	EventBus.emit_signal("main_scene_requested")
 
 func _on_new_game_requested() -> void:
-	_on_start_run_requested()
+	# Default to first hero and deck if called without parameters
+	var hero_defs = Database.get_hero_definitions()
+	var deck_meta = Database.get_all_deck_metadata()
+	if hero_defs.size() > 0 and deck_meta.size() > 0:
+		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id)
+	else:
+		printerr("GameManager: Could not start new game - no heroes or decks available")
 
 func _on_battle_ended() -> void:
 	# Handle battle end logic here
@@ -247,15 +254,29 @@ func _on_node_selected(node_def: PathNodeDefinition):
 			
 			print("GameManager: Day: ", run_state.day, ", Budget: ", budget, ", Node subtype: ", node_def.subtype)
 			var encounter_def = EncounterGenerator.generate_encounter(budget)
-			EventBus.emit_signal("battle_start_requested", encounter_def)
+			# Use Main.gd to handle scene loading
+			var main_node = get_tree().get_root().find_child("Main", true, false)
+			if is_instance_valid(main_node):
+				main_node._on_battle_start_requested(encounter_def)
 		"SHOP":
 			_enter_shop()
+		"REST":
+			# Use Main.gd to handle scene loading
+			var main_node = get_tree().get_root().find_child("Main", true, false)
+			if is_instance_valid(main_node):
+				main_node._clear_content_area()
+				var instance = REST_SITE_SCENE.instantiate()
+				main_node._current_content_node = instance
+				main_node.content_area.get_node("SubViewport/MarginContainer").add_child(instance)
 
 func _enter_shop():
 	_reroll_cost = 1
 	_generate_shop_stock()
 	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
-	EventBus.emit_signal("shop_scene_requested", context)
+	# Use Main.gd to handle scene loading
+	var main_node = get_tree().get_root().find_child("Main", true, false)
+	if is_instance_valid(main_node):
+		main_node._on_shop_scene_requested(context)
 
 func _generate_shop_stock():
 	_temporary_shop_master_dict.clear()

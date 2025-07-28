@@ -9,7 +9,7 @@ const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
 
 # --- Run/Scene Signals ---
 signal new_game_requested
-signal start_run_requested
+signal start_run_requested(hero_def_id: StringName, deck_id: StringName)
 signal loadout_scene_requested
 signal main_scene_requested
 signal path_choice_scene_requested
@@ -62,3 +62,7 @@ signal unit_stats_changed(unit_uuid: String)
 signal unit_inventory_changed(unit_uuid: String)
 signal battle_log_event(message: String)
 signal inventory_ui_refresh_requested
+
+# --- Flashcard Signals ---
+signal flashcard_minigame_completed(results: Dictionary)
+signal results_acknowledged

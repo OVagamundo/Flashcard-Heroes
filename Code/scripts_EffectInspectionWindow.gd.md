@@ -33,4 +33,7 @@ func populate(context: Dictionary):
 	name_label.text = tr(effect_def.name_key)
 	description_label.text = tr(effect_def.description_key)
 
+func get_location() -> LocationIdentifier:
+	return null
+
 ```

@@ -52,4 +52,9 @@ extends Resource
 ## The abilities this unit possesses.
 @export var ability_definitions: Array[AbilityDefinition]
 
+## Flashcard properties (for learning system)
+@export var question: String = ""
+@export var answer: String = ""
+@export var explanation: String = ""
+
 ```

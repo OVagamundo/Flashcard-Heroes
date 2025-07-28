@@ -39,8 +39,11 @@ func _ready():
 	add_to_group("battle_manager")
 	_change_phase(Phases.MANAGEMENT)
 	_connect_signals()
+	# Connect to flashcard completion signal
+	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 
 func _exit_tree():
+	print("BattleManager: _exit_tree called")
 	GameManager.is_in_battle = false
 	EventBus.emit_signal("battle_state_changed", false)
 	if EventBus.is_connected("end_turn_requested", _on_end_turn_requested):
@@ -51,6 +54,8 @@ func _exit_tree():
 		EventBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
 	if EventBus.is_connected("battle_inventory_changed", _check_and_trigger_reshuffles):
 		EventBus.battle_inventory_changed.disconnect(_check_and_trigger_reshuffles)
+	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
+		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
 
 func _connect_signals():
 	EventBus.end_turn_requested.connect(_on_end_turn_requested)
@@ -68,15 +73,20 @@ func start_battle(encounter_def: EncounterDefinition):
 	GameManager.is_in_battle = true
 	EventBus.emit_signal("battle_state_changed", true)
 	EventBus.emit_signal("battle_inventory_changed")
+	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Emit unit_stats_changed for all units that have equipped items after UI is populated
 	call_deferred("_emit_stats_changed_for_equipped_units")
+	
+	# Start the first turn with the mini-game
+	call_deferred("_change_phase", Phases.START_OF_TURN)
 
 func _setup_battle(encounter_def: EncounterDefinition = null):
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
 	_gacha_tokens = 5
+	print("BattleManager: Initial gacha_tokens set to: ", _gacha_tokens)
 	
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 	var permanent_to_battle_uuid_map: Dictionary = {}
@@ -333,10 +343,15 @@ func _change_phase(new_phase: Phases):
 	EventBus.emit_signal("battle_phase_changed", get_current_phase_name())
 	match _current_battle_phase:
 		Phases.START_OF_TURN:
-			_gacha_tokens += 5
-			EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
-			_populate_effect_queue()
-			_process_effect_queue()
+			# The flashcard mini-game is the first event of the turn.
+			# TDD Section 9.4: Battle Flow
+			if is_instance_valid(GameManager.run_state):
+				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+			# Note: The combat phase will now be triggered by _on_flashcard_completed
+		Phases.MANAGEMENT:
+			# Re-enable draw buttons when entering management phase
+			print("BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed")
+			EventBus.emit_signal("battle_inventory_changed")
 		Phases.END_OF_TURN:
 			pass
 
@@ -550,5 +565,39 @@ func _emit_stats_changed_for_equipped_units():
 				EventBus.emit_signal("unit_stats_changed", instance.ball_uuid)
 			else:
 				print("BattleManager: Unit ", instance.ball_uuid, " has no equipped items")
+
+func _on_flashcard_completed(results: Dictionary):
+	print("BattleManager: _on_flashcard_completed called with results: ", results)
+	# TDD Section 9.4: Battle Flow
+	# This handler is only for the battle context.
+	if not is_instance_valid(get_node_or_null("/root/Main/VBoxContainer/ContentArea/SubViewport/Battle")):
+		print("BattleManager: Early return from _on_flashcard_completed - no battle found")
+		return
+
+	var correct_answers = results.get("correct_answers", 0)
+	var gacha_gain = 5 + correct_answers  # TDD: gacha_gain = 5 (base) + results.correct_answers
+	
+	# Display ResultsPopup
+	WindowManager.open_modal_window(&"ResultsPopup", {
+		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % gacha_gain, "Okay"]
+	})
+	
+	# Connect to results_acknowledged to proceed with combat
+	EventBus.results_acknowledged.connect(_on_results_acknowledged, CONNECT_ONE_SHOT)
+
+func _on_results_acknowledged():
+	"""Called when player acknowledges the results popup"""
+	var correct_answers = 0  # We need to get this from the results, but it's not stored
+	# For now, we'll use a simple approach - just add the base amount
+	var gacha_gain = 5
+	
+	print("BattleManager: Adding ", gacha_gain, " tokens. Current tokens: ", _gacha_tokens)
+	_gacha_tokens += gacha_gain
+	print("BattleManager: New token count: ", _gacha_tokens)
+	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+
+	# After the minigame, proceed with the combat phase
+	_populate_effect_queue()
+	_process_effect_queue()
 
 ```

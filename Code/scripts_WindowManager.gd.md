@@ -28,6 +28,7 @@ var _modal_layer: CanvasLayer = null
 func _ready():
 	# Ensure this node can process input events
 	set_process_input(true)
+	print("WindowManager: _ready called, input processing enabled")
 	
 	EventBus.inspect_inventory_requested.connect(_on_inspect_inventory_requested)
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
@@ -35,6 +36,8 @@ func _ready():
 	EventBus.close_modal_requested.connect(_close_top_modal)
 	EventBus.background_clicked.connect(_on_background_blocker_clicked)
 	EventBus.selection_changed.connect(_on_selection_changed)
+	EventBus.battle_state_changed.connect(_on_battle_state_changed)
+	EventBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
 	
 	# Scene changes should close all windows
 	EventBus.main_scene_requested.connect(_close_all_windows)
@@ -42,6 +45,23 @@ func _ready():
 	EventBus.title_scene_requested.connect(_close_all_windows)
 
 func _input(event: InputEvent):
+	# Debug: Check if input is being received
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		print("WindowManager: Received mouse click at position: ", event.position)
+		print("WindowManager: Active inspection group size: ", _active_inspection_group.size())
+		print("WindowManager: Modal stack size: ", _modal_stack.size())
+		if not _modal_stack.is_empty():
+			print("WindowManager: Modal stack contents:")
+			for i in range(_modal_stack.size()):
+				var modal = _modal_stack[i]
+				if is_instance_valid(modal):
+					print("  [", i, "] ", modal.name, " (", modal.get_class(), ")")
+				else:
+					print("  [", i, "] INVALID")
+	
+	# Clean up any invalid windows before processing input
+	_cleanup_invalid_windows()
+	
 	# Handle escape key for closing windows
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
@@ -68,12 +88,19 @@ func _input(event: InputEvent):
 
 	if not _active_inspection_group.is_empty():
 		var click_is_inside_a_window = false
+		var valid_windows_exist = false
 		for window in _active_inspection_group:
-			if is_instance_valid(window) and window.get_global_rect().has_point(event.position):
-				click_is_inside_a_window = true
-				break
+			if is_instance_valid(window):
+				valid_windows_exist = true
+				if window.get_global_rect().has_point(event.position):
+					click_is_inside_a_window = true
+					break
 		
-		if not click_is_inside_a_window:
+		# If no valid windows exist, clear the group
+		if not valid_windows_exist:
+			print("WindowManager: No valid windows in active group, clearing")
+			_active_inspection_group.clear()
+		elif not click_is_inside_a_window:
 			close_all_inspection_windows()
 			EventBus.emit_signal("selection_clear_requested")
 			# We DO NOT consume the input here, allowing it to "click through".
@@ -95,7 +122,7 @@ func open_dialog_window(type: StringName, context: Dictionary = {}):
 
 func open_modal_window(type: StringName, context: Dictionary = {}):
 	if not _window_scenes.has(type): 
-		return
+		return null
 	
 	# TDD Rule: General-purpose modals are exclusive. Close any active one first.
 	_close_all_windows()
@@ -106,6 +133,8 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 	
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
+	
+	return window_instance
 
 func open_end_battle_popup(is_victory: bool):
 	open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
@@ -174,10 +203,18 @@ func handle_inspection_background_click(clicked_window: Control):
 				child_window.queue_free()
 
 func close_all_inspection_windows():
+	print("WindowManager: Closing all inspection windows. Count: ", _active_inspection_group.size())
+	
+	# First, clean up any invalid windows
+	_cleanup_invalid_windows()
+	
 	for window in _active_inspection_group:
 		if is_instance_valid(window):
+			# Clean up tracking data before freeing the window
+			stop_tracking_window(window.get_instance_id())
 			window.queue_free()
 	_active_inspection_group.clear()
+	print("WindowManager: All inspection windows closed. Tracking data count: ", _tracked_windows.size())
 
 # --- Signal Handlers ---
 
@@ -236,8 +273,8 @@ func _close_children_of(parent_window: Control):
 		for i in range(child_count):
 			var child_window = _active_inspection_group.pop_back()
 			if is_instance_valid(child_window):
-				# Child windows are not tracked, but good practice to call this anyway.
-				stop_tracking_window(child_window)
+				# The window is about to be freed. We must stop tracking it by its ID.
+				stop_tracking_window(child_window.get_instance_id())
 				child_window.queue_free()
 
 
@@ -289,9 +326,10 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control):
 	# Check if a window already exists for this location
 	for window in _active_inspection_group:
+		# Check if the window has a location and if it matches.
 		if is_instance_valid(window) and window.has_method("get_location"):
 			var window_loc = window.get_location()
-			if window_loc != null and window_loc.container_tag == loc.container_tag and window_loc.slot_index == loc.slot_index:
+			if is_instance_valid(window_loc) and window_loc.is_equal(loc):
 				# Window already exists for this location, don't create another one
 				return
 	
@@ -316,6 +354,45 @@ func _on_selection_changed(new_location: LocationIdentifier):
 			if _find_window_in_group(source_view) == -1:
 				close_all_inspection_windows()
 
+func _on_battle_state_changed(is_in_battle: bool):
+	# When battle ends (is_in_battle becomes false), close all inspection windows
+	# because their anchors (battle UI elements) are about to be destroyed
+	if not is_in_battle:
+		print("WindowManager: Battle ended, closing all inspection windows. Active group size: ", _active_inspection_group.size())
+		# Use call_deferred to ensure proper cleanup order
+		call_deferred("close_all_inspection_windows")
+	else:
+		print("WindowManager: Battle started. Active group size: ", _active_inspection_group.size())
+
+func _on_path_choice_scene_requested():
+	# When transitioning to path choice (after reward scene), close all inspection windows
+	# because the reward scene is about to be destroyed
+	print("WindowManager: Path choice requested, closing all inspection windows")
+	close_all_inspection_windows()
+
+func _cleanup_invalid_windows():
+	# Remove any invalid windows from the active inspection group
+	var i = 0
+	while i < _active_inspection_group.size():
+		var window = _active_inspection_group[i]
+		if not is_instance_valid(window):
+			print("WindowManager: Removing invalid window from active group")
+			_active_inspection_group.remove_at(i)
+			# Don't increment i since we removed an element
+		else:
+			i += 1
+	
+	# Remove any invalid windows from the modal stack
+	i = 0
+	while i < _modal_stack.size():
+		var modal = _modal_stack[i]
+		if not is_instance_valid(modal):
+			print("WindowManager: Removing invalid modal from modal stack")
+			_modal_stack.remove_at(i)
+			# Don't increment i since we removed an element
+		else:
+			i += 1
+
 # --- Private: Inspection Window Logic ---
 
 
@@ -335,6 +412,9 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 		var def = instance.get_definition()
 		window_type = &"UnitInspection" if def.category == &"UNIT" else &"ItemInspection"
 		context = {"source_view": source_view, "instance": instance, "location": loc}
+		
+		if loc.container == &"EnemyLineup":
+			context["is_enemy_context"] = true
 		print("WindowManager: Opening ", window_type, " window for ", def.category, " instance")
 
 	elif source_view.has_meta("effect_definition"):
@@ -375,6 +455,11 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	
 	if not is_instance_valid(window_instance) or not is_instance_valid(stable_anchor):
 		return
+	# Use the window's instance ID as the key for tracking.
+	var window_id = window_instance.get_instance_id()
+
+	print("WindowManager: Tracking window ID: ", window_id, " with anchor: ", stable_anchor.name, " (", stable_anchor.get_class(), ")")
+
 	# Connect geometry change using bound callable (avoid capturing freed references)
 	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_instance, stable_anchor)
 	if not stable_anchor.is_connected("item_rect_changed", geom_callable):
@@ -384,8 +469,10 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_instance.get_instance_id(), stable_anchor.get_instance_id(), loc, geom_callable)
 	if not stable_anchor.is_connected("tree_exited", freed_callable):
 		stable_anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
+		print("WindowManager: Connected tree_exited signal for anchor: ", stable_anchor.name)
 
-	_tracked_windows[window_instance] = {
+	# Store tracking info using the instance ID.
+	_tracked_windows[window_id] = {
 		"anchor": stable_anchor,
 		"geom_callable": geom_callable,
 		"freed_callable": freed_callable
@@ -406,22 +493,25 @@ func _find_stable_anchor(original_anchor: Control) -> Control:
 	# If no stable container found, fall back to the original anchor
 	return original_anchor
 
-func stop_tracking_window(window_instance: Control) -> void:
-	if not _tracked_windows.has(window_instance):
+func stop_tracking_window(window_id: int) -> void:
+	if not _tracked_windows.has(window_id):
 		return
 
-	var tracking_info = _tracked_windows[window_instance]
+	var tracking_info = _tracked_windows[window_id]
 	var anchor = tracking_info["anchor"]
 	var geom_callable = tracking_info["geom_callable"]
 	var freed_callable = tracking_info["freed_callable"]
 
+	# The anchor might have already been freed, so we must check if it's valid
+	# before trying to disconnect signals from it.
 	if is_instance_valid(anchor):
 		if anchor.is_connected("item_rect_changed", geom_callable):
 			anchor.item_rect_changed.disconnect(geom_callable)
 		if anchor.is_connected("tree_exited", freed_callable):
 			anchor.tree_exited.disconnect(freed_callable)
 	
-	_tracked_windows.erase(window_instance)
+	_tracked_windows.erase(window_id)
+	print("WindowManager: Stopped tracking window ID: ", window_id, ". Remaining tracking data: ", _tracked_windows.size())
 
 func _on_inspection_anchor_moved(window_instance: Control, anchor: Control) -> void:
 	# Guard against operating on an object that was freed since the signal was emitted.
@@ -442,6 +532,11 @@ func _register_window(window_instance: Control, is_modal: bool) -> void:
 		window_instance.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
 func _on_window_freed(window_id: int, was_modal: bool) -> void:
+	# CRITICAL FIX: The window is being freed. We MUST clean up its tracking data
+	# to prevent dangling signal connections. This is now possible because we use the ID.
+	if not was_modal:
+		stop_tracking_window(window_id)
+	
 	# This function is now robust against race conditions. It finds the window
 	# to remove by its ID, which is always valid, instead of its object
 	# reference, which might be stale.
@@ -455,16 +550,11 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 			var window = _active_inspection_group[i]
 			if not is_instance_valid(window) or window.get_instance_id() == window_id:
 				_active_inspection_group.remove_at(i)
-		
-		# We still need to call stop_tracking_window for the specific window
-		# that was freed, if it can be found by ID.
-		var window_instance = instance_from_id(window_id)
-		if is_instance_valid(window_instance):
-			stop_tracking_window(window_instance)
 
 
 
 func _on_inspection_anchor_freed(window_instance_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable) -> void:
+	print("WindowManager: Anchor freed for window ID: ", window_instance_id)
 	var old_anchor = instance_from_id(old_anchor_id)
 	var window_instance = instance_from_id(window_instance_id)
 
@@ -472,10 +562,13 @@ func _on_inspection_anchor_freed(window_instance_id: int, old_anchor_id: int, _l
 		if old_anchor.is_connected("item_rect_changed", geom_callable):
 			old_anchor.item_rect_changed.disconnect(geom_callable)
 	
-		# SAFE BEHAVIOR: If the anchor is gone, the inspection window is no longer
+	# SAFE BEHAVIOR: If the anchor is gone, the inspection window is no longer
 	# relevant and must be closed to prevent crashes and orphaned UI.
 	if is_instance_valid(window_instance):
+		print("WindowManager: Closing window due to anchor being freed")
 		window_instance.queue_free()
+	else:
+		print("WindowManager: Window instance is invalid, cannot close")
 
 
 func _close_top_modal():
@@ -687,11 +780,14 @@ func _find_view_in_node(node: Node, loc: LocationIdentifier) -> Control:
 func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):
 		var nodes = get_tree().get_nodes_in_group("modal_layer")
-		if not nodes.is_empty(): _modal_layer = nodes[0]
+		if not nodes.is_empty(): 
+			_modal_layer = nodes[0]
+			print("WindowManager: Found existing modal layer: ", _modal_layer.name)
 		else:
 			printerr("WindowManager: CRITICAL - No node in group 'modal_layer'.")
 			_modal_layer = CanvasLayer.new()
 			get_tree().root.add_child(_modal_layer)
+			print("WindowManager: Created new modal layer")
 	return _modal_layer
 
 ```
