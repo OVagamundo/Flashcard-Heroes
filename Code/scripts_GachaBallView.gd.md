@@ -15,7 +15,13 @@ var _location: LocationIdentifier
 var _instance_uuid: String
 var _is_selected: bool = false
 var _is_inspectable: bool = true
+var _is_interactive: bool = true
 var _single_click_inspect: bool = false
+
+# InteractionContext properties
+var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
+var _entity_type: StringName = &"UNIT"
+var _window_group_id: int = 0
 
 func _ready():
 	EventBus.view_selected.connect(_on_view_selected)
@@ -37,6 +43,9 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 		visible = false
 		return
 	
+	# Set entity type based on definition category
+	_entity_type = definition.category
+	
 	visible = true
 	icon_rect.texture = definition.icon
 	tier_label.text = "T%d" % definition.tier
@@ -49,6 +58,27 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 func set_is_enemy(is_enemy: bool):
 	if is_instance_valid(icon_rect):
 		icon_rect.flip_h = is_enemy
+
+func set_is_interactive(is_interactive: bool):
+	self._is_interactive = is_interactive
+
+## Configure the interaction context for this view
+func set_interaction_context(interaction_mode: StringName, entity_type: StringName, window_group_id: int = 0):
+	_interaction_mode = interaction_mode
+	_entity_type = entity_type
+	_window_group_id = window_group_id
+
+## Create and emit InteractionContext for this view
+func _create_interaction_context(event_type: StringName) -> InteractionContext:
+	var context = InteractionContext.new()
+	context.source_view_instance_id = get_instance_id()
+	context.event_type = event_type
+	context.location = _location
+	context.entity_uuid = _instance_uuid
+	context.entity_type = _entity_type
+	context.interaction_mode = _interaction_mode
+	context.window_group_id = _window_group_id
+	return context
 
 func _update_stats():
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
@@ -144,42 +174,27 @@ func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Ensure clicking an equipped item inside a UnitInspectionWindow prunes any child windows first.
-		var win: Node = self
-		while win and win != get_tree().root:
-			if win is InspectionWindow:
-				WindowManager.handle_inspection_background_click(win as Control)
-				break
-			win = win.get_parent()
-
 		get_viewport().set_input_as_handled()
-		
-		if _is_inspectable:
-			if event.double_click:
-				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-				EventBus.emit_signal("selection_clear_requested")
-				return
-			
-			if _single_click_inspect:
-				EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-				EventBus.emit_signal("selection_clear_requested")
-				return
 
-			var selected_loc = InteractionManager.get_selected_location()
-			if is_instance_valid(selected_loc) and selected_loc != _location:
-				EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
-				# Defer: if nothing is selected after the action, select this one (fallback for invalid action)
-				await get_tree().process_frame
-				if not is_instance_valid(InteractionManager.get_selected_location()):
-					InteractionManager.select_view(self, _location)
-			else:
-				InteractionManager.select_view(self, _location)
+		# Determine event type
+		var event_type: StringName
+		if event.double_click:
+			event_type = &"DOUBLE_CLICK"
 		else:
-			EventBus.emit_signal("inspection_requested", _location, _find_slot_anchor())
-			EventBus.emit_signal("selection_clear_requested")
+			event_type = &"SINGLE_CLICK"
+
+		# Create and emit InteractionContext
+		var context = _create_interaction_context(event_type)
+		EventBus.emit_signal("interaction_context_received", context)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	if not _is_inspectable or not is_instance_valid(_location): return null
+	# Use the new flag to control drag-and-drop.
+	if not _is_interactive: return null
+	
+	# TDD 4.3.III.5: Prevent dragging in Inspection-Only contexts
+	var context_group = InteractionManager.get_context_group(_location.container)
+	if context_group == &"InspectionOnly":
+		return null
 
 	var preview = TextureRect.new()
 	preview.texture = icon_rect.texture
@@ -196,10 +211,15 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	return { "source_loc": _location }
 
 func _can_drop_data(_at_position, data) -> bool:
+	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
+	var context_group = InteractionManager.get_context_group(_location.container)
+	if context_group == &"InspectionOnly":
+		return false
+		
 	return data is Dictionary and data.has("source_loc")
 
 func _drop_data(_at_position, data):
-	EventBus.emit_signal("inventory_action_requested", data.source_loc, _location)
+	EventBus.emit_signal("try_inventory_action", data.source_loc, _location)
 	InteractionManager.end_drag(true)
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):

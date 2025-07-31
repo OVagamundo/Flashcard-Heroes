@@ -5,6 +5,7 @@
 extends Node
 
 ## Singleton responsible for the mini-game's lifecycle.
+## Implements the TDD V7.0 specification for flashcard system.
 ## TDD Section 9.2: FlashcardManager.gd
 
 signal minigame_finished(results: Dictionary)
@@ -20,6 +21,8 @@ func _select_card_via_srs() -> StringName:
 	if not is_instance_valid(_run_state_ref):
 		printerr("FlashcardManager: _run_state_ref is null in _select_card_via_srs")
 		return _active_deck_ids.pick_random() if not _active_deck_ids.is_empty() else &""
+	
+	print("FlashcardManager: Selecting card via SRS from ", _active_deck_ids.size(), " cards")
 	
 	var candidates = _active_deck_ids.duplicate()
 	if candidates.has(_last_shown_card_id):
@@ -61,10 +64,27 @@ func _select_card_via_srs() -> StringName:
 func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void:
 	"""Starts a flashcard minigame with the specified run state and active deck"""
 	if is_instance_valid(_minigame_instance):
+		print("FlashcardManager: Minigame already in progress")
 		return # Game already in progress
 	
+	if not is_instance_valid(run_state):
+		printerr("FlashcardManager: Invalid run_state provided")
+		return
+	
+	if active_deck.is_empty():
+		printerr("FlashcardManager: Empty active deck provided")
+		return
+	
+	# Validate that all cards in the deck exist
+	for card_id in active_deck:
+		if not Database.flashcard_definitions.has(card_id):
+			printerr("FlashcardManager: Card ID not found in database: ", card_id)
+			return
+	
 	self._run_state_ref = run_state
-	self._active_deck_ids = active_deck
+	self._active_deck_ids = active_deck.duplicate()
+	
+	print("FlashcardManager: Starting minigame with ", active_deck.size(), " cards")
 	
 	# Open the flashcard minigame modal window
 	_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {
@@ -123,5 +143,44 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	
 	# Emit signal after cleanup to prevent any callbacks from accessing freed objects
 	emit_signal("minigame_finished", results)
+
+## Get statistics about the current deck for debugging.
+## @return Dictionary - Statistics about the deck
+func get_deck_statistics() -> Dictionary:
+	if not is_instance_valid(_run_state_ref):
+		return {}
+	
+	var stats = {
+		"total_cards": _active_deck_ids.size(),
+		"mastery_levels": {},
+		"average_mastery": 0.0,
+		"cards_by_mastery": {}
+	}
+	
+	var total_mastery = 0
+	var cards_counted = 0
+	
+	for card_id in _active_deck_ids:
+		if _run_state_ref.flashcard_progress.has(card_id):
+			var progress = _run_state_ref.flashcard_progress[card_id]
+			var mastery = progress.mastery_level
+			
+			stats.mastery_levels[card_id] = mastery
+			total_mastery += mastery
+			cards_counted += 1
+			
+			if not stats.cards_by_mastery.has(mastery):
+				stats.cards_by_mastery[mastery] = []
+			stats.cards_by_mastery[mastery].append(card_id)
+		else:
+			stats.mastery_levels[card_id] = 0
+			if not stats.cards_by_mastery.has(0):
+				stats.cards_by_mastery[0] = []
+			stats.cards_by_mastery[0].append(card_id)
+	
+	if cards_counted > 0:
+		stats.average_mastery = float(total_mastery) / float(cards_counted)
+	
+	return stats
 
 ```

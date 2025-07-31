@@ -5,12 +5,30 @@ extends "res://scripts/InspectionWindow.gd"
 @onready var description_label: RichTextLabel = %DescriptionLabel
 
 func _ready():
-	pass
+	$InternalBackground.gui_input.connect(_on_internal_background_clicked)
 
-func _gui_input(event: InputEvent):
+func _on_internal_background_clicked(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
+		# Create and emit InteractionContext for inspection window background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"WINDOW_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 1  # Inspection window group
+		
+		EventBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
+
+
+
+
+
+
+
+
 
 func populate(context: Dictionary):
 	var effect_definitions = context.get("effect_definition")

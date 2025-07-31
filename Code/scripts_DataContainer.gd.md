@@ -1,30 +1,47 @@
 <!-- Original: scripts/DataContainer.gd -->
 
 ```gdscript
-class_name DataContainer
-extends Resource
+class_name DataContainer extends RefCounted
 
-## The abstract base class for all data collections (inventories, lineups, etc.).
-## Defines the public interface for interacting with any container, hiding
-## the underlying implementation (Array, Dictionary, etc.).
+## Abstract methods that must be implemented by concrete container classes
 
-func get_uuid(_index: int) -> String:
-	push_error("get_uuid() must be implemented by a subclass.")
+## Returns the UUID at the specified index
+func get_uuid(index: int) -> String:
+	push_error("DataContainer.get_uuid() must be overridden")
 	return ""
 
-func set_uuid(_index: int, _uuid: String) -> void:
-	push_error("set_uuid() must be implemented by a subclass.")
+## Sets the UUID at the specified index
+func set_uuid(index: int, uuid: String) -> void:
+	push_error("DataContainer.set_uuid() must be overridden")
 
+## Returns the first available slot index, or -1 if full
 func find_first_empty_slot() -> int:
-	push_error("find_first_empty_slot() must be implemented by a subclass.")
+	push_error("DataContainer.find_first_empty_slot() must be overridden")
 	return -1
 
-func get_all_uuids() -> Array[String]:
-	push_error("get_all_uuids() must be implemented by a subclass.")
+## Checks if an index is within bounds
+func is_valid_index(index: int) -> bool:
+	push_error("DataContainer.is_valid_index() must be overridden")
+	return false
+
+## Returns the current capacity of the container
+func get_size() -> int:
+	push_error("DataContainer.get_size() must be overridden")
+	return 0
+
+## Returns true if the container has no items
+func is_empty() -> bool:
+	push_error("DataContainer.is_empty() must be overridden")
+	return true
+
+## Returns an array of all non-empty UUIDs in the container
+func get_all_non_empty_uuids() -> Array[String]:
+	push_error("DataContainer.get_all_non_empty_uuids() must be overridden")
 	return []
 
-func get_all_non_empty_uuids() -> Array[String]:
-	var all_uuids = get_all_uuids()
-	return all_uuids.filter(func(uuid): return not uuid.is_empty())
+## Returns an array of all UUIDs in the container (including empty ones)
+func get_all_uuids() -> Array[String]:
+	push_error("DataContainer.get_all_uuids() must be overridden")
+	return []
 
 ```

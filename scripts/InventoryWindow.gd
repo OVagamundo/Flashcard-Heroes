@@ -44,7 +44,18 @@ func _on_panel_gui_input(event: InputEvent):
 		if InteractionManager.is_drag_active():
 			InteractionManager.end_drag(false)
 			return
-		WindowManager.close_all_inspection_windows()
+		
+		# Create and emit InteractionContext for window background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"WINDOW_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 1  # Inspection windows group
+		
+		EventBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
 func _on_grid_gui_input(event: InputEvent):
@@ -52,7 +63,17 @@ func _on_grid_gui_input(event: InputEvent):
 		# Only clear selection if the click is not on a SlotView
 		var target = get_viewport().gui_get_focus_owner()
 		if not (target and target is SlotView):
-			EventBus.emit_signal("selection_clear_requested")
+			# Create and emit InteractionContext for grid background
+			var context = InteractionContext.new()
+			context.source_view_instance_id = get_instance_id()
+			context.event_type = &"SINGLE_CLICK"
+			context.location = null  # No specific location for grid background
+			context.entity_uuid = ""
+			context.entity_type = &"WINDOW_BACKGROUND"
+			context.interaction_mode = &"FULLY_INTERACTIVE"
+			context.window_group_id = 1  # Inspection windows group
+			
+			EventBus.emit_signal("interaction_context_received", context)
 
 func _initialize_grids_if_needed():
 	if _grids_initialized:
@@ -70,6 +91,9 @@ func _initialize_grids_if_needed():
 		for i in range(slot_count):
 			var slot_view = _SlotView.instantiate()
 			grid_node.add_child(slot_view)
+			# Configure interaction context for run inventory slots (FULLY_INTERACTIVE)
+			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
+			print("InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE")
 	
 	_grids_initialized = true
 
@@ -119,6 +143,8 @@ func _populate_grids():
 
 			var loc = LocationIdentifier.new(container_name, i)
 			slot_view.populate(loc) # Always update the location data on the slot
+			# Ensure interaction context is set for run inventory
+			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 
 			if i >= all_uuids.size(): continue # Should not happen with growable containers
 
@@ -131,3 +157,6 @@ func _populate_grids():
 				var gacha_view = _GachaBallView.instantiate()
 				slot_view.add_child(gacha_view)
 				gacha_view.populate(loc, instance, true)
+				# Configure interaction context for run inventory (FULLY_INTERACTIVE)
+				gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
+				print("InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ", instance.get_definition().category)

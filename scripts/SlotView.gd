@@ -1,8 +1,11 @@
 class_name SlotView
 extends PanelContainer
 
-
 var _location: LocationIdentifier
+
+# InteractionContext properties
+var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
+var _window_group_id: int = 0
 
 func _ready():
 	# Add a simple stylebox to make the empty slot visible.
@@ -22,42 +25,43 @@ func populate(loc: LocationIdentifier):
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
+## Configure the interaction context for this slot
+func set_interaction_context(interaction_mode: StringName, window_group_id: int = 0):
+	_interaction_mode = interaction_mode
+	_window_group_id = window_group_id
+
+## Create and emit InteractionContext for this slot
+func _create_interaction_context(event_type: StringName) -> InteractionContext:
+	var context = InteractionContext.new()
+	context.source_view_instance_id = get_instance_id()
+	context.event_type = event_type
+	context.location = _location
+	context.entity_uuid = ""  # Empty slots have no entity
+	context.entity_type = &"EMPTY_SLOT"
+	context.interaction_mode = _interaction_mode
+	context.window_group_id = _window_group_id
+	return context
+
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Prune any child inspection windows first (standard inspection behavior).
-		var win: Node = self
-		while win and win != get_tree().root:
-			if win is InspectionWindow:
-				WindowManager.handle_inspection_background_click(win as Control)
-				break
-			win = win.get_parent()
-
 		get_viewport().set_input_as_handled()
-		var selected_loc = InteractionManager.get_selected_location()
 		
-		# Only emit a signal if something is already selected and this slot is the target.
-		if is_instance_valid(selected_loc) and selected_loc != _location:
-			EventBus.emit_signal("inventory_action_requested", selected_loc, _location)
-		
-		# An empty slot should never be the source of an action.
-		# Clicking it with nothing else selected should just clear the context.
-		else:
-			EventBus.emit_signal("selection_clear_requested")
-			# Only close inspection windows if not inside one
-			var node = self.get_parent()
-			var inside_inspection_window = false
-			while node and node != get_tree().root:
-				if node is InspectionWindow:
-					inside_inspection_window = true
-					break
-				node = node.get_parent()
-			if not inside_inspection_window:
-				WindowManager.close_all_inspection_windows()
+		# Create and emit InteractionContext
+		var context = _create_interaction_context(&"SINGLE_CLICK")
+		EventBus.emit_signal("interaction_context_received", context)
 
 func _can_drop_data(_at_position, data) -> bool:
+	# Check if this is an inspection-only context
+	if _interaction_mode == &"INSPECTION_ONLY":
+		return false
+		
 	return data is Dictionary and data.has("source_loc")
 
 func _drop_data(_at_position, data):
-	EventBus.emit_signal("inventory_action_requested", data.source_loc, _location)
+	# Check if this is an inspection-only context
+	if _interaction_mode == &"INSPECTION_ONLY":
+		return
+		
+	EventBus.emit_signal("try_inventory_action", data.source_loc, _location)

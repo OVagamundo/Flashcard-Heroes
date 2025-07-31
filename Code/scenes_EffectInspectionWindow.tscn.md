@@ -30,6 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+mouse_filter = 2
 theme = SubResource("Theme_y151u")
 script = ExtResource("1_v452y")
 

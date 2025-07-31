@@ -47,7 +47,18 @@ func _on_panel_gui_input(event: InputEvent):
 		if InteractionManager.is_drag_active():
 			InteractionManager.end_drag(false)
 			return
-		WindowManager.close_all_inspection_windows()
+		
+		# Create and emit InteractionContext for window background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"WINDOW_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 1  # Inspection windows group
+		
+		EventBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
 func _on_grid_gui_input(event: InputEvent):
@@ -55,7 +66,17 @@ func _on_grid_gui_input(event: InputEvent):
 		# Only clear selection if the click is not on a SlotView
 		var target = get_viewport().gui_get_focus_owner()
 		if not (target and target is SlotView):
-			EventBus.emit_signal("selection_clear_requested")
+			# Create and emit InteractionContext for grid background
+			var context = InteractionContext.new()
+			context.source_view_instance_id = get_instance_id()
+			context.event_type = &"SINGLE_CLICK"
+			context.location = null  # No specific location for grid background
+			context.entity_uuid = ""
+			context.entity_type = &"WINDOW_BACKGROUND"
+			context.interaction_mode = &"FULLY_INTERACTIVE"
+			context.window_group_id = 1  # Inspection windows group
+			
+			EventBus.emit_signal("interaction_context_received", context)
 
 func _initialize_grids_if_needed():
 	if _grids_initialized:

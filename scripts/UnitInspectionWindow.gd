@@ -8,12 +8,15 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
+@onready var internal_background: ColorRect = $InternalBackground
 
 var _inspected_unit_uuid: String
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _is_enemy_context: bool = false
+var _window_group_id: int = 1  # Inspection window group
+var _stable_anchor: Control = null  # Stable anchor for positioning
 
 func _ready():
 	EventBus.battle_inventory_changed.connect(_on_inventory_changed)
@@ -24,7 +27,6 @@ func _ready():
 	description_label.mouse_filter = MOUSE_FILTER_PASS
 	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
 	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
-
 func _exit_tree():
 	if EventBus.is_connected("battle_inventory_changed", _on_inventory_changed):
 		EventBus.battle_inventory_changed.disconnect(_on_inventory_changed)
@@ -36,20 +38,28 @@ func _exit_tree():
 		EventBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
 
 func _gui_input(event: InputEvent):
+	# Handle background clicks on the inspection window itself
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
-		EventBus.emit_signal("selection_clear_requested")
+		print("UnitInspectionWindow: PanelContainer background click received!")
+		
+		# Create WINDOW_BACKGROUND context for any click on the window
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"WINDOW_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 1  # Inspection window group
+		
+		print("UnitInspectionWindow: Emitting interaction_context_received signal")
+		EventBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
-# Fallback: if a child Control consumes the event before it reaches _gui_input,
-# this unhandled_input ensures we still prune child windows when the user
-# clicks anywhere inside the unit window background.
-func _unhandled_input(event: InputEvent):
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Only act if the click occurred inside this window's rect.
-		if get_global_rect().has_point(event.position):
-			WindowManager.handle_inspection_background_click(self)
-			get_viewport().set_input_as_handled()
+
+
+
+
 
 func populate(context: Dictionary):
 	_source_view = context.get("source_view")
@@ -69,6 +79,9 @@ func populate(context: Dictionary):
 
 	_inspected_unit_uuid = _instance.ball_uuid
 
+	# Set up stable anchor pattern
+	_setup_stable_anchor()
+
 	name_label.text = tr(unit_definition.display_name_key)
 	var description_text = tr(unit_definition.description_key)
 	
@@ -81,6 +94,75 @@ func populate(context: Dictionary):
 
 	# --- Core UI Population Logic ---
 	_rebuild_item_grid()
+
+## Set up stable anchor pattern for robust positioning
+func _setup_stable_anchor():
+	if is_instance_valid(_source_view):
+		# Find the nearest stable container (SlotView or PanelContainer)
+		_stable_anchor = _find_stable_anchor(_source_view)
+		if is_instance_valid(_stable_anchor):
+			# Connect to anchor movement for dynamic positioning
+			_stable_anchor.item_rect_changed.connect(_on_anchor_moved)
+			_stable_anchor.tree_exited.connect(_on_anchor_freed)
+
+## Find stable anchor for positioning
+func _find_stable_anchor(original_anchor: Control) -> Control:
+	# If the original anchor is already a stable container, use it
+	if original_anchor.get_class() == "SlotView" or original_anchor.get_class() == "PanelContainer":
+		return original_anchor
+	
+	# Otherwise, find the nearest stable container parent
+	var current = original_anchor
+	while is_instance_valid(current) and current != get_tree().root:
+		if current.get_class() == "SlotView" or current.get_class() == "PanelContainer":
+			return current
+		current = current.get_parent()
+	
+	# If no stable container found, fall back to the original anchor
+	return original_anchor
+
+## Handle anchor movement for dynamic positioning
+func _on_anchor_moved():
+	if is_instance_valid(_stable_anchor):
+		# Reposition window relative to anchor
+		global_position = _calculate_position_relative_to_anchor()
+
+## Handle anchor being freed
+func _on_anchor_freed():
+	# If anchor is gone, close the window to prevent orphaned UI
+	queue_free()
+
+## Calculate position relative to stable anchor
+func _calculate_position_relative_to_anchor() -> Vector2:
+	if not is_instance_valid(_stable_anchor):
+		return global_position
+	
+	var anchor_rect = _stable_anchor.get_global_rect()
+	var window_size = size
+	var viewport_rect = get_viewport().get_visible_rect()
+	
+	# Try to position to the right of the anchor
+	var pos_right = Vector2(anchor_rect.end.x + 20, anchor_rect.position.y)
+	if viewport_rect.encloses(Rect2(pos_right, window_size)):
+		return pos_right
+	
+	# Try to position below the anchor
+	var pos_below = Vector2(anchor_rect.position.x, anchor_rect.end.y + 20)
+	if viewport_rect.encloses(Rect2(pos_below, window_size)):
+		return pos_below
+	
+	# Try to position above the anchor
+	var pos_above = Vector2(anchor_rect.position.x, anchor_rect.position.y - window_size.y - 20)
+	if viewport_rect.encloses(Rect2(pos_above, window_size)):
+		return pos_above
+	
+	# Fallback: position to the left of the anchor
+	var pos_left = Vector2(anchor_rect.position.x - window_size.x - 20, anchor_rect.position.y)
+	if viewport_rect.encloses(Rect2(pos_left, window_size)):
+		return pos_left
+	
+	# Last resort: position in the top-right corner of the anchor
+	return Vector2(anchor_rect.end.x - window_size.x - 20, anchor_rect.position.y + 20)
 
 
 func _rebuild_item_grid():
@@ -126,6 +208,10 @@ func _rebuild_item_grid():
 		loc.index = i
 		loc.unit_uuid = _instance.ball_uuid
 		slot_view.populate(loc) # This makes the empty slot a valid drop target.
+		
+		# Set interaction context for the slot
+		var slot_interaction_mode = &"INSPECTION_ONLY" if _is_enemy_context else &"FULLY_INTERACTIVE"
+		slot_view.set_interaction_context(slot_interaction_mode, _window_group_id)
 
 		var item_uuid = _instance.get_equipped_item_uuid(i)
 
@@ -133,10 +219,15 @@ func _rebuild_item_grid():
 			var item_instance = all_instances_db[item_uuid]
 			var gacha_view = _GachaBallView.instantiate()
 			slot_view.add_child(gacha_view)
-			# The GachaBallView gets the same location data as its parent slot.
+			
+			# Enhanced contextual behavior for player vs enemy units
 			var is_interactive = not _is_enemy_context
 			var single_click_inspect = _is_enemy_context
-			gacha_view.populate(loc, item_instance, is_interactive, single_click_inspect)
+			var interaction_mode = &"INSPECTION_ONLY" if _is_enemy_context else &"FULLY_INTERACTIVE"
+			
+			gacha_view.populate(loc, item_instance, true, single_click_inspect)
+			gacha_view.set_is_interactive(is_interactive)
+			gacha_view.set_interaction_context(interaction_mode, &"ITEM", _window_group_id)
 	
 
 func _update_description():

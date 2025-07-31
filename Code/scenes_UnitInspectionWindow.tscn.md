@@ -22,6 +22,14 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_abcde")
 script = ExtResource("1_qwert")
 
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0)
+mouse_filter = 1
+
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 2
 theme_override_constants/margin_left = 8
@@ -36,7 +44,7 @@ theme_override_constants/separation = 8
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+mouse_filter = 1
 theme_override_font_sizes/font_size = 18
 text = "Unit Name"
 horizontal_alignment = 1
@@ -55,7 +63,7 @@ meta_underlined = false
 [node name="ItemGridLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+mouse_filter = 1
 text = "Equipped Items:"
 
 [node name="ItemGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]

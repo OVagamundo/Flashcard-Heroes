@@ -27,10 +27,23 @@ var _active_inspection_group: Array[Control] = [] # The single, active chain of 
 var _tracked_windows: Dictionary = {} # Stores info about tracked windows for cleanup.
 var _modal_layer: CanvasLayer = null
 
+# Enhanced tracking for better window management
+var _window_hierarchy: Dictionary = {} # Maps window instance IDs to their parent/child relationships
+var _window_group_registry: Dictionary = {} # Maps window group IDs to window lists
+var _instance_id_to_window: Dictionary = {} # Maps instance IDs to window references for quick lookup
+var _cleanup_timer: Timer = null # Timer for proactive cleanup
+
 func _ready():
 	# Ensure this node can process input events
 	set_process_input(true)
 	print("WindowManager: _ready called, input processing enabled")
+	
+	# Initialize cleanup timer for proactive cleanup
+	_cleanup_timer = Timer.new()
+	_cleanup_timer.wait_time = 5.0  # Run cleanup every 5 seconds
+	_cleanup_timer.timeout.connect(_proactive_cleanup)
+	add_child(_cleanup_timer)
+	_cleanup_timer.start()
 	
 	EventBus.inspect_inventory_requested.connect(_on_inspect_inventory_requested)
 	EventBus.display_discard_pile_requested.connect(_on_display_discard_pile_requested)
@@ -47,24 +60,8 @@ func _ready():
 	EventBus.title_scene_requested.connect(_close_all_windows)
 
 func _input(event: InputEvent):
-	# Debug: Check if input is being received
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		print("WindowManager: Received mouse click at position: ", event.position)
-		print("WindowManager: Active inspection group size: ", _active_inspection_group.size())
-		print("WindowManager: Modal stack size: ", _modal_stack.size())
-		if not _modal_stack.is_empty():
-			print("WindowManager: Modal stack contents:")
-			for i in range(_modal_stack.size()):
-				var modal = _modal_stack[i]
-				if is_instance_valid(modal):
-					print("  [", i, "] ", modal.name, " (", modal.get_class(), ")")
-				else:
-					print("  [", i, "] INVALID")
-	
-	# Clean up any invalid windows before processing input
 	_cleanup_invalid_windows()
 	
-	# Handle escape key for closing windows
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		if InteractionManager.is_drag_active():
@@ -77,35 +74,37 @@ func _input(event: InputEvent):
 			EventBus.emit_signal("selection_clear_requested")
 		return
 	
-	# Handle mouse clicks for closing inspection windows
-	if not event is InputEventMouseButton:
-		return
-	if not event.button_index == MOUSE_BUTTON_LEFT or not event.is_pressed():
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed()):
 		return
 
-	# Don't close inspection windows if there are modal windows active
-	# The user might be legitimately interacting with the modal window
+	# If a modal is open, its blocker handles input. The global handler does nothing.
 	if not _modal_stack.is_empty():
 		return
 
-	if not _active_inspection_group.is_empty():
-		var click_is_inside_a_window = false
-		var valid_windows_exist = false
-		for window in _active_inspection_group:
-			if is_instance_valid(window):
-				valid_windows_exist = true
-				if window.get_global_rect().has_point(event.position):
-					click_is_inside_a_window = true
-					break
-		
-		# If no valid windows exist, clear the group
-		if not valid_windows_exist:
-			print("WindowManager: No valid windows in active group, clearing")
-			_active_inspection_group.clear()
-		elif not click_is_inside_a_window:
-			close_all_inspection_windows()
-			EventBus.emit_signal("selection_clear_requested")
-			# We DO NOT consume the input here, allowing it to "click through".
+	# If no inspection windows are open, there's nothing for this handler to do.
+	if _active_inspection_group.is_empty():
+		return
+
+	# --- THE DEFINITIVE INPUT ROUTER ---
+	var top_most_clicked_window: Control = null
+	# Iterate in reverse (from top-most to bottom-most) to find which window was clicked.
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var window = _active_inspection_group[i]
+		if is_instance_valid(window) and window.get_global_rect().has_point(event.position):
+			top_most_clicked_window = window
+			break
+
+	if top_most_clicked_window:
+		# A click inside an inspection window. Let the window handle it internally.
+		# The inspection windows have their own _gui_input handlers for background clicks.
+		# We don't interfere here - let the window's internal logic handle it.
+		return
+	else:
+		# The click was not inside ANY open inspection window.
+		# This is a "true" global background click. Close everything.
+		close_all_inspection_windows()
+		# We DO NOT consume the event here, allowing it to "click-through" to
+		# select another unit, as per the TDD.
 
 # --- Public API ---
 
@@ -129,9 +128,15 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 	# TDD Rule: General-purpose modals are exclusive. Close any active one first.
 	_close_all_windows()
 
+	# Clear any active selection when opening a major modal view.
+	EventBus.emit_signal("selection_clear_requested")
+
 	var window_instance = _window_scenes[type].instantiate()
 	_get_modal_layer().add_child(window_instance)
 	_modal_stack.push_back(window_instance)
+	
+	# Enhanced registration with group ID 0 (main windows)
+	_register_window_enhanced(window_instance, true, 0)
 	
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
@@ -155,7 +160,7 @@ func _on_inspect_inventory_requested():
 	else:
 		var run_state = GameManager.run_state
 		if is_instance_valid(run_state):
-			inventory_data = run_state.run_inventory_containers
+			inventory_data = run_state.get_run_inventory_containers()
 		title = "Run Inventory"
 	
 	var context = {
@@ -195,7 +200,6 @@ func handle_inspection_background_click(clicked_window: Control):
 	var window_index = _active_inspection_group.find(clicked_window)
 	if window_index == -1: return
 
-	# Close all windows that are children of the clicked one.
 	# TDD Rule: Clicking a window closes its descendants.
 	var child_count = _active_inspection_group.size() - (window_index + 1)
 	if child_count > 0:
@@ -203,6 +207,10 @@ func handle_inspection_background_click(clicked_window: Control):
 			var child_window = _active_inspection_group.pop_back()
 			if is_instance_valid(child_window):
 				child_window.queue_free()
+	
+	# After handling window closure, clear any active selection.
+	# This prevents the race condition and ensures consistent state.
+	EventBus.emit_signal("selection_clear_requested")
 
 func close_all_inspection_windows():
 	print("WindowManager: Closing all inspection windows. Count: ", _active_inspection_group.size())
@@ -246,6 +254,9 @@ func _deferred_position_and_track(window_id: int, anchor_id: int, loc: LocationI
 		_track_inspection_anchor(window_instance, anchor, loc)
 
 func open_child_inspection_window(parent_window: Control, window_type: StringName, context: Dictionary):
+	# TDD 4.3.II: This rule applies to all inspection windows, root or child.
+	EventBus.emit_signal("selection_clear_requested")
+
 	if not _window_scenes.has(window_type):
 		printerr("WindowManager: Window scene not found for type: %s" % window_type)
 		return
@@ -254,6 +265,7 @@ func open_child_inspection_window(parent_window: Control, window_type: StringNam
 
 	var window_instance = _window_scenes[window_type].instantiate()
 	_active_inspection_group.append(window_instance)
+	# REVERTED: Children MUST be added to the global modal layer to render correctly.
 	_get_modal_layer().add_child(window_instance)
 	_register_window(window_instance, false)
 
@@ -266,7 +278,7 @@ func open_child_inspection_window(parent_window: Control, window_type: StringNam
 	window_instance.call_deferred("_position_child_window", parent_window)
 
 func _close_children_of(parent_window: Control):
-	var parent_index = _find_window_in_group(parent_window)
+	var parent_index = find_window_in_group(parent_window)
 	if parent_index == -1:
 		return
 
@@ -282,9 +294,9 @@ func _close_children_of(parent_window: Control):
 
 # Helper: find nearest ancestor that is in the active inspection group
 func _find_ancestor_inspection_window(node: Node) -> Control:
-	var current := node
+	var current := node.get_parent() # Start search from the parent
 	while is_instance_valid(current) and current != get_tree().root:
-		if current is Control and _active_inspection_group.has(current):
+		if current is InspectionWindow and _active_inspection_group.has(current):
 			return current as Control
 		current = current.get_parent()
 	return null
@@ -326,6 +338,9 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 	return payload
 
 func _open_root_inspection_window(loc: LocationIdentifier, source_view: Control):
+	# TDD 4.3.II: "Opening any inspection window immediately clears the active selection."
+	EventBus.emit_signal("selection_clear_requested")
+
 	# Check if a window already exists for this location
 	for window in _active_inspection_group:
 		# Check if the window has a location and if it matches.
@@ -353,7 +368,7 @@ func _on_selection_changed(new_location: LocationIdentifier):
 		if is_instance_valid(source_view):
 			# If the new selection is NOT inside an existing inspection window group,
 			# it's a "root" selection, so we clear out any old windows.
-			if _find_window_in_group(source_view) == -1:
+			if find_window_in_group(source_view) == -1:
 				close_all_inspection_windows()
 
 func _on_battle_state_changed(is_in_battle: bool):
@@ -401,6 +416,13 @@ func _cleanup_invalid_windows():
 
 func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	print("WindowManager: Opening inspection window for location: ", loc.container, " [", loc.index, "]")
+	
+	# TDD Rule: Single Active Group - Close entire previous group when opening new root-level window
+	# Check if the source view is NOT part of an existing inspection window group
+	if find_window_in_group(source_view) == -1:
+		# This is a new root-level window, so close the entire previous group
+		close_all_inspection_windows()
+	
 	var window_type: StringName
 	var context: Dictionary
 	var instance: GachaBallInstance
@@ -433,8 +455,10 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	var window_instance = _window_scenes[window_type].instantiate()
 	
 	_active_inspection_group.push_back(window_instance)
-	_register_window(window_instance, false)
 	_get_modal_layer().add_child(window_instance)
+	
+	# Enhanced registration with group ID 1 (inspection windows)
+	_register_window_enhanced(window_instance, false, 1)
 	
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
@@ -539,6 +563,15 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 	if not was_modal:
 		stop_tracking_window(window_id)
 	
+	# Clean up enhanced tracking structures
+	_instance_id_to_window.erase(window_id)
+	_window_hierarchy.erase(window_id)
+	
+	# Clean up from group registry
+	for group_id in _window_group_registry:
+		var window_ids = _window_group_registry[group_id]
+		window_ids.erase(window_id)
+	
 	# This function is now robust against race conditions. It finds the window
 	# to remove by its ID, which is always valid, instead of its object
 	# reference, which might be stale.
@@ -592,7 +625,7 @@ func _close_all_windows():
 			window.queue_free()
 	close_all_inspection_windows()
 
-func _find_window_in_group(control_node: Node) -> int:
+func find_window_in_group(control_node: Node) -> int:
 	var current : Node = control_node
 	while is_instance_valid(current) and current != get_tree().root:
 		# Only attempt the lookup if the node is a Control; the typed array would
@@ -791,5 +824,172 @@ func _get_modal_layer() -> CanvasLayer:
 			get_tree().root.add_child(_modal_layer)
 			print("WindowManager: Created new modal layer")
 	return _modal_layer
+
+func is_any_inspection_window_open() -> bool:
+	# This helper allows other scripts to query the window state without accessing private variables.
+	return not _active_inspection_group.is_empty()
+
+## Close child windows based on window group ID or parent window ID
+func close_child_windows(window_group_id: int, parent_window_id: int = -1):
+	# TDD Rule: Close only the children of a specific parent window
+	if parent_window_id != -1:
+		# Close children of the specific parent window
+		var parent_index = -1
+		for i in range(_active_inspection_group.size()):
+			if _active_inspection_group[i].get_instance_id() == parent_window_id:
+				parent_index = i
+				break
+		
+		if parent_index != -1:
+			# Close all windows that come after the parent (children)
+			var child_count = _active_inspection_group.size() - (parent_index + 1)
+			if child_count > 0:
+				for i in range(child_count):
+					var child_window = _active_inspection_group.pop_back()
+					if is_instance_valid(child_window):
+						stop_tracking_window(child_window.get_instance_id())
+						child_window.queue_free()
+	elif window_group_id == 1 and not _active_inspection_group.is_empty():
+		# Fallback: Close children of the top-most window
+		var parent_index = _active_inspection_group.size() - 1
+		
+		# Close all windows that come after the parent (children)
+		var child_count = _active_inspection_group.size() - (parent_index + 1)
+		if child_count > 0:
+			for i in range(child_count):
+				var child_window = _active_inspection_group.pop_back()
+				if is_instance_valid(child_window):
+					stop_tracking_window(child_window.get_instance_id())
+					child_window.queue_free()
+	elif window_group_id == 0:
+		# Close all windows (both modals and inspections)
+		close_all_inspection_windows()
+		# Also close any open modals
+		while not _modal_stack.is_empty():
+			_close_top_modal()
+
+# --- Enhanced Window Management Methods ---
+
+## Enhanced window registration with instance ID tracking
+func _register_window_enhanced(window_instance: Control, is_modal: bool, window_group_id: int = 0):
+	if not is_instance_valid(window_instance):
+		return
+	
+	var window_id = window_instance.get_instance_id()
+	
+	# Register in instance ID lookup
+	_instance_id_to_window[window_id] = window_instance
+	
+	# Register in window group registry
+	if not _window_group_registry.has(window_group_id):
+		_window_group_registry[window_group_id] = []
+	_window_group_registry[window_group_id].append(window_id)
+	
+	# Register in hierarchy (for inspection windows)
+	if not is_modal and not _active_inspection_group.is_empty():
+		var parent_window = _active_inspection_group.back()
+		if is_instance_valid(parent_window):
+			var parent_id = parent_window.get_instance_id()
+			_window_hierarchy[window_id] = parent_id
+	
+	# Connect cleanup signals
+	_register_window(window_instance, is_modal)
+
+## Enhanced proactive cleanup function
+func _proactive_cleanup():
+	# Clean up invalid windows from all tracking structures
+	_cleanup_invalid_windows()
+	_cleanup_invalid_instance_ids()
+	_cleanup_invalid_hierarchy_entries()
+	_cleanup_invalid_group_registry_entries()
+
+## Clean up invalid instance ID mappings
+func _cleanup_invalid_instance_ids():
+	var invalid_ids = []
+	for window_id in _instance_id_to_window:
+		var window = _instance_id_to_window[window_id]
+		if not is_instance_valid(window):
+			invalid_ids.append(window_id)
+	
+	for window_id in invalid_ids:
+		_instance_id_to_window.erase(window_id)
+		print("WindowManager: Cleaned up invalid instance ID mapping: ", window_id)
+
+## Clean up invalid hierarchy entries
+func _cleanup_invalid_hierarchy_entries():
+	var invalid_entries = []
+	for window_id in _window_hierarchy:
+		var parent_id = _window_hierarchy[window_id]
+		if not instance_from_id(parent_id) or not instance_from_id(window_id):
+			invalid_entries.append(window_id)
+	
+	for window_id in invalid_entries:
+		_window_hierarchy.erase(window_id)
+		print("WindowManager: Cleaned up invalid hierarchy entry: ", window_id)
+
+## Clean up invalid group registry entries
+func _cleanup_invalid_group_registry_entries():
+	for group_id in _window_group_registry:
+		var window_ids = _window_group_registry[group_id]
+		var valid_ids = []
+		for window_id in window_ids:
+			if instance_from_id(window_id):
+				valid_ids.append(window_id)
+		_window_group_registry[group_id] = valid_ids
+
+## Get window by instance ID (enhanced lookup)
+func get_window_by_instance_id(instance_id: int) -> Control:
+	if _instance_id_to_window.has(instance_id):
+		var window = _instance_id_to_window[instance_id]
+		if is_instance_valid(window):
+			return window
+		else:
+			# Clean up invalid reference
+			_instance_id_to_window.erase(instance_id)
+	return null
+
+## Get all windows in a group
+func get_windows_in_group(group_id: int) -> Array[Control]:
+	var windows: Array[Control] = []
+	if _window_group_registry.has(group_id):
+		for window_id in _window_group_registry[group_id]:
+			var window = get_window_by_instance_id(window_id)
+			if is_instance_valid(window):
+				windows.append(window)
+	return windows
+
+## Close all windows in a specific group
+func close_windows_in_group(group_id: int):
+	var windows = get_windows_in_group(group_id)
+	for window in windows:
+		if is_instance_valid(window):
+			window.queue_free()
+
+## Enhanced window hierarchy management
+func get_child_windows(parent_window_id: int) -> Array[int]:
+	var child_ids: Array[int] = []
+	for window_id in _window_hierarchy:
+		if _window_hierarchy[window_id] == parent_window_id:
+			child_ids.append(window_id)
+	return child_ids
+
+## Close all child windows of a specific parent
+func close_child_windows_of_parent(parent_window_id: int):
+	var child_ids = get_child_windows(parent_window_id)
+	for child_id in child_ids:
+		var child_window = get_window_by_instance_id(child_id)
+		if is_instance_valid(child_window):
+			child_window.queue_free()
+
+## Enhanced window statistics
+func get_window_statistics() -> Dictionary:
+	return {
+		"modal_count": _modal_stack.size(),
+		"inspection_count": _active_inspection_group.size(),
+		"tracked_count": _tracked_windows.size(),
+		"instance_id_count": _instance_id_to_window.size(),
+		"hierarchy_count": _window_hierarchy.size(),
+		"group_registry_count": _window_group_registry.size()
+	}
 
 ```

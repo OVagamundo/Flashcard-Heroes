@@ -17,10 +17,8 @@ const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
 @export var flashcard_progress: Dictionary = {} # key = StringName, value = FlashcardProgress
 @export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
 
-# Inventory containers indexed by name (e.g., "RunInventoryT1").
-var run_inventory_containers: Dictionary = {} # key = StringName, value = DataContainer
-# Additional containers (lineup, bench, etc.) cached here
-var _other_containers: Dictionary = {}
+# All containers indexed by name (e.g., "RunInventoryT1", "PlayerLineup", etc.)
+var _containers: Dictionary[StringName, DataContainer] = {}
 
 static var RUN_CONTAINER_TAGS: Dictionary = {
 	HERO = &"Hero",
@@ -69,6 +67,15 @@ func _normalize_container_tag(tag: StringName) -> StringName:
 func get_all_instances() -> Dictionary:
 	return run_instances
 
+func get_run_inventory_containers() -> Dictionary:
+	var inventory_data = {}
+	for tier in [1, 2, 3]:
+		var container_name = &"RunInventoryT%d" % tier
+		var container = get_container(container_name)
+		if is_instance_valid(container):
+			inventory_data[container_name] = container
+	return inventory_data
+
 func get_location_for_uuid(uuid: String) -> LocationIdentifier:
 	if uuid.is_empty():
 		return null
@@ -81,21 +88,17 @@ func get_location_for_uuid(uuid: String) -> LocationIdentifier:
 	return null
 
 func get_container(container_name: StringName) -> DataContainer:
-	# Check inventory containers first
-	if run_inventory_containers.has(container_name):
-		return run_inventory_containers[container_name]
-
-	# Check other containers
-	if _other_containers.has(container_name):
-		return _other_containers[container_name]
+	# Check if container exists
+	if _containers.has(container_name):
+		return _containers[container_name]
 	
 	# Handle standard containers with default sizes if they don't exist yet
 	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP or container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-		_other_containers[container_name] = preload("res://scripts/FixedArrayContainer.gd").new(6)
-		return _other_containers[container_name]
+		_containers[container_name] = FixedArrayContainer.new(6)
+		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-		_other_containers[container_name] = preload("res://scripts/FixedArrayContainer.gd").new(3)
-		return _other_containers[container_name]
+		_containers[container_name] = FixedArrayContainer.new(12)
+		return _containers[container_name]
 	
 	return null
 
@@ -114,8 +117,7 @@ func start_new_run() -> void:
 	gold = 5 # Set starting gold
 	day = 0
 	run_instances.clear()
-	run_inventory_containers.clear()
-	_other_containers.clear()
+	_containers.clear()
 	flashcard_progress.clear()
 	active_deck_ids.clear()
 
@@ -146,7 +148,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
 		var container_name: StringName = &"RunInventoryT%d" % t
-		run_inventory_containers[container_name] = preload("res://scripts/GrowableGridContainer.gd").new(16, 4)
+		_containers[container_name] = GrowableGridContainer.new(16)
 
 	# --- Create hero instance ---
 	if hero_def:

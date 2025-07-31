@@ -2,17 +2,24 @@
 
 ```gdscript
 # res://scripts/EffectDefinition.gd
+@tool
 class_name EffectDefinition
 extends Resource
 
-## The base class for all ability effects.
-## Defines the contract for what an effect can do.
+## An abstract base class for any action that can occur in the game.
+## Concrete effects (e.g., `EffectModifyStat`, `EffectDealDamage`) must inherit from this class and implement its `execute` method.
 
-## Executes the effect's logic.
-## @param source: The GachaBallInstance initiating the effect.
-## @param targets: An array of GachaBallInstances being targeted.
-## @param battle_manager: A reference to the current BattleManager.
-func execute(_source, _targets, _battle_manager):
+## A dictionary containing the specific parameters for this effect's execution.
+## This supports both flat values (e.g., `{"damage": 3}`) and stat-scaling values. See TDD for stat-scaling structure.
+@export var parameters: Dictionary
+
+## The core method that all concrete effect scripts must implement.
+## It receives all necessary information to perform its action.
+## @param source_uuid: String - The UUID of the GachaBallInstance initiating the effect.
+## @param targets: Array[String] - An array of target UUIDs.
+## @param battle_manager: BattleManager - A reference to the current BattleManager.
+## @param context: Dictionary - The original context of the event that started this chain.
+func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: Dictionary):
 	pass
 
 ```

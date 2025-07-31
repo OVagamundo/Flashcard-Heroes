@@ -16,8 +16,8 @@ var _selected_cost: int = 0
 var _price_labels_container: HBoxContainer
 
 func _ready():
-	EventBus.selection_changed.connect(_on_selection_changed)
 	EventBus.shop_stock_refreshed.connect(populate)
+	EventBus.selection_changed.connect(_on_selection_changed)
 
 	buy_button.pressed.connect(_on_buy_pressed)
 	reroll_button.pressed.connect(_on_reroll_pressed)
@@ -30,7 +30,7 @@ func _ready():
 	add_child(_price_labels_container)
 	move_child(_price_labels_container, 2)  # Place after slots container
 	
-	# Add global input handling for closing inspection windows
+	# Add background input handling for the new InteractionContext system
 	gui_input.connect(_on_gui_input)
 
 func populate(context: Dictionary):
@@ -51,6 +51,8 @@ func populate(context: Dictionary):
 
 		var loc = LocationIdentifier.new(&"Shop", i)
 		slot_view.populate(loc)
+		# Set up interaction context for the slot
+		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
@@ -59,6 +61,8 @@ func populate(context: Dictionary):
 			slot_view.add_child(gacha_view)
 			# THE CRITICAL FIX: The last argument must be 'false' to enable double-click inspection.
 			gacha_view.populate(loc, inst_for_slot, true, false)
+			# Set up interaction context for the new system
+			gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", &"ITEM", 0)
 		
 		# Always create a price label for each slot to maintain positioning
 		var price_label = Label.new()
@@ -79,6 +83,7 @@ func _find_instance_for_slot(slot_index: int) -> GachaBallInstance:
 			return inst
 	return null
 
+## Handle selection changes from the new InteractionContext system
 func _on_selection_changed(new_location: LocationIdentifier):
 	if new_location and new_location.container == &"Shop":
 		var instance = _find_instance_for_slot(new_location.index)
@@ -93,6 +98,7 @@ func _on_selection_changed(new_location: LocationIdentifier):
 	_selected_cost = 0
 
 func _on_buy_pressed():
+	# Get the currently selected location from the new InteractionManager
 	var selected_loc = InteractionManager.get_selected_location()
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
@@ -107,10 +113,19 @@ func _on_leave_pressed():
 	queue_free()
 
 func _on_gui_input(event: InputEvent):
-	# Close inspection windows when clicking on background
+	# Handle background clicks using the new InteractionContext system
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# If we clicked on this scene's background, close inspection windows
-		WindowManager.close_all_inspection_windows()
-		EventBus.emit_signal("selection_clear_requested") 
+		# Create and emit InteractionContext for shop background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"WINDOW_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 0  # Main window group
+		
+		EventBus.emit_signal("interaction_context_received", context)
+		get_viewport().set_input_as_handled() 
 
 ```

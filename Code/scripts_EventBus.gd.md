@@ -2,13 +2,14 @@
 
 ```gdscript
 # res://scripts/EventBus.gd
-extends Node # EventBus for Flashcard Heroes
+extends Node
 
 const LocationIdentifier = preload("res://scripts/LocationIdentifier.gd")
 const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
+const InteractionContext = preload("res://scripts/InteractionContext.gd")
 
-## A global script containing only signal definitions for the entire game.
-## All communication between major systems happens through these signals.
+## Global event bus for Flashcard Heroes
+## Handles all game-wide signal communication
 
 # --- Run/Scene Signals ---
 signal new_game_requested
@@ -21,6 +22,7 @@ signal battle_start_requested(encounter_def: EncounterDefinition)
 signal title_scene_requested
 signal reward_scene_requested(context)
 signal battle_victory_acknowledged
+signal battle_won_rewards_pending
 signal reward_chosen(payload)
 
 # --- Window/Modal Signals ---
@@ -42,7 +44,8 @@ signal node_selected(node_def: PathNodeDefinition)
 
 # --- Action Signals ---
 signal draw_gacha_requested(tier: int)
-signal inventory_action_requested(source_loc: LocationIdentifier, target_loc: LocationIdentifier)
+signal try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier)
+signal inventory_action_invalid(source_loc: LocationIdentifier, target_loc: LocationIdentifier)
 signal choice_made(choice_id: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName)
 signal inspection_requested(loc: LocationIdentifier, source_view: Control)
 signal end_turn_requested
@@ -53,6 +56,9 @@ signal view_deselected(view: Control)
 signal invalid_action_triggered(view: Control)
 signal selection_changed(new_location: LocationIdentifier)
 signal selection_clear_requested
+
+# --- Global Interaction Router Signals ---
+signal interaction_context_received(context: InteractionContext)
 
 # --- State Change Signals ---
 signal run_state_changed

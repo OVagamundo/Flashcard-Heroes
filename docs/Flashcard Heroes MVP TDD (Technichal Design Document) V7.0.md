@@ -1,4 +1,17 @@
-Flashcard Heroes - Technical Design Document (V5.1 - Definitive)
+Flashcard Heroes - Technical Design Document (V7.0 - Global Interaction Router update)
+
+<!-- TOC -->
+- [Part 1: Core Architecture & Principles](#part-1-core-architecture--principles)
+- [Part 2: Data Schemas & Structures](#part-2-data-schemas--structures)
+- [Part 3: Manager & System Responsibilities](#part-3-manager--system-responsibilities)
+- [Part 4: Presentation Layer - Global Interaction Router](#part-4-presentation-layer--ui---the-global-interaction-router-architecture-rewritten)
+- [Part 5: Game Flows](#part-5-game-flows)
+- [Part 6: Localization & Sequence Diagrams](#part-6-localization--sequence-diagrams)
+- [Part 7: Event-Driven Ability System Architecture](#part-7-event-driven-ability-system-architecture)
+- [Part 8: Dynamic Encounter Generation System](#part-8-dynamic-encounter-generation-system)
+- [Part 9: Flashcard System & Resource Generation](#part-9-flashcard-system--resource-generation)
+- [Part 10: Pre-Run Setup & Data Pipeline](#part-10-pre-run-setup--data-pipeline)
+<!-- /TOC -->
 Part 1: Core Architecture & Principles
 ### 1.1 Architectural Principles
 The game's logic is built upon a definitive **Hybrid Architecture** to guarantee data integrity while maintaining performance. This architecture is not optional; it is the required implementation pattern for all game state management. It consists of three pillars:
@@ -10,8 +23,8 @@ The game's logic is built upon a definitive **Hybrid Architecture** to guarantee
 3.  **Managers are Authoritative Operators:** Managers like `InventoryManager` contain the stateless logic (the "verbs") that operates on the data. They are responsible for correctly executing the **Golden Rule of State Synchronization**: any operation that moves an instance *must* update both the `DataContainer` (the index) and the `GachaBallInstance`'s properties (the truth) in a single, atomic operation.
 
 4.  **Inversion of Control for Transient Dependencies:** To prevent circular preload dependencies, transient objects (like `BattleManager`) must register themselves with persistent objects (like `GameManager`) rather than persistent objects searching for transient objects. This follows the principle that persistent Autoload singletons should not query the scene tree during preload validation, as this can create unresolvable dependency loops.
-1.2 Directory Structure
-Generated code
+
+### 1.2 Directory Structure
 res://
 ├── assets/
 ├── resources/
@@ -20,16 +33,17 @@ res://
 └── scripts/
 ├── localization.csv
 Use code with caution.
-Part 2: Data Schemas & Structures
-2.1 Core Data Resources
-RunState.gd: Resource, class_name RunState. The persistent state for an entire run.
+## Part 2: Data Schemas & Structures
+### 2.1 Core Data Resources
+**RunState.gd**: Resource, class_name RunState. The persistent state for an entire run.
 *   **Properties:**
     *   `gold: int` - The player's current gold count.
     *   `day: int` - The current day of the run.
     *   `run_instances: Dictionary[String, GachaBallInstance]` - The master dictionary of all permanent instances for the run.
     *   `flashcard_progress: Dictionary[StringName, FlashcardProgress]` - Master dictionary of progress for every card in the loaded deck.
     *   `active_deck_ids: Array[StringName]` - The list of card IDs currently available in the mini-game.
-**GachaBallDefinition.gd:** Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
+
+**GachaBallDefinition.gd**: Resource, class_name GachaBallDefinition. The immutable template for a GachaBall.
 *   **Properties:**
     *   `@export var id: StringName` - Unique identifier.
     *   `@export var display_name_key: String` - Localization key.
@@ -45,82 +59,262 @@ RunState.gd: Resource, class_name RunState. The persistent state for an entire r
     *   `@export var bonus_hp: int` - For "ITEM" category.
     *   `@export var bonus_pwr: int` - For "ITEM" category.
     *   `@export var ability_definitions: Array[AbilityDefinition]`
-**GachaBallInstance.gd:** Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall. This resource is the single source of truth for all of its own data.
-*   **Core Properties:** `definition_id: StringName`, `ball_uuid: String`, `origin_uuid: String`, `current_hp: int`, `current_pwr: int`
+
+**GachaBallInstance.gd**: Resource, class_name GachaBallInstance. A unique, mutable instance of a GachaBall. This resource is the single source of truth for all of its own data.
+*   **Core Properties:** 
+    - `definition_id: StringName` - Reference to the definition this instance is based on
+    - `ball_uuid: String` - Unique identifier for this instance
+    - `origin_uuid: String` - UUID of the instance this was copied from (if applicable)
+    - `current_hp: int` - Current health points
+    - `current_pwr: int` - Current power value
+
 *   **Location Properties (The Single Source of Truth):** 
     - `location_container_tag: StringName` - The container tag when not equipped
     - `location_slot_index: int` - The slot index when not equipped
     - `equipped_on_uuid: String` - UUID of the unit this item is equipped on (empty if not equipped)
     - `equipped_slot_index: int` - The slot index on the unit where this item is equipped (-1 if not equipped)
     - `equipped_item_uuids: Array[String]` - For units: array of UUIDs of equipped items (empty strings for empty slots)
+
 *   **Status Effect Properties:**
     - `status_effects: Dictionary[StringName, int]` - Stores active status effects and their stacks (e.g., {"poison": 5, "strength": 2}).
     - `temporary_multipliers: Dictionary[StringName, float]` - Stores temporary multiplicative modifiers from abilities (e.g., {"rage_ability": 1.5}). This dictionary is cleared at the end of each turn.
+
 *   **Methods:** 
-    - `initialize(def: GachaBallInstance)`
-    - `add_tag(tag: StringName)`, `remove_tag(tag: StringName)`, `has_tag(tag: StringName) -> bool`
-    - `create_battle_copy() -> GachaBallInstance`
-    - `get_location() -> LocationIdentifier` - Returns a LocationIdentifier that represents the instance's current location. For equipped items, returns a location with container="equipped_item", unit_uuid set to the parent unit's UUID, and index set to the equipped slot index. For unequipped items, returns a location with the appropriate container tag and slot index.
-    - `get_current_pwr() -> int` - Calculates and returns the final, effective Power using the Stat Calculation Order of Operations (see Section 7.9).
-    - `get_current_hp() -> int` - Calculates and returns the final, effective Health using the Stat Calculation Order of Operations (see Section 7.9).
-MergeRecipe.gd: Resource, class_name MergeRecipe.
-Properties: @export var id: StringName, @export var ingredient_a_id: StringName, @export var ingredient_b_id: StringName, @export var result_id: StringName
+    - `initialize(def: GachaBallInstance)` - Initialize a new instance based on a definition
+    - `add_tag(tag: StringName)`, `remove_tag(tag: StringName)`, `has_tag(tag: StringName) -> bool` - Tag management
+    - `create_battle_copy() -> GachaBallInstance` - Create a battle-specific copy of this instance
+    - `get_location() -> LocationIdentifier` - Returns a LocationIdentifier representing the instance's current location
+    - `get_current_pwr() -> int` - Calculates and returns the final, effective Power
+    - `get_current_hp() -> int` - Calculates and returns the final, effective Health
+
+**MergeRecipe.gd**: Resource, class_name MergeRecipe.
+*   **Properties:**
+    - `@export var id: StringName` - Unique recipe identifier
+    - `@export var ingredient_a_id: StringName` - First ingredient definition ID
+    - `@export var ingredient_b_id: StringName` - Second ingredient definition ID
+    - `@export var result_id: StringName` - Resulting definition ID
 
 **FlashcardDefinition.gd**: Resource, class_name `FlashcardDefinition`. An in-memory resource created from a JSON deck file.
-*   **Properties:** `id: StringName`, `question: String`, `answer: String`, `explanation: String`.
+*   **Properties:** 
+    - `id: StringName` - Unique identifier
+    - `question: String` - The flashcard question text
+    - `answer: String` - The flashcard answer text
+    - `explanation: String` - Detailed explanation (optional)
 
 **FlashcardProgress.gd**: Resource, class_name `FlashcardProgress`. Tracks run-specific progress for a single flashcard.
-*   **Properties:** `definition_id: StringName`, `mastery_level: int`, `last_review_day: int`.
+*   **Properties:**
+    - `definition_id: StringName` - Reference to the FlashcardDefinition
+    - `mastery_level: int` - Current mastery level (0-5)
+    - `last_review_time: int` - Last time this card was reviewed
 
-EffectRequest.gd: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
-Properties: source_uuid: String, ability_id: StringName, trigger_context: Dictionary
-AbilityDefinition.gd & EffectDefinition.gd: Define abilities and their executable effects.
+**EffectRequest.gd**: Resource, class_name EffectRequest. A request to execute an ability, placed on the effect queue.
+*   **Properties:**
+    - `source_uuid: String` - UUID of the source instance
+    - `ability_id: StringName` - ID of the ability being executed
+    - `trigger_context: Dictionary` - Additional context about what triggered this effect
+
+**AbilityDefinition.gd & EffectDefinition.gd**: Define abilities and their executable effects.
+
 ### 2.2 Location Container Tags (location_container_tag)
 
-These StringName values define all possible logical locations for a GachaBallInstance.
+These StringName values define all possible logical locations for a GachaBallInstance. They are used in the `location_container_tag` property of `GachaBallInstance` and in the `container` field of `LocationIdentifier`.
 
-*   **Run State Locations:** `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`
-*   **Battle State Locations:** `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`, `EnemyLineup`, `DiscardPile`
-*   **Special Location:** `equipped_item` - A conceptual location indicating an item is equipped on a unit. Used in LocationIdentifier but not stored directly.
+#### Run State Locations
+*   `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`: Tiered inventory containers for units and items during the run
+*   `PlayerLineup`: Active units in the player's battle formation
+*   `PlayerBench`: Reserve units not currently in the lineup
+*   `ItemInventory`: General storage for items not currently equipped
 
-An item's location is determined by its `equipped_on_uuid` property. If this property is set, the item is considered to be located in the special "equipped_item" container on the parent unit. The `LocationIdentifier` for an equipped item will have:
-- `container = "equipped_item"`
-- `unit_uuid` = the UUID of the parent unit
-- `index` = the slot index on the unit where the item is equipped
+#### Battle State Locations
+*   `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`: Battle-specific tiered inventory
+*   `EnemyLineup`: Enemy units in the current battle
+*   `DiscardPile`: Contains units and items that have been used or defeated in battle
 
-If `equipped_on_uuid` is empty, the item is located in the container specified by its `location_container_tag` and `location_slot_index`. The `GachaBallInstance.get_location()` helper method formalizes this logic and is the standard way to query an instance's location.
+#### Special Location
+*   `equipped_item` - A conceptual location indicating an item is equipped on a unit. This is used in the `LocationIdentifier` but is never stored directly in `location_container_tag`.
+
+#### Location Resolution Rules
+1.  **Equipped Items**: If `equipped_on_uuid` is set, the item is considered to be in the special "equipped_item" container on the parent unit.
+    - `LocationIdentifier` will have:
+      - `container = "equipped_item"`
+      - `unit_uuid` = the UUID of the parent unit
+      - `index` = the equipped slot index on the unit
+
+2.  **Unequipped Items**: If `equipped_on_uuid` is empty, the item is in the container specified by `location_container_tag` at `location_slot_index`.
+    - `LocationIdentifier` will have:
+      - `container` = the value of `location_container_tag`
+      - `unit_uuid` = empty string
+      - `index` = the value of `location_slot_index`
+
+**Important**: Always use `GachaBallInstance.get_location()` to get the current location of an instance. This method encapsulates the logic above and ensures consistent behavior throughout the codebase.
 
 ### 2.3 Data Containers
-To solve the performance and complexity issues of querying scattered instance data, the architecture uses a layer of `DataContainer` objects to act as a fast, location-based index.
+To solve the performance and complexity issues of querying scattered instance data, the architecture uses a layer of `DataContainer` objects to act as a fast, location-based index. These containers provide O(1) lookup time for instances by their location, while maintaining the single source of truth in the `GachaBallInstance` objects themselves.
 
-*   **`DataContainer.gd`:** An abstract base class defining the interface for all containers (e.g., `get_uuid(index)`, `set_uuid(index)`, `find_first_empty_slot()`).
-*   **`FixedArrayContainer.gd`:** A concrete implementation for collections with a fixed, predefined size, such as the player/enemy lineups and benches.
-*   **`GrowableGridContainer.gd`:** A concrete implementation for collections that can expand when full, such as the tiered battle inventories and the discard pile.
-    *   **Initial Size Rule:** To ensure a consistent player experience, all tiered inventory containers (RunInventoryT* and BattleInventoryT*) must be instantiated with an initial size of 16.
+#### Core Container Classes
 
-Both `RunState` and `BattleManager` use an internal dictionary of these containers to manage their respective instances efficiently.
+**`DataContainer.gd`** (Abstract Base Class)
+*   **Purpose**: Defines the common interface for all container implementations
+*   **Key Methods**:
+    - `get_uuid(index: int) -> String` - Returns the UUID at the specified index
+    - `set_uuid(index: int, uuid: String) -> void` - Sets the UUID at the specified index
+    - `find_first_empty_slot() -> int` - Returns the first available slot index, or -1 if full
+    - `is_valid_index(index: int) -> bool` - Checks if an index is within bounds
+    - `get_size() -> int` - Returns the current capacity of the container
+    - `is_empty() -> bool` - Returns true if the container has no items
+
+**`FixedArrayContainer.gd`**
+*   **Purpose**: Implements a fixed-size array container
+*   **Use Cases**: Player/enemy lineups, benches, and other collections with a fixed number of slots
+*   **Implementation**:
+    - Backed by a fixed-size array
+    - Throws an error if attempting to exceed capacity
+    - Optimized for fast random access
+
+**`GrowableGridContainer.gd`**
+*   **Purpose**: Implements a container that can expand when full
+*   **Use Cases**: Tiered inventories, discard piles, and other collections that need to grow
+*   **Implementation**:
+    - Starts with an initial capacity (see Initial Size Rule)
+    - Automatically expands by a configured amount when full
+    - Maintains a free list for efficient slot reuse
+
+#### Initial Size Rule
+To ensure a consistent player experience and optimal performance, all tiered inventory containers (RunInventoryT* and BattleInventoryT*) must be instantiated with an initial size of 16. This provides a good balance between memory usage and performance for the expected number of items.
+
+#### Container Management
+Both `RunState` and `BattleManager` maintain an internal dictionary of these containers, keyed by container tag. This allows for efficient lookup of containers by their logical names (e.g., "PlayerLineup", "BattleInventoryT1").
+
+**Example Usage**:
+```gdscript
+# Getting a container from RunState
+var container = run_state.get_container("PlayerLineup")
+
+# Checking if a slot is occupied
+if container.is_valid_index(slot_index) and container.get_uuid(slot_index) != "":
+    var instance = run_state.run_instances[container.get_uuid(slot_index)]
+    # Do something with the instance
+```
+
+**Important**: While containers provide fast lookups, they should never be used to store or modify instance data directly. All modifications to instance state must go through the appropriate manager methods to maintain data consistency.
 
 ### 2.4 Game Loop Data Structures
-To manage the meta-game loop, the following data-driven resources are introduced.
+To manage the meta-game loop and battle progression, the following data-driven resources are used:
 
-**PathNodeDefinition.gd**: Resource, class_name PathNodeDefinition. Defines a single selectable node from a set of choices.
+**PathNodeDefinition.gd**: Resource, class_name PathNodeDefinition. Defines a single selectable node from a set of choices in the run's path.
 *   **Properties:**
-    - `node_type: StringName` - The primary type of the node (e.g., "BATTLE", "SHOP", "EVENT", "REST").
-    - `subtype: StringName` - A variant of the node type (e.g., "COMMON", "ELITE", "BOSS").
-    - `display_name_key: String` - Localization key for the node's name.
-    - `icon: Texture2D` - The icon representing the node on the choice screen.
-    - `encounter_id: StringName` - For "BATTLE" nodes, this links to a specific EncounterDefinition.
+    - `node_type: StringName` - The primary type of the node. Must be one of:
+      - `"BATTLE"`: Combat encounter with enemies
+      - `"SHOP"`: Shop to purchase items/units
+      - `"EVENT"`: Special game event or story moment
+      - `"REST"`: Rest area to heal and upgrade
+    - `subtype: StringName` - A variant of the node type:
+      - For `BATTLE`: `"COMMON"`, `"ELITE"`, `"MINIBOSS"`, `"BOSS"`
+      - For `SHOP`: `"REGULAR"`, `"SPECIAL"`
+      - For `EVENT`: Event-specific identifier
+      - For `REST`: `"CAMPFIRE"`, `"TOWN"`
+    - `display_name_key: String` - Localization key for the node's display name
+    - `description_key: String` - Localization key for the node's description
+    - `icon: Texture2D` - Visual representation of the node on the path
+    - `encounter_id: StringName` - For "BATTLE" nodes, references an EncounterDefinition
+    - `rewards: Array[RewardDefinition]` - Potential rewards for completing this node
+    - `difficulty: int` - Relative difficulty level (1-5)
 
-**EncounterDefinition.gd**: Resource, class_name EncounterDefinition. Defines the composition of an enemy team.
+**EncounterDefinition.gd**: Resource, class_name EncounterDefinition. Defines the composition and behavior of enemy teams.
 *   **Properties:**
-    - `id: StringName` - Unique identifier for this encounter.
-    - `enemy_placements: Array[Dictionary]` - An array defining which units to place and where. Each dictionary contains: `{"id": StringName, "position": int}`.
+    - `id: StringName` - Unique identifier for this encounter
+    - `display_name_key: String` - Localization key for the encounter's name
+    - `enemy_placements: Array[Dictionary]` - Array of enemy unit placements with format:
+      ```gdscript
+      {
+          "id": StringName,      # Enemy unit definition ID
+          "position": int,       # Battlefield position (0-based)
+          "level": int,          # Unit level
+          "equipment": Array[    # Optional equipment for this unit
+              {
+                  "id": StringName,  # Item definition ID
+                  "level": int       # Item level
+              }
+          ]
+      }
+      ```
+    - `ai_behavior: StringName` - Default AI behavior for enemies
+    - `environment: StringName` - Battlefield environment/theme
+    - `background: Texture2D` - Background image for the battle
+    - `music_track: StringName` - Music track to play during battle
+    - `is_boss: bool` - Whether this is a boss encounter
+    - `victory_rewards: Array[RewardDefinition]` - Guaranteed rewards for victory
+    - `possible_rewards: Array[RewardDefinition]` - Possible additional rewards
 
-Part 3: Logic Layer & Managers
+**RewardDefinition.gd**: Resource, class_name RewardDefinition. Defines rewards that can be granted to the player.
+*   **Properties:**
+    - `type: StringName` - Type of reward ("GOLD", "ITEM", "UNIT", "CARD", "UPGRADE")
+    - `amount: int` - Quantity or value of the reward
+    - `item_id: StringName` - For ITEM/UNIT rewards, the definition ID
+    - `rarity_weights: Dictionary` - For random rewards, the weights for each rarity
+    - `min_tier: int` - Minimum tier for random rewards
+    - `max_tier: int` - Maximum tier for random rewards
+
+**BattleResult.gd**: Resource, class_name BattleResult. Contains the outcome of a battle.
+*   **Properties:**
+    - `victory: bool` - Whether the player won
+    - `rounds: int` - Number of rounds taken
+    - `player_units_lost: int` - Number of player units defeated
+    - `enemy_units_defeated: int` - Number of enemy units defeated
+    - `gold_earned: int` - Gold earned from the battle
+    - `experience_gained: int` - Experience points gained
+    - `drops: Array[StringName]` - Item/unit drops from the battle
+    - `achievements: Array[StringName]` - Any achievements unlocked
+
+## Part 3: Logic Layer & Managers
 ### 3.1 Shop Node Implementation
+The Shop system allows players to purchase items and units using gold. The shop's inventory is generated based on the current run state and available resources.
 
-#### 1. Architectural Fit & Data Flow
-The Shop Node leverages the temporary instance pattern established by the Post-Battle Reward Flow (Reward.tscn) to ensure architectural consistency and code reuse.
+**ShopManager.gd**: Singleton that manages all shop-related functionality.
+*   **Properties:**
+    - `current_shop_inventory: Array[ShopItem]` - Items/units currently available for purchase
+    - `current_reroll_cost: int` - Cost to reroll the shop inventory
+    - `purchase_modifier: float` - Multiplier for all shop prices (for difficulty modifiers)
+
+*   **Key Methods:**
+    - `initialize_shop(run_state: RunState) -> void` - Sets up the shop for the first time
+    - `reroll_shop(run_state: RunState) -> bool` - Rerolls the shop inventory, returns success
+    - `purchase_item(item_id: StringName, buyer: Node) -> bool` - Attempts to purchase an item
+    - `get_affordable_items(gold: int) -> Array[ShopItem]` - Returns items the player can afford
+
+**ShopItem.gd**: Resource representing an item/unit in the shop.
+*   **Properties:**
+    - `id: StringName` - Unique identifier
+    - `item_type: StringName` - "UNIT" or "ITEM"
+    - `definition_id: StringName` - References GachaBallDefinition
+    - `price: int` - Cost in gold
+    - `stock: int` - How many are available (0 for unlimited)
+    - `is_on_sale: bool` - Whether this item is discounted
+
+### 3.2 Signal Bus
+The Signal Bus is a global event system that allows decoupled communication between game systems. While the `GlobalInteractionRouter` handles UI interactions, the Signal Bus is used for game-wide event notifications.
+
+**SignalBus.gd**: Autoload singleton that defines and emits all game signals.
+
+**Core Signals:**
+- `game_state_changed(old_state: StringName, new_state: StringName)` - When game state changes
+- `battle_started(encounter_id: StringName)` - When a battle begins
+- `battle_ended(victory: bool, result: BattleResult)` - When a battle concludes
+- `inventory_updated(container_tag: StringName)` - When items/units are moved/changed
+- `gold_changed(old_amount: int, new_amount: int)` - When player's gold changes
+- `day_advanced(new_day: int)` - When progressing to a new day
+- `achievement_unlocked(achievement_id: StringName)` - When player earns an achievement
+
+**Usage Example:**
+```gdscript
+# Connect to a signal
+SignalBus.battle_started.connect(_on_battle_started)
+
+# Emit a signal
+SignalBus.gold_changed.emit(old_gold, new_gold)
+```
+
+**Important Note**: While the Signal Bus is powerful, prefer direct method calls within the same system and only use signals for cross-system communication to maintain code clarity and code reuse.
 
 - **State Authority**: GameManager serves as the authority for the Shop's state during a node visit.
 - **Data Flow**: 
@@ -367,211 +561,117 @@ Population: When the COMBAT phase begins, BattleManager creates an EffectRequest
 Processing Loop: The BattleManager's _process function contains a loop that pops one request from the stack, awaits its resolution via the AbilityResolver, and then repeats until the queue is empty.
     *   The system must re-validate that the source unit is still alive (HP > 0) at the moment its action is popped from the queue. If the source is no longer alive, its action is skipped.
 Chain Reactions: Any ability that triggers another effect creates a new EffectRequest and pushes it to the top of the stack, ensuring it is resolved next.
-Part 4: Presentation Layer (UI)
-4.1 UI Component Blueprints
 
-**ResultsPopup.tscn**: A modal popup used to display the outcome of an event, like the flashcard mini-game.
-*   **Structure:** A `PanelContainer` with a `VBoxContainer` holding a `%TitleLabel`, a `%MessageLabel`, and a `%ConfirmButton`. It must also include a `BackgroundBlocker`.
-*   **Logic (`ResultsPopup.gd`):** The script will have a `populate(title: String, message: String, button_text: String)` method. When the `%ConfirmButton` is pressed, the popup emits a `results_acknowledged` signal and then calls `queue_free()` on itself.
+Part 4: Presentation Layer (UI) - The Global Interaction Router Architecture
+The game's UI is built upon a definitive Intent-Based Interaction Architecture. This system is designed to be robust, scalable, and completely decoupled from the specifics of Godot's scene tree structure and input propagation quirks. It ensures that all user interactions are handled consistently and predictably.
+4.1 Architectural Pillars
+Views are Dumb Sensors: UI elements that can be clicked (GachaBallView, SlotView, RichTextLabel links, window backgrounds) have one primary responsibility: to sense a raw input event (like a click or double-click), package it with context, and report it. They contain no complex interaction logic themselves and are configured to stop event propagation once handled.
+Context is Explicit Data: When a view reports an input, it packages a standardized data resource, the InteractionContext, which describes everything about the click: what was clicked, where it is, and the rules governing its area. This makes context explicit and removes any reliance on get_parent() or scene tree assumptions.
+The Router is the Central Brain: A new singleton, GlobalInteractionRouter, is the single source of truth for interpreting user intent. It receives the InteractionContext from the clicked view, compares it to the current UI state (e.g., what is already selected, which windows are open), and determines the user's goal.
+Execution is a Command Queue: The router's output is a "Command Queue"—an array of simple, atomic command objects (e.g., DESELECT, OPEN_WINDOW, REQUEST_ACTION). This chain of commands represents the complete, multi-step result of a single user click. Managers like WindowManager and InventoryManager become simple executors that process these commands.
+4.2 Core Data Schema: InteractionContext.gd
+This Resource is the lifeblood of the system. It is the standardized data packet sent with every interaction.
+InteractionContext.gd: Resource, class_name InteractionContext.
+source_view_instance_id: int: The instance ID of the Control node that was clicked, obtained via source_view.get_instance_id(). This allows any system to retrieve the node reference later using instance_from_id().
+event_type: StringName: The type of input (&"SINGLE_CLICK", &"DOUBLE_CLICK").
+location: LocationIdentifier: The game-logic location of the entity.
+entity_uuid: String: The UUID of the GachaBallInstance represented, if any.
+entity_type: StringName: The kind of thing clicked (e.g., &"UNIT", &"ITEM", &"EMPTY_SLOT", &"WINDOW_BACKGROUND", &"UI_LINK", &"GLOBAL_BACKGROUND").
+interaction_mode: StringName: The TDD-defined interaction rules for this context (e.g., &"FULLY_INTERACTIVE", &"SELECTION_ONLY", &"INSPECTION_ONLY").
+window_group_id: int: A unique ID for the chain of inspection windows this element belongs to (0 if on the main board).
+4.3 Definitive Mouse Filter Strategy
+To ensure unambiguous and reliable input handling, particularly within layered inspection windows, the following mouse_filter strategy is mandatory. This "Layered Catcher" pattern is designed to work seamlessly with the Global Interaction Router.
+The Problem: A single click can be interpreted in multiple ways if input events are allowed to propagate through multiple UI layers. A click on an inspection window's background might incorrectly also register as a click on the battle scene behind it.
+The Solution: The Layered Catcher Pattern
+Every complex UI view (like an inspection window) is composed of three conceptual input layers:
+The Container Layer (e.g., the root PanelContainer): Its role is to hold other elements and provide styling. It must be completely transparent to mouse input.
+The Catcher Layer (e.g., an InternalBackground ColorRect): A single, large node that sits at the bottom of the visual hierarchy. Its role is to catch any input that is not caught by the Content Layer and stop it from propagating further.
+The Content Layer (e.g., GachaBallView, Button, RichTextLabel): These are the interactive elements the user is meant to click on. They are responsible for handling their own input and stopping it.
+Mandatory mouse_filter Settings:
+Node Type	Role	mouse_filter Setting	Rationale
+Root PanelContainer (of an inspection window)	Container	MOUSE_FILTER_IGNORE (2)	Must not interfere with input intended for its children or background.
+InternalBackground ColorRect	Catcher	MOUSE_FILTER_STOP (1)	Catches all "missed" clicks within the window's bounds and prevents them from passing through to the scene behind it. Its _gui_input creates the WINDOW_BACKGROUND InteractionContext.
+GachaBallView, SlotView, Button	Content	MOUSE_FILTER_STOP (1)	These are the primary interactive elements. They must handle their own input and stop the event from propagating to the Catcher Layer behind them.
+4.4 The Definitive Guide to Player Interactions
+This section is the single source of truth for the rules that the GlobalInteractionRouter must implement.
+4.4.1 Core Terminology & Interaction Modes (interaction_mode)
+&"FULLY_INTERACTIVE": Contexts where GachaBalls can be selected, moved, swapped, merged, and equipped. Double-clicking is required for inspection.
+&"SELECTION_ONLY": Contexts where the only valid interaction is to change the current selection. All other actions are invalid. Double-clicking is required for inspection.
+&"INSPECTION_ONLY": Contexts where GachaBalls cannot be moved or selected. A single-click is used for inspection.
+4.4.2 Global Router Rules (Master Checklist)
+[GR-1] Open on Request: The router must generate an OPEN_INSPECTION_WINDOW command when a valid inspection event occurs (determined by combining event_type and interaction_mode).
+[GR-2] Clear Selection on Open: The command queue for opening any inspection window must begin with a DESELECT command.
+[GR-3] Position Correctly: The OPEN_INSPECTION_WINDOW command must contain the anchor view's instance ID for the WindowManager to use.
+[GR-4] Close on "True" Background Click: If the router receives a context with entity_type: &"GLOBAL_BACKGROUND", it must generate a CLOSE_ALL_INSPECTION_WINDOWS command.
+[GR-5] Close on Invalid Action Click: If a selection is active and the router receives a click context that results in an invalid action, it must generate the command queue: [ {cmd: "CLOSE_ALL_INSPECTION_WINDOWS"}, {cmd: "DESELECT"} ].
+[GR-6] Child Window Closure: If the router receives a click with entity_type: &"WINDOW_BACKGROUND", it must generate a CLOSE_CHILD_WINDOWS command for that window's group.
+[GR-7] Same Item Deselection: If the router receives a click on the currently selected item (same source_view_instance_id), it must generate a DESELECT command.
+[GR-8] Drag and Drop State Management: 
+- Drag operations must clear any existing selection state when started
+- After any drag operation (successful or failed), selection state must be cleared
+- Drag operations bypass the GlobalInteractionRouter and go directly to InventoryManager
+- After successful inventory actions (move, swap, equip, merge), selection state must be cleared
 
-**GachaBallView.tscn / SlotView.tscn**:
-*   **Metadata:** Must store the ball_uuid: String of the instance it represents.
-*   **Behavior:** Listens for instance_* signals to update its appearance and position.
-
-**DiscardPileWindow.tscn**: A modal window opened by WindowManager in response to display_discard_pile_requested.
-
-**Reward.tscn**: The content scene for displaying post-battle reward choices.
-*   **Structure:** This scene follows the "Persistent Slots" pattern (Sec 4.5). It must contain a HBoxContainer (%RewardChoicesContainer) which, at design time, holds three empty PanelContainer nodes that act as persistent slots. It also contains the %ConfirmSelectionButton and %TakeGoldButton.
-*   **Logic:** The Reward.gd script is responsible for populating the persistent slots. It will instantiate RewardChoiceView scenes and add them as children to the slots. It also manages the enabled/disabled state of the %ConfirmSelectionButton by listening to the selection_changed signal.
-
-RewardChoiceView.tscn: This scene is now simplified, as the complexity is handled by existing systems.
-Structure: The root node is a PanelContainer containing a single SlotView.tscn instance.
-Logic: The RewardChoiceView.gd script's primary role is to populate its child SlotView and the GachaBallView within it using the real GachaBallInstance and LocationIdentifier it receives from the Reward.gd script. All selection and inspection logic is automatically handled by the SlotView, GachaBallView, and InteractionManager.
-### 4.2 Window Management & UI Patterns
-
-#### Global Input Interception for Window Closure
-To ensure a consistent and responsive user experience, the `WindowManager` singleton employs a global input interception strategy. This is the authoritative pattern for closing non-modal inspection windows.
-
-1.  **`WindowManager` as the First Responder:** The `WindowManager` uses the `_input` lifecycle method to inspect all mouse clicks *before* they are passed to any UI control's `_gui_input` method.
-
-2.  **Out-of-Bounds Detection:** If any inspection windows are currently open, the `WindowManager` checks if the click's position is outside the global rectangle of all open inspection windows.
-
-3.  **Closure without Consumption (The "Click-Through" Rule):** If the click is determined to be outside, the `WindowManager` calls `close_all_inspection_windows()`. Crucially, it **does not** consume the input event (`set_input_as_handled()`). This allows the event to continue propagating to the UI element that was actually clicked (e.g., another `GachaBallView` or an empty `SlotView`).
-
-This pattern creates a seamless "click-through" feel, where a single click can both close an open window and initiate a new action, preventing any "wasted" clicks. This is a core part of the game's UX philosophy.
-
-#### Modal Window Closure
-Modal windows (e.g., `InventoryWindow`, `ChoiceWindow`) are accompanied by a `BackgroundBlocker` node. A click on this blocker is consumed and explicitly closes only the top-most modal window via the `background_clicked` signal. This provides clear, expected behavior for modal dialogs.
-
-#### Dynamic Mouse Filter Pattern
-For RichTextLabels with clickable links (like the "EFFECTS" link), the `mouse_filter` must be dynamically changed from `PASS` to `STOP` on `meta_hover_started` and back to `PASS` on `meta_hover_ended`. This ensures that the link is clickable while still allowing clicks on the rest of the label's area to fall through to the window's background for closure logic.
-4.3 Player Interaction Scenarios
-Design Rationale: Interaction rules are separated for "In-Battle" and "Out-of-Battle" states because their consequences are fundamentally different. In-battle actions modify temporary _battle_instances, while out-of-battle actions modify the permanent run_instances. This separation is critical to the game's core loop.
-Table 4.3.1: In-Battle Interactions (is_in_battle == true)
-Player Action	Conditions	Resulting Logic Flow
-Drop Unit on Unit	Merge recipe exists.	InventoryManager shows ChoiceWindow. Player choice re-sends inventory_action_requested with explicit_action: "MERGE" or "SWAP".
-Drop Unit on Unit	No merge recipe.	Swap their location_slot_index properties.
-Drop Item on Unit	Unit has empty item slot.	Change item's equipped_on_uuid and equipped_slot_index. Emit unit_inventory_changed(unit_uuid) to trigger stat recalculation.
-Drag Item off Unit	Target is empty Item Inv. slot.	Unequip: Change item's location_container_tag to BATTLE_ITEM_INVENTORY and clear equipped_on_uuid.
-Table 4.3.2: Out-of-Battle Interactions (is_in_battle == false)
-Player Action	Conditions	Resulting Logic Flow
-Drop Instance on Instance	Merge recipe exists.	InventoryManager shows ChoiceWindow. The chosen action is routed to RunState to modify the permanent instances.
-Drop Instance on Instance	No merge recipe.	Swap their location_slot_index within the same RUN_INVENTORY_T* container.
-
-#### 4.3.3 The Definitive Click Interaction Cycle
-
-To ensure consistent behavior and eliminate duplicate code, all `_gui_input` events from `GachaBallView` and `SlotView` must be delegated to a single authoritative function: `InteractionManager.handle_click(view, location, context)`. This function is responsible for executing the following state machine, which governs all selection and deselection logic.
-
-**The Golden Rule of Interaction:** A user's click must result in immediate and clear feedback. The system must never remain in a "ghost selection" state where the UI and the `InteractionManager` are desynchronized.
-
-**The Interaction Flow:**
-
-1. A click occurs on a `GachaBallView` or an empty `SlotView`. The view's `_gui_input` function must immediately delegate to `InteractionManager.handle_click`, passing a reference to itself, its `LocationIdentifier`, and its interaction context (`is_interactive`).
-
-2. The `InteractionManager` executes the following logic:
-
-   **Case A: No item is currently selected.**
-   - If the click was on an interactive `GachaBallView` (e.g., a player unit), that view becomes the new selection.
-   - If the click was on a non-interactive view (e.g., an enemy unit), an `inspection_requested` signal is emitted. Nothing is selected.
-   - If the click was on an empty `SlotView` or the background, nothing happens.
-
-   **Case B: An item is currently selected.**
-   - If the click is on the original selected item: Do nothing (to allow for double-click inspection).
-   - If the click is on a valid action target (e.g., a mergeable unit, an empty slot compatible with the selected instance): The `InteractionManager` emits `inventory_action_requested` and immediately clears its own selection state.
-   - If the click is on another interactive `GachaBallView` that is NOT a valid action target (e.g., selecting an item when a unit is selected on the battle board, this would trigger a swap in the other mixed type inventories): The `InteractionManager` clears the old selection and then selects the new target. This creates a seamless "change selection" flow.
-   - If the click is on any other target (a non-interactive view like an enemy, an invalid empty slot, a UI button, the background): The selection is immediately cleared, and no further action is taken.
-
-#### 4.3.4 Centralized Selection State Management
-
-**1. Core Principles:**
-- The `InteractionManager` is the sole authority for selection state management.
-- All selection clearing is done through the `selection_clear_requested` signal, emitted by UI elements when appropriate.
-
-**2. When Selection Is Cleared:**
-- Any click on a non-actionable area (background, grid container, scroll container, etc.) emits `selection_clear_requested`.
-- Clicking on an enemy unit (inspection-only) opens the inspection window for that unit without changing the current selection. This is handled by a single-click interaction.
-- Clicking on a player-controlled `GachaBallView` or slot performs the normal action (select, move, etc.) and updates selection accordingly. A double-click is required to open the inspection window for player-controlled units.
-- Clicking the background in the battle board (handled by the root Battle node) clears selection.
-- Clicking the grid background in inventory windows (handled by grid containers) clears selection.
-- Clicking the modal window's `BackgroundBlocker` closes the modal and clears selection.
-
-**3. Implementation Details:**
-- All relevant UI containers (inventory grids, scroll containers, battle board background, etc.) have `_gui_input` handlers that emit `selection_clear_requested` on mouse button press, unless the click is on an actionable child.
-- The modal `BackgroundBlocker` is only present when a modal is open and is responsible for closing the modal and clearing selection.
-- The system uses a "click-through" pattern where clicks can both close a window (or clear selection) and trigger an action on the element under the mouse, if appropriate.
-
-**4. Interaction Table:**
-| Click Target | Resulting Behavior |
-|--------------|-------------------|
-| Empty slot | Clears selection |
-| GachaBallView (player/item) - Single Click | Selects the unit/item |
-| GachaBallView (player/item) - Double Click | Opens inspection window without changing selection |
-| GachaBallView (enemy) - Single Click | Opens inspection window without changing selection |
-| Inventory grid background | Clears selection |
-| Battle board background | Clears selection |
-| Modal BackgroundBlocker | Closes modal and clears selection |
-| UI Button | Button action, selection cleared if not actionable |
-
-**5. Key Lessons:**
-- In Godot, input events are only received by the topmost node under the mouse; background nodes cannot clear selection if covered by UI.
-- Explicit `_gui_input` handlers are required on all "dead zone" UI containers for robust selection clearing.
-- Centralizing selection logic in the `InteractionManager` and using signals ensures maintainability and prevents ghost selection bugs.
-
-#### 4.3.5 In-Battle Container and Placement Rules
-
-To ensure game logic integrity, all inventory actions must be validated against these placement rules. The `InventoryManager.is_action_valid()` function is the authority for enforcing these rules. An "invalid action" results in the cancellation of the action and the clearing of any selection.
-
-**PlayerLineup:**
-- Can only contain instances with the "hero" tag or instances with the "unit" tag.
-- Cannot contain instances with the "item" tag.
-
-**PlayerBench:**
-- Can only contain instances with the "unit" tag.
-- Cannot contain instances with the "hero" tag or the "item" tag.
-
-**ItemInventory:**
-- Can only contain instances with the "item" tag.
-- Cannot contain instances with the "hero" tag or the "unit" tag.
-
-**Hero Instance:** An instance with the "hero" tag can only exist in the PlayerLineup container. Any attempt to move or swap it to PlayerBench, ItemInventory, or any other container is an invalid action.
-
-**EnemyLineup:** This container is strictly read-only for the player. No player-initiated move, swap, or drop action can target this container or any instance within it.
-
-### 4.4 Inspection Window System: Rules and Behavior
-
-This section defines the precise, authoritative rules for how all inspection windows (Unit, Item, Effects) must behave. These rules ensure a consistent, intuitive, and robust user experience.
-
-**1. Core Principles:**
-
-*   **Global Click-to-Close:** Clicking anywhere on the screen that is *not* part of the active inspection window group will immediately close the entire group. This is handled globally by the `WindowManager`'s input interception logic.
-
-**2. Contextual Interaction:**
-
-The method for opening an inspection window and the interactivity of its contents are context-dependent, based on whether the target is player-controlled or an enemy.
-
-**Player-Controlled Units & Items (Interactive Mode):**
-- **Opening:** A double-click is required to open an inspection window from any container where drag-and-drop is the primary interaction. This includes the Battle Board (PlayerLineup, PlayerBench), all inventory windows, and the shop.
-- **Contents:** When inspecting a player-controlled unit, its equipped item grid is a fully interactive container. Items can be dragged, dropped, swapped, and merged. To prevent conflicts with drag-and-drop, inspecting an equipped item from this view also requires a double-click.
-
-**Enemy Units (Read-Only Mode):**
-- **Opening:** A single-click on an enemy unit on the battle board opens its inspection window. This is because enemy units are not interactive; their only function is to be inspected.
-- **Contents:** When inspecting an enemy unit, the window is strictly read-only. All drag-and-drop functionality is disabled for its equipped items and slots. To inspect an enemy's equipped item further, the player uses a single-click.
-*   **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on the screen at any time. Opening a new root-level window (e.g., inspecting a different unit on the board) must close the entire previous group.
-*   **Single Child Per Parent:** A parent window can only have one direct child window open at a time. Requesting a new child window must first close any existing child and its descendants.
-*   **Hierarchical Click-to-Close:** Clicking on the background of any window in a group (e.g., the panel of a `UnitInspectionWindow`) closes all of its children, but not itself.
-*   **Deselection on Open:** The action of opening any inspection window must immediately deselect any currently selected `GachaBallView`.
-*   **Empty Slot Interaction:** An empty `SlotView` cannot be the source of an interaction. A click on an empty slot, with nothing else selected, must result in clearing the current selection state in the `InteractionManager`. This prevents the system from entering an invalid state where "emptiness" is selected.
-
-**2. Contextual Interaction:**
-
-The method for opening an inspection window is context-dependent:
-
-*   **Double-Click:** Required to open an inspection window from any container where **drag-and-drop is the primary interaction**. This includes:
-    *   The Battle Board (`PlayerLineup`, `PlayerBench`).
-    *   The main Run Inventory and Battle Inventory windows.
-*   **Single-Click:** Required to open an inspection window from any container that is **static and does not support drag-and-drop**. This includes:
-
-*   **Enemy Units:** The enemy units are just regular units that are using enemy lineup slots. The enemy slot is an inspection-only type of container, so the selection and double-click for inspection are not available - only a single click to inspect that opens the inspection window. If a player unit is selected, a single-click on an enemy will first deselect the player's unit and then inspect the enemy in the same click.
-
-*   The item grid within a `UnitInspectionWindow`.
-    *   The "EFFECTS" button/link within any inspection window.
-
-**3. Positioning:**
-
-*   **No Overlap:** A child window must never overlap the UI element of its direct parent. 
-    *   A root window's anchor is the `SlotView` containing the `GachaBallView`, and the window should appear adjacent to it.
-    *   A child window's anchor is its parent window, and it should be positioned adjacent to its parent.
-*   **Dynamic Tracking:** All windows must dynamically track their anchor's position. If the anchor moves (e.g., a unit is moved on the board), the window must move with it.
-
-**4. Example Flow (Equipped Item Inspection):**
-
-1.  User double-clicks a Unit on the battle board. The `UnitInspectionWindow` opens.
-2.  User single-clicks an equipped item inside the `UnitInspectionWindow`. The `ItemInspectionWindow` opens as a child.
-3.  User single-clicks the "EFFECTS" link inside the `ItemInspectionWindow`. The `EffectInspectionWindow` opens as a child of the item window.
-4.  At this point, the group is: `Unit -> Item -> Effect`.
-5.  User now single-clicks the "EFFECTS" link on the original `UnitInspectionWindow`. 
-    *   The `ItemInspectionWindow` and its child `EffectInspectionWindow` are closed.
-    *   A new `EffectInspectionWindow` opens as a direct child of the `UnitInspectionWindow`.
-    *   The group is now: `Unit -> Effect`.
-
-### 4.5 UI Population Pattern: Persistent Slots
-
-To ensure a stable, performant, and bug-free UI, views that display collections of items in a grid (such as `InventoryWindow` or `DiscardPileWindow`) must adhere to the "Persistent Slots" pattern.
-
-#### The Problem to Avoid:
-Constantly destroying (`queue_free()`) and recreating UI nodes for every data change is inefficient and leads to visual bugs, such as `GridContainer` reflowing, loss of state, and desynchronization between the view and the data model.
-
-#### The Correct Pattern:
-1. **One-Time Initialization**: When the window is first created, it should programmatically instantiate and add the required number of "slot" nodes (e.g., `SlotView.tscn`) to its `GridContainer`. These slot nodes are now persistent for the lifetime of the window. The window should also set its interaction mode based on context (interactive for player-controlled units, read-only for enemy units).
-
-2. **Content Update on Refresh**: When a UI refresh is required (e.g., after an inventory action), the window must not destroy the persistent slot nodes. Instead, it should:
-   a. Iterate through its existing slot nodes.
-   b. For each slot, clear any old content (e.g., a `GachaBallView` child).
-   c. Look up the corresponding data for that slot's index in the data model.
-   d. If the data slot contains an item, instantiate a new content view (e.g., `GachaBallView`) and add it as a child to the persistent slot node.
-   e. For read-only windows (e.g., enemy inspection), disable drag-and-drop functionality and set appropriate visual styling to indicate the non-interactive state.
-
-This pattern ensures that the UI's structure remains stable, preventing visual glitches and correctly reflecting the underlying data state at all times.
+[GR-9] Robust State Management (Critical):
+- Selection and drag states are mutually exclusive - both cannot be active simultaneously
+- State transitions are atomic and protected by a transition lock to prevent race conditions
+- Redundant clear_selection() calls are ignored to prevent signal emission conflicts
+- Periodic state validation runs every frame to detect and correct inconsistencies
+- GlobalInteractionRouter validates state before processing any interaction
+- State validation failures trigger automatic cleanup and recovery
+- **CRITICAL**: Both InteractionManager and GlobalInteractionRouter maintain selection state and must be synchronized
+- All selection state changes must update both systems simultaneously
+- State validation includes cross-system consistency checks
+4.4.3 Interaction Rules by Context
+1. The Battle Board (PlayerLineup, PlayerBench, ItemInventory):
+interaction_mode: &"FULLY_INTERACTIVE".
+A click on a GachaBallView while another is selected generates a REQUEST_ACTION command.
+2. The UnitInspectionWindow Equipped Item Grid:
+Player Unit: interaction_mode: &"FULLY_INTERACTIVE".
+Enemy Unit: interaction_mode: &"INSPECTION_ONLY".
+3. The Inventory Window ((Run/Battle)InventoryT<n>):
+interaction_mode: &"FULLY_INTERACTIVE".
+Router Rule: If the active selection's context and the new click's context both have an InventoryT container but the containers are not identical, the generated command queue is [ {cmd: "DESELECT"}, {cmd: "SELECT", ...} ].
+4. Shop & Reward Scenes:
+interaction_mode: &"SELECTION_ONLY".
+Router Rule: If a selection is active and a new click is received in this mode, the command queue is [ {cmd: "DESELECT"}, {cmd: "SELECT", ...} ].
+5. EnemyLineup Container:
+interaction_mode: &"INSPECTION_ONLY".
+4.4.4 Invalid Action Resolution Flow
+If an inventory_action_requested signal is sent for an action that is not valid, InventoryManager will emit inventory_action_invalid. InteractionManager listens for this and resolves the invalid UI state by closing all inspection windows and clearing the selection, as per Rule [GR-5].
+4.5 Advanced Window Group Navigation
+The Global Interaction Router must handle complex navigation within an active inspection window group. The following rules govern interactions with parent windows when child windows are open, using the interaction_mode from the InteractionContext to determine the precise user intent.
+The Principle: Clicks on elements within a parent window serve as commands to change the focus of the inspection, effectively re-directing or pruning the inspection "branch" from that parent.
+Rule [GR-10] Re-Inspection from Parent (Context-Aware):
+Scenario: A child window is open. The user clicks on an interactive element (e.g., another item) within the parent window.
+User Intent: To switch inspection focus or select an item.
+Router Logic:
+The router first identifies the parent window of the clicked element.
+It then checks the interaction_mode of the received InteractionContext.
+If interaction_mode is &"INSPECTION_ONLY": The single-click is an inspection request.
+Generated Command Queue:
+CLOSE_CHILD_WINDOWS (for the identified parent window).
+OPEN_INSPECTION_WINDOW (for the newly clicked element).
+If interaction_mode is &"FULLY_INTERACTIVE": A single-click is a selection request, not an inspection request.
+Generated Command Queue:
+CLOSE_CHILD_WINDOWS (for the identified parent window).
+SELECT (for the newly clicked element).
+Outcome: The UI correctly distinguishes between a request to inspect and a request to select, based on the rules of the area that was clicked. The old child window is always closed, as the user's focus has definitively shifted.
+Rule [GR-11] Navigational Clicks on Parent:
+Scenario: A child window is open. The user clicks on a non-actionable element within the parent window, such as an EMPTY_SLOT or the window's background.
+User Intent: To close the child and return focus to the parent.
+Router Logic: The router identifies the parent window of the clicked element. A click on an EMPTY_SLOT in this context is treated identically to a click on a WINDOW_BACKGROUND.
+Generated Command Queue:
+CLOSE_CHILD_WINDOWS (for the identified parent window).
+Outcome: The child window is closed, pruning the inspection branch back to the parent that was clicked.
+4.6 UI Population Pattern: Persistent Slots
+To ensure a stable, performant, and bug-free UI, views that display collections of items in a grid (such as InventoryWindow or DiscardPileWindow) must adhere to the "Persistent Slots" pattern.
+The Problem to Avoid:
+Constantly destroying (queue_free()) and recreating UI nodes for every data change is inefficient and leads to visual bugs, loss of state, and desynchronization between the view and the data model.
+The Correct Pattern:
+One-Time Initialization: When the window is first created, it should programmatically instantiate and add the required number of "slot" nodes (e.g., SlotView.tscn) to its GridContainer. These slot nodes are now persistent for the lifetime of the window.
+Content Update on Refresh: When a UI refresh is required, the window must not destroy the persistent slot nodes. Instead, it should iterate through its existing slot nodes, clear any old content (e.g., a GachaBallView child), look up the corresponding data, and instantiate a new content view if necessary.
+Context Configuration: During population, each view (SlotView, GachaBallView, etc.) must be initialized with the correct InteractionContext data (interaction_mode, entity_type, etc.) so it can report its context accurately to the GlobalInteractionRouter.
 
 Part 5: Game Flows
 ### 5.1 In-Battle Instance Lifecycle
@@ -601,7 +701,7 @@ It emits instance_location_changed(drawn_uuid).
 1.  `InventoryManager` receives `inventory_action_requested` for a merge.
 2.  It instructs the appropriate data owner (`RunState` or `BattleManager`) to perform the following atomic operation:
     a. Create a new `result_instance` from the merge recipe.
-    b. Update the `result_instance`'s location properties to place it in the correct destination container and slot.
+    b. Update the `result_instance`'s location properties to place it in the correct destination container and slot. **Rule: If the merge occurs on the battle board (`PlayerLineup`, `PlayerBench`, `ItemInventory`) or in an equipped item slot, the result is placed in the target ingredient's original slot. The tier-up-to-new-inventory-pool logic only applies when merging within the `(Run/Battle)InventoryT<n>` containers.**
     c. Add the new instance's UUID to the master instance dictionary and the destination `DataContainer` (the index).
     d. For each ingredient, remove its UUID from its `DataContainer` and the master instance dictionary.
     e. For all inherited items, update their `equipped_on_uuid` property to point to the new `result_instance`.
@@ -1123,6 +1223,59 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Battle
     battle_manager.summon_unit_to_location(definition_to_summon, power, health, targets[0]) # Assuming target is a location identifier
 ```
 
+# Part 5: Game Flows
+### 5.1 In-Battle Instance Lifecycle
+To ensure data integrity and prevent unnecessary object creation, the following rules govern how GachaBall instances are handled during a battle after the initial setup:
+
+**No New Copies:** After the initial `battle_copy()` creation at the start of a battle, no further copies or clones of `GachaBall` instances are made. All subsequent operations manipulate the existing battle instances.
+
+**Movement is a State Change:** "Moving" an instance (e.g., from bench to lineup, or inventory to discard) is achieved by changing the `location_container_tag` and `location_slot_index` properties on the instance itself, and updating the relevant `DataContainer` objects. The instance's `ball_uuid` remains the same for the duration of the battle.
+
+**Item Salvage and Inheritance:** When a unit is defeated or used as a merge ingredient, its equipped items are not copied. The exact same item instances are transferred. Their `equipped_on_uuid` and `location` properties are updated to reflect their new state (either moved to the discard pile or re-equipped on a newly merged unit).
+
+### 5.2 Battle Setup Flow
+1.  `BattleManager` receives a generated `EncounterDefinition`.
+2.  It creates `battle_copy()` instances from `run_state.run_instances` for all player units and items. It stores a map of permanent-to-battle UUIDs.
+3.  It iterates through the new battle copies and remaps their `equipped_item_uuids` to the new battle-specific UUIDs.
+4.  The Hero is a special case; the persistent `GachaBallInstance` from `RunState` is used directly in battle without being copied.
+5.  It creates new instances for all enemies and their items as defined in the `EncounterDefinition`.
+6.  It places all instances into the correct `DataContainer` indices according to their original locations or the encounter definition.
+
+### 5.3 Gacha Draw Flow
+`BattleManager` receives `draw_gacha_requested(tier_tag)`.
+* It queries `_battle_instances` for instances with `location_container_tag == "BATTLE_DRAW_POOL_[tier_tag]"`.
+* If a draw or merge action causes a tiered battle inventory pool to become empty, it is automatically and immediately replenished with all corresponding GachaBalls from the `BATTLE_DISCARD_PILE`. When a reshuffle occurs, any GachaBall instance being moved from the `BATTLE_DISCARD_PILE` to a `BATTLE_DRAW_POOL` must have its `current_hp` and `current_pwr` stats reset to the `base_hp` and `base_pwr` values from its `GachaBallDefinition`.
+* It picks a random instance and changes its location properties to an available slot in `BATTLE_PLAYER_BENCH` or `BATTLE_ITEM_INVENTORY`.
+* It emits `instance_location_changed(drawn_uuid)`.
+
+### 5.4 Merge Flow
+1.  `InventoryManager` receives `inventory_action_requested` for a merge.
+2.  It instructs the appropriate data owner (`RunState` or `BattleManager`) to perform the following atomic operation:
+    a. Create a new `result_instance` from the merge recipe.
+    b. Update the `result_instance`'s location properties to place it in the correct destination container and slot. **Rule: If the merge occurs on the battle board (`PlayerLineup`, `PlayerBench`, `ItemInventory`) or in an equipped item slot, the result is placed in the target ingredient's original slot. The tier-up-to-new-inventory-pool logic only applies when merging within the `(Run/Battle)InventoryT<n>` containers.**
+    c. Add the new instance's UUID to the master instance dictionary and the destination `DataContainer` (the index).
+    d. For each ingredient, remove its UUID from its `DataContainer` and the master instance dictionary.
+    e. For all inherited items, update their `equipped_on_uuid` property to point to the new `result_instance`.
+3.  The data owner emits the necessary state change signals (`battle_inventory_changed` or `run_data_changed`).
+
+### 5.5 Post-Battle Reward Flow
+#### Design Rationale: Instance-Based Rewards
+To ensure architectural consistency and maximum feature reuse, the reward system uses real `GachaBallInstance` objects instead of temporary representations. This treats the reward choice screen as a temporary inventory, allowing all existing systems (inspection, selection, tooltips) to function without special-case logic.
+
+#### Authoritative Flow
+1. **Victory & Acknowledgement**: The flow begins after the player acknowledges a battle victory, which emits `battle_victory_acknowledged`.
+2. **Reward Instance Generation**: 
+   - `GameManager` receives the signal, generates the temporary reward instances, and stores them in its `_temporary_reward_master_dict`.
+   - The reward instances are created with proper location information in a temporary container.
+3. **Display**: 
+   - `GameManager` emits `reward_scene_requested`. 
+   - `Reward.tscn` is displayed. Its `GachaBallViews` and `SlotViews` are configured for a selection-only context. 
+4. **Player Interaction**: The player interacts with the rewards, and `GlobalInteractionRouter` handles selection changes.
+5. **Final Choice & State Change**: The player confirms their choice; `Reward.gd` emits `reward_chosen`, updates UI state, and reveals `%BackToPathButton`.
+6. **State Update & Cleanup**: `GameManager` processes `reward_chosen` following the **Golden Rule**, updates `RunState`, and clears `_temporary_reward_master_dict`.
+7. **Manual Scene Transition**: Clicking `%BackToPathButton` emits `path_choice_scene_requested`; `Reward.gd` immediately calls `queue_free()` on itself.
+
+---
 # Part 8: Dynamic Encounter Generation System
 
 This section details the technical implementation of the budget-based system responsible for generating enemy teams for COMMON and ELITE battle nodes.
@@ -1297,3 +1450,46 @@ To provide clear feedback, the result of the mini-game is displayed in a dedicat
     *   Adds any defined starter units/items to the inventory.
     *   Sets `day = 1`.
 5.  **Transition:** `GameManager` transitions to the `Main.tscn` and requests the `PathChoice` content scene.
+
+---
+
+### 5.5 Post-Battle Reward Flow
+
+#### Design Rationale: Instance-Based Rewards
+To ensure architectural consistency and maximum feature reuse, the reward system uses real GachaBallInstance objects instead of temporary representations. This approach treats the reward choice screen as a temporary inventory, allowing all existing systems (inspection, selection, tooltips) to function without special-case logic. When a choice is made, the selected instance is simply moved to the permanent RunState, while the unchosen instances are discarded. This maintains the "single source of truth" principle and creates a more robust and extensible system.
+
+#### Authoritative Flow
+1. **Victory & Acknowledgement**: The flow begins after the player acknowledges a battle victory, which emits `battle_victory_acknowledged`.
+
+2. **Reward Instance Generation**: 
+   - `GameManager` receives the signal, generates the temporary reward instances, and stores them in its `_temporary_reward_master_dict`.
+   - The reward instances are created with proper location information in a temporary container.
+
+3. **Display**: 
+   - `GameManager` emits `reward_scene_requested`. 
+   - The `Reward.tscn` scene is displayed. Its `GachaBallViews` and `SlotViews` are configured for a selection-only context. 
+   - Double-click to inspect remains functional.
+
+4. **Player Interaction**: 
+   - The player interacts with the rewards. The UI will provide the correct `InteractionContext` to the `GlobalInteractionRouter`, which will handle selection changes seamlessly.
+
+5. **Final Choice & State Change**: 
+   - The player clicks either the `%ConfirmSelectionButton` or `%TakeGoldButton`.
+   - The `Reward.gd` script emits the `reward_chosen` signal with the appropriate payload.
+   - The script then changes the UI state: it hides the `Confirm` and `Gold` buttons and makes a new `%BackToPathButton` visible. 
+
+6. **State Update & Cleanup**: 
+   - `GameManager` receives `reward_chosen` and performs the final state modification according to the **Golden Rule of State Synchronization**.
+   - It clears its internal temporary reward data (`_temporary_reward_master_dict`).
+
+7. **Manual Scene Transition**: 
+   - The player is now on the reward screen with their new item added to their inventory. 
+   - When the player clicks `%BackToPathButton`, the `Reward.gd` script emits `path_choice_scene_requested`.
+   - Immediately after emitting the signal, the `Reward.gd` script must call `queue_free()` on itself.
+
+---
+# Part 6: Localization & Sequence Diagrams
+### 6.1 Localization System
+Key-Based System: All user-facing text must be stored as keys in resource files.
+Central File: A central localization.csv file will be used to store the key-value pairs.
+Implementation: Text will be set in UI scripts using the tr() function.

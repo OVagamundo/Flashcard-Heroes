@@ -12,7 +12,7 @@ const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 
 var run_state: RunState
 var is_in_battle: bool = false # The global authority on whether a battle is active.
-var _active_battle_manager: BattleManager = null # ADD THIS LINE
+var _active_battle_manager: Node = null # ADD THIS LINE
 var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
@@ -32,6 +32,7 @@ func _ready() -> void:
 	EventBus.title_scene_requested.connect(_on_return_to_title)
 	EventBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
 	EventBus.battle_start_requested.connect(_on_battle_start_requested)
+	EventBus.battle_won_rewards_pending.connect(_on_battle_won_rewards_pending)
 
 	EventBus.reward_chosen.connect(_on_reward_chosen)
 	EventBus.node_selected.connect(_on_node_selected)
@@ -39,11 +40,17 @@ func _ready() -> void:
 	EventBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 
 # ADD THESE TWO FUNCTIONS
-func register_battle_manager(bm: BattleManager):
+func register_battle_manager(bm: Node):
 	_active_battle_manager = bm
 
 func unregister_battle_manager():
 	_active_battle_manager = null
+
+func get_pending_rewards() -> Dictionary:
+	return {
+		"reward_instances": _temporary_reward_master_dict.values(),
+		"gold_amount": _temporary_gold_reward
+	}
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
 	run_state = RunState.new()
@@ -65,7 +72,10 @@ func _on_battle_ended() -> void:
 	pass
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition):
-	# Pre-generate rewards for the upcoming battle and store them.
+	pass
+
+func _on_battle_won_rewards_pending():
+	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	

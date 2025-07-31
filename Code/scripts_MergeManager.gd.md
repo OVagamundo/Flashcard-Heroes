@@ -44,11 +44,14 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
 
 
-func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, _source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
+func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
 	# --- CONTEXT-AWARE VALIDATION ---
-	# Merging is not allowed on the battle board itself.
-	if target_loc.container == "battle_board":
-		return null
+	# TDD 4.3.III.3: Merging is not allowed between different interaction contexts.
+	# The InteractionManager should prevent this, but this is a final safeguard.
+	if source_loc.container != target_loc.container:
+		# Exception: Merging an item from the board/inventory onto an equipped item is allowed.
+		if not (target_loc.container == &"equipped_item" and source_loc.container != &"equipped_item"):
+			return null
 
 	# Get definitions for both instances
 	var def_a = instance_a.get_definition()

@@ -47,9 +47,23 @@ func _ready():
 		_update_day_label(GameManager.run_state.day)
 
 func _on_content_area_gui_input(event: InputEvent):
-	# This acts as a backstop for drops on the background of the game area.
-	if event is InputEventMouseButton and not event.is_pressed() and InteractionManager.is_drag_active():
-		InteractionManager.end_drag(false)
+	# Handle background clicks and drag end on the main game area
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.is_pressed():
+			# Create and emit InteractionContext for main game background
+			var context = InteractionContext.new()
+			context.source_view_instance_id = get_instance_id()
+			context.event_type = &"SINGLE_CLICK"
+			context.location = null  # No specific location for background
+			context.entity_uuid = ""
+			context.entity_type = &"GLOBAL_BACKGROUND"
+			context.interaction_mode = &"FULLY_INTERACTIVE"
+			context.window_group_id = 0  # Main game area
+			
+			EventBus.emit_signal("interaction_context_received", context)
+		elif InteractionManager.is_drag_active():
+			# This acts as a backstop for drops on the background of the game area.
+			InteractionManager.end_drag(false)
 
 func _clear_content_area():
 	if is_instance_valid(_current_content_node):

@@ -1,5 +1,5 @@
-extends Node
 class_name BattleManager
+extends Node
 
 const RS = preload("res://scripts/RunState.gd")
 
@@ -17,6 +17,24 @@ const BATTLE_CONTAINER_TAGS = {
 	ENEMY_BENCH = &"EnemyBench",
 	BATTLE_DISCARD_PILE = &"DiscardPile",
 }
+
+# Target resolution constants
+const SELF = &"SELF"
+const HOLDER = &"HOLDER"
+const ATTACK_TARGET = &"ATTACK_TARGET"
+const TRIGGERING_ENTITY = &"TRIGGERING_ENTITY"
+const FRONTMOST_ENEMY = &"FRONTMOST_ENEMY"
+const RANDOM_ENEMY = &"RANDOM_ENEMY"
+const RANDOM_ALLY = &"RANDOM_ALLY"
+const ALLY_BEHIND = &"ALLY_BEHIND"
+const ALLY_SLOT_AHEAD = &"ALLY_SLOT_AHEAD"
+const ADJACENT_ALLIES = &"ADJACENT_ALLIES"
+const ALL_ALLIES = &"ALL_ALLIES"
+
+# Condition constants
+const TEAM_SIZE_LESS_THAN_ENEMY = &"TEAM_SIZE_LESS_THAN_ENEMY"
+const SLOT_AHEAD_IS_EMPTY = &"SLOT_AHEAD_IS_EMPTY"
+const TARGET_HP_GREATER_THAN_SELF_HP = &"TARGET_HP_GREATER_THAN_SELF_HP"
 
 var _battle_instances: Dictionary = {}
 var _containers: Dictionary = {}
@@ -174,6 +192,9 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
 	_setup_enemy_lineup(encounter_def)
+	
+	# Trigger on_battle_start for all units
+	_trigger_battle_start_abilities()
 
 func _setup_enemy_lineup(encounter_def: EncounterDefinition = null):
 	print("BattleManager: Setting up enemy lineup with encounter_def: ", encounter_def != null)
@@ -234,13 +255,15 @@ func get_container(container_name: StringName) -> DataContainer:
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(6)
-		BATTLE_CONTAINER_TAGS.PLAYER_BENCH, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-			new_container = FixedArrayContainer.new(3)
+		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+			new_container = FixedArrayContainer.new(6)
+		BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
+			new_container = FixedArrayContainer.new(12)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
-			new_container = GrowableGridContainer.new(16, 8)
+			new_container = GrowableGridContainer.new(16)
 		_: # Default case for BattleInventoryT*
 			if container_name.begins_with("BattleInventoryT"):
-				new_container = GrowableGridContainer.new(16, 4)
+				new_container = GrowableGridContainer.new(16)
 			else:
 				# Failsafe for unknown container types
 				printerr("BattleManager: Unknown container type requested: ", container_name)
@@ -365,18 +388,38 @@ func _change_phase(new_phase: Phases):
 
 func _populate_effect_queue():
 	_effect_queue.clear()
+	
+	# Process enemy attacks
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	for attacker in enemy_lineup:
 		var target = _get_frontmost_target(false)
 		if is_instance_valid(target):
-			var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", {"target_uuid": target.ball_uuid})
-			_effect_queue.append(request)
+			# Trigger on_attack for the enemy unit
+			var context = {"source_uuid": attacker.ball_uuid, "target_uuid": target.ball_uuid}
+			AbilityResolver.process_trigger(&"on_attack", context)
+			
+			# If no abilities triggered, add default basic attack
+			if _effect_queue.is_empty():
+				var basic_attack_effect = Database.get_ability_definition(&"basic_attack").effects[0] if Database.get_ability_definition(&"basic_attack") else null
+				if is_instance_valid(basic_attack_effect):
+					var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", basic_attack_effect, [target.ball_uuid], context)
+					_effect_queue.append(request)
+	
+	# Process player attacks
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	for attacker in player_lineup:
 		var target = _get_frontmost_target(true)
 		if is_instance_valid(target):
-			var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", {"target_uuid": target.ball_uuid})
-			_effect_queue.append(request)
+			# Trigger on_attack for the player unit
+			var context = {"source_uuid": attacker.ball_uuid, "target_uuid": target.ball_uuid}
+			AbilityResolver.process_trigger(&"on_attack", context)
+			
+			# If no abilities triggered, add default basic attack
+			if _effect_queue.is_empty():
+				var basic_attack_effect = Database.get_ability_definition(&"basic_attack").effects[0] if Database.get_ability_definition(&"basic_attack") else null
+				if is_instance_valid(basic_attack_effect):
+					var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", basic_attack_effect, [target.ball_uuid], context)
+					_effect_queue.append(request)
 
 func _process_effect_queue() -> void:
 	if _is_processing_effect: return
@@ -384,23 +427,25 @@ func _process_effect_queue() -> void:
 	_is_processing_effect = true
 	while not _effect_queue.is_empty():
 		var request: EffectRequest = _effect_queue.pop_back()
-		var source = get_instance(request.source_uuid)
-		if not is_instance_valid(source) or source.current_hp <= 0: continue
-		var target = get_instance(request.trigger_context.get("target_uuid"))
-		if not is_instance_valid(target) or target.current_hp <= 0:
-			var attacker_is_player: bool = source.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			target = _get_frontmost_target(attacker_is_player)
-			if not is_instance_valid(target): continue
-		var ability_def = Database.get_ability_definition(request.ability_id)
-		if not is_instance_valid(ability_def): continue
-		var message = "[b]%s[/b] uses [b]%s[/b] on [b]%s[/b]" % [tr(source.get_definition().display_name_key), tr(ability_def.name_key), tr(target.get_definition().display_name_key)]
-		EventBus.emit_signal("battle_log_event", message)
-		ability_def.effect.execute(source, [target], self)
+		
+		# Check if source is still valid and alive
+		var source = get_instance_by_uuid(request.source_uuid)
+		if not is_instance_valid(source) or source.current_hp <= 0: 
+			continue
+		
+		# Execute the effect using the new interface
+		if is_instance_valid(request.effect_definition):
+			request.effect_definition.execute(request.source_uuid, request.resolved_targets, self, request.trigger_context)
+		
 		_check_for_deaths()
 		if _is_battle_over():
 			return
 		await get_tree().create_timer(0.8).timeout
 	_is_processing_effect = false
+	
+	# Trigger on_turn_end for all units
+	_trigger_turn_end_abilities()
+	
 	_change_phase(Phases.END_OF_TURN)
 	await get_tree().create_timer(0.1).timeout
 	_change_phase(Phases.START_OF_TURN)
@@ -420,7 +465,7 @@ func _remove_instance_from_container(instance: GachaBallInstance):
 	var container = get_container(loc.container)
 	if is_instance_valid(container):
 		var uuids = container.get_all_uuids()
-		var idx := uuids.find(instance.ball_uuid)
+		var idx: int = uuids.find(instance.ball_uuid)
 		if idx != -1: container.set_uuid(idx, "")
 
 func _check_for_deaths():
@@ -429,6 +474,18 @@ func _check_for_deaths():
 	for unit in player_units:
 		if unit.current_hp <= 0:
 			something_changed = true
+			
+			# Trigger on_death for the dying unit
+			var death_context = {"source_uuid": unit.ball_uuid}
+			AbilityResolver.process_trigger(&"on_death", death_context)
+			
+			# Trigger on_ally_death for all other units
+			var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+			for ally in all_units:
+				if ally.ball_uuid != unit.ball_uuid:
+					var ally_death_context = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+					AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+			
 			_remove_instance_from_container(unit)
 			for item_uuid in unit.equipped_item_uuids:
 				if not item_uuid.is_empty():
@@ -439,13 +496,27 @@ func _check_for_deaths():
 						_move_instance_to_discard(item_instance)
 			unit.equipped_item_uuids.fill("")
 			_move_instance_to_discard(unit)
+	
 	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
 			something_changed = true
+			
+			# Trigger on_death for the dying unit
+			var death_context = {"source_uuid": unit.ball_uuid}
+			AbilityResolver.process_trigger(&"on_death", death_context)
+			
+			# Trigger on_ally_death for all other units
+			var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+			for ally in all_units:
+				if ally.ball_uuid != unit.ball_uuid:
+					var ally_death_context = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+					AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+			
 			_remove_instance_from_container(unit)
 			if _battle_instances.has(unit.ball_uuid):
 				_battle_instances.erase(unit.ball_uuid)
+	
 	if something_changed:
 		EventBus.emit_signal("battle_inventory_changed")
 
@@ -454,12 +525,232 @@ func _is_battle_over() -> bool:
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	if player_lineup.is_empty() or enemy_lineup.is_empty():
 		_current_battle_phase = Phases.BATTLE_OVER
-		var did_player_win = enemy_lineup.is_empty()
-		if did_player_win:
-			EventBus.emit_signal("battle_won_rewards_pending")
-		WindowManager.open_end_battle_popup(did_player_win)
 		return true
 	return false
+
+## Resolve targets for an effect based on target type and context.
+## @param source_uuid: String - The UUID of the source instance
+## @param target_type: StringName - The type of target to resolve (e.g., "SELF", "FRONTMOST_ENEMY")
+## @param context: Dictionary - The context of the event
+## @return Array[String] - Array of target UUIDs
+func resolve_target(source_uuid: String, target_type: StringName, context: Dictionary) -> Array[String]:
+	var source_instance = get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(source_instance):
+		return []
+	
+	match target_type:
+		"SELF":
+			return [source_uuid]
+		"HOLDER":
+			# For items, return the unit they're equipped to
+			if source_instance.get_definition().category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
+				return [source_instance.equipped_on_uuid]
+			# For units, return self
+			return [source_uuid]
+		"ATTACK_TARGET":
+			# Return the target from the attack context
+			var target_uuid = context.get("target_uuid", "")
+			if not target_uuid.is_empty():
+				return [target_uuid]
+			return []
+		"TRIGGERING_ENTITY":
+			# Return the entity that triggered the event
+			var triggering_uuid = context.get("triggering_uuid", "")
+			if not triggering_uuid.is_empty():
+				return [triggering_uuid]
+			return []
+		"FRONTMOST_ENEMY":
+			var is_source_player = _is_player_unit(source_instance)
+			var target = _get_frontmost_target(!is_source_player)
+			if is_instance_valid(target):
+				return [target.ball_uuid]
+			return []
+		"RANDOM_ENEMY":
+			var is_source_player = _is_player_unit(source_instance)
+			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+			if not enemies.is_empty():
+				var random_enemy = enemies[randi() % enemies.size()]
+				return [random_enemy.ball_uuid]
+			return []
+		"RANDOM_ALLY":
+			var is_source_player = _is_player_unit(source_instance)
+			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+			if not allies.is_empty():
+				var random_ally = allies[randi() % allies.size()]
+				return [random_ally.ball_uuid]
+			return []
+		"ALLY_BEHIND":
+			var ally_behind = _get_ally_behind(source_instance)
+			if is_instance_valid(ally_behind):
+				return [ally_behind.ball_uuid]
+			return []
+		"ALLY_SLOT_AHEAD":
+			# Return empty array for summoning slots (not implemented yet)
+			return []
+		"ADJACENT_ALLIES":
+			var adjacent = _get_adjacent_allies(source_instance)
+			var uuids: Array[String] = []
+			for ally in adjacent:
+				uuids.append(ally.ball_uuid)
+			return uuids
+		"ALL_ALLIES":
+			var is_source_player = _is_player_unit(source_instance)
+			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+			var uuids: Array[String] = []
+			for ally in allies:
+				uuids.append(ally.ball_uuid)
+			return uuids
+		_:
+			print("BattleManager: Unknown target type: ", target_type)
+			return []
+
+## Check if a condition is met for an ability.
+## @param condition_def: ConditionDefinition - The condition to check
+## @param source_uuid: String - The UUID of the source instance
+## @param context: Dictionary - The context of the event
+## @return bool - True if condition is met
+func check_condition(condition_def: ConditionDefinition, source_uuid: String, context: Dictionary) -> bool:
+	if not is_instance_valid(condition_def):
+		return true  # No condition means always true
+	
+	var source_instance = get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(source_instance):
+		return false
+	
+	var result = false
+	match condition_def.condition_type:
+		"TEAM_SIZE_LESS_THAN_ENEMY":
+			var is_source_player = _is_player_unit(source_instance)
+			var ally_count = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).size()
+			var enemy_count = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).size()
+			result = ally_count < enemy_count
+		"SLOT_AHEAD_IS_EMPTY":
+			var slot_ahead = _get_slot_ahead(source_instance)
+			result = slot_ahead == null
+		"TARGET_HP_GREATER_THAN_SELF_HP":
+			var target_uuid = context.get("target_uuid", "")
+			if not target_uuid.is_empty():
+				var target_instance = get_instance_by_uuid(target_uuid)
+				if is_instance_valid(target_instance):
+					result = target_instance.current_hp > source_instance.current_hp
+		_:
+			print("BattleManager: Unknown condition type: ", condition_def.condition_type)
+			result = false
+	
+	# Apply inversion if specified
+	return !result if condition_def.invert_result else result
+
+## Enqueue an effect request for processing.
+## @param effect_request: EffectRequest - The effect request to enqueue
+func enqueue_effect_request(effect_request: EffectRequest):
+	if is_instance_valid(effect_request):
+		_effect_queue.append(effect_request)
+
+## Get an instance by UUID.
+## @param uuid: String - The UUID of the instance
+## @return GachaBallInstance - The instance, or null if not found
+func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
+	return _battle_instances.get(uuid, null)
+
+## Check if a unit is on the player's side.
+## @param instance: GachaBallInstance - The instance to check
+## @return bool - True if the unit is on the player's side
+func _is_player_unit(instance: GachaBallInstance) -> bool:
+	return instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+
+## Get the ally unit behind the source unit.
+## @param source_instance: GachaBallInstance - The source unit
+## @return GachaBallInstance - The ally behind, or null if none
+func _get_ally_behind(source_instance: GachaBallInstance) -> GachaBallInstance:
+	var container_name = source_instance.location_container_tag
+	var container = get_container(container_name)
+	if not is_instance_valid(container):
+		return null
+	
+	var source_index = container.get_index_of_uuid(source_instance.ball_uuid)
+	if source_index == -1:
+		return null
+	
+	var behind_index = source_index - 1
+	if behind_index >= 0:
+		var behind_uuid = container.get_uuid(behind_index)
+		if not behind_uuid.is_empty():
+			return get_instance_by_uuid(behind_uuid)
+	
+	return null
+
+## Get the slot ahead of the source unit.
+## @param source_instance: GachaBallInstance - The source unit
+## @return GachaBallInstance - The unit ahead, or null if empty
+func _get_slot_ahead(source_instance: GachaBallInstance) -> GachaBallInstance:
+	var container_name = source_instance.location_container_tag
+	var container = get_container(container_name)
+	if not is_instance_valid(container):
+		return null
+	
+	var source_index = container.get_index_of_uuid(source_instance.ball_uuid)
+	if source_index == -1:
+		return null
+	
+	var ahead_index = source_index + 1
+	if ahead_index < container.get_all_uuids().size():
+		var ahead_uuid = container.get_uuid(ahead_index)
+		if not ahead_uuid.is_empty():
+			return get_instance_by_uuid(ahead_uuid)
+	
+	return null
+
+## Get adjacent allies (front and back).
+## @param source_instance: GachaBallInstance - The source unit
+## @return Array[GachaBallInstance] - Array of adjacent allies
+func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBallInstance]:
+	var adjacent: Array[GachaBallInstance] = []
+	
+	var ally_behind = _get_ally_behind(source_instance)
+	if is_instance_valid(ally_behind):
+		adjacent.append(ally_behind)
+	
+	var ally_ahead = _get_slot_ahead(source_instance)
+	if is_instance_valid(ally_ahead):
+		adjacent.append(ally_ahead)
+	
+	return adjacent
+
+## Trigger on_hurt event for a unit that took damage.
+## @param target_uuid: String - The UUID of the unit that took damage
+## @param damage_amount: int - The amount of damage taken
+## @param attacker_uuid: String - The UUID of the unit that caused the damage
+func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String):
+	var hurt_context = {
+		"source_uuid": target_uuid,
+		"damage_taken": damage_amount,
+		"attacker_uuid": attacker_uuid
+	}
+	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
+
+## Trigger on_kill event for a unit that killed another unit.
+## @param killer_uuid: String - The UUID of the unit that got the kill
+## @param killed_uuid: String - The UUID of the unit that was killed
+func trigger_on_kill(killer_uuid: String, killed_uuid: String):
+	var kill_context = {
+		"source_uuid": killer_uuid,
+		"killed_uuid": killed_uuid
+	}
+	AbilityResolver.process_trigger(&"on_kill", kill_context)
+
+## Trigger on_battle_start abilities for all units.
+func _trigger_battle_start_abilities():
+	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	for unit in all_units:
+		var battle_start_context = {"source_uuid": unit.ball_uuid}
+		AbilityResolver.process_trigger(&"on_battle_start", battle_start_context)
+
+## Trigger on_turn_end abilities for all units.
+func _trigger_turn_end_abilities():
+	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	for unit in all_units:
+		var turn_end_context = {"source_uuid": unit.ball_uuid}
+		AbilityResolver.process_trigger(&"on_turn_end", turn_end_context)
 
 func _reshuffle_discard_pile(tier_to_reshuffle: int):
 	var source_container = get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
@@ -549,7 +840,7 @@ func _on_draw_gacha_requested(tier: int):
 
 # Helper function to equip an item on a unit
 func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
-	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
+	var empty_slot_idx: int = unit_instance.equipped_item_uuids.find("")
 	if empty_slot_idx != -1:
 		unit_instance.equipped_item_uuids[empty_slot_idx] = item_instance.ball_uuid
 		item_instance.equipped_on_uuid = unit_instance.ball_uuid

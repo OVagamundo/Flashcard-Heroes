@@ -49,6 +49,8 @@ func populate(context: Dictionary):
 
 		# 3. Populate the SlotView itself, making it a valid interactive target.
 		slot_view.populate(loc)
+		# Set up interaction context for the slot
+		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 		
 		# 4. Get the instance for this slot from the context data.
 		var inst = null
@@ -62,6 +64,8 @@ func populate(context: Dictionary):
 			# THE CRITICAL FIX: The last argument must be 'false' to enable
 			# standard inventory interactions (select, double-click, drag).
 			gacha_view.populate(loc, inst, true, false)
+			# Set up interaction context for the new system
+			gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", &"ITEM", 0)
 
 func _on_selection_changed(new_location: LocationIdentifier):
 	var is_valid_selection = new_location and new_location.container == &"Rewards"
@@ -96,8 +100,17 @@ func _on_back_to_path_pressed():
 	queue_free()
 
 func _on_gui_input(event: InputEvent):
-	# Close inspection windows when clicking on background
+	# Handle background clicks using the new InteractionContext system
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# If we clicked on this scene's background, close inspection windows
-		WindowManager.close_all_inspection_windows()
-		EventBus.emit_signal("selection_clear_requested")
+		# Create and emit InteractionContext for reward background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"WINDOW_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 0  # Main window group
+		
+		EventBus.emit_signal("interaction_context_received", context)
+		get_viewport().set_input_as_handled()

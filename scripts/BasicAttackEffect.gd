@@ -2,23 +2,74 @@
 extends EffectDefinition
 
 ## An effect that deals damage equal to the source's power to the first target.
+## This is the default attack effect used when no special abilities are triggered.
 
-func execute(source, targets, _battle_manager):
-	if targets.is_empty() or not is_instance_valid(targets[0]):
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary):
+	if targets.is_empty():
 		return
 
-	var target = targets[0]
-	var damage = source.current_pwr
-	target.set_current_hp(max(0, target.current_hp - damage))
+	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
+	var target_instance = battle_manager.get_instance_by_uuid(targets[0])
+	
+	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance):
+		return
+
+	# Calculate damage (can be overridden by parameters for stat scaling)
+	var damage = _calculate_damage(source_instance)
+	
+	# Store original HP for kill detection
+	var original_hp = target_instance.current_hp
+	
+	# Apply damage
+	target_instance.set_current_hp(max(0, target_instance.current_hp - damage))
+
+	# Trigger on_hurt event for the target
+	battle_manager.trigger_on_hurt(target_instance.ball_uuid, damage, source_instance.ball_uuid)
+	
+	# Check if the target was killed
+	if original_hp > 0 and target_instance.current_hp <= 0:
+		battle_manager.trigger_on_kill(source_instance.ball_uuid, target_instance.ball_uuid)
 
 	# Inform UI and log systems
-	if Engine.has_singleton("EventBus"):
-		var src_name = tr(source.get_definition().display_name_key)
-		var tgt_name = tr(target.get_definition().display_name_key)
-		var msg = "%s deals %d dmg to %s" % [src_name, damage, tgt_name]
-		EventBus.emit_signal("battle_log_event", msg)
-		EventBus.emit_signal("battle_inventory_changed")
-		# Emit unit_stats_changed so UI updates HP in real time
-		EventBus.emit_signal("unit_stats_changed", target.ball_uuid)
+	var src_name = tr(source_instance.get_definition().display_name_key)
+	var tgt_name = tr(target_instance.get_definition().display_name_key)
+	var msg = "%s deals %d dmg to %s" % [src_name, damage, tgt_name]
+	EventBus.battle_log_event.emit(msg)
+	EventBus.battle_inventory_changed.emit()
+	# Emit unit_stats_changed so UI updates HP in real time
+	EventBus.unit_stats_changed.emit(target_instance.ball_uuid)
 
-	print("BasicAttack: %s attacks %s for %d damage. Target HP is now %d." % [source.definition_id, target.definition_id, damage, target.current_hp])
+	print("BasicAttack: %s attacks %s for %d damage. Target HP is now %d." % [source_instance.definition_id, target_instance.definition_id, damage, target_instance.current_hp])
+
+## Calculate damage using stat-scaling parameters if provided
+func _calculate_damage(source_instance: GachaBallInstance) -> int:
+	if not parameters.has("damage"):
+		# Default: use source's power
+		return source_instance.current_pwr
+	
+	var damage_param = parameters["damage"]
+	
+	# If it's a simple integer, use it directly
+	if damage_param is int:
+		return damage_param
+	
+	# If it's a dictionary with stat-scaling, calculate it
+	if damage_param is Dictionary:
+		return _calculate_stat_scaled_value(damage_param, source_instance)
+	
+	# Fallback to source's power
+	return source_instance.current_pwr
+
+## Calculate a stat-scaled value using the TDD V7.0 formula
+func _calculate_stat_scaled_value(param_dict: Dictionary, source_instance: GachaBallInstance) -> int:
+	var base_value = param_dict.get("base_value", 0)
+	var pwr_multiplier = param_dict.get("pwr_multiplier", 0.0)
+	var hp_multiplier = param_dict.get("hp_multiplier", 0.0)
+	var base_hp_multiplier = param_dict.get("base_hp_multiplier", 0.0)
+	
+	var final_value = base_value
+	final_value += source_instance.current_pwr * pwr_multiplier
+	final_value += source_instance.current_hp * hp_multiplier
+	final_value += source_instance.base_hp * base_hp_multiplier
+	
+	return floor(final_value)

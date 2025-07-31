@@ -7,9 +7,20 @@ extends Node
 const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
 const GachaBallDefinition = preload("res://scripts/GachaBallDefinition.gd")
 
-# Main public function. Generates a complete encounter based on a budget.
+## A stateless service that generates dynamic encounters using the "Constrained Random Build" algorithm.
+## Implements the TDD V7.0 specification for encounter generation.
+
+## Generates a complete encounter based on the given budget.
+## @param budget: int - The total budget to spend on units and items
+## @return EncounterDefinition - A complete encounter definition with enemy placements
 func generate_encounter(budget: int) -> EncounterDefinition:
 	print("EncounterGenerator: Generating encounter with budget: ", budget)
+	
+	# Validate input
+	if budget <= 0:
+		printerr("EncounterGenerator: Invalid budget: ", budget)
+		return _create_fallback_encounter()
+	
 	# --- Phase 1: Setup & Data Pooling ---
 	# 1. Get all non-hero GachaBallDefinitions from the Database singleton.
 	# 2. Separate them into two pools: `available_units` and `available_items`.
@@ -74,17 +85,22 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 				purchased_items.append(purchase)
 			spent_budget += purchase.cost
 
-		# Store this result if it's better than the last one
+				# Store this result if it's better than the last one
 		if spent_budget > best_build.spent:
 			best_build = {"units": purchased_units, "items": purchased_items, "spent": spent_budget}
+			print("EncounterGenerator: New best build - Units: ", purchased_units.size(), ", Items: ", purchased_items.size(), ", Spent: ", spent_budget, "/", budget)
 
 		# If we found a perfect build, exit early
-		if spent_budget == budget: break
+		if spent_budget == budget:
+			print("EncounterGenerator: Found perfect build!")
+			break
 		
 	# --- Phase 4: Final Assembly ---
 	var final_encounter = EncounterDefinition.new()
 	final_encounter.id = "dynamic_encounter_%d" % Time.get_unix_time_from_system()
-	print("EncounterGenerator: Final build - Units: ", best_build.units.size(), ", Items: ", best_build.items.size(), ", Spent: ", best_build.spent)
+	
+	var efficiency = (float(best_build.spent) / float(budget)) * 100.0
+	print("EncounterGenerator: Final build - Units: ", best_build.units.size(), ", Items: ", best_build.items.size(), ", Spent: ", best_build.spent, "/", budget, " (", efficiency, "% efficiency)")
 	
 	# Place units
 	var available_positions = [0, 1, 2, 3, 4, 5]
@@ -102,6 +118,82 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 		)
 		if possible_parents.is_empty(): break # No more slots
 		possible_parents.pick_random().items.append(item_def.id)
+	
+	# Validate the final encounter
+	if not _validate_encounter(final_encounter):
+		print("EncounterGenerator: Warning - Generated encounter failed validation, using fallback")
+		return _create_fallback_encounter()
 		
-	return final_encounter 
+	return final_encounter
+
+## Creates a fallback encounter when generation fails.
+## @return EncounterDefinition - A basic encounter with minimal units
+func _create_fallback_encounter() -> EncounterDefinition:
+	print("EncounterGenerator: Creating fallback encounter")
+	var fallback = EncounterDefinition.new()
+	fallback.id = "fallback_encounter_%d" % Time.get_unix_time_from_system()
+	
+	# Add a basic enemy if available
+	var basic_enemy = Database.get_definition(&"Tier1unitA")
+	if is_instance_valid(basic_enemy):
+		var placement = {"id": basic_enemy.id, "position": 0, "items": []}
+		fallback.enemy_placements.append(placement)
+	
+	return fallback
+
+## Validates that the generated encounter is valid.
+## @param encounter: EncounterDefinition - The encounter to validate
+## @return bool - True if the encounter is valid
+func _validate_encounter(encounter: EncounterDefinition) -> bool:
+	if not is_instance_valid(encounter):
+		return false
+	
+	if encounter.enemy_placements.is_empty():
+		print("EncounterGenerator: Warning - Generated encounter has no units")
+		return false
+	
+	# Check that all units have valid definitions
+	for placement in encounter.enemy_placements:
+		var unit_def = Database.get_definition(placement.id)
+		if not is_instance_valid(unit_def):
+			print("EncounterGenerator: Warning - Invalid unit definition: ", placement.id)
+			return false
+		
+		# Check that items don't exceed unit's item slots
+		if placement.items.size() > unit_def.item_slot_count:
+			print("EncounterGenerator: Warning - Too many items for unit: ", placement.id)
+			return false
+	
+	return true
+
+## Calculates the total power of an encounter for debugging purposes.
+## @param encounter: EncounterDefinition - The encounter to analyze
+## @return Dictionary - Analysis data including total power, unit count, etc.
+func analyze_encounter(encounter: EncounterDefinition) -> Dictionary:
+	var analysis = {
+		"unit_count": 0,
+		"item_count": 0,
+		"total_power": 0,
+		"total_hp": 0,
+		"total_cost": 0
+	}
+	
+	for placement in encounter.enemy_placements:
+		var unit_def = Database.get_definition(placement.id)
+		if is_instance_valid(unit_def):
+			analysis.unit_count += 1
+			analysis.total_power += unit_def.base_pwr
+			analysis.total_hp += unit_def.base_hp
+			analysis.total_cost += unit_def.cost
+			
+			# Add item stats
+			for item_id in placement.items:
+				var item_def = Database.get_definition(item_id)
+				if is_instance_valid(item_def):
+					analysis.item_count += 1
+					analysis.total_cost += item_def.cost
+					analysis.total_power += item_def.bonus_pwr
+					analysis.total_hp += item_def.bonus_hp
+	
+	return analysis 
 ```

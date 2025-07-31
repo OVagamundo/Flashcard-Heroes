@@ -1,15 +1,15 @@
 # res://scripts/ConditionDefinition.gd
+@tool
 class_name ConditionDefinition
 extends Resource
 
-## Defines conditions for ability effects and other game mechanics.
+## A reusable, self-contained check that determines if an ability is allowed to proceed.
 
-## Evaluates the condition based on the game state.
-## source: The GachaBallInstance using the ability.
-## target: The GachaBallInstance being targeted by the ability.
-## battle_manager: A reference to the current BattleManager.
-## event_data: Optional dictionary with context-specific data.
-func evaluate(_source: GachaBallInstance, _target: GachaBallInstance, _battle_manager, _event_data: Dictionary = {}) -> bool:
-	# MVP Scope Note: For the MVP, this is a placeholder and always returns true
-	# to allow architectural flow testing without implementing complex logic.
-	return true
+## Unique identifier for the condition (e.g., "cond_team_size_less_than_enemy").
+@export var id: StringName
+## The specific type of check to perform. This is interpreted by BattleManager. See TDD for canonical list.
+@export var condition_type: StringName
+## A flexible dictionary containing any values needed for the check. For example, a RELATIVE_HP check might use `{"comparison": "greater_than"}`.
+@export var parameters: Dictionary
+## If true, the result of the condition check is inverted. (e.g., "if NOT front slot is empty").
+@export var invert_result: bool = false 

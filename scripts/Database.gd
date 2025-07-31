@@ -104,7 +104,6 @@ func get_definition(id: StringName) -> GachaBallDefinition:
 	definition = items.get(id)
 	if definition:
 		return definition
-	
 
 	printerr("Database: Definition for ID ", id, " not found in units/items.")
 	return null

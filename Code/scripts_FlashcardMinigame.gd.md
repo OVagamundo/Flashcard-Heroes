@@ -57,16 +57,14 @@ func _check_for_new_card():
 	# For now, we'll implement a simple version - introduce a new card every 3 sessions
 	# In a full implementation, this would track which cards have been introduced
 	
-	# Check if we have enough cards for the mini-game (need at least 10 for 9 distractors + 1 question)
-	if _active_deck.size() < 10:
-		# Add a new card to the active deck
-		var all_cards = _run_state.flashcard_progress.keys()
-		for card_id in all_cards:
-			if not _active_deck.has(card_id):
-				_new_card_id = card_id
-				_active_deck.append(card_id)
-				_is_introducing_new_card = true
-				return
+	# Add a new card to the active deck
+	var all_cards = _run_state.flashcard_progress.keys()
+	for card_id in all_cards:
+		if not _active_deck.has(card_id):
+			_new_card_id = card_id
+			_active_deck.append(card_id)
+			_is_introducing_new_card = true
+			return
 	
 	_is_introducing_new_card = false
 
@@ -91,8 +89,11 @@ func _on_got_it_pressed():
 
 func _start_minigame_session():
 	"""Start the 3-second sprint mini-game"""
-	# TDD: 3-second session timer for the entire session
-	_session_timer = 3.0
+	card_intro_container.hide()
+	
+	# TDD: 5-second session timer for the entire session
+	_session_timer = 5.0
+	_is_introducing_new_card = false
 	_correct_answers = 0
 	_total_answers = 0
 	
@@ -108,7 +109,7 @@ func _start_minigame_session():
 
 func _process(delta):
 	"""Update the session timer"""
-	if _session_timer > 0 and not _is_introducing_new_card:
+	if not _is_introducing_new_card and _session_timer > 0:
 		_session_timer -= delta
 		_update_timer_display()
 		
@@ -155,6 +156,7 @@ func _show_next_question():
 			var button = Button.new()
 			button.text = choice_data.get("answer", "Error")
 			button.custom_minimum_size = Vector2(250, 80)
+			button.add_theme_font_size_override("font_size", 60)
 			button.pressed.connect(_on_choice_selected.bind(choice_id))
 			choices_grid.add_child(button)
 
@@ -165,11 +167,11 @@ func _on_choice_selected(selected_answer_id: StringName):
 	
 	if was_correct:
 		_correct_answers += 1
-		# TDD: Correct answer flashes white
-		_flash_button_white(selected_answer_id)
+		# TDD: Correct answer flashes green
+		_flash_button_correct(selected_answer_id)
 	else:
 		# TDD: Incorrect answer flashes red
-		_flash_button_red(selected_answer_id)
+		_flash_button_incorrect(selected_answer_id)
 	
 	# Submit answer to FlashcardManager
 	FlashcardManager.submit_answer(_current_question_id, was_correct)
@@ -177,20 +179,17 @@ func _on_choice_selected(selected_answer_id: StringName):
 	# TDD: Next question appears instantly
 	_show_next_question()
 
-func _flash_button_white(correct_answer_id: StringName):
-	"""Flash the correct answer button white"""
+func _flash_button_correct(correct_answer_id: StringName):
+	"""Flash the correct answer button green"""
 	for i in range(choices_grid.get_child_count()):
 		var button = choices_grid.get_child(i)
 		if not is_instance_valid(button):
 			continue
 		if button.text == Database.get_flashcard_definition(correct_answer_id).get("answer", ""):
-			button.modulate = Color.WHITE
-			# Use a timer to reset the color without lambda capture
-			var timer = get_tree().create_timer(0.1)
-			timer.timeout.connect(_reset_button_color.bind(button))
+			button.modulate = Color.LIGHT_GREEN
 			break
 
-func _flash_button_red(incorrect_answer_id: StringName):
+func _flash_button_incorrect(incorrect_answer_id: StringName):
 	"""Flash the incorrect answer button red"""
 	for i in range(choices_grid.get_child_count()):
 		var button = choices_grid.get_child(i)
@@ -198,15 +197,7 @@ func _flash_button_red(incorrect_answer_id: StringName):
 			continue
 		if button.text == Database.get_flashcard_definition(incorrect_answer_id).get("answer", ""):
 			button.modulate = Color.RED
-			# Use a timer to reset the color without lambda capture
-			var timer = get_tree().create_timer(0.1)
-			timer.timeout.connect(_reset_button_color.bind(button))
 			break
-
-func _reset_button_color(button: Button):
-	"""Reset button color to white"""
-	if is_instance_valid(button):
-		button.modulate = Color.WHITE
 
 func _end_minigame():
 	"""End the mini-game when timer expires"""
@@ -221,9 +212,6 @@ func _end_minigame():
 	
 	# Emit our internal signal
 	minigame_complete.emit(results)
-	
-	# Close the modal window
-	EventBus.emit_signal("close_modal_requested")
 
 func _on_flashcard_completed(results: Dictionary):
 	"""Called when FlashcardManager emits minigame_finished"""

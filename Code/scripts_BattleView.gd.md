@@ -125,7 +125,13 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		if is_instance_valid(instance):
 			var view = GachaBallView.instantiate()
 			slot.add_child(view)
-			view.populate(loc, instance, not is_enemy)
+			
+			# --- THIS IS THE LINE TO CHANGE ---
+			# The third argument `is_inspectable` should be true, and the fourth argument
+			# `single_click_inspect` should also be true for enemies.
+			view.populate(loc, instance, true, is_enemy)
+			# --- END OF CHANGE ---
+
 			view.set_is_enemy(is_enemy)
 			view.set_meta("location_identifier", loc)
 		else:
@@ -164,7 +170,17 @@ func _on_battle_phase_changed(phase_name: StringName):
 				button.disabled = not is_management_phase
 
 func _gui_input(event):
-	if event is InputEventMouseButton and event.is_pressed():
-		EventBus.emit_signal("selection_clear_requested")
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Create and emit InteractionContext for battle background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null  # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"GLOBAL_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 0  # Main battle scene
+		
+		EventBus.emit_signal("interaction_context_received", context)
 
 ```
