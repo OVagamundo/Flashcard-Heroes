@@ -1,7 +1,7 @@
 # res://scripts/SceneManager.gd
 extends Node
 
-## Manages all scene loading and transitions in response to EventBus signals.
+## Manages all scene loading and transitions in response to SignalBus signals.
 
 const SCENE_PATHS = {
 	"Title": "res://scenes/Title.tscn",
@@ -17,9 +17,9 @@ func _ready() -> void:
 	var root = get_tree().root
 	current_scene = root.get_child(root.get_child_count() - 1)
 
-	EventBus.title_scene_requested.connect(_on_title_scene_requested)
-	EventBus.loadout_scene_requested.connect(_on_loadout_scene_requested)
-	EventBus.main_scene_requested.connect(_on_main_scene_requested)
+	SignalBus.title_scene_requested.connect(_on_title_scene_requested)
+	SignalBus.loadout_scene_requested.connect(_on_loadout_scene_requested)
+	SignalBus.main_scene_requested.connect(_on_main_scene_requested)
 
 func _on_title_scene_requested() -> void:
 	_change_scene_to(SCENE_PATHS["Title"])

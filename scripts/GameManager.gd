@@ -24,17 +24,17 @@ var _reroll_cost: int = 1
 
 func _ready() -> void:
 	# Connect to signals to manage the run and battle state.
-	EventBus.start_run_requested.connect(_on_start_run_requested)
-	EventBus.battle_state_changed.connect(func(in_battle): is_in_battle = in_battle)
-	EventBus.title_scene_requested.connect(_on_return_to_title)
-	EventBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
-	EventBus.battle_start_requested.connect(_on_battle_start_requested)
-	EventBus.battle_won_rewards_pending.connect(_on_battle_won_rewards_pending)
+	SignalBus.start_run_requested.connect(_on_start_run_requested)
+	SignalBus.battle_state_changed.connect(func(in_battle): is_in_battle = in_battle)
+	SignalBus.title_scene_requested.connect(_on_return_to_title)
+	SignalBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
+	SignalBus.battle_start_requested.connect(_on_battle_start_requested)
+	SignalBus.battle_won_rewards_pending.connect(_on_battle_won_rewards_pending)
 
-	EventBus.reward_chosen.connect(_on_reward_chosen)
-	EventBus.node_selected.connect(_on_node_selected)
-	EventBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
-	EventBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
+	SignalBus.reward_chosen.connect(_on_reward_chosen)
+	SignalBus.node_selected.connect(_on_node_selected)
+	SignalBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
+	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 
 # ADD THESE TWO FUNCTIONS
 func register_battle_manager(bm: Node):
@@ -52,8 +52,8 @@ func get_pending_rewards() -> Dictionary:
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id)
-	EventBus.emit_signal("run_data_changed")
-	EventBus.emit_signal("main_scene_requested")
+	SignalBus.emit_signal("run_data_changed")
+	SignalBus.emit_signal("main_scene_requested")
 
 func _on_new_game_requested() -> void:
 	# Default to first hero and deck if called without parameters
@@ -119,12 +119,12 @@ func _on_battle_victory_acknowledged():
 	_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
 
 	# Signal the UI to display the pre-generated rewards.
-	EventBus.emit_signal("reward_scene_requested")
+	SignalBus.emit_signal("reward_scene_requested")
 
 func _on_reward_chosen(payload):
 	# --- STALE SELECTION FIX ---
 	# The action is complete. Clear the interaction state immediately.
-	EventBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("selection_clear_requested")
 
 	if payload.type == "gachaball":
 		var chosen_uuid = payload.get("instance_uuid")
@@ -157,14 +157,14 @@ func _on_reward_chosen(payload):
 			
 	elif payload.type == "gold":
 		run_state.gold += payload.get("amount", 0)
-		EventBus.emit_signal("gold_changed", run_state.gold)
+		SignalBus.emit_signal("gold_changed", run_state.gold)
 
 	# --- TRANSITION LOGIC REMOVED ---
 	# The scene transition is now handled by the new button in Reward.gd.
 	# We still need to clean up the temporary data and signal that the run data has changed.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
-	EventBus.emit_signal("run_data_changed")
+	SignalBus.emit_signal("run_data_changed")
 	# DO NOT emit path_choice_scene_requested here anymore.
 	
 	_is_processing_victory = false
@@ -317,7 +317,7 @@ func _on_shop_purchase_requested(instance_uuid: String, cost: int):
 	if run_state.gold < cost: return
 
 	run_state.gold -= cost
-	EventBus.emit_signal("gold_changed", run_state.gold)
+	SignalBus.emit_signal("gold_changed", run_state.gold)
 
 	var purchased_instance = _temporary_shop_master_dict[instance_uuid]
 	var def = purchased_instance.get_definition()
@@ -335,19 +335,19 @@ func _on_shop_purchase_requested(instance_uuid: String, cost: int):
 	if temp_slot != -1:
 		_temporary_shop_container.set_uuid(temp_slot, "")
 
-	EventBus.emit_signal("run_data_changed")
+	SignalBus.emit_signal("run_data_changed")
 	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
-	EventBus.emit_signal("shop_stock_refreshed", context)
+	SignalBus.emit_signal("shop_stock_refreshed", context)
 
 func _on_shop_reroll_requested():
 	if run_state.gold < _reroll_cost: return
 
 	run_state.gold -= _reroll_cost
-	EventBus.emit_signal("gold_changed", run_state.gold)
+	SignalBus.emit_signal("gold_changed", run_state.gold)
 	_reroll_cost += 1
 
 	_generate_shop_stock()
 	
-	EventBus.emit_signal("run_data_changed")
+	SignalBus.emit_signal("run_data_changed")
 	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
-	EventBus.emit_signal("shop_stock_refreshed", context)
+	SignalBus.emit_signal("shop_stock_refreshed", context)

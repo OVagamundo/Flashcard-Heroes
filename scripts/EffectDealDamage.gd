@@ -34,10 +34,10 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			var src_name = tr(source_instance.get_definition().display_name_key)
 			var tgt_name = tr(target_instance.get_definition().display_name_key)
 			var msg = "%s deals %d dmg to %s" % [src_name, damage, tgt_name]
-			EventBus.battle_log_event.emit(msg)
-			EventBus.unit_stats_changed.emit(target_instance.ball_uuid)
+			SignalBus.battle_log_event.emit(msg)
+			SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
 
-	EventBus.battle_inventory_changed.emit()
+	SignalBus.battle_inventory_changed.emit()
 
 ## Calculate damage using stat-scaling parameters
 func _calculate_damage(source_instance: GachaBallInstance) -> int:

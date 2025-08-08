@@ -11,7 +11,7 @@ var _reward_uuids: Array[String] = []
 var _gold_amount: int = 0
 
 func _ready():
-	EventBus.selection_changed.connect(_on_selection_changed)
+	SignalBus.selection_changed.connect(_on_selection_changed)
 	confirm_button.disabled = true
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	gold_button.pressed.connect(_on_gold_pressed)
@@ -75,19 +75,19 @@ func _on_confirm_pressed():
 	var selected_loc = InteractionManager.get_selected_location()
 	if selected_loc and selected_loc.container == &"Rewards":
 		var uuid = _reward_uuids[selected_loc.index]
-		EventBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		# Hide old buttons, show the new one
 		confirm_button.visible = false
 		gold_button.visible = false
 		back_to_path_button.visible = true
 		# Clear selection and remove all reward GachaBalls
-		EventBus.emit_signal("selection_clear_requested")
+		SignalBus.emit_signal("selection_clear_requested")
 		for slot_view in choices_container.get_children():
 			for child in slot_view.get_children():
 				child.queue_free()
 
 func _on_gold_pressed():
-	EventBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
+	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
 	
 	# Hide old buttons, show the new one
 	confirm_button.visible = false
@@ -95,7 +95,7 @@ func _on_gold_pressed():
 	back_to_path_button.visible = true
 
 func _on_back_to_path_pressed():
-	EventBus.emit_signal("path_choice_scene_requested")
+	SignalBus.emit_signal("path_choice_scene_requested")
 	# The reward scene has served its purpose and should be removed.
 	queue_free()
 
@@ -112,5 +112,5 @@ func _on_gui_input(event: InputEvent):
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 0  # Main window group
 		
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()

@@ -21,26 +21,26 @@ var _current_content_node: Node = null
 
 func _ready():
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
-	draw_tier1_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 1))
-	draw_tier2_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 2))
-	draw_tier3_button.pressed.connect(func(): EventBus.emit_signal("draw_gacha_requested", 3))
+	draw_tier1_button.pressed.connect(func(): SignalBus.emit_signal("draw_gacha_requested", 1))
+	draw_tier2_button.pressed.connect(func(): SignalBus.emit_signal("draw_gacha_requested", 2))
+	draw_tier3_button.pressed.connect(func(): SignalBus.emit_signal("draw_gacha_requested", 3))
 
 	
-	EventBus.battle_start_requested.connect(_on_battle_start_requested)
-	EventBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
-	EventBus.battle_state_changed.connect(_on_battle_state_changed)
-	EventBus.reward_scene_requested.connect(_on_reward_scene_requested)
+	SignalBus.battle_start_requested.connect(_on_battle_start_requested)
+	SignalBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
+	SignalBus.battle_state_changed.connect(_on_battle_state_changed)
+	SignalBus.reward_scene_requested.connect(_on_reward_scene_requested)
 	# TDD Safeguard: Re-enable draw buttons after the UI has redrawn.
-	EventBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
+	SignalBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	content_area.gui_input.connect(_on_content_area_gui_input)
 
-	EventBus.gold_changed.connect(_on_gold_changed)
-	EventBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
-	EventBus.shop_scene_requested.connect(_on_shop_scene_requested)
-	EventBus.run_data_changed.connect(_on_run_data_changed)
+	SignalBus.gold_changed.connect(_on_gold_changed)
+	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
+	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
+	SignalBus.run_data_changed.connect(_on_run_data_changed)
 
 	_on_battle_state_changed(false)
-	EventBus.emit_signal("path_choice_scene_requested")
+	SignalBus.emit_signal("path_choice_scene_requested")
 
 	if is_instance_valid(GameManager.run_state):
 		_on_gold_changed(GameManager.run_state.gold)
@@ -60,7 +60,7 @@ func _on_content_area_gui_input(event: InputEvent):
 			context.interaction_mode = &"FULLY_INTERACTIVE"
 			context.window_group_id = 0  # Main game area
 			
-			EventBus.emit_signal("interaction_context_received", context)
+			SignalBus.emit_signal("interaction_context_received", context)
 		elif InteractionManager.is_drag_active():
 			# This acts as a backstop for drops on the background of the game area.
 			InteractionManager.end_drag(false)
@@ -101,7 +101,7 @@ func _on_reward_scene_requested():
 func _on_inspect_inventory_pressed():
 	# This is a bit of a hack for now, but the WindowManager is
 	# responsible for figuring out which inventory to open based on game state.
-	EventBus.emit_signal("inspect_inventory_requested")
+	SignalBus.emit_signal("inspect_inventory_requested")
 	inspect_inventory_button.release_focus()
 
 
@@ -109,7 +109,7 @@ func _on_inspect_inventory_pressed():
 func _on_draw_button_pressed(button: Button, tier: int):
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
-	EventBus.emit_signal("draw_gacha_requested", tier)
+	SignalBus.emit_signal("draw_gacha_requested", tier)
 
 func _on_battle_inventory_changed():
 	print("Main: _on_battle_inventory_changed called, re-enabling draw buttons")

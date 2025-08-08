@@ -8,21 +8,21 @@ class_name EndBattlePopup
 var _is_victory: bool = false
 
 func _ready():
-    return_button.pressed.connect(_on_return_button_pressed)
+	return_button.pressed.connect(_on_return_button_pressed)
 
 func populate(context: Dictionary):
-    var is_victory: bool = context.get("is_victory", false)
-    _is_victory = is_victory
-    if is_victory:
-        title_label.text = "VICTORY!"
-        return_button.text = "Continue"
-    else:
-        title_label.text = "DEFEAT"
-        return_button.text = "Return to Title"
+	var is_victory: bool = context.get("is_victory", false)
+	_is_victory = is_victory
+	if is_victory:
+		title_label.text = "VICTORY!"
+		return_button.text = "Continue"
+	else:
+		title_label.text = "DEFEAT"
+		return_button.text = "Return to Title"
 
 func _on_return_button_pressed():
-    if _is_victory:
-        EventBus.emit_signal("battle_victory_acknowledged")
-    else:
-        EventBus.emit_signal("title_scene_requested")
-    queue_free()
+	if _is_victory:
+		SignalBus.emit_signal("battle_victory_acknowledged")
+	else:
+		SignalBus.emit_signal("title_scene_requested")
+	queue_free()

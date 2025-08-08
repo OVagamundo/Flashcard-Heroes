@@ -13,8 +13,8 @@ var _selected_cost: int = 0
 var _price_labels_container: HBoxContainer
 
 func _ready():
-	EventBus.shop_stock_refreshed.connect(populate)
-	EventBus.selection_changed.connect(_on_selection_changed)
+	SignalBus.shop_stock_refreshed.connect(populate)
+	SignalBus.selection_changed.connect(_on_selection_changed)
 
 	buy_button.pressed.connect(_on_buy_pressed)
 	reroll_button.pressed.connect(_on_reroll_pressed)
@@ -100,13 +100,13 @@ func _on_buy_pressed():
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
 		if is_instance_valid(instance):
-			EventBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
+			SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
 
 func _on_reroll_pressed():
-	EventBus.emit_signal("shop_reroll_requested")
+	SignalBus.emit_signal("shop_reroll_requested")
 
 func _on_leave_pressed():
-	EventBus.emit_signal("path_choice_scene_requested")
+	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
 func _on_gui_input(event: InputEvent):
@@ -122,5 +122,5 @@ func _on_gui_input(event: InputEvent):
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 0  # Main window group
 		
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled() 

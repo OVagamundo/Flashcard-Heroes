@@ -19,7 +19,7 @@ func _on_internal_background_clicked(event: InputEvent):
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 1  # Inspection window group
 		
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
 

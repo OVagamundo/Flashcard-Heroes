@@ -13,29 +13,21 @@ var _stable_anchor: Control = null  # Stable anchor for positioning
 
 func _ready():
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
-	# Allow clicks on the description area to propagate to the root window so
-	# WindowManager can register background clicks. Identical behaviour to
-	# UnitInspectionWindow.
+	# Ensure the window root receives clicks for local pruning
+	mouse_filter = MOUSE_FILTER_STOP
+	# Allow non-link clicks to bubble to the window root so it can prune children
 	description_label.mouse_filter = MOUSE_FILTER_PASS
-	description_label.meta_hover_started.connect(func(_m): description_label.mouse_filter = MOUSE_FILTER_STOP)
-	description_label.meta_hover_ended.connect(func(_m): description_label.mouse_filter = MOUSE_FILTER_PASS)
+	# Keep gui_input connected but do not consume non-link clicks (see handler below)
+	description_label.gui_input.connect(_on_description_gui_input)
+
+	# Prune children when clicking anywhere on the window background area
+	if is_instance_valid(internal_background):
+		internal_background.mouse_filter = MOUSE_FILTER_STOP
+		internal_background.gui_input.connect(_on_internal_background_gui_input)
 func _gui_input(event: InputEvent):
-	# Handle background clicks on the inspection window itself
+	# Local background-click handling: prune only this window's descendants.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		print("ItemInspectionWindow: PanelContainer background click received!")
-		
-		# Create WINDOW_BACKGROUND context for any click on the window
-		var context = InteractionContext.new()
-		context.source_view_instance_id = get_instance_id()
-		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
-		context.entity_uuid = ""
-		context.entity_type = &"WINDOW_BACKGROUND"
-		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 1  # Inspection window group
-		
-		print("ItemInspectionWindow: Emitting interaction_context_received signal")
-		EventBus.emit_signal("interaction_context_received", context)
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
 
@@ -84,13 +76,26 @@ func _on_description_meta_clicked(meta):
 	if meta == "effect":
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
-			var context = {"effect_definition": definition.ability_definitions}
-			# --- THIS IS THE LINE TO CHANGE ---
-			# The source_view for a child window is the parent window itself.
-			var child_context = context.duplicate()
-			child_context["source_view"] = self
-			# --- END OF CHANGE ---
-			WindowManager.open_child_inspection_window(self, &"EffectInspection", child_context)
+			# Open EffectInspection as a CHILD contextual window anchored to this window.
+			WindowManager.open_child_contextual_window(
+				&"EffectInspection",
+				self,
+				{"effect_definition": definition.ability_definitions}
+			)
+			# Prevent this click from propagating as a WINDOW_BACKGROUND/global click
+			get_viewport().set_input_as_handled()
+			accept_event()
+
+func _on_description_gui_input(event: InputEvent):
+	# No-op: non-link clicks should bubble to the window root to trigger pruning.
+	# Link clicks are handled in _on_description_meta_clicked and are consumed there.
+	pass
+
+func _on_internal_background_gui_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		WindowManager.handle_inspection_background_click(self)
+		get_viewport().set_input_as_handled()
+		accept_event()
 
 func get_location() -> LocationIdentifier:
 	return _location

@@ -1,3 +1,6 @@
+<!-- Original: scripts/EventBus.gd -->
+
+```gdscript
 # res://scripts/EventBus.gd
 extends Node
 
@@ -72,3 +75,5 @@ signal inventory_ui_refresh_requested
 # --- Flashcard Signals ---
 signal flashcard_minigame_completed(results: Dictionary)
 signal results_acknowledged
+
+```

@@ -5,4 +5,4 @@ extends Control
 
 func _ready():
 	# The Title screen should now transition to the Loadout scene, not start a run directly.
-	start_run_button.pressed.connect(func(): EventBus.emit_signal("loadout_scene_requested"))
+	start_run_button.pressed.connect(func(): SignalBus.emit_signal("loadout_scene_requested"))

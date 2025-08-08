@@ -38,6 +38,6 @@ func _on_merge_pressed():
 	_on_choice_made(&"MERGE", _recipe_id)
 
 func _on_choice_made(choice: StringName, recipe_id: StringName):
-	# The signature now matches the new, more robust EventBus signal.
-	EventBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
-	EventBus.emit_signal("close_modal_requested")
+	# The signature now matches the new, more robust SignalBus signal.
+	SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
+	SignalBus.emit_signal("close_modal_requested")

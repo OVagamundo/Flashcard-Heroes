@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://c28k46w6p3h0"]
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
-[ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+
 
 [node name="DiscardPileWindow" type="Control"]
 layout_mode = 3
@@ -12,8 +12,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_v38m6")
-
-[node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 unique_name_in_owner = true

@@ -38,4 +38,4 @@ func _on_start_run_pressed():
 	var hero_id = _hero_defs[selected_hero_index].id
 	var deck_id = _deck_meta[selected_deck_index].deck_id
 
-	EventBus.emit_signal("start_run_requested", hero_id, deck_id)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id)

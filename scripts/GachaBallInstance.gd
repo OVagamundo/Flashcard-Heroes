@@ -86,7 +86,7 @@ func equip_item_bonus(item_instance: GachaBallInstance):
 	if not is_instance_valid(item_def): return
 	self.current_hp += item_def.bonus_hp
 	self.current_pwr += item_def.bonus_pwr
-	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 func unequip_item_bonus(item_instance: GachaBallInstance):
 	if not is_instance_valid(item_instance): return
@@ -94,13 +94,13 @@ func unequip_item_bonus(item_instance: GachaBallInstance):
 	if not is_instance_valid(item_def): return
 	self.current_hp -= item_def.bonus_hp
 	self.current_pwr -= item_def.bonus_pwr
-	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 # --- Stat Management ---
 func set_current_hp(new_hp: int):
 	if self.current_hp != new_hp:
 		self.current_hp = new_hp
-		EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+		SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 func reset_battle_stats():
 	var definition = get_definition()
@@ -140,7 +140,7 @@ func recalculate_stats(all_instances_db: Dictionary):
 	self.current_hp = new_hp
 	self.current_pwr = new_pwr
 
-	EventBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 # --- Tag Helpers ---
 func add_tag(tag: StringName):

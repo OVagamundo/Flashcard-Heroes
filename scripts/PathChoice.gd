@@ -9,7 +9,7 @@ const NodeViewScene = preload("res://scenes/NodeView.tscn")
 func _ready():
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.day += 1
-		EventBus.emit_signal("run_data_changed")
+		SignalBus.emit_signal("run_data_changed")
 
 	var node_types = ["BATTLE", "SHOP", "REST"]
 	node_types.shuffle()
@@ -32,4 +32,4 @@ func _ready():
 		node_container.add_child(node_view)
 
 func _on_node_selected(node_def: PathNodeDefinition):
-	EventBus.emit_signal("node_selected", node_def)
+	SignalBus.emit_signal("node_selected", node_def)

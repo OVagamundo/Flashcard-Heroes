@@ -2,8 +2,8 @@
 extends Node
 
 func _ready():
-	EventBus.try_inventory_action.connect(_on_try_inventory_action)
-	EventBus.choice_made.connect(_on_choice_made)
+	SignalBus.try_inventory_action.connect(_on_try_inventory_action)
+	SignalBus.choice_made.connect(_on_choice_made)
 
 # --- Main Action Handler ---
 
@@ -18,12 +18,12 @@ func _on_try_inventory_action(source_loc, target_loc):
 		if target_context_group == &"SelectionOnly":
 			# This is handled by InteractionManager.handle_view_click
 			# We shouldn't reach here, but if we do, it's invalid
-			EventBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+			SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
 			InteractionManager.end_drag(false)
 			return
 		else:
 			# Incompatible contexts - invalid action
-			EventBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+			SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
 			InteractionManager.end_drag(false)
 			return
 	
@@ -40,7 +40,7 @@ func _on_try_inventory_action(source_loc, target_loc):
 			InteractionManager.end_drag(true)
 		else:
 			# The placement is invalid. Report it.
-			EventBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+			SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
 			InteractionManager.end_drag(false)
 		return
 
@@ -63,7 +63,7 @@ func _on_try_inventory_action(source_loc, target_loc):
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
 		var context = { "source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id }
-		WindowManager.open_dialog_window(&"ChoiceWindow", context)
+		WindowManager.open_choice_window(context)
 		InteractionManager.end_drag(true)
 		return
 
@@ -74,7 +74,7 @@ func _on_try_inventory_action(source_loc, target_loc):
 		return
 
 	# If we reach the end and no valid action was found, report it.
-	EventBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+	SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
 	InteractionManager.end_drag(false)
 
 
@@ -109,7 +109,7 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	# Default move behaviour for normal containers
 	_remove_from_location(source_loc)
 	_place_in_container_slot(instance_to_move, target_loc.container, target_loc.index)
-	EventBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("selection_clear_requested")
 	_emit_data_changed_signal()
 
 func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
@@ -136,7 +136,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	else:
 		_place_in_container_slot(target_instance, source_loc.container, source_loc.index)
 
-	EventBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("selection_clear_requested")
 	_emit_data_changed_signal()
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
@@ -144,7 +144,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
 		InteractionManager.end_drag(false)
-		EventBus.emit_signal("selection_clear_requested")
+		SignalBus.emit_signal("selection_clear_requested")
 		return
 
 	# Restrict: If the item is already equipped on a unit, it may only be
@@ -153,7 +153,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
 		InteractionManager.end_drag(false)
-		EventBus.emit_signal("selection_clear_requested")
+		SignalBus.emit_signal("selection_clear_requested")
 		return
 
 	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
@@ -161,12 +161,12 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
 		InteractionManager.end_drag(false)
-		EventBus.emit_signal("selection_clear_requested")
+		SignalBus.emit_signal("selection_clear_requested")
 		return
 
 	_remove_from_location(item_instance.get_location())
 	_perform_equip(item_instance, unit_instance, empty_slot_idx)
-	EventBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("selection_clear_requested")
 	_emit_data_changed_signal()
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
@@ -253,7 +253,7 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 	# Equip the bonus to the new unit
 	unit_instance.equip_item_bonus(item_instance)
 
-	EventBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
+	SignalBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
 
 func _perform_unequip(item_instance: GachaBallInstance):
 	if not is_instance_valid(item_instance): return
@@ -266,7 +266,7 @@ func _perform_unequip(item_instance: GachaBallInstance):
 		if is_instance_valid(parent_unit):
 			if item_instance.equipped_slot_index < parent_unit.equipped_item_uuids.size():
 				parent_unit.equipped_item_uuids[item_instance.equipped_slot_index] = ""
-			EventBus.emit_signal("unit_inventory_changed", parent_uuid)
+			SignalBus.emit_signal("unit_inventory_changed", parent_uuid)
 
 	item_instance.equipped_on_uuid = ""
 	item_instance.equipped_slot_index = -1
@@ -358,8 +358,8 @@ func _get_data_owner() -> Object:
 
 func _emit_data_changed_signal():
 	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_data_changed"
-	EventBus.emit_signal(signal_name)
-	EventBus.emit_signal("inventory_ui_refresh_requested")
+	SignalBus.emit_signal(signal_name)
+	SignalBus.emit_signal("inventory_ui_refresh_requested")
 
 # --- Golden Rule Validation Helpers ---
 

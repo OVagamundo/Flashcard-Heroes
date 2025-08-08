@@ -50,13 +50,13 @@ func _ready():
 		return
 
 	# Connect to all relevant state change signals
-	EventBus.battle_inventory_changed.connect(_redraw_board)
-	EventBus.gacha_tokens_changed.connect(_update_gacha_token_label)
-	EventBus.battle_phase_changed.connect(_on_battle_phase_changed)
+	SignalBus.battle_inventory_changed.connect(_redraw_board)
+	SignalBus.gacha_tokens_changed.connect(_update_gacha_token_label)
+	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	
 	# Connect this view's buttons to emit the correct intent signals
-	end_turn_button.pressed.connect(func(): EventBus.emit_signal("end_turn_requested"))
-	discard_pile_button.pressed.connect(func(): EventBus.emit_signal("display_discard_pile_requested"))
+	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
+	discard_pile_button.pressed.connect(func(): SignalBus.emit_signal("display_discard_pile_requested"))
 	
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")
@@ -178,4 +178,4 @@ func _gui_input(event):
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 0  # Main battle scene
 		
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)

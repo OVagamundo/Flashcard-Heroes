@@ -1,9 +1,9 @@
 # res://scripts/SignalBus.gd
 extends Node
-class_name SignalBus
 
 ## Central signal management system for Flashcard Heroes
-## Replaces EventBus with better organization and documentation
+## Centralized signal bus for all game events
+## Replaces the old EventBus system with better organization and documentation
 ## TDD Section 10.1: SignalBus.gd
 
 # -----------------------------------------------------------------------------
@@ -218,6 +218,10 @@ signal close_modal_requested
 
 ## Emitted when background is clicked
 signal background_clicked
+
+## Emitted when an ambiguous action requires the player to choose (e.g., Merge or Swap).
+## @param context: Dictionary - The context for the ChoiceWindow to populate itself.
+signal open_choice_window_requested(context: Dictionary)
 
 # -----------------------------------------------------------------------------
 # FLASHCARD SYSTEM SIGNALS

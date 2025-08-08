@@ -30,7 +30,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			var tgt_name = tr(target_instance.get_definition().display_name_key)
 			var status_name = tr("status." + status_id + ".name")
 			var msg = "%s applies %s (%d) to %s" % [src_name, status_name, stacks, tgt_name]
-			EventBus.battle_log_event.emit(msg)
-			EventBus.unit_stats_changed.emit(target_instance.ball_uuid)
+			SignalBus.battle_log_event.emit(msg)
+			SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
 
-	EventBus.battle_inventory_changed.emit() 
+	SignalBus.battle_inventory_changed.emit()

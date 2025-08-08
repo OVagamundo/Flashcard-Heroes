@@ -16,14 +16,14 @@ var _grids_initialized: bool = false
 
 func _ready():
 	panel_container.gui_input.connect(_on_panel_gui_input)
-	EventBus.inventory_ui_refresh_requested.connect(_on_ui_refresh)
+	SignalBus.inventory_ui_refresh_requested.connect(_on_ui_refresh)
 	tier_1_grid.gui_input.connect(_on_grid_gui_input)
 	tier_2_grid.gui_input.connect(_on_grid_gui_input)
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
 
 func _exit_tree():
-	if EventBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):
-		EventBus.inventory_ui_refresh_requested.disconnect(_on_ui_refresh)
+	if SignalBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):
+		SignalBus.inventory_ui_refresh_requested.disconnect(_on_ui_refresh)
 
 func populate(context: Dictionary):
 	title_label.text = context.get("title", "Inventory")
@@ -55,7 +55,7 @@ func _on_panel_gui_input(event: InputEvent):
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 1  # Inspection windows group
 		
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
 func _on_grid_gui_input(event: InputEvent):
@@ -73,7 +73,7 @@ func _on_grid_gui_input(event: InputEvent):
 			context.interaction_mode = &"FULLY_INTERACTIVE"
 			context.window_group_id = 1  # Inspection windows group
 			
-			EventBus.emit_signal("interaction_context_received", context)
+			SignalBus.emit_signal("interaction_context_received", context)
 
 func _initialize_grids_if_needed():
 	if _grids_initialized:

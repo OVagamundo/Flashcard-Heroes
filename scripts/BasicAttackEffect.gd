@@ -34,10 +34,10 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var src_name = tr(source_instance.get_definition().display_name_key)
 	var tgt_name = tr(target_instance.get_definition().display_name_key)
 	var msg = "%s deals %d dmg to %s" % [src_name, damage, tgt_name]
-	EventBus.battle_log_event.emit(msg)
-	EventBus.battle_inventory_changed.emit()
+	SignalBus.battle_log_event.emit(msg)
+	SignalBus.battle_inventory_changed.emit()
 	# Emit unit_stats_changed so UI updates HP in real time
-	EventBus.unit_stats_changed.emit(target_instance.ball_uuid)
+	SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
 
 	print("BasicAttack: %s attacks %s for %d damage. Target HP is now %d." % [source_instance.definition_id, target_instance.definition_id, damage, target_instance.current_hp])
 

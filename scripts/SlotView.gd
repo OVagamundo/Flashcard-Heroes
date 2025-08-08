@@ -50,7 +50,7 @@ func _gui_input(event: InputEvent):
 		
 		# Create and emit InteractionContext
 		var context = _create_interaction_context(&"SINGLE_CLICK")
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)
 
 func _can_drop_data(_at_position, data) -> bool:
 	# Check if this is an inspection-only context
@@ -64,4 +64,4 @@ func _drop_data(_at_position, data):
 	if _interaction_mode == &"INSPECTION_ONLY":
 		return
 		
-	EventBus.emit_signal("try_inventory_action", data.source_loc, _location)
+	SignalBus.emit_signal("try_inventory_action", data.source_loc, _location)

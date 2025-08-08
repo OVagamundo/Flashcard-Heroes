@@ -16,7 +16,7 @@ func _ready():
 	
 	# Connect to flashcard completion signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
-	EventBus.results_acknowledged.connect(_on_results_acknowledged)
+	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 
 func _on_train_pressed(type: TrainingType):
 	_current_training = type
@@ -59,8 +59,8 @@ func _on_results_acknowledged():
 				hero_instance.current_hp += stat_gain
 			elif _current_training == TrainingType.PWR:
 				hero_instance.current_pwr += stat_gain
-			EventBus.emit_signal("run_data_changed")
-			EventBus.emit_signal("unit_stats_changed", hero_instance.ball_uuid)
+			SignalBus.emit_signal("run_data_changed")
+			SignalBus.emit_signal("unit_stats_changed", hero_instance.ball_uuid)
 	
 	_last_minigame_results.clear()
 	_current_training = TrainingType.NONE
@@ -68,11 +68,11 @@ func _on_results_acknowledged():
 	train_pwr_button.disabled = false
 
 func _on_leave_pressed():
-	EventBus.emit_signal("path_choice_scene_requested")
+	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
 func _exit_tree():
-	if EventBus.flashcard_minigame_completed.is_connected(_on_flashcard_completed):
-		EventBus.flashcard_minigame_completed.disconnect(_on_flashcard_completed)
-	if EventBus.is_connected("results_acknowledged", _on_results_acknowledged):
-		EventBus.results_acknowledged.disconnect(_on_results_acknowledged) 
+	if SignalBus.flashcard_minigame_completed.is_connected(_on_flashcard_completed):
+		SignalBus.flashcard_minigame_completed.disconnect(_on_flashcard_completed)
+	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):
+		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged) 

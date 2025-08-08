@@ -58,43 +58,43 @@ func _ready():
 	_connect_signals()
 	# Connect to flashcard completion signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
-	EventBus.results_acknowledged.connect(_on_results_acknowledged)
+	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 
 func _exit_tree():
 	print("BattleManager: _exit_tree called")
 	GameManager.unregister_battle_manager() # ADD THIS LINE
 	GameManager.is_in_battle = false
-	EventBus.emit_signal("battle_state_changed", false)
-	if EventBus.is_connected("end_turn_requested", _on_end_turn_requested):
-		EventBus.end_turn_requested.disconnect(_on_end_turn_requested)
-	if EventBus.is_connected("draw_gacha_requested", _on_draw_gacha_requested):
-		EventBus.draw_gacha_requested.disconnect(_on_draw_gacha_requested)
-	if EventBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
-		EventBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
-	if EventBus.is_connected("battle_inventory_changed", _check_and_trigger_reshuffles):
-		EventBus.battle_inventory_changed.disconnect(_check_and_trigger_reshuffles)
+	SignalBus.emit_signal("battle_state_changed", false)
+	if SignalBus.is_connected("end_turn_requested", _on_end_turn_requested):
+		SignalBus.end_turn_requested.disconnect(_on_end_turn_requested)
+	if SignalBus.is_connected("draw_gacha_requested", _on_draw_gacha_requested):
+		SignalBus.draw_gacha_requested.disconnect(_on_draw_gacha_requested)
+	if SignalBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
+		SignalBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
+	if SignalBus.is_connected("battle_inventory_changed", _check_and_trigger_reshuffles):
+		SignalBus.battle_inventory_changed.disconnect(_check_and_trigger_reshuffles)
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
-	if EventBus.is_connected("results_acknowledged", _on_results_acknowledged):
-		EventBus.results_acknowledged.disconnect(_on_results_acknowledged)
+	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):
+		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged)
 
 func _connect_signals():
-	EventBus.end_turn_requested.connect(_on_end_turn_requested)
-	EventBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
-	EventBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
-	EventBus.battle_inventory_changed.connect(_check_and_trigger_reshuffles)
+	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
+	SignalBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
+	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
+	SignalBus.battle_inventory_changed.connect(_check_and_trigger_reshuffles)
 
 
 
 func start_battle(encounter_def: EncounterDefinition):
 	print("BattleManager: Starting battle with encounter_def: ", encounter_def != null)
 	# Clear any existing selection when entering battle
-	EventBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("selection_clear_requested")
 	_setup_battle(encounter_def)
 	GameManager.is_in_battle = true
-	EventBus.emit_signal("battle_state_changed", true)
-	EventBus.emit_signal("battle_inventory_changed")
-	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+	SignalBus.emit_signal("battle_state_changed", true)
+	SignalBus.emit_signal("battle_inventory_changed")
+	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Emit unit_stats_changed for all units that have equipped items after UI is populated
 	call_deferred("_emit_stats_changed_for_equipped_units")
@@ -366,12 +366,12 @@ func get_discard_pile_inventory() -> Array[GachaBallInstance]:
 
 func _change_phase(new_phase: Phases):
 	_current_battle_phase = new_phase
-	EventBus.emit_signal("battle_phase_changed", get_current_phase_name())
+	SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
 	match _current_battle_phase:
 		Phases.START_OF_TURN:
 			# Grant base 5 tokens for the turn
 			_gacha_tokens += 5
-			EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+			SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 			# The flashcard mini-game is the first event of the turn.
 			# TDD Section 9.4: Battle Flow
 			if is_instance_valid(GameManager.run_state):
@@ -380,7 +380,7 @@ func _change_phase(new_phase: Phases):
 		Phases.MANAGEMENT:
 			# Re-enable draw buttons when entering management phase
 			print("BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed")
-			EventBus.emit_signal("battle_inventory_changed")
+			SignalBus.emit_signal("battle_inventory_changed")
 		Phases.COMBAT:
 			pass
 		Phases.END_OF_TURN:
@@ -518,7 +518,7 @@ func _check_for_deaths():
 				_battle_instances.erase(unit.ball_uuid)
 	
 	if something_changed:
-		EventBus.emit_signal("battle_inventory_changed")
+		SignalBus.emit_signal("battle_inventory_changed")
 
 func _is_battle_over() -> bool:
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
@@ -761,7 +761,7 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int):
 		func(inst): return inst.get_definition().tier == tier_to_reshuffle
 	)
 	if instances_to_move.is_empty(): return
-	EventBus.emit_signal("battle_log_event", "Reshuffling Tier %d discard pile..." % tier_to_reshuffle)
+	SignalBus.emit_signal("battle_log_event", "Reshuffling Tier %d discard pile..." % tier_to_reshuffle)
 	for instance in instances_to_move:
 		# Restore stats to base values before moving back to draw pool
 		instance.reset_battle_stats()
@@ -813,7 +813,7 @@ func _on_draw_gacha_requested(tier: int):
 	var tier_pool = get_instances_in_container(container_tag)
 	if tier_pool.is_empty(): return
 	_gacha_tokens -= cost
-	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	var drawn_instance = tier_pool.pick_random()
 	var target_container_tag: StringName
 	var target_container_capacity: int
@@ -826,7 +826,7 @@ func _on_draw_gacha_requested(tier: int):
 			target_container_capacity = 3
 		_:
 			_move_instance_to_discard(drawn_instance)
-			EventBus.emit_signal("battle_inventory_changed")
+			SignalBus.emit_signal("battle_inventory_changed")
 			return
 	_remove_instance_from_container(drawn_instance)
 	var target_container := get_container(target_container_tag)
@@ -836,7 +836,7 @@ func _on_draw_gacha_requested(tier: int):
 			_update_instance_location(drawn_instance.ball_uuid, target_container_tag, empty_slot)
 	else:
 		_move_instance_to_discard(drawn_instance)
-	EventBus.emit_signal("battle_inventory_changed")
+	SignalBus.emit_signal("battle_inventory_changed")
 
 # Helper function to equip an item on a unit
 func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
@@ -866,7 +866,7 @@ func _emit_stats_changed_for_equipped_units():
 				print("BattleManager: Base stats - HP: ", def.base_hp, ", PWR: ", def.base_pwr)
 				print("BattleManager: Current stats - HP: ", instance.current_hp, ", PWR: ", instance.current_pwr)
 				print("BattleManager: Emitting unit_stats_changed for unit: ", instance.ball_uuid)
-				EventBus.emit_signal("unit_stats_changed", instance.ball_uuid)
+				SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
 			else:
 				print("BattleManager: Unit ", instance.ball_uuid, " has no equipped items")
 
@@ -898,8 +898,8 @@ func _on_results_acknowledged():
 	print("BattleManager: Adding ", gacha_gain, " tokens. Current tokens: ", _gacha_tokens)
 	_gacha_tokens += gacha_gain
 	print("BattleManager: New token count: ", _gacha_tokens)
-	EventBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
 	_last_minigame_results.clear()
 	
-	EventBus.emit_signal("close_modal_requested")
+	SignalBus.emit_signal("close_modal_requested")

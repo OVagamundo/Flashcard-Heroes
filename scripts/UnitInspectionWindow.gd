@@ -19,47 +19,45 @@ var _window_group_id: int = 1  # Inspection window group
 var _stable_anchor: Control = null  # Stable anchor for positioning
 
 func _ready():
-	EventBus.battle_inventory_changed.connect(_on_inventory_changed)
-	EventBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
-	EventBus.run_data_changed.connect(_on_inventory_changed)
-	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
+	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
+	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
+	SignalBus.run_data_changed.connect(_on_inventory_changed)
+	SignalBus.unit_stats_changed.connect(_on_unit_stats_changed)
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
+	# Ensure the window root receives clicks for local pruning
+	mouse_filter = MOUSE_FILTER_STOP
+	# Allow non-link clicks on the description to bubble to the window root
+	# Hover handlers below will set STOP only while over UI links
 	description_label.mouse_filter = MOUSE_FILTER_PASS
-	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
-	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
+
+	# Prune children when clicking anywhere on the window background area
+	if is_instance_valid(internal_background):
+		internal_background.mouse_filter = MOUSE_FILTER_STOP
+		internal_background.gui_input.connect(_on_internal_background_gui_input)
+
+	# Also treat clicks on the item grid (empty slots area) as background for pruning
+	if is_instance_valid(item_grid):
+		item_grid.mouse_filter = MOUSE_FILTER_STOP
+		item_grid.gui_input.connect(_on_item_grid_gui_input)
+
+	# Configure child controls to allow bubbling so the root can prune children on generic clicks
+	_configure_mouse_filters()
+
 func _exit_tree():
-	if EventBus.is_connected("battle_inventory_changed", _on_inventory_changed):
-		EventBus.battle_inventory_changed.disconnect(_on_inventory_changed)
-	if EventBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
-		EventBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
-	if EventBus.is_connected("run_data_changed", _on_inventory_changed):
-		EventBus.run_data_changed.disconnect(_on_inventory_changed)
-	if EventBus.is_connected("unit_stats_changed", _on_unit_stats_changed):
-		EventBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
+	if SignalBus.is_connected("battle_inventory_changed", _on_inventory_changed):
+		SignalBus.battle_inventory_changed.disconnect(_on_inventory_changed)
+	if SignalBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
+		SignalBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
+	if SignalBus.is_connected("run_data_changed", _on_inventory_changed):
+		SignalBus.run_data_changed.disconnect(_on_inventory_changed)
+	if SignalBus.is_connected("unit_stats_changed", _on_unit_stats_changed):
+		SignalBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
 
 func _gui_input(event: InputEvent):
-	# Handle background clicks on the inspection window itself
+	# Local background-click handling: prune only this window's descendants.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		print("UnitInspectionWindow: PanelContainer background click received!")
-		
-		# Create WINDOW_BACKGROUND context for any click on the window
-		var context = InteractionContext.new()
-		context.source_view_instance_id = get_instance_id()
-		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
-		context.entity_uuid = ""
-		context.entity_type = &"WINDOW_BACKGROUND"
-		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 1  # Inspection window group
-		
-		print("UnitInspectionWindow: Emitting interaction_context_received signal")
-		EventBus.emit_signal("interaction_context_received", context)
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
-
-
-
-
-
 
 func populate(context: Dictionary):
 	_source_view = context.get("source_view")
@@ -307,10 +305,44 @@ func _on_description_meta_clicked(meta):
 	if meta == "effect":
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
-			var context = {"effect_definition": definition.ability_definitions}
-			var child_context = context.duplicate()
-			child_context["source_view"] = self # Pass the window itself as the anchor
-			WindowManager.open_child_inspection_window(self, &"EffectInspection", child_context)
+			WindowManager.open_child_contextual_window(
+				&"EffectInspection",
+				self,
+				{"effect_definition": definition.ability_definitions}
+			)
+			# Prevent this click from propagating as a WINDOW_BACKGROUND/global click
+			get_viewport().set_input_as_handled()
+			accept_event()
+
+## Recursively set mouse filters to PASS for child controls that should bubble to the root
+func _configure_mouse_filters():
+	var stack: Array = [self]
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		for child in node.get_children():
+			if child is Control:
+				# Skip nodes that have explicit handlers or must remain STOP
+				if child == internal_background or child == item_grid or child == description_label:
+					pass
+				else:
+					(child as Control).mouse_filter = MOUSE_FILTER_PASS
+				stack.append(child)
+
+func _on_description_gui_input(event: InputEvent):
+	# No-op: we rely on meta hover/click to manage link interactions.
+	pass
+
+func _on_internal_background_gui_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		WindowManager.handle_inspection_background_click(self)
+		get_viewport().set_input_as_handled()
+		accept_event()
+
+func _on_item_grid_gui_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		WindowManager.handle_inspection_background_click(self)
+		get_viewport().set_input_as_handled()
+		accept_event()
 
 func _on_description_meta_hover_started(_meta):
 	description_label.mouse_filter = MOUSE_FILTER_STOP

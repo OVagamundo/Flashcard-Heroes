@@ -7,7 +7,7 @@ func _ready():
 	# Connect to the battle log event signal from the BattleManager
 	# Note: This assumes BattleManager is emitting this global signal.
 	# A more robust solution might use a direct connection if a reference is available.
-	EventBus.battle_log_event.connect(add_message)
+	SignalBus.battle_log_event.connect(add_message)
 
 func add_message(message: String):
 	# Add a timestamp or turn number for clarity

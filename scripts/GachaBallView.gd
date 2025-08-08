@@ -21,9 +21,11 @@ var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
 func _ready():
-	EventBus.view_selected.connect(_on_view_selected)
-	EventBus.view_deselected.connect(_on_view_deselected)
-	EventBus.unit_stats_changed.connect(_on_unit_stats_changed)
+	var bus = get_node("/root/SignalBus")
+	if is_instance_valid(bus):
+		bus.connect("view_selected", _on_view_selected)
+		bus.connect("view_deselected", _on_view_deselected)
+		bus.unit_stats_changed.connect(_on_unit_stats_changed)
 
 func _exit_tree():
 	pass
@@ -184,7 +186,7 @@ func _gui_input(event: InputEvent):
 		# Create and emit InteractionContext
 		var context = _create_interaction_context(event_type)
 		print("GachaBallView: Created InteractionContext - entity_type: ", context.entity_type, ", source_id: ", context.source_view_instance_id)
-		EventBus.emit_signal("interaction_context_received", context)
+		SignalBus.emit_signal("interaction_context_received", context)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Use the new flag to control drag-and-drop.
@@ -220,7 +222,7 @@ func _can_drop_data(_at_position, data) -> bool:
 func _drop_data(_at_position, data):
 	# For drag and drop, we need to handle this as a direct action
 	# since the source location comes from the drag data, not the current view
-	EventBus.emit_signal("try_inventory_action", data.source_loc, _location)
+	SignalBus.emit_signal("try_inventory_action", data.source_loc, _location)
 	
 	# End the drag operation - this will clear selection state
 	InteractionManager.end_drag(true)

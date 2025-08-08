@@ -41,7 +41,7 @@ func _ready():
 	_window_manager = WindowManager
 	
 	# Connect to interaction signals
-	EventBus.interaction_context_received.connect(_on_interaction_context_received)
+	SignalBus.interaction_context_received.connect(_on_interaction_context_received)
 
 ## Main entry point for processing interactions
 func _on_interaction_context_received(context: InteractionContext):
@@ -69,14 +69,21 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	print("GlobalInteractionRouter: Generating commands for entity_type: ", context.entity_type)
 	
 	# TDD Rule: ANYWHERE outside window group should close entire group
-	# Check if inspection windows are open and this click is outside the window group
-	if _window_manager and _window_manager.is_any_inspection_window_open():
-		# Check if this click is outside the inspection window group
-		if not _is_click_inside_inspection_group(context):
-			# This is a click outside the window group - close entire group
-			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-			# Continue processing the click normally
-	
+	# IMPORTANT: Do NOT apply this to UI_LINK interactions, which originate inside windows
+	if context.entity_type != &"UI_LINK":
+		if _window_manager and _window_manager.is_any_inspection_window_open():
+			# First, prune children when clicking anywhere inside a window (except explicit WINDOW_BACKGROUND, handled below)
+			var src_view = _find_view_by_instance_id(context.source_view_instance_id)
+			if src_view and context.entity_type != &"WINDOW_BACKGROUND":
+				var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
+				if is_instance_valid(parent_window):
+					commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
+						"parent_window_id": parent_window.get_instance_id()
+					}))
+			# Next, if the click is outside all windows, close the entire group
+			if not _is_click_inside_inspection_group(context):
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+
 	# Handle different entity types
 	match context.entity_type:
 		&"GLOBAL_BACKGROUND":
@@ -139,9 +146,13 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 	
 	# Check if we have a current selection
 	if _current_selection != null:
-		# Check if clicking on the same item (deselect it)
+		# Re-Selection Inspects (S4): single-click on already-selected opens inspection
 		if _current_selection.source_view_instance_id == context.source_view_instance_id:
 			commands.append(Command.new(CommandType.DESELECT))
+			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+				"context": context,
+				"anchor_view_id": context.source_view_instance_id
+			}))
 			return commands
 		
 		# Check for inventory tier change rule
@@ -209,10 +220,20 @@ func _handle_ui_link_interaction(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	# TDD Rule: Effects link should close existing children of the current window
-	# The context.source_view_instance_id should be the window containing the EFFECTS link
-	# We need to close any children of that specific window
+	# Resolve the actual parent window containing the link, even if the source id is a child label
+	var parent_window_id: int = -1
+	if _window_manager:
+		var src_view: Control = _find_view_by_instance_id(context.source_view_instance_id)
+		if src_view:
+			var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
+			if is_instance_valid(parent_window):
+				parent_window_id = parent_window.get_instance_id()
+	# Fallback to the raw source id if mapping fails (best effort)
+	if parent_window_id == -1:
+		parent_window_id = context.source_view_instance_id
+	# Close children of the resolved parent window
 	commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
-		"parent_window_id": context.source_view_instance_id
+		"parent_window_id": parent_window_id
 	}))
 	
 	# Then open the effects inspection window
@@ -290,12 +311,13 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 
 ## Check if a click is inside the inspection window group
 func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
-	# Check if the source view is part of an inspection window
-	if _window_manager:
-		var view = _find_view_by_instance_id(context.source_view_instance_id)
-		if view:
-			return _window_manager.find_window_in_group(view) != -1
-	return false
+	if not _window_manager:
+		return false
+	var view: Control = _find_view_by_instance_id(context.source_view_instance_id)
+	if not view:
+		return false
+	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
+	return is_instance_valid(parent_window)
 
 ## Execute the command queue
 func _execute_command_queue(commands: Array[Command]):
@@ -351,8 +373,8 @@ func _execute_open_inspection_window(command_context: Dictionary):
 		# Find the anchor view by instance ID
 		var anchor_view = _find_view_by_instance_id(anchor_view_id)
 		if anchor_view:
-			# Use the correct WindowManager method
-			_window_manager._open_inspection_window(context.location, anchor_view)
+			# Use the public WindowManager API
+			_window_manager.open_inspection_window(context.location, anchor_view)
 
 ## Execute close all inspection windows command
 func _execute_close_all_inspection_windows():
@@ -370,7 +392,7 @@ func _execute_request_action(command_context: Dictionary):
 	var target_context: InteractionContext = command_context.get("target_context")
 	
 	if source_context and target_context:
-		EventBus.emit_signal("try_inventory_action", 
+		SignalBus.emit_signal("try_inventory_action", 
 			source_context.location, 
 			target_context.location)
 
@@ -381,7 +403,20 @@ func _execute_invalid_action():
 
 ## Find a view by its instance ID
 func _find_view_by_instance_id(instance_id: int) -> Control:
-	# Search for the view in the scene tree
+	# Fast path: use engine lookup, then ascend to nearest Control
+	if instance_id <= 0:
+		return null
+	var obj := instance_from_id(instance_id)
+	if is_instance_valid(obj):
+		if obj is Control:
+			return obj as Control
+		# If the id belongs to a non-Control (e.g. TextureRect child), walk up to nearest Control
+		var n: Node = obj
+		while is_instance_valid(n) and not (n is Control) and n != get_tree().root:
+			n = n.get_parent()
+		if n is Control:
+			return n as Control
+	# Fallback: recursive tree search (slower, but robust during scene changes)
 	var root = get_tree().root
 	return _find_view_recursive(root, instance_id)
 

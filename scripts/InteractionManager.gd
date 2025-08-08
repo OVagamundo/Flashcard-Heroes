@@ -18,10 +18,10 @@ var _is_state_transitioning: bool = false
 var _global_router: Node = null
 
 func _ready():
-	EventBus.close_modal_requested.connect(clear_selection)
-	EventBus.main_scene_requested.connect(clear_selection)
-	EventBus.selection_clear_requested.connect(clear_selection)
-	EventBus.inventory_action_invalid.connect(_on_inventory_action_invalid)
+	SignalBus.close_modal_requested.connect(clear_selection)
+	SignalBus.main_scene_requested.connect(clear_selection)
+	SignalBus.selection_clear_requested.connect(clear_selection)
+	SignalBus.inventory_action_invalid.connect(_on_inventory_action_invalid)
 	
 	# Get reference to GlobalInteractionRouter
 	_global_router = get_node("/root/GlobalInteractionRouter")
@@ -61,7 +61,7 @@ func handle_selection_request(view: Control, location: LocationIdentifier):
 	# Check if the locations are compatible for actions
 	if _are_locations_compatible_for_action(source_loc, target_loc):
 		print("InteractionManager: Locations compatible, trying inventory action")
-		EventBus.emit_signal("try_inventory_action", source_loc, target_loc)
+		SignalBus.emit_signal("try_inventory_action", source_loc, target_loc)
 	else:
 		print("InteractionManager: Locations incompatible, changing selection")
 		# Incompatible locations - just change selection
@@ -147,8 +147,8 @@ func select_view(view: Control, location: LocationIdentifier):
 		_global_router.set_current_selection(context)
 	
 	print("InteractionManager: Emitting view_selected and selection_changed signals")
-	EventBus.emit_signal("view_selected", _selected_view, _selected_location)
-	EventBus.emit_signal("selection_changed", _selected_location)
+	SignalBus.emit_signal("view_selected", _selected_view, _selected_location)
+	SignalBus.emit_signal("selection_changed", _selected_location)
 	
 	_is_state_transitioning = false
 
@@ -190,8 +190,8 @@ func clear_selection():
 	
 	print("InteractionManager: Emitting view_deselected and selection_changed signals")
 	if is_instance_valid(previously_selected_view):
-		EventBus.emit_signal("view_deselected", previously_selected_view)
-	EventBus.emit_signal("selection_changed", null)
+		SignalBus.emit_signal("view_deselected", previously_selected_view)
+	SignalBus.emit_signal("selection_changed", null)
 	
 	_is_state_transitioning = false
 

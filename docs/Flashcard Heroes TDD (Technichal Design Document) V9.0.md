@@ -1,0 +1,147 @@
+# Flashcard Heroes - Technical Design Document (V8.0)
+
+**Version:** 8.0  
+**Status:** Active  
+**Architectural Update:** This version incorporates the Global Interaction Router (GIR) as the canonical input handling system. The `InteractionManager` is now deprecated and replaced by the `SelectionManager` and the GIR command-based architecture.
+
+<!-- TOC -->
+- [Part 1: Core Architecture & Principles](#part-1-core-architecture--principles)
+- [Part 2: Data Schemas & Structures](#part-2-data-schemas--structures)
+- [Part 3: System Architecture & Managers](#part-3-system-architecture--managers)
+- [Part 4: Input Handling](#part-4-input-handling)
+- [Part 5: Game Flows](#part-5-game-flows)
+- [Part 6: Localization](#part-6-localization)
+<!-- /TOC -->
+
+## Part 1: Core Architecture & Principles
+
+### 1.1 The Definitive Hybrid Architecture
+
+The game's logic is built upon a mandatory hybrid architecture to guarantee data integrity while maintaining performance. This pattern is required for all game state management.
+
+1.  **The Instance is the Source of Truth:** The `GachaBallInstance` resource is the single, undeniable source of truth for all of its own data, including its stats, status, and location (`location_container_tag`, `location_slot_index`, `equipped_on_uuid`). Caching this data in managers is strictly forbidden.
+
+2.  **The Container is a Performant Index:** `DataContainer` objects hold only UUIDs and act as a disposable index into the master instance dictionary. They provide fast, location-based lookups but are not a source of truth for any data besides the ordering of UUIDs in a location.
+
+3.  **Managers are Authoritative Operators:** Managers contain the stateless logic (the "verbs") that operates on the data. They are responsible for correctly executing the **Golden Rule of State Synchronization**: any operation that moves an instance *must* update both the `DataContainer` (the index) and the `GachaBallInstance`'s properties (the truth) in a single, atomic operation.
+
+### 1.2 Circular Preload Dependency Prevention
+
+To prevent game crashes, the following pattern of Inversion of Control is mandatory:
+
+-   **Rule:** Persistent Autoload singletons (e.g., `GameManager`) must **not** query the scene tree for transient objects (e.g., `BattleManager`) during preload.
+-   **Pattern:** Transient objects must register themselves with persistent objects when they enter the scene tree (e.g., in `_ready`) and unregister themselves when they exit.
+
+## Part 2: Data Schemas & Structures
+
+### 2.1 Core Data Resources
+
+-   **`RunState.gd`**: (Resource) The persistent state for an entire run, including `gold`, `day`, the master `run_instances` dictionary, and flashcard progress.
+-   **`GachaBallDefinition.gd`**: (Resource) The immutable template for a GachaBall, defining its base stats, abilities, tags, tier, and `@export var cost: int`.
+-   **`GachaBallInstance.gd`**: (Resource) A unique, mutable instance of a GachaBall. This is the single source of truth for an instance's current HP/PWR, status effects, and location properties.
+-   **`MergeRecipe.gd`**: (Resource) Defines a valid merge combination of two ingredient IDs and the resulting ID.
+-   **`FlashcardDefinition.gd`**: (Resource) An in-memory representation of a flashcard, loaded from JSON.
+-   **`FlashcardProgress.gd`**: (Resource) Tracks run-specific progress (`mastery_level`, `last_review_time`) for a single flashcard.
+-   **`AbilityDefinition.gd`**: (Resource) Defines an ability by linking a `trigger`, `condition`, and `effects`.
+-   **`EffectRequest.gd`**: (Resource) A request to execute an ability, placed on the effect queue.
+-   **`InteractionContext`**: (Immutable Packet) A standardized data packet sent from a UI view to the Global Interaction Router with every gesture. Its structure is defined in `docs/InputHandling(GIR).md`.
+
+### 2.2 Location Container Tags
+
+These `StringName` values define all possible logical locations for a `GachaBallInstance` and are used in its `location_container_tag` property.
+
+-   **Run State Locations:** `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`.
+-   **Battle State Locations:** `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `EnemyLineup`, `DiscardPile`.
+-   **Special Location:** `equipped_item` (conceptual, used by `LocationIdentifier`).
+
+### 2.3 Data Containers
+
+A layer of `DataContainer` objects provides a fast, location-based index for O(1) lookups.
+
+-   **`DataContainer.gd`**: Abstract base class defining the common interface.
+-   **`FixedArrayContainer.gd`**: Implements a fixed-size array for lineups and benches.
+-   **`GrowableGridContainer.gd`**: Implements an expandable container for inventories and discard piles.
+
+## Part 3: System Architecture & Managers
+
+The game logic is modularized into distinct systems and managers, each with a clear responsibility.
+
+### 3.1 Core Systems
+
+-   **GachaBall System:** Manages the definitions and instances of all collectible units and items.
+    -   (See `docs/GachaBallSystem.md`)
+-   **Combat System:** Orchestrates the turn-based, auto-battler combat phases and logic.
+    -   (See `docs/CombatSystem.md`)
+-   **Ability System:** A data-driven system for executing all special abilities in response to game events.
+    -   (See `docs/AbilitySystem.md`)
+-   **Flashcard System:** Manages the high-speed learning mini-game and its associated rewards.
+    -   (See `docs/FlashcardSystem.md`)
+-   **Dynamic Encounter Generation System:** Programmatically generates enemy teams for non-boss battles based on a budget.
+    -   (See `docs/EncounterGenerationSystem.md`)
+
+### 3.2 Interaction & UI Managers
+
+These managers are responsible for interpreting player input and managing the UI state. They execute commands issued by the GIR.
+
+-   **Global Interaction Router (GIR):** The central clearing-house for all raw user input. It translates gestures into a command queue for other managers to execute.
+    -   (See `docs/InputHandling(GIR).md`)
+-   **Selection Manager:** Maintains the state of the single currently selected GachaBall or UI element. Replaces the legacy `InteractionManager`.
+    -   (See `docs/SelectionManager.md`)
+-   **Window Manager:** The sole authority for the lifecycle of all modal and inspection windows.
+    -   (See `docs/WindowManager.md`)
+
+### 3.3 Gameplay Logic Managers
+
+These managers contain the core "verb" logic of the game.
+
+-   **Game Manager:** Orchestrates the meta-game loop, run state, and transitions between scenes.
+-   **Battle Manager:** Manages the state and flow of a single battle encounter. Its lifecycle is tied to the battle scene.
+-   **Inventory Manager:** A stateless logic controller for all inventory actions (move, swap, merge, equip). It executes `REQUEST_ACTION` commands from the GIR.
+    -   (See `docs/InventoryManager.md`)
+-   **Database:** Loads and provides query access to all game data resources (`.tres`, `.json`) on startup.
+
+## Part 4: Input Handling
+
+All user gestures and inputs are processed through a unified, decoupled system.
+
+**All user gestures/inputs route through the Global Interaction Router – Refer to `docs/InputHandling(GIR).md`.**
+
+## Part 5: Game Flows
+
+### 5.1 Battle Setup Flow
+
+1.  `BattleManager` receives an `EncounterDefinition`.
+2.  It creates `battle_copy()` instances from `run_state.run_instances` for all player GachaBalls. The Hero instance is used directly.
+3.  It creates new instances for all enemies and their items as defined in the encounter.
+4.  It places all instances into the correct `DataContainer` indices.
+
+### 5.2 Gacha Draw Flow (In-Battle)
+
+1.  A draw is requested for a specific tier.
+2.  A random GachaBall is drawn from the corresponding `BattleInventoryT<n>` pool.
+3.  If a pool becomes empty, it is immediately reshuffled with all matching GachaBalls from the `DiscardPile`. Reshuffled instances have their HP/PWR reset to base values.
+4.  The drawn instance's location is updated to the player's bench or item inventory.
+
+### 5.3 Merge Flow
+
+1.  The Global Interaction Router (GIR) processes a user gesture and places a `REQUEST_ACTION` command (with `source_uuid` and `target_uuid`) onto the command queue, intended for the `InventoryManager`.
+2.  `InventoryManager` executes the command. It instructs the data owner (`RunState` or `BattleManager`) to perform an atomic operation:
+    a. Create the new `result_instance`.
+    b. Place it in the correct destination slot.
+    c. Update all data containers and instance location properties.
+    d. Transfer equipped items from ingredients to the result.
+    e. Destroy the ingredient instances.
+
+### 5.4 Post-Battle Reward Flow
+
+1.  After victory is acknowledged, `GameManager` generates temporary `GachaBallInstance` rewards.
+2.  The `Reward.tscn` scene is displayed. Its views are configured with an `interaction_mode` of `SELECTION_ONLY`.
+3.  The player's clicks are routed through the GIR, which issues `SELECT` and `DESELECT` commands to the `SelectionManager`.
+4.  Upon confirmation, `GameManager` performs the state change, moving the chosen instance to the `RunState` and destroying the others.
+5.  The player manually transitions back to the path choice screen.
+
+## Part 6: Localization
+
+-   **System:** A key-based system is used for all user-facing text.
+-   **Source:** A central `localization.csv` file stores all key-value pairs.
+-   **Implementation:** Text is set in UI scripts using Godot's `tr()` function.
