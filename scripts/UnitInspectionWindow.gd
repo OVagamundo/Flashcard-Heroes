@@ -313,10 +313,17 @@ func _on_description_meta_clicked(meta):
 	if meta == "effect":
 		var definition = description_label.get_meta("effect_definition")
 		if definition:
+			# Ensure EffectInspection uses the Unit window as its parent when inside unit inspection.
+			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
+			var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
 			WindowManager.open_child_contextual_window(
 				&"EffectInspection",
 				self,
-				{"effect_definition": definition.ability_definitions}
+				{
+					"effect_definition": definition.ability_definitions,
+					"is_inside_unit_inspection": true,
+					"target_parent_window_id": parent_id
+				}
 			)
 			# Prevent this click from propagating as a WINDOW_BACKGROUND/global click
 			get_viewport().set_input_as_handled()

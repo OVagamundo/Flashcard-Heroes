@@ -44,9 +44,11 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
 	# --- CONTEXT-AWARE VALIDATION ---
 	# TDD 4.3.III.3: Merging is not allowed between different interaction contexts.
-	# The InteractionManager should prevent this, but this is a final safeguard.
-	if source_loc.container != target_loc.container:
-		# Exception: Merging an item from the board/inventory onto an equipped item is allowed.
+	# Use GIR functional groups (e.g., PlayerBench and PlayerLineup are both "BattleBoard").
+	var src_group: StringName = GlobalInteractionRouter.get_context_group(source_loc.container)
+	var tgt_group: StringName = GlobalInteractionRouter.get_context_group(target_loc.container)
+	if src_group != tgt_group:
+		# Exception: allow merges that target an equipped item slot (handled by InventoryManager as needed).
 		if not (target_loc.container == &"equipped_item" and source_loc.container != &"equipped_item"):
 			return null
 

@@ -24,21 +24,38 @@ func _on_internal_background_clicked(event: InputEvent):
 
 func populate(context: Dictionary):
 	var effect_definitions = context.get("effect_definition")
+	# Accept either a single definition or an array of definitions
+	var defs: Array = []
+	if effect_definitions is Array:
+		defs = effect_definitions
+	elif effect_definitions != null:
+		defs = [effect_definitions]
 
-	# If the unit/item has no abilities, show a placeholder instead of closing.
-	if not effect_definitions is Array or effect_definitions.is_empty():
+	# If no abilities, show placeholder instead of closing
+	if defs.is_empty():
 		name_label.text = "Effects"
 		description_label.text = "This unit has no special effects."
 		return
 
-	# If there are abilities, display the first one as before.
-	var effect_def = effect_definitions[0]
-	if not is_instance_valid(effect_def):
-		WindowManager.request_close_inspection_window(self, &"INVALID_DEFINITION")
+	# Display the first effect definition; support Dictionary or Object types
+	var first = defs[0]
+	var name_key := ""
+	var desc_key := ""
+	if first is Dictionary:
+		name_key = first.get("name_key", "")
+		desc_key = first.get("description_key", "")
+	elif first is Object:
+		# Use safe field access via get() to avoid relying on typed properties
+		name_key = first.get("name_key") if first.has_method("get") else (first.name_key if "name_key" in first else "")
+		desc_key = first.get("description_key") if first.has_method("get") else (first.description_key if "description_key" in first else "")
+
+	if name_key == "" and desc_key == "":
+		name_label.text = "Effects"
+		description_label.text = "No details available for this effect."
 		return
 
-	name_label.text = tr(effect_def.name_key)
-	description_label.text = tr(effect_def.description_key)
+	name_label.text = tr(name_key)
+	description_label.text = tr(desc_key)
 
 func get_location() -> LocationIdentifier:
 	return null

@@ -115,12 +115,15 @@ func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
 		window_instance.populate(populate_ctx)
 	# Position near anchor if available; otherwise center on viewport
 	if is_instance_valid(anchor):
-		var pos := _calculate_top_center_over_anchor(anchor, window_instance)
-		window_instance.set_global_position(pos)
+		var pos: Vector2 = _calculate_top_center_over_anchor(anchor, window_instance)
+		_set_window_screen_position(window_instance, pos)
 	else:
 		var viewport_rect = get_viewport().get_visible_rect()
 		var win_sz = _get_window_size(window_instance)
-		window_instance.set_global_position(viewport_rect.position + viewport_rect.size / 2.0 - win_sz / 2.0)
+		var vp_pos: Vector2 = Vector2(viewport_rect.position)
+		var vp_size: Vector2 = Vector2(viewport_rect.size)
+		var pos: Vector2 = vp_pos + vp_size / 2.0 - win_sz / 2.0
+		_set_window_screen_position(window_instance, pos)
 	window_instance.show()
 
 # Public entry point for all inspection windows (Unit, Item, Effect).
@@ -135,6 +138,9 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control):
 		"populate_context": payload.get("context"),
 		"anchor_view": source_view,
 	}
+	var pos_hint = payload.get("positioning_hint", "")
+	if pos_hint != "":
+		context["positioning_hint"] = pos_hint
 	_open_contextual_window(context)
 
 # Public API for GIR (Rule W3 - Window Pruning).
@@ -235,33 +241,44 @@ func _open_contextual_window(context: Dictionary):
 	var window_type: StringName = context.get("window_type")
 	var anchor_view: Control = context.get("anchor_view", null)
 	var populate_context: Dictionary = context.get("populate_context", {})
-	
-	# Rule W1 Implementation: Distinguish between root and child requests.
-	var parent_window = _find_ancestor_inspection_window(anchor_view)
-	# Robust fallback: if we have an anchor but could not resolve its ancestor window,
-	# assume the top of the active inspection group is the intended parent (e.g., Inventory)
-	# to avoid closing the entire group and losing the anchor.
-	if parent_window == null and is_instance_valid(anchor_view) and not _active_inspection_group.is_empty():
-		parent_window = _active_inspection_group.back()
 
-	if parent_window:
-		# It's a child request. Prune other children of the same parent.
+	# Rule W1 Implementation with context-sensitive parent resolution.
+	# Prefer explicit target_parent_window_id or unit-context hint over structural inference.
+	var parent_window = _resolve_parent_window(anchor_view, populate_context)
+	# Robust fallback: if we have an anchor but could not resolve its ancestor window,
+	# enforce pruning policy: close children for child requests, close entire group for roots.
+	if is_instance_valid(parent_window):
 		close_children_of(parent_window)
 	else:
-		# It's a new root request. Close the entire previous group.
 		close_all_inspection_windows()
 
-	if not _window_scenes.has(window_type): return
+	if not _window_scenes.has(window_type):
+		printerr("WindowManager: Unknown contextual window type ", window_type)
+		return
 
 	var window_instance = _window_scenes[window_type].instantiate()
-	# Hide until fully positioned to prevent a single-frame flash at default position
-	window_instance.visible = false
-	_active_inspection_group.push_back(window_instance)
 	_get_modal_layer().add_child(window_instance)
+	# Prevent flashing before we compute final position
+	window_instance.hide()
 	_register_window(window_instance, false) # Register as NON-modal.
+	_active_inspection_group.push_back(window_instance)
 
 	if window_instance.has_method("populate"):
 		window_instance.populate(populate_context)
+
+	# Diagnostics: log canvas layers and transforms for anchor/parent/window
+	if OS.is_debug_build():
+		var anchor_layer := _find_canvas_layer(anchor_view)
+		var parent_layer := _find_canvas_layer(parent_window)
+		var window_layer := _find_canvas_layer(window_instance)
+		print("[WM] open ctx '", window_type, "' anchor=",
+			anchor_view.get_path() if is_instance_valid(anchor_view) else "<nil>",
+			" parent=",
+			parent_window.get_path() if is_instance_valid(parent_window) else "<nil>",
+			" layers a/p/w=",
+			(anchor_layer.layer if is_instance_valid(anchor_layer) else -999), "/",
+			(parent_layer.layer if is_instance_valid(parent_layer) else -999), "/",
+			(window_layer.layer if is_instance_valid(window_layer) else -999))
 
 	var pos_hint: String = context.get("positioning_hint", "")
 	call_deferred("_deferred_position", window_instance, anchor_view, parent_window, pos_hint)
@@ -275,29 +292,96 @@ func _open_contextual_window(context: Dictionary):
 
 # --- HELPER FUNCTIONS ---
 
+
 func _deferred_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = ""):
 	if not is_instance_valid(window): return
 	# Ensure layout has settled for the newly added window before measuring
 	await get_tree().process_frame
 
 	var position: Vector2
-	# Always prefer positioning relative to the actual anchor view if available.
-	# Parent window existence should not override anchor-based placement.
-	if is_instance_valid(anchor):
+	# SIMPLIFIED RULE: If a parent window is provided, ALWAYS position relative to it.
+	# This makes child windows independent of scene structure and canvas layers of anchors.
+	if is_instance_valid(parent_window):
+		# If caller requests parent-based placement (e.g., equipped items), ignore anchor.
+		if pos_hint == "use_parent_window":
+			position = _calculate_child_window_position(parent_window, window)
+			if OS.is_debug_build():
+				var pr0 = _get_screen_rect(parent_window)
+				print("[WM] deferred child pos (parent-only by hint) parent=", parent_window.name, " pr=", pr0, " -> ", position)
+		# Prefer anchor-relative placement when anchor is available; clamp to viewport.
+		elif is_instance_valid(anchor):
+			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
+			if OS.is_debug_build():
+				var pr = _get_screen_rect(parent_window)
+				var ar = _get_screen_rect(anchor)
+				print("[WM] deferred child pos (anchor-relative) parent=", parent_window.name, " pr=", pr, " anchor=", anchor.name, " ar=", ar, " -> ", position)
+		else:
+			position = _calculate_child_window_position(parent_window, window)
+			if OS.is_debug_build():
+				var pr2 = _get_screen_rect(parent_window)
+				print("[WM] deferred child pos (parent-rect) parent=", parent_window.name, " pr=", pr2, " -> ", position)
+	elif is_instance_valid(anchor):
+		# Root-anchored windows (no parent): allow specific hints; otherwise use general placement
+		if pos_hint == "center_over_anchor":
+			position = _calculate_centered_over_anchor(anchor, window)
+			if OS.is_debug_build():
+				print("[WM] deferred root pos (center_over_anchor) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
+		elif pos_hint == "top_center_over_anchor":
+			position = _calculate_top_center_over_anchor(anchor, window)
+			if OS.is_debug_build():
+				print("[WM] deferred root pos (top_center_over_anchor) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
+		elif pos_hint == "left_of_anchor":
+			position = _calculate_left_of_anchor(anchor, window)
+			if OS.is_debug_build():
+				print("[WM] deferred root pos (left_of_anchor) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
+		else:
+			position = _calculate_window_position(anchor, window)
+			if OS.is_debug_build():
+				print("[WM] deferred root pos (general) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
+	else: # It's a root fixed-position window (Inventory, etc.)
+		var viewport_rect = get_viewport().get_visible_rect()
+		var vp_pos: Vector2 = Vector2(viewport_rect.position)
+		var vp_size: Vector2 = Vector2(viewport_rect.size)
+		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
+
+	# Set position in screen space accounting for canvas transforms
+	_set_window_screen_position(window, position)
+	# Second pass: after the window is visible and fully laid out, finalize position
+	call_deferred("_finalize_position", window, anchor, parent_window, pos_hint)
+
+func _finalize_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = ""):
+	if not is_instance_valid(window): return
+	await get_tree().process_frame
+	var position: Vector2
+	# Keep the simplified parent-first rule for child windows
+	if is_instance_valid(parent_window):
+		if pos_hint == "use_parent_window":
+			position = _calculate_child_window_position(parent_window, window)
+			if OS.is_debug_build():
+				print("[WM] finalize child pos (parent-only by hint) -> ", position)
+		elif is_instance_valid(anchor):
+			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
+			if OS.is_debug_build():
+				print("[WM] finalize child pos (anchor-relative) -> ", position)
+		else:
+			position = _calculate_child_window_position(parent_window, window)
+			if OS.is_debug_build():
+				print("[WM] finalize child pos (parent-rect) -> ", position)
+	elif is_instance_valid(anchor):
 		if pos_hint == "center_over_anchor":
 			position = _calculate_centered_over_anchor(anchor, window)
 		elif pos_hint == "top_center_over_anchor":
 			position = _calculate_top_center_over_anchor(anchor, window)
+		elif pos_hint == "left_of_anchor":
+			position = _calculate_left_of_anchor(anchor, window)
 		else:
 			position = _calculate_window_position(anchor, window)
-	elif is_instance_valid(parent_window):
-		position = _calculate_child_window_position(parent_window, window)
-	else: # It's a root fixed-position window (Inventory, etc.)
+	else:
 		var viewport_rect = get_viewport().get_visible_rect()
-		position = viewport_rect.position + viewport_rect.size / 2.0 - window.size / 2.0
-	
-	window.set_global_position(position)
-	# Now that the window is correctly positioned, reveal it
+		var vp_pos: Vector2 = Vector2(viewport_rect.position)
+		var vp_size: Vector2 = Vector2(viewport_rect.size)
+		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
+	_set_window_screen_position(window, position)
 	window.show()
 
 func _find_ancestor_inspection_window(node: Node) -> Control:
@@ -318,6 +402,35 @@ func _find_ancestor_inspection_window(node: Node) -> Control:
 # Public helper: resolve the ancestor inspection window for an arbitrary node
 func find_ancestor_window_for_view(node: Node) -> Control:
 	return _find_ancestor_inspection_window(node)
+
+# Context-sensitive parent resolver used by _open_contextual_window
+func _resolve_parent_window(anchor_view: Control, populate_context: Dictionary) -> Control:
+	# 1) Explicit parent by instance_id (authoritative)
+	var explicit_id: int = populate_context.get("target_parent_window_id", -1)
+	if explicit_id != -1:
+		for w in _active_inspection_group:
+			if is_instance_valid(w) and w.get_instance_id() == explicit_id:
+				if OS.is_debug_build():
+					print("[WM] _resolve_parent_window: explicit_id -> ", w.name, " (", w.get_instance_id(), ")")
+				return w
+		# If explicit id was provided but not found, fall back below.
+
+	# 2) Inside UnitInspection context: choose the nearest UnitInspectionWindow already on the stack
+	# Windows are siblings under the modal layer, so we cannot rely on ancestry here.
+	var inside_unit: bool = populate_context.get("is_inside_unit_inspection", false)
+	if inside_unit:
+		for i in range(_active_inspection_group.size() - 1, -1, -1):
+			var w = _active_inspection_group[i]
+			if is_instance_valid(w) and w is UnitInspectionWindow:
+				if OS.is_debug_build():
+					print("[WM] _resolve_parent_window: inside_unit_stack -> ", w.name, " (", w.get_instance_id(), ")")
+				return w
+
+	# 3) Structural fallback: nearest tracked inspection window
+	var fallback = _find_ancestor_inspection_window(anchor_view)
+	if OS.is_debug_build():
+		print("[WM] _resolve_parent_window: structural_fallback -> ", fallback.name if is_instance_valid(fallback) else "<nil>")
+	return fallback
 
 # Public helper: resolve a Control view for a given LocationIdentifier, if present in the scene.
 func find_view_for_location(loc: LocationIdentifier) -> Control:
@@ -381,10 +494,22 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 		if def.category == &"UNIT":
 			window_type = &"UnitInspection"
 			context = {"source_view": source_view, "instance": instance, "location": loc}
-			if loc.container == &"EnemyLineup": context["is_enemy_context"] = true
+			if loc.container == &"EnemyLineup":
+				context["is_enemy_context"] = true
+				# Prefer left of the enemy unit (enemy lineup is on the right half of the screen).
+				payload["positioning_hint"] = "left_of_anchor"
 		elif def.category == &"ITEM":
 			window_type = &"ItemInspection"
 			context = {"source_view": source_view, "instance": instance, "location": loc}
+			# When the item is equipped, the correct positioning basis is the parent UnitInspection window,
+			# not the tiny equipped slot view. Provide a hint so positioning prefers the parent window rect.
+			if loc.container == &"equipped_item":
+				# Augment context so WindowManager can resolve the correct parent window reliably.
+				var unit_parent: Control = find_ancestor_window_for_view(source_view)
+				if is_instance_valid(unit_parent) and unit_parent is UnitInspectionWindow:
+					context["is_inside_unit_inspection"] = true
+					context["target_parent_window_id"] = unit_parent.get_instance_id()
+				payload["positioning_hint"] = "use_parent_window"
 		else: return {}
 	elif source_view.has_meta("effect_definition"):
 		var effect_def = source_view.get_meta("effect_definition")
@@ -426,11 +551,15 @@ func stop_tracking_window(window_id: int):
 
 func _on_inspection_anchor_moved(window_instance: Control, anchor: Control):
 	if is_instance_valid(anchor) and is_instance_valid(window_instance):
-		window_instance.global_position = _calculate_window_position(anchor, window_instance)
+		var pos: Vector2 = _calculate_window_position(anchor, window_instance)
+		_set_window_screen_position(window_instance, pos)
+
 
 func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable):
 	var old_anchor = instance_from_id(old_anchor_id)
 	var window_instance = instance_from_id(window_id)
+	if not is_instance_valid(window_instance):
+		return
 	if is_instance_valid(old_anchor) and old_anchor.is_connected("item_rect_changed", geom_callable):
 		old_anchor.item_rect_changed.disconnect(geom_callable)
 	if is_instance_valid(window_instance):
@@ -476,29 +605,43 @@ func _close_all_windows():
 func _calculate_window_position(source_view: Control, new_window: Control) -> Vector2:
 	if not is_instance_valid(source_view): return Vector2.ZERO
 	var viewport_rect = get_viewport().get_visible_rect()
-	var source_rect = source_view.get_global_rect()
-	var window_size = _get_window_size(new_window)
-	var is_source_on_right_side = source_rect.get_center().x > viewport_rect.size.x / 2.0
-	var pos_right = Vector2(source_rect.end.x + INSPECTION_WINDOW_MARGIN, source_rect.position.y)
-	var pos_left = Vector2(source_rect.position.x - window_size.x - INSPECTION_WINDOW_MARGIN, source_rect.position.y)
-	if is_source_on_right_side:
-		if viewport_rect.encloses(Rect2(pos_left, window_size)): return pos_left
-	else:
-		if viewport_rect.encloses(Rect2(pos_right, window_size)): return pos_right
-	var pos_down = Vector2(source_rect.position.x, source_rect.end.y + INSPECTION_WINDOW_MARGIN)
-	if viewport_rect.encloses(Rect2(pos_down, window_size)): return pos_down
-	var pos_up = Vector2(source_rect.position.x, source_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN)
-	if viewport_rect.encloses(Rect2(pos_up, window_size)): return pos_up
-	if is_source_on_right_side:
-		if viewport_rect.encloses(Rect2(pos_right, window_size)): return pos_right
-	else:
-		if viewport_rect.encloses(Rect2(pos_left, window_size)): return pos_left
-	return Vector2(INSPECTION_WINDOW_MARGIN, INSPECTION_WINDOW_MARGIN)
+	var vp_center = viewport_rect.get_center()
+	var src = _get_screen_rect(source_view)
+	var win_sz = _get_window_size(new_window)
+	# Horizontal: place on the side opposite to the source half
+	var place_right: bool = src.get_center().x <= vp_center.x
+	var x: float = (src.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (src.position.x - win_sz.x - INSPECTION_WINDOW_MARGIN)
+	# Vertical alignment: align to top if source is on the top half; else align bottom
+	var align_top: bool = src.get_center().y <= vp_center.y
+	var y: float = src.position.y if align_top else (src.end.y - win_sz.y)
+	# Clamp fully within viewport with a small margin
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - win_sz.x - margin)
+	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - win_sz.y - margin)
+	return Vector2(x, y)
+
+# Position child relative to its anchor, but decide side/top based on the parent window's quadrant.
+func _calculate_child_window_position_from_anchor(parent_window: Control, anchor: Control, child_window: Control) -> Vector2:
+	var viewport_rect = get_viewport().get_visible_rect()
+	var vp_center = viewport_rect.get_center()
+	var parent_rect = _get_screen_rect(parent_window)
+	var anchor_rect = _get_screen_rect(anchor)
+	var child_sz = _get_window_size(child_window)
+	# Decide side/top using the ANCHOR's quadrant to keep behavior consistent with root-anchored windows.
+	var place_right: bool = anchor_rect.get_center().x <= vp_center.x
+	var x: float = (anchor_rect.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (anchor_rect.position.x - child_sz.x - INSPECTION_WINDOW_MARGIN)
+	var align_top: bool = anchor_rect.get_center().y <= vp_center.y
+	var y: float = anchor_rect.position.y if align_top else (anchor_rect.end.y - child_sz.y)
+	# Clamp fully within viewport
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - child_sz.x - margin)
+	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
+	return Vector2(x, y)
 
 # Position helper to center a window over its anchor, clamped to the viewport with a small margin
 func _calculate_centered_over_anchor(anchor: Control, new_window: Control) -> Vector2:
 	var viewport_rect = get_viewport().get_visible_rect()
-	var anchor_rect = anchor.get_global_rect()
+	var anchor_rect = _get_screen_rect(anchor)
 	var window_size = _get_window_size(new_window)
 	var desired = anchor_rect.get_center() - window_size / 2.0
 	# Clamp within viewport with margin
@@ -510,18 +653,94 @@ func _calculate_centered_over_anchor(anchor: Control, new_window: Control) -> Ve
 # Position helper to place window centered horizontally above the anchor (top-center), clamped to viewport
 func _calculate_top_center_over_anchor(anchor: Control, new_window: Control) -> Vector2:
 	var viewport_rect = get_viewport().get_visible_rect()
-	var anchor_rect = anchor.get_global_rect()
+	var anchor_rect = _get_screen_rect(anchor)
 	var window_size = _get_window_size(new_window)
-	# Center horizontally, place above the anchor with a margin
-	var desired = Vector2(
-		anchor_rect.get_center().x - window_size.x / 2.0,
-		anchor_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN
-	)
-	# Clamp within viewport with margin
+	# Center horizontally; prefer above the anchor, but flip below if insufficient space.
 	var margin: float = INSPECTION_WINDOW_MARGIN
-	desired.x = clampf(desired.x, viewport_rect.position.x + margin, viewport_rect.end.x - window_size.x - margin)
-	desired.y = clampf(desired.y, viewport_rect.position.y + margin, viewport_rect.end.y - window_size.y - margin)
-	return desired
+	var viewport_left: float = float(viewport_rect.position.x) + margin
+	var viewport_right: float = float(viewport_rect.end.x) - window_size.x - margin
+	var viewport_top: float = float(viewport_rect.position.y) + margin
+	var viewport_bottom: float = float(viewport_rect.end.y) - window_size.y - margin
+
+	var x: float = clampf(anchor_rect.get_center().x - window_size.x / 2.0, viewport_left, viewport_right)
+	var above_y: float = anchor_rect.position.y - window_size.y - margin
+	var below_y: float = anchor_rect.end.y + margin
+	var y: float
+	if above_y >= viewport_top:
+		y = above_y
+	elif below_y <= viewport_bottom:
+		y = below_y
+	else:
+		# Neither fits fully; choose the option with more available space then clamp
+		var space_above: float = float(anchor_rect.position.y) - float(viewport_rect.position.y) - margin
+		var space_below: float = float(viewport_rect.end.y) - float(anchor_rect.end.y) - margin
+		y = above_y if space_above >= space_below else below_y
+	# Final clamp within viewport
+	y = clampf(y, viewport_top, viewport_bottom)
+	return Vector2(x, y)
+
+# Position helper to place window to the left of the anchor with sensible vertical alignment and viewport clamping.
+func _calculate_left_of_anchor(anchor: Control, new_window: Control) -> Vector2:
+	var viewport_rect = get_viewport().get_visible_rect()
+	var anchor_rect = _get_screen_rect(anchor)
+	var win_sz = _get_window_size(new_window)
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	var viewport_left: float = float(viewport_rect.position.x) + margin
+	var viewport_right: float = float(viewport_rect.end.x) - win_sz.x - margin
+	var viewport_top: float = float(viewport_rect.position.y) + margin
+	var viewport_bottom: float = float(viewport_rect.end.y) - win_sz.y - margin
+
+	# Try left of anchor; if it doesn't fit, fall back to right of anchor.
+	var x_left: float = anchor_rect.position.x - win_sz.x - margin
+	var x: float = x_left if x_left >= viewport_left else (anchor_rect.end.x + margin)
+	# Vertical alignment: align top if anchor is in top half, else align bottom.
+	var vp_center_y: float = float(viewport_rect.get_center().y)
+	var align_top: bool = anchor_rect.get_center().y <= vp_center_y
+	var y: float = (anchor_rect.position.y if align_top else (anchor_rect.end.y - win_sz.y))
+	# Clamp fully within viewport
+	x = clampf(x, viewport_left, viewport_right)
+	y = clampf(y, viewport_top, viewport_bottom)
+	return Vector2(x, y)
+
+func _get_screen_rect(ctrl: Control) -> Rect2:
+	if not is_instance_valid(ctrl):
+		return Rect2()
+	var size := ctrl.size
+	if size == Vector2.ZERO:
+		var min_sz := ctrl.get_combined_minimum_size()
+		if min_sz != Vector2.ZERO:
+			size = min_sz
+	var xf := ctrl.get_global_transform_with_canvas()
+	var p0: Vector2 = xf * Vector2(0, 0)
+	var p1: Vector2 = xf * Vector2(size.x, 0)
+	var p2: Vector2 = xf * Vector2(0, size.y)
+	var p3: Vector2 = xf * Vector2(size.x, size.y)
+	var min_x = min(p0.x, min(p1.x, min(p2.x, p3.x)))
+	var max_x = max(p0.x, max(p1.x, max(p2.x, p3.x)))
+	var min_y = min(p0.y, min(p1.y, min(p2.y, p3.y)))
+	var max_y = max(p0.y, max(p1.y, max(p2.y, p3.y)))
+	return Rect2(Vector2(min_x, min_y), Vector2(max_x - min_x, max_y - min_y))
+
+func _set_window_screen_position(window: Control, screen_pos: Vector2) -> void:
+	# Convert a desired screen-space top-left position into the window's parent/canvas space
+	var parent := window.get_parent()
+	if parent is CanvasItem:
+		# Ideal path: transform screen -> parent local, then assign
+		var parent_xf := (parent as CanvasItem).get_global_transform_with_canvas()
+		var parent_inv := parent_xf.affine_inverse()
+		var local_in_parent: Vector2 = parent_inv * screen_pos
+		window.position = local_in_parent
+	else:
+		# Fallback (e.g., parent is CanvasLayer): screen space == global space
+		window.global_position = screen_pos
+
+func _find_canvas_layer(node: Node) -> CanvasLayer:
+	var current := node
+	while is_instance_valid(current):
+		if current is CanvasLayer:
+			return current
+		current = current.get_parent()
+	return null
 
 func _get_window_size(window: Control) -> Vector2:
 	var sz := window.size
@@ -533,7 +752,19 @@ func _get_window_size(window: Control) -> Vector2:
 	return sz
 
 func _calculate_child_window_position(parent_window: Control, child_window: Control) -> Vector2:
-	return _calculate_window_position(parent_window, child_window)
+	# Deterministic quadrant-based placement relative to parent window's rect
+	var viewport_rect = get_viewport().get_visible_rect()
+	var vp_center = viewport_rect.get_center()
+	var parent_rect = _get_screen_rect(parent_window)
+	var child_sz = _get_window_size(child_window)
+	var place_right: bool = parent_rect.get_center().x <= vp_center.x
+	var x: float = (parent_rect.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (parent_rect.position.x - child_sz.x - INSPECTION_WINDOW_MARGIN)
+	var align_top: bool = parent_rect.get_center().y <= vp_center.y
+	var y: float = parent_rect.position.y if align_top else (parent_rect.end.y - child_sz.y)
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - child_sz.x - margin)
+	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
+	return Vector2(x, y)
 
 func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):
