@@ -1,5 +1,5 @@
-Window Manager - V2.0 (Service Architecture)
-Version: 2.0
+Window Manager - V2.2 (Service Architecture)
+Version: 2.2
 Status: Canonical
 This document specifies the architecture and behavior of the WindowManager, a core UI system in Flashcard Heroes.
 1. Purpose & Core Philosophy
@@ -44,6 +44,7 @@ Inspection windows should handle clicks on their own background locally and prun
 - GIR continues to handle global background clicks (outside any window) and other input, issuing `CLOSE_ALL_INSPECTION_WINDOWS`, etc.
 
 This keeps WindowManager as a service executor while simplifying scene wiring and avoiding global signal signature issues.
+- Signature safety note: Do NOT emit a global `background_clicked` signal from inspection windows. Call `WindowManager.handle_inspection_background_click(self)` directly from `_gui_input` instead to avoid signal signature mismatches and to respect the local‑only pruning contract (W3).
 
 4.2 Child Contextual Window API
 Use this API to open a child contextual window anchored to an existing window or view. This wraps the unified contextual open path and preserves the single-group hierarchy (W1):
@@ -65,6 +66,20 @@ WindowManager.open_child_contextual_window(
     {"effect_definition": definition.ability_definitions}
 )
 ```
+
+4.3 Command Handling Contract (from GIR)
+
+The WindowManager executes commands issued by `GlobalInteractionRouter` and does not interpret raw input:
+
+- __CLOSE_ALL_INSPECTION_WINDOWS__ → close all contextual windows and clear `_active_inspection_group`.
+- __CLOSE_CHILD_WINDOWS(parent_window: Control)__ → `close_children_of(parent_window)`.
+- __Open contextual/inspection windows__ → use the unified contextual open path. Public helpers:
+  - `open_child_contextual_window(window_type, anchor_view, populate_ctx)`
+  - `open_choice_window(populate_ctx, anchor_view = null)`
+
+Notes:
+- WindowManager never decides intent; GIR owns precedence and validation. WindowManager only performs lifecycle and positioning.
+- For background clicks inside a window, windows must call `handle_inspection_background_click(self)` (local prune). Global background clicks are routed by GIR to `CLOSE_ALL_INSPECTION_WINDOWS`.
 5. Positioning & Sizing System
 The WindowManager is responsible for all window positioning.
 Fixed-Position Windows (InventoryWindow, DiscardPileWindow): These are the simplest. Their scenes are designed with a pre-set size, and the WindowManager simply places them in the center of the viewport.

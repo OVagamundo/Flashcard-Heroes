@@ -41,8 +41,8 @@ func _on_ui_refresh():
 
 func _on_panel_gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		if InteractionManager.is_drag_active():
-			InteractionManager.end_drag(false)
+		if GlobalInteractionRouter.is_drag_active():
+			GlobalInteractionRouter.end_drag(false)
 			return
 		
 		# Create and emit InteractionContext for window background

@@ -96,7 +96,8 @@ func _on_selection_changed(new_location: LocationIdentifier):
 
 func _on_buy_pressed():
 	# Get the currently selected location from the new InteractionManager
-	var selected_loc = InteractionManager.get_selected_location()
+	var selected_ctx = GlobalInteractionRouter.get_current_selection()
+	var selected_loc = selected_ctx.location if selected_ctx else null
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
 		if is_instance_valid(instance):

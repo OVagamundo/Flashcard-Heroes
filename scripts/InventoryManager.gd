@@ -8,51 +8,84 @@ func _ready():
 # --- Main Action Handler ---
 
 func _on_try_inventory_action(source_loc, target_loc):
+	print("InventoryManager: try_inventory_action src=", source_loc.container, " -> tgt=", target_loc.container)
+	
+	# Early-case: Allow equipping items onto units even across functional groups
+	var early_source_instance = _get_instance_at_location(source_loc)
+	var early_target_instance = _get_instance_at_location(target_loc)
+	if is_instance_valid(early_source_instance) and is_instance_valid(early_target_instance):
+		var sdef = early_source_instance.get_definition()
+		var tdef = early_target_instance.get_definition()
+		# Rule I3: Allow equipping from any InventoryGrid onto a UNIT on the board
+		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
+		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and s_group == &"InventoryGrid" and target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
+			print("InventoryManager: Early equip path triggered (ITEM -> UNIT on board)")
+			_equip_item(early_source_instance, early_target_instance)
+			GlobalInteractionRouter.end_drag(true)
+			return
+
+	# Early-case: Allow equipping items by dropping onto an equipped_item slot (empty or same-unit slot)
+	if is_instance_valid(early_source_instance) and target_loc.container == &"equipped_item":
+		var sdef2 = early_source_instance.get_definition()
+		if sdef2.category == &"ITEM":
+			var data_owner = _get_data_owner()
+			if is_instance_valid(data_owner):
+				var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
+				if is_instance_valid(parent_unit):
+					# If slot already occupied, fall through to swap logic later
+					# Rule I3: Allow equipping into equipped_item from any InventoryGrid and only to empty slot
+					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
+					if s_group2 == &"InventoryGrid" and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
+						print("InventoryManager: Early equip path triggered (ITEM -> equipped_item slot)")
+						_remove_from_location(source_loc)
+						_perform_equip(early_source_instance, parent_unit, target_loc.index)
+						_emit_data_changed_signal()
+						GlobalInteractionRouter.end_drag(true)
+						return
+
 	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
-	var source_context_group = InteractionManager.get_context_group(source_loc.container)
-	var target_context_group = InteractionManager.get_context_group(target_loc.container)
+	var source_context_group = GlobalInteractionRouter.get_context_group(source_loc.container)
+	var target_context_group = GlobalInteractionRouter.get_context_group(target_loc.container)
+	print("InventoryManager: Groups src=", source_context_group, " tgt=", target_context_group)
 	
 	# If contexts are incompatible, this is an invalid action
 	if source_context_group != target_context_group:
-		# Special case: Selection-Only contexts allow changing selection
-		if target_context_group == &"SelectionOnly":
-			# This is handled by InteractionManager.handle_view_click
-			# We shouldn't reach here, but if we do, it's invalid
-			SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-			InteractionManager.end_drag(false)
-			return
+		# Exception: Allow InventoryGrid -> equipped_item (click-to-click equip)
+		if source_context_group == &"InventoryGrid" and target_loc.container == &"equipped_item":
+			print("InventoryManager: Allowing InventoryGrid -> equipped_item despite group mismatch")
 		else:
-			# Incompatible contexts - invalid action
-			SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-			InteractionManager.end_drag(false)
-			return
+			print("InventoryManager: Group mismatch; rejecting unless SelectionOnly target")
+			# Special case: Selection-Only contexts allow changing selection
+			if target_context_group == &"SelectionOnly":
+				# We shouldn't reach here, but if we do, it's invalid
+				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+				GlobalInteractionRouter.end_drag(false)
+				return
+			else:
+				# Incompatible contexts - invalid action
+				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+				GlobalInteractionRouter.end_drag(false)
+				return
 	
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 
 	if not is_instance_valid(source_instance):
-		InteractionManager.end_drag(false)
+		GlobalInteractionRouter.end_drag(false)
 		return
 
 	if not is_instance_valid(target_instance):
 		if _is_valid_placement(source_instance, target_loc):
 			_move(source_loc, target_loc)
-			InteractionManager.end_drag(true)
+			GlobalInteractionRouter.end_drag(true)
 		else:
 			# The placement is invalid. Report it.
 			SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-			InteractionManager.end_drag(false)
+			GlobalInteractionRouter.end_drag(false)
 		return
 
 	var source_def = source_instance.get_definition()
 	var target_def = target_instance.get_definition()
-
-	# Case 2: Item on Unit (Equip)
-	if source_def.category == &"ITEM" and target_def.category == &"UNIT":
-		if target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
-			_equip_item(source_instance, target_instance)
-			InteractionManager.end_drag(true)
-			return
 
 	var data_owner: Object = _get_data_owner()
 	if not is_instance_valid(data_owner): return
@@ -64,18 +97,18 @@ func _on_try_inventory_action(source_loc, target_loc):
 	if is_instance_valid(recipe):
 		var context = { "source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id }
 		WindowManager.open_choice_window(context)
-		InteractionManager.end_drag(true)
+		GlobalInteractionRouter.end_drag(true)
 		return
 
 	# Case 4: Possible Swap
 	if _is_valid_placement(source_instance, target_loc) and _is_valid_placement(target_instance, source_loc):
 		_swap(source_loc, target_loc)
-		InteractionManager.end_drag(true)
+		GlobalInteractionRouter.end_drag(true)
 		return
 
 	# If we reach the end and no valid action was found, report it.
 	SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-	InteractionManager.end_drag(false)
+	GlobalInteractionRouter.end_drag(false)
 
 
 func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
@@ -143,7 +176,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): 
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
-		InteractionManager.end_drag(false)
+		GlobalInteractionRouter.end_drag(false)
 		SignalBus.emit_signal("selection_clear_requested")
 		return
 
@@ -152,7 +185,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
-		InteractionManager.end_drag(false)
+		GlobalInteractionRouter.end_drag(false)
 		SignalBus.emit_signal("selection_clear_requested")
 		return
 
@@ -160,7 +193,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	if empty_slot_idx == -1:
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
-		InteractionManager.end_drag(false)
+		GlobalInteractionRouter.end_drag(false)
 		SignalBus.emit_signal("selection_clear_requested")
 		return
 
@@ -325,12 +358,11 @@ func _is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locat
 	if source_loc and source_loc.container == &"equipped_item":
 		return target_container_name == &"equipped_item" and target_loc.unit_uuid == source_loc.unit_uuid
 
-	# 2. If the target is an equipped_item container, only allow if the source
-	#    item is NOT equipped and we're equipping it onto that unit (handled
-	#    elsewhere), so ensure it's a different container.
+	# 2. If the target is an equipped_item container, only allow equipping
+	#    from ItemInventory (Rule I3). All actual equipping is handled in the
+	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == &"equipped_item":
-		# Only allowed when moving from non-equipped to equipped of SAME unit.
-		return source_loc.container != &"equipped_item" and target_loc.unit_uuid == target_loc.unit_uuid # always true, but keeps symmetry
+		return source_loc.container == &"ItemInventory"
 
 
 	if target_container_name.begins_with("RunInventoryT"):

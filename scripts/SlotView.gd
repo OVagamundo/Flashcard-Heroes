@@ -46,7 +46,8 @@ func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		get_viewport().set_input_as_handled()
+		# Do NOT consume the event here; allow child views to initiate drag
+		print("SlotView._gui_input: click on slot ", _location.container, "[", _location.index, "] children=", get_child_count())
 		
 		# Create and emit InteractionContext
 		var context = _create_interaction_context(&"SINGLE_CLICK")
@@ -63,5 +64,10 @@ func _drop_data(_at_position, data):
 	# Check if this is an inspection-only context
 	if _interaction_mode == &"INSPECTION_ONLY":
 		return
-		
-	SignalBus.emit_signal("try_inventory_action", data.source_loc, _location)
+
+	# Create a target interaction context and route via GIR
+	var target_ctx = _create_interaction_context(&"DROP")
+	SignalBus.emit_signal("interaction_context_received", target_ctx)
+
+	# End the drag operation via GIR
+	GlobalInteractionRouter.end_drag(true)

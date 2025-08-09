@@ -26,33 +26,40 @@ class Command:
 ## Current selection state
 var _current_selection: InteractionContext = null
 
-## Reference to InteractionManager for selection state
-var _interaction_manager: Node = null
-
 ## Reference to WindowManager for window operations
 var _window_manager: Node = null
+
+## Drag-and-drop state (centralized in GIR per spec)
+var _is_drag_active: bool = false
+var _drag_origin_context: InteractionContext = null
+var _drag_source_view: Control = null
+var _drag_placeholder: Control = null
 
 func _ready():
 	# Register as singleton
 	add_to_group("global_interaction_router")
 	
 	# Get references to other managers
-	_interaction_manager = InteractionManager
 	_window_manager = WindowManager
 	
 	# Connect to interaction signals
 	SignalBus.interaction_context_received.connect(_on_interaction_context_received)
 
+func _exit_tree():
+	# Scene cleanup per spec: clear drag and selection
+	_end_drag_visuals(false)
+	_is_drag_active = false
+	_drag_origin_context = null
+	# Emit deselect if needed
+	if _current_selection != null:
+		_emit_view_deselected(_current_selection)
+		_emit_selection_changed(null)
+	_is_drag_active = false
+	_drag_origin_context = null
+
 ## Main entry point for processing interactions
 func _on_interaction_context_received(context: InteractionContext):
 	print("GlobalInteractionRouter: Received interaction context - entity_type: ", context.entity_type, ", source_id: ", context.source_view_instance_id)
-	
-	# Validate state before processing
-	if _interaction_manager:
-		if not _interaction_manager.validate_selection_state():
-			print("GlobalInteractionRouter: Invalid state detected, forcing cleanup")
-			_interaction_manager.clear_selection()
-			_interaction_manager.cancel_active_drag()
 	
 	var command_queue: Array[Command] = []
 	
@@ -62,11 +69,47 @@ func _on_interaction_context_received(context: InteractionContext):
 	# Execute the command queue
 	_execute_command_queue(command_queue)
 
+## High-priority input handling (Escape, true background)
+func _unhandled_input(event: InputEvent) -> void:
+	# ESC: cancel drag, then modals, then contextual windows, then selection
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		# 1) Cancel active drag if any
+		if _is_drag_active:
+			end_drag(false)
+			_end_drag_visuals(false)
+			return
+		# 2) Try to close a modal (WindowManager listens to this signal)
+		if SignalBus.has_signal("close_modal_requested"):
+			SignalBus.emit_signal("close_modal_requested")
+			return
+		# 3) Close all contextual windows if any are open
+		_execute_close_all_inspection_windows()
+		# 4) Clear selection if any
+		_execute_deselect()
+		return
+
+	# True background click: left mouse press not handled by any Control
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		# Close contextual windows and clear selection
+		_execute_close_all_inspection_windows()
+		_execute_deselect()
+
 ## Generate command queue based on interaction context and current state
 func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	print("GlobalInteractionRouter: Generating commands for entity_type: ", context.entity_type)
+	
+	# If a drag is active, this incoming context is the drop target.
+	# Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
+	if _is_drag_active and _drag_origin_context != null:
+		print("GIR: Drag drop target received. src=", _drag_origin_context.location.container, " -> tgt=", context.location.container)
+		commands.append(Command.new(CommandType.REQUEST_ACTION, {
+			"source_context": _drag_origin_context,
+			"target_context": context
+		}))
+		commands.append(Command.new(CommandType.DESELECT))
+		return commands
 	
 	# TDD Rule: ANYWHERE outside window group should close entire group
 	# IMPORTANT: Do NOT apply this to UI_LINK interactions, which originate inside windows
@@ -83,7 +126,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 			# Next, if the click is outside all windows, close the entire group
 			if not _is_click_inside_inspection_group(context):
 				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-
+	
 	# Handle different entity types
 	match context.entity_type:
 		&"GLOBAL_BACKGROUND":
@@ -170,6 +213,11 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 			# Clear selection after any action (valid or invalid)
 			commands.append(Command.new(CommandType.DESELECT))
 		else:
+			var sel_c = _current_selection.location.container if _current_selection and _current_selection.location else StringName("<nil>")
+			var tgt_c = context.location.container if context and context.location else StringName("<nil>")
+			var sel_g = get_context_group(sel_c)
+			var tgt_g = get_context_group(tgt_c)
+			print("GIR: Invalid action target for click. sel=", sel_c, " (", sel_g, ") -> tgt=", tgt_c, " (", tgt_g, ")")
 			# GR-5: Close on Invalid Action Click
 			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			commands.append(Command.new(CommandType.DESELECT))
@@ -276,11 +324,19 @@ func _is_valid_action_target(selection: InteractionContext, target: InteractionC
 		return false
 	
 	# Check if they're in the same functional group (can interact with each other)
-	var selection_group = InteractionManager.get_context_group(selection.location.container)
-	var target_group = InteractionManager.get_context_group(target.location.container)
+	var selection_group = get_context_group(selection.location.container)
+	var target_group = get_context_group(target.location.container)
 	
 	# Same group means they can interact
 	if selection_group == target_group:
+		return true
+
+	# Allow equipping: Inventory -> Equipped
+	if selection_group == &"InventoryGrid" and target_group == &"EquippedGrid":
+		return true
+
+	# Allow equipping onto units: Inventory -> BattleBoard (click item then click unit)
+	if selection_group == &"InventoryGrid" and target_group == &"BattleBoard":
 		return true
 	
 	# Special case: Inventory tier changes should be handled as selection changes, not actions
@@ -296,11 +352,15 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 		return false
 	
 	# Check if they're in the same functional group
-	var selection_group = InteractionManager.get_context_group(selection.location.container)
-	var target_group = InteractionManager.get_context_group(target.location.container)
+	var selection_group = get_context_group(selection.location.container)
+	var target_group = get_context_group(target.location.container)
 	
 	# Same group means they can interact
 	if selection_group == target_group:
+		return true
+
+	# Allow equipping: Inventory -> Equipped
+	if selection_group == &"InventoryGrid" and target_group == &"EquippedGrid":
 		return true
 	
 	# Special case: Inventory tier changes should be handled as selection changes, not invalid actions
@@ -346,23 +406,22 @@ func _execute_command(command: Command):
 
 ## Execute deselect command
 func _execute_deselect():
-	_current_selection = null
-	if _interaction_manager:
-		_interaction_manager.clear_selection()
+	if _current_selection != null:
+		_emit_view_deselected(_current_selection)
+		_emit_selection_changed(null)
+		_current_selection = null
 
 ## Execute select command
 func _execute_select(context: InteractionContext):
 	print("GlobalInteractionRouter: Executing SELECT command for entity_type: ", context.entity_type, ", source_id: ", context.source_view_instance_id)
-	if _interaction_manager:
-		# Find the view by instance ID and call the new selection method
-		var view = _find_view_by_instance_id(context.source_view_instance_id)
-		if view:
-			print("GlobalInteractionRouter: Found view, calling handle_selection_request")
-			_interaction_manager.handle_selection_request(view, context.location)
-			# Update our selection state to match InteractionManager
-			_current_selection = context
-		else:
-			print("GlobalInteractionRouter: ERROR - Could not find view with instance_id: ", context.source_view_instance_id)
+	# Update our selection state and emit signals
+	var view = _find_view_by_instance_id(context.source_view_instance_id)
+	_current_selection = context
+	if view:
+		SignalBus.emit_signal("view_selected", view, context.location)
+		_emit_selection_changed(context.location)
+	else:
+		print("GlobalInteractionRouter: ERROR - Could not find view with instance_id: ", context.source_view_instance_id)
 
 ## Execute open inspection window command
 func _execute_open_inspection_window(command_context: Dictionary):
@@ -398,8 +457,19 @@ func _execute_request_action(command_context: Dictionary):
 
 ## Execute invalid action command
 func _execute_invalid_action():
-	if _interaction_manager:
-		_interaction_manager._resolve_and_clear_invalid_interaction()
+	# GR-5 resolution: close contextual windows and clear selection
+	_execute_close_all_inspection_windows()
+	_execute_deselect()
+
+## Emit selection changed uniformly
+func _emit_selection_changed(loc: LocationIdentifier):
+	SignalBus.emit_signal("selection_changed", loc)
+
+## Emit view deselected using the stored selection
+func _emit_view_deselected(sel: InteractionContext):
+	var view = _find_view_by_instance_id(sel.source_view_instance_id)
+	if view:
+		SignalBus.emit_signal("view_deselected", view)
 
 ## Find a view by its instance ID
 func _find_view_by_instance_id(instance_id: int) -> Control:
@@ -442,4 +512,76 @@ func get_current_selection() -> InteractionContext:
 
 ## Public API for external systems to clear selection
 func clear_current_selection():
-	_current_selection = null 
+	_current_selection = null
+
+## Public method to get the functional group of a container (migrated from InteractionManager)
+func get_context_group(container_name: StringName) -> StringName:
+	return _get_container_functional_group(container_name)
+
+## Internal container functional group resolver
+func _get_container_functional_group(container_name: StringName) -> StringName:
+	# Battle board containers
+	if container_name in [&"PlayerLineup", &"PlayerBench"]:
+		return &"BattleBoard"
+
+	# Inventory containers (can interact with each other)
+	if container_name.begins_with("RunInventoryT") or container_name.begins_with("BattleInventoryT"):
+		return &"InventoryGrid"
+
+	# Non-tiered item storage should also be treated as InventoryGrid
+	if container_name == &"ItemInventory":
+		return &"InventoryGrid"
+
+	# Selection-only containers (can only be selected)
+	if container_name in [&"Rewards", &"Shop"]:
+		return &"SelectionOnly"
+
+	# Equipped items (special handling)
+	if container_name == &"equipped_item":
+		return &"EquippedGrid"
+
+	# Inspection-only containers (no actions allowed)
+	if container_name in [&"EnemyLineup", &"DiscardPile"]:
+		return &"InspectionOnly"
+
+	return &"Unknown"
+
+## Public API: start a drag operation (called by InteractionManager)
+func start_drag(origin_context: InteractionContext):
+	print("GIR.start_drag: origin=", origin_context.location.container, "[", origin_context.location.index, "]")
+	_is_drag_active = true
+	_drag_origin_context = origin_context
+	# Inform listeners that a drag has started (optional hook for visuals)
+	if SignalBus.has_signal("drag_started"):
+		SignalBus.emit_signal("drag_started", origin_context)
+
+## Public API: end a drag operation (called by InteractionManager)
+func end_drag(_was_handled: bool):
+	print("GIR.end_drag: was_handled=", _was_handled)
+	_is_drag_active = false
+	_drag_origin_context = null
+	# Inform listeners that a drag has ended (optional hook for visuals)
+	if SignalBus.has_signal("drag_ended"):
+		SignalBus.emit_signal("drag_ended", _was_handled)
+
+## Lightweight helpers to manage drag visuals centrally (temporary until DragVisualController)
+func start_drag_visuals(source_view: Control, placeholder: Control) -> void:
+	_drag_source_view = source_view
+	_drag_placeholder = placeholder
+	if is_instance_valid(_drag_source_view):
+		_drag_source_view.visible = false
+
+func end_drag_visuals(was_handled: bool) -> void:
+	_end_drag_visuals(was_handled)
+
+func _end_drag_visuals(was_handled: bool) -> void:
+	if is_instance_valid(_drag_source_view) and not was_handled:
+		_drag_source_view.visible = true
+	if is_instance_valid(_drag_placeholder):
+		_drag_placeholder.queue_free()
+	_drag_source_view = null
+	_drag_placeholder = null
+
+## Public API: query drag active state
+func is_drag_active() -> bool:
+	return _is_drag_active

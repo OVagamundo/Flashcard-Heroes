@@ -376,3 +376,130 @@ This addendum documents the hard‑won refinements introduced in GIR v6.0 to mak
 - __[Separation of concerns]__ GIR interprets intent and issues commands; WindowManager executes lifecycle and positioning.
 - __[No per‑element programming]__ Generic ancestor lookup + consistent mouse_filter/parenting contract cover all contexts.
 - __[Deterministic precedence]__ Local prune (W3) < Inside prune (within group) < Global close (W4), governed by GIR with WindowManager as executor.
+
+---
+
+# Phase 2: Intent Rules & Action Validation (I1–I6)
+
+This phase completes the core gameplay interpretation in GIR by implementing deterministic gating and routing for action intent (Equip / Merge / Swap / Move) for both click-to-act and drag-and-drop, while deferring authoritative priority and legality decisions to InventoryManager.
+
+## Scope
+
+- __[Implement intent gating in GIR]__
+  - Complete `GlobalInteractionRouter.gd` coarse checks so interactions produce the correct command queue without enforcing final intent priority:
+    - Move when target is `EMPTY_SLOT` and placement appears valid (handled in `_handle_empty_slot_interaction`).
+    - For non-empty targets, if locations are in compatible functional groups and the pairing is plausibly actionable (e.g., ITEM→UNIT, UNIT↔UNIT, ITEM↔ITEM within same group), emit a generic `REQUEST_ACTION` and let `InventoryManager` decide Equip/Merge/Swap.
+  - Emit `REQUEST_ACTION` with `{ "source_context": InteractionContext, "target_context": InteractionContext }`.
+  - Emit `INVALID_ACTION` when rules fail (clears UI via `InteractionManager`).
+
+- __[Unify drag and click pathways]__
+  - Ensure click-to-act path mirrors drag-to-act decisions so both feed the same InventoryManager logic.
+  - Drag state can remain in `InteractionManager`; GIR should not store drag state unless needed later.
+
+## Code Changes
+
+- __GlobalInteractionRouter (`scripts/GlobalInteractionRouter.gd`)__
+  - __Complete__ `._is_valid_action_target(selection, target) -> bool`.
+    - Enforce I1–I6 from TDD v6.0 at a coarse level and do NOT encode action priority (that is owned by `InventoryManager`).
+  - __Complete__ `._is_valid_move_target(selection, target) -> bool` for EMPTY_SLOT targets using container constraints.
+  - __Route actions in__ `._handle_fully_interactive(context)`:
+    - If `_current_selection != null`:
+      - If `_is_inspection_event(context)`: open inspection (already implemented).
+      - Else if `_is_valid_action_target(_current_selection, context)`: `REQUEST_ACTION` with `{ source_context, target_context }`.
+      - Else: `INVALID_ACTION`.
+    - If no selection: `SELECT` default path (already implemented).
+  - __UI_LINK path__ `._handle_ui_link_interaction(...)` is already pruning children; no change needed.
+
+- __InventoryManager (`scripts/InventoryManager.gd`)__
+  - Already consumes `try_inventory_action(source_loc, target_loc)` and performs Merge/Equip/Swap/Move.
+  - GIR’s `REQUEST_ACTION` executor `_execute_request_action(..)` already bridges to `SignalBus.try_inventory_action`.
+  - No code changes expected here for Phase 2, but add a verification pass (see Acceptance below).
+
+- __InteractionManager (`scripts/InteractionManager.gd`)__
+  - Continues to manage selection and drag state, and to clear state on invalid actions via `_resolve_and_clear_invalid_interaction()`.
+  - No structural change required in Phase 2.
+
+## TDD Rules (I1–I6) Mapping (aligned with current code)
+
+- __I1 Equip Intent Priority__: For non-empty targets, `InventoryManager` prioritizes ITEM→UNIT equip on board containers (`PlayerLineup`, `PlayerBench`).
+  - GIR: If in same functional group and pairing is ITEM→UNIT, allow by emitting `REQUEST_ACTION`; do not enforce priority in GIR.
+
+- __I2 Merge Rule__: If a valid recipe exists, `InventoryManager` opens `ChoiceWindow` and proceeds with merge.
+  - GIR: Treat UNIT↔UNIT and ITEM↔ITEM within the same group as plausible; emit `REQUEST_ACTION` and let `InventoryManager` ask `MergeManager`.
+
+- __I3 Equip Constraints__: Equipped grid semantics apply (equipped items move only within the same unit; equipping onto a unit from non-equipped is allowed).
+  - GIR: rely on `InventoryManager._is_valid_placement` for enforcement; only perform obvious category/container gating.
+
+- __I4 Swap/Move Rule__: `InventoryManager` falls back to Swap when both placements are valid, or Move when target is EMPTY_SLOT and placement valid.
+  - GIR: For EMPTY_SLOT use `_is_valid_move_target`; for non-empty targets, just emit `REQUEST_ACTION` if within same group and plausibly actionable.
+
+- __I5 Cross-Context Restrictions__: Prevent actions across incompatible functional groups (Inventory vs Battle Board vs Selection-Only).
+  - GIR: Use `InteractionManager.get_context_group(container_name)` (public wrapper) or own light checks to avoid emitting invalid actions.
+
+- __I6 Merge Placement Context__: Context-specific merge allowances (e.g., equipped_item exceptions) are ultimately validated by InventoryManager and MergeManager; GIR should not special-case beyond category/container checks.
+
+## Function-level TODOs (GIR)
+
+- __`_is_valid_action_target(selection, target)`__
+  - Fast-fail when either context/location missing.
+  - Disallow when groups differ (use `InteractionManager.get_context_group` for containers).
+  - If both resolve to concrete instances:
+    - If categories match and not UNIT->ITEM, consider MERGE candidate; return true (InventoryManager re-validates via MergeManager).
+    - If ITEM -> UNIT and target in board containers, return true (equip or swap will be chosen later).
+    - Else if both placements appear valid for swap (coarse check), return true.
+  - Else if target is `EMPTY_SLOT` and placement appears valid, return true.
+  - Otherwise return false.
+
+- __`_is_valid_move_target(selection, target)`__
+  - Fast-fail missing selection/locations.
+  - Disallow cross functional groups.
+  - Allow only when target is `EMPTY_SLOT` and high-level placement constraints pass (category/container tier sanity).
+
+- __`_handle_fully_interactive(context)`__
+  - After pruning logic, when selection exists and event is single-click:
+    - If `_is_valid_action_target(_current_selection, context)`: enqueue `REQUEST_ACTION`.
+    - Else: `INVALID_ACTION`.
+
+## Acceptance Criteria
+
+- __Click-to-act parity__
+  - Single-click with a selection performs Merge/Equip/Swap/Move using the same legality as drag-and-drop.
+
+- __Drag remains authoritative__
+  - Drag interactions are unaffected and still end in the same `try_inventory_action` path.
+
+- __No cross-group actions__
+  - GIR does not emit `REQUEST_ACTION` when containers are in different functional groups.
+
+- __Invalid actions resolve state__
+  - Emitting `INVALID_ACTION` triggers `InteractionManager._resolve_and_clear_invalid_interaction()` and clears selection.
+
+- __No regression to window system__
+  - Inside/prune/global close behavior remains intact during action attempts.
+
+## Test Matrix (Expanded)
+
+- __Inventory Grid (Run/Battle)__
+  - Unit -> Unit: valid merge recipe shows ChoiceWindow then merge; invalid falls back to swap if placements valid, else invalid.
+  - Item -> Unit: equips into valid slot; invalid container is rejected.
+  - Unit/Item -> EMPTY_SLOT: moves when legal; otherwise invalid.
+
+- __Board Containers__
+  - PlayerLineup/PlayerBench swaps and merges as applicable; items cannot be placed directly unless equipping via unit.
+
+- __Equipped Grid__
+  - Moving equipped items only within same unit; merge exceptions per rules validated by InventoryManager/MergeManager.
+
+## Implementation Notes
+
+- GIR should prefer coarse validation and defer authoritative checks to InventoryManager/MergeManager to avoid duplication.
+- Keep logging at key decision points in GIR to assist debugging (entity types, groups, coarse decisions, emitted command).
+- Use existing helper `_find_view_by_instance_id` when needed, but prefer operating purely on `InteractionContext` for action decisions.
+
+## Checklist
+
+- [ ] Complete `_is_valid_action_target` in `GlobalInteractionRouter.gd`.
+- [ ] Complete `_is_valid_move_target` in `GlobalInteractionRouter.gd`.
+- [ ] Update `_handle_fully_interactive` to emit `REQUEST_ACTION`/`INVALID_ACTION` as per rules.
+- [ ] Verify `InventoryManager._on_try_inventory_action` paths for Merge/Equip/Swap/Move still align with TDD v6.0.
+- [ ] Run manual tests across Inventory, Board, and Equipped contexts; confirm no regressions in window pruning.

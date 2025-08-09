@@ -59,11 +59,11 @@ func _on_content_area_gui_input(event: InputEvent):
 			context.entity_type = &"GLOBAL_BACKGROUND"
 			context.interaction_mode = &"FULLY_INTERACTIVE"
 			context.window_group_id = 0  # Main game area
-			
 			SignalBus.emit_signal("interaction_context_received", context)
-		elif InteractionManager.is_drag_active():
-			# This acts as a backstop for drops on the background of the game area.
-			InteractionManager.end_drag(false)
+		elif GlobalInteractionRouter.is_drag_active() and not event.is_pressed():
+			# Do NOT forcibly end drag on background release here; drop targets manage drag end.
+			# This was canceling drag before GIR processed battle board drop targets.
+			pass
 
 func _clear_content_area():
 	if is_instance_valid(_current_content_node):

@@ -71,8 +71,6 @@ func _exit_tree():
 		SignalBus.draw_gacha_requested.disconnect(_on_draw_gacha_requested)
 	if SignalBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
 		SignalBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
-	if SignalBus.is_connected("battle_inventory_changed", _check_and_trigger_reshuffles):
-		SignalBus.battle_inventory_changed.disconnect(_check_and_trigger_reshuffles)
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
 	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):
@@ -82,7 +80,7 @@ func _connect_signals():
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
 	SignalBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
-	SignalBus.battle_inventory_changed.connect(_check_and_trigger_reshuffles)
+	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 
 
@@ -772,11 +770,6 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int):
 		dest_container.set_uuid(new_index, instance.ball_uuid)
 		_update_instance_location(instance.ball_uuid, dest_container_tag, new_index)
 
-func _check_and_trigger_reshuffles():
-	for tier in [1, 2, 3]:
-		var tier_pool = get_instances_in_container("BattleInventoryT%d" % tier)
-		if tier_pool.is_empty():
-			_reshuffle_discard_pile(tier)
 
 func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
 	var target_lineup_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if attacker_is_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
@@ -811,7 +804,12 @@ func _on_draw_gacha_requested(tier: int):
 	if _gacha_tokens < cost: return
 	var container_tag: StringName = "BattleInventoryT%d" % tier
 	var tier_pool = get_instances_in_container(container_tag)
-	if tier_pool.is_empty(): return
+	# If the pool is empty, reshuffle that tier from discard first (atomic path)
+	if tier_pool.is_empty():
+		_reshuffle_discard_pile(tier)
+		tier_pool = get_instances_in_container(container_tag)
+		if tier_pool.is_empty():
+			return  # Nothing to draw even after reshuffle
 	_gacha_tokens -= cost
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	var drawn_instance = tier_pool.pick_random()
@@ -828,7 +826,11 @@ func _on_draw_gacha_requested(tier: int):
 			_move_instance_to_discard(drawn_instance)
 			SignalBus.emit_signal("battle_inventory_changed")
 			return
+	# Remove from the draw pool first (so we can check if it became empty)
 	_remove_instance_from_container(drawn_instance)
+	# If the tier pool is now empty after removal, reshuffle immediately
+	if get_instances_in_container(container_tag).is_empty():
+		_reshuffle_discard_pile(tier)
 	var target_container := get_container(target_container_tag)
 	var empty_slot := target_container.find_first_empty_slot()
 	if empty_slot != -1 and empty_slot < target_container_capacity:
@@ -836,6 +838,7 @@ func _on_draw_gacha_requested(tier: int):
 			_update_instance_location(drawn_instance.ball_uuid, target_container_tag, empty_slot)
 	else:
 		_move_instance_to_discard(drawn_instance)
+	# Emit inventory changed once at the end of the atomic operation
 	SignalBus.emit_signal("battle_inventory_changed")
 
 # Helper function to equip an item on a unit

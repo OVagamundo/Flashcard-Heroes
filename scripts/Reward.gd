@@ -72,7 +72,8 @@ func _on_selection_changed(new_location: LocationIdentifier):
 	confirm_button.disabled = not is_valid_selection
 
 func _on_confirm_pressed():
-	var selected_loc = InteractionManager.get_selected_location()
+	var selected_ctx = GlobalInteractionRouter.get_current_selection()
+	var selected_loc = selected_ctx.location if selected_ctx else null
 	if selected_loc and selected_loc.container == &"Rewards":
 		var uuid = _reward_uuids[selected_loc.index]
 		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})

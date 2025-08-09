@@ -193,10 +193,11 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	if not _is_interactive: return null
 	
 	# TDD 4.3.III.5: Prevent dragging in Inspection-Only contexts
-	var context_group = InteractionManager.get_context_group(_location.container)
+	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 	if context_group == &"InspectionOnly":
 		return null
 
+	print("GachaBallView._get_drag_data: origin=", _location.container, "[", _location.index, "] uuid=", _instance_uuid)
 	var preview = TextureRect.new()
 	preview.texture = icon_rect.texture
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -208,12 +209,20 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	get_parent().add_child(placeholder)
 	get_parent().move_child(placeholder, get_index())
 
-	InteractionManager.start_drag(self, placeholder)
+	# Delegate drag visuals to GIR helper (replaces InteractionManager)
+	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
+
+	# Notify GIR of drag origin so it can interpret the eventual drop
+	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
+	print("GachaBallView._get_drag_data: calling GIR.start_drag")
+	GlobalInteractionRouter.start_drag(origin_ctx)
+
 	return { "source_loc": _location }
 
 func _can_drop_data(_at_position, data) -> bool:
 	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
-	var context_group = InteractionManager.get_context_group(_location.container)
+	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
+	print("GachaBallView._can_drop_data: container=", _location.container, ", group=", context_group, ", has_source_loc=", (data is Dictionary and data.has("source_loc")))
 	if context_group == &"InspectionOnly":
 		return false
 		
@@ -222,10 +231,15 @@ func _can_drop_data(_at_position, data) -> bool:
 func _drop_data(_at_position, data):
 	# For drag and drop, we need to handle this as a direct action
 	# since the source location comes from the drag data, not the current view
-	SignalBus.emit_signal("try_inventory_action", data.source_loc, _location)
-	
-	# End the drag operation - this will clear selection state
-	InteractionManager.end_drag(true)
+	# Create a target interaction context and route via GIR
+	var target_ctx = _create_interaction_context(&"DROP")
+	print("GachaBallView._drop_data: target=", _location.container, "[", _location.index, "]", 
+		" drag_active=", GlobalInteractionRouter.is_drag_active())
+	SignalBus.emit_signal("interaction_context_received", target_ctx)
+
+	# End the drag state and visuals via GIR
+	GlobalInteractionRouter.end_drag(true)
+	GlobalInteractionRouter.end_drag_visuals(true)
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):
 	print("GachaBallView: _on_view_selected called for view: ", view, ", self: ", self, ", entity_uuid: ", _instance_uuid)
@@ -259,6 +273,5 @@ func _apply_selection_feedback():
 	add_theme_stylebox_override("panel", stylebox)
 
 func _notification(what: int):
-	if what == NOTIFICATION_DRAG_END:
-		if InteractionManager.is_drag_active() and InteractionManager.get_drag_source_view() == self:
-			InteractionManager.end_drag(false)
+	# Do not end drag here; drag lifecycle is handled by drop targets and InteractionManager
+	pass
