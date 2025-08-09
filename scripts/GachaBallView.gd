@@ -15,6 +15,10 @@ var _is_inspectable: bool = true
 var _is_interactive: bool = true
 var _single_click_inspect: bool = false
 
+# Local input state to disambiguate click vs drag
+var _pressed_pending_click: bool = false
+var _drag_initiated_for_click: bool = false
+
 # InteractionContext properties
 var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _entity_type: StringName = &"UNIT"
@@ -172,21 +176,27 @@ func _on_unit_stats_changed(unit_uuid: String):
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
 
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		get_viewport().set_input_as_handled()
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		# Handle double-click immediately on press for fast inspection
+		if event.is_pressed() and event.double_click:
+			get_viewport().set_input_as_handled()
+			var dc_ctx = _create_interaction_context(&"DOUBLE_CLICK")
+			SignalBus.emit_signal("interaction_context_received", dc_ctx)
+			_pressed_pending_click = false
+			return
 
-		# Determine event type
-		var event_type: StringName
-		if event.double_click:
-			event_type = &"DOUBLE_CLICK"
+		if event.is_pressed():
+			# Defer single-click to release; may become a drag
+			get_viewport().set_input_as_handled()
+			_pressed_pending_click = true
 		else:
-			event_type = &"SINGLE_CLICK"
-
-		print("GachaBallView: _gui_input - event_type: ", event_type, ", entity_uuid: ", _instance_uuid, ", interaction_mode: ", _interaction_mode)
-		# Create and emit InteractionContext
-		var context = _create_interaction_context(event_type)
-		print("GachaBallView: Created InteractionContext - entity_type: ", context.entity_type, ", source_id: ", context.source_view_instance_id)
-		SignalBus.emit_signal("interaction_context_received", context)
+			# On release: only emit SINGLE_CLICK if no drag was initiated
+			if _pressed_pending_click and not _drag_initiated_for_click:
+				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK")
+				SignalBus.emit_signal("interaction_context_received", sc_ctx)
+			# Reset flags regardless
+			_pressed_pending_click = false
+			_drag_initiated_for_click = false
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Use the new flag to control drag-and-drop.
@@ -198,6 +208,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		return null
 
 	print("GachaBallView._get_drag_data: origin=", _location.container, "[", _location.index, "] uuid=", _instance_uuid)
+	_drag_initiated_for_click = true
+	_pressed_pending_click = false
+	# Do NOT close windows on drag start. Closing ancestor windows can free the
+	# source view or the engine-managed drag preview and cause errors.
 	var preview = TextureRect.new()
 	preview.texture = icon_rect.texture
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -237,9 +251,9 @@ func _drop_data(_at_position, data):
 		" drag_active=", GlobalInteractionRouter.is_drag_active())
 	SignalBus.emit_signal("interaction_context_received", target_ctx)
 
-	# End the drag state and visuals via GIR
-	GlobalInteractionRouter.end_drag(true)
-	GlobalInteractionRouter.end_drag_visuals(true)
+	# Do not end drag visuals here. The InventoryManager will decide whether the
+	# action was handled and call GlobalInteractionRouter.end_drag(true/false)
+	# accordingly. This prevents the source from remaining hidden after invalid actions.
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):
 	print("GachaBallView: _on_view_selected called for view: ", view, ", self: ", self, ", entity_uuid: ", _instance_uuid)
@@ -273,5 +287,11 @@ func _apply_selection_feedback():
 	add_theme_stylebox_override("panel", stylebox)
 
 func _notification(what: int):
-	# Do not end drag here; drag lifecycle is handled by drop targets and InteractionManager
-	pass
+	# Fallback: if a drag ends without any drop target handling it, restore visuals
+	if what == NOTIFICATION_DRAG_END:
+		# Reset local drag flag
+		_drag_initiated_for_click = false
+		if GlobalInteractionRouter.is_drag_active():
+			print("GachaBallView: NOTIFICATION_DRAG_END without handled drop; restoring source visibility")
+			GlobalInteractionRouter.end_drag(false)
+			GlobalInteractionRouter.end_drag_visuals(false)

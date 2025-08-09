@@ -52,6 +52,9 @@ func _gui_input(event: InputEvent):
 		# Create and emit InteractionContext
 		var context = _create_interaction_context(&"SINGLE_CLICK")
 		SignalBus.emit_signal("interaction_context_received", context)
+		# If this is an empty slot (no child view), stop propagation so Main/Battle don't emit GLOBAL_BACKGROUND
+		if get_child_count() == 0:
+			get_viewport().set_input_as_handled()
 
 func _can_drop_data(_at_position, data) -> bool:
 	# Check if this is an inspection-only context
@@ -69,5 +72,5 @@ func _drop_data(_at_position, data):
 	var target_ctx = _create_interaction_context(&"DROP")
 	SignalBus.emit_signal("interaction_context_received", target_ctx)
 
-	# End the drag operation via GIR
-	GlobalInteractionRouter.end_drag(true)
+	# Do not end drag here; InventoryManager will decide handled/unhandled and
+	# call GlobalInteractionRouter.end_drag(true/false) centrally.

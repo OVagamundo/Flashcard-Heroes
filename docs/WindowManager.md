@@ -177,6 +177,35 @@ WindowManager.open_choice_window(populate_ctx: Dictionary, anchor_view: Control 
 - When an `anchor_view` is valid but `_find_ancestor_inspection_window(anchor_view)` returns null, we assume the top of `_active_inspection_group` is the intended parent and prune children of that parent instead of closing the entire group.
 - Rationale: Inventory/board hosting may not be direct ancestors of the anchor view; this retains the active group and preserves the anchor.
 
+## v6.2 Addendum: Suppression‑Aware Closures & Deferred Anchor Handling
+
+This addendum documents how the WindowManager cooperates with the GIR’s close‑suppression to prevent premature closure of inspection windows when anchors are freed or reparented during inventory actions (swap/merge/equip).
+
+### Principles
+
+- __Never close blindly__: Always use `WindowManager.request_close_inspection_window(window, cause)` for closing contextual windows. This API checks GIR suppression before performing any close.
+- __ID‑targeted suppression__: GIR activates suppression for a specific parent window ID. While suppression is active, close requests for that window are deferred or ignored.
+- __Deferred anchors__: When a window’s anchor is freed/replaced, WindowManager emits a deferred close via `request_close_inspection_window(window, "ANCHOR_FREED")`. GIR suppression must be active during this window to avoid premature closure.
+
+### Relevant Public Helpers
+
+- `find_view_for_location(loc: LocationIdentifier) -> Control`
+- `find_ancestor_window_for_view(view: Control) -> Control`
+- `request_close_inspection_window(window: Control, cause: StringName = &"")`
+- `close_children_of(parent_window: Control)` / `CLOSE_CHILD_WINDOWS(parent)` (command from GIR)
+
+### ChoiceWindow Interaction
+
+- `open_choice_window(populate_ctx, anchor_view?)` opens a non‑exclusive contextual prompt without closing existing inspection windows.
+- After the user makes a choice, `ChoiceWindow` emits `choice_made` then `close_modal_requested`. The actual swap/merge must ensure GIR suppression is active for the affected inspection window.
+- Implementation reference: `InventoryManager._on_choice_made` resolves the affected `parent_window` via `find_view_for_location` and `find_ancestor_window_for_view`, then asks GIR to activate suppression for that window ID before executing the action.
+
+### Diagnostics
+
+- WindowManager logs all suppression‑aware close attempts:
+  - `WindowManager: request_close_inspection_window window=... (...) cause=... suppressed_for_id=... suppressed_now=...`
+- Use alongside GIR logs (suppression activation/expiry) to trace any premature closure.
+
 ## Scene Requirements for ChoiceWindow
 
 - Root node is a `PanelContainer` (not fullscreen `Control`).

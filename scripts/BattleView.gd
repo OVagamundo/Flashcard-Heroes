@@ -34,6 +34,9 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName):
 			parent.add_child(slot_view)
 			parent.move_child(slot_view, idx)
 			slot_view.populate(loc)
+			# EnemyLineup must be inspection-only: configure SlotView accordingly
+			if container_name == &"EnemyLineup":
+				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 func _ready():
 	# Guard against duplicate BattleView instances which would cause multiple
@@ -128,6 +131,11 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			# `single_click_inspect` should also be true for enemies.
 			view.populate(loc, instance, true, is_enemy)
 			# --- END OF CHANGE ---
+			# EnemyLineup must be inspection-only: configure GachaBallView accordingly
+			if container_name == &"EnemyLineup":
+				var def = instance.get_definition()
+				if is_instance_valid(def):
+					view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
 
 			view.set_is_enemy(is_enemy)
 			view.set_meta("location_identifier", loc)
@@ -136,6 +144,9 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			if slot.get_script() == preload("res://scripts/SlotView.gd"):
 				slot.populate(loc)
 				slot.set_meta("location_identifier", loc)
+				# EnemyLineup must be inspection-only: configure SlotView accordingly
+				if container_name == &"EnemyLineup":
+					slot.set_interaction_context(&"INSPECTION_ONLY", 0)
 				continue
 			# Otherwise replace placeholder PanelContainer with a proper SlotView prefab.
 			var SlotViewScene := preload("res://scenes/SlotView.tscn")
@@ -149,6 +160,9 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			# Populate location data so it can handle clicks/drops.
 			slot_view.populate(loc)
 			slot_view.set_meta("location_identifier", loc)
+			# EnemyLineup must be inspection-only: configure SlotView accordingly
+			if container_name == &"EnemyLineup":
+				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 func _update_gacha_token_label(new_amount: int):
 	gacha_token_label.text = "Tokens: %d" % new_amount

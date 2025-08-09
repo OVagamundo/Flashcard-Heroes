@@ -67,12 +67,12 @@ func populate(context: Dictionary):
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
 		printerr("UnitInspectionWindow: Invalid context provided.")
-		queue_free()
+		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
 		return
 
 	var unit_definition = _instance.get_definition()
 	if not is_instance_valid(unit_definition):
-		queue_free()
+		WindowManager.request_close_inspection_window(self, &"INVALID_DEFINITION")
 		return
 
 	_inspected_unit_uuid = _instance.ball_uuid
@@ -127,8 +127,16 @@ func _on_anchor_moved():
 
 ## Handle anchor being freed
 func _on_anchor_freed():
-	# If anchor is gone, close the window to prevent orphaned UI
-	queue_free()
+	# Defer briefly to allow UI to settle (e.g., during inventory reflow) before deciding to close.
+	# This avoids premature self-closing that bypasses WindowManager suppression during actions.
+	var self_ref = self
+	await get_tree().create_timer(0.25).timeout
+	if not is_instance_valid(self_ref) or not is_instance_valid(self):
+		return
+	# Try to re-establish a stable anchor from the current source view
+	_setup_stable_anchor()
+	if not is_instance_valid(_stable_anchor):
+		WindowManager.request_close_inspection_window(self, &"ANCHOR_LOST_NO_STABLE")
 
 ## Calculate position relative to stable anchor
 func _calculate_position_relative_to_anchor() -> Vector2:
@@ -263,7 +271,7 @@ func _on_inventory_changed():
 	var all_instances = _get_all_instances_db()
 	var current_instance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
-		queue_free()
+		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
 		return
 	
 	# The unit still exists, so we just need to refresh the item grid.
@@ -283,7 +291,7 @@ func _on_unit_inventory_changed(unit_uuid: String):
 	var all_instances = _get_all_instances_db()
 	var current_instance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
-		queue_free()
+		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_UNIT_INV_CHANGE")
 		return
 	
 	# The unit still exists, so we just need to refresh the item grid.

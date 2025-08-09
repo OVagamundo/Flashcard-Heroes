@@ -6,6 +6,33 @@ This document describes the definitive, centralized architecture for handling al
 The system is built on a Centralized, Command-Driven Architecture to eliminate state conflicts and ensure a predictable, robust user experience.
 The GIR as the Central Nervous System: The GlobalInteractionRouter.gd autoload singleton is the sole interpreter of user intent AND the sole holder of all transient interaction state. It receives standardized information packets from the UI, analyzes them against a strict set of rules, and produces a clear, ordered set of instructions.
 The Command Queue as the Voice: The GIR's only output is a Command Queue—an ordered array of commands. It dispatches these commands to specialist "service" managers (WindowManager, InventoryManager) who are responsible for execution.
+
+## v3.4 Addendum: Suppression Windows & REQUEST_ACTION Execution Details
+
+This addendum clarifies how GIR activates close‑suppression during request actions and how that integrates with ChoiceWindow‑driven inventory actions.
+
+### Suppression Model
+
+- __Purpose__: Prevent premature closure of inspection windows due to deferred anchor checks or transient reparenting while actions execute.
+- __Activation__: During `REQUEST_ACTION` execution, GIR determines a target parent window ID (via source/target contexts or explicit `target_parent_window_id` in the command context) and calls `_activate_close_suppression_for_window_id(window_id, duration_ms)`.
+- __Duration__: Short by default; may be extended for actions within unit inspection contexts. Durations should exceed any known deferred close windows.
+- __Query__: WindowManager consults GIR via `is_close_suppressed_for_window_id(id)` and `is_close_suppressed_now()` before closing.
+
+### REQUEST_ACTION Emission and Handling
+
+- __Generation__: GIR generates `REQUEST_ACTION` when selection + target contexts are compatible for an inventory action.
+- __Execution__: On execution, GIR emits `SignalBus.try_inventory_action(source_loc, target_loc)` and activates suppression around the relevant window. InventoryManager performs early equip/swap/merge detection and may open `ChoiceWindow` if ambiguous.
+
+### ChoiceWindow Integration (Swap/Merge)
+
+- __Prompt__: Opened by InventoryManager through `WindowManager.open_choice_window(context)`; designed as a non‑exclusive contextual window that does not close existing inspection windows.
+- __Decision__: On `choice_made`, InventoryManager must ensure suppression is active for the affected parent window just before executing `_swap`/`_merge`. It resolves the window via `WindowManager.find_view_for_location(...)` and `find_ancestor_window_for_view(...)`, then calls GIR suppression activation.
+- __Why in InventoryManager__: Routing the choice back through GIR `REQUEST_ACTION` would duplicate prompts and complicate suppression timing. Keeping execution local with explicit suppression preserves determinism.
+
+### Diagnostics & Logging
+
+- GIR logs suppression activations with window IDs and expiry times when `_activate_close_suppression_for_window_id(...)` is called.
+- WindowManager logs suppression state on every `request_close_inspection_window(...)` attempt, enabling cross‑correlation.
 2. Core Interaction State (Held by GIR)
 The GIR is a state machine that tracks the user's current interaction. It holds three key state variables:
 Variable	Type	Description

@@ -74,6 +74,7 @@ func _on_grid_gui_input(event: InputEvent):
 			context.window_group_id = 1  # Inspection windows group
 			
 			SignalBus.emit_signal("interaction_context_received", context)
+			get_viewport().set_input_as_handled()
 
 func _initialize_grids_if_needed():
 	if _grids_initialized:

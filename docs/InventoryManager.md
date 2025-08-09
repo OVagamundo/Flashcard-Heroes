@@ -10,6 +10,40 @@ Authoritative Validation: The manager is the final authority on whether a gamepl
 Command-Driven: Its primary entry point for player-initiated actions is the `try_inventory_action` signal, which is emitted by the GlobalInteractionRouter (GIR) when it executes a `REQUEST_ACTION` command.
 Signal Contract (from GIR): `SignalBus.try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier)` — GIR extracts `.location` from its stored `source_context` and the current `target_context` (see `GlobalInteractionRouter._execute_request_action`).
 The Golden Rule of State Synchronization: All state change instructions sent to data owners must be atomic. This means any operation that moves an instance must update both the DataContainer (the index) and the GachaBallInstance's properties (the truth) in a single, indivisible operation.
+
+## v2.4 Addendum: ChoiceWindow-Driven Swap/Merge and Close Suppression
+
+This addendum documents the finalized flow for ambiguous actions (Swap/Merge) prompted via `ChoiceWindow` and the suppression required to prevent premature closing of inspection windows during these actions.
+
+### Flow Summary
+
+- __Ambiguity detection__: In `InventoryManager._on_try_inventory_action`, if `MergeManager.find_recipe(...)` returns a valid recipe, the manager opens the `ChoiceWindow` via `WindowManager.open_choice_window(context)` and returns without taking action.
+- __User decision__: `ChoiceWindow` emits `SignalBus.choice_made(choice, source_loc, target_loc, recipe_id)`.
+- __Suppression before action__: In `InventoryManager._on_choice_made(...)`, before calling `_swap` or `_merge`, suppression is explicitly activated for the relevant inspection window:
+  1) Resolve `anchor_view` using `WindowManager.find_view_for_location(target_loc)` with fallback to `source_loc`.
+  2) Resolve `parent_window` via `WindowManager.find_ancestor_window_for_view(anchor_view)`.
+  3) Call `GlobalInteractionRouter._activate_close_suppression_for_window_id(parent_window.get_instance_id(), duration_ms)`.
+  4) Choose duration to cover deferred anchor checks (currently ~420ms for unit-context actions such as `equipped_item`, `PlayerLineup`, `PlayerBench`; ~320ms otherwise).
+- __Execute__: Perform `_merge(source_loc, target_loc, recipe_id)` or `_swap(source_loc, target_loc)`, emit selection/data-change signals as usual. No direct window-close is performed here.
+
+### Rationale
+
+- Inspection windows can schedule deferred self-closes when their anchor view is freed or reparented. Without suppression active at the exact moment of Swap/Merge, those defers can close windows prematurely.
+- Activating suppression tied to the target window ID ensures `WindowManager.request_close_inspection_window(...)` and any deferred close paths consult GIR and defer/skip closure.
+
+### APIs Involved
+
+- `WindowManager.find_view_for_location(loc: LocationIdentifier) -> Control`
+- `WindowManager.find_ancestor_window_for_view(view: Control) -> Control`
+- `GlobalInteractionRouter._activate_close_suppression_for_window_id(window_id: int, duration_ms: int)`
+
+Note: The GIR suppression helper is currently a private method used intentionally here to guarantee correct timing. A small public wrapper may be introduced later to formalize this contract.
+
+### Do/Don't
+
+- __Do not__ re-route the `choice_made` decision back through GIR’s `REQUEST_ACTION` (would duplicate prompts and complicate suppression timing).
+- __Do not__ close windows on drag start. Window closure must occur via background clicks or GIR/WindowManager APIs. Drag end triggers short-lived suppression to cover deferred checks.
+
 2. The Definitive Rules of Action & Gameplay
 This is the core logic that the InventoryManager enforces. It follows a strict priority checklist to determine and validate the player's intent for any interaction between two locations.
 Rule I0: The Context Integrity Rule
@@ -35,6 +69,42 @@ An item already equipped on Unit A cannot be directly moved to Unit B or back to
 The target must be either (a) a UNIT on `PlayerLineup`/`PlayerBench`, or (b) that unit’s empty `equipped_item` slot.
 Mechanism: If these checks pass, the manager performs an early equip path: remove the item from its source container and attach it to the target unit’s equipped list, updating both the container index and the instance’s location (atomic update).
 Rationale: This makes equipping deliberate and predictable while allowing click‑to‑click and drag‑and‑drop equip from any InventoryGrid.
+Inventory & Gacha Systems - V2.0 (Unified)
+Version: 2.0
+Status: Canonical
+This document describes the architecture and definitive rules for all GachaBall manipulation systems, including inventory actions (Move, Swap, Equip, Merge), the Gacha draw mechanism, and the Discard Pile lifecycle. The InventoryManager is the central, stateless service that executes the logic described herein.
+1. Purpose & Core Philosophy
+The InventoryManager is a stateless logic controller. It is the "verb" system for all GachaBall instances. Its sole purpose is to execute commands and signals related to GachaBall manipulation, validate them against a strict set of gameplay rules, and instruct the appropriate data owner (RunState or BattleManager) to perform the state change.
+Core Principles:
+Stateless Operation: The manager never stores its own state between actions. It always queries the current game state from the data owners.
+Authoritative Validation: The manager is the final authority on whether a gameplay action is legal.
+Command-Driven: Its primary entry point for player-initiated actions is the try_inventory_action signal, which is the final consequence of a REQUEST_ACTION command generated by the Global Interaction Router (GIR).
+The Golden Rule of State Synchronization: All state change instructions sent to data owners must be atomic. This means any operation that moves an instance must update both the DataContainer (the index) and the GachaBallInstance's properties (the truth) in a single, indivisible operation.
+2. The Definitive Rules of Action & Gameplay
+This is the core logic that the InventoryManager enforces. It follows a strict priority checklist to determine and validate the player's intent for any interaction between two locations.
+Rule I0: The Context Integrity Rule
+Statement: An action can only be attempted between entities that exist within the same functional context group.
+Mechanism: The manager's first step is to get the context group for the source and target locations from the GIR (e.g., BATTLE_BOARD, INVENTORY_GRID). If the groups do not match, the action is immediately rejected as invalid, and an inventory_action_invalid signal is emitted.
+Rationale: A top-level sanity check that prevents illogical actions, like swapping an unit from the bench with a item on the item inventory or a tier 1 gachaball with a tier 2 or 3 gachaball or vice versa, on the run/battle inventory, that have tier exclusive containers.
+Rule I1: The Merge Priority Rule
+Statement: If an interaction between two GachaBalls could possibly be a merge (and is not in conflict with The Context Integrity Rule 0), that possibility must be resolved before any other action is considered.
+Mechanism:
+The manager's first gameplay check is to query the MergeManager service to see if a valid MergeRecipe exists for the source and target instances.
+If a recipe exists: The action is ambiguous. The InventoryManager halts and commands the WindowManager to open the ChoiceWindow (Merge/Swap). It will take no further action until it receives a choice_made signal.
+If no recipe exists: The action is unambiguously not a merge. The manager proceeds to the next rule in the priority list.
+Rationale: Merging is a powerful, transformative action. This rule ensures the player is always offered the chance to perform an upgrade if one is available.
+Rule I2: The Equip Intent Rule
+Statement: An action is interpreted as an "Equip" if and only if a source GachaBallInstance with category: ITEM is interacting with a target GachaBallInstance with category: UNIT as it's target, not the other way around.
+Mechanism: If no merge is possible, the manager checks the categories of the source and target instances. If they match the criteria, it proceeds to validate the action against the specific equip rules (I3).
+Rationale: Provides a clear, type-based definition for the equip action.
+Rule I3: The Equip Legality Rule
+Statement: A valid Equip action is constrained by the item's origin and the unit's capacity.
+Validation Checklist:
+The source Item must originate from the ItemInventory container. The only exceptions are the enemy units that are equipped using a different method.
+An item already equipped on Unit A cannot be directly moved to Unit B or back to the ItemInventory container. There is no way to directly unnequip items with player inventory actions.
+The target Unit must have at least one empty item slot.
+Mechanism: If these checks pass, the data owner is instructed to perform the equip operation: the Item's UUID is moved from its source DataContainer into the Unit's equipped_item_uuids array, and the Item's own location properties are updated to reflect its new "equipped" state.
+Rationale: This makes equipping a deliberate choice and prevents chaotic item-swapping between units, adding strategic weight to item placement.
 Rule I4: The Swap/Move Rule
 Statement: If an action is not a Merge and not an Equip, it is interpreted as a potential Swap or Move.
 Mechanism (Swap): If the target location contains an instance, the manager checks if the source instance can legally occupy the target's slot, AND if the target instance can legally occupy the source's original slot (per Rule I5). If both are true, it's a Swap. The data owner is instructed to exchange their location properties.

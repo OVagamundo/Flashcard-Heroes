@@ -14,7 +14,8 @@ func _ready():
 
 func _on_panel_gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.close_all_inspection_windows()
+		# Prune only child inspection windows of this window to avoid global closures
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):

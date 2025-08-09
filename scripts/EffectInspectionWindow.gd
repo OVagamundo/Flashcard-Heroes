@@ -9,18 +9,10 @@ func _ready():
 
 func _on_internal_background_clicked(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Create and emit InteractionContext for inspection window background
-		var context = InteractionContext.new()
-		context.source_view_instance_id = get_instance_id()
-		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
-		context.entity_uuid = ""
-		context.entity_type = &"WINDOW_BACKGROUND"
-		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 1  # Inspection window group
-		
-		SignalBus.emit_signal("interaction_context_received", context)
+		# Prune only this window's descendants via WindowManager (preferred local pattern)
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
+		accept_event()
 
 
 
@@ -42,7 +34,7 @@ func populate(context: Dictionary):
 	# If there are abilities, display the first one as before.
 	var effect_def = effect_definitions[0]
 	if not is_instance_valid(effect_def):
-		queue_free()
+		WindowManager.request_close_inspection_window(self, &"INVALID_DEFINITION")
 		return
 
 	name_label.text = tr(effect_def.name_key)

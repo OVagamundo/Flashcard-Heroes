@@ -115,7 +115,20 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		printerr("InventoryManager: Received choice_made with invalid locations.")
 		return
-		
+	# Activate suppression via GIR for the parent inspection window of the target (or source) view
+	# to avoid premature closure during swap/merge execution triggered by ChoiceWindow.
+	var wm = WindowManager
+	var anchor_view: Control = wm.find_view_for_location(target_loc)
+	if not is_instance_valid(anchor_view):
+		anchor_view = wm.find_view_for_location(source_loc)
+	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
+	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
+	var inside_unit: bool = target_loc.container == &"equipped_item" or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
+	if parent_id != -1:
+		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
+		GlobalInteractionRouter._activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
+		print("InventoryManager._on_choice_made: suppression activated for parent_id=", parent_id, " inside_unit=", inside_unit)
+
 	match choice:
 		&"MERGE":
 			_merge(source_loc, target_loc, recipe_id)

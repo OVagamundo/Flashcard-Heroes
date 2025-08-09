@@ -92,26 +92,36 @@ func open_discard_pile_window():
 # Public entry point for the Choice Window.
 # Optionally provide an anchor_view to dynamically position near a target view (e.g., target GachaBall).
 func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
+	# Design: ChoiceWindow is a lightweight modal overlay that should NOT close
+	# existing inspection windows. Open it on the modal layer without exclusivity.
 	var anchor := anchor_view
 	if not is_instance_valid(anchor):
-		# Attempt to resolve from target_location if provided in context
+		# Attempt to resolve from target_location then source_location
 		var target_loc: LocationIdentifier = populate_ctx.get("target_location")
 		if is_instance_valid(target_loc):
 			anchor = find_view_for_location(target_loc)
 			print("Resolved anchor from target_location")
 		if not is_instance_valid(anchor):
-			# Fallback: attempt to resolve from source_location
 			var source_loc: LocationIdentifier = populate_ctx.get("source_location")
 			if is_instance_valid(source_loc):
 				anchor = find_view_for_location(source_loc)
 				print("Resolved anchor from source_location")
-	var context = {
-		"window_type": &"ChoiceWindow",
-		"populate_context": populate_ctx,
-		"anchor_view": anchor,
-		"positioning_hint": "top_center_over_anchor",
-	}
-	_open_contextual_window(context)
+	if not _window_scenes.has(&"ChoiceWindow"): return
+	var window_instance: Control = _window_scenes[&"ChoiceWindow"].instantiate()
+	_get_modal_layer().add_child(window_instance)
+	_modal_stack.push_back(window_instance)
+	_register_window(window_instance, true) # Track as modal, but non-exclusive
+	if window_instance.has_method("populate"):
+		window_instance.populate(populate_ctx)
+	# Position near anchor if available; otherwise center on viewport
+	if is_instance_valid(anchor):
+		var pos := _calculate_top_center_over_anchor(anchor, window_instance)
+		window_instance.set_global_position(pos)
+	else:
+		var viewport_rect = get_viewport().get_visible_rect()
+		var win_sz = _get_window_size(window_instance)
+		window_instance.set_global_position(viewport_rect.position + viewport_rect.size / 2.0 - win_sz / 2.0)
+	window_instance.show()
 
 # Public entry point for all inspection windows (Unit, Item, Effect).
 func open_inspection_window(loc: LocationIdentifier, source_view: Control):
@@ -131,14 +141,13 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control):
 func close_children_of(parent_window: Control):
 	var parent_index = _active_inspection_group.find(parent_window)
 	if parent_index == -1: return
-
-	var child_count = _active_inspection_group.size() - (parent_index + 1)
-	if child_count > 0:
-		for i in range(child_count):
-			var child_window = _active_inspection_group.pop_back()
-			if is_instance_valid(child_window):
-				stop_tracking_window(child_window.get_instance_id())
-				child_window.queue_free()
+	print("WindowManager: close_children_of parent=", parent_window.name, " (", parent_window.get_instance_id(), ") from_index=", parent_index)
+	for i in range(_active_inspection_group.size() - 1, parent_index, -1):
+		var child_window = _active_inspection_group[i]
+		if is_instance_valid(child_window):
+			stop_tracking_window(child_window.get_instance_id())
+			print("WindowManager: close_child -> ", child_window.name, " (", child_window.get_instance_id(), ")")
+			child_window.queue_free()
 
 # Back-compat API expected by GIR: resolve parent by instance_id and prune its children
 func close_child_windows(window_group_id: int, parent_window_id: int = -1):
@@ -154,9 +163,11 @@ func close_child_windows(window_group_id: int, parent_window_id: int = -1):
 
 # Public API for GIR (Rules W2, W4, W5).
 func close_all_inspection_windows():
+	print("WindowManager: close_all_inspection_windows count=", _active_inspection_group.size())
 	for window in _active_inspection_group:
 		if is_instance_valid(window):
 			stop_tracking_window(window.get_instance_id())
+			print("WindowManager: close_all -> ", window.name, " (", window.get_instance_id(), ")")
 			window.queue_free()
 	_active_inspection_group.clear()
 
@@ -196,7 +207,25 @@ func handle_inspection_background_click(clicked_window: Control):
 	# Use index lookup to avoid typed array validation issues on non-Control nodes
 	var idx := _index_in_active_group(clicked_window)
 	if idx != -1:
+		print("WindowManager: handle_inspection_background_click -> pruning children of ", clicked_window.name, " (", clicked_window.get_instance_id(), ")")
 		close_children_of(clicked_window)
+
+
+# Suppression-aware close request for inspection windows.
+# Windows and internal handlers (e.g., anchor-freed) must use this instead of queue_free.
+func request_close_inspection_window(window: Control, cause: StringName = &""):
+	if not is_instance_valid(window):
+		return
+	var window_id := window.get_instance_id()
+	# Respect GIR suppression to avoid premature closures during interactions.
+	var suppressed_for_id := GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
+	var suppressed_now := GlobalInteractionRouter.is_close_suppressed_now()
+	print("WindowManager: request_close_inspection_window window=", window.name, " (", window_id, ") cause=", cause, " suppressed_for_id=", suppressed_for_id, " suppressed_now=", suppressed_now)
+	if suppressed_for_id or suppressed_now:
+		return
+	stop_tracking_window(window_id)
+	print("WindowManager: closing window id=", window_id, " name=", window.name)
+	window.queue_free()
 
 
 # --- CORE INTERNAL LOGIC ---
@@ -405,7 +434,10 @@ func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: Locat
 	if is_instance_valid(old_anchor) and old_anchor.is_connected("item_rect_changed", geom_callable):
 		old_anchor.item_rect_changed.disconnect(geom_callable)
 	if is_instance_valid(window_instance):
-		window_instance.queue_free()
+		var suppressed_for_id := GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
+		var suppressed_now := GlobalInteractionRouter.is_close_suppressed_now()
+		print("WindowManager: _on_inspection_anchor_freed window_id=", window_id, " name=", window_instance.name, " old_anchor_id=", old_anchor_id, " suppressed_for_id=", suppressed_for_id, " suppressed_now=", suppressed_now)
+		request_close_inspection_window(window_instance, &"ANCHOR_FREED")
 
 # FINAL FIX: This function is now correctly defined and used for lifecycle cleanup.
 func _register_window(window_instance: Control, is_modal: bool):
@@ -422,6 +454,7 @@ func _on_window_freed(window_id: int, was_modal: bool):
 		var window = stack[i]
 		if not is_instance_valid(window) or window.get_instance_id() == window_id:
 			stack.remove_at(i)
+	print("WindowManager: _on_window_freed id=", window_id, " was_modal=", was_modal)
 
 func _close_top_modal():
 	if not _modal_stack.is_empty():

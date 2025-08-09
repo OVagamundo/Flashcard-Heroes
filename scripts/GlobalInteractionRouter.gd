@@ -34,6 +34,8 @@ var _is_drag_active: bool = false
 var _drag_origin_context: InteractionContext = null
 var _drag_source_view: Control = null
 var _drag_placeholder: Control = null
+var _suppress_close_parent_window_id: int = -1
+var _suppress_close_until_msec: int = 0
 
 func _ready():
 	# Register as singleton
@@ -90,8 +92,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# True background click: left mouse press not handled by any Control
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# Close contextual windows and clear selection
-		_execute_close_all_inspection_windows()
+		# Close contextual windows and clear selection (guarded by suppression)
+		if not _is_close_suppressed_now():
+			_execute_close_all_inspection_windows()
 		_execute_deselect()
 
 ## Generate command queue based on interaction context and current state
@@ -104,10 +107,16 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	# Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
 	if _is_drag_active and _drag_origin_context != null:
 		print("GIR: Drag drop target received. src=", _drag_origin_context.location.container, " -> tgt=", context.location.container)
-		commands.append(Command.new(CommandType.REQUEST_ACTION, {
+		var req_ctx := {
 			"source_context": _drag_origin_context,
-			"target_context": context
-		}))
+			"target_context": context,
+		}
+		# Attach target parent window information for suppression
+		var tgt_parent_id := _resolve_parent_window_id_for_context(context)
+		if tgt_parent_id != -1:
+			req_ctx["target_parent_window_id"] = tgt_parent_id
+			req_ctx["is_inside_unit_inspection"] = _is_unit_inspection_window_id(tgt_parent_id)
+		commands.append(Command.new(CommandType.REQUEST_ACTION, req_ctx))
 		commands.append(Command.new(CommandType.DESELECT))
 		return commands
 	
@@ -125,13 +134,21 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 					}))
 			# Next, if the click is outside all windows, close the entire group
 			if not _is_click_inside_inspection_group(context):
-				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+				# Suppress global close if an in-window action just occurred. Prefer context-aware suppression,
+				# but fall back to contextless suppression for true background contexts.
+				var suppressed := _is_close_suppressed_for_context(context)
+				if not suppressed and _is_close_suppressed_now():
+					suppressed = true
+				if not suppressed:
+					commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 	
 	# Handle different entity types
 	match context.entity_type:
 		&"GLOBAL_BACKGROUND":
 			# GR-4: Close on "True" Background Click
-			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+			# Guard with suppression to avoid closing immediately after an in-window action
+			if not _is_close_suppressed_now():
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			
 		&"WINDOW_BACKGROUND":
 			# GR-6: Child Window Closure - prune that branch
@@ -206,10 +223,15 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 		
 		# Check if this is a valid action target
 		if _is_valid_action_target(_current_selection, context):
-			commands.append(Command.new(CommandType.REQUEST_ACTION, {
+			var req_ctx := {
 				"source_context": _current_selection,
-				"target_context": context
-			}))
+				"target_context": context,
+			}
+			var tgt_parent_id := _resolve_parent_window_id_for_context(context)
+			if tgt_parent_id != -1:
+				req_ctx["target_parent_window_id"] = tgt_parent_id
+				req_ctx["is_inside_unit_inspection"] = _is_unit_inspection_window_id(tgt_parent_id)
+			commands.append(Command.new(CommandType.REQUEST_ACTION, req_ctx))
 			# Clear selection after any action (valid or invalid)
 			commands.append(Command.new(CommandType.DESELECT))
 		else:
@@ -219,7 +241,8 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 			var tgt_g = get_context_group(tgt_c)
 			print("GIR: Invalid action target for click. sel=", sel_c, " (", sel_g, ") -> tgt=", tgt_c, " (", tgt_g, ")")
 			# GR-5: Close on Invalid Action Click
-			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+			if not _is_close_suppressed_for_context(context):
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			commands.append(Command.new(CommandType.DESELECT))
 	else:
 		# No current selection, just select this item
@@ -250,15 +273,21 @@ func _handle_empty_slot_interaction(context: InteractionContext) -> Array[Comman
 			# Note: Empty slots don't get selected, so we just deselect
 		# Check if this is a valid move target
 		elif _is_valid_move_target(_current_selection, context):
-			commands.append(Command.new(CommandType.REQUEST_ACTION, {
+			var req_ctx := {
 				"source_context": _current_selection,
-				"target_context": context
-			}))
+				"target_context": context,
+			}
+			var tgt_parent_id := _resolve_parent_window_id_for_context(context)
+			if tgt_parent_id != -1:
+				req_ctx["target_parent_window_id"] = tgt_parent_id
+				req_ctx["is_inside_unit_inspection"] = _is_unit_inspection_window_id(tgt_parent_id)
+			commands.append(Command.new(CommandType.REQUEST_ACTION, req_ctx))
 			# Clear selection after any action (valid or invalid)
 			commands.append(Command.new(CommandType.DESELECT))
 		else:
 			# Invalid action - clear selection and close inspection windows
-			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+			if not _is_close_suppressed_for_context(context):
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			commands.append(Command.new(CommandType.DESELECT))
 	
 	return commands
@@ -379,6 +408,75 @@ func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
 	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
 	return is_instance_valid(parent_window)
 
+## Temporary suppression after in-window actions: prevent closing the parent inspection window
+func _activate_close_suppression_for_view(view: Control, duration_msec: int = 200) -> void:
+	if not _window_manager or not is_instance_valid(view):
+		return
+	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
+	if is_instance_valid(parent_window):
+		var until_ts := Time.get_ticks_msec() + duration_msec
+		_suppress_close_parent_window_id = parent_window.get_instance_id()
+		_suppress_close_until_msec = until_ts
+		print("GIR: _activate_close_suppression_for_view parent=", parent_window.name, " (", _suppress_close_parent_window_id, ") duration=", duration_msec, " now=", Time.get_ticks_msec(), " until=", until_ts)
+
+# Directly activate suppression for a known parent window id
+func _activate_close_suppression_for_window_id(window_id: int, duration_msec: int = 220) -> void:
+	if window_id <= 0:
+		return
+	var until_ts := Time.get_ticks_msec() + duration_msec
+	_suppress_close_parent_window_id = window_id
+	_suppress_close_until_msec = until_ts
+	print("GIR: _activate_close_suppression_for_window_id id=", window_id, " duration=", duration_msec, " now=", Time.get_ticks_msec(), " until=", until_ts)
+
+func _is_close_suppressed_for_context(context: InteractionContext) -> bool:
+	if Time.get_ticks_msec() > _suppress_close_until_msec:
+		return false
+	if not _window_manager or context == null:
+		return false
+	var v: Control = _find_view_by_instance_id(context.source_view_instance_id)
+	if not v:
+		return false
+	var parent_window: Control = _window_manager.find_ancestor_window_for_view(v)
+	return is_instance_valid(parent_window) and parent_window.get_instance_id() == _suppress_close_parent_window_id
+
+# Resolve the parent inspection window id for a given interaction context's source view
+func _resolve_parent_window_id_for_context(context: InteractionContext) -> int:
+	if not _window_manager or context == null:
+		return -1
+	var v: Control = _find_view_by_instance_id(context.source_view_instance_id)
+	if not v:
+		return -1
+	var parent_window: Control = _window_manager.find_ancestor_window_for_view(v)
+	return parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
+
+## Contextless suppression check (for true background events)
+func _is_close_suppressed_now() -> bool:
+	# Contextless suppression: only care about the active time window.
+	# This allows stage-1 global suppression (id=0) from end_drag() to block
+	# background closures before precise window-tied suppression is established.
+	var now := Time.get_ticks_msec()
+	var active := now <= _suppress_close_until_msec
+	if active:
+		print("GIR: _is_close_suppressed_now true now=", now, " until=", _suppress_close_until_msec)
+	return active
+
+# Heuristic: check whether a given window id refers to a UnitInspection window
+func _is_unit_inspection_window_id(window_id: int) -> bool:
+	var node := instance_from_id(window_id)
+	if not is_instance_valid(node) or not (node is Control):
+		return false
+	var ctrl := node as Control
+	# Prefer explicit name check
+	if ctrl.name.findn("UnitInspection") != -1:
+		return true
+	# Fallbacks: try to infer from script path
+	var s = ctrl.get_script()
+	if is_instance_valid(s):
+		var res_path: String = s.resource_path
+		if res_path.findn("UnitInspection") != -1:
+			return true
+	return false
+
 ## Execute the command queue
 func _execute_command_queue(commands: Array[Command]):
 	print("GlobalInteractionRouter: Executing command queue with ", commands.size(), " commands")
@@ -451,6 +549,27 @@ func _execute_request_action(command_context: Dictionary):
 	var target_context: InteractionContext = command_context.get("target_context")
 	
 	if source_context and target_context:
+		print("GIR._execute_request_action: src_view_id=", source_context.source_view_instance_id, " tgt_view_id=", target_context.source_view_instance_id)
+		# Prefer explicit window-id suppression if provided by command context
+		var tgt_parent_id: int = command_context.get("target_parent_window_id", -1)
+		var inside_unit: bool = command_context.get("is_inside_unit_inspection", false)
+		if tgt_parent_id != -1:
+			# Slightly longer suppression when inside unit inspection to absorb UI refresh bursts
+			print("GIR._execute_request_action: using explicit target_parent_window_id=", tgt_parent_id, " inside_unit=", inside_unit)
+			_activate_close_suppression_for_window_id(tgt_parent_id, 280 if inside_unit else 220)
+		else:
+			# Activate short-lived suppression tied to the parent window where the action occurs.
+			# For equipping into a UnitInspectionWindow, the TARGET view is inside the unit window.
+			var tgt_view: Control = _find_view_by_instance_id(target_context.source_view_instance_id)
+			if tgt_view:
+				print("GIR._execute_request_action: activating suppression for target view id=", target_context.source_view_instance_id)
+				_activate_close_suppression_for_view(tgt_view)
+			else:
+				# Fallback: tie suppression to the source view's parent (covers drag from inventory)
+				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
+				if src_view:
+					print("GIR._execute_request_action: activating suppression for source view id=", source_context.source_view_instance_id)
+					_activate_close_suppression_for_view(src_view)
 		SignalBus.emit_signal("try_inventory_action", 
 			source_context.location, 
 			target_context.location)
@@ -551,6 +670,9 @@ func start_drag(origin_context: InteractionContext):
 	print("GIR.start_drag: origin=", origin_context.location.container, "[", origin_context.location.index, "]")
 	_is_drag_active = true
 	_drag_origin_context = origin_context
+	# Design rule: DO NOT close inspection windows on drag start. Closing here can
+	# free the drag preview or source view and trigger anchor churn. Windows will be
+	# closed via background clicks or explicit GIR/WindowManager APIs.
 	# Inform listeners that a drag has started (optional hook for visuals)
 	if SignalBus.has_signal("drag_started"):
 		SignalBus.emit_signal("drag_started", origin_context)
@@ -560,6 +682,16 @@ func end_drag(_was_handled: bool):
 	print("GIR.end_drag: was_handled=", _was_handled)
 	_is_drag_active = false
 	_drag_origin_context = null
+	# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background
+	# close so that the ensuing REQUEST_ACTION can set precise window-tied suppression.
+	if _was_handled:
+		# Use a minimal duration; precise suppression will override shortly after
+		_suppress_close_parent_window_id = 0
+		var until_ts := Time.get_ticks_msec() + 420
+		_suppress_close_until_msec = until_ts
+		print("GIR.end_drag: stage-1 suppression active id=0 until=", until_ts)
+	# Centralize drag visual cleanup so views don't have to decide
+	_end_drag_visuals(_was_handled)
 	# Inform listeners that a drag has ended (optional hook for visuals)
 	if SignalBus.has_signal("drag_ended"):
 		SignalBus.emit_signal("drag_ended", _was_handled)
@@ -585,3 +717,19 @@ func _end_drag_visuals(was_handled: bool) -> void:
 ## Public API: query drag active state
 func is_drag_active() -> bool:
 	return _is_drag_active
+
+## Public API: expose suppression state for WindowManager
+func is_close_suppressed_for_window_id(window_id: int) -> bool:
+	# Valid only within the active suppression window
+	var now := Time.get_ticks_msec()
+	if now > _suppress_close_until_msec:
+		return false
+	if window_id <= 0:
+		return false
+	var res := window_id == _suppress_close_parent_window_id
+	print("GIR.is_close_suppressed_for_window_id: window_id=", window_id, " match=", res, " now=", now, " until=", _suppress_close_until_msec, " target_id=", _suppress_close_parent_window_id)
+	return res
+
+func is_close_suppressed_now() -> bool:
+	# Contextless suppression: time-window only
+	return Time.get_ticks_msec() <= _suppress_close_until_msec

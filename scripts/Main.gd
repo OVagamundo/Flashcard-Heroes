@@ -21,9 +21,9 @@ var _current_content_node: Node = null
 
 func _ready():
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
-	draw_tier1_button.pressed.connect(func(): SignalBus.emit_signal("draw_gacha_requested", 1))
-	draw_tier2_button.pressed.connect(func(): SignalBus.emit_signal("draw_gacha_requested", 2))
-	draw_tier3_button.pressed.connect(func(): SignalBus.emit_signal("draw_gacha_requested", 3))
+	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
+	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
+	draw_tier3_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier3_button, 3))
 
 	
 	SignalBus.battle_start_requested.connect(_on_battle_start_requested)
@@ -109,6 +109,19 @@ func _on_inspect_inventory_pressed():
 func _on_draw_button_pressed(button: Button, tier: int):
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
+	# Ensure UI focus doesn't interfere
+	button.release_focus()
+	# Route a background interaction through GIR so any open inspection windows close
+	var context = InteractionContext.new()
+	context.source_view_instance_id = button.get_instance_id()
+	context.event_type = &"SINGLE_CLICK"
+	context.location = null
+	context.entity_uuid = ""
+	context.entity_type = &"GLOBAL_BACKGROUND"
+	context.interaction_mode = &"FULLY_INTERACTIVE"
+	context.window_group_id = 0
+	SignalBus.emit_signal("interaction_context_received", context)
+	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
 
 func _on_battle_inventory_changed():
