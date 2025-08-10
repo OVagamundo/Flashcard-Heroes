@@ -10,291 +10,7 @@ WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished whe
    at: instantiate (scene/resources/packed_scene.cpp:178)
 WindowManager: close_all_inspection_windows count=0
 WindowManager: close_all_inspection_windows count=0
-[WM] _resolve_parent_window: structural_fallback -> <nil>
-WindowManager: close_all_inspection_windows count=0
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE
-GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: UNIT
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-GachaBallView: _update_stats - Not a unit, hiding stats
-InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ITEM
-[WM] open ctx 'Inventory' anchor=<nil> parent=<nil> layers a/p/w=-999/-999/128
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 111853701109
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 111853701109
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#109588776812>, entity_uuid: unit_t1_a_1754773174_9982
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#109941098371>, entity_uuid: unit_t1_a_1754773174_7464
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#110276642711>, entity_uuid: unit_t1_b_1754773174_9389
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#110612187051>, entity_uuid: unit_t1_b_1754773174_8627
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#110947731391>, entity_uuid: item_t1_a_1754773174_6957
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#111249721297>, entity_uuid: item_t1_a_1754773174_0587
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#111551711203>, entity_uuid: item_t1_b_1754773174_6801
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#111853701109>, entity_uuid: item_t1_b_1754773174_6270
-GachaBallView: Setting selection to true
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#112289908751>, entity_uuid: unit_t2_c_1754773174_3360
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#112659007525>, entity_uuid: unit_t2_c_1754773174_5861
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#113028106299>, entity_uuid: item_t2_c_1754773174_4807
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#113330096205>, entity_uuid: item_t2_c_1754773174_4776
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#113833412715>, entity_uuid: unit_t3_d_1754773174_3064
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#114269620357>, entity_uuid: unit_t3_d_1754773174_2343
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#114705827999>, entity_uuid: item_t3_d_1754773174_0833
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#115007817905>, entity_uuid: item_t3_d_1754773174_1862
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 111853701109
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#109588776812>, entity_uuid: unit_t1_a_1754773174_9982
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#109941098371>, entity_uuid: unit_t1_a_1754773174_7464
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#110276642711>, entity_uuid: unit_t1_b_1754773174_9389
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#110612187051>, entity_uuid: unit_t1_b_1754773174_8627
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#110947731391>, entity_uuid: item_t1_a_1754773174_6957
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#111249721297>, entity_uuid: item_t1_a_1754773174_0587
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#111551711203>, entity_uuid: item_t1_b_1754773174_6801
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#111853701109>, entity_uuid: item_t1_b_1754773174_6270
-GachaBallView: Setting selection to false
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#112289908751>, entity_uuid: unit_t2_c_1754773174_3360
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#112659007525>, entity_uuid: unit_t2_c_1754773174_5861
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#113028106299>, entity_uuid: item_t2_c_1754773174_4807
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#113330096205>, entity_uuid: item_t2_c_1754773174_4776
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#113833412715>, entity_uuid: unit_t3_d_1754773174_3064
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#114269620357>, entity_uuid: unit_t3_d_1754773174_2343
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#114705827999>, entity_uuid: item_t3_d_1754773174_0833
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111853701109>, self: GachaBallView:<PanelContainer#115007817905>, entity_uuid: item_t3_d_1754773174_1862
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> InventoryWindow
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/InventoryWindow/PanelContainer/VBoxContainer/GridsArea/Tier1Column/ScrollContainer/Tier1Grid/@PanelContainer@22/GachaBallView parent=/root/Main/ModalLayer/InventoryWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=InventoryWindow pr=[P: (0.0, 0.0), S: (1920.0, 1080.0)] anchor=GachaBallView ar=[P: (716.0, 374.0), S: (78.0, 90.0)] -> (814.0, 374.0)
-[WM] finalize child pos (anchor-relative) -> (814.0, 374.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (127171299543)
-WindowManager: close_children_of parent=ItemInspectionWindow (127171299543) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (127171299543)
-WindowManager: close_children_of parent=ItemInspectionWindow (127171299543) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (814.0, 374.0), S: (172.0, 225.0)] anchor=ItemInspectionWindow ar=[P: (814.0, 374.0), S: (172.0, 225.0)] -> (1006.0, 374.0)
-[WM] finalize child pos (anchor-relative) -> (1006.0, 374.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 111551711203
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (132674225898)
-WindowManager: close_child -> ItemInspectionWindow (127171299543)
-GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 111551711203
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#109588776812>, entity_uuid: unit_t1_a_1754773174_9982
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#109941098371>, entity_uuid: unit_t1_a_1754773174_7464
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#110276642711>, entity_uuid: unit_t1_b_1754773174_9389
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#110612187051>, entity_uuid: unit_t1_b_1754773174_8627
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#110947731391>, entity_uuid: item_t1_a_1754773174_6957
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#111249721297>, entity_uuid: item_t1_a_1754773174_0587
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#111551711203>, entity_uuid: item_t1_b_1754773174_6801
-GachaBallView: Setting selection to true
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#111853701109>, entity_uuid: item_t1_b_1754773174_6270
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#112289908751>, entity_uuid: unit_t2_c_1754773174_3360
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#112659007525>, entity_uuid: unit_t2_c_1754773174_5861
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#113028106299>, entity_uuid: item_t2_c_1754773174_4807
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#113330096205>, entity_uuid: item_t2_c_1754773174_4776
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#113833412715>, entity_uuid: unit_t3_d_1754773174_3064
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#114269620357>, entity_uuid: unit_t3_d_1754773174_2343
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#114705827999>, entity_uuid: item_t3_d_1754773174_0833
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#115007817905>, entity_uuid: item_t3_d_1754773174_1862
-WindowManager: _on_window_freed id=132674225898 was_modal=false
-WindowManager: _on_window_freed id=127171299543 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 111551711203
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#109588776812>, entity_uuid: unit_t1_a_1754773174_9982
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#109941098371>, entity_uuid: unit_t1_a_1754773174_7464
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#110276642711>, entity_uuid: unit_t1_b_1754773174_9389
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#110612187051>, entity_uuid: unit_t1_b_1754773174_8627
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#110947731391>, entity_uuid: item_t1_a_1754773174_6957
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#111249721297>, entity_uuid: item_t1_a_1754773174_0587
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#111551711203>, entity_uuid: item_t1_b_1754773174_6801
-GachaBallView: Setting selection to false
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#111853701109>, entity_uuid: item_t1_b_1754773174_6270
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#112289908751>, entity_uuid: unit_t2_c_1754773174_3360
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#112659007525>, entity_uuid: unit_t2_c_1754773174_5861
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#113028106299>, entity_uuid: item_t2_c_1754773174_4807
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#113330096205>, entity_uuid: item_t2_c_1754773174_4776
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#113833412715>, entity_uuid: unit_t3_d_1754773174_3064
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#114269620357>, entity_uuid: unit_t3_d_1754773174_2343
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#114705827999>, entity_uuid: item_t3_d_1754773174_0833
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#111551711203>, self: GachaBallView:<PanelContainer#115007817905>, entity_uuid: item_t3_d_1754773174_1862
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> InventoryWindow
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/InventoryWindow/PanelContainer/VBoxContainer/GridsArea/Tier1Column/ScrollContainer/Tier1Grid/@PanelContainer@21/GachaBallView parent=/root/Main/ModalLayer/InventoryWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=InventoryWindow pr=[P: (0.0, 0.0), S: (1920.0, 1080.0)] anchor=GachaBallView ar=[P: (631.0, 374.0), S: (78.0, 90.0)] -> (729.0, 374.0)
-[WM] finalize child pos (anchor-relative) -> (729.0, 374.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (142270793972)
-WindowManager: close_children_of parent=ItemInspectionWindow (142270793972) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (142270793972)
-WindowManager: close_children_of parent=ItemInspectionWindow (142270793972) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (729.0, 374.0), S: (172.0, 225.0)] anchor=ItemInspectionWindow ar=[P: (729.0, 374.0), S: (172.0, 225.0)] -> (921.0, 374.0)
-[WM] finalize child pos (anchor-relative) -> (921.0, 374.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 113330096205
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (148646135463)
-WindowManager: close_child -> ItemInspectionWindow (142270793972)
-GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 113330096205
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#109588776812>, entity_uuid: unit_t1_a_1754773174_9982
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#109941098371>, entity_uuid: unit_t1_a_1754773174_7464
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#110276642711>, entity_uuid: unit_t1_b_1754773174_9389
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#110612187051>, entity_uuid: unit_t1_b_1754773174_8627
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#110947731391>, entity_uuid: item_t1_a_1754773174_6957
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#111249721297>, entity_uuid: item_t1_a_1754773174_0587
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#111551711203>, entity_uuid: item_t1_b_1754773174_6801
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#111853701109>, entity_uuid: item_t1_b_1754773174_6270
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#112289908751>, entity_uuid: unit_t2_c_1754773174_3360
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#112659007525>, entity_uuid: unit_t2_c_1754773174_5861
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#113028106299>, entity_uuid: item_t2_c_1754773174_4807
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#113330096205>, entity_uuid: item_t2_c_1754773174_4776
-GachaBallView: Setting selection to true
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#113833412715>, entity_uuid: unit_t3_d_1754773174_3064
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#114269620357>, entity_uuid: unit_t3_d_1754773174_2343
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#114705827999>, entity_uuid: item_t3_d_1754773174_0833
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#115007817905>, entity_uuid: item_t3_d_1754773174_1862
-WindowManager: _on_window_freed id=148646135463 was_modal=false
-WindowManager: _on_window_freed id=142270793972 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 113330096205
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#109588776812>, entity_uuid: unit_t1_a_1754773174_9982
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#109941098371>, entity_uuid: unit_t1_a_1754773174_7464
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#110276642711>, entity_uuid: unit_t1_b_1754773174_9389
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#110612187051>, entity_uuid: unit_t1_b_1754773174_8627
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#110947731391>, entity_uuid: item_t1_a_1754773174_6957
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#111249721297>, entity_uuid: item_t1_a_1754773174_0587
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#111551711203>, entity_uuid: item_t1_b_1754773174_6801
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#111853701109>, entity_uuid: item_t1_b_1754773174_6270
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#112289908751>, entity_uuid: unit_t2_c_1754773174_3360
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#112659007525>, entity_uuid: unit_t2_c_1754773174_5861
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#113028106299>, entity_uuid: item_t2_c_1754773174_4807
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#113330096205>, entity_uuid: item_t2_c_1754773174_4776
-GachaBallView: Setting selection to false
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#113833412715>, entity_uuid: unit_t3_d_1754773174_3064
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#114269620357>, entity_uuid: unit_t3_d_1754773174_2343
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#114705827999>, entity_uuid: item_t3_d_1754773174_0833
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#113330096205>, self: GachaBallView:<PanelContainer#115007817905>, entity_uuid: item_t3_d_1754773174_1862
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> InventoryWindow
-WindowManager: close_children_of parent=InventoryWindow (106166224573) from_index=0
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/InventoryWindow/PanelContainer/VBoxContainer/GridsArea/Tier2Column/ScrollContainer/Tier2Grid/@PanelContainer@33/GachaBallView parent=/root/Main/ModalLayer/InventoryWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=InventoryWindow pr=[P: (0.0, 0.0), S: (1920.0, 1080.0)] anchor=GachaBallView ar=[P: (1052.0, 251.0), S: (78.0, 116.0)] -> (875.0, 251.0)
-[WM] finalize child pos (anchor-relative) -> (875.0, 251.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (159534549254)
-WindowManager: close_children_of parent=ItemInspectionWindow (159534549254) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (159534549254)
-WindowManager: close_children_of parent=ItemInspectionWindow (159534549254) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (875.0, 251.0), S: (157.0, 248.0)] anchor=ItemInspectionWindow ar=[P: (875.0, 251.0), S: (157.0, 248.0)] -> (1052.0, 251.0)
-[WM] finalize child pos (anchor-relative) -> (1052.0, 251.0)
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=3
-WindowManager: close_all -> InventoryWindow (106166224573)
-WindowManager: close_all -> ItemInspectionWindow (159534549254)
-WindowManager: close_all -> EffectInspectionWindow (165758896377)
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-WindowManager: _on_window_freed id=106166224573 was_modal=false
-WindowManager: _on_window_freed id=159534549254 was_modal=false
-WindowManager: _on_window_freed id=165758896377 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
@@ -305,65 +21,61 @@ EncounterGenerator: Total definitions found: 10
 EncounterGenerator: Database.units size: 6
 EncounterGenerator: Database.items size: 4
 EncounterGenerator: Available units: 4, Available items: 4
-EncounterGenerator: New best build - Units: 1, Items: 1, Spent: 5/5
+EncounterGenerator: New best build - Units: 3, Items: 0, Spent: 5/5
 EncounterGenerator: Found perfect build!
-EncounterGenerator: Final build - Units: 1, Items: 1, Spent: 5/5 (100.0% efficiency)
+EncounterGenerator: Final build - Units: 3, Items: 0, Spent: 5/5 (100.0% efficiency)
 BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
 Main: Starting battle with encounter_def: true
 BattleManager: Starting battle with encounter_def: true
+GlobalInteractionRouter: selection_clear_requested received -> no current selection (noop)
 BattleManager: Initial gacha_tokens set to: 0
 BattleManager: Processing 17 run state instances
-BattleManager: Found hero instance: hero_1754773174_6762
+BattleManager: Found hero instance: hero_1754817782_5583
 --- BATTLE SETUP: PASS 3 ---
 BattleManager: Hero instance found: true
 BattleManager: Placing hero at index 0
-Processing permanent instance: unit_t1_a_1754773174_9982 with location: RunInventoryT1 [0]
-Processing permanent instance: unit_t1_a_1754773174_7464 with location: RunInventoryT1 [1]
-Processing permanent instance: unit_t1_b_1754773174_9389 with location: RunInventoryT1 [2]
-Processing permanent instance: unit_t1_b_1754773174_8627 with location: RunInventoryT1 [3]
-Processing permanent instance: item_t1_a_1754773174_6957 with location: RunInventoryT1 [4]
-Processing permanent instance: item_t1_a_1754773174_0587 with location: RunInventoryT1 [5]
-Processing permanent instance: item_t1_b_1754773174_6801 with location: RunInventoryT1 [6]
-Processing permanent instance: item_t1_b_1754773174_6270 with location: RunInventoryT1 [7]
-Processing permanent instance: unit_t2_c_1754773174_3360 with location: RunInventoryT2 [0]
-Processing permanent instance: unit_t2_c_1754773174_5861 with location: RunInventoryT2 [1]
-Processing permanent instance: item_t2_c_1754773174_4807 with location: RunInventoryT2 [2]
-Processing permanent instance: item_t2_c_1754773174_4776 with location: RunInventoryT2 [3]
-Processing permanent instance: unit_t3_d_1754773174_3064 with location: RunInventoryT3 [0]
-Processing permanent instance: unit_t3_d_1754773174_2343 with location: RunInventoryT3 [1]
-Processing permanent instance: item_t3_d_1754773174_0833 with location: RunInventoryT3 [2]
-Processing permanent instance: item_t3_d_1754773174_1862 with location: RunInventoryT3 [3]
+Processing permanent instance: unit_t1_a_1754817782_1860 with location: RunInventoryT1 [0]
+Processing permanent instance: unit_t1_a_1754817782_6235 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t1_b_1754817782_7361 with location: RunInventoryT1 [2]
+Processing permanent instance: unit_t1_b_1754817782_6702 with location: RunInventoryT1 [3]
+Processing permanent instance: item_t1_a_1754817782_0362 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_a_1754817782_7492 with location: RunInventoryT1 [5]
+Processing permanent instance: item_t1_b_1754817782_3532 with location: RunInventoryT1 [6]
+Processing permanent instance: item_t1_b_1754817782_6342 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1754817782_4477 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1754817782_5710 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1754817782_0599 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1754817782_7059 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1754817782_1612 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1754817782_5518 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1754817782_7824 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1754817782_3588 with location: RunInventoryT3 [3]
 BattleManager: Setting up enemy lineup with encounter_def: true
-BattleManager: Encounter has 1 placements
-BattleManager: Created enemy unit at position 5 with 1 items
-BattleManager: Enemy unit unit_t3_d_1754773185_0140 has 1 equipped items
+BattleManager: Encounter has 3 placements
+BattleManager: Created enemy unit at position 4 with 0 items
+BattleManager: Created enemy unit at position 5 with 0 items
+BattleManager: Created enemy unit at position 0 with 0 items
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
 GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
 Main: _on_gacha_tokens_changed called with amount: 0
 Main: Updated tokens label to: Tokens: 0
 BattleManager: _emit_stats_changed_for_equipped_units called
-BattleManager: Unit hero_1754773174_6762 has no equipped items
-BattleManager: Unit unit_t1_a_1754773185_3807 has no equipped items
-BattleManager: Unit unit_t1_a_1754773185_9532 has no equipped items
-BattleManager: Unit unit_t1_b_1754773185_9979 has no equipped items
-BattleManager: Unit unit_t1_b_1754773185_6429 has no equipped items
-BattleManager: Unit unit_t2_c_1754773185_2915 has no equipped items
-BattleManager: Unit unit_t2_c_1754773185_7013 has no equipped items
-BattleManager: Unit unit_t3_d_1754773185_8143 has no equipped items
-BattleManager: Unit unit_t3_d_1754773185_7494 has no equipped items
-BattleManager: Unit unit_t3_d_1754773185_0140 has 1 equipped items
-BattleManager: Base stats - HP: 6, PWR: 6
-BattleManager: Current stats - HP: 7, PWR: 7
-BattleManager: Emitting unit_stats_changed for unit: unit_t3_d_1754773185_0140
-GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754773185_0140, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754773185_0140, my UUID: unit_t3_d_1754773185_0140
-GachaBallView: Updating stats for unit: unit_t3_d_1754773185_0140
-GachaBallView: Current stats before update - HP: 7, PWR: 7
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GachaBallView: Stats updated
+BattleManager: Unit hero_1754817782_5583 has no equipped items
+BattleManager: Unit unit_t1_a_1754817784_2639 has no equipped items
+BattleManager: Unit unit_t1_a_1754817784_1662 has no equipped items
+BattleManager: Unit unit_t1_b_1754817784_4388 has no equipped items
+BattleManager: Unit unit_t1_b_1754817784_1949 has no equipped items
+BattleManager: Unit unit_t2_c_1754817784_4008 has no equipped items
+BattleManager: Unit unit_t2_c_1754817784_9262 has no equipped items
+BattleManager: Unit unit_t3_d_1754817784_1402 has no equipped items
+BattleManager: Unit unit_t3_d_1754817784_0233 has no equipped items
+BattleManager: Unit unit_t1_a_1754817784_4253 has no equipped items
+BattleManager: Unit unit_t3_d_1754817784_0600 has no equipped items
+BattleManager: Unit unit_t1_a_1754817784_7222 has no equipped items
 Main: _on_gacha_tokens_changed called with amount: 5
 Main: Updated tokens label to: Tokens: 5
 FlashcardManager: Starting minigame with 10 cards
@@ -374,17 +86,34 @@ FlashcardManager: Selecting card via SRS from 10 cards
 FlashcardManager: Selecting card via SRS from 10 cards
 BattleManager: _on_flashcard_completed called with results: { "correct_answers": 3, "incorrect_answers": 0 }
 WindowManager: close_all_inspection_windows count=0
-WindowManager: _on_window_freed id=181210712277 was_modal=true
+WindowManager: _on_window_freed id=119990650774 was_modal=true
 BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
 GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
 BattleManager: Adding 3 tokens. Current tokens: 5
 BattleManager: New token count: 8
 Main: _on_gacha_tokens_changed called with amount: 8
 Main: Updated tokens label to: Tokens: 8
-WindowManager: _on_window_freed id=205336348323 was_modal=true
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94959044233
+WindowManager: _on_window_freed id=143176763374 was_modal=true
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 145945003935
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 1
+GlobalInteractionRouter: Executing SELECT command for entity_type: UNIT, source_id: 145945003935
+GachaBallView: _on_view_selected called for view: @PanelContainer@78:<PanelContainer#145945003935>, self: @PanelContainer@78:<PanelContainer#145945003935>, entity_uuid: hero_1754817782_5583
+GachaBallView: Setting selection to true
+GachaBallView: _on_view_selected called for view: @PanelContainer@78:<PanelContainer#145945003935>, self: @PanelContainer@84:<PanelContainer#146599315432>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_selected called for view: @PanelContainer@78:<PanelContainer#145945003935>, self: @PanelContainer@86:<PanelContainer#146985191343>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_selected called for view: @PanelContainer@78:<PanelContainer#145945003935>, self: @PanelContainer@88:<PanelContainer#147320735713>, entity_uuid: unit_t3_d_1754817784_0600
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98683586236
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
@@ -393,9 +122,11 @@ Main: _on_gacha_tokens_changed called with amount: 7
 Main: Updated tokens label to: Tokens: 7
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
 GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Not a unit, hiding stats
 GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94959044233
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98683586236
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
@@ -404,10 +135,12 @@ Main: _on_gacha_tokens_changed called with amount: 6
 Main: Updated tokens label to: Tokens: 6
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
 GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
 GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94959044233
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98683586236
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
@@ -416,11 +149,186 @@ Main: _on_gacha_tokens_changed called with amount: 5
 Main: Updated tokens label to: Tokens: 5
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
 GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
 GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94959044233
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 180791281531
+GlobalInteractionRouter: Generating commands for entity_type: ITEM
+GIR: Invalid action target for click. sel=PlayerLineup (BattleBoard) -> tgt=ItemInventory (InventoryGrid)
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 180791281531
+GlobalInteractionRouter: Generating commands for entity_type: ITEM
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 1
+GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 180791281531
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#180187301693>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#180791281531>, entity_uuid: item_t1_b_1754817784_2958
+GachaBallView: Setting selection to true
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: @PanelContainer@125:<PanelContainer#181093271404>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#181395261271>, entity_uuid: item_t1_b_1754817784_6066
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#181697251314>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#182083127248>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#182418671668>, entity_uuid: unit_t3_d_1754817784_0600
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 180187301693
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 5
+GIR._execute_request_action: src_view_id=180791281531 tgt_view_id=180187301693
+GIR._execute_request_action: activating suppression for target view id=180187301693
+InventoryManager: try_inventory_action src=ItemInventory -> tgt=PlayerLineup
+InventoryManager: Early equip path triggered (ITEM -> UNIT on board)
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: hero_1754817782_5583
+GachaBallView: Updating stats for unit: hero_1754817782_5583
+GachaBallView: Current stats before update - HP: 10, PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 3
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_b_1754817784_2958
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_b_1754817784_6066
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: hero_1754817782_5583
+GachaBallView: Updating stats for unit: hero_1754817782_5583
+GachaBallView: Current stats before update - HP: 10, PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 3
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_b_1754817784_2958
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_b_1754817784_6066
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#180187301693>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#180791281531>, entity_uuid: item_t1_b_1754817784_2958
+GachaBallView: Setting selection to false
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: @PanelContainer@125:<PanelContainer#181093271404>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#181395261271>, entity_uuid: item_t1_b_1754817784_6066
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#181697251314>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#182083127248>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#180791281531>, self: GachaBallView:<PanelContainer#182418671668>, entity_uuid: unit_t3_d_1754817784_0600
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 3
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GIR.end_drag: was_handled=true
+GIR.end_drag: stage-1 suppression active id=0 until=22846
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 213137754068
+GlobalInteractionRouter: Generating commands for entity_type: ITEM
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 1
+GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 213137754068
+GachaBallView: _on_view_selected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@132:<PanelContainer#212181452601>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_selected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: GachaBallView:<PanelContainer#212835764118>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_selected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@139:<PanelContainer#213137754068>, entity_uuid: item_t1_b_1754817784_6066
+GachaBallView: Setting selection to true
+GachaBallView: _on_view_selected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@140:<PanelContainer#213439743970>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_selected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@142:<PanelContainer#213825619919>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_selected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@144:<PanelContainer#214161164367>, entity_uuid: unit_t3_d_1754817784_0600
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 212181452601
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 5
+GIR._execute_request_action: src_view_id=213137754068 tgt_view_id=212181452601
+GIR._execute_request_action: activating suppression for target view id=212181452601
+InventoryManager: try_inventory_action src=ItemInventory -> tgt=PlayerLineup
+InventoryManager: Early equip path triggered (ITEM -> UNIT on board)
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: hero_1754817782_5583
+GachaBallView: Updating stats for unit: hero_1754817782_5583
+GachaBallView: Current stats before update - HP: 10, PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_b_1754817784_6066
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: hero_1754817782_5583
+GachaBallView: Updating stats for unit: hero_1754817782_5583
+GachaBallView: Current stats before update - HP: 10, PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_b_1754817784_6066
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@132:<PanelContainer#212181452601>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_deselected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: GachaBallView:<PanelContainer#212835764118>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_deselected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@139:<PanelContainer#213137754068>, entity_uuid: item_t1_b_1754817784_6066
+GachaBallView: Setting selection to false
+GachaBallView: _on_view_deselected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@140:<PanelContainer#213439743970>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_deselected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@142:<PanelContainer#213825619919>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_deselected called for view: @PanelContainer@139:<PanelContainer#213137754068>, self: @PanelContainer@144:<PanelContainer#214161164367>, entity_uuid: unit_t3_d_1754817784_0600
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GIR.end_drag: was_handled=true
+GIR.end_drag: stage-1 suppression active id=0 until=25077
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98683586236
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
@@ -428,668 +336,799 @@ WindowManager: close_all_inspection_windows count=0
 Main: _on_gacha_tokens_changed called with amount: 4
 Main: Updated tokens label to: Tokens: 4
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
-GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98683586236
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+Main: _on_gacha_tokens_changed called with amount: 3
+Main: Updated tokens label to: Tokens: 3
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
 GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
 GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
 GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98683586236
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
 WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 224881805196
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
+Main: _on_gacha_tokens_changed called with amount: 2
+Main: Updated tokens label to: Tokens: 2
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 259677751267
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 224881805196
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@194:<PanelContainer#223640290967>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@200:<PanelContainer#224193939099>, entity_uuid: unit_t1_a_1754773185_9532
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@202:<PanelContainer#224529483746>, entity_uuid: unit_t1_b_1754773185_6429
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#224881805196>, entity_uuid: item_t1_a_1754773185_7659
+GlobalInteractionRouter: Executing SELECT command for entity_type: UNIT, source_id: 259677751267
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@198:<PanelContainer#258385905511>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: GachaBallView:<PanelContainer#259006662629>, entity_uuid: unit_t1_a_1754817784_2639
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@207:<PanelContainer#259342206899>, entity_uuid: unit_t1_b_1754817784_4388
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: GachaBallView:<PanelContainer#259677751267>, entity_uuid: unit_t1_b_1754817784_1949
 GachaBallView: Setting selection to true
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#225183795177>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@204:<PanelContainer#225586448452>, entity_uuid: unit_t3_d_1754773185_0140
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: GachaBallView:<PanelContainer#260030072751>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@210:<PanelContainer#260348840007>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@212:<PanelContainer#260734715997>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@214:<PanelContainer#261070260236>, entity_uuid: unit_t3_d_1754817784_0600
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
 WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 224193939099
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
+SlotView._gui_input: click on slot PlayerLineup[5] children=0
+GlobalInteractionRouter: Received interaction context - entity_type: EMPTY_SLOT, source_id: 116031227625
+GlobalInteractionRouter: Generating commands for entity_type: EMPTY_SLOT
 GlobalInteractionRouter: Executing command queue with 2 commands
 GlobalInteractionRouter: Executing command: 5
-GIR._execute_request_action: src_view_id=224881805196 tgt_view_id=224193939099
-GIR._execute_request_action: activating suppression for target view id=224193939099
-InventoryManager: try_inventory_action src=ItemInventory -> tgt=PlayerBench
+GIR._execute_request_action: src_view_id=259677751267 tgt_view_id=116031227625
+GIR._execute_request_action: activating suppression for target view id=116031227625
+InventoryManager: try_inventory_action src=PlayerBench -> tgt=PlayerLineup
+InventoryManager: Groups src=BattleBoard tgt=BattleBoard
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@198:<PanelContainer#258385905511>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: GachaBallView:<PanelContainer#259006662629>, entity_uuid: unit_t1_a_1754817784_2639
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@207:<PanelContainer#259342206899>, entity_uuid: unit_t1_b_1754817784_4388
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: GachaBallView:<PanelContainer#259677751267>, entity_uuid: unit_t1_b_1754817784_1949
+GachaBallView: Setting selection to false
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: GachaBallView:<PanelContainer#260030072751>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@210:<PanelContainer#260348840007>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@212:<PanelContainer#260734715997>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#259677751267>, self: @PanelContainer@214:<PanelContainer#261070260236>, entity_uuid: unit_t3_d_1754817784_0600
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GIR.end_drag: was_handled=true
+GIR.end_drag: stage-1 suppression active id=0 until=31964
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 114202510833
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GIR: _is_close_suppressed_now true now=31544 until=31964
+GlobalInteractionRouter: Executing command queue with 0 commands
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 284910684025
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 1
+GlobalInteractionRouter: Executing SELECT command for entity_type: UNIT, source_id: 284910684025
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#283635615553>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#284239594985>, entity_uuid: unit_t1_b_1754817784_1949
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: @PanelContainer@230:<PanelContainer#284575139867>, entity_uuid: unit_t1_a_1754817784_2639
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#284910684025>, entity_uuid: unit_t1_b_1754817784_4388
+GachaBallView: Setting selection to true
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: @PanelContainer@233:<PanelContainer#285279782680>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#285598549706>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#285984426120>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#286319970460>, entity_uuid: unit_t3_d_1754817784_0600
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+SlotView._gui_input: click on slot PlayerLineup[4] children=0
+GlobalInteractionRouter: Received interaction context - entity_type: EMPTY_SLOT, source_id: 115964118755
+GlobalInteractionRouter: Generating commands for entity_type: EMPTY_SLOT
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 5
+GIR._execute_request_action: src_view_id=284910684025 tgt_view_id=115964118755
+GIR._execute_request_action: activating suppression for target view id=115964118755
+InventoryManager: try_inventory_action src=PlayerBench -> tgt=PlayerLineup
+InventoryManager: Groups src=BattleBoard tgt=BattleBoard
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#283635615553>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#284239594985>, entity_uuid: unit_t1_b_1754817784_1949
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: @PanelContainer@230:<PanelContainer#284575139867>, entity_uuid: unit_t1_a_1754817784_2639
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#284910684025>, entity_uuid: unit_t1_b_1754817784_4388
+GachaBallView: Setting selection to false
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: @PanelContainer@233:<PanelContainer#285279782680>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#285598549706>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#285984426120>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#284910684025>, self: GachaBallView:<PanelContainer#286319970460>, entity_uuid: unit_t3_d_1754817784_0600
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GIR.end_drag: was_handled=true
+GIR.end_drag: stage-1 suppression active id=0 until=33911
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 114202510833
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GIR: _is_close_suppressed_now true now=33491 until=33911
+GlobalInteractionRouter: Executing command queue with 0 commands
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 310730819673
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 1
+GlobalInteractionRouter: Executing SELECT command for entity_type: UNIT, source_id: 310730819673
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@240:<PanelContainer#309472528431>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: GachaBallView:<PanelContainer#310059731038>, entity_uuid: unit_t1_b_1754817784_4388
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@249:<PanelContainer#310395275258>, entity_uuid: unit_t1_b_1754817784_1949
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: GachaBallView:<PanelContainer#310730819673>, entity_uuid: unit_t1_a_1754817784_2639
+GachaBallView: Setting selection to true
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: GachaBallView:<PanelContainer#311116695638>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@252:<PanelContainer#311435462398>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@254:<PanelContainer#311821338384>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@256:<PanelContainer#312156882784>, entity_uuid: unit_t3_d_1754817784_0600
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+SlotView._gui_input: click on slot PlayerLineup[3] children=0
+GlobalInteractionRouter: Received interaction context - entity_type: EMPTY_SLOT, source_id: 115897009647
+GlobalInteractionRouter: Generating commands for entity_type: EMPTY_SLOT
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 5
+GIR._execute_request_action: src_view_id=310730819673 tgt_view_id=115897009647
+GIR._execute_request_action: activating suppression for target view id=115897009647
+InventoryManager: try_inventory_action src=PlayerBench -> tgt=PlayerLineup
+InventoryManager: Groups src=BattleBoard tgt=BattleBoard
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@240:<PanelContainer#309472528431>, entity_uuid: hero_1754817782_5583
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: GachaBallView:<PanelContainer#310059731038>, entity_uuid: unit_t1_b_1754817784_4388
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@249:<PanelContainer#310395275258>, entity_uuid: unit_t1_b_1754817784_1949
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: GachaBallView:<PanelContainer#310730819673>, entity_uuid: unit_t1_a_1754817784_2639
+GachaBallView: Setting selection to false
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: GachaBallView:<PanelContainer#311116695638>, entity_uuid: item_t1_a_1754817784_7997
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@252:<PanelContainer#311435462398>, entity_uuid: unit_t1_a_1754817784_7222
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@254:<PanelContainer#311821338384>, entity_uuid: unit_t1_a_1754817784_4253
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#310730819673>, self: @PanelContainer@256:<PanelContainer#312156882784>, entity_uuid: unit_t3_d_1754817784_0600
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GIR.end_drag: was_handled=true
+GIR.end_drag: stage-1 suppression active id=0 until=36165
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 114202510833
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GIR: _is_close_suppressed_now true now=35745 until=36165
+GlobalInteractionRouter: Executing command queue with 0 commands
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98733917887
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+Main: _on_gacha_tokens_changed called with amount: 0
+Main: Updated tokens label to: Tokens: 0
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 4
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GachaBallView._get_drag_data: origin=ItemInventory[0] uuid=item_t2_c_1754817784_9756
+GachaBallView._get_drag_data: calling GIR.start_drag
+GIR.start_drag: origin=ItemInventory[0]
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
+GachaBallView._drop_data: target=PlayerLineup[0] drag_active=true
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 356230629384
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GIR: Drag drop target received. src=ItemInventory -> tgt=PlayerLineup
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 5
+GIR._execute_request_action: src_view_id=357858019417 tgt_view_id=356230629384
+GIR._execute_request_action: activating suppression for target view id=356230629384
+InventoryManager: try_inventory_action src=ItemInventory -> tgt=PlayerLineup
 InventoryManager: Early equip path triggered (ITEM -> UNIT on board)
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t1_a_1754773185_9532
-GachaBallView: Updating stats for unit: unit_t1_a_1754773185_9532
-GachaBallView: Current stats before update - HP: 2, PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 2
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: hero_1754817782_5583
+GachaBallView: Updating stats for unit: hero_1754817782_5583
+GachaBallView: Current stats before update - HP: 11, PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
 GachaBallView: Stats updated
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t1_b_1754773185_6429
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_2639
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: item_t1_a_1754773185_7659
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_b_1754817784_4388
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: item_t1_a_1754773185_5103
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_b_1754817784_1949
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t3_d_1754773185_0140
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t2_c_1754817784_9756
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: hero_1754773174_6762
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_a_1754817784_7997
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t1_a_1754773185_9532
-GachaBallView: Updating stats for unit: unit_t1_a_1754773185_9532
-GachaBallView: Current stats before update - HP: 2, PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 2
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: hero_1754817782_5583
+GachaBallView: Updating stats for unit: hero_1754817782_5583
+GachaBallView: Current stats before update - HP: 11, PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
 GachaBallView: Stats updated
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t1_b_1754773185_6429
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_2639
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: item_t1_a_1754773185_7659
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_b_1754817784_4388
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: item_t1_a_1754773185_5103
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_b_1754817784_1949
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t3_d_1754773185_0140
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t2_c_1754817784_9756
 GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: hero_1754817782_5583, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GlobalInteractionRouter: selection_clear_requested received -> no current selection (noop)
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
-GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
-GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GIR.end_drag: was_handled=true
-GIR.end_drag: stage-1 suppression active id=0 until=27484
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@194:<PanelContainer#223640290967>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@200:<PanelContainer#224193939099>, entity_uuid: unit_t1_a_1754773185_9532
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@202:<PanelContainer#224529483746>, entity_uuid: unit_t1_b_1754773185_6429
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#224881805196>, entity_uuid: item_t1_a_1754773185_7659
-GachaBallView: Setting selection to false
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#225183795177>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@204:<PanelContainer#225586448452>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#252346107947>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#252899756065>, entity_uuid: unit_t1_a_1754773185_9532
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#253268854756>, entity_uuid: unit_t1_b_1754773185_6429
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: @PanelContainer@218:<PanelContainer#253637953455>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#224881805196>, self: GachaBallView:<PanelContainer#254040606726>, entity_uuid: unit_t3_d_1754773185_0140
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 252899756065
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> <nil>
-WindowManager: close_all_inspection_windows count=0
-GachaBallView: _update_stats - Not a unit, hiding stats
-[WM] open ctx 'UnitInspection' anchor=/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/TeamAreas/PlayerArea/BenchAndInventory/PlayerBench/SlotView/GachaBallView parent=<nil> layers a/p/w=-999/-999/128
-[WM] deferred root pos (general) anchor=GachaBallView ar=[P: (1.0, 525.0), S: (78.0, 116.0)] -> (99.0, 331.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 255399561282
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (254862690372) from_index=0
-GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 255399561282
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#252346107947>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#252899756065>, entity_uuid: unit_t1_a_1754773185_9532
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#253268854756>, entity_uuid: unit_t1_b_1754773185_6429
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#255399561282>, self: @PanelContainer@218:<PanelContainer#253637953455>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#254040606726>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#255399561282>, entity_uuid: item_t1_a_1754773185_7659
-GachaBallView: Setting selection to true
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 255399561282
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (254862690372) from_index=0
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#252346107947>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#252899756065>, entity_uuid: unit_t1_a_1754773185_9532
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#253268854756>, entity_uuid: unit_t1_b_1754773185_6429
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#255399561282>, self: @PanelContainer@218:<PanelContainer#253637953455>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#254040606726>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#255399561282>, self: GachaBallView:<PanelContainer#255399561282>, entity_uuid: item_t1_a_1754773185_7659
-GachaBallView: Setting selection to false
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (254862690372)
-WindowManager: close_children_of parent=UnitInspectionWindow (254862690372) from_index=0
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (99.0, 331.0), S: (143.0, 379.0)] -> (262.0, 331.0)
-[WM] finalize child pos (parent-only by hint) -> (262.0, 331.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (263368738551)
-WindowManager: close_children_of parent=ItemInspectionWindow (263368738551) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (263368738551)
-WindowManager: close_children_of parent=ItemInspectionWindow (263368738551) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (262.0, 331.0), S: (157.0, 225.0)] anchor=ItemInspectionWindow ar=[P: (262.0, 331.0), S: (157.0, 225.0)] -> (439.0, 331.0)
-[WM] finalize child pos (anchor-relative) -> (439.0, 331.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (263368738551)
-WindowManager: close_children_of parent=ItemInspectionWindow (263368738551) from_index=1
-WindowManager: close_child -> EffectInspectionWindow (268435458006)
-WindowManager: _on_window_freed id=268435458006 was_modal=false
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (263368738551)
-WindowManager: close_children_of parent=ItemInspectionWindow (263368738551) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (263368738551)
-WindowManager: close_children_of parent=ItemInspectionWindow (263368738551) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (262.0, 331.0), S: (157.0, 225.0)] anchor=ItemInspectionWindow ar=[P: (262.0, 331.0), S: (157.0, 225.0)] -> (439.0, 331.0)
-[WM] finalize child pos (anchor-relative) -> (439.0, 331.0)
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (254862690372)
-WindowManager: close_children_of parent=UnitInspectionWindow (254862690372) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (278132688629)
-WindowManager: close_child -> ItemInspectionWindow (263368738551)
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (254862690372)
-WindowManager: close_children_of parent=UnitInspectionWindow (254862690372) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (278132688629)
-WindowManager: close_child -> ItemInspectionWindow (263368738551)
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-WindowManager: _on_window_freed id=278132688629 was_modal=false
-WindowManager: _on_window_freed id=263368738551 was_modal=false
-[WM] deferred child pos (anchor-relative) parent=UnitInspectionWindow pr=[P: (99.0, 331.0), S: (143.0, 379.0)] anchor=UnitInspectionWindow ar=[P: (99.0, 331.0), S: (143.0, 379.0)] -> (262.0, 331.0)
-[WM] finalize child pos (anchor-relative) -> (262.0, 331.0)
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (254862690372)
-WindowManager: close_children_of parent=UnitInspectionWindow (254862690372) from_index=0
-WindowManager: close_child -> @PanelContainer@229 (284726134520)
-WindowManager: _on_window_freed id=284726134520 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=1
-WindowManager: close_all -> UnitInspectionWindow (254862690372)
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 176211101913
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-WindowManager: _on_window_freed id=254862690372 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GachaBallView._get_drag_data: origin=PlayerBench[0] uuid=unit_t1_a_1754773185_9532
-GachaBallView._get_drag_data: calling GIR.start_drag
-GIR.start_drag: origin=PlayerBench[0]
-GlobalInteractionRouter: Received interaction context - entity_type: EMPTY_SLOT, source_id: 177905600763
-GlobalInteractionRouter: Generating commands for entity_type: EMPTY_SLOT
-GIR: Drag drop target received. src=PlayerBench -> tgt=PlayerLineup
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 5
-GIR._execute_request_action: src_view_id=252899756065 tgt_view_id=177905600763
-GIR._execute_request_action: activating suppression for target view id=177905600763
-InventoryManager: try_inventory_action src=PlayerBench -> tgt=PlayerLineup
-InventoryManager: Groups src=BattleBoard tgt=BattleBoard
-Main: _on_battle_inventory_changed called, re-enabling draw buttons
-GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
-GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GIR.end_drag: was_handled=true
-GIR.end_drag: stage-1 suppression active id=0 until=38682
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GachaBallView._get_drag_data: origin=PlayerBench[1] uuid=unit_t1_b_1754773185_6429
-GachaBallView._get_drag_data: calling GIR.start_drag
-GIR.start_drag: origin=PlayerBench[1]
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._can_drop_data: container=PlayerLineup, group=BattleBoard, has_source_loc=true
-GachaBallView._drop_data: target=PlayerLineup[3] drag_active=true
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 310193948744
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
-GIR: Drag drop target received. src=PlayerBench -> tgt=PlayerLineup
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 5
-GIR._execute_request_action: src_view_id=310613379034 tgt_view_id=310193948744
-GIR._execute_request_action: activating suppression for target view id=310193948744
-InventoryManager: try_inventory_action src=PlayerBench -> tgt=PlayerLineup
-InventoryManager: Groups src=BattleBoard tgt=BattleBoard
-Resolved anchor from target_location
-GIR.end_drag: was_handled=true
-GIR.end_drag: stage-1 suppression active id=0 until=40428
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t1_a_1754773185_9532
-GachaBallView: Updating stats for unit: unit_t1_a_1754773185_9532
-GachaBallView: Current stats before update - HP: 1, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
 GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GIR.end_drag: was_handled=true
+GIR.end_drag: stage-1 suppression active id=0 until=40047
+GlobalInteractionRouter: Executing command: 0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: Updating stats for unit: unit_t1_a_1754817784_7222
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
 GachaBallView: Stats updated
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t1_b_1754773185_6429
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_4253
 GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: item_t1_a_1754773185_5103
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754773185_9532, my UUID: unit_t3_d_1754773185_0140
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t1_a_1754773185_9532
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t1_b_1754773185_6429
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_5103
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t3_d_1754773185_0140
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t1_a_1754773185_9532
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t1_b_1754773185_6429
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_5103
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t3_d_1754773185_0140
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t3_d_1754817784_0600
 GachaBallView: UUID mismatch, ignoring signal
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
-GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
 GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-WindowManager: _on_window_freed id=330628597488 was_modal=true
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: Updating stats for unit: unit_t1_a_1754817784_7222
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_7222
+GachaBallView: Updating stats for unit: unit_t1_a_1754817784_7222
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_7222, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: Updating stats for unit: unit_t1_a_1754817784_4253
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: Updating stats for unit: unit_t1_a_1754817784_4253
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t1_a_1754817784_4253
+GachaBallView: Updating stats for unit: unit_t1_a_1754817784_4253
+GachaBallView: Current stats before update - HP: 0, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 2
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_a_1754817784_4253, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: UUID mismatch, ignoring signal
+BasicAttack: unit_t1_b attacks unit_t1_a for 1 damage. Target HP is now 0.
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: Updating stats for unit: unit_t3_d_1754817784_0600
+GachaBallView: Current stats before update - HP: 4, PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 6
+GachaBallView: Stats updated
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 6
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: Updating stats for unit: unit_t3_d_1754817784_0600
+GachaBallView: Current stats before update - HP: 4, PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 6
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: Updating stats for unit: unit_t3_d_1754817784_0600
+GachaBallView: Current stats before update - HP: 4, PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 6
+GachaBallView: Stats updated
+BasicAttack: unit_t1_a attacks unit_t3_d for 2 damage. Target HP is now 4.
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: Updating stats for unit: unit_t3_d_1754817784_0600
+GachaBallView: Current stats before update - HP: 0, PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 6
+GachaBallView: Stats updated
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 6
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: Updating stats for unit: unit_t3_d_1754817784_0600
+GachaBallView: Current stats before update - HP: 0, PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 6
+GachaBallView: Stats updated
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_a_1754817784_2639
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_4388
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t1_b_1754817784_1949
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: item_t1_a_1754817784_7997
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t3_d_1754817784_0600, my UUID: unit_t3_d_1754817784_0600
+GachaBallView: Updating stats for unit: unit_t3_d_1754817784_0600
+GachaBallView: Current stats before update - HP: 0, PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 0, PWR: PWR: 6
+GachaBallView: Stats updated
+BasicAttack: hero attacks unit_t3_d for 5 damage. Target HP is now 0.
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Not a unit, hiding stats
+GameManager: Generated 3 reward instances
+WindowManager: close_all_inspection_windows count=0
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 1, PWR: PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+BattleManager: _exit_tree called
+WindowManager: _on_window_freed id=425654749432 was_modal=true
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
 WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 334890010868
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
-GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 432214640842
+GlobalInteractionRouter: Generating commands for entity_type: ITEM
+GlobalInteractionRouter: Executing command queue with 2 commands
+GlobalInteractionRouter: Executing command: 0
 GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: UNIT, source_id: 334890010868
-GachaBallView: _on_view_selected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: GachaBallView:<PanelContainer#334386694113>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_selected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: @PanelContainer@258:<PanelContainer#334890010868>, entity_uuid: unit_t2_c_1754773212_3374
+GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 432214640842
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#432214640842>, self: GachaBallView:<PanelContainer#431778432710>, entity_uuid: unit_t3_d_1754817822_0055
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#432214640842>, self: GachaBallView:<PanelContainer#432214640842>, entity_uuid: unit_t1_a_1754817822_2228
 GachaBallView: Setting selection to true
-GachaBallView: _on_view_selected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: @PanelContainer@262:<PanelContainer#335393326868>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_selected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: GachaBallView:<PanelContainer#335795980244>, entity_uuid: unit_t3_d_1754773185_0140
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
+GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#432214640842>, self: GachaBallView:<PanelContainer#432550184906>, entity_uuid: unit_t1_b_1754817822_7933
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
 GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 3
 WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 334890010868
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: GachaBallView:<PanelContainer#334386694113>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_deselected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: @PanelContainer@258:<PanelContainer#334890010868>, entity_uuid: unit_t2_c_1754773212_3374
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#432214640842>, self: GachaBallView:<PanelContainer#431778432710>, entity_uuid: unit_t3_d_1754817822_0055
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#432214640842>, self: GachaBallView:<PanelContainer#432214640842>, entity_uuid: unit_t1_a_1754817822_2228
 GachaBallView: Setting selection to false
-GachaBallView: _on_view_deselected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: @PanelContainer@262:<PanelContainer#335393326868>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_deselected called for view: @PanelContainer@258:<PanelContainer#334890010868>, self: GachaBallView:<PanelContainer#335795980244>, entity_uuid: unit_t3_d_1754773185_0140
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> <nil>
+GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#432214640842>, self: GachaBallView:<PanelContainer#432550184906>, entity_uuid: unit_t1_b_1754817822_7933
+--- REWARD CHOSEN ---
+Instance UUID: unit_t1_a_1754817822_2228
+Set Location To: RunInventoryT1 [8]
+--------------------
+GlobalInteractionRouter: selection_clear_requested received -> no current selection (noop)
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
 WindowManager: close_all_inspection_windows count=0
-GachaBallView: _update_stats - Not a unit, hiding stats
-[WM] open ctx 'UnitInspection' anchor=/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/TeamAreas/PlayerArea/PlayerLineup/@PanelContainer@86/@PanelContainer@258 parent=<nil> layers a/p/w=-999/-999/128
-[WM] deferred root pos (general) anchor=@PanelContainer@258 ar=[P: (253.0, 181.0), S: (78.0, 174.0)] -> (351.0, 181.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 344151033831
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GameManager: Day: 2, Budget: 10, Node subtype: 
+EncounterGenerator: Generating encounter with budget: 10
+EncounterGenerator: Total definitions found: 10
+EncounterGenerator: Database.units size: 6
+EncounterGenerator: Database.items size: 4
+EncounterGenerator: Available units: 4, Available items: 4
+EncounterGenerator: New best build - Units: 5, Items: 1, Spent: 10/10
+EncounterGenerator: Found perfect build!
+EncounterGenerator: Final build - Units: 5, Items: 1, Spent: 10/10 (100.0% efficiency)
+BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+Main: Starting battle with encounter_def: true
+BattleManager: Starting battle with encounter_def: true
+GlobalInteractionRouter: selection_clear_requested received -> no current selection (noop)
+BattleManager: Initial gacha_tokens set to: 0
+BattleManager: Processing 18 run state instances
+BattleManager: Found hero instance: hero_1754817782_5583
+--- BATTLE SETUP: PASS 3 ---
+BattleManager: Hero instance found: true
+BattleManager: Placing hero at index 0
+Processing permanent instance: unit_t1_a_1754817782_1860 with location: RunInventoryT1 [0]
+Processing permanent instance: unit_t1_a_1754817782_6235 with location: RunInventoryT1 [1]
+Processing permanent instance: unit_t1_b_1754817782_7361 with location: RunInventoryT1 [2]
+Processing permanent instance: unit_t1_b_1754817782_6702 with location: RunInventoryT1 [3]
+Processing permanent instance: item_t1_a_1754817782_0362 with location: RunInventoryT1 [4]
+Processing permanent instance: item_t1_a_1754817782_7492 with location: RunInventoryT1 [5]
+Processing permanent instance: item_t1_b_1754817782_3532 with location: RunInventoryT1 [6]
+Processing permanent instance: item_t1_b_1754817782_6342 with location: RunInventoryT1 [7]
+Processing permanent instance: unit_t2_c_1754817782_4477 with location: RunInventoryT2 [0]
+Processing permanent instance: unit_t2_c_1754817782_5710 with location: RunInventoryT2 [1]
+Processing permanent instance: item_t2_c_1754817782_0599 with location: RunInventoryT2 [2]
+Processing permanent instance: item_t2_c_1754817782_7059 with location: RunInventoryT2 [3]
+Processing permanent instance: unit_t3_d_1754817782_1612 with location: RunInventoryT3 [0]
+Processing permanent instance: unit_t3_d_1754817782_5518 with location: RunInventoryT3 [1]
+Processing permanent instance: item_t3_d_1754817782_7824 with location: RunInventoryT3 [2]
+Processing permanent instance: item_t3_d_1754817782_3588 with location: RunInventoryT3 [3]
+Processing permanent instance: unit_t1_a_1754817822_2228 with location: RunInventoryT1 [8]
+BattleManager: Setting up enemy lineup with encounter_def: true
+BattleManager: Encounter has 5 placements
+BattleManager: Created enemy unit at position 2 with 0 items
+BattleManager: Created enemy unit at position 3 with 0 items
+BattleManager: Created enemy unit at position 4 with 0 items
+BattleManager: Created enemy unit at position 5 with 1 items
+BattleManager: Enemy unit unit_t1_b_1754817837_6796 has 1 equipped items
+BattleManager: Created enemy unit at position 1 with 0 items
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 2
+Main: _on_gacha_tokens_changed called with amount: 0
+Main: Updated tokens label to: Tokens: 0
+BattleManager: _emit_stats_changed_for_equipped_units called
+BattleManager: Unit hero_1754817782_5583 has no equipped items
+BattleManager: Unit unit_t1_a_1754817837_4673 has no equipped items
+BattleManager: Unit unit_t1_a_1754817837_3924 has no equipped items
+BattleManager: Unit unit_t1_b_1754817837_8729 has no equipped items
+BattleManager: Unit unit_t1_b_1754817837_7859 has no equipped items
+BattleManager: Unit unit_t2_c_1754817837_4311 has no equipped items
+BattleManager: Unit unit_t2_c_1754817837_5979 has no equipped items
+BattleManager: Unit unit_t3_d_1754817837_6080 has no equipped items
+BattleManager: Unit unit_t3_d_1754817837_1543 has no equipped items
+BattleManager: Unit unit_t1_a_1754817837_5543 has no equipped items
+BattleManager: Unit unit_t1_b_1754817837_8714 has no equipped items
+BattleManager: Unit unit_t1_b_1754817837_1738 has no equipped items
+BattleManager: Unit unit_t3_d_1754817837_4112 has no equipped items
+BattleManager: Unit unit_t1_b_1754817837_6796 has 1 equipped items
+BattleManager: Base stats - HP: 2, PWR: 1
+BattleManager: Current stats - HP: 3, PWR: 2
+BattleManager: Emitting unit_stats_changed for unit: unit_t1_b_1754817837_6796
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1754817837_6796, my UUID: hero_1754817782_5583
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1754817837_6796, my UUID: unit_t2_c_1754817837_9608
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1754817837_6796, my UUID: unit_t1_b_1754817837_8714
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1754817837_6796, my UUID: unit_t1_b_1754817837_1738
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1754817837_6796, my UUID: unit_t3_d_1754817837_4112
+GachaBallView: UUID mismatch, ignoring signal
+GachaBallView: Received unit_stats_changed for UUID: unit_t1_b_1754817837_6796, my UUID: unit_t1_b_1754817837_6796
+GachaBallView: Updating stats for unit: unit_t1_b_1754817837_6796
+GachaBallView: Current stats before update - HP: 3, PWR: 2
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 2
+GachaBallView: Stats updated
+BattleManager: Unit unit_t2_c_1754817837_9608 has no equipped items
+Main: _on_gacha_tokens_changed called with amount: 5
+Main: Updated tokens label to: Tokens: 5
+FlashcardManager: Starting minigame with 11 cards
+WindowManager: close_all_inspection_windows count=0
+FlashcardManager: Selecting card via SRS from 11 cards
+FlashcardManager: Selecting card via SRS from 11 cards
+FlashcardManager: Selecting card via SRS from 11 cards
+BattleManager: _on_flashcard_completed called with results: { "correct_answers": 2, "incorrect_answers": 0 }
+WindowManager: close_all_inspection_windows count=0
+WindowManager: _on_window_freed id=487126468443 was_modal=true
+BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed
+Main: _on_battle_inventory_changed called, re-enabling draw buttons
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 2
+BattleManager: Adding 2 tokens. Current tokens: 5
+BattleManager: New token count: 7
+Main: _on_gacha_tokens_changed called with amount: 7
+Main: Updated tokens label to: Tokens: 7
+WindowManager: _on_window_freed id=516536927993 was_modal=true
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 521100331277
+GlobalInteractionRouter: Generating commands for entity_type: UNIT
+GlobalInteractionRouter: Executing command queue with 1 commands
 GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 344151033831
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#334386694113>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@258:<PanelContainer#334890010868>, entity_uuid: unit_t2_c_1754773212_3374
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@262:<PanelContainer#335393326868>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#335795980244>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#344151033831>, entity_uuid: item_t1_a_1754773185_7659
+GlobalInteractionRouter: Executing SELECT command for entity_type: UNIT, source_id: 521100331277
+GachaBallView: _on_view_selected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@522:<PanelContainer#521100331277>, entity_uuid: hero_1754817782_5583
 GachaBallView: Setting selection to true
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 344151033831
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#334386694113>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@258:<PanelContainer#334890010868>, entity_uuid: unit_t2_c_1754773212_3374
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@262:<PanelContainer#335393326868>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#335795980244>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#344151033831>, entity_uuid: item_t1_a_1754773185_7659
-GachaBallView: Setting selection to false
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (343563831171)
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (351.0, 181.0), S: (182.0, 356.0)] -> (553.0, 181.0)
-[WM] finalize child pos (parent-only by hint) -> (553.0, 181.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (349586851593)
-WindowManager: close_children_of parent=ItemInspectionWindow (349586851593) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (349586851593)
-WindowManager: close_children_of parent=ItemInspectionWindow (349586851593) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (553.0, 181.0), S: (157.0, 225.0)] anchor=ItemInspectionWindow ar=[P: (553.0, 181.0), S: (157.0, 225.0)] -> (730.0, 181.0)
-[WM] finalize child pos (anchor-relative) -> (730.0, 181.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (349586851593)
-WindowManager: close_children_of parent=ItemInspectionWindow (349586851593) from_index=1
-WindowManager: close_child -> EffectInspectionWindow (357438588913)
-WindowManager: _on_window_freed id=357438588913 was_modal=false
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (343563831171)
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-WindowManager: close_child -> ItemInspectionWindow (349586851593)
-WindowManager: _on_window_freed id=349586851593 was_modal=false
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (343563831171)
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (343563831171)
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=UnitInspectionWindow pr=[P: (351.0, 181.0), S: (182.0, 356.0)] anchor=UnitInspectionWindow ar=[P: (351.0, 181.0), S: (182.0, 356.0)] -> (553.0, 181.0)
-[WM] finalize child pos (anchor-relative) -> (553.0, 181.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 344151033831
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (367723022081)
-GlobalInteractionRouter: Executing command: 1
-GlobalInteractionRouter: Executing SELECT command for entity_type: ITEM, source_id: 344151033831
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#334386694113>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@258:<PanelContainer#334890010868>, entity_uuid: unit_t2_c_1754773212_3374
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@262:<PanelContainer#335393326868>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#335795980244>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_selected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#344151033831>, entity_uuid: item_t1_a_1754773185_7659
-GachaBallView: Setting selection to true
-WindowManager: _on_window_freed id=367723022081 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 344151033831
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-GlobalInteractionRouter: Executing command: 0
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#334386694113>, entity_uuid: hero_1754773174_6762
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@258:<PanelContainer#334890010868>, entity_uuid: unit_t2_c_1754773212_3374
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: @PanelContainer@262:<PanelContainer#335393326868>, entity_uuid: item_t1_a_1754773185_5103
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#335795980244>, entity_uuid: unit_t3_d_1754773185_0140
-GachaBallView: _on_view_deselected called for view: GachaBallView:<PanelContainer#344151033831>, self: GachaBallView:<PanelContainer#344151033831>, entity_uuid: item_t1_a_1754773185_7659
-GachaBallView: Setting selection to false
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (343563831171)
-WindowManager: close_children_of parent=UnitInspectionWindow (343563831171) from_index=0
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (351.0, 181.0), S: (182.0, 356.0)] -> (553.0, 181.0)
-[WM] finalize child pos (parent-only by hint) -> (553.0, 181.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (372001212481)
-WindowManager: close_children_of parent=ItemInspectionWindow (372001212481) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (372001212481)
-WindowManager: close_children_of parent=ItemInspectionWindow (372001212481) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (553.0, 181.0), S: (157.0, 225.0)] anchor=ItemInspectionWindow ar=[P: (553.0, 181.0), S: (157.0, 225.0)] -> (730.0, 181.0)
-[WM] finalize child pos (anchor-relative) -> (730.0, 181.0)
-GachaBallView._get_drag_data: origin=equipped_item[0] uuid=item_t1_a_1754773185_7659
-GachaBallView._get_drag_data: calling GIR.start_drag
-GIR.start_drag: origin=equipped_item[0]
-GlobalInteractionRouter: Received interaction context - entity_type: EMPTY_SLOT, source_id: 344083924919
+GachaBallView: _on_view_selected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@528:<PanelContainer#521771419144>, entity_uuid: unit_t2_c_1754817837_9608
+GachaBallView: _on_view_selected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@531:<PanelContainer#522140518433>, entity_uuid: unit_t1_b_1754817837_8714
+GachaBallView: _on_view_selected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@533:<PanelContainer#522476062206>, entity_uuid: unit_t1_b_1754817837_1738
+GachaBallView: _on_view_selected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@535:<PanelContainer#522811606910>, entity_uuid: unit_t3_d_1754817837_4112
+GachaBallView: _on_view_selected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@540:<PanelContainer#523247814558>, entity_uuid: unit_t1_b_1754817837_6796
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 98046051815
+GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
+GlobalInteractionRouter: Executing command queue with 1 commands
+GlobalInteractionRouter: Executing command: 3
+WindowManager: close_all_inspection_windows count=0
+SlotView._gui_input: click on slot PlayerLineup[2] children=0
+GlobalInteractionRouter: Received interaction context - entity_type: EMPTY_SLOT, source_id: 482076526614
 GlobalInteractionRouter: Generating commands for entity_type: EMPTY_SLOT
-GIR: Drag drop target received. src=equipped_item -> tgt=equipped_item
 GlobalInteractionRouter: Executing command queue with 2 commands
 GlobalInteractionRouter: Executing command: 5
-GIR._execute_request_action: src_view_id=344151033831 tgt_view_id=344083924919
-GIR._execute_request_action: using explicit target_parent_window_id=343563831171 inside_unit=true
-GIR: _activate_close_suppression_for_window_id id=343563831171 duration=280 now=52171 until=52451
-InventoryManager: try_inventory_action src=equipped_item -> tgt=equipped_item
-InventoryManager: Groups src=EquippedGrid tgt=EquippedGrid
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t2_c_1754773212_3374
-GachaBallView: Updating stats for unit: unit_t2_c_1754773212_3374
-GachaBallView: Current stats before update - HP: 3, PWR: 3
-GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
-GachaBallView: Stats updated
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_5103
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t3_d_1754773185_0140
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_7659
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t2_c_1754773212_3374
-GachaBallView: Updating stats for unit: unit_t2_c_1754773212_3374
-GachaBallView: Current stats before update - HP: 4, PWR: 3
-GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 3
-GachaBallView: Stats updated
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_5103
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t3_d_1754773185_0140
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_7659
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: hero_1754773174_6762
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t2_c_1754773212_3374
-GachaBallView: Updating stats for unit: unit_t2_c_1754773212_3374
-GachaBallView: Current stats before update - HP: 4, PWR: 3
-GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 3
-GachaBallView: Stats updated
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_5103
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: unit_t3_d_1754773185_0140
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: Received unit_stats_changed for UUID: unit_t2_c_1754773212_3374, my UUID: item_t1_a_1754773185_7659
-GachaBallView: UUID mismatch, ignoring signal
-GachaBallView: _update_stats - Not a unit, hiding stats
+GIR._execute_request_action: src_view_id=521100331277 tgt_view_id=482076526614
+GIR._execute_request_action: activating suppression for target view id=482076526614
+InventoryManager: try_inventory_action src=PlayerLineup -> tgt=PlayerLineup
+InventoryManager: Groups src=BattleBoard tgt=BattleBoard
+GlobalInteractionRouter: selection_clear_requested received -> clearing selection now
+GachaBallView: _on_view_deselected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@522:<PanelContainer#521100331277>, entity_uuid: hero_1754817782_5583
+GachaBallView: Setting selection to false
+GachaBallView: _on_view_deselected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@528:<PanelContainer#521771419144>, entity_uuid: unit_t2_c_1754817837_9608
+GachaBallView: _on_view_deselected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@531:<PanelContainer#522140518433>, entity_uuid: unit_t1_b_1754817837_8714
+GachaBallView: _on_view_deselected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@533:<PanelContainer#522476062206>, entity_uuid: unit_t1_b_1754817837_1738
+GachaBallView: _on_view_deselected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@535:<PanelContainer#522811606910>, entity_uuid: unit_t3_d_1754817837_4112
+GachaBallView: _on_view_deselected called for view: @PanelContainer@522:<PanelContainer#521100331277>, self: @PanelContainer@540:<PanelContainer#523247814558>, entity_uuid: unit_t1_b_1754817837_6796
 Main: _on_battle_inventory_changed called, re-enabling draw buttons
-GachaBallView: _update_stats - Updated labels to HP: HP: 10, PWR: PWR: 2
-GachaBallView: _update_stats - Updated labels to HP: HP: 4, PWR: PWR: 3
-GachaBallView: _update_stats - Not a unit, hiding stats
-GachaBallView: _update_stats - Updated labels to HP: HP: 7, PWR: PWR: 7
-GachaBallView: _update_stats - Not a unit, hiding stats
+GachaBallView: _update_stats - Updated labels to HP: HP: 11, PWR: PWR: 5
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 3
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 2, PWR: PWR: 1
+GachaBallView: _update_stats - Updated labels to HP: HP: 6, PWR: PWR: 6
+GachaBallView: _update_stats - Updated labels to HP: HP: 3, PWR: PWR: 2
 GIR.end_drag: was_handled=true
-GIR.end_drag: stage-1 suppression active id=0 until=52598
+GIR.end_drag: stage-1 suppression active id=0 until=71858
 GlobalInteractionRouter: Executing command: 0
-GIR.is_close_suppressed_for_window_id: window_id=343563831171 match=false now=52182 until=52598 target_id=0
-WindowManager: _on_inspection_anchor_freed window_id=343563831171 name=UnitInspectionWindow old_anchor_id=334890010868 suppressed_for_id=false suppressed_now=true
-GIR.is_close_suppressed_for_window_id: window_id=343563831171 match=false now=52183 until=52598 target_id=0
-WindowManager: request_close_inspection_window window=UnitInspectionWindow (343563831171) cause=ANCHOR_FREED suppressed_for_id=false suppressed_now=true
-GIR.is_close_suppressed_for_window_id: window_id=372001212481 match=false now=52434 until=52598 target_id=0
-WindowManager: request_close_inspection_window window=ItemInspectionWindow (372001212481) cause=ANCHOR_LOST_NO_STABLE suppressed_for_id=false suppressed_now=true
-GIR.is_close_suppressed_for_window_id: window_id=343563831171 match=false now=52434 until=52598 target_id=0
-WindowManager: request_close_inspection_window window=UnitInspectionWindow (343563831171) cause=ANCHOR_LOST_NO_STABLE suppressed_for_id=false suppressed_now=true
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
+GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 480449136514
 GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=3
-WindowManager: close_all -> UnitInspectionWindow (343563831171)
-WindowManager: close_all -> ItemInspectionWindow (372001212481)
-WindowManager: close_all -> EffectInspectionWindow (378292668361)
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 176211101913
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-WindowManager: _on_window_freed id=343563831171 was_modal=false
-WindowManager: _on_window_freed id=372001212481 was_modal=false
-WindowManager: _on_window_freed id=378292668361 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 387486582577
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> <nil>
-WindowManager: close_all_inspection_windows count=0
-GachaBallView: _update_stats - Not a unit, hiding stats
-[WM] open ctx 'UnitInspection' anchor=/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/TeamAreas/EnemyArea/EnemyLineupContainer/@PanelContainer@97/@PanelContainer@286 parent=<nil> layers a/p/w=-999/-999/128
-[WM] deferred root pos (left_of_anchor) anchor=@PanelContainer@286 ar=[P: (1841.0, 241.0), S: (78.0, 234.0)] -> (1471.0, 241.0)
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] anchor=UnitInspectionWindow ar=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1177.0, 241.0)
-[WM] finalize child pos (anchor-relative) -> (1177.0, 241.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 399901722550
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (409850611397)
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (409850611397)
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-WindowManager: _on_window_freed id=409850611397 was_modal=false
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1294.0, 241.0)
-[WM] finalize child pos (parent-only by hint) -> (1294.0, 241.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 399901722550
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> ItemInspectionWindow (414195910531)
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> ItemInspectionWindow (414195910531)
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-WindowManager: _on_window_freed id=414195910531 was_modal=false
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1294.0, 241.0)
-[WM] finalize child pos (parent-only by hint) -> (1294.0, 241.0)
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> @PanelContainer@300 (414799890080)
-WindowManager: _on_window_freed id=414799890080 was_modal=false
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] anchor=UnitInspectionWindow ar=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1177.0, 241.0)
-[WM] finalize child pos (anchor-relative) -> (1177.0, 241.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 399901722550
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (419514287813)
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (419514287813)
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-WindowManager: _on_window_freed id=419514287813 was_modal=false
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1294.0, 241.0)
-[WM] finalize child pos (parent-only by hint) -> (1294.0, 241.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (423607928951)
-WindowManager: close_children_of parent=ItemInspectionWindow (423607928951) from_index=1
-[WM] _resolve_parent_window: explicit_id -> ItemInspectionWindow (423607928951)
-WindowManager: close_children_of parent=ItemInspectionWindow (423607928951) from_index=1
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/ItemInspectionWindow parent=/root/Main/ModalLayer/ItemInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=ItemInspectionWindow pr=[P: (1294.0, 241.0), S: (157.0, 248.0)] anchor=ItemInspectionWindow ar=[P: (1294.0, 241.0), S: (157.0, 248.0)] -> (1000.0, 241.0)
-[WM] finalize child pos (anchor-relative) -> (1000.0, 241.0)
-WindowManager: handle_inspection_background_click -> pruning children of ItemInspectionWindow (423607928951)
-WindowManager: close_children_of parent=ItemInspectionWindow (423607928951) from_index=1
-WindowManager: close_child -> EffectInspectionWindow (430419478593)
-WindowManager: _on_window_freed id=430419478593 was_modal=false
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> ItemInspectionWindow (423607928951)
-WindowManager: _on_window_freed id=423607928951 was_modal=false
-WindowManager: handle_inspection_background_click -> pruning children of UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-[WM] open ctx 'EffectInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-[WM] deferred child pos (anchor-relative) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] anchor=UnitInspectionWindow ar=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1177.0, 241.0)
-[WM] finalize child pos (anchor-relative) -> (1177.0, 241.0)
-GlobalInteractionRouter: Received interaction context - entity_type: ITEM, source_id: 399901722550
-GlobalInteractionRouter: Generating commands for entity_type: ITEM
-GlobalInteractionRouter: Executing command queue with 3 commands
-GlobalInteractionRouter: Executing command: 4
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (451491661870)
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: explicit_id -> UnitInspectionWindow (399213856503)
-WindowManager: close_children_of parent=UnitInspectionWindow (399213856503) from_index=0
-WindowManager: close_child -> EffectInspectionWindow (451491661870)
-[WM] open ctx 'ItemInspection' anchor=/root/Main/ModalLayer/UnitInspectionWindow/MarginContainer/VBoxContainer/ItemGrid/SlotView/GachaBallView parent=/root/Main/ModalLayer/UnitInspectionWindow layers a/p/w=128/128/128
-WindowManager: _on_window_freed id=451491661870 was_modal=false
-[WM] deferred child pos (parent-only by hint) parent=UnitInspectionWindow pr=[P: (1471.0, 241.0), S: (350.0, 310.0)] -> (1294.0, 241.0)
-[WM] finalize child pos (parent-only by hint) -> (1294.0, 241.0)
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=2
-WindowManager: close_all -> UnitInspectionWindow (399213856503)
-WindowManager: close_all -> ItemInspectionWindow (455165871522)
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 176211101913
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-WindowManager: _on_window_freed id=399213856503 was_modal=false
-WindowManager: _on_window_freed id=455165871522 was_modal=false
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: UNIT, source_id: 387486582577
-GlobalInteractionRouter: Generating commands for entity_type: UNIT
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 0
-GlobalInteractionRouter: Executing command: 2
-[WM] _resolve_parent_window: structural_fallback -> <nil>
-WindowManager: close_all_inspection_windows count=0
-GachaBallView: _update_stats - Not a unit, hiding stats
-[WM] open ctx 'UnitInspection' anchor=/root/Main/VBoxContainer/ContentArea/SubViewport/Battle/TeamAreas/EnemyArea/EnemyLineupContainer/@PanelContainer@97/@PanelContainer@286 parent=<nil> layers a/p/w=-999/-999/128
-[WM] deferred root pos (left_of_anchor) anchor=@PanelContainer@286 ar=[P: (1841.0, 241.0), S: (78.0, 234.0)] -> (1471.0, 241.0)
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 94321509851
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 2 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=1
-WindowManager: close_all -> UnitInspectionWindow (471053895371)
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-GlobalInteractionRouter: Received interaction context - entity_type: GLOBAL_BACKGROUND, source_id: 176211101913
-GlobalInteractionRouter: Generating commands for entity_type: GLOBAL_BACKGROUND
-GlobalInteractionRouter: Executing command queue with 1 commands
-GlobalInteractionRouter: Executing command: 3
-WindowManager: close_all_inspection_windows count=0
-WindowManager: _on_window_freed id=471053895371 was_modal=false
+GIR: _is_close_suppressed_now true now=71438 until=71858
+GlobalInteractionRouter: Executing command queue with 0 commands
 BattleManager: _exit_tree called

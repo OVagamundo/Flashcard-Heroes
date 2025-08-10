@@ -46,6 +46,9 @@ func _ready():
 	
 	# Connect to interaction signals
 	SignalBus.interaction_context_received.connect(_on_interaction_context_received)
+	# Proactively clear selection on scene transitions and other flows that request it
+	if SignalBus.has_signal("selection_clear_requested"):
+		SignalBus.selection_clear_requested.connect(_on_selection_clear_requested)
 
 func _exit_tree():
 	# Scene cleanup per spec: clear drag and selection
@@ -96,6 +99,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		if not _is_close_suppressed_now():
 			_execute_close_all_inspection_windows()
 		_execute_deselect()
+
+## External signal handler: proactively clear selection when requested (e.g., scene transitions)
+func _on_selection_clear_requested():
+	if _current_selection != null:
+		print("GlobalInteractionRouter: selection_clear_requested received -> clearing selection now")
+		_execute_deselect()
+	else:
+		print("GlobalInteractionRouter: selection_clear_requested received -> no current selection (noop)")
 
 ## Generate command queue based on interaction context and current state
 func _generate_command_queue(context: InteractionContext) -> Array[Command]:
@@ -254,7 +265,21 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 func _handle_selection_only(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
 	
-	# GR rule: Always change selection in selection-only contexts
+	# In selection-only contexts, clicking the already-selected item should open inspection (S4 equivalent).
+	if _current_selection != null:
+		var same_view: bool = _current_selection.source_view_instance_id == context.source_view_instance_id
+		var same_loc: bool = _current_selection.location and context.location \
+			and _current_selection.location.container == context.location.container \
+			and _current_selection.location.index == context.location.index
+		if same_view or same_loc:
+			commands.append(Command.new(CommandType.DESELECT))
+			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+				"context": context,
+				"anchor_view_id": context.source_view_instance_id
+			}))
+			return commands
+	
+	# Default: always change selection in selection-only contexts
 	commands.append(Command.new(CommandType.DESELECT))
 	commands.append(Command.new(CommandType.SELECT, {"context": context}))
 	

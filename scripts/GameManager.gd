@@ -30,6 +30,7 @@ func _ready() -> void:
 	SignalBus.battle_victory_acknowledged.connect(_on_battle_victory_acknowledged)
 	SignalBus.battle_start_requested.connect(_on_battle_start_requested)
 	SignalBus.battle_won_rewards_pending.connect(_on_battle_won_rewards_pending)
+	SignalBus.battle_ended.connect(_on_battle_ended)
 
 	SignalBus.reward_chosen.connect(_on_reward_chosen)
 	SignalBus.node_selected.connect(_on_node_selected)
@@ -64,9 +65,17 @@ func _on_new_game_requested() -> void:
 	else:
 		printerr("GameManager: Could not start new game - no heroes or decks available")
 
-func _on_battle_ended() -> void:
-	# Handle battle end logic here
-	pass
+func _on_battle_ended(results: Dictionary) -> void:
+	# Centralize post-battle handling per GIR.
+	# 1) Flip global battle state off and broadcast.
+	is_in_battle = false
+	SignalBus.emit_signal("battle_state_changed", false)
+	# 2) If victory, pre-generate rewards now so the modal can be instant.
+	var is_victory: bool = bool(results.get("victory", false))
+	if is_victory:
+		SignalBus.emit_signal("battle_won_rewards_pending")
+	# 3) Open the hermetic end-of-battle modal.
+	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition):
 	pass

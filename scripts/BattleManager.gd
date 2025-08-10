@@ -8,6 +8,7 @@ var _current_battle_phase: Phases
 
 var _effect_queue: Array[EffectRequest] = []
 var _is_processing_effect: bool = false
+var _battle_over_emitted: bool = false
 
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
@@ -104,6 +105,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
+	_battle_over_emitted = false
 	_gacha_tokens = 0
 	print("BattleManager: Initial gacha_tokens set to: ", _gacha_tokens)
 	
@@ -384,6 +386,13 @@ func _change_phase(new_phase: Phases):
 		Phases.END_OF_TURN:
 			pass
 
+func _count_requests_for_source(uuid: String) -> int:
+	var c := 0
+	for req in _effect_queue:
+		if req != null and req.source_uuid == uuid:
+			c += 1
+	return c
+
 func _populate_effect_queue():
 	_effect_queue.clear()
 	
@@ -394,11 +403,20 @@ func _populate_effect_queue():
 		if is_instance_valid(target):
 			# Trigger on_attack for the enemy unit
 			var context = {"source_uuid": attacker.ball_uuid, "target_uuid": target.ball_uuid}
+			var before_for_source = _count_requests_for_source(attacker.ball_uuid)
 			AbilityResolver.process_trigger(&"on_attack", context)
 			
-			# If no abilities triggered, add default basic attack
-			if _effect_queue.is_empty():
-				var basic_attack_effect = Database.get_ability_definition(&"basic_attack").effects[0] if Database.get_ability_definition(&"basic_attack") else null
+			# If no abilities were queued for this attacker, add default basic attack
+			if _count_requests_for_source(attacker.ball_uuid) == before_for_source:
+				var basic_attack_effect: EffectDefinition = null
+				var basic_attack_def = Database.get_ability_definition(&"basic_attack")
+				if is_instance_valid(basic_attack_def):
+					var effects_array = basic_attack_def.effects
+					if effects_array.size() > 0 and is_instance_valid(effects_array[0]):
+						basic_attack_effect = effects_array[0]
+				if not is_instance_valid(basic_attack_effect):
+					var BasicAttackEffectScript = preload("res://scripts/BasicAttackEffect.gd")
+					basic_attack_effect = BasicAttackEffectScript.new()
 				if is_instance_valid(basic_attack_effect):
 					var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", basic_attack_effect, [target.ball_uuid], context)
 					_effect_queue.append(request)
@@ -410,11 +428,20 @@ func _populate_effect_queue():
 		if is_instance_valid(target):
 			# Trigger on_attack for the player unit
 			var context = {"source_uuid": attacker.ball_uuid, "target_uuid": target.ball_uuid}
+			var before_for_source = _count_requests_for_source(attacker.ball_uuid)
 			AbilityResolver.process_trigger(&"on_attack", context)
 			
-			# If no abilities triggered, add default basic attack
-			if _effect_queue.is_empty():
-				var basic_attack_effect = Database.get_ability_definition(&"basic_attack").effects[0] if Database.get_ability_definition(&"basic_attack") else null
+			# If no abilities were queued for this attacker, add default basic attack
+			if _count_requests_for_source(attacker.ball_uuid) == before_for_source:
+				var basic_attack_effect: EffectDefinition = null
+				var basic_attack_def = Database.get_ability_definition(&"basic_attack")
+				if is_instance_valid(basic_attack_def):
+					var effects_array = basic_attack_def.effects
+					if effects_array.size() > 0 and is_instance_valid(effects_array[0]):
+						basic_attack_effect = effects_array[0]
+				if not is_instance_valid(basic_attack_effect):
+					var BasicAttackEffectScript = preload("res://scripts/BasicAttackEffect.gd")
+					basic_attack_effect = BasicAttackEffectScript.new()
 				if is_instance_valid(basic_attack_effect):
 					var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", basic_attack_effect, [target.ball_uuid], context)
 					_effect_queue.append(request)
@@ -431,12 +458,26 @@ func _process_effect_queue() -> void:
 		if not is_instance_valid(source) or source.current_hp <= 0: 
 			continue
 		
+		# Determine live targets; retarget at execution-time if needed (match 'Great state!')
+		var exec_targets: Array[String] = request.resolved_targets.duplicate()
+		if exec_targets.size() > 0:
+			var current_target = get_instance_by_uuid(exec_targets[0])
+			if not is_instance_valid(current_target) or current_target.current_hp <= 0:
+				var src_loc = get_location_for_uuid(source.ball_uuid)
+				var attacker_is_player: bool = src_loc != null and src_loc.container == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+				var new_target_inst = _get_frontmost_target(attacker_is_player)
+				if is_instance_valid(new_target_inst):
+					exec_targets[0] = new_target_inst.ball_uuid
+				else:
+					continue
+		
 		# Execute the effect using the new interface
 		if is_instance_valid(request.effect_definition):
-			request.effect_definition.execute(request.source_uuid, request.resolved_targets, self, request.trigger_context)
+			request.effect_definition.execute(request.source_uuid, exec_targets, self, request.trigger_context)
 		
 		_check_for_deaths()
 		if _is_battle_over():
+			_is_processing_effect = false
 			return
 		await get_tree().create_timer(0.8).timeout
 	_is_processing_effect = false
@@ -523,6 +564,14 @@ func _is_battle_over() -> bool:
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	if player_lineup.is_empty() or enemy_lineup.is_empty():
 		_current_battle_phase = Phases.BATTLE_OVER
+		if not _battle_over_emitted:
+			_battle_over_emitted = true
+			SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
+			var player_won := not player_lineup.is_empty()
+			var results := {
+				"victory": player_won
+			}
+			SignalBus.emit_signal("battle_ended", results)
 		return true
 	return false
 

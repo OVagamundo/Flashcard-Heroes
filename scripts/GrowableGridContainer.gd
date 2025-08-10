@@ -43,7 +43,12 @@ func find_first_empty_slot() -> int:
 		_expand_container()
 	if _free_list.is_empty():
 		return -1
-	return _free_list[0]
+	# Return the lowest available index to honor "first available slot" semantics
+	var min_index: int = _free_list[0]
+	for idx in _free_list:
+		if idx < min_index:
+			min_index = idx
+	return min_index
 
 ## Checks if an index is within bounds
 func is_valid_index(index: int) -> bool:

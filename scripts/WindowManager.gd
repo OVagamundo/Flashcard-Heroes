@@ -92,39 +92,31 @@ func open_discard_pile_window():
 # Public entry point for the Choice Window.
 # Optionally provide an anchor_view to dynamically position near a target view (e.g., target GachaBall).
 func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
-	# Design: ChoiceWindow is a lightweight modal overlay that should NOT close
-	# existing inspection windows. Open it on the modal layer without exclusivity.
+	# ChoiceWindow is a dynamic-position contextual window (no blocker, non-exclusive).
+	# Resolve anchor: prefer explicit anchor_view, then target_location, then source_location.
 	var anchor := anchor_view
 	if not is_instance_valid(anchor):
-		# Attempt to resolve from target_location then source_location
 		var target_loc: LocationIdentifier = populate_ctx.get("target_location")
 		if is_instance_valid(target_loc):
 			anchor = find_view_for_location(target_loc)
-			print("Resolved anchor from target_location")
-		if not is_instance_valid(anchor):
-			var source_loc: LocationIdentifier = populate_ctx.get("source_location")
-			if is_instance_valid(source_loc):
-				anchor = find_view_for_location(source_loc)
-				print("Resolved anchor from source_location")
+			if OS.is_debug_build():
+				print("[WM] ChoiceWindow anchor <- target_location")
+	if not is_instance_valid(anchor):
+		var source_loc: LocationIdentifier = populate_ctx.get("source_location")
+		if is_instance_valid(source_loc):
+			anchor = find_view_for_location(source_loc)
+			if OS.is_debug_build():
+				print("[WM] ChoiceWindow anchor <- source_location")
+
 	if not _window_scenes.has(&"ChoiceWindow"): return
-	var window_instance: Control = _window_scenes[&"ChoiceWindow"].instantiate()
-	_get_modal_layer().add_child(window_instance)
-	_modal_stack.push_back(window_instance)
-	_register_window(window_instance, true) # Track as modal, but non-exclusive
-	if window_instance.has_method("populate"):
-		window_instance.populate(populate_ctx)
-	# Position near anchor if available; otherwise center on viewport
+	var context := {
+		"window_type": &"ChoiceWindow",
+		"populate_context": populate_ctx,
+		"positioning_hint": "top_center_over_anchor",
+	}
 	if is_instance_valid(anchor):
-		var pos: Vector2 = _calculate_top_center_over_anchor(anchor, window_instance)
-		_set_window_screen_position(window_instance, pos)
-	else:
-		var viewport_rect = get_viewport().get_visible_rect()
-		var win_sz = _get_window_size(window_instance)
-		var vp_pos: Vector2 = Vector2(viewport_rect.position)
-		var vp_size: Vector2 = Vector2(viewport_rect.size)
-		var pos: Vector2 = vp_pos + vp_size / 2.0 - win_sz / 2.0
-		_set_window_screen_position(window_instance, pos)
-	window_instance.show()
+		context["anchor_view"] = anchor
+	_open_contextual_window(context)
 
 # Public entry point for all inspection windows (Unit, Item, Effect).
 func open_inspection_window(loc: LocationIdentifier, source_view: Control):

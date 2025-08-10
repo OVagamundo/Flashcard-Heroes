@@ -50,7 +50,7 @@ func populate(context: Dictionary):
 		# 3. Populate the SlotView itself, making it a valid interactive target.
 		slot_view.populate(loc)
 		# Set up interaction context for the slot
-		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
+		slot_view.set_interaction_context(&"SELECTION_ONLY", 0)
 		
 		# 4. Get the instance for this slot from the context data.
 		var inst = null
@@ -65,7 +65,7 @@ func populate(context: Dictionary):
 			# standard inventory interactions (select, double-click, drag).
 			gacha_view.populate(loc, inst, true, false)
 			# Set up interaction context for the new system
-			gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", &"ITEM", 0)
+			gacha_view.set_interaction_context(&"SELECTION_ONLY", &"ITEM", 0)
 
 func _on_selection_changed(new_location: LocationIdentifier):
 	var is_valid_selection = new_location and new_location.container == &"Rewards"

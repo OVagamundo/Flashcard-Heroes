@@ -15,6 +15,15 @@ func _ready():
 	# Connect the SWAP button signal, as it's always available.
 	# The MERGE button signal will be connected in populate() only if a valid recipe exists.
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
+	# Prune only child windows when clicking on this window's background
+	gui_input.connect(_on_panel_gui_input)
+
+func _on_panel_gui_input(event: InputEvent):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Local background click inside this window should prune only its children.
+		# Global outside clicks are handled by GIR to close the entire inspection group.
+		WindowManager.handle_inspection_background_click(self)
+		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):
 	_source_location = context.get("source_location")

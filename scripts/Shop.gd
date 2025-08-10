@@ -49,7 +49,7 @@ func populate(context: Dictionary):
 		var loc = LocationIdentifier.new(&"Shop", i)
 		slot_view.populate(loc)
 		# Set up interaction context for the slot
-		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
+		slot_view.set_interaction_context(&"SELECTION_ONLY", 0)
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
@@ -59,7 +59,7 @@ func populate(context: Dictionary):
 			# THE CRITICAL FIX: The last argument must be 'false' to enable double-click inspection.
 			gacha_view.populate(loc, inst_for_slot, true, false)
 			# Set up interaction context for the new system
-			gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", &"ITEM", 0)
+			gacha_view.set_interaction_context(&"SELECTION_ONLY", &"ITEM", 0)
 		
 		# Always create a price label for each slot to maintain positioning
 		var price_label = Label.new()

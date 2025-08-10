@@ -91,6 +91,71 @@ Anchor Tracking Policy:
 - Applied only for root contextual windows that were opened with a valid `anchor_view`.
 - Child windows do not track anchors; their position is derived from the parent.
 - Root fixed-position windows (e.g., Inventory, DiscardPile) do not track anchors and are centered.
+
+## 5.1 Screen‑Space Coordinate System
+
+- __All positioning is done in screen space.__ We measure anchors and parents in screen coordinates and set window positions accordingly, regardless of scene parenting or CanvasLayer.
+- __Measuring rects:__ `_get_screen_rect(ctrl)` uses `ctrl.get_global_transform_with_canvas()` and converts to a `Rect2` in screen space.
+- __Setting positions:__ `_set_window_screen_position(window, pos: Vector2)` transforms the target screen position through the inverse of the window’s canvas transform to the window’s local space before assigning `window.global_position`.
+- __API migration:__ Godot 4 replaces `Transform2D.xform()` with `xform_point()`/`xform_vector()`. All usages are updated accordingly to avoid parser errors.
+
+## 5.2 Two‑Pass Placement (Deferred + Finalize)
+
+- __Deferred pass (`_deferred_position`)__: awaited for one frame to allow layout to settle; computes an initial position using current `custom_minimum_size`/`size`.
+- __Finalize pass (`_finalize_position`)__: awaited again (after `show()`); corrects the position using the final computed size to eliminate layout jitter and off‑by‑one clamps.
+- This makes placement robust across dynamic content, fonts, and theme changes.
+
+## 5.3 Root vs Child Positioning Rules
+
+- __Root contextual windows__ (no `parent_window`):
+  - Use the resolved `anchor_view` rect when provided.
+  - Apply a specific `positioning_hint` if present; otherwise use the general heuristic (`_calculate_window_position`) that avoids overlapping the anchor and stays on screen.
+- __Child contextual windows__ (with `parent_window`):
+  - __Parent‑first rule__: position relative to the `parent_window` rect to ensure consistent, scene‑agnostic behavior.
+  - If an `anchor_view` is also provided, `_calculate_child_window_position_from_anchor(parent, anchor, child)` may refine placement.
+  - Special hint `"use_parent_window"` forces strictly parent‑rect placement and ignores the anchor. Used for equipped item inspections so they attach to the UnitInspectionWindow, not the small equipped slot.
+
+## 5.4 Positioning Hints (Canonical)
+
+- __center_over_anchor__ → `_calculate_centered_over_anchor(anchor, window)`
+  - Centers the window on the anchor rect; viewport clamped.
+- __top_center_over_anchor__ → `_calculate_top_center_over_anchor(anchor, window)`
+  - Centers horizontally on the anchor and prefers above with `INSPECTION_WINDOW_MARGIN`.
+  - __Flip logic__: if insufficient space above, place below; if neither side fully fits, pick the side with more available space; finally clamp to viewport.
+  - Godot 4 typing: intermediate values are explicitly `float` to avoid inference errors when mixing `Rect2(i)` with float math.
+- __left_of_anchor__ → `_calculate_left_of_anchor(anchor, window)`
+  - Places the window to the left of the anchor when possible; otherwise to the right.
+  - Vertical alignment: top‑align if the anchor is in the top half of the viewport; otherwise bottom‑align. Always clamped to viewport.
+  - __Used for EnemyLineup__: units sit on the right half of the screen; their inspection windows open to the left of the GachaBall.
+- __use_parent_window__ (child only)
+  - Forces parent‑rect placement and ignores `anchor_view` entirely. __Used for equipped items__ (both player and enemy): item inspections attach to the owning `UnitInspectionWindow` instead of the small equipped item slot.
+- __General heuristic__ → `_calculate_window_position(anchor, window)` avoids overlapping the anchor and selects side/quadrant by available space; clamps to viewport.
+
+## 5.5 Overlap Avoidance and Viewport Clamping
+
+- Windows must not overlay their anchors in inspection contexts. Intersection checks are used and fallbacks are applied to keep a clear gap defined by `INSPECTION_WINDOW_MARGIN`.
+- All final positions are clamped within the visible viewport, subtracting the same margin on each edge to avoid edge‑hugging.
+
+## 5.6 Godot 4 Compatibility & Style Constraints
+
+- __Typed GDScript__: When combining `Rect2/Rect2i` components with float math, annotate intermediates as `float` and cast with `float(...)` to prevent inference errors.
+- __Transforms__: Replace deprecated `xform` with `xform_point`/`xform_vector` everywhere.
+- __Timing__: Use `Time.get_ticks_msec()` instead of `OS.get_ticks_msec()`.
+- __Indentation__: Tabs‑only in all GDScript files. Mixing spaces causes parser errors ("Used space character for indentation instead of tab").
+
+## 5.7 Diagnostics
+
+- Debug builds print detailed placement logs, including:
+  - Parent selection and rects: `[WM] deferred/finalize child pos (...) parent=... pr=Rect2(...)`
+  - Anchor rects for root/child: `ar=Rect2(...)`
+  - Hint branch taken: `(top_center_over_anchor)`, `(left_of_anchor)`, `(parent‑only by hint)`, etc.
+- These logs are essential to debug inconsistent placement across Inventory, Battle Board, and EnemyLineup.
+
+## 5.8 Context‑Specific Rules
+
+- __EnemyLineup (Units)__: root UnitInspectionWindow uses `left_of_anchor` to open left of the GachaBall.
+- __Equipped Items (Player & Enemy)__: ItemInspectionWindow is always positioned relative to the parent UnitInspectionWindow (`use_parent_window`), never the item’s small GachaBall slot.
+- __ChoiceWindow__: root contextual prompt uses `top_center_over_anchor` and the same screen‑space setter.
 6. Implementation & Refactoring Notes
 This section highlights the critical discrepancies between the current codebase and this target architecture. The following changes are required to achieve the desired behavior.
 Refactoring InventoryWindow and DiscardPileWindow:
