@@ -125,7 +125,6 @@ func _on_draw_button_pressed(button: Button, tier: int):
 	SignalBus.emit_signal("draw_gacha_requested", tier)
 
 func _on_battle_inventory_changed():
-	print("Main: _on_battle_inventory_changed called, re-enabling draw buttons")
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
 	draw_tier1_button.disabled = false
 	draw_tier2_button.disabled = false
@@ -141,12 +140,10 @@ func _on_gold_changed(new_amount: int):
 		gold_label.text = "Gold: %d" % new_amount
 
 func _on_gacha_tokens_changed(new_amount: int):
-	print("Main: _on_gacha_tokens_changed called with amount: ", new_amount)
 	if is_instance_valid(tokens_label):
 		tokens_label.text = "Tokens: %d" % new_amount
-		print("Main: Updated tokens label to: ", tokens_label.text)
 	else:
-		print("Main: tokens_label is not valid!")
+		pass
 
 func _on_shop_scene_requested(context: Dictionary):
 	_clear_content_area()
@@ -170,7 +167,6 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition):
 	# Find the BattleManager in the loaded scene and start the battle
 	var battle_manager = _current_content_node.get_node_or_null("BattleManager")
 	if battle_manager and battle_manager.has_method("start_battle"):
-		print("Main: Starting battle with encounter_def: ", encounter_def != null)
 		battle_manager.start_battle(encounter_def)
 	else:
-		print("Main: Could not find BattleManager or start_battle method")
+		pass

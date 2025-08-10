@@ -63,7 +63,7 @@ func _on_new_game_requested() -> void:
 	if hero_defs.size() > 0 and deck_meta.size() > 0:
 		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id)
 	else:
-		printerr("GameManager: Could not start new game - no heroes or decks available")
+		return
 
 func _on_battle_ended(results: Dictionary) -> void:
 	# Centralize post-battle handling per GIR.
@@ -87,7 +87,6 @@ func _on_battle_won_rewards_pending():
 	
 	var reward_pool = load("res://resources/reward_pool.tres")
 	if not is_instance_valid(reward_pool):
-		printerr("GameManager: Failed to load reward_pool.tres for pre-generation.")
 		return
 
 	var all_defs = reward_pool.definitions.duplicate()
@@ -100,8 +99,7 @@ func _on_battle_won_rewards_pending():
 		inst.location_slot_index = i
 		_temporary_reward_master_dict[inst.ball_uuid] = inst
 		_temporary_reward_container.set_uuid(i, inst.ball_uuid)
-	
-	print("GameManager: Generated ", _temporary_reward_master_dict.size(), " reward instances")
+
 
 func _on_return_to_title() -> void:
 	# Clear the run state and any pending rewards when returning to the title screen
@@ -144,7 +142,6 @@ func _on_reward_chosen(payload):
 			var container_name = &"RunInventoryT%d" % def.tier
 			var container = run_state.get_container(container_name)
 			if not is_instance_valid(container):
-				printerr("GameManager: Could not find run container for tag: ", container_name)
 				return
 
 			var target_slot = container.find_first_empty_slot()
@@ -157,12 +154,6 @@ func _on_reward_chosen(payload):
 			selected_instance.equipped_slot_index = -1
 			
 			run_state.run_instances[selected_instance.ball_uuid] = selected_instance
-			
-			# --- Debug Output ---
-			print("--- REWARD CHOSEN ---")
-			print("Instance UUID: ", selected_instance.ball_uuid)
-			print("Set Location To: ", selected_instance.location_container_tag, " [", selected_instance.location_slot_index, "]")
-			print("--------------------")
 			
 	elif payload.type == "gold":
 		run_state.gold += payload.get("amount", 0)
@@ -233,7 +224,6 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 		data_owner = run_state
 
 	if not is_instance_valid(data_owner):
-		printerr("GameManager: Could not determine a valid data owner.")
 		return null
 
 	# Step 2: Apply contextual understanding based on the location type.
@@ -241,14 +231,12 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	# Case A: The location is for an equipped item (a conceptual location).
 	if loc.container == &"equipped_item":
 		if loc.unit_uuid.is_empty():
-			printerr("GameManager: LocationIdentifier for equipped_item is missing a unit_uuid.")
 			return null
 		
 		var all_instances_db = data_owner.get_all_instances()
 		var parent_unit: GachaBallInstance = all_instances_db.get(loc.unit_uuid)
 		
 		if not is_instance_valid(parent_unit):
-			printerr("GameManager: Could not find parent unit with UUID: ", loc.unit_uuid)
 			return null
 		
 		var item_uuid = parent_unit.get_equipped_item_uuid(loc.index)
@@ -264,7 +252,6 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 			return data_owner.get_instance_by_location(loc)
 
 	# Fallback if no valid case is met.
-	printerr("GameManager: Unhandled location type in get_instance_from_location for container: ", loc.container)
 	return null
 
 func _on_node_selected(node_def: PathNodeDefinition):
@@ -274,7 +261,6 @@ func _on_node_selected(node_def: PathNodeDefinition):
 			if node_def.subtype == "ELITE":
 				budget = int(floor(budget * 1.5))
 			
-			print("GameManager: Day: ", run_state.day, ", Budget: ", budget, ", Node subtype: ", node_def.subtype)
 			var encounter_def = EncounterGenerator.generate_encounter(budget)
 			# Use Main.gd to handle scene loading
 			var main_node = get_tree().get_root().find_child("Main", true, false)

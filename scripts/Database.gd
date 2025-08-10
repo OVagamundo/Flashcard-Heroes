@@ -37,7 +37,6 @@ func get_ability_definition(id: StringName) -> AbilityDefinition:
 	var def = abilities.get(id)
 	if def:
 		return def
-	printerr("Database: Ability definition for ID %s not found." % id)
 	return null
 
 ## A helper function that iterates through a directory, loads each `.tres` file,
@@ -45,7 +44,6 @@ func get_ability_definition(id: StringName) -> AbilityDefinition:
 func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 	var dir = DirAccess.open(path)
 	if not dir:
-		printerr("Database: Could not open directory at path: ", path)
 		return
 
 	dir.list_dir_begin()
@@ -58,9 +56,9 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 				if "id" in resource:
 					dictionary[resource.id] = resource
 				else:
-					printerr("Database: Resource at '%s' is missing the 'id' property." % resource_path)
+					pass
 			else:
-				printerr("Database: Failed to load resource at path: ", resource_path)
+				pass
 		file_name = dir.get_next()
 
 ## Loads the translation CSV file and adds it to the TranslationServer
@@ -72,7 +70,6 @@ func _load_translations() -> void:
 	# Load the CSV file
 	var csv_file = FileAccess.open("res://localization/game.csv", FileAccess.READ)
 	if not csv_file:
-		printerr("Database: Failed to open translation file: res://localization/game.csv")
 		return
 	
 	# Skip the header line
@@ -91,9 +88,8 @@ func _load_translations() -> void:
 	# Add the translation to the server
 	TranslationServer.add_translation(translation)
 	TranslationServer.set_locale("en")
-	
-	print("Database: Successfully loaded translations")
-	print("Database: Testing translation - hero.name = ", tr("hero.name"))
+
+
 
 ## A central helper to find any GachaBallDefinition by its ID, regardless of category.
 func get_definition(id: StringName) -> GachaBallDefinition:
@@ -105,7 +101,6 @@ func get_definition(id: StringName) -> GachaBallDefinition:
 	if definition:
 		return definition
 
-	printerr("Database: Definition for ID ", id, " not found in units/items.")
 	return null
 
 ## A helper to get a GachaBallDefinition from a deck by card ID
@@ -142,7 +137,6 @@ func get_all_deck_metadata() -> Array[Dictionary]:
 func _load_reward_pool_definitions() -> void:
 	var reward_pool = load("res://resources/reward_pool.tres")
 	if not is_instance_valid(reward_pool):
-		printerr("Database: Could not load or parse res://resources/reward_pool.tres")
 		return
 
 	for definition in reward_pool.definitions:
@@ -160,7 +154,6 @@ func _load_reward_pool_definitions() -> void:
 func _load_flashcard_definitions() -> void:
 	var dir = DirAccess.open("res://decks/")
 	if not dir:
-		printerr("Database: Could not open decks directory")
 		return
 
 	dir.list_dir_begin()
@@ -186,7 +179,7 @@ func _load_flashcard_definitions() -> void:
 									"explanation": card.get("explanation", "")
 								}
 				else:
-					printerr("Database: Failed to parse JSON file: ", file_path)
+					pass
 			else:
-				printerr("Database: Failed to open file: ", file_path)
+				pass
 		file_name = dir.get_next()

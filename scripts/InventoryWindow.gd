@@ -24,6 +24,19 @@ func _ready():
 func _exit_tree():
 	if SignalBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):
 		SignalBus.inventory_ui_refresh_requested.disconnect(_on_ui_refresh)
+	# Disconnect child gui_input hooks if still connected
+	if is_instance_valid(panel_container) and panel_container.gui_input.is_connected(_on_panel_gui_input):
+		panel_container.gui_input.disconnect(_on_panel_gui_input)
+	if is_instance_valid(tier_1_grid) and tier_1_grid.gui_input.is_connected(_on_grid_gui_input):
+		tier_1_grid.gui_input.disconnect(_on_grid_gui_input)
+	if is_instance_valid(tier_2_grid) and tier_2_grid.gui_input.is_connected(_on_grid_gui_input):
+		tier_2_grid.gui_input.disconnect(_on_grid_gui_input)
+	if is_instance_valid(tier_3_grid) and tier_3_grid.gui_input.is_connected(_on_grid_gui_input):
+		tier_3_grid.gui_input.disconnect(_on_grid_gui_input)
+	# Ensure any active drag is ended before this window and its children are freed
+	if GlobalInteractionRouter.is_drag_active():
+		GlobalInteractionRouter.end_drag(false)
+		GlobalInteractionRouter.end_drag_visuals(false)
 
 func populate(context: Dictionary):
 	title_label.text = context.get("title", "Inventory")
@@ -94,7 +107,7 @@ func _initialize_grids_if_needed():
 			grid_node.add_child(slot_view)
 			# Configure interaction context for run inventory slots (FULLY_INTERACTIVE)
 			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
-			print("InventoryWindow: Set SlotView interaction context - mode: FULLY_INTERACTIVE")
+			
 	
 	_grids_initialized = true
 
@@ -160,4 +173,4 @@ func _populate_grids():
 				gacha_view.populate(loc, instance, true)
 				# Configure interaction context for run inventory (FULLY_INTERACTIVE)
 				gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
-				print("InventoryWindow: Set GachaBallView interaction context - mode: FULLY_INTERACTIVE, category: ", instance.get_definition().category)
+				

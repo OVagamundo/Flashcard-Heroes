@@ -16,10 +16,7 @@ var _minigame_instance: Control = null
 func _select_card_via_srs() -> StringName:
 	"""Selects a card using the weighted SRS algorithm"""
 	if not is_instance_valid(_run_state_ref):
-		printerr("FlashcardManager: _run_state_ref is null in _select_card_via_srs")
 		return _active_deck_ids.pick_random() if not _active_deck_ids.is_empty() else &""
-	
-	print("FlashcardManager: Selecting card via SRS from ", _active_deck_ids.size(), " cards")
 	
 	var candidates = _active_deck_ids.duplicate()
 	if candidates.has(_last_shown_card_id):
@@ -61,27 +58,21 @@ func _select_card_via_srs() -> StringName:
 func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void:
 	"""Starts a flashcard minigame with the specified run state and active deck"""
 	if is_instance_valid(_minigame_instance):
-		print("FlashcardManager: Minigame already in progress")
 		return # Game already in progress
 	
 	if not is_instance_valid(run_state):
-		printerr("FlashcardManager: Invalid run_state provided")
 		return
 	
 	if active_deck.is_empty():
-		printerr("FlashcardManager: Empty active deck provided")
 		return
 	
 	# Validate that all cards in the deck exist
 	for card_id in active_deck:
 		if not Database.flashcard_definitions.has(card_id):
-			printerr("FlashcardManager: Card ID not found in database: ", card_id)
 			return
 	
 	self._run_state_ref = run_state
 	self._active_deck_ids = active_deck.duplicate()
-	
-	print("FlashcardManager: Starting minigame with ", active_deck.size(), " cards")
 	
 	# Open the flashcard minigame modal window
 	_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {
@@ -92,7 +83,6 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 func get_next_question() -> Dictionary:
 	"""Gets the next question using SRS algorithm"""
 	if not is_instance_valid(_run_state_ref):
-		printerr("FlashcardManager: _run_state_ref is null in get_next_question")
 		return {}
 	
 	if _active_deck_ids.size() < 10:
@@ -100,7 +90,6 @@ func get_next_question() -> Dictionary:
 	
 	var question_card_id = _select_card_via_srs()
 	if question_card_id.is_empty():
-		printerr("FlashcardManager: Could not select a question card")
 		return {}
 	
 	_last_shown_card_id = question_card_id
@@ -121,7 +110,6 @@ func get_next_question() -> Dictionary:
 func submit_answer(question_id: StringName, was_correct: bool) -> void:
 	"""Records an answer and updates progress"""
 	if not is_instance_valid(_run_state_ref):
-		printerr("FlashcardManager: _run_state_ref is null in submit_answer")
 		return
 	
 	if _run_state_ref.flashcard_progress.has(question_id):

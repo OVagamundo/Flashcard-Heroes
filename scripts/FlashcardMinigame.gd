@@ -37,7 +37,6 @@ func populate(context: Dictionary):
 	_active_deck = context.get("active_deck", [])
 	
 	if not is_instance_valid(_run_state):
-		printerr("FlashcardMinigame: Invalid run_state in context")
 		return
 	
 	# Check if we need to introduce a new card
@@ -125,7 +124,6 @@ func _show_next_question():
 	
 	var current_question = FlashcardManager.get_next_question()
 	if current_question.is_empty():
-		printerr("FlashcardMinigame: Could not get next question")
 		_end_minigame()
 		return
 	
@@ -133,7 +131,6 @@ func _show_next_question():
 	var question_card_id = current_question.get("question_id", "")
 	var card_data = Database.get_flashcard_definition(question_card_id)
 	if card_data.is_empty():
-		printerr("FlashcardMinigame: Could not find card data for ID: ", question_card_id)
 		_end_minigame()
 		return
 	

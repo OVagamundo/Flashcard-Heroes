@@ -39,7 +39,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Emit unit_stats_changed so UI updates HP in real time
 	SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
 
-	print("BasicAttack: %s attacks %s for %d damage. Target HP is now %d." % [source_instance.definition_id, target_instance.definition_id, damage, target_instance.current_hp])
+
 
 ## Calculate damage using stat-scaling parameters if provided
 func _calculate_damage(source_instance: GachaBallInstance) -> int:

@@ -8,7 +8,6 @@ func _ready():
 # --- Main Action Handler ---
 
 func _on_try_inventory_action(source_loc, target_loc):
-	print("InventoryManager: try_inventory_action src=", source_loc.container, " -> tgt=", target_loc.container)
 	
 	# Early-case: Allow equipping items onto units even across functional groups
 	var early_source_instance = _get_instance_at_location(source_loc)
@@ -19,7 +18,6 @@ func _on_try_inventory_action(source_loc, target_loc):
 		# Rule I3: Allow equipping from any InventoryGrid onto a UNIT on the board
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and s_group == &"InventoryGrid" and target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
-			print("InventoryManager: Early equip path triggered (ITEM -> UNIT on board)")
 			_equip_item(early_source_instance, early_target_instance)
 			GlobalInteractionRouter.end_drag(true)
 			return
@@ -36,7 +34,6 @@ func _on_try_inventory_action(source_loc, target_loc):
 					# Rule I3: Allow equipping into equipped_item from any InventoryGrid and only to empty slot
 					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
 					if s_group2 == &"InventoryGrid" and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
-						print("InventoryManager: Early equip path triggered (ITEM -> equipped_item slot)")
 						_remove_from_location(source_loc)
 						_perform_equip(early_source_instance, parent_unit, target_loc.index)
 						_emit_data_changed_signal()
@@ -46,15 +43,14 @@ func _on_try_inventory_action(source_loc, target_loc):
 	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
 	var source_context_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 	var target_context_group = GlobalInteractionRouter.get_context_group(target_loc.container)
-	print("InventoryManager: Groups src=", source_context_group, " tgt=", target_context_group)
 	
 	# If contexts are incompatible, this is an invalid action
 	if source_context_group != target_context_group:
 		# Exception: Allow InventoryGrid -> equipped_item (click-to-click equip)
 		if source_context_group == &"InventoryGrid" and target_loc.container == &"equipped_item":
-			print("InventoryManager: Allowing InventoryGrid -> equipped_item despite group mismatch")
+			# Allowed exception; fall through to normal handling below
+			pass
 		else:
-			print("InventoryManager: Group mismatch; rejecting unless SelectionOnly target")
 			# Special case: Selection-Only contexts allow changing selection
 			if target_context_group == &"SelectionOnly":
 				# We shouldn't reach here, but if we do, it's invalid
@@ -113,7 +109,6 @@ func _on_try_inventory_action(source_loc, target_loc):
 
 func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
-		printerr("InventoryManager: Received choice_made with invalid locations.")
 		return
 	# Activate suppression via GIR for the parent inspection window of the target (or source) view
 	# to avoid premature closure during swap/merge execution triggered by ChoiceWindow.
@@ -127,7 +122,6 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 	if parent_id != -1:
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
 		GlobalInteractionRouter._activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
-		print("InventoryManager._on_choice_made: suppression activated for parent_id=", parent_id, " inside_unit=", inside_unit)
 
 	match choice:
 		&"MERGE":

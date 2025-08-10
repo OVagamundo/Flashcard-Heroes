@@ -40,7 +40,6 @@ func populate(context: Dictionary):
 	_location = context.get("location")
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
-		printerr("ItemInspectionWindow: Invalid context provided.")
 		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
 		return
 

@@ -52,6 +52,48 @@ instance_merged(ingredient_uuids: Array[String], result_instance: GachaBallInsta
 Fired after a successful Merge action.
 inventory_action_invalid(source_uuid: String, target_uuid: String, reason_key: String)
 Fired when a requested action fails validation.
+
+## Combat System
+
+The combat loop is orchestrated by `scripts/BattleManager.gd`. Below are the operational details not covered elsewhere.
+
+### Phases & Flow
+- __MANAGEMENT -> COMBAT__: When `BattleManager._on_end_turn_requested()` fires during the `MANAGEMENT` phase, it:
+  - Calls `_populate_effect_queue()` to enqueue all attacks for the turn.
+  - Switches to `COMBAT` via `_change_phase(Phases.COMBAT)`.
+  - Processes the queue via `_process_effect_queue()`.
+- __Turn end__: After the queue drains, `_change_phase(Phases.MANAGEMENT)` is called and `_trigger_turn_end_abilities()` fires for all units.
+
+### Lineups & Indices
+- Containers: `BATTLE_CONTAINER_TAGS.PLAYER_LINEUP` and `BATTLE_CONTAINER_TAGS.ENEMY_LINEUP`.
+- Retrieval: `get_instances_in_container(tag)` returns units sorted by their slot `index` ascending.
+- Convention: Lower `index` means further left within the lineup container.
+
+### Attack Sequencing (per turn)
+- __Enemy__: Iterated in ascending index and enqueued in that order. Because effects are processed LIFO, execution occurs right-to-left.
+- __Player__: Iterated in reverse (descending index) when enqueuing. With LIFO processing, execution occurs left-to-right.
+- Rationale: `_process_effect_queue()` uses `pop_back()`; reversing only the player enqueue order yields the intended visual sequence.
+
+### Target Selection
+- Helper: `BattleManager._get_frontmost_target(attacker_is_player: bool)`.
+- It collects living targets in the opposing lineup, sorts by slot `index` ascending, then returns:
+  - Player attacker: `living_targets[0]` (frontmost/leftmost).
+  - Enemy attacker: `living_targets[-1]` (frontmost/rightmost).
+
+### Effect Queue
+- Storage: `_effect_queue: Array[EffectRequest]`.
+- Processing: `_process_effect_queue()` guards re-entrancy with `_is_processing_effect` and loops while the queue is non-empty using `pop_back()` (LIFO).
+- Validation at execution time:
+  - Skips a request if the `source` is invalid or dead.
+  - Retargets if the current target is invalid or dead by calling `_get_frontmost_target()` based on the attacker's side. If no valid target exists, the request is skipped.
+- Execution: `request.effect_definition.execute(source_uuid, exec_targets, self, request.trigger_context)`.
+- Timing: Adds a short delay between executions (about 0.8s) to pace the combat.
+
+### Enqueuing Attacks
+- Basic Attack: `_populate_effect_queue()` resolves the `basic_attack` effect from `Database`. If missing, it falls back to `res://scripts/BasicAttackEffect.gd`.
+- Request shape: `EffectRequest.new(source_uuid, ability_key, effect_definition, [target_uuid], trigger_context)`.
+- Ability Triggers: For each attacker, the manager emits the `on_attack` trigger through `AbilityResolver.process_trigger("on_attack", context)`. Abilities may produce additional `EffectRequest`s via `BattleManager.enqueue_effect_request()`.
+
 6. Invariants
 Stateless Operation: The manager must never store its own state between actions.
 The Golden Rule: All state change instructions sent to data owners must be designed to be atomic, ensuring that both the DataContainer (index) and the GachaBallInstance (truth) are updated together.

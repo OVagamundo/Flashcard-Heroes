@@ -11,11 +11,9 @@ const GachaBallDefinition = preload("res://scripts/GachaBallDefinition.gd")
 ## @param budget: int - The total budget to spend on units and items
 ## @return EncounterDefinition - A complete encounter definition with enemy placements
 func generate_encounter(budget: int) -> EncounterDefinition:
-	print("EncounterGenerator: Generating encounter with budget: ", budget)
-	
+
 	# Validate input
 	if budget <= 0:
-		printerr("EncounterGenerator: Invalid budget: ", budget)
 		return _create_fallback_encounter()
 	
 	# --- Phase 1: Setup & Data Pooling ---
@@ -23,9 +21,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	# 2. Separate them into two pools: `available_units` and `available_items`.
 	#    Sort both pools by cost in ascending order to help the algorithm.
 	var all_defs = Database.units.values() + Database.items.values()
-	print("EncounterGenerator: Total definitions found: ", all_defs.size())
-	print("EncounterGenerator: Database.units size: ", Database.units.size())
-	print("EncounterGenerator: Database.items size: ", Database.items.size())
+
 	var available_units: Array[GachaBallDefinition] = []
 	var available_items: Array[GachaBallDefinition] = []
 	for d in all_defs:
@@ -35,7 +31,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 		elif d.category == &"ITEM":
 			available_items.append(d)
 	
-	print("EncounterGenerator: Available units: ", available_units.size(), ", Available items: ", available_items.size())
+
 	
 	available_units.sort_custom(func(a, b): return a.cost < b.cost)
 	available_items.sort_custom(func(a, b): return a.cost < b.cost)
@@ -85,11 +81,10 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 				# Store this result if it's better than the last one
 		if spent_budget > best_build.spent:
 			best_build = {"units": purchased_units, "items": purchased_items, "spent": spent_budget}
-			print("EncounterGenerator: New best build - Units: ", purchased_units.size(), ", Items: ", purchased_items.size(), ", Spent: ", spent_budget, "/", budget)
+
 
 		# If we found a perfect build, exit early
 		if spent_budget == budget:
-			print("EncounterGenerator: Found perfect build!")
 			break
 		
 	# --- Phase 4: Final Assembly ---
@@ -97,7 +92,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	final_encounter.id = "dynamic_encounter_%d" % Time.get_unix_time_from_system()
 	
 	var efficiency = (float(best_build.spent) / float(budget)) * 100.0
-	print("EncounterGenerator: Final build - Units: ", best_build.units.size(), ", Items: ", best_build.items.size(), ", Spent: ", best_build.spent, "/", budget, " (", efficiency, "% efficiency)")
+
 	
 	# Place units
 	var available_positions = [0, 1, 2, 3, 4, 5]
@@ -118,7 +113,6 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	
 	# Validate the final encounter
 	if not _validate_encounter(final_encounter):
-		print("EncounterGenerator: Warning - Generated encounter failed validation, using fallback")
 		return _create_fallback_encounter()
 		
 	return final_encounter
@@ -126,7 +120,6 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 ## Creates a fallback encounter when generation fails.
 ## @return EncounterDefinition - A basic encounter with minimal units
 func _create_fallback_encounter() -> EncounterDefinition:
-	print("EncounterGenerator: Creating fallback encounter")
 	var fallback = EncounterDefinition.new()
 	fallback.id = "fallback_encounter_%d" % Time.get_unix_time_from_system()
 	
@@ -146,19 +139,16 @@ func _validate_encounter(encounter: EncounterDefinition) -> bool:
 		return false
 	
 	if encounter.enemy_placements.is_empty():
-		print("EncounterGenerator: Warning - Generated encounter has no units")
 		return false
 	
 	# Check that all units have valid definitions
 	for placement in encounter.enemy_placements:
 		var unit_def = Database.get_definition(placement.id)
 		if not is_instance_valid(unit_def):
-			print("EncounterGenerator: Warning - Invalid unit definition: ", placement.id)
 			return false
 		
 		# Check that items don't exceed unit's item slots
 		if placement.items.size() > unit_def.item_slot_count:
-			print("EncounterGenerator: Warning - Too many items for unit: ", placement.id)
 			return false
 	
 	return true

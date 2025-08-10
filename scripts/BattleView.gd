@@ -44,12 +44,10 @@ func _ready():
 	add_to_group("battle_view")
 	var views := get_tree().get_nodes_in_group("battle_view")
 	if views.size() > 1:
-		printerr("BattleView: Duplicate instance detected – self-terminating to avoid duplicate draw emissions.")
 		queue_free()
 		return
 	battle_manager = get_node("BattleManager")
 	if not is_instance_valid(battle_manager):
-		printerr("BattleView CRITICAL: BattleManager node not found!")
 		return
 
 	# Connect to all relevant state change signals
@@ -94,7 +92,6 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 	
 	var data_container = battle_manager.get_container(container_name)
 	if not is_instance_valid(data_container):
-		printerr("BattleView: Could not find data container named: ", container_name)
 		return
 	
 	# 1. Get all PanelContainer nodes (the slots) from the UI container.

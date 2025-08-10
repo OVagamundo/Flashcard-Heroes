@@ -5,7 +5,6 @@ extends Node
 
 func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, all_instances_db: Dictionary) -> Dictionary:
 	if not instance_a or not instance_b:
-		printerr("MergeManager: Attempted merge with a null instance.")
 		return {}
 		
 	var recipe: MergeRecipe = find_recipe(instance_a, instance_b, source_loc, target_loc, all_instances_db)
@@ -14,7 +13,6 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 
 	var result_definition: GachaBallDefinition = Database.get_definition(recipe.result_id)
 	if not result_definition:
-		printerr("MergeManager: Result ID from recipe not found in Database: ", recipe.result_id)
 		return {}
 		
 	var merged_instance := GachaBallInstance.new()

@@ -32,7 +32,6 @@ func _on_start_run_pressed():
 	var selected_deck_index = deck_button.selected
 
 	if selected_hero_index == -1 or selected_deck_index == -1:
-		printerr("Loadout: Cannot start run, a selection is missing.")
 		return
 
 	var hero_id = _hero_defs[selected_hero_index].id

@@ -83,8 +83,6 @@ func get_location_for_uuid(uuid: String) -> LocationIdentifier:
 	var instance = get_instance_by_uuid(uuid)
 	if is_instance_valid(instance):
 		return instance.get_location()
-	
-	printerr("RunState: Could not find instance with UUID %s to get location." % uuid)
 	return null
 
 func get_container(container_name: StringName) -> DataContainer:
@@ -130,8 +128,6 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		self.hero_instance = GachaBallInstance.new()
 		self.hero_instance.initialize(hero_def)
 		self.run_instances[self.hero_instance.ball_uuid] = self.hero_instance
-	else:
-		printerr("Failed to find hero definition for ID: ", hero_def_id)
 	
 	# Initialize flashcard progress for the selected deck
 	var deck_card_ids = Database.flashcard_definitions.keys()
@@ -163,8 +159,6 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		hero_instance.location_slot_index = hero_slot
 		# 3. Add to master dictionary
 		run_instances[hero_instance.ball_uuid] = hero_instance
-	else:
-		printerr("RunState: CRITICAL – could not find hero definition in Database.")
 
 	# --- Add starter units/items to inventory ---
 	var starters: Array[StringName] = [
@@ -177,7 +171,6 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	for id in starters:
 		var def: GachaBallDefinition = Database.get_definition(id)
 		if not def:
-			printerr("RunState: Missing definition '%s' while starting new run." % id)
 			continue
 			
 		var inst := GachaBallInstance.new()
@@ -188,7 +181,6 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		# --- Inlined logic from the deleted add_instance function ---
 		var container = get_container(container_name)
 		if not is_instance_valid(container):
-			printerr("RunState: Failed to find container for starter instance '%s'." % id)
 			continue
 		
 		var target_slot = container.find_first_empty_slot()

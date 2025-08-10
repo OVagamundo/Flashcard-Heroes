@@ -41,7 +41,6 @@ func _load_content_scene(path: String) -> void:
 	var holder_path := "VBoxContainer/ContentArea/SubViewport/MarginContainer"
 	var holder: Node = current_scene.get_node(holder_path)
 	if not is_instance_valid(holder):
-		printerr("SceneManager: Could not find content holder at path: ", holder_path)
 		return
 	# Clear old content
 	for child in holder.get_children():
@@ -50,7 +49,6 @@ func _load_content_scene(path: String) -> void:
 	
 	var res = load(path)
 	if not res:
-		printerr("SceneManager: Failed to load content scene: ", path)
 		return
 	var inst = res.instantiate()
 	holder.add_child(inst)
@@ -65,7 +63,6 @@ func _change_scene_to(path: String) -> void:
 
 	var new_scene_res = load(path)
 	if not new_scene_res:
-		printerr("SceneManager: Failed to load scene at path: ", path)
 		return
 		
 	current_scene = new_scene_res.instantiate()

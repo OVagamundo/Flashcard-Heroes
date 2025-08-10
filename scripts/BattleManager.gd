@@ -62,7 +62,6 @@ func _ready():
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 
 func _exit_tree():
-	print("BattleManager: _exit_tree called")
 	GameManager.unregister_battle_manager() # ADD THIS LINE
 	GameManager.is_in_battle = false
 	SignalBus.emit_signal("battle_state_changed", false)
@@ -86,7 +85,6 @@ func _connect_signals():
 
 
 func start_battle(encounter_def: EncounterDefinition):
-	print("BattleManager: Starting battle with encounter_def: ", encounter_def != null)
 	# Clear any existing selection when entering battle
 	SignalBus.emit_signal("selection_clear_requested")
 	_setup_battle(encounter_def)
@@ -107,20 +105,17 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 	_effect_queue.clear()
 	_battle_over_emitted = false
 	_gacha_tokens = 0
-	print("BattleManager: Initial gacha_tokens set to: ", _gacha_tokens)
 	
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 	var permanent_to_battle_uuid_map: Dictionary = {}
 
 	# First pass: Create all battle copies and map their new UUIDs, except for the hero (use persistent instance for hero)
 	var hero_instance = null
-	print("BattleManager: Processing ", run_state_instances.size(), " run state instances")
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
 		if is_hero:
 			hero_instance = perm_inst
-			print("BattleManager: Found hero instance: ", perm_inst.ball_uuid)
 			# Add the hero instance to _battle_instances so UI can find it during battle
 			_battle_instances[perm_inst.ball_uuid] = perm_inst
 			continue # Don't create a battle copy for the hero
@@ -149,8 +144,6 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 					item_instance.equipped_slot_index = i
 
 	# Third pass: Place all instances in their correct, stable locations.
-	print("--- BATTLE SETUP: PASS 3 ---")
-	print("BattleManager: Hero instance found: ", hero_instance != null)
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
@@ -158,7 +151,6 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 		if not is_instance_valid(perm_loc): continue
 		if is_hero:
 			# Place the persistent hero instance directly in the PlayerLineup
-			print("BattleManager: Placing hero at index ", perm_loc.index)
 			var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 			container.set_uuid(perm_loc.index, perm_inst.ball_uuid)
 			_update_instance_location(perm_inst.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, perm_loc.index)
@@ -166,7 +158,6 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 		var battle_uuid = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
 		if not battle_uuid: continue
 		var battle_copy = _battle_instances[battle_uuid]
-		print("Processing permanent instance: ", perm_inst.ball_uuid, " with location: ", perm_inst.location_container_tag, " [", perm_inst.location_slot_index, "]")
 		# An item's location is determined by what it's equipped to. Skip direct placement.
 		if not battle_copy.equipped_on_uuid.is_empty():
 			continue
@@ -197,10 +188,8 @@ func _setup_battle(encounter_def: EncounterDefinition = null):
 	_trigger_battle_start_abilities()
 
 func _setup_enemy_lineup(encounter_def: EncounterDefinition = null):
-	print("BattleManager: Setting up enemy lineup with encounter_def: ", encounter_def != null)
 	if encounter_def:
 		# Use the provided encounter definition
-		print("BattleManager: Encounter has ", encounter_def.enemy_placements.size(), " placements")
 		var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 		
 		for placement in encounter_def.enemy_placements:
@@ -224,12 +213,7 @@ func _setup_enemy_lineup(encounter_def: EncounterDefinition = null):
 			
 			lineup_container.set_uuid(placement.position, enemy_inst.ball_uuid)
 			_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, placement.position)
-			
-			print("BattleManager: Created enemy unit at position ", placement.position, " with ", placement.get("items", []).size(), " items")
-			
 			# Note: unit_stats_changed will be emitted after UI is populated
-			if placement.get("items", []).size() > 0:
-				print("BattleManager: Enemy unit ", enemy_inst.ball_uuid, " has ", placement.get("items", []).size(), " equipped items")
 	else:
 		# Fallback to hardcoded enemy lineup
 		var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
@@ -266,7 +250,6 @@ func get_container(container_name: StringName) -> DataContainer:
 				new_container = GrowableGridContainer.new(16)
 			else:
 				# Failsafe for unknown container types
-				printerr("BattleManager: Unknown container type requested: ", container_name)
 				new_container = FixedArrayContainer.new(1)
 
 	_containers[container_name] = new_container
@@ -379,7 +362,6 @@ func _change_phase(new_phase: Phases):
 			# Note: The combat phase will now be triggered by _on_flashcard_completed
 		Phases.MANAGEMENT:
 			# Re-enable draw buttons when entering management phase
-			print("BattleManager: Entering MANAGEMENT phase, emitting battle_inventory_changed")
 			SignalBus.emit_signal("battle_inventory_changed")
 		Phases.COMBAT:
 			pass
@@ -423,7 +405,9 @@ func _populate_effect_queue():
 	
 	# Process player attacks
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	for attacker in player_lineup:
+	# Enqueue in reverse so LIFO processing executes left->right for players
+	for i in range(player_lineup.size() - 1, -1, -1):
+		var attacker = player_lineup[i]
 		var target = _get_frontmost_target(true)
 		if is_instance_valid(target):
 			# Trigger on_attack for the player unit
@@ -648,7 +632,6 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 				uuids.append(ally.ball_uuid)
 			return uuids
 		_:
-			print("BattleManager: Unknown target type: ", target_type)
 			return []
 
 ## Check if a condition is met for an ability.
@@ -681,7 +664,6 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 				if is_instance_valid(target_instance):
 					result = target_instance.current_hp > source_instance.current_hp
 		_:
-			print("BattleManager: Unknown condition type: ", condition_def.condition_type)
 			result = false
 	
 	# Apply inversion if specified
@@ -902,7 +884,6 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 		unit_instance.equip_item_bonus(item_instance)
 
 func _emit_stats_changed_for_equipped_units():
-	print("BattleManager: _emit_stats_changed_for_equipped_units called")
 	# Emit unit_stats_changed for all units that have equipped items
 	for instance in _battle_instances.values():
 		if is_instance_valid(instance) and instance.get_definition().category == &"UNIT":
@@ -913,21 +894,12 @@ func _emit_stats_changed_for_equipped_units():
 					has_equipped_items = true
 					equipped_count += 1
 			if has_equipped_items:
-				var def = instance.get_definition()
-				print("BattleManager: Unit ", instance.ball_uuid, " has ", equipped_count, " equipped items")
-				print("BattleManager: Base stats - HP: ", def.base_hp, ", PWR: ", def.base_pwr)
-				print("BattleManager: Current stats - HP: ", instance.current_hp, ", PWR: ", instance.current_pwr)
-				print("BattleManager: Emitting unit_stats_changed for unit: ", instance.ball_uuid)
 				SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
-			else:
-				print("BattleManager: Unit ", instance.ball_uuid, " has no equipped items")
 
 func _on_flashcard_completed(results: Dictionary):
-	print("BattleManager: _on_flashcard_completed called with results: ", results)
 	# TDD Section 9.4: Battle Flow
 	# This handler is only for the battle context.
 	if not is_instance_valid(get_node_or_null("/root/Main/VBoxContainer/ContentArea/SubViewport/Battle")):
-		print("BattleManager: Early return from _on_flashcard_completed - no battle found")
 		return
 
 	_last_minigame_results = results
@@ -947,9 +919,7 @@ func _on_results_acknowledged():
 	var correct_answers = _last_minigame_results.get("correct_answers", 0)
 	var gacha_gain = correct_answers
 	
-	print("BattleManager: Adding ", gacha_gain, " tokens. Current tokens: ", _gacha_tokens)
 	_gacha_tokens += gacha_gain
-	print("BattleManager: New token count: ", _gacha_tokens)
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
 	_last_minigame_results.clear()

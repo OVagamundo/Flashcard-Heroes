@@ -32,7 +32,20 @@ func _ready():
 		bus.unit_stats_changed.connect(_on_unit_stats_changed)
 
 func _exit_tree():
-	pass
+	# Proactively disconnect signals and end any active drag to prevent leaks
+	var bus = get_node_or_null("/root/SignalBus")
+	if is_instance_valid(bus):
+		if bus.is_connected("view_selected", _on_view_selected):
+			bus.disconnect("view_selected", _on_view_selected)
+		if bus.is_connected("view_deselected", _on_view_deselected):
+			bus.disconnect("view_deselected", _on_view_deselected)
+		if bus.unit_stats_changed.is_connected(_on_unit_stats_changed):
+			bus.unit_stats_changed.disconnect(_on_unit_stats_changed)
+
+	# If this view is being freed during a drag, centrally end the drag and visuals
+	if GlobalInteractionRouter.is_drag_active():
+		GlobalInteractionRouter.end_drag(false)
+		GlobalInteractionRouter.end_drag_visuals(false)
 
 func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false):
 	self._location = loc
@@ -86,13 +99,11 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 func _update_stats():
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance): 
-		print("GachaBallView: _update_stats - No instance found for UUID: ", _instance_uuid)
 		return
 	var definition = instance.get_definition()
 	if not definition or definition.category != &"UNIT":
 		hp_label.visible = false
 		pwr_label.visible = false
-		print("GachaBallView: _update_stats - Not a unit, hiding stats")
 		return
 	
 	hp_label.visible = true
@@ -101,7 +112,6 @@ func _update_stats():
 	var new_pwr_text = "PWR: %d" % instance.current_pwr
 	hp_label.text = new_hp_text
 	pwr_label.text = new_pwr_text
-	print("GachaBallView: _update_stats - Updated labels to HP: ", new_hp_text, ", PWR: ", new_pwr_text)
 
 func _update_item_slots():
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
@@ -160,18 +170,10 @@ func _find_slot_anchor() -> Control:
 	return self
 
 func _on_unit_stats_changed(unit_uuid: String):
-	print("GachaBallView: Received unit_stats_changed for UUID: ", unit_uuid, ", my UUID: ", _instance_uuid)
 	if _instance_uuid == unit_uuid:
 		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
-			print("GachaBallView: Updating stats for unit: ", unit_uuid)
-			print("GachaBallView: Current stats before update - HP: ", instance.current_hp, ", PWR: ", instance.current_pwr)
 			_update_stats()
-			print("GachaBallView: Stats updated")
-		else:
-			print("GachaBallView: Could not find instance for UUID: ", unit_uuid)
-	else:
-		print("GachaBallView: UUID mismatch, ignoring signal")
 
 func _gui_input(event: InputEvent):
 	if not is_instance_valid(_location): return
@@ -207,7 +209,6 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	if context_group == &"InspectionOnly":
 		return null
 
-	print("GachaBallView._get_drag_data: origin=", _location.container, "[", _location.index, "] uuid=", _instance_uuid)
 	_drag_initiated_for_click = true
 	_pressed_pending_click = false
 	# Do NOT close windows on drag start. Closing ancestor windows can free the
@@ -228,7 +229,6 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 
 	# Notify GIR of drag origin so it can interpret the eventual drop
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
-	print("GachaBallView._get_drag_data: calling GIR.start_drag")
 	GlobalInteractionRouter.start_drag(origin_ctx)
 
 	return { "source_loc": _location }
@@ -236,7 +236,6 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 func _can_drop_data(_at_position, data) -> bool:
 	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
 	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
-	print("GachaBallView._can_drop_data: container=", _location.container, ", group=", context_group, ", has_source_loc=", (data is Dictionary and data.has("source_loc")))
 	if context_group == &"InspectionOnly":
 		return false
 		
@@ -247,8 +246,6 @@ func _drop_data(_at_position, data):
 	# since the source location comes from the drag data, not the current view
 	# Create a target interaction context and route via GIR
 	var target_ctx = _create_interaction_context(&"DROP")
-	print("GachaBallView._drop_data: target=", _location.container, "[", _location.index, "]", 
-		" drag_active=", GlobalInteractionRouter.is_drag_active())
 	SignalBus.emit_signal("interaction_context_received", target_ctx)
 
 	# Do not end drag visuals here. The InventoryManager will decide whether the
@@ -256,16 +253,12 @@ func _drop_data(_at_position, data):
 	# accordingly. This prevents the source from remaining hidden after invalid actions.
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier):
-	print("GachaBallView: _on_view_selected called for view: ", view, ", self: ", self, ", entity_uuid: ", _instance_uuid)
 	if view == self:
-		print("GachaBallView: Setting selection to true")
 		_is_selected = true
 		_apply_selection_feedback()
 
 func _on_view_deselected(view: Control):
-	print("GachaBallView: _on_view_deselected called for view: ", view, ", self: ", self, ", entity_uuid: ", _instance_uuid)
 	if view == self:
-		print("GachaBallView: Setting selection to false")
 		_is_selected = false
 		_apply_selection_feedback()
 
@@ -292,6 +285,5 @@ func _notification(what: int):
 		# Reset local drag flag
 		_drag_initiated_for_click = false
 		if GlobalInteractionRouter.is_drag_active():
-			print("GachaBallView: NOTIFICATION_DRAG_END without handled drop; restoring source visibility")
 			GlobalInteractionRouter.end_drag(false)
 			GlobalInteractionRouter.end_drag_visuals(false)

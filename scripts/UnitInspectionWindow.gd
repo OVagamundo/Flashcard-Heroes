@@ -66,7 +66,6 @@ func populate(context: Dictionary):
 	_is_enemy_context = context.get("is_enemy_context", false)
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
-		printerr("UnitInspectionWindow: Invalid context provided.")
 		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
 		return
 

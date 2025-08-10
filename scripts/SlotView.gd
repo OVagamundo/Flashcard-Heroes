@@ -16,7 +16,10 @@ func _ready():
 	add_theme_stylebox_override("panel", style)
 
 func _exit_tree():
-	pass
+	# If a drag is active while this slot is being freed, end it to prevent leaks
+	if GlobalInteractionRouter.is_drag_active():
+		GlobalInteractionRouter.end_drag(false)
+		GlobalInteractionRouter.end_drag_visuals(false)
 
 func _notification(what):
 	pass
@@ -47,8 +50,7 @@ func _gui_input(event: InputEvent):
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Do NOT consume the event here; allow child views to initiate drag
-		print("SlotView._gui_input: click on slot ", _location.container, "[", _location.index, "] children=", get_child_count())
-		
+
 		# Create and emit InteractionContext
 		var context = _create_interaction_context(&"SINGLE_CLICK")
 		SignalBus.emit_signal("interaction_context_received", context)

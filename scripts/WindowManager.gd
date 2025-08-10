@@ -99,14 +99,10 @@ func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
 		var target_loc: LocationIdentifier = populate_ctx.get("target_location")
 		if is_instance_valid(target_loc):
 			anchor = find_view_for_location(target_loc)
-			if OS.is_debug_build():
-				print("[WM] ChoiceWindow anchor <- target_location")
 	if not is_instance_valid(anchor):
 		var source_loc: LocationIdentifier = populate_ctx.get("source_location")
 		if is_instance_valid(source_loc):
 			anchor = find_view_for_location(source_loc)
-			if OS.is_debug_build():
-				print("[WM] ChoiceWindow anchor <- source_location")
 
 	if not _window_scenes.has(&"ChoiceWindow"): return
 	var context := {
@@ -139,12 +135,10 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control):
 func close_children_of(parent_window: Control):
 	var parent_index = _active_inspection_group.find(parent_window)
 	if parent_index == -1: return
-	print("WindowManager: close_children_of parent=", parent_window.name, " (", parent_window.get_instance_id(), ") from_index=", parent_index)
 	for i in range(_active_inspection_group.size() - 1, parent_index, -1):
 		var child_window = _active_inspection_group[i]
 		if is_instance_valid(child_window):
 			stop_tracking_window(child_window.get_instance_id())
-			print("WindowManager: close_child -> ", child_window.name, " (", child_window.get_instance_id(), ")")
 			child_window.queue_free()
 
 # Back-compat API expected by GIR: resolve parent by instance_id and prune its children
@@ -161,11 +155,9 @@ func close_child_windows(window_group_id: int, parent_window_id: int = -1):
 
 # Public API for GIR (Rules W2, W4, W5).
 func close_all_inspection_windows():
-	print("WindowManager: close_all_inspection_windows count=", _active_inspection_group.size())
 	for window in _active_inspection_group:
 		if is_instance_valid(window):
 			stop_tracking_window(window.get_instance_id())
-			print("WindowManager: close_all -> ", window.name, " (", window.get_instance_id(), ")")
 			window.queue_free()
 	_active_inspection_group.clear()
 
@@ -205,7 +197,6 @@ func handle_inspection_background_click(clicked_window: Control):
 	# Use index lookup to avoid typed array validation issues on non-Control nodes
 	var idx := _index_in_active_group(clicked_window)
 	if idx != -1:
-		print("WindowManager: handle_inspection_background_click -> pruning children of ", clicked_window.name, " (", clicked_window.get_instance_id(), ")")
 		close_children_of(clicked_window)
 
 
@@ -216,13 +207,11 @@ func request_close_inspection_window(window: Control, cause: StringName = &""):
 		return
 	var window_id := window.get_instance_id()
 	# Respect GIR suppression to avoid premature closures during interactions.
-	var suppressed_for_id := GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
-	var suppressed_now := GlobalInteractionRouter.is_close_suppressed_now()
-	print("WindowManager: request_close_inspection_window window=", window.name, " (", window_id, ") cause=", cause, " suppressed_for_id=", suppressed_for_id, " suppressed_now=", suppressed_now)
+	var suppressed_for_id: bool = GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
+	var suppressed_now: bool = GlobalInteractionRouter.is_close_suppressed_now()
 	if suppressed_for_id or suppressed_now:
 		return
 	stop_tracking_window(window_id)
-	print("WindowManager: closing window id=", window_id, " name=", window.name)
 	window.queue_free()
 
 
@@ -245,7 +234,6 @@ func _open_contextual_window(context: Dictionary):
 		close_all_inspection_windows()
 
 	if not _window_scenes.has(window_type):
-		printerr("WindowManager: Unknown contextual window type ", window_type)
 		return
 
 	var window_instance = _window_scenes[window_type].instantiate()
@@ -258,19 +246,7 @@ func _open_contextual_window(context: Dictionary):
 	if window_instance.has_method("populate"):
 		window_instance.populate(populate_context)
 
-	# Diagnostics: log canvas layers and transforms for anchor/parent/window
-	if OS.is_debug_build():
-		var anchor_layer := _find_canvas_layer(anchor_view)
-		var parent_layer := _find_canvas_layer(parent_window)
-		var window_layer := _find_canvas_layer(window_instance)
-		print("[WM] open ctx '", window_type, "' anchor=",
-			anchor_view.get_path() if is_instance_valid(anchor_view) else "<nil>",
-			" parent=",
-			parent_window.get_path() if is_instance_valid(parent_window) else "<nil>",
-			" layers a/p/w=",
-			(anchor_layer.layer if is_instance_valid(anchor_layer) else -999), "/",
-			(parent_layer.layer if is_instance_valid(parent_layer) else -999), "/",
-			(window_layer.layer if is_instance_valid(window_layer) else -999))
+	# (diagnostics removed)
 
 	var pos_hint: String = context.get("positioning_hint", "")
 	call_deferred("_deferred_position", window_instance, anchor_view, parent_window, pos_hint)
@@ -297,39 +273,21 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 		# If caller requests parent-based placement (e.g., equipped items), ignore anchor.
 		if pos_hint == "use_parent_window":
 			position = _calculate_child_window_position(parent_window, window)
-			if OS.is_debug_build():
-				var pr0 = _get_screen_rect(parent_window)
-				print("[WM] deferred child pos (parent-only by hint) parent=", parent_window.name, " pr=", pr0, " -> ", position)
 		# Prefer anchor-relative placement when anchor is available; clamp to viewport.
 		elif is_instance_valid(anchor):
 			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
-			if OS.is_debug_build():
-				var pr = _get_screen_rect(parent_window)
-				var ar = _get_screen_rect(anchor)
-				print("[WM] deferred child pos (anchor-relative) parent=", parent_window.name, " pr=", pr, " anchor=", anchor.name, " ar=", ar, " -> ", position)
 		else:
 			position = _calculate_child_window_position(parent_window, window)
-			if OS.is_debug_build():
-				var pr2 = _get_screen_rect(parent_window)
-				print("[WM] deferred child pos (parent-rect) parent=", parent_window.name, " pr=", pr2, " -> ", position)
 	elif is_instance_valid(anchor):
 		# Root-anchored windows (no parent): allow specific hints; otherwise use general placement
 		if pos_hint == "center_over_anchor":
 			position = _calculate_centered_over_anchor(anchor, window)
-			if OS.is_debug_build():
-				print("[WM] deferred root pos (center_over_anchor) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
 		elif pos_hint == "top_center_over_anchor":
 			position = _calculate_top_center_over_anchor(anchor, window)
-			if OS.is_debug_build():
-				print("[WM] deferred root pos (top_center_over_anchor) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
 		elif pos_hint == "left_of_anchor":
 			position = _calculate_left_of_anchor(anchor, window)
-			if OS.is_debug_build():
-				print("[WM] deferred root pos (left_of_anchor) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
 		else:
 			position = _calculate_window_position(anchor, window)
-			if OS.is_debug_build():
-				print("[WM] deferred root pos (general) anchor=", anchor.name, " ar=", _get_screen_rect(anchor), " -> ", position)
 	else: # It's a root fixed-position window (Inventory, etc.)
 		var viewport_rect = get_viewport().get_visible_rect()
 		var vp_pos: Vector2 = Vector2(viewport_rect.position)
@@ -349,16 +307,10 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 	if is_instance_valid(parent_window):
 		if pos_hint == "use_parent_window":
 			position = _calculate_child_window_position(parent_window, window)
-			if OS.is_debug_build():
-				print("[WM] finalize child pos (parent-only by hint) -> ", position)
 		elif is_instance_valid(anchor):
 			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
-			if OS.is_debug_build():
-				print("[WM] finalize child pos (anchor-relative) -> ", position)
 		else:
 			position = _calculate_child_window_position(parent_window, window)
-			if OS.is_debug_build():
-				print("[WM] finalize child pos (parent-rect) -> ", position)
 	elif is_instance_valid(anchor):
 		if pos_hint == "center_over_anchor":
 			position = _calculate_centered_over_anchor(anchor, window)
@@ -402,8 +354,6 @@ func _resolve_parent_window(anchor_view: Control, populate_context: Dictionary) 
 	if explicit_id != -1:
 		for w in _active_inspection_group:
 			if is_instance_valid(w) and w.get_instance_id() == explicit_id:
-				if OS.is_debug_build():
-					print("[WM] _resolve_parent_window: explicit_id -> ", w.name, " (", w.get_instance_id(), ")")
 				return w
 		# If explicit id was provided but not found, fall back below.
 
@@ -414,17 +364,12 @@ func _resolve_parent_window(anchor_view: Control, populate_context: Dictionary) 
 		for i in range(_active_inspection_group.size() - 1, -1, -1):
 			var w = _active_inspection_group[i]
 			if is_instance_valid(w) and w is UnitInspectionWindow:
-				if OS.is_debug_build():
-					print("[WM] _resolve_parent_window: inside_unit_stack -> ", w.name, " (", w.get_instance_id(), ")")
 				return w
 
 	# 3) Structural fallback: nearest tracked inspection window
 	var fallback = _find_ancestor_inspection_window(anchor_view)
-	if OS.is_debug_build():
-		print("[WM] _resolve_parent_window: structural_fallback -> ", fallback.name if is_instance_valid(fallback) else "<nil>")
 	return fallback
 
-# Public helper: resolve a Control view for a given LocationIdentifier, if present in the scene.
 func find_view_for_location(loc: LocationIdentifier) -> Control:
 	if not is_instance_valid(loc):
 		return null
@@ -555,9 +500,8 @@ func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: Locat
 	if is_instance_valid(old_anchor) and old_anchor.is_connected("item_rect_changed", geom_callable):
 		old_anchor.item_rect_changed.disconnect(geom_callable)
 	if is_instance_valid(window_instance):
-		var suppressed_for_id := GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
-		var suppressed_now := GlobalInteractionRouter.is_close_suppressed_now()
-		print("WindowManager: _on_inspection_anchor_freed window_id=", window_id, " name=", window_instance.name, " old_anchor_id=", old_anchor_id, " suppressed_for_id=", suppressed_for_id, " suppressed_now=", suppressed_now)
+		var suppressed_for_id: bool = GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
+		var suppressed_now: bool = GlobalInteractionRouter.is_close_suppressed_now()
 		request_close_inspection_window(window_instance, &"ANCHOR_FREED")
 
 # FINAL FIX: This function is now correctly defined and used for lifecycle cleanup.
@@ -575,7 +519,6 @@ func _on_window_freed(window_id: int, was_modal: bool):
 		var window = stack[i]
 		if not is_instance_valid(window) or window.get_instance_id() == window_id:
 			stack.remove_at(i)
-	print("WindowManager: _on_window_freed id=", window_id, " was_modal=", was_modal)
 
 func _close_top_modal():
 	if not _modal_stack.is_empty():
@@ -762,7 +705,6 @@ func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):
 		_modal_layer = get_tree().get_first_node_in_group("modal_layer")
 		if not is_instance_valid(_modal_layer):
-			printerr("WindowManager: CRITICAL - No node in group 'modal_layer' found in scene tree.")
 			_modal_layer = CanvasLayer.new()
 			_modal_layer.name = "ModalLayerFailsafe"
 			get_tree().root.add_child(_modal_layer)

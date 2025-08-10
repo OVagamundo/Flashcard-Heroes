@@ -34,7 +34,6 @@ var abilities: Array[AbilityDefinition] = []
 # --- Initialization ---
 func initialize(definition: GachaBallDefinition):
 	if not is_instance_valid(definition):
-		printerr("GachaBallInstance.initialize() called with a null definition.")
 		return
 
 	self.definition_id = definition.id
@@ -55,7 +54,6 @@ func create_battle_copy() -> GachaBallInstance:
 	var copy = self.duplicate(false) # Shallow copy of value types
 	var definition = get_definition()
 	if not is_instance_valid(definition):
-		printerr("Cannot create battle copy, definition not found for ID: ", self.definition_id)
 		return null
 
 	# Deep copy mutable types
@@ -105,7 +103,6 @@ func set_current_hp(new_hp: int):
 func reset_battle_stats():
 	var definition = get_definition()
 	if not is_instance_valid(definition):
-		printerr("GachaBallInstance: Could not reset stats, definition not found for ID: ", self.definition_id)
 		return
 	self.current_hp = definition.base_hp
 	self.current_pwr = definition.base_pwr
