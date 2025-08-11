@@ -1,0 +1,17 @@
+<!-- Original: resources/recipes/Merge_Item_A_B_to_C.tres -->
+
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_a_b_to_c"
+ingredient_a_id = &"item_t1_a"
+ingredient_b_id = &"item_t1_b"
+result_id = &"item_t2_c"
+is_self_merge = false
+merge_type = &"ITEM"
+
+```

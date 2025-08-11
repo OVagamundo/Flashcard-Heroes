@@ -16,7 +16,6 @@ corner_radius_bottom_left = 4
 
 [node name="UnitInspectionWindow" type="PanelContainer"]
 mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_abcde")
 script = ExtResource("1_qwert")
 
 [node name="InternalBackground" type="ColorRect" parent="."]

@@ -3,16 +3,16 @@
 [ext_resource type="Script" path="res://scripts/EffectInspectionWindow.gd" id="1_v452y"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t340j"]
-bg_color = Color(0.0862745, 0.101961, 0.133333, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.32549, 0.384314, 0.470588, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+bg_color = Color(0.121569, 0.121569, 0.172549, 0.941176)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="Theme" id="Theme_y151u"]
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_t340j")
@@ -28,7 +28,6 @@ grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 mouse_filter = 2
-theme = SubResource("Theme_y151u")
 script = ExtResource("1_v452y")
 
 [node name="InternalBackground" type="ColorRect" parent="."]

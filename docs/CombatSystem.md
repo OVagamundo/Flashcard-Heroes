@@ -69,7 +69,6 @@ The combat loop is orchestrated by `scripts/BattleManager.gd`. Below are the ope
 - Retrieval: `get_instances_in_container(tag)` returns units sorted by their slot `index` ascending.
 - Convention: Lower `index` means further left within the lineup container.
 
-### Attack Sequencing (per turn)
 - __Enemy__: Iterated in ascending index and enqueued in that order. Because effects are processed LIFO, execution occurs right-to-left.
 - __Player__: Iterated in reverse (descending index) when enqueuing. With LIFO processing, execution occurs left-to-right.
 - Rationale: `_process_effect_queue()` uses `pop_back()`; reversing only the player enqueue order yields the intended visual sequence.
@@ -86,8 +85,20 @@ The combat loop is orchestrated by `scripts/BattleManager.gd`. Below are the ope
 - Validation at execution time:
   - Skips a request if the `source` is invalid or dead.
   - Retargets if the current target is invalid or dead by calling `_get_frontmost_target()` based on the attacker's side. If no valid target exists, the request is skipped.
-- Execution: `request.effect_definition.execute(source_uuid, exec_targets, self, request.trigger_context)`.
-- Timing: Adds a short delay between executions (about 0.8s) to pace the combat.
+- Execution: For each request, the effect is executed in simulation: `request.effect_definition.execute(source_uuid, exec_targets, self, sim_ctx)` where `sim_ctx.is_simulation = true`. This updates data silently and returns any result payload (e.g., damage) used to build `CombatEvent`s.
+- Timing: Pacing is handled by `scripts/BattleAnimator.gd` with a step delay of ~0.8s per event. `BattleManager` awaits the animator per request; if animator is missing, a fallback emits the same UI signals with a frame yield + 0.8s timer per event.
+
+### Animator & Event Replay (2025-08-11)
+- Simulation vs. Presentation: `BattleManager` simulates one request at a time, building an `Array[CombatEvent]` for just that action. It then calls and awaits `BattleAnimator.play_turn(events)` before moving to the next request.
+- Event Types (in `scripts/CombatEvent.gd`):
+  - `LOG_MESSAGE` `{ text: String }` → emits `SignalBus.battle_log_event(text)`
+  - `DAMAGE` `{ target_uuids: Array[String] }` → emits `SignalBus.unit_stats_changed(uuid)` for each
+  - `INVENTORY_SYNC` `{}` → emits `SignalBus.battle_inventory_changed()` (e.g., unit removal after death)
+- Animator Behavior (in `scripts/BattleAnimator.gd`):
+  - For each event: emit the mapped UI signal(s), `await get_tree().process_frame`, then wait `TURN_STEP_DELAY = 0.8` seconds.
+  - Emits `turn_animation_finished` after finishing the given array. `BattleManager` awaits `play_turn(...)` per request, so UI updates are synchronized step-by-step.
+- Deaths: `_check_for_deaths(true, events)` runs after each simulated request to enqueue an `INVENTORY_SYNC` when removals are needed.
+- Phase Safety: `BattleManager._on_turn_animation_finished()` ignores intermediate animator signals while `_is_processing_effect` is true; phase advancement happens only after the effect queue fully drains.
 
 ### Enqueuing Attacks
 - Basic Attack: `_populate_effect_queue()` resolves the `basic_attack` effect from `Database`. If missing, it falls back to `res://scripts/BasicAttackEffect.gd`.

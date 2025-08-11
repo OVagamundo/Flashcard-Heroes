@@ -203,7 +203,10 @@ func _gui_input(event: InputEvent):
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Use the new flag to control drag-and-drop.
 	if not _is_interactive: return null
-	
+	# Full input lock during COMBAT: do not start engine drag or create previews
+	if GlobalInteractionRouter and GlobalInteractionRouter.is_combat_locked():
+		return null
+		
 	# TDD 4.3.III.5: Prevent dragging in Inspection-Only contexts
 	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 	if context_group == &"InspectionOnly":

@@ -3,3 +3,7 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished when instantiating: 'res://scenes/Loadout.tscn'.
    at: instantiate (scene/resources/packed_scene.cpp:178)
+WARNING: 1 RID of type "CanvasItem" was leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2677)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)

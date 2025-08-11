@@ -1,0 +1,73 @@
+<!-- Original: scenes/UnitInspectionWindow.tscn -->
+
+```ini
+[gd_scene load_steps=3 format=3 uid="uid://dopg1h1v15g2x"]
+
+[ext_resource type="Script" path="res://scripts/UnitInspectionWindow.gd" id="1_qwert"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abcde"]
+bg_color = Color(0.121569, 0.121569, 0.172549, 0.941176)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="UnitInspectionWindow" type="PanelContainer"]
+mouse_filter = 1
+script = ExtResource("1_qwert")
+
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0)
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+text = "Unit Name"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+bbcode_enabled = true
+text = ""
+fit_content = true
+meta_underlined = false
+
+[node name="ItemGridLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+text = "Equipped Items:"
+
+[node name="ItemGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 5
+
+```

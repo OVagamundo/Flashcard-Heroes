@@ -21,7 +21,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var original_hp = target_instance.current_hp
 	
 	# Apply damage
-	target_instance.set_current_hp(max(0, target_instance.current_hp - damage))
+	var is_simulation = _context.get("is_simulation", false)
+	var new_hp = max(0, target_instance.current_hp - damage)
+	if is_simulation and target_instance.has_method("set_current_hp_silent"):
+		target_instance.set_current_hp_silent(new_hp)
+	else:
+		target_instance.set_current_hp(new_hp)
 
 	# Trigger on_hurt event for the target
 	battle_manager.trigger_on_hurt(target_instance.ball_uuid, damage, source_instance.ball_uuid)
@@ -30,16 +35,17 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if original_hp > 0 and target_instance.current_hp <= 0:
 		battle_manager.trigger_on_kill(source_instance.ball_uuid, target_instance.ball_uuid)
 
-	# Inform UI and log systems
+	# Inform UI and log systems (suppressed when simulating)
 	var src_name = tr(source_instance.get_definition().display_name_key)
 	var tgt_name = tr(target_instance.get_definition().display_name_key)
 	var msg = "%s deals %d dmg to %s" % [src_name, damage, tgt_name]
-	SignalBus.battle_log_event.emit(msg)
-	SignalBus.battle_inventory_changed.emit()
-	# Emit unit_stats_changed so UI updates HP in real time
-	SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
+	if not is_simulation:
+		SignalBus.battle_log_event.emit(msg)
+		SignalBus.battle_inventory_changed.emit()
+		# Emit unit_stats_changed so UI updates HP in real time
+		SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
 
-
+	return damage
 
 ## Calculate damage using stat-scaling parameters if provided
 func _calculate_damage(source_instance: GachaBallInstance) -> int:

@@ -1,7 +1,7 @@
 # res://scripts/EncounterGenerator.gd
 extends Node
 
-const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
+const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 const GachaBallDefinition = preload("res://scripts/GachaBallDefinition.gd")
 
 ## A stateless service that generates dynamic encounters using the "Constrained Random Build" algorithm.

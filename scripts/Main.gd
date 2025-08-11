@@ -15,7 +15,7 @@ const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
-const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
+const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 
 var _current_content_node: Node = null
 

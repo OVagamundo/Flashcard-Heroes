@@ -42,9 +42,20 @@ var _containers: Dictionary = {}
 
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
-const EncounterDefinition = preload("res://scripts/data/EncounterDefinition.gd")
+const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
+const CombatEvent = preload("res://scripts/CombatEvent.gd")
 var _gacha_tokens: int = 0
 var _last_minigame_results: Dictionary = {}
+@onready var _animator: Node = $"../BattleAnimator"
+
+func _resolve_animator():
+	if is_instance_valid(_animator):
+		return
+	var candidate = get_tree().get_first_node_in_group("battle_animator")
+	if is_instance_valid(candidate):
+		_animator = candidate
+		if not _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
+			_animator.turn_animation_finished.connect(_on_turn_animation_finished)
 
 func _ready():
 	var existing := get_tree().get_nodes_in_group("battle_manager")
@@ -60,6 +71,9 @@ func _ready():
 	# Connect to flashcard completion signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
+	_resolve_animator()
+	if is_instance_valid(_animator) and not _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
+		_animator.turn_animation_finished.connect(_on_turn_animation_finished)
 
 func _exit_tree():
 	GameManager.unregister_battle_manager() # ADD THIS LINE
@@ -75,6 +89,8 @@ func _exit_tree():
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
 	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):
 		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged)
+	if is_instance_valid(_animator) and _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
+		_animator.turn_animation_finished.disconnect(_on_turn_animation_finished)
 
 func _connect_signals():
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
@@ -429,46 +445,134 @@ func _populate_effect_queue():
 				if is_instance_valid(basic_attack_effect):
 					var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", basic_attack_effect, [target.ball_uuid], context)
 					_effect_queue.append(request)
-
-func _process_effect_queue() -> void:
-	if _is_processing_effect: return
-	if _effect_queue.is_empty(): _change_phase(Phases.MANAGEMENT); return
-	_is_processing_effect = true
+func _resolve_combat_turn() -> Array[CombatEvent]:
+	var events: Array[CombatEvent] = []
+	if _effect_queue.is_empty():
+		return events
+	
 	while not _effect_queue.is_empty():
 		var request: EffectRequest = _effect_queue.pop_back()
-		
-		# Check if source is still valid and alive
+		# Validate source is still alive
 		var source = get_instance_by_uuid(request.source_uuid)
-		if not is_instance_valid(source) or source.current_hp <= 0: 
+		if not is_instance_valid(source) or source.current_hp <= 0:
 			continue
 		
-		# Determine live targets; retarget at execution-time if needed (match 'Great state!')
+		# Retarget dynamically if first target is dead or invalid
 		var exec_targets: Array[String] = request.resolved_targets.duplicate()
 		if exec_targets.size() > 0:
-			var current_target = get_instance_by_uuid(exec_targets[0])
-			if not is_instance_valid(current_target) or current_target.current_hp <= 0:
-				var src_loc = get_location_for_uuid(source.ball_uuid)
-				var attacker_is_player: bool = src_loc != null and src_loc.container == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			var first_target = get_instance_by_uuid(exec_targets[0])
+			var attacker_is_player = _is_player_unit(source)
+			if not is_instance_valid(first_target) or first_target.current_hp <= 0:
 				var new_target_inst = _get_frontmost_target(attacker_is_player)
 				if is_instance_valid(new_target_inst):
 					exec_targets[0] = new_target_inst.ball_uuid
 				else:
 					continue
 		
-		# Execute the effect using the new interface
+		# Execute without emitting UI; capture basic damage if returned
+		var damage := 0
 		if is_instance_valid(request.effect_definition):
-			request.effect_definition.execute(request.source_uuid, exec_targets, self, request.trigger_context)
+			var sim_ctx = request.trigger_context.duplicate(true)
+			sim_ctx["is_simulation"] = true
+			var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
+			if typeof(res) == TYPE_INT:
+				damage = int(res)
+				# Construct the same log message as BasicAttackEffect for compatibility
+				if exec_targets.size() > 0:
+					var src_inst = get_instance_by_uuid(request.source_uuid)
+					var tgt_inst = get_instance_by_uuid(exec_targets[0])
+					if is_instance_valid(src_inst) and is_instance_valid(tgt_inst):
+						var src_name = tr(src_inst.get_definition().display_name_key)
+						var tgt_name = tr(tgt_inst.get_definition().display_name_key)
+						events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [src_name, damage, tgt_name]}))
+						events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"target_uuids": [tgt_inst.ball_uuid]}))
 		
-		_check_for_deaths()
+		# Apply deaths and enqueue inventory sync if needed
+		_check_for_deaths(true, events)
 		if _is_battle_over():
-			_is_processing_effect = false
-			return
-		await get_tree().create_timer(0.8).timeout
+			break
+
+	return events
+
+func _process_effect_queue() -> void:
+	if _is_processing_effect: return
+	_is_processing_effect = true
+	_resolve_animator()
+	# Process one request at a time so data and UI advance in lockstep per unit.
+	while not _effect_queue.is_empty():
+		var events: Array[CombatEvent] = []
+		# --- Begin single-request resolution (mirrors _resolve_combat_turn inner loop) ---
+		var request: EffectRequest = _effect_queue.pop_back()
+		# Validate source is still alive
+		var source = get_instance_by_uuid(request.source_uuid)
+		if not is_instance_valid(source) or source.current_hp <= 0:
+			continue
+		# Retarget dynamically if first target is dead or invalid
+		var exec_targets: Array[String] = request.resolved_targets.duplicate()
+		if exec_targets.size() > 0:
+			var first_target = get_instance_by_uuid(exec_targets[0])
+			var attacker_is_player = _is_player_unit(source)
+			if not is_instance_valid(first_target) or first_target.current_hp <= 0:
+				var new_target_inst = _get_frontmost_target(attacker_is_player)
+				if is_instance_valid(new_target_inst):
+					exec_targets[0] = new_target_inst.ball_uuid
+				else:
+					continue
+		# Execute without emitting UI; capture basic damage if returned
+		var damage := 0
+		if is_instance_valid(request.effect_definition):
+			var sim_ctx = request.trigger_context.duplicate(true)
+			sim_ctx["is_simulation"] = true
+			var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
+			if typeof(res) == TYPE_INT:
+				damage = int(res)
+				# Construct the same log message as BasicAttackEffect for compatibility
+				if exec_targets.size() > 0:
+					var src_inst = get_instance_by_uuid(request.source_uuid)
+					var tgt_inst = get_instance_by_uuid(exec_targets[0])
+					if is_instance_valid(src_inst) and is_instance_valid(tgt_inst):
+						var src_name = tr(src_inst.get_definition().display_name_key)
+						var tgt_name = tr(tgt_inst.get_definition().display_name_key)
+						events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [src_name, damage, tgt_name]}))
+						events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"target_uuids": [tgt_inst.ball_uuid]}))
+		# Apply deaths and enqueue inventory sync if needed
+		_check_for_deaths(true, events)
+		# --- End single-request resolution ---
+
+		# Play just this request's events, then continue to the next.
+		if is_instance_valid(_animator):
+			await _animator.play_turn(events)
+		else:
+			# Fallback: directly emit events with pacing if animator missing
+			for e in events:
+				match e.type:
+					CombatEvent.Type.LOG_MESSAGE:
+						SignalBus.emit_signal("battle_log_event", e.text)
+					CombatEvent.Type.DAMAGE:
+						if e.target_uuids.size() > 0:
+							SignalBus.emit_signal("unit_stats_changed", e.target_uuids[0])
+					CombatEvent.Type.INVENTORY_SYNC:
+						SignalBus.emit_signal("battle_inventory_changed")
+				await get_tree().process_frame
+				await get_tree().create_timer(0.8).timeout
+
+		if _is_battle_over():
+			break
+
 	_is_processing_effect = false
-	
-	# Trigger on_turn_end for all units
+	_on_turn_animation_finished()
+
+func _on_turn_animation_finished():
+	# If we're mid-processing per-effect animations, ignore intermediate finished signals.
+	if _is_processing_effect:
+		return
+	# Reset processing flag after animations complete
+	_is_processing_effect = false
+	# After all animations, advance phases unless battle ended
+	if _is_battle_over():
+		return
+	# Trigger end-of-turn abilities and advance
 	_trigger_turn_end_abilities()
-	
 	_change_phase(Phases.END_OF_TURN)
 	await get_tree().create_timer(0.1).timeout
 	_change_phase(Phases.START_OF_TURN)
@@ -491,7 +595,7 @@ func _remove_instance_from_container(instance: GachaBallInstance):
 		var idx: int = uuids.find(instance.ball_uuid)
 		if idx != -1: container.set_uuid(idx, "")
 
-func _check_for_deaths():
+func _check_for_deaths(is_simulation: bool = false, out_events = null):
 	var something_changed = false
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
 	for unit in player_units:
@@ -519,7 +623,7 @@ func _check_for_deaths():
 						_move_instance_to_discard(item_instance)
 			unit.equipped_item_uuids.fill("")
 			_move_instance_to_discard(unit)
-	
+		
 	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
@@ -539,9 +643,13 @@ func _check_for_deaths():
 			_remove_instance_from_container(unit)
 			if _battle_instances.has(unit.ball_uuid):
 				_battle_instances.erase(unit.ball_uuid)
-	
+		
 	if something_changed:
-		SignalBus.emit_signal("battle_inventory_changed")
+		if is_simulation:
+			if out_events != null:
+				out_events.append(CombatEvent.new(CombatEvent.Type.INVENTORY_SYNC))
+		else:
+			SignalBus.emit_signal("battle_inventory_changed")
 
 func _is_battle_over() -> bool:
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)

@@ -5,7 +5,21 @@ extends "res://scripts/InspectionWindow.gd"
 @onready var description_label: RichTextLabel = %DescriptionLabel
 
 func _ready():
+	# Ensure the window root consumes clicks so they don't fall through to the true background
+	mouse_filter = MOUSE_FILTER_STOP
+	# Bubble non-link clicks on description to the root so local prune runs
+	description_label.mouse_filter = MOUSE_FILTER_PASS
+	# Cover the entire window for background clicks inside the window area
 	$InternalBackground.gui_input.connect(_on_internal_background_clicked)
+	# Configure child controls to bubble clicks to the root (except the internal background)
+	_configure_mouse_filters()
+
+func _gui_input(event: InputEvent):
+	# Local background-click handling: prune only this window's descendants (do not close self)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		WindowManager.handle_inspection_background_click(self)
+		get_viewport().set_input_as_handled()
+		accept_event()
 
 func _on_internal_background_clicked(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
@@ -13,6 +27,20 @@ func _on_internal_background_clicked(event: InputEvent):
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
+
+## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
+func _configure_mouse_filters():
+	var stack: Array = [self]
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		for child in node.get_children():
+			if child is Control:
+				# Keep the internal background STOP to capture clicks anywhere in the window
+				if child == $InternalBackground:
+					(child as Control).mouse_filter = MOUSE_FILTER_STOP
+				else:
+					(child as Control).mouse_filter = MOUSE_FILTER_PASS
+				stack.append(child)
 
 
 

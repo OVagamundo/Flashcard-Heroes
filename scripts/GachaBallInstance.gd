@@ -100,6 +100,10 @@ func set_current_hp(new_hp: int):
 		self.current_hp = new_hp
 		SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
+func set_current_hp_silent(new_hp: int):
+	# Update HP without emitting UI signals. Used during simulation passes.
+	self.current_hp = new_hp
+
 func reset_battle_stats():
 	var definition = get_definition()
 	if not is_instance_valid(definition):

@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://ccwelqtvctrxe"]
+[gd_scene load_steps=5 format=3 uid="uid://ccwelqtvctrxe"]
 
 [ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 [ext_resource type="PackedScene" uid="uid://bdsj2fjaq3w5c" path="res://scenes/BattleLog.tscn" id="4_battle_log"]
+[ext_resource type="Script" path="res://scripts/BattleAnimator.gd" id="2_battle_animator_script"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -16,6 +17,9 @@ script = ExtResource("3_battle_view_script")
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")
+
+[node name="BattleAnimator" type="Node" parent="."]
+script = ExtResource("2_battle_animator_script")
 
 [node name="TeamAreas" type="HBoxContainer" parent="."]
 layout_mode = 1

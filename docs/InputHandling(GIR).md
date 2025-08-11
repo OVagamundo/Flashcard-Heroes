@@ -33,6 +33,38 @@ This addendum clarifies how GIR activates close‑suppression during request act
 
 - GIR logs suppression activations with window IDs and expiry times when `_activate_close_suppression_for_window_id(...)` is called.
 - WindowManager logs suppression state on every `request_close_inspection_window(...)` attempt, enabling cross‑correlation.
+
+## v3.5 Addendum: COMBAT Phase Interaction Policy (2025-08-11)
+
+Purpose
+- Ensure player input does not disrupt animator‑driven, per‑effect combat pacing.
+
+Rules
+- During `Phases.COMBAT`, GIR must not emit `REQUEST_ACTION`. Click‑to‑click and drag‑drop inventory operations are disabled.
+- Background/Escape inputs still apply per Section 5.1, but must not interrupt the animator; they only close windows or clear selection.
+- Selection/inspection inside windows remains allowed where appropriate (inspection‑only), but actions are gated until combat ends.
+
+Implementation Notes
+- GIR should gate `REQUEST_ACTION` generation with a phase check against `BattleManager`'s current phase (COMBAT) and instead emit `INVALID_ACTION` when in COMBAT.
+- Visual feedback: views should reflect non‑interactive state (e.g., dim highlights) while COMBAT is active.
+- No blocking: signal handlers must return immediately; the animator yields one frame after each event to allow UI to render.
+
+## v3.6 Addendum: Full Input Lock During COMBAT (2025-08-11)
+
+Supersedes v3.5 by enforcing a complete input lock while `BattleManager` is in `COMBAT`.
+
+Policy
+- All interaction contexts are ignored by GIR during COMBAT. No command queues are generated.
+- Unhandled input (ESC/background clicks) is ignored. GIR performs no window/selection operations.
+- Drags cannot start; drag visuals are suppressed and placeholders freed if invoked.
+- No `REQUEST_ACTION` is emitted, and GIR does not emit `INVALID_ACTION` either; it simply returns.
+
+Rationale
+- Prevent any user action from racing or interfering with animator-driven per-event pacing.
+- Maintain deterministic state during combat resolution.
+
+UI Guidance
+- Views may optionally reflect a dimmed/non-interactive state while COMBAT is active. This is a UI concern and not enforced by GIR.
 2. Core Interaction State (Held by GIR)
 The GIR is a state machine that tracks the user's current interaction. It holds three key state variables:
 Variable	Type	Description

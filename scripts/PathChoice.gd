@@ -1,7 +1,7 @@
 # res://scripts/PathChoice.gd
 extends Control
 
-const PathNodeDefinition = preload("res://scripts/data/PathNodeDefinition.gd")
+const PathNodeDefinition = preload("res://scripts/PathNodeDefinition.gd")
 const NodeViewScene = preload("res://scenes/NodeView.tscn")
 
 @onready var node_container: HBoxContainer = $CenterContainer/HBoxContainer

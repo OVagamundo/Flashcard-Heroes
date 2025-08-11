@@ -29,6 +29,9 @@ var _current_selection: InteractionContext = null
 ## Reference to WindowManager for window operations
 var _window_manager: Node = null
 
+## Combat state (gated interactions during COMBAT phase)
+var _is_combat_phase: bool = false
+
 ## Drag-and-drop state (centralized in GIR per spec)
 var _is_drag_active: bool = false
 var _drag_origin_context: InteractionContext = null
@@ -49,6 +52,9 @@ func _ready():
 	# Proactively clear selection on scene transitions and other flows that request it
 	if SignalBus.has_signal("selection_clear_requested"):
 		SignalBus.selection_clear_requested.connect(_on_selection_clear_requested)
+	# Track battle phase to gate interactions during COMBAT
+	if SignalBus.has_signal("battle_phase_changed"):
+		SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 
 func _exit_tree():
 	# Scene cleanup per spec: clear drag and selection
@@ -66,20 +72,29 @@ func _exit_tree():
 		SignalBus.interaction_context_received.disconnect(_on_interaction_context_received)
 	if SignalBus.has_signal("selection_clear_requested") and SignalBus.selection_clear_requested.is_connected(_on_selection_clear_requested):
 		SignalBus.selection_clear_requested.disconnect(_on_selection_clear_requested)
+	if SignalBus.has_signal("battle_phase_changed") and SignalBus.battle_phase_changed.is_connected(_on_battle_phase_changed):
+		SignalBus.battle_phase_changed.disconnect(_on_battle_phase_changed)
 
 ## Main entry point for processing interactions
 func _on_interaction_context_received(context: InteractionContext):
-	
+
 	var command_queue: Array[Command] = []
-	
+
+	# Full input lock during COMBAT: ignore all interaction contexts
+	if _is_combat_phase:
+		return
+
 	# Generate commands based on the interaction context and current state
 	command_queue = _generate_command_queue(context)
-	
+
 	# Execute the command queue
 	_execute_command_queue(command_queue)
 
 ## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
+	# Full input lock during COMBAT: swallow ESC/background clicks
+	if _is_combat_phase:
+		return
 	# ESC: cancel drag, then modals, then contextual windows, then selection
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		# 1) Cancel active drag if any
@@ -109,6 +124,17 @@ func _on_selection_clear_requested():
 	if _current_selection != null:
 		_execute_deselect()
 
+## Track battle phase to enforce COMBAT gating
+func _on_battle_phase_changed(phase_name: StringName):
+	_is_combat_phase = phase_name == &"COMBAT"
+	# If entering COMBAT, ensure any drag state and engine preview are cleared
+	if _is_combat_phase:
+		if _is_drag_active:
+			end_drag(false)
+		# Also cancel engine-managed drag preview to avoid lingering visuals
+		var vp := get_viewport()
+		if vp and vp.has_method("gui_cancel_drag"):
+			vp.gui_cancel_drag()
 
 ## Generate command queue based on interaction context and current state
 func _generate_command_queue(context: InteractionContext) -> Array[Command]:
@@ -558,6 +584,9 @@ func _execute_close_child_windows(window_group_id: int, parent_window_id: int = 
 
 ## Execute request action command
 func _execute_request_action(command_context: Dictionary):
+	# COMBAT-phase gate: full lockout, no side-effects
+	if _is_combat_phase:
+		return
 	var source_context: InteractionContext = command_context.get("source_context")
 	var target_context: InteractionContext = command_context.get("target_context")
 	
@@ -676,6 +705,9 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 
 ## Public API: start a drag operation (called by InteractionManager)
 func start_drag(origin_context: InteractionContext):
+	# Full input lock during COMBAT: do not start drags
+	if _is_combat_phase:
+		return
 	_is_drag_active = true
 	_drag_origin_context = origin_context
 	# Design rule: DO NOT close inspection windows on drag start. Closing here can
@@ -704,6 +736,11 @@ func end_drag(_was_handled: bool):
 
 ## Lightweight helpers to manage drag visuals centrally (temporary until DragVisualController)
 func start_drag_visuals(source_view: Control, placeholder: Control) -> void:
+	# Full input lock during COMBAT: suppress visuals and free placeholder to avoid leaks
+	if _is_combat_phase:
+		if is_instance_valid(placeholder):
+			placeholder.queue_free()
+		return
 	_drag_source_view = source_view
 	_drag_placeholder = placeholder
 	if is_instance_valid(_drag_source_view):
@@ -723,6 +760,10 @@ func _end_drag_visuals(was_handled: bool) -> void:
 ## Public API: query drag active state
 func is_drag_active() -> bool:
 	return _is_drag_active
+
+## Public API: expose COMBAT lock state for views
+func is_combat_locked() -> bool:
+	return _is_combat_phase
 
 ## Public API: expose suppression state for WindowManager
 func is_close_suppressed_for_window_id(window_id: int) -> bool:

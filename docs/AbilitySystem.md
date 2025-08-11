@@ -220,6 +220,44 @@ poison_effect.on_tick_effect.parameters = {"amount": 5, "is_heal": false}
 poison_effect.on_tick_effect.target = "self"
 ```
 
+## 9.5 Simulation-aware Effects & Animator Integration (2025-08-11)
+
+- Two-stage pipeline: (1) simulate effects to mutate data and collect `CombatEvent`s, (2) replay events via `scripts/BattleAnimator.gd` with pacing.
+- Effects must respect `context.is_simulation` to suppress direct UI signals during simulation.
+- Use silent setters (e.g., `set_current_hp_silent`) in simulation to avoid reactive UI side-effects.
+
+Rules
+- Do emit gameplay triggers during simulation (e.g., `on_hurt`, `on_kill`) so abilities can enqueue follow-up effects.
+- Do not emit combat UI signals during simulation (`battle_log_event`, `unit_stats_changed`, `battle_inventory_changed`). The animator emits them after simulation per event.
+- Return values: `BasicAttackEffect.execute(...)` returns dealt damage (int). `BattleManager` currently uses this to create `LOG_MESSAGE` and `DAMAGE` `CombatEvent`s. Other effects may return nothing; only known return types are transformed into events.
+
+Example
+```gdscript
+func execute(source_uuid: String, targets: Array[String], bm: Node, ctx: Dictionary):
+	var is_sim := ctx.get("is_simulation", false)
+	var src = bm.get_instance_by_uuid(source_uuid)
+	var tgt = bm.get_instance_by_uuid(targets[0])
+	var dmg := _calc(src)
+	var new_hp := max(0, tgt.current_hp - dmg)
+	if is_sim and tgt.has_method("set_current_hp_silent"):
+		tgt.set_current_hp_silent(new_hp)
+	else:
+		tgt.set_current_hp(new_hp)
+
+	bm.trigger_on_hurt(tgt.ball_uuid, dmg, src.ball_uuid)
+	if new_hp <= 0 and tgt.current_hp > 0:
+		bm.trigger_on_kill(src.ball_uuid, tgt.ball_uuid)
+
+	if not is_sim:
+		SignalBus.battle_log_event.emit("%s deals %d dmg to %s" % [
+			tr(src.get_definition().display_name_key), dmg, tr(tgt.get_definition().display_name_key)
+		])
+		SignalBus.unit_stats_changed.emit(tgt.ball_uuid)
+		SignalBus.battle_inventory_changed.emit()
+
+	return dmg
+```
+
 ## 10. Best Practices
 
 ### 10.1 Ability Design

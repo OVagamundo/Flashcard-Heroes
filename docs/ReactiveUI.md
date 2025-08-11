@@ -55,3 +55,31 @@ Fired when a requested action fails validation.
 6. Invariants
 Stateless Operation: The manager must never store its own state between actions.
 The Golden Rule: All state change instructions sent to data owners must be designed to be atomic, ensuring that both the DataContainer (index) and the GachaBallInstance (truth) are updated together.
+
+## Reactive UI & Combat Signals (2025-08-11)
+
+Overview
+- Combat presentation is now event-driven and paced by `scripts/BattleAnimator.gd`.
+- Effects simulate first (no UI), then the animator emits UI signals per event with a frame yield and a ~0.8s delay between events.
+
+Signals Emitted by Animator
+- `SignalBus.battle_log_event(text: String)`
+  - Append `text` to the battle log view immediately on receipt.
+- `SignalBus.unit_stats_changed(unit_uuid: String)`
+  - Refresh only the affected unit’s UI (HP labels/bars, status icons). Avoid global refreshes.
+- `SignalBus.battle_inventory_changed()`
+  - Update lineup/bench grids (e.g., remove dead units) and reflow as needed.
+
+Simulation Suppression
+- During combat simulation, effects must not emit UI signals. They use silent setters (e.g., `set_current_hp_silent`) to avoid triggering UI indirectly.
+- All reactive UI changes tied to combat should be driven by the animator’s signals above.
+
+View Guidance
+- Subscribe to the three signals at initialization time; unsubscribe on `_exit_tree()`.
+- Keep updates idempotent and incremental. Example:
+  - On `unit_stats_changed(uuid)`: update only the corresponding `GachaBallView` widgets.
+  - On `battle_inventory_changed()`: rebuild only the affected container(s).
+- Do not block the main thread inside signal handlers; the animator yields a frame after each emission to allow UI to render.
+
+Diagnostics
+- Prefer visual indicators and lightweight counters over `print()` logging (global prints were removed). Consider optional, scoped debug labels within UI that can be toggled.
