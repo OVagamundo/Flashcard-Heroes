@@ -21,7 +21,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var original_hp = target_instance.current_hp
 	
 	# Apply damage
-	var is_simulation = _context.get("is_simulation", false)
+	var is_simulation: bool = _context.get("is_simulation", false)
 	var new_hp = max(0, target_instance.current_hp - damage)
 	if is_simulation and target_instance.has_method("set_current_hp_silent"):
 		target_instance.set_current_hp_silent(new_hp)
@@ -68,10 +68,10 @@ func _calculate_damage(source_instance: GachaBallInstance) -> int:
 
 ## Calculate a stat-scaled value using the TDD V7.0 formula
 func _calculate_stat_scaled_value(param_dict: Dictionary, source_instance: GachaBallInstance) -> int:
-	var base_value = param_dict.get("base_value", 0)
-	var pwr_multiplier = param_dict.get("pwr_multiplier", 0.0)
-	var hp_multiplier = param_dict.get("hp_multiplier", 0.0)
-	var base_hp_multiplier = param_dict.get("base_hp_multiplier", 0.0)
+	var base_value: int = param_dict.get("base_value", 0)
+	var pwr_multiplier: float = param_dict.get("pwr_multiplier", 0.0)
+	var hp_multiplier: float = param_dict.get("hp_multiplier", 0.0)
+	var base_hp_multiplier: float = param_dict.get("base_hp_multiplier", 0.0)
 	
 	var final_value = base_value
 	final_value += source_instance.current_pwr * pwr_multiplier

@@ -38,7 +38,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 
 	# --- Phase 2 & 3: Optimized Build Loop ---
 	# This combines the mandatory spend and flexible spend into a single, robust process.
-	var best_build = {"units": [], "items": [], "spent": 0}
+	var best_build: Dictionary = {"units": [], "items": [], "spent": 0}
 	
 	for _i in range(10): # Max 10 attempts to find a perfect build
 		var purchased_units: Array[GachaBallDefinition] = []
@@ -99,7 +99,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	available_positions.shuffle()
 	for unit_def in best_build.units:
 		var pos = available_positions.pop_front()
-		var placement = {"id": unit_def.id, "position": pos, "items": []}
+		var placement: Dictionary = {"id": unit_def.id, "position": pos, "items": []}
 		final_encounter.enemy_placements.append(placement)
 		
 	# Equip items randomly
@@ -126,7 +126,7 @@ func _create_fallback_encounter() -> EncounterDefinition:
 	# Add a basic enemy if available
 	var basic_enemy = Database.get_definition(&"Tier1unitA")
 	if is_instance_valid(basic_enemy):
-		var placement = {"id": basic_enemy.id, "position": 0, "items": []}
+		var placement: Dictionary = {"id": basic_enemy.id, "position": 0, "items": []}
 		fallback.enemy_placements.append(placement)
 	
 	return fallback
@@ -157,7 +157,7 @@ func _validate_encounter(encounter: EncounterDefinition) -> bool:
 ## @param encounter: EncounterDefinition - The encounter to analyze
 ## @return Dictionary - Analysis data including total power, unit count, etc.
 func analyze_encounter(encounter: EncounterDefinition) -> Dictionary:
-	var analysis = {
+	var analysis: Dictionary = {
 		"unit_count": 0,
 		"item_count": 0,
 		"total_power": 0,

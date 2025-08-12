@@ -34,7 +34,7 @@ func _on_flashcard_completed(results: Dictionary):
 	
 	_last_minigame_results = results
 	
-	var correct_answers = results.get("correct_answers", 0)
+	var correct_answers: int = results.get("correct_answers", 0)
 	var stat_gain = floori(correct_answers / 2.0)  # TDD: stat_gain = floor(results.correct_answers / 2.0)
 	
 	# Determine stat type for display
@@ -49,18 +49,15 @@ func _on_results_acknowledged():
 	"""Called when player acknowledges the training results"""
 	if _current_training == TrainingType.NONE: return
 	
-	var correct_answers = _last_minigame_results.get("correct_answers", 0)
+	var correct_answers: int = _last_minigame_results.get("correct_answers", 0)
 	var stat_gain = floori(correct_answers / 2.0)
 	
 	if stat_gain > 0 and is_instance_valid(GameManager.run_state):
-		var hero_instance = GameManager.get_instance_by_uuid(GameManager.run_state.hero_instance.ball_uuid)
-		if is_instance_valid(hero_instance):
-			if _current_training == TrainingType.HP:
-				hero_instance.current_hp += stat_gain
-			elif _current_training == TrainingType.PWR:
-				hero_instance.current_pwr += stat_gain
-			SignalBus.emit_signal("run_data_changed")
-			SignalBus.emit_signal("unit_stats_changed", hero_instance.ball_uuid)
+		var hero_uuid = GameManager.run_state.hero_instance.ball_uuid
+		if _current_training == TrainingType.HP:
+			GameManager.run_state.modify_unit_stats(hero_uuid, stat_gain, 0)
+		elif _current_training == TrainingType.PWR:
+			GameManager.run_state.modify_unit_stats(hero_uuid, 0, stat_gain)
 	
 	_last_minigame_results.clear()
 	_current_training = TrainingType.NONE

@@ -230,6 +230,18 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Delegate drag visuals to GIR helper (replaces InteractionManager)
 	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
 
+	# Safe window pruning on drag start:
+	# - If this view is inside an inspection window, prune only that window's children
+	#   to remove higher-level windows without freeing the source or drag preview.
+	# - If not inside any inspection window, close all inspection windows.
+	# This restores prior UX while honoring the rule to not close the source window itself.
+	if WindowManager:
+		var parent_window: Control = WindowManager.find_ancestor_window_for_view(self)
+		if is_instance_valid(parent_window):
+			WindowManager.close_children_of(parent_window)
+		else:
+			WindowManager.close_all_inspection_windows()
+
 	# Notify GIR of drag origin so it can interpret the eventual drop
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
 	GlobalInteractionRouter.start_drag(origin_ctx)

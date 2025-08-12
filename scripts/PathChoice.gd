@@ -8,8 +8,7 @@ const NodeViewScene = preload("res://scenes/NodeView.tscn")
 
 func _ready():
 	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.day += 1
-		SignalBus.emit_signal("run_data_changed")
+		GameManager.run_state.advance_day(1)
 
 	var node_types = ["BATTLE", "SHOP", "REST"]
 	node_types.shuffle()

@@ -19,7 +19,7 @@ func _on_panel_gui_input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary):
-	var discard_pile_data = context.get("inventory", [])
+	var discard_pile_data: Array = context.get("inventory", [])
 	
 	for child in discard_grid.get_children():
 		child.queue_free()

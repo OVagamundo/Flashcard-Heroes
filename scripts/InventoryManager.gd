@@ -18,7 +18,13 @@ func _on_try_inventory_action(source_loc, target_loc):
 		# Rule I3: Allow equipping from any InventoryGrid onto a UNIT on the board
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and s_group == &"InventoryGrid" and target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
-			_equip_item(early_source_instance, early_target_instance)
+			# Use atomic equip API
+			var owner = _get_data_owner()
+			if is_instance_valid(owner):
+				if GameManager.is_in_battle:
+					owner.bm_equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
+				else:
+					owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
 			GlobalInteractionRouter.end_drag(true)
 			return
 
@@ -34,15 +40,23 @@ func _on_try_inventory_action(source_loc, target_loc):
 					# Rule I3: Allow equipping into equipped_item from any InventoryGrid and only to empty slot
 					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
 					if s_group2 == &"InventoryGrid" and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
-						_remove_from_location(source_loc)
-						_perform_equip(early_source_instance, parent_unit, target_loc.index)
-						_emit_data_changed_signal()
+						# Use atomic equip with explicit slot
+						if GameManager.is_in_battle:
+							data_owner.bm_equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+						else:
+							data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 						GlobalInteractionRouter.end_drag(true)
 						return
 
 	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
 	var source_context_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 	var target_context_group = GlobalInteractionRouter.get_context_group(target_loc.container)
+	# SelectionOnly contexts (Shop/Rewards): all inventory actions are invalid by design.
+	# Cancel drag immediately so the original sprite reappears and nothing moves.
+	if source_context_group == &"SelectionOnly" or target_context_group == &"SelectionOnly":
+		SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+		GlobalInteractionRouter.end_drag(false)
+		return
 	
 	# If contexts are incompatible, this is an invalid action
 	if source_context_group != target_context_group:
@@ -91,9 +105,9 @@ func _on_try_inventory_action(source_loc, target_loc):
 	# Case 3: Possible Merge
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
-		var context = { "source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id }
+		var context: Dictionary = { "source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id }
 		WindowManager.open_choice_window(context)
-		GlobalInteractionRouter.end_drag(true)
+		GlobalInteractionRouter.end_drag(false)
 		return
 
 	# Case 4: Possible Swap
@@ -141,16 +155,22 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 		if not is_instance_valid(data_owner): return
 		var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
 		if is_instance_valid(parent_unit):
-			_remove_from_location(source_loc)
-			_perform_equip(instance_to_move, parent_unit, target_loc.index)
-			_emit_data_changed_signal()
+			# Atomic equip handles removal and signaling
+			if GameManager.is_in_battle:
+				data_owner.bm_equip_item(instance_to_move.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+			else:
+				data_owner.equip_item(instance_to_move.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+			SignalBus.emit_signal("selection_clear_requested")
 			return
 
 	# Default move behaviour for normal containers
-	_remove_from_location(source_loc)
-	_place_in_container_slot(instance_to_move, target_loc.container, target_loc.index)
+	var owner = _get_data_owner()
+	if not is_instance_valid(owner): return
+	if GameManager.is_in_battle:
+		owner.bm_move_instance(source_loc, target_loc)
+	else:
+		owner.move_instance(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
-	_emit_data_changed_signal()
 
 func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	var data_owner = _get_data_owner()
@@ -161,23 +181,13 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 	var target_instance = _get_instance_at_location(target_loc)
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
-	_remove_from_location(source_loc)
-	_remove_from_location(target_loc)
-
-	if target_loc.container == &"equipped_item":
-		var target_parent_unit = all_instances_db.get(target_loc.unit_uuid)
-		_perform_equip(source_instance, target_parent_unit, target_loc.index)
+	# Use atomic swap APIs
+	if GameManager.is_in_battle:
+		data_owner.bm_swap_instances(source_loc, target_loc)
 	else:
-		_place_in_container_slot(source_instance, target_loc.container, target_loc.index)
-
-	if source_loc.container == &"equipped_item":
-		var source_parent_unit = all_instances_db.get(source_loc.unit_uuid)
-		_perform_equip(target_instance, source_parent_unit, source_loc.index)
-	else:
-		_place_in_container_slot(target_instance, source_loc.container, source_loc.index)
+		data_owner.swap_instances(source_loc, target_loc)
 
 	SignalBus.emit_signal("selection_clear_requested")
-	_emit_data_changed_signal()
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): 
@@ -204,10 +214,14 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		SignalBus.emit_signal("selection_clear_requested")
 		return
 
-	_remove_from_location(item_instance.get_location())
-	_perform_equip(item_instance, unit_instance, empty_slot_idx)
+	# Use atomic equip API (slot resolved above)
+	var owner = _get_data_owner()
+	if is_instance_valid(owner):
+		if GameManager.is_in_battle:
+			owner.bm_equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
+		else:
+			owner.equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
 	SignalBus.emit_signal("selection_clear_requested")
-	_emit_data_changed_signal()
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
 	var data_owner = _get_data_owner()
@@ -224,46 +238,94 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	var new_instance = GachaBallInstance.new()
 	new_instance.initialize(result_def)
-	all_instances_db[new_instance.ball_uuid] = new_instance
-	
-	var all_parent_items = MergeManager._get_equipped_item_instances(source_instance, all_instances_db)
+	# Collect items equipped on parents (if any) to equip onto a UNIT result later
+	var all_parent_items: Array[GachaBallInstance] = MergeManager._get_equipped_item_instances(source_instance, all_instances_db)
 	all_parent_items.append_array(MergeManager._get_equipped_item_instances(target_instance, all_instances_db))
 
-	for i in range(min(all_parent_items.size(), new_instance.equipped_item_uuids.size())):
-		var item_to_equip = all_parent_items[i]
-		_perform_equip(item_to_equip, new_instance, i)
-
-	_remove_from_location(source_loc)
-	_remove_from_location(target_loc)
-
-	# --- CONTEXT-AWARE PLACEMENT LOGIC ---
+	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
 	var source_is_equipped = source_loc.container == &"equipped_item"
 	var target_is_equipped = target_loc.container == &"equipped_item"
 	# CORRECTED: A "board merge" now includes the ItemInventory, not just player unit containers.
 	var is_board_merge = target_loc.container.begins_with("Player") or target_loc.container == &"ItemInventory"
 
-	# Case 1: Most specific. Merging two items on the same unit.
-	if source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid:
-		var parent_unit = all_instances_db.get(target_loc.unit_uuid)
-		_perform_equip(new_instance, parent_unit, target_loc.index)
-	# Case 2: Merging on the battle board (Lineup/Bench/ItemInventory). Result stays on the board.
+	var placed_container: StringName = &""
+	var placed_index: int = -1
+
+	# For all merges except equipping two items on the same unit, remove source/target first
+	var is_same_unit_item_merge := source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid
+	if not is_same_unit_item_merge:
+		if GameManager.is_in_battle:
+			data_owner.bm_remove_instance(source_instance.ball_uuid)
+			data_owner.bm_remove_instance(target_instance.ball_uuid)
+		else:
+			data_owner.remove_instance(source_instance.ball_uuid)
+			data_owner.remove_instance(target_instance.ball_uuid)
+
+	# Case 1: Most specific. Merging two items on the same unit -> remove both items, then equip the new item on same unit slot
+	if is_same_unit_item_merge:
+		# Remove old items first (safe for equipped items)
+		if GameManager.is_in_battle:
+			data_owner.bm_remove_instance(source_instance.ball_uuid)
+			data_owner.bm_remove_instance(target_instance.ball_uuid)
+		else:
+			data_owner.remove_instance(source_instance.ball_uuid)
+			data_owner.remove_instance(target_instance.ball_uuid)
+		# Register new item temporarily into ItemInventory, then equip onto the unit slot
+		var temp_container: StringName = &"ItemInventory"
+		if GameManager.is_in_battle:
+			data_owner.bm_add_instance(new_instance, temp_container, -1)
+		else:
+			data_owner.add_instance(new_instance, temp_container, -1)
+		if GameManager.is_in_battle:
+			data_owner.bm_equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
+		else:
+			data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
+		placed_container = &"equipped_item"
+		placed_index = target_loc.index
+	# Case 2: Merging on the board (Lineup/Bench/ItemInventory) -> place result into target slot
 	elif is_board_merge:
-		_place_in_container_slot(new_instance, target_loc.container, target_loc.index)
-	# Case 3: Merging in a draw pool. This is where tier-up logic applies.
+		if GameManager.is_in_battle:
+			data_owner.bm_add_instance(new_instance, target_loc.container, target_loc.index)
+		else:
+			data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
+		placed_container = target_loc.container
+		placed_index = target_loc.index
+	# Case 3: Draw pool tier-up -> place in higher-tier container first empty slot
 	elif result_def.tier > source_instance.get_definition().tier:
 		var prefix = "BattleInventoryT" if GameManager.is_in_battle else "RunInventoryT"
 		var new_container_tag = &"%s%d" % [prefix, result_def.tier]
-		var new_container = data_owner.get_container(new_container_tag)
-		var new_slot = new_container.find_first_empty_slot()
-		_place_in_container_slot(new_instance, new_container_tag, new_slot)
-	# Case 4: Default. Same-tier merge in a draw pool. Result goes in target's old slot.
+		# Use atomic add with index -1 (first empty)
+		if GameManager.is_in_battle:
+			data_owner.bm_add_instance(new_instance, new_container_tag, -1)
+		else:
+			data_owner.add_instance(new_instance, new_container_tag, -1)
+		placed_container = new_container_tag
+		placed_index = -1
+	# Case 4: Default same-tier draw pool -> place in target's old slot
 	else:
-		_place_in_container_slot(new_instance, target_loc.container, target_loc.index)
+		if GameManager.is_in_battle:
+			data_owner.bm_add_instance(new_instance, target_loc.container, target_loc.index)
+		else:
+			data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
+		placed_container = target_loc.container
+		placed_index = target_loc.index
 
-	all_instances_db.erase(source_instance.ball_uuid)
-	all_instances_db.erase(target_instance.ball_uuid)
+	# If the result is a UNIT, equip parent items onto it using atomic equip
+	if result_def.category == &"UNIT":
+		var max_slots = new_instance.equipped_item_uuids.size()
+		for i in range(min(all_parent_items.size(), max_slots)):
+			var it: GachaBallInstance = all_parent_items[i]
+			if not is_instance_valid(it):
+				continue
+			if GameManager.is_in_battle:
+				data_owner.bm_equip_item(it.ball_uuid, new_instance.ball_uuid, i)
+			else:
+				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
 
-	_emit_data_changed_signal()
+	# (removals were performed earlier for all non-same-unit item merges)
+
+	# Clear selection at the end for UX consistency
+	SignalBus.emit_signal("selection_clear_requested")
 
 # --- Single-Responsibility Helpers ---
 
@@ -274,7 +336,7 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
 		var data_owner = _get_data_owner()
 		if is_instance_valid(data_owner):
-			var prev_unit = data_owner.get_all_instances().get(item_instance.equipped_on_uuid)
+			var prev_unit: GachaBallInstance = data_owner.get_all_instances().get(item_instance.equipped_on_uuid)
 			if is_instance_valid(prev_unit):
 				prev_unit.unequip_item_bonus(item_instance)
 
@@ -294,48 +356,6 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 	unit_instance.equip_item_bonus(item_instance)
 
 	SignalBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
-
-func _perform_unequip(item_instance: GachaBallInstance):
-	if not is_instance_valid(item_instance): return
-	var data_owner = _get_data_owner()
-	if not is_instance_valid(data_owner): return
-
-	var parent_uuid = item_instance.equipped_on_uuid
-	if not parent_uuid.is_empty():
-		var parent_unit = data_owner.get_all_instances().get(parent_uuid)
-		if is_instance_valid(parent_unit):
-			if item_instance.equipped_slot_index < parent_unit.equipped_item_uuids.size():
-				parent_unit.equipped_item_uuids[item_instance.equipped_slot_index] = ""
-			SignalBus.emit_signal("unit_inventory_changed", parent_uuid)
-
-	item_instance.equipped_on_uuid = ""
-	item_instance.equipped_slot_index = -1
-
-func _place_in_container_slot(instance: GachaBallInstance, container_tag: StringName, slot_index: int):
-	var data_owner = _get_data_owner()
-	if not is_instance_valid(data_owner) or not is_instance_valid(instance): return
-	var container = data_owner.get_container(container_tag)
-	if not is_instance_valid(container): return
-	
-	# Update Index
-	container.set_uuid(slot_index, instance.ball_uuid)
-	# Update Truth (and guarantee it's not also equipped)
-	instance.location_container_tag = container_tag
-	instance.location_slot_index = slot_index
-	instance.equipped_on_uuid = ""
-	instance.equipped_slot_index = -1
-
-func _remove_from_location(loc: LocationIdentifier):
-	var instance = _get_instance_at_location(loc)
-	if not is_instance_valid(instance): return
-	
-	if loc.container == &"equipped_item":
-		_perform_unequip(instance)
-	else:
-		var data_owner = _get_data_owner()
-		var container = data_owner.get_container(loc.container)
-		if is_instance_valid(container):
-			container.set_uuid(loc.index, "")
 
 # --- Other Helpers ---
 
@@ -429,12 +449,14 @@ func _validate_state_consistency() -> bool:
 	return true
 
 func _atomic_move_instance(instance: GachaBallInstance, from_loc: LocationIdentifier, to_loc: LocationIdentifier) -> void:
-	"""Performs an atomic move operation ensuring Golden Rule compliance"""
-	# Step 1: Update the index (DataContainer)
-	_remove_from_location(from_loc)
-	_place_in_container_slot(instance, to_loc.container, to_loc.index)
-	
-	# Step 2: Validate consistency (debug only)
+	"""Performs an atomic move using centralized atomic APIs"""
+	var owner = _get_data_owner()
+	if not is_instance_valid(owner):
+		return
+	if GameManager.is_in_battle:
+		owner.bm_move_instance(from_loc, to_loc)
+	else:
+		owner.move_instance(from_loc, to_loc)
+	# Optional extra validation (atomic APIs already validate in debug builds)
 	if OS.is_debug_build():
-		if not _validate_state_consistency():
-			push_error("State inconsistency detected after atomic move operation")
+		_validate_state_consistency()

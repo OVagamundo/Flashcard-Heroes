@@ -114,7 +114,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		loc.container = container_name
 		loc.index = i
 
-		var instance = null
+		var instance: GachaBallInstance = null
 		if i < uuids.size():
 			var uuid = uuids[i]
 			instance = battle_manager.get_instance(uuid)
@@ -167,6 +167,8 @@ func _update_gacha_token_label(new_amount: int):
 func _on_battle_phase_changed(phase_name: StringName):
 	var is_management_phase = (phase_name == &"MANAGEMENT")
 	end_turn_button.disabled = not is_management_phase
+	# Disable in-battle contextual buttons during COMBAT
+	discard_pile_button.disabled = not is_management_phase
 	
 	var main_node = get_tree().get_root().find_child("Main", true, false)
 	if not is_instance_valid(main_node): return
@@ -176,6 +178,10 @@ func _on_battle_phase_changed(phase_name: StringName):
 		for button in draw_buttons_parent.get_children():
 			if button is Button and button.name.begins_with("DrawTier"):
 				button.disabled = not is_management_phase
+		# Also disable the InspectInventory button outside the battle view
+		var inspect_btn := draw_buttons_parent.get_node_or_null("InspectInventoryButton")
+		if inspect_btn is Button:
+			inspect_btn.disabled = not is_management_phase
 
 func _gui_input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():

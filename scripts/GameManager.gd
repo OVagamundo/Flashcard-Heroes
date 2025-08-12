@@ -53,7 +53,6 @@ func get_pending_rewards() -> Dictionary:
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id)
-	SignalBus.emit_signal("run_data_changed")
 	SignalBus.emit_signal("main_scene_requested")
 
 func _on_new_game_requested() -> void:
@@ -126,7 +125,8 @@ func _on_battle_victory_acknowledged():
 	_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
 
 	# Signal the UI to display the pre-generated rewards.
-	SignalBus.emit_signal("reward_scene_requested")
+	var context: Dictionary = get_pending_rewards()
+	SignalBus.emit_signal("reward_scene_requested", context)
 
 func _on_reward_chosen(payload):
 	# --- STALE SELECTION FIX ---
@@ -134,37 +134,24 @@ func _on_reward_chosen(payload):
 	SignalBus.emit_signal("selection_clear_requested")
 
 	if payload.type == "gachaball":
-		var chosen_uuid = payload.get("instance_uuid")
+		var chosen_uuid: String = payload.get("instance_uuid", "")
 		if chosen_uuid and _temporary_reward_master_dict.has(chosen_uuid):
 			var selected_instance = _temporary_reward_master_dict[chosen_uuid]
 			var def = selected_instance.get_definition()
 			
 			var container_name = &"RunInventoryT%d" % def.tier
-			var container = run_state.get_container(container_name)
-			if not is_instance_valid(container):
-				return
-
-			var target_slot = container.find_first_empty_slot()
-			
-			container.set_uuid(target_slot, selected_instance.ball_uuid)
-			
-			selected_instance.location_container_tag = container_name
-			selected_instance.location_slot_index = target_slot
-			selected_instance.equipped_on_uuid = ""
-			selected_instance.equipped_slot_index = -1
-			
-			run_state.run_instances[selected_instance.ball_uuid] = selected_instance
+			# Atomic add handles index/registry/truth updates and signals
+			run_state.add_instance(selected_instance, container_name, -1)
 			
 	elif payload.type == "gold":
-		run_state.gold += payload.get("amount", 0)
-		SignalBus.emit_signal("gold_changed", run_state.gold)
+		run_state.add_gold(payload.get("amount", 0))
 
 	# --- TRANSITION LOGIC REMOVED ---
 	# The scene transition is now handled by the new button in Reward.gd.
 	# We still need to clean up the temporary data and signal that the run data has changed.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
-	SignalBus.emit_signal("run_data_changed")
+	# Atomic APIs used above already emitted run_data_changed if needed
 	# DO NOT emit path_choice_scene_requested here anymore.
 	
 	_is_processing_victory = false
@@ -280,7 +267,7 @@ func _on_node_selected(node_def: PathNodeDefinition):
 func _enter_shop():
 	_reroll_cost = 1
 	_generate_shop_stock()
-	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
 	# Use Main.gd to handle scene loading
 	var main_node = get_tree().get_root().find_child("Main", true, false)
 	if is_instance_valid(main_node):
@@ -309,40 +296,29 @@ func _generate_shop_stock():
 
 func _on_shop_purchase_requested(instance_uuid: String, cost: int):
 	if not _temporary_shop_master_dict.has(instance_uuid): return
-	if run_state.gold < cost: return
-
-	run_state.gold -= cost
-	SignalBus.emit_signal("gold_changed", run_state.gold)
+	if not run_state.spend_gold(cost): return
 
 	var purchased_instance = _temporary_shop_master_dict[instance_uuid]
 	var def = purchased_instance.get_definition()
 	var container_name = &"RunInventoryT%d" % def.tier
-	var container = run_state.get_container(container_name)
-	var target_slot = container.find_first_empty_slot()
-
-	container.set_uuid(target_slot, purchased_instance.ball_uuid)
-	purchased_instance.location_container_tag = container_name
-	purchased_instance.location_slot_index = target_slot
-	run_state.run_instances[purchased_instance.ball_uuid] = purchased_instance
+	# Atomic add handles container slot selection and registry updates
+	run_state.add_instance(purchased_instance, container_name, -1)
 
 	_temporary_shop_master_dict.erase(instance_uuid)
 	var temp_slot = _temporary_shop_container.get_all_uuids().find(instance_uuid)
 	if temp_slot != -1:
 		_temporary_shop_container.set_uuid(temp_slot, "")
 
-	SignalBus.emit_signal("run_data_changed")
-	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	# Avoid duplicate run_data_changed; atomic APIs already emitted above
+	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
 	SignalBus.emit_signal("shop_stock_refreshed", context)
 
 func _on_shop_reroll_requested():
-	if run_state.gold < _reroll_cost: return
-
-	run_state.gold -= _reroll_cost
-	SignalBus.emit_signal("gold_changed", run_state.gold)
+	if not run_state.spend_gold(_reroll_cost): return
 	_reroll_cost += 1
 
 	_generate_shop_stock()
-	
-	SignalBus.emit_signal("run_data_changed")
-	var context = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+
+	# Avoid duplicate run_data_changed; spend_gold already emitted
+	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
 	SignalBus.emit_signal("shop_stock_refreshed", context)

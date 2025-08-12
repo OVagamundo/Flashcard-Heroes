@@ -34,7 +34,12 @@ func _ready():
 func populate(context: Dictionary):
 	"""Called by WindowManager when the modal window is opened"""
 	_run_state = context.get("run_state")
-	_active_deck = context.get("active_deck", [])
+	# Coerce active_deck into Array[StringName]
+	var raw_deck: Variant = context.get("active_deck", null)
+	_active_deck.clear()
+	if raw_deck is Array:
+		for v in raw_deck:
+			_active_deck.append(StringName(v))
 	
 	if not is_instance_valid(_run_state):
 		return
@@ -128,7 +133,7 @@ func _show_next_question():
 		return
 	
 	# Get the question data from Database
-	var question_card_id = current_question.get("question_id", "")
+	var question_card_id: StringName = current_question.get("question_id", &"")
 	var card_data = Database.get_flashcard_definition(question_card_id)
 	if card_data.is_empty():
 		_end_minigame()
@@ -136,7 +141,12 @@ func _show_next_question():
 	
 	question_label.text = card_data.get("question", "Error: No question")
 	_current_question_id = question_card_id
-	_current_choices = current_question.get("choices", [])
+	# Coerce choices into Array[StringName]
+	var raw_choices: Variant = current_question.get("choices", null)
+	_current_choices.clear()
+	if raw_choices is Array:
+		for v in raw_choices:
+			_current_choices.append(StringName(v))
 	
 	# Clear previous choices
 	for child in choices_grid.get_children():
@@ -195,7 +205,7 @@ func _flash_button_incorrect(incorrect_answer_id: StringName):
 
 func _end_minigame():
 	"""End the mini-game when timer expires"""
-	var results = {
+	var results: Dictionary = {
 		"correct_answers": _correct_answers,
 		"total_answers": _total_answers,
 		"incorrect_answers": _total_answers - _correct_answers

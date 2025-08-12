@@ -61,7 +61,7 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 
 # Public entry point for the Inventory Window.
 func open_inventory_window():
-	var context = {
+	var context: Dictionary = {
 		"window_type": &"Inventory",
 		"populate_context": _get_inventory_populate_context()
 	}
@@ -74,7 +74,7 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
 # Public API: open a child contextual window anchored to an existing window/view.
 func open_child_contextual_window(window_type: StringName, anchor_view: Control, populate_ctx: Dictionary = {}):
 	if not is_instance_valid(anchor_view): return
-	var context = {
+	var context: Dictionary = {
 		"window_type": window_type,
 		"anchor_view": anchor_view,
 		"populate_context": populate_ctx,
@@ -83,7 +83,7 @@ func open_child_contextual_window(window_type: StringName, anchor_view: Control,
 
 # Public entry point for the Discard Pile Window.
 func open_discard_pile_window():
-	var context = {
+	var context: Dictionary = {
 		"window_type": &"DiscardPile",
 		"populate_context": _get_discard_pile_populate_context()
 	}
@@ -94,7 +94,7 @@ func open_discard_pile_window():
 func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
 	# ChoiceWindow is a dynamic-position contextual window (no blocker, non-exclusive).
 	# Resolve anchor: prefer explicit anchor_view, then target_location, then source_location.
-	var anchor := anchor_view
+	var anchor: Control = anchor_view
 	if not is_instance_valid(anchor):
 		var target_loc: LocationIdentifier = populate_ctx.get("target_location")
 		if is_instance_valid(target_loc):
@@ -105,7 +105,7 @@ func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
 			anchor = find_view_for_location(source_loc)
 
 	if not _window_scenes.has(&"ChoiceWindow"): return
-	var context := {
+	var context: Dictionary = {
 		"window_type": &"ChoiceWindow",
 		"populate_context": populate_ctx,
 		"positioning_hint": "top_center_over_anchor",
@@ -121,12 +121,12 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	var payload = _derive_window_payload(loc, source_view)
 	if payload.is_empty(): return
 
-	var context = {
+	var context: Dictionary = {
 		"window_type": payload.get("window_type"),
 		"populate_context": payload.get("context"),
 		"anchor_view": source_view,
 	}
-	var pos_hint = payload.get("positioning_hint", "")
+	var pos_hint: String = payload.get("positioning_hint", "")
 	if pos_hint != "":
 		context["positioning_hint"] = pos_hint
 	_open_contextual_window(context)
@@ -219,6 +219,11 @@ func request_close_inspection_window(window: Control, cause: StringName = &""):
 
 # This unified function handles the creation and management of ALL Contextual Windows.
 func _open_contextual_window(context: Dictionary):
+	# Block contextual windows triggered by user input during COMBAT.
+	# This preserves strict input blocking while allowing true modals via open_modal_window.
+	var gir := get_tree().get_first_node_in_group("global_interaction_router")
+	if is_instance_valid(gir) and gir.has_method("is_combat_locked") and gir.is_combat_locked():
+		return
 	var window_type: StringName = context.get("window_type")
 	var anchor_view: Control = context.get("anchor_view", null)
 	var populate_context: Dictionary = context.get("populate_context", {})
@@ -252,7 +257,7 @@ func _open_contextual_window(context: Dictionary):
 	call_deferred("_deferred_position", window_instance, anchor_view, parent_window, pos_hint)
 	
 	if parent_window == null and anchor_view != null:
-		var loc = populate_context.get("location")
+		var loc: LocationIdentifier = populate_context.get("location")
 		if loc == null:
 			loc = populate_context.get("target_location")
 		_track_inspection_anchor(window_instance, anchor_view, loc)
@@ -380,7 +385,7 @@ func find_view_for_location(loc: LocationIdentifier) -> Control:
 		for child in node.get_children():
 			queue.push_back(child)
 		if node is Control and node.has_meta("location_identifier"):
-			var meta_loc = node.get_meta("location_identifier")
+			var meta_loc: LocationIdentifier = node.get_meta("location_identifier")
 			if _locations_equal(meta_loc, loc):
 				return node as Control
 	return null
@@ -390,17 +395,17 @@ func _locations_equal(a, b) -> bool:
 	if a == null or b == null:
 		return false
 	# Field-wise comparison via Object.get() to avoid relying on reference equality
-	var a_container = a.get("container") if a is Object else null
-	var b_container = b.get("container") if b is Object else null
-	var a_index = a.get("index") if a is Object else -1
-	var b_index = b.get("index") if b is Object else -1
-	var a_unit = a.get("unit_uuid") if a is Object else ""
-	var b_unit = b.get("unit_uuid") if b is Object else ""
+	var a_container: StringName = a.get("container") if a is Object else &""
+	var b_container: StringName = b.get("container") if b is Object else &""
+	var a_index: int = a.get("index") if a is Object else -1
+	var b_index: int = b.get("index") if b is Object else -1
+	var a_unit: String = a.get("unit_uuid") if a is Object else ""
+	var b_unit: String = b.get("unit_uuid") if b is Object else ""
 	return a_container == b_container and a_index == b_index and a_unit == b_unit
 
 func _get_inventory_populate_context() -> Dictionary:
 	var is_battle = GameManager.is_in_battle
-	var inventory_data = {}
+	var inventory_data: Dictionary = {}
 	var title = ""
 	if is_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -413,14 +418,14 @@ func _get_inventory_populate_context() -> Dictionary:
 	return { "inventory": inventory_data, "is_battle_context": is_battle, "title": title, "is_interactive": true }
 
 func _get_discard_pile_populate_context() -> Dictionary:
-	var inventory_data = []
+	var inventory_data: Array = []
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		if is_instance_valid(bm): inventory_data = bm.get_discard_pile_inventory()
 	return { "inventory": inventory_data, "is_battle_context": GameManager.is_in_battle, "title": "Discard Pile", "is_interactive": false }
 
 func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Dictionary:
-	var payload := {}
+	var payload: Dictionary = {}
 	var instance: GachaBallInstance
 	var window_type: StringName
 	var context: Dictionary
@@ -449,7 +454,7 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 				payload["positioning_hint"] = "use_parent_window"
 		else: return {}
 	elif source_view.has_meta("effect_definition"):
-		var effect_def = source_view.get_meta("effect_definition")
+		var effect_def: Variant = source_view.get_meta("effect_definition")
 		if effect_def == null: return {}
 		window_type = &"EffectInspection"
 		context = {"source_view": source_view, "effect_definition": effect_def}

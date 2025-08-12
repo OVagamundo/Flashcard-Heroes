@@ -51,7 +51,7 @@ func _configure_mouse_filters():
 
 
 func populate(context: Dictionary):
-	var effect_definitions = context.get("effect_definition")
+	var effect_definitions: Variant = context.get("effect_definition")
 	# Accept either a single definition or an array of definitions
 	var defs: Array = []
 	if effect_definitions is Array:

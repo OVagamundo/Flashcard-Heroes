@@ -53,7 +53,7 @@ func populate(context: Dictionary):
 		slot_view.set_interaction_context(&"SELECTION_ONLY", 0)
 		
 		# 4. Get the instance for this slot from the context data.
-		var inst = null
+		var inst: GachaBallInstance = null
 		if i < reward_instances.size():
 			inst = reward_instances[i]
 

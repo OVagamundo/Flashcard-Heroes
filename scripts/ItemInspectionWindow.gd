@@ -73,7 +73,7 @@ func populate(context: Dictionary):
 
 func _on_description_meta_clicked(meta):
 	if meta == "effect":
-		var definition = description_label.get_meta("effect_definition")
+		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
 			# Open EffectInspection as a CHILD contextual window anchored to this window.
 			# Provide context so WindowManager can pick the correct parent (e.g., UnitInspection).

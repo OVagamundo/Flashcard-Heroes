@@ -32,7 +32,7 @@ func _ready():
 
 func populate(context: Dictionary):
 	_current_shop_instances = context.get("shop_instances", [])
-	var reroll_cost = context.get("reroll_cost", 1)
+	var reroll_cost: int = context.get("reroll_cost", 1)
 	reroll_button.text = "Reroll (%d Gold)" % reroll_cost
 
 	# Clear existing price labels

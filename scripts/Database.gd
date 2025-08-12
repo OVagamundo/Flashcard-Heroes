@@ -34,7 +34,7 @@ func _ready() -> void:
 
 # Returns an AbilityDefinition by id, or null.
 func get_ability_definition(id: StringName) -> AbilityDefinition:
-	var def = abilities.get(id)
+	var def: AbilityDefinition = abilities.get(id)
 	if def:
 		return def
 	return null
@@ -93,7 +93,7 @@ func _load_translations() -> void:
 
 ## A central helper to find any GachaBallDefinition by its ID, regardless of category.
 func get_definition(id: StringName) -> GachaBallDefinition:
-	var definition = units.get(id)
+	var definition: GachaBallDefinition = units.get(id)
 	if definition:
 		return definition
 	

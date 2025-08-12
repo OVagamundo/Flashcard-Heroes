@@ -19,7 +19,7 @@ func _init(p_type: Type, p_context: Dictionary = {}):
 	self.source_uuid = p_context.get("source_uuid", "")
 	# Coerce to typed Array[String]
 	self.target_uuids = []
-	var raw_targets = p_context.get("target_uuids", [])
+	var raw_targets: Variant = p_context.get("target_uuids", [])
 	if raw_targets is Array:
 		for u in raw_targets:
 			self.target_uuids.append(String(u))

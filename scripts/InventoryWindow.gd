@@ -93,11 +93,11 @@ func _initialize_grids_if_needed():
 	if _grids_initialized:
 		return
 	
-	var grids = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
+	var grids: Dictionary = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
 	for tier in grids:
 		var grid_node = grids[tier]
 		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
-		var container = _data_source.get(container_name)
+		var container: DataContainer = _data_source.get(container_name)
 		if not is_instance_valid(container):
 			continue
 			
@@ -123,7 +123,7 @@ func _populate_grids():
 		return
 
 	# --- Step 1: Correctly identify all equipped items ---
-	var equipped_item_uuids := {}
+	var equipped_item_uuids: Dictionary = {}
 	var unit_container_names: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
 	for container_name in unit_container_names:
 		var unit_container = data_owner.get_container(container_name)
@@ -138,11 +138,11 @@ func _populate_grids():
 							equipped_item_uuids[item_uuid] = true
 
 	# --- Step 2: Iterate through the persistent slots and update their content ---
-	var grids = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
+	var grids: Dictionary = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
 	for tier in grids:
 		var grid_node = grids[tier]
 		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
-		var container = _data_source.get(container_name)
+		var container: DataContainer = _data_source.get(container_name)
 		if not is_instance_valid(container):
 			continue
 

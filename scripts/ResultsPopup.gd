@@ -15,7 +15,13 @@ func _ready():
 
 func populate(context: Dictionary) -> void:
 	"""Populates the popup with the given content"""
-	var populate_args = context.get("populate_args", ["", "", ""])
+	# Coerce any untyped Array in context to Array[String] to satisfy strict typing
+	var raw_args: Variant = context.get("populate_args", null)
+	var populate_args: Array[String] = []
+	if raw_args is Array:
+		for v in raw_args:
+			populate_args.append(String(v))
+	
 	if populate_args.size() >= 3:
 		title_label.text = populate_args[0]
 		message_label.text = populate_args[1]

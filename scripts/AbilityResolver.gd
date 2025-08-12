@@ -48,7 +48,7 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			continue
 		
 		# Resolve targets for this effect
-		var resolved_targets = battle_manager.resolve_target(source_uuid, effect.target_type, context)
+		var resolved_targets: Array[String] = battle_manager.resolve_target(source_uuid, effect.target_type, context)
 		
 		# Create EffectRequest
 		var effect_request = EffectRequest.new(

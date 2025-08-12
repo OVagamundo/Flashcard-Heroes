@@ -119,7 +119,7 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed"""
 	# Store results before cleanup
-	var results = {"correct_answers": correct, "incorrect_answers": incorrect}
+	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
 	# Clear references first
 	_minigame_instance = null # Allow a new game to start
@@ -134,8 +134,8 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 func get_deck_statistics() -> Dictionary:
 	if not is_instance_valid(_run_state_ref):
 		return {}
-	
-	var stats = {
+		
+	var stats: Dictionary = {
 		"total_cards": _active_deck_ids.size(),
 		"mastery_levels": {},
 		"average_mastery": 0.0,

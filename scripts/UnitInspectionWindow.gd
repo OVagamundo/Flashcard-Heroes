@@ -253,12 +253,11 @@ func _update_description():
 	description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, basic_attack_desc]
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
-
 func _on_unit_stats_changed(unit_uuid: String):
 	if unit_uuid == _inspected_unit_uuid:
 		# Update the instance reference and refresh the description
-		var all_instances = _get_all_instances_db()
-		var current_instance = all_instances.get(_inspected_unit_uuid)
+		var all_instances: Dictionary = _get_all_instances_db()
+		var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 		if is_instance_valid(current_instance):
 			_instance = current_instance
 			_update_description()
@@ -267,8 +266,8 @@ func _on_inventory_changed():
 	if not is_instance_valid(self): 
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
-	var all_instances = _get_all_instances_db()
-	var current_instance = all_instances.get(_inspected_unit_uuid)
+	var all_instances: Dictionary = _get_all_instances_db()
+	var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
 		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
 		return
@@ -288,7 +287,7 @@ func _on_unit_inventory_changed(unit_uuid: String):
 	
 	# Check if the inspected unit still exists. If not, the window should close.
 	var all_instances = _get_all_instances_db()
-	var current_instance = all_instances.get(_inspected_unit_uuid)
+	var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
 		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_UNIT_INV_CHANGE")
 		return
@@ -310,7 +309,7 @@ func _get_all_instances_db() -> Dictionary:
 
 func _on_description_meta_clicked(meta):
 	if meta == "effect":
-		var definition = description_label.get_meta("effect_definition")
+		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
 			# Ensure EffectInspection uses the Unit window as its parent when inside unit inspection.
 			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)

@@ -143,7 +143,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	# If a drag is active, this incoming context is the drop target.
 	# Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
 	if _is_drag_active and _drag_origin_context != null:
-		var req_ctx := {
+		var req_ctx: Dictionary = {
 			"source_context": _drag_origin_context,
 			"target_context": context,
 		}
@@ -258,7 +258,7 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 		
 		# Check if this is a valid action target
 		if _is_valid_action_target(_current_selection, context):
-			var req_ctx := {
+			var req_ctx: Dictionary = {
 				"source_context": _current_selection,
 				"target_context": context,
 			}
@@ -321,7 +321,7 @@ func _handle_empty_slot_interaction(context: InteractionContext) -> Array[Comman
 			# Note: Empty slots don't get selected, so we just deselect
 		# Check if this is a valid move target
 		elif _is_valid_move_target(_current_selection, context):
-			var req_ctx := {
+			var req_ctx: Dictionary = {
 				"source_context": _current_selection,
 				"target_context": context,
 			}

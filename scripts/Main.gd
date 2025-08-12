@@ -86,15 +86,14 @@ func _on_path_choice_scene_requested():
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 
-func _on_reward_scene_requested():
+	
+func _on_reward_scene_requested(context: Dictionary):
 	_clear_content_area()
 	var instance = REWARD_SCENE.instantiate()
 	_current_content_node = instance
 	# Correctly parent the new scene inside the MarginContainer
 	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
 	
-	# The context dictionary is now required as per the TDD.
-	var context = GameManager.get_pending_rewards()
 	if instance.has_method("populate"):
 		instance.populate(context)
 
