@@ -19,7 +19,7 @@ const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 
 var _current_content_node: Node = null
 
-func _ready():
+func _ready() -> void:
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
 	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
 	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
@@ -46,7 +46,7 @@ func _ready():
 		_on_gold_changed(GameManager.run_state.gold)
 		_update_day_label(GameManager.run_state.day)
 
-func _on_content_area_gui_input(event: InputEvent):
+func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
@@ -65,29 +65,29 @@ func _on_content_area_gui_input(event: InputEvent):
 			# This was canceling drag before GIR processed battle board drop targets.
 			pass
 
-func _clear_content_area():
+func _clear_content_area() -> void:
 	if is_instance_valid(_current_content_node):
 		_current_content_node.queue_free()
 	_current_content_node = null
 
-func _load_content(scene_resource: PackedScene):
+func _load_content(scene_resource: PackedScene) -> void:
 	_clear_content_area()
 	var instance = scene_resource.instantiate()
 	_current_content_node = instance
 	content_area.get_node("SubViewport").add_child(instance)
 
-func _on_battle_start_requested(encounter_def: EncounterDefinition):
+func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	_load_content(BATTLE_SCENE)
 	# Use call_deferred to ensure the BattleManager is ready before calling it
 	call_deferred("_start_battle_with_encounter", encounter_def)
 
-func _on_path_choice_scene_requested():
+func _on_path_choice_scene_requested() -> void:
 	_load_content(PATH_CHOICE_SCENE)
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 
 	
-func _on_reward_scene_requested(context: Dictionary):
+func _on_reward_scene_requested(context: Dictionary) -> void:
 	_clear_content_area()
 	var instance = REWARD_SCENE.instantiate()
 	_current_content_node = instance
@@ -97,7 +97,7 @@ func _on_reward_scene_requested(context: Dictionary):
 	if instance.has_method("populate"):
 		instance.populate(context)
 
-func _on_inspect_inventory_pressed():
+func _on_inspect_inventory_pressed() -> void:
 	# This is a bit of a hack for now, but the WindowManager is
 	# responsible for figuring out which inventory to open based on game state.
 	SignalBus.emit_signal("inspect_inventory_requested")
@@ -105,7 +105,7 @@ func _on_inspect_inventory_pressed():
 
 
 
-func _on_draw_button_pressed(button: Button, tier: int):
+func _on_draw_button_pressed(button: Button, tier: int) -> void:
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
 	# Ensure UI focus doesn't interfere
@@ -123,28 +123,28 @@ func _on_draw_button_pressed(button: Button, tier: int):
 	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
 
-func _on_battle_inventory_changed():
+func _on_battle_inventory_changed() -> void:
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
 	draw_tier1_button.disabled = false
 	draw_tier2_button.disabled = false
 	draw_tier3_button.disabled = false
 
-func _on_battle_state_changed(is_in_battle: bool):
+func _on_battle_state_changed(is_in_battle: bool) -> void:
 	draw_tier1_button.visible = is_in_battle
 	draw_tier2_button.visible = is_in_battle
 	draw_tier3_button.visible = is_in_battle
 
-func _on_gold_changed(new_amount: int):
+func _on_gold_changed(new_amount: int) -> void:
 	if is_instance_valid(gold_label):
 		gold_label.text = "Gold: %d" % new_amount
 
-func _on_gacha_tokens_changed(new_amount: int):
+func _on_gacha_tokens_changed(new_amount: int) -> void:
 	if is_instance_valid(tokens_label):
 		tokens_label.text = "Tokens: %d" % new_amount
 	else:
 		pass
 
-func _on_shop_scene_requested(context: Dictionary):
+func _on_shop_scene_requested(context: Dictionary) -> void:
 	_clear_content_area()
 	var instance = SHOP_SCENE.instantiate()
 	_current_content_node = instance
@@ -153,16 +153,16 @@ func _on_shop_scene_requested(context: Dictionary):
 	if instance.has_method("populate"):
 		instance.populate(context)
 
-func _update_day_label(day: int):
+func _update_day_label(day: int) -> void:
 	if is_instance_valid(days_label):
 		days_label.text = "Day %d" % day
 
-func _on_run_data_changed():
+func _on_run_data_changed() -> void:
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 		_on_gold_changed(GameManager.run_state.gold)
 
-func _start_battle_with_encounter(encounter_def: EncounterDefinition):
+func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	# Find the BattleManager in the loaded scene and start the battle
 	var battle_manager = _current_content_node.get_node_or_null("BattleManager")
 	if battle_manager and battle_manager.has_method("start_battle"):

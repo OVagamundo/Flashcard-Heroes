@@ -26,12 +26,12 @@ var _new_card_id: StringName = &""
 var _current_question_id: StringName = &""
 var _current_choices: Array[StringName] = []
 
-func _ready():
+func _ready() -> void:
 	# Connect to the FlashcardManager's minigame_finished signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 	got_it_button.pressed.connect(_on_got_it_pressed)
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	"""Called by WindowManager when the modal window is opened"""
 	_run_state = context.get("run_state")
 	# Coerce active_deck into Array[StringName]
@@ -52,7 +52,7 @@ func populate(context: Dictionary):
 	else:
 		_start_minigame_session()
 
-func _check_for_new_card():
+func _check_for_new_card() -> void:
 	"""Check if a new card should be introduced to the active deck"""
 	# TDD: Card Introduction - one new card is drawn in order from the Main Deck
 	# For now, we'll implement a simple version - introduce a new card every 3 sessions
@@ -69,7 +69,7 @@ func _check_for_new_card():
 	
 	_is_introducing_new_card = false
 
-func _show_card_introduction():
+func _show_card_introduction() -> void:
 	"""Show the new card introduction screen"""
 	card_intro_container.show()
 	choices_grid.hide()
@@ -83,12 +83,12 @@ func _show_card_introduction():
 		intro_answer_label.text = "Answer: %s" % card_data.get("answer", "Error")
 		intro_explanation_label.text = "Explanation: %s" % card_data.get("explanation", "No explanation available")
 
-func _on_got_it_pressed():
+func _on_got_it_pressed() -> void:
 	"""Called when player clicks 'Got It!' on card introduction"""
 	card_intro_container.hide()
 	_start_minigame_session()
 
-func _start_minigame_session():
+func _start_minigame_session() -> void:
 	"""Start the 3-second sprint mini-game"""
 	card_intro_container.hide()
 	
@@ -108,7 +108,7 @@ func _start_minigame_session():
 	_update_timer_display()
 	_show_next_question()
 
-func _process(delta):
+func _process(delta) -> void:
 	"""Update the session timer"""
 	if not _is_introducing_new_card and _session_timer > 0:
 		_session_timer -= delta
@@ -117,12 +117,12 @@ func _process(delta):
 		if _session_timer <= 0:
 			_end_minigame()
 
-func _update_timer_display():
+func _update_timer_display() -> void:
 	"""Update the timer display"""
 	timer_label.text = "%.1f" % max(0, _session_timer)
 	score_label.text = "Score: %d" % _correct_answers
 
-func _show_next_question():
+func _show_next_question() -> void:
 	"""Show the next question with 9 answer choices"""
 	if _session_timer <= 0:
 		return
@@ -164,7 +164,7 @@ func _show_next_question():
 			button.pressed.connect(_on_choice_selected.bind(choice_id))
 			choices_grid.add_child(button)
 
-func _on_choice_selected(selected_answer_id: StringName):
+func _on_choice_selected(selected_answer_id: StringName) -> void:
 	"""Handle when a player selects an answer"""
 	var was_correct = selected_answer_id == _current_question_id
 	_total_answers += 1
@@ -183,7 +183,7 @@ func _on_choice_selected(selected_answer_id: StringName):
 	# TDD: Next question appears instantly
 	_show_next_question()
 
-func _flash_button_correct(correct_answer_id: StringName):
+func _flash_button_correct(correct_answer_id: StringName) -> void:
 	"""Flash the correct answer button green"""
 	for i in range(choices_grid.get_child_count()):
 		var button = choices_grid.get_child(i)
@@ -193,7 +193,7 @@ func _flash_button_correct(correct_answer_id: StringName):
 			button.modulate = Color.LIGHT_GREEN
 			break
 
-func _flash_button_incorrect(incorrect_answer_id: StringName):
+func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 	"""Flash the incorrect answer button red"""
 	for i in range(choices_grid.get_child_count()):
 		var button = choices_grid.get_child(i)
@@ -203,7 +203,7 @@ func _flash_button_incorrect(incorrect_answer_id: StringName):
 			button.modulate = Color.RED
 			break
 
-func _end_minigame():
+func _end_minigame() -> void:
 	"""End the mini-game when timer expires"""
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,
@@ -217,11 +217,11 @@ func _end_minigame():
 	# Emit our internal signal
 	minigame_complete.emit(results)
 
-func _on_flashcard_completed(results: Dictionary):
+func _on_flashcard_completed(results: Dictionary) -> void:
 	"""Called when FlashcardManager emits minigame_finished"""
 	# This is handled by the calling system (BattleManager or RestSite)
 	pass
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)

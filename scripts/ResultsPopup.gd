@@ -10,7 +10,7 @@ signal results_acknowledged
 @onready var message_label: Label = %MessageLabel
 @onready var confirm_button: Button = %ConfirmButton
 
-func _ready():
+func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm_pressed)
 
 func populate(context: Dictionary) -> void:

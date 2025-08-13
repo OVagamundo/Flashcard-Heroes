@@ -11,4 +11,4 @@ script = ExtResource("1_script")
 id = &"basic_attack"
 name_key = "ability.basic_attack.name"
 description_key = "ability.basic_attack.desc"
-effect = SubResource("BasicAttackEffect_1")
+effects = Array[Resource]([SubResource("BasicAttackEffect_1")])

@@ -1,20 +1,20 @@
 class_name InspectionWindow
 extends PanelContainer
 
-func _notification(what):
+func _notification(what) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		# WindowManager might not exist if the game is shutting down.
 		if WindowManager:
 			WindowManager.stop_tracking_window(self.get_instance_id())
 
-func _position_child_window(parent_window: Control):
+func _position_child_window(parent_window: Control) -> void:
 	# This method is called by WindowManager to position child windows
 	# after they are fully set up and have their correct size
 	if WindowManager:
 		var position = WindowManager._calculate_child_window_position(parent_window, self)
 		set_global_position(position)
 
-func _position_root_window(source_view: Control):
+func _position_root_window(source_view: Control) -> void:
 	# This method is called by WindowManager to position root windows
 	# after they are fully set up and have their correct size
 	if WindowManager:

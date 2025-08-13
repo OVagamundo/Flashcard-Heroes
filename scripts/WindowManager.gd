@@ -25,7 +25,7 @@ var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
 
 
-func _ready():
+func _ready() -> void:
 	# FINAL FIX: Input processing is REMOVED. The WindowManager is now a pure service.
 	# It no longer interprets raw input; it only executes commands from the GIR.
 	set_process_input(false)
@@ -37,6 +37,7 @@ func _ready():
 	SignalBus.inspection_requested.connect(open_inspection_window)
 	SignalBus.open_choice_window_requested.connect(open_choice_window)
 	SignalBus.close_modal_requested.connect(_close_top_modal)
+	SignalBus.close_top_contextual_requested.connect(close_top_contextual_window)
 	
 	SignalBus.main_scene_requested.connect(_close_all_windows)
 	SignalBus.loadout_scene_requested.connect(_close_all_windows)
@@ -47,8 +48,8 @@ func _ready():
 # --- PUBLIC API ---
 
 # This function is ONLY for true "Hermetic Modals" that halt game flow.
-func open_modal_window(type: StringName, context: Dictionary = {}):
-	if not _window_scenes.has(type): return
+func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
+	if not _window_scenes.has(type): return null
 	_close_all_windows() # True modals are exclusive.
 
 	var window_instance = _window_scenes[type].instantiate()
@@ -59,8 +60,10 @@ func open_modal_window(type: StringName, context: Dictionary = {}):
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 
+	return window_instance
+
 # Public entry point for the Inventory Window.
-func open_inventory_window():
+func open_inventory_window() -> void:
 	var context: Dictionary = {
 		"window_type": &"Inventory",
 		"populate_context": _get_inventory_populate_context()
@@ -68,11 +71,11 @@ func open_inventory_window():
 	_open_contextual_window(context)
 
 # Back-compat shim for GIR callers that still use the old private name
-func _open_inspection_window(loc: LocationIdentifier, source_view: Control):
+func _open_inspection_window(loc: LocationIdentifier, source_view: Control) -> void:
 	open_inspection_window(loc, source_view)
 
 # Public API: open a child contextual window anchored to an existing window/view.
-func open_child_contextual_window(window_type: StringName, anchor_view: Control, populate_ctx: Dictionary = {}):
+func open_child_contextual_window(window_type: StringName, anchor_view: Control, populate_ctx: Dictionary = {}) -> void:
 	if not is_instance_valid(anchor_view): return
 	var context: Dictionary = {
 		"window_type": window_type,
@@ -82,7 +85,7 @@ func open_child_contextual_window(window_type: StringName, anchor_view: Control,
 	_open_contextual_window(context)
 
 # Public entry point for the Discard Pile Window.
-func open_discard_pile_window():
+func open_discard_pile_window() -> void:
 	var context: Dictionary = {
 		"window_type": &"DiscardPile",
 		"populate_context": _get_discard_pile_populate_context()
@@ -91,7 +94,7 @@ func open_discard_pile_window():
 
 # Public entry point for the Choice Window.
 # Optionally provide an anchor_view to dynamically position near a target view (e.g., target GachaBall).
-func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
+func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null) -> void:
 	# ChoiceWindow is a dynamic-position contextual window (no blocker, non-exclusive).
 	# Resolve anchor: prefer explicit anchor_view, then target_location, then source_location.
 	var anchor: Control = anchor_view
@@ -115,7 +118,7 @@ func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null):
 	_open_contextual_window(context)
 
 # Public entry point for all inspection windows (Unit, Item, Effect).
-func open_inspection_window(loc: LocationIdentifier, source_view: Control):
+func open_inspection_window(loc: LocationIdentifier, source_view: Control) -> void:
 	if not is_instance_valid(source_view): return
 
 	var payload = _derive_window_payload(loc, source_view)
@@ -132,7 +135,7 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control):
 	_open_contextual_window(context)
 
 # Public API for GIR (Rule W3 - Window Pruning).
-func close_children_of(parent_window: Control):
+func close_children_of(parent_window: Control) -> void:
 	var parent_index = _active_inspection_group.find(parent_window)
 	if parent_index == -1: return
 	for i in range(_active_inspection_group.size() - 1, parent_index, -1):
@@ -142,7 +145,7 @@ func close_children_of(parent_window: Control):
 			child_window.queue_free()
 
 # Back-compat API expected by GIR: resolve parent by instance_id and prune its children
-func close_child_windows(window_group_id: int, parent_window_id: int = -1):
+func close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
 	if parent_window_id == -1:
 		return
 	var parent_window: Control = null
@@ -154,7 +157,7 @@ func close_child_windows(window_group_id: int, parent_window_id: int = -1):
 		close_children_of(parent_window)
 
 # Public API for GIR (Rules W2, W4, W5).
-func close_all_inspection_windows():
+func close_all_inspection_windows() -> void:
 	for window in _active_inspection_group:
 		if is_instance_valid(window):
 			stop_tracking_window(window.get_instance_id())
@@ -191,7 +194,7 @@ func _index_in_active_group(node: Node) -> int:
 # Windows should call this from their `_gui_input` when detecting a click on their
 # background. This prunes only the descendants of the clicked window (W3),
 # while GIR handles truly global background clicks.
-func handle_inspection_background_click(clicked_window: Control):
+func handle_inspection_background_click(clicked_window: Control) -> void:
 	if not is_instance_valid(clicked_window):
 		return
 	# Use index lookup to avoid typed array validation issues on non-Control nodes
@@ -202,7 +205,7 @@ func handle_inspection_background_click(clicked_window: Control):
 
 # Suppression-aware close request for inspection windows.
 # Windows and internal handlers (e.g., anchor-freed) must use this instead of queue_free.
-func request_close_inspection_window(window: Control, cause: StringName = &""):
+func request_close_inspection_window(window: Control, cause: StringName = &"") -> void:
 	if not is_instance_valid(window):
 		return
 	var window_id := window.get_instance_id()
@@ -218,7 +221,7 @@ func request_close_inspection_window(window: Control, cause: StringName = &""):
 # --- CORE INTERNAL LOGIC ---
 
 # This unified function handles the creation and management of ALL Contextual Windows.
-func _open_contextual_window(context: Dictionary):
+func _open_contextual_window(context: Dictionary) -> void:
 	# Block contextual windows triggered by user input during COMBAT.
 	# This preserves strict input blocking while allowing true modals via open_modal_window.
 	var gir := get_tree().get_first_node_in_group("global_interaction_router")
@@ -266,7 +269,7 @@ func _open_contextual_window(context: Dictionary):
 # --- HELPER FUNCTIONS ---
 
 
-func _deferred_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = ""):
+func _deferred_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = "") -> void:
 	if not is_instance_valid(window): return
 	# Ensure layout has settled for the newly added window before measuring
 	await get_tree().process_frame
@@ -304,7 +307,7 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 	# Second pass: after the window is visible and fully laid out, finalize position
 	call_deferred("_finalize_position", window, anchor, parent_window, pos_hint)
 
-func _finalize_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = ""):
+func _finalize_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = "") -> void:
 	if not is_instance_valid(window): return
 	await get_tree().process_frame
 	var position: Vector2
@@ -445,7 +448,7 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 			context = {"source_view": source_view, "instance": instance, "location": loc}
 			# When the item is equipped, the correct positioning basis is the parent UnitInspection window,
 			# not the tiny equipped slot view. Provide a hint so positioning prefers the parent window rect.
-			if loc.container == &"equipped_item":
+			if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 				# Augment context so WindowManager can resolve the correct parent window reliably.
 				var unit_parent: Control = find_ancestor_window_for_view(source_view)
 				if is_instance_valid(unit_parent) and unit_parent is UnitInspectionWindow:
@@ -469,7 +472,7 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
  #   `anchor_view != null` (lines where we gate the tracking).
  # - Child windows do NOT track anchors (their position is derived from parent).
  # - Root fixed-position windows (e.g., Inventory) also do NOT track anchors.
-func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: LocationIdentifier):
+func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: LocationIdentifier) -> void:
 	if not is_instance_valid(window_instance) or not is_instance_valid(anchor): return
 	var window_id = window_instance.get_instance_id()
 	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_instance, anchor)
@@ -480,7 +483,7 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 		anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 	_tracked_windows[window_id] = { "anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable }
 
-func stop_tracking_window(window_id: int):
+func stop_tracking_window(window_id: int) -> void:
 	if not _tracked_windows.has(window_id): return
 	var tracking_info = _tracked_windows[window_id]
 	var anchor = tracking_info["anchor"]
@@ -491,13 +494,13 @@ func stop_tracking_window(window_id: int):
 			anchor.tree_exited.disconnect(tracking_info["freed_callable"])
 	_tracked_windows.erase(window_id)
 
-func _on_inspection_anchor_moved(window_instance: Control, anchor: Control):
+func _on_inspection_anchor_moved(window_instance: Control, anchor: Control) -> void:
 	if is_instance_valid(anchor) and is_instance_valid(window_instance):
 		var pos: Vector2 = _calculate_window_position(anchor, window_instance)
 		_set_window_screen_position(window_instance, pos)
 
 
-func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable):
+func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable) -> void:
 	var old_anchor = instance_from_id(old_anchor_id)
 	var window_instance = instance_from_id(window_id)
 	if not is_instance_valid(window_instance):
@@ -510,13 +513,13 @@ func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: Locat
 		request_close_inspection_window(window_instance, &"ANCHOR_FREED")
 
 # FINAL FIX: This function is now correctly defined and used for lifecycle cleanup.
-func _register_window(window_instance: Control, is_modal: bool):
+func _register_window(window_instance: Control, is_modal: bool) -> void:
 	if not is_instance_valid(window_instance): return
 	var freed_callable := Callable(self, "_on_window_freed").bind(window_instance.get_instance_id(), is_modal)
 	if not window_instance.is_connected("tree_exited", freed_callable):
 		window_instance.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
-func _on_window_freed(window_id: int, was_modal: bool):
+func _on_window_freed(window_id: int, was_modal: bool) -> void:
 	if not was_modal:
 		stop_tracking_window(window_id)
 	var stack = _modal_stack if was_modal else _active_inspection_group
@@ -525,19 +528,20 @@ func _on_window_freed(window_id: int, was_modal: bool):
 		if not is_instance_valid(window) or window.get_instance_id() == window_id:
 			stack.remove_at(i)
 
-func _close_top_modal():
+func _close_top_modal() -> void:
 	if not _modal_stack.is_empty():
 		var window = _modal_stack.pop_back()
 		if is_instance_valid(window):
 			window.queue_free()
 		return
-	# Fallback: close the top contextual window if no modals are open
+
+func close_top_contextual_window() -> void:
 	if not _active_inspection_group.is_empty():
 		var top_window = _active_inspection_group.back()
 		if is_instance_valid(top_window):
 			top_window.queue_free()
 
-func _close_all_windows():
+func _close_all_windows() -> void:
 	close_all_inspection_windows()
 	while not _modal_stack.is_empty():
 		_close_top_modal()

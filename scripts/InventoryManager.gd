@@ -1,13 +1,13 @@
 # res://scripts/InventoryManager.gd
 extends Node
 
-func _ready():
+func _ready() -> void:
 	SignalBus.try_inventory_action.connect(_on_try_inventory_action)
 	SignalBus.choice_made.connect(_on_choice_made)
 
 # --- Main Action Handler ---
 
-func _on_try_inventory_action(source_loc, target_loc):
+func _on_try_inventory_action(source_loc, target_loc) -> void:
 	
 	# Early-case: Allow equipping items onto units even across functional groups
 	var early_source_instance = _get_instance_at_location(source_loc)
@@ -29,7 +29,7 @@ func _on_try_inventory_action(source_loc, target_loc):
 			return
 
 	# Early-case: Allow equipping items by dropping onto an equipped_item slot (empty or same-unit slot)
-	if is_instance_valid(early_source_instance) and target_loc.container == &"equipped_item":
+	if is_instance_valid(early_source_instance) and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var sdef2 = early_source_instance.get_definition()
 		if sdef2.category == &"ITEM":
 			var data_owner = _get_data_owner()
@@ -61,7 +61,7 @@ func _on_try_inventory_action(source_loc, target_loc):
 	# If contexts are incompatible, this is an invalid action
 	if source_context_group != target_context_group:
 		# Exception: Allow InventoryGrid -> equipped_item (click-to-click equip)
-		if source_context_group == &"InventoryGrid" and target_loc.container == &"equipped_item":
+		if source_context_group == &"InventoryGrid" and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 			# Allowed exception; fall through to normal handling below
 			pass
 		else:
@@ -121,7 +121,7 @@ func _on_try_inventory_action(source_loc, target_loc):
 	GlobalInteractionRouter.end_drag(false)
 
 
-func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
+func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return
 	# Activate suppression via GIR for the parent inspection window of the target (or source) view
@@ -132,10 +132,10 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		anchor_view = wm.find_view_for_location(source_loc)
 	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
 	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
-	var inside_unit: bool = target_loc.container == &"equipped_item" or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
+	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
 	if parent_id != -1:
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
-		GlobalInteractionRouter._activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
+		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
 
 	match choice:
 		&"MERGE":
@@ -145,12 +145,12 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 
 # --- Core Logic Functions ---
 
-func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
 	var instance_to_move = _get_instance_at_location(source_loc)
 	if not is_instance_valid(instance_to_move): return
 
 	# Special-case: moving an item into an equipped slot on a unit.
-	if target_loc.container == &"equipped_item":
+	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var data_owner = _get_data_owner()
 		if not is_instance_valid(data_owner): return
 		var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
@@ -172,7 +172,7 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 		owner.move_instance(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
 
-func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
+func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
 	var data_owner = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 	
@@ -189,7 +189,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier):
 
 	SignalBus.emit_signal("selection_clear_requested")
 
-func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance):
+func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): 
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
@@ -223,7 +223,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 			owner.equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
 	SignalBus.emit_signal("selection_clear_requested")
 
-func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName):
+func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
 	var data_owner = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 
@@ -243,8 +243,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	all_parent_items.append_array(MergeManager._get_equipped_item_instances(target_instance, all_instances_db))
 
 	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
-	var source_is_equipped = source_loc.container == &"equipped_item"
-	var target_is_equipped = target_loc.container == &"equipped_item"
+	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
+	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	# CORRECTED: A "board merge" now includes the ItemInventory, not just player unit containers.
 	var is_board_merge = target_loc.container.begins_with("Player") or target_loc.container == &"ItemInventory"
 
@@ -280,7 +280,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			data_owner.bm_equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
 		else:
 			data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
-		placed_container = &"equipped_item"
+		placed_container = C.CONTAINER_EQUIPPED_ITEM
 		placed_index = target_loc.index
 	# Case 2: Merging on the board (Lineup/Bench/ItemInventory) -> place result into target slot
 	elif is_board_merge:
@@ -329,7 +329,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 # --- Single-Responsibility Helpers ---
 
-func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, target_item_slot: int):
+func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, target_item_slot: int) -> void:
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): return
 
 	# If the item was previously equipped on another unit, unequip its bonus from that unit
@@ -382,13 +382,13 @@ func _is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locat
 
 	# 1. If the item is currently equipped, it cannot be moved anywhere except
 	#    another slot on the SAME parent unit.
-	if source_loc and source_loc.container == &"equipped_item":
-		return target_container_name == &"equipped_item" and target_loc.unit_uuid == source_loc.unit_uuid
+	if source_loc and source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		return target_container_name == C.CONTAINER_EQUIPPED_ITEM and target_loc.unit_uuid == source_loc.unit_uuid
 
 	# 2. If the target is an equipped_item container, only allow equipping
 	#    from ItemInventory (Rule I3). All actual equipping is handled in the
 	#    early equip path; general placement into equipped_item is otherwise illegal.
-	if target_container_name == &"equipped_item":
+	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
 		return source_loc.container == &"ItemInventory"
 
 
@@ -415,7 +415,7 @@ func _get_data_owner() -> Object:
 	else:
 		return GameManager.run_state
 
-func _emit_data_changed_signal():
+func _emit_data_changed_signal() -> void:
 	var signal_name = "battle_inventory_changed" if GameManager.is_in_battle else "run_data_changed"
 	SignalBus.emit_signal(signal_name)
 	SignalBus.emit_signal("inventory_ui_refresh_requested")
@@ -435,7 +435,7 @@ func _validate_state_consistency() -> bool:
 		var location = instance.get_location()
 		
 		# Skip equipped items (they have special handling)
-		if location.container == &"equipped_item":
+		if location.container == C.CONTAINER_EQUIPPED_ITEM:
 			continue
 			
 		var container = data_owner.get_container(location.container)

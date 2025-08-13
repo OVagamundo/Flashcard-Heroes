@@ -18,7 +18,7 @@ const SlotView = preload("res://scenes/SlotView.tscn")
 var battle_manager: BattleManager
 
 # --- Helper to convert placeholder PanelContainers into SlotView prefabs once ---
-func _initialize_slots(ui_container: HBoxContainer, container_name: StringName):
+func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) -> void:
 	var slots: Array = ui_container.get_children()
 	var SlotViewScene := preload("res://scenes/SlotView.tscn")
 	for i in range(slots.size()):
@@ -38,7 +38,7 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName):
 			if container_name == &"EnemyLineup":
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
-func _ready():
+func _ready() -> void:
 	# Guard against duplicate BattleView instances which would cause multiple
 	# emissions of draw_gacha_requested per click.
 	add_to_group("battle_view")
@@ -70,7 +70,7 @@ func _ready():
 	_redraw_board()
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
 
-func _redraw_board():
+func _redraw_board() -> void:
 	if not is_instance_valid(battle_manager): 
 		return
 	
@@ -86,7 +86,7 @@ func _redraw_board():
 		var discard_count = discard_container.get_all_non_empty_uuids().size()
 		discard_pile_button.text = "Discard Pile (%d)" % discard_count
 
-func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool):
+func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
 	if not is_instance_valid(battle_manager): 
 		return
 	
@@ -161,14 +161,16 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			if container_name == &"EnemyLineup":
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
-func _update_gacha_token_label(new_amount: int):
+func _update_gacha_token_label(new_amount: int) -> void:
 	gacha_token_label.text = "Tokens: %d" % new_amount
 
-func _on_battle_phase_changed(phase_name: StringName):
+func _on_battle_phase_changed(phase_name: StringName) -> void:
 	var is_management_phase = (phase_name == &"MANAGEMENT")
+	var is_combat = (phase_name == &"COMBAT")
+	# End Turn is only available during MANAGEMENT
 	end_turn_button.disabled = not is_management_phase
-	# Disable in-battle contextual buttons during COMBAT
-	discard_pile_button.disabled = not is_management_phase
+	# Contextual/discovery buttons should be disabled only during COMBAT
+	discard_pile_button.disabled = is_combat
 	
 	var main_node = get_tree().get_root().find_child("Main", true, false)
 	if not is_instance_valid(main_node): return
@@ -177,13 +179,13 @@ func _on_battle_phase_changed(phase_name: StringName):
 	if is_instance_valid(draw_buttons_parent):
 		for button in draw_buttons_parent.get_children():
 			if button is Button and button.name.begins_with("DrawTier"):
-				button.disabled = not is_management_phase
-		# Also disable the InspectInventory button outside the battle view
-		var inspect_btn := draw_buttons_parent.get_node_or_null("InspectInventoryButton")
-		if inspect_btn is Button:
-			inspect_btn.disabled = not is_management_phase
+				button.disabled = is_combat
+			# Also disable the InspectInventory button outside the battle view
+			var inspect_btn := draw_buttons_parent.get_node_or_null("InspectInventoryButton")
+			if inspect_btn is Button:
+				inspect_btn.disabled = is_combat
 
-func _gui_input(event):
+func _gui_input(event) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Create and emit InteractionContext for battle background
 		var context = InteractionContext.new()

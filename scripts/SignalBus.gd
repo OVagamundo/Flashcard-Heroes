@@ -105,9 +105,6 @@ signal gacha_tokens_changed(new_amount: int)
 ## Emitted when run data changes (inventory, gold, etc.)
 signal run_data_changed
 
-## Emitted when run state changes
-signal run_state_changed
-
 ## Emitted when gold amount changes
 ## @param new_amount: int - The new gold amount
 signal gold_changed(new_amount: int)
@@ -216,6 +213,9 @@ signal display_discard_pile_requested
 ## Emitted when modal should be closed
 signal close_modal_requested
 
+## Emitted when the top contextual window should be closed
+signal close_top_contextual_requested
+
 ## Emitted when background is clicked
 signal background_clicked
 
@@ -229,10 +229,6 @@ signal open_choice_window_requested(context: Dictionary)
 
 ## Emitted when flashcard minigame ends
 ## @param results: Dictionary - Minigame results (score, cards reviewed, etc.)
-signal flashcard_minigame_ended(results: Dictionary)
-
-## Emitted when flashcard minigame is completed
-## @param results: Dictionary - The minigame results
 signal flashcard_minigame_completed(results: Dictionary)
 
 ## Emitted when flashcard progress is updated
@@ -250,10 +246,7 @@ signal results_acknowledged
 ## Emitted for debug logging
 ## @param message: String - The debug message
 ## @param level: String - The debug level (INFO, WARNING, ERROR)
-signal debug_log(message: String, level: String)
 
 ## Emitted when game state should be saved
-signal game_save_requested
 
 ## Emitted when game state should be loaded
-signal game_load_requested

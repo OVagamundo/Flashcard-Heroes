@@ -32,7 +32,7 @@ var dynamic_tags: Array[StringName] = [] # For status effects like "POISONED", "
 var abilities: Array[AbilityDefinition] = []
 
 # --- Initialization ---
-func initialize(definition: GachaBallDefinition):
+func initialize(definition: GachaBallDefinition) -> void:
 	if not is_instance_valid(definition):
 		return
 
@@ -78,7 +78,7 @@ func create_battle_copy() -> GachaBallInstance:
 	return copy
 
 # --- Equipment Stat Modification ---
-func equip_item_bonus(item_instance: GachaBallInstance):
+func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
@@ -86,7 +86,7 @@ func equip_item_bonus(item_instance: GachaBallInstance):
 	self.current_pwr += item_def.bonus_pwr
 	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
-func unequip_item_bonus(item_instance: GachaBallInstance):
+func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
@@ -95,16 +95,16 @@ func unequip_item_bonus(item_instance: GachaBallInstance):
 	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 # --- Stat Management ---
-func set_current_hp(new_hp: int):
+func set_current_hp(new_hp: int) -> void:
 	if self.current_hp != new_hp:
 		self.current_hp = new_hp
 		SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
-func set_current_hp_silent(new_hp: int):
+func set_current_hp_silent(new_hp: int) -> void:
 	# Update HP without emitting UI signals. Used during simulation passes.
 	self.current_hp = new_hp
 
-func reset_battle_stats():
+func reset_battle_stats() -> void:
 	var definition = get_definition()
 	if not is_instance_valid(definition):
 		return
@@ -112,7 +112,7 @@ func reset_battle_stats():
 	self.current_pwr = definition.base_pwr
 
 # --- Stat Recalculation ---
-func recalculate_stats(all_instances_db: Dictionary):
+func recalculate_stats(all_instances_db: Dictionary) -> void:
 	var definition = get_definition()
 	if not is_instance_valid(definition):
 		return
@@ -144,11 +144,11 @@ func recalculate_stats(all_instances_db: Dictionary):
 	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 # --- Tag Helpers ---
-func add_tag(tag: StringName):
+func add_tag(tag: StringName) -> void:
 	if not dynamic_tags.has(tag):
 		dynamic_tags.append(tag)
 
-func remove_tag(tag: StringName):
+func remove_tag(tag: StringName) -> void:
 	if dynamic_tags.has(tag):
 		dynamic_tags.erase(tag)
 
@@ -168,7 +168,7 @@ func get_location() -> LocationIdentifier:
 	
 	# If an item is equipped, its location is defined by its parent unit.
 	if not equipped_on_uuid.is_empty():
-		loc.container = &"equipped_item"
+		loc.container = C.CONTAINER_EQUIPPED_ITEM
 		loc.unit_uuid = equipped_on_uuid
 		loc.index = equipped_slot_index
 	# Otherwise, its location is defined by the container it's in.

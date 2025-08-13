@@ -4,15 +4,15 @@ extends EffectDefinition
 ## An effect that deals damage equal to the source's power to the first target.
 ## This is the default attack effect used when no special abilities are triggered.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary):
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> Variant:
 	if targets.is_empty():
-		return
+		return null
 
 	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
 	var target_instance = battle_manager.get_instance_by_uuid(targets[0])
 	
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance):
-		return
+		return null
 
 	# Calculate damage (can be overridden by parameters for stat scaling)
 	var damage = _calculate_damage(source_instance)

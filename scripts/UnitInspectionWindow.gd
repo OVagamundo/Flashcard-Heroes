@@ -18,7 +18,7 @@ var _is_enemy_context: bool = false
 var _window_group_id: int = 1  # Inspection window group
 var _stable_anchor: Control = null  # Stable anchor for positioning
 
-func _ready():
+func _ready() -> void:
 	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 	SignalBus.run_data_changed.connect(_on_inventory_changed)
@@ -43,7 +43,7 @@ func _ready():
 	# Configure child controls to allow bubbling so the root can prune children on generic clicks
 	_configure_mouse_filters()
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if SignalBus.is_connected("battle_inventory_changed", _on_inventory_changed):
 		SignalBus.battle_inventory_changed.disconnect(_on_inventory_changed)
 	if SignalBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
@@ -53,13 +53,13 @@ func _exit_tree():
 	if SignalBus.is_connected("unit_stats_changed", _on_unit_stats_changed):
 		SignalBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
 
-func _gui_input(event: InputEvent):
+func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
 	_location = context.get("location")
@@ -93,7 +93,7 @@ func populate(context: Dictionary):
 	_rebuild_item_grid()
 
 ## Set up stable anchor pattern for robust positioning
-func _setup_stable_anchor():
+func _setup_stable_anchor() -> void:
 	if is_instance_valid(_source_view):
 		# Find the nearest stable container (SlotView or PanelContainer)
 		_stable_anchor = _find_stable_anchor(_source_view)
@@ -119,13 +119,13 @@ func _find_stable_anchor(original_anchor: Control) -> Control:
 	return original_anchor
 
 ## Handle anchor movement for dynamic positioning
-func _on_anchor_moved():
+func _on_anchor_moved() -> void:
 	if is_instance_valid(_stable_anchor):
 		# Reposition window relative to anchor
 		global_position = _calculate_position_relative_to_anchor()
 
 ## Handle anchor being freed
-func _on_anchor_freed():
+func _on_anchor_freed() -> void:
 	# Defer briefly to allow UI to settle (e.g., during inventory reflow) before deciding to close.
 	# This avoids premature self-closing that bypasses WindowManager suppression during actions.
 	var self_ref = self
@@ -170,7 +170,7 @@ func _calculate_position_relative_to_anchor() -> Vector2:
 	return Vector2(anchor_rect.end.x - window_size.x - 20, anchor_rect.position.y + 20)
 
 
-func _rebuild_item_grid():
+func _rebuild_item_grid() -> void:
 	# This function now handles the complete lifecycle of the item grid UI.
 	# It ensures that slots are persistent and correctly represent the data model.
 	if not is_instance_valid(_instance): 
@@ -209,7 +209,7 @@ func _rebuild_item_grid():
 		
 		# CRITICAL: Create a valid LocationIdentifier for EVERY slot, empty or not.
 		var loc = LocationIdentifier.new()
-		loc.container = &"equipped_item"
+		loc.container = C.CONTAINER_EQUIPPED_ITEM
 		loc.index = i
 		loc.unit_uuid = _instance.ball_uuid
 		slot_view.populate(loc) # This makes the empty slot a valid drop target.
@@ -235,7 +235,7 @@ func _rebuild_item_grid():
 			gacha_view.set_interaction_context(interaction_mode, &"ITEM", _window_group_id)
 	
 
-func _update_description():
+func _update_description() -> void:
 	if not is_instance_valid(_instance):
 		return
 	
@@ -253,7 +253,7 @@ func _update_description():
 	description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, basic_attack_desc]
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
-func _on_unit_stats_changed(unit_uuid: String):
+func _on_unit_stats_changed(unit_uuid: String) -> void:
 	if unit_uuid == _inspected_unit_uuid:
 		# Update the instance reference and refresh the description
 		var all_instances: Dictionary = _get_all_instances_db()
@@ -262,7 +262,7 @@ func _on_unit_stats_changed(unit_uuid: String):
 			_instance = current_instance
 			_update_description()
 
-func _on_inventory_changed():
+func _on_inventory_changed() -> void:
 	if not is_instance_valid(self): 
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
@@ -277,7 +277,7 @@ func _on_inventory_changed():
 	_update_description()
 	_rebuild_item_grid()
 
-func _on_unit_inventory_changed(unit_uuid: String):
+func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	if not is_instance_valid(self): 
 		return
 	
@@ -307,7 +307,7 @@ func _get_all_instances_db() -> Dictionary:
 	
 	return result
 
-func _on_description_meta_clicked(meta):
+func _on_description_meta_clicked(meta) -> void:
 	if meta == "effect":
 		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
@@ -328,7 +328,7 @@ func _on_description_meta_clicked(meta):
 			accept_event()
 
 ## Recursively set mouse filters to PASS for child controls that should bubble to the root
-func _configure_mouse_filters():
+func _configure_mouse_filters() -> void:
 	var stack: Array = [self]
 	while not stack.is_empty():
 		var node = stack.pop_back()
@@ -341,26 +341,26 @@ func _configure_mouse_filters():
 					(child as Control).mouse_filter = MOUSE_FILTER_PASS
 				stack.append(child)
 
-func _on_description_gui_input(event: InputEvent):
+func _on_description_gui_input(event: InputEvent) -> void:
 	# No-op: we rely on meta hover/click to manage link interactions.
 	pass
 
-func _on_internal_background_gui_input(event: InputEvent):
+func _on_internal_background_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
 
-func _on_item_grid_gui_input(event: InputEvent):
+func _on_item_grid_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
 
-func _on_description_meta_hover_started(_meta):
+func _on_description_meta_hover_started(_meta) -> void:
 	description_label.mouse_filter = MOUSE_FILTER_STOP
 
-func _on_description_meta_hover_ended(_meta):
+func _on_description_meta_hover_ended(_meta) -> void:
 	description_label.mouse_filter = MOUSE_FILTER_PASS
 
 func get_location() -> LocationIdentifier:

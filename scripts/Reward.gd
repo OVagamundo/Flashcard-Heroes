@@ -10,7 +10,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 var _reward_uuids: Array[String] = []
 var _gold_amount: int = 0
 
-func _ready():
+func _ready() -> void:
 	SignalBus.selection_changed.connect(_on_selection_changed)
 	confirm_button.disabled = true
 	confirm_button.pressed.connect(_on_confirm_pressed)
@@ -21,7 +21,7 @@ func _ready():
 	gui_input.connect(_on_gui_input)
 
 # This is a public function called by Main.gd at the correct time.
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	# This function now accepts a context dictionary with reward instances and gold amount.
 	
 	# Get reward instances and gold amount from the context
@@ -67,11 +67,11 @@ func populate(context: Dictionary):
 			# Set up interaction context for the new system
 			gacha_view.set_interaction_context(&"SELECTION_ONLY", &"ITEM", 0)
 
-func _on_selection_changed(new_location: LocationIdentifier):
+func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	var is_valid_selection = new_location and new_location.container == &"Rewards"
 	confirm_button.disabled = not is_valid_selection
 
-func _on_confirm_pressed():
+func _on_confirm_pressed() -> void:
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
 	var selected_loc = selected_ctx.location if selected_ctx else null
 	if selected_loc and selected_loc.container == &"Rewards":
@@ -87,7 +87,7 @@ func _on_confirm_pressed():
 			for child in slot_view.get_children():
 				child.queue_free()
 
-func _on_gold_pressed():
+func _on_gold_pressed() -> void:
 	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
 	
 	# Hide old buttons, show the new one
@@ -95,12 +95,18 @@ func _on_gold_pressed():
 	gold_button.visible = false
 	back_to_path_button.visible = true
 
-func _on_back_to_path_pressed():
+	# Clear selection and remove all reward GachaBalls (mirror confirm behavior)
+	SignalBus.emit_signal("selection_clear_requested")
+	for slot_view in choices_container.get_children():
+		for child in slot_view.get_children():
+			child.queue_free()
+
+func _on_back_to_path_pressed() -> void:
 	SignalBus.emit_signal("path_choice_scene_requested")
 	# The reward scene has served its purpose and should be removed.
 	queue_free()
 
-func _on_gui_input(event: InputEvent):
+func _on_gui_input(event: InputEvent) -> void:
 	# Handle background clicks using the new InteractionContext system
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Create and emit InteractionContext for reward background

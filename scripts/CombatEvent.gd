@@ -13,7 +13,7 @@ var text: String = ""
 var source_uuid: String = ""
 var target_uuids: Array[String] = []
 
-func _init(p_type: Type, p_context: Dictionary = {}):
+func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.type = p_type
 	self.text = p_context.get("text", "")
 	self.source_uuid = p_context.get("source_uuid", "")

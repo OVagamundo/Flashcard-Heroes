@@ -6,7 +6,7 @@ const NodeViewScene = preload("res://scenes/NodeView.tscn")
 
 @onready var node_container: HBoxContainer = $CenterContainer/HBoxContainer
 
-func _ready():
+func _ready() -> void:
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.advance_day(1)
 
@@ -30,5 +30,5 @@ func _ready():
 		node_view.node_selected.connect(_on_node_selected)
 		node_container.add_child(node_view)
 
-func _on_node_selected(node_def: PathNodeDefinition):
+func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	SignalBus.emit_signal("node_selected", node_def)

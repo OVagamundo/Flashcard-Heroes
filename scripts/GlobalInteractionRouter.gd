@@ -19,7 +19,7 @@ class Command:
 	var cmd: CommandType
 	var context: Dictionary = {}
 	
-	func _init(command_type: CommandType, command_context: Dictionary = {}):
+	func _init(command_type: CommandType, command_context: Dictionary = {}) -> void:
 		cmd = command_type
 		context = command_context
 
@@ -40,7 +40,7 @@ var _drag_placeholder: Control = null
 var _suppress_close_parent_window_id: int = -1
 var _suppress_close_until_msec: int = 0
 
-func _ready():
+func _ready() -> void:
 	# Register as singleton
 	add_to_group("global_interaction_router")
 	
@@ -56,7 +56,7 @@ func _ready():
 	if SignalBus.has_signal("battle_phase_changed"):
 		SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 
-func _exit_tree():
+func _exit_tree() -> void:
 	# Scene cleanup per spec: clear drag and selection
 	_end_drag_visuals(false)
 	_is_drag_active = false
@@ -76,7 +76,7 @@ func _exit_tree():
 		SignalBus.battle_phase_changed.disconnect(_on_battle_phase_changed)
 
 ## Main entry point for processing interactions
-func _on_interaction_context_received(context: InteractionContext):
+func _on_interaction_context_received(context: InteractionContext) -> void:
 
 	var command_queue: Array[Command] = []
 
@@ -106,9 +106,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if SignalBus.has_signal("close_modal_requested"):
 			SignalBus.emit_signal("close_modal_requested")
 			return
-		# 3) Close all contextual windows if any are open
-		_execute_close_all_inspection_windows()
-		# 4) Clear selection if any
+		# 3) Close contextual windows (guarded by suppression) and clear selection
+		if not _is_close_suppressed_now():
+			_execute_close_all_inspection_windows()
 		_execute_deselect()
 		return
 
@@ -120,12 +120,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		_execute_deselect()
 
 ## External signal handler: proactively clear selection when requested (e.g., scene transitions)
-func _on_selection_clear_requested():
+func _on_selection_clear_requested() -> void:
+	# Always clear selection if present
 	if _current_selection != null:
 		_execute_deselect()
+	# Also activate a brief, contextless close suppression to guard the very next click
+	# after system-driven actions (e.g., shop purchase, reward choice). This prevents
+	# GR-4 global close or background handlers from triggering immediately.
+	var until_ts := Time.get_ticks_msec() + 240
+	_suppress_close_parent_window_id = 0
+	_suppress_close_until_msec = until_ts
 
 ## Track battle phase to enforce COMBAT gating
-func _on_battle_phase_changed(phase_name: StringName):
+func _on_battle_phase_changed(phase_name: StringName) -> void:
 	_is_combat_phase = phase_name == &"COMBAT"
 	# If entering COMBAT, ensure any drag state and engine preview are cleared
 	if _is_combat_phase:
@@ -466,8 +473,9 @@ func _activate_close_suppression_for_view(view: Control, duration_msec: int = 20
 		_suppress_close_parent_window_id = parent_window.get_instance_id()
 		_suppress_close_until_msec = until_ts
 
-# Directly activate suppression for a known parent window id
-func _activate_close_suppression_for_window_id(window_id: int, duration_msec: int = 220) -> void:
+
+# Directly activate suppression for a known parent window id (public API)
+func activate_close_suppression_for_window_id(window_id: int, duration_msec: int = 220) -> void:
 	if window_id <= 0:
 		return
 	var until_ts := Time.get_ticks_msec() + duration_msec
@@ -522,12 +530,12 @@ func _is_unit_inspection_window_id(window_id: int) -> bool:
 	return false
 
 ## Execute the command queue
-func _execute_command_queue(commands: Array[Command]):
+func _execute_command_queue(commands: Array[Command]) -> void:
 	for command in commands:
 		_execute_command(command)
 
 ## Execute a single command
-func _execute_command(command: Command):
+func _execute_command(command: Command) -> void:
 	match command.cmd:
 		CommandType.DESELECT:
 			_execute_deselect()
@@ -545,14 +553,14 @@ func _execute_command(command: Command):
 			_execute_invalid_action()
 
 ## Execute deselect command
-func _execute_deselect():
+func _execute_deselect() -> void:
 	if _current_selection != null:
 		_emit_view_deselected(_current_selection)
 		_emit_selection_changed(null)
 		_current_selection = null
 
 ## Execute select command
-func _execute_select(context: InteractionContext):
+func _execute_select(context: InteractionContext) -> void:
 	# Update our selection state and emit signals
 	var view = _find_view_by_instance_id(context.source_view_instance_id)
 	_current_selection = context
@@ -561,7 +569,7 @@ func _execute_select(context: InteractionContext):
 		_emit_selection_changed(context.location)
 
 ## Execute open inspection window command
-func _execute_open_inspection_window(command_context: Dictionary):
+func _execute_open_inspection_window(command_context: Dictionary) -> void:
 	var context: InteractionContext = command_context.get("context")
 	var anchor_view_id: int = command_context.get("anchor_view_id", 0)
 	
@@ -573,17 +581,17 @@ func _execute_open_inspection_window(command_context: Dictionary):
 			_window_manager.open_inspection_window(context.location, anchor_view)
 
 ## Execute close all inspection windows command
-func _execute_close_all_inspection_windows():
+func _execute_close_all_inspection_windows() -> void:
 	if _window_manager:
 		_window_manager.close_all_inspection_windows()
 
 ## Execute close child windows command
-func _execute_close_child_windows(window_group_id: int, parent_window_id: int = -1):
+func _execute_close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
 	if _window_manager:
 		_window_manager.close_child_windows(window_group_id, parent_window_id)
 
 ## Execute request action command
-func _execute_request_action(command_context: Dictionary):
+func _execute_request_action(command_context: Dictionary) -> void:
 	# COMBAT-phase gate: full lockout, no side-effects
 	if _is_combat_phase:
 		return
@@ -596,7 +604,7 @@ func _execute_request_action(command_context: Dictionary):
 		var inside_unit: bool = command_context.get("is_inside_unit_inspection", false)
 		if tgt_parent_id != -1:
 			# Slightly longer suppression when inside unit inspection to absorb UI refresh bursts
-			_activate_close_suppression_for_window_id(tgt_parent_id, 280 if inside_unit else 220)
+			activate_close_suppression_for_window_id(tgt_parent_id, 280 if inside_unit else 220)
 		else:
 			# Activate short-lived suppression tied to the parent window where the action occurs.
 			# For equipping into a UnitInspectionWindow, the TARGET view is inside the unit window.
@@ -613,17 +621,17 @@ func _execute_request_action(command_context: Dictionary):
 			target_context.location)
 
 ## Execute invalid action command
-func _execute_invalid_action():
+func _execute_invalid_action() -> void:
 	# GR-5 resolution: close contextual windows and clear selection
 	_execute_close_all_inspection_windows()
 	_execute_deselect()
 
 ## Emit selection changed uniformly
-func _emit_selection_changed(loc: LocationIdentifier):
+func _emit_selection_changed(loc: LocationIdentifier) -> void:
 	SignalBus.emit_signal("selection_changed", loc)
 
 ## Emit view deselected using the stored selection
-func _emit_view_deselected(sel: InteractionContext):
+func _emit_view_deselected(sel: InteractionContext) -> void:
 	var view = _find_view_by_instance_id(sel.source_view_instance_id)
 	if view:
 		SignalBus.emit_signal("view_deselected", view)
@@ -660,7 +668,7 @@ func _find_view_recursive(node: Node, target_id: int) -> Control:
 	return null
 
 ## Public API for external systems to set selection
-func set_current_selection(context: InteractionContext):
+func set_current_selection(context: InteractionContext) -> void:
 	_current_selection = context
 
 ## Public API for external systems to get current selection
@@ -668,7 +676,7 @@ func get_current_selection() -> InteractionContext:
 	return _current_selection
 
 ## Public API for external systems to clear selection
-func clear_current_selection():
+func clear_current_selection() -> void:
 	_current_selection = null
 
 ## Public method to get the functional group of a container (migrated from InteractionManager)
@@ -694,7 +702,7 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 		return &"SelectionOnly"
 
 	# Equipped items (special handling)
-	if container_name == &"equipped_item":
+	if container_name == C.CONTAINER_EQUIPPED_ITEM:
 		return &"EquippedGrid"
 
 	# Inspection-only containers (no actions allowed)
@@ -704,21 +712,26 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 	return &"Unknown"
 
 ## Public API: start a drag operation (called by InteractionManager)
-func start_drag(origin_context: InteractionContext):
+func start_drag(origin_context: InteractionContext) -> void:
 	# Full input lock during COMBAT: do not start drags
 	if _is_combat_phase:
 		return
 	_is_drag_active = true
 	_drag_origin_context = origin_context
-	# Design rule: DO NOT close inspection windows on drag start. Closing here can
-	# free the drag preview or source view and trigger anchor churn. Windows will be
-	# closed via background clicks or explicit GIR/WindowManager APIs.
+	# Prune only child windows of the source's parent inspection window on drag start.
+	# Do NOT close the parent window itself to avoid freeing the drag preview/source view.
+	if _window_manager and origin_context != null:
+		var src_view: Control = _find_view_by_instance_id(origin_context.source_view_instance_id)
+		if src_view:
+			var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
+			if is_instance_valid(parent_window):
+				_window_manager.close_children_of(parent_window)
 	# Inform listeners that a drag has started (optional hook for visuals)
 	if SignalBus.has_signal("drag_started"):
 		SignalBus.emit_signal("drag_started", origin_context)
 
 ## Public API: end a drag operation (called by InteractionManager)
-func end_drag(_was_handled: bool):
+func end_drag(_was_handled: bool) -> void:
 	_is_drag_active = false
 	_drag_origin_context = null
 	# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background

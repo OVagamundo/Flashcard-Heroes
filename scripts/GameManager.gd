@@ -38,10 +38,10 @@ func _ready() -> void:
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 
 # ADD THESE TWO FUNCTIONS
-func register_battle_manager(bm: Node):
+func register_battle_manager(bm: Node) -> void:
 	_active_battle_manager = bm
 
-func unregister_battle_manager():
+func unregister_battle_manager() -> void:
 	_active_battle_manager = null
 
 func get_pending_rewards() -> Dictionary:
@@ -76,10 +76,10 @@ func _on_battle_ended(results: Dictionary) -> void:
 	# 3) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
-func _on_battle_start_requested(encounter_def: EncounterDefinition):
+func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	pass
 
-func _on_battle_won_rewards_pending():
+func _on_battle_won_rewards_pending() -> void:
 	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
@@ -109,7 +109,7 @@ func _on_return_to_title() -> void:
 
 
 
-func _on_battle_victory_acknowledged():
+func _on_battle_victory_acknowledged() -> void:
 	if _is_processing_victory: 
 		return # Debounce guard
 	_is_processing_victory = true
@@ -128,7 +128,7 @@ func _on_battle_victory_acknowledged():
 	var context: Dictionary = get_pending_rewards()
 	SignalBus.emit_signal("reward_scene_requested", context)
 
-func _on_reward_chosen(payload):
+func _on_reward_chosen(payload) -> void:
 	# --- STALE SELECTION FIX ---
 	# The action is complete. Clear the interaction state immediately.
 	SignalBus.emit_signal("selection_clear_requested")
@@ -216,7 +216,7 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	# Step 2: Apply contextual understanding based on the location type.
 	
 	# Case A: The location is for an equipped item (a conceptual location).
-	if loc.container == &"equipped_item":
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		if loc.unit_uuid.is_empty():
 			return null
 		
@@ -241,7 +241,7 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	# Fallback if no valid case is met.
 	return null
 
-func _on_node_selected(node_def: PathNodeDefinition):
+func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
 			var budget = run_state.day * 5
@@ -264,7 +264,7 @@ func _on_node_selected(node_def: PathNodeDefinition):
 				main_node._current_content_node = instance
 				main_node.content_area.get_node("SubViewport/MarginContainer").add_child(instance)
 
-func _enter_shop():
+func _enter_shop() -> void:
 	_reroll_cost = 1
 	_generate_shop_stock()
 	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
@@ -273,7 +273,7 @@ func _enter_shop():
 	if is_instance_valid(main_node):
 		main_node._on_shop_scene_requested(context)
 
-func _generate_shop_stock():
+func _generate_shop_stock() -> void:
 	_temporary_shop_master_dict.clear()
 	_temporary_shop_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
@@ -294,7 +294,7 @@ func _generate_shop_stock():
 		_temporary_shop_master_dict[inst.ball_uuid] = inst
 		_temporary_shop_container.set_uuid(i, inst.ball_uuid)
 
-func _on_shop_purchase_requested(instance_uuid: String, cost: int):
+func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
 	if not _temporary_shop_master_dict.has(instance_uuid): return
 	if not run_state.spend_gold(cost): return
 
@@ -309,11 +309,13 @@ func _on_shop_purchase_requested(instance_uuid: String, cost: int):
 	if temp_slot != -1:
 		_temporary_shop_container.set_uuid(temp_slot, "")
 
+	SignalBus.emit_signal("selection_clear_requested")
+
 	# Avoid duplicate run_data_changed; atomic APIs already emitted above
 	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
 	SignalBus.emit_signal("shop_stock_refreshed", context)
 
-func _on_shop_reroll_requested():
+func _on_shop_reroll_requested() -> void:
 	if not run_state.spend_gold(_reroll_cost): return
 	_reroll_cost += 1
 

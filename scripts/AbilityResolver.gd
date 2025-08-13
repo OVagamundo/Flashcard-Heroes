@@ -7,7 +7,7 @@ extends Node
 ## Process a trigger event and generate EffectRequests for all matching abilities.
 ## @param trigger: StringName - The trigger type (e.g., "on_attack", "on_death")
 ## @param context: Dictionary - The context of the event (e.g., {"source_uuid": "...", "target_uuid": "..."})
-func process_trigger(trigger: StringName, context: Dictionary):
+func process_trigger(trigger: StringName, context: Dictionary) -> void:
 	# Get the current BattleManager
 	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
 	if not is_instance_valid(battle_manager):
@@ -36,7 +36,7 @@ func process_trigger(trigger: StringName, context: Dictionary):
 ## @param source_uuid: String - The UUID of the source instance
 ## @param battle_manager: Node - The current battle manager
 ## @param context: Dictionary - The event context
-func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary):
+func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary) -> void:
 	# Check condition if present
 	if is_instance_valid(ability.condition):
 		if not battle_manager.check_condition(ability.condition, source_uuid, context):

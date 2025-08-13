@@ -11,21 +11,21 @@ var _source_location: LocationIdentifier
 var _target_location: LocationIdentifier
 var _recipe_id: StringName
 
-func _ready():
+func _ready() -> void:
 	# Connect the SWAP button signal, as it's always available.
 	# The MERGE button signal will be connected in populate() only if a valid recipe exists.
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
 	# Prune only child windows when clicking on this window's background
 	gui_input.connect(_on_panel_gui_input)
 
-func _on_panel_gui_input(event: InputEvent):
+func _on_panel_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Local background click inside this window should prune only its children.
 		# Global outside clicks are handled by GIR to close the entire inspection group.
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	_source_location = context.get("source_location")
 	_target_location = context.get("target_location")
 	_recipe_id = context.get("recipe_id")
@@ -42,11 +42,11 @@ func populate(context: Dictionary):
 		# No valid recipe. The button should be disabled.
 		merge_button.disabled = true
 
-func _on_merge_pressed():
+func _on_merge_pressed() -> void:
 	# This function is now a dedicated handler for the merge button press.
 	_on_choice_made(&"MERGE", _recipe_id)
 
-func _on_choice_made(choice: StringName, recipe_id: StringName):
+func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 	# The signature now matches the new, more robust SignalBus signal.
 	SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
-	SignalBus.emit_signal("close_modal_requested")
+	SignalBus.emit_signal("close_top_contextual_requested")

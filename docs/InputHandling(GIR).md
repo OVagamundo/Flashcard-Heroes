@@ -195,5 +195,6 @@ END OF FLOW.
 6. Drag-and-Drop Implementation Details
 The GIR's management of drag-and-drop state is what enables the unified logic tree above.
 start_drag(context): Called by a view's _get_drag_data. It clears any current selection, sets _is_drag_active = true, and stores the context in _drag_origin_context.
+On drag start, GIR prunes only the child inspection windows of the anchor (parent) window via `WindowManager.close_children_of(parent_window)`. The parent window remains open.
 end_drag(): Called by the GIR after a successful drop or by a view's _notification on a cancelled drop. It sets _is_drag_active = false, clears _drag_origin_context, and ensures the source view is made visible again if the drag was not handled.
 This comprehensive logic tree, with the GIR managing all interaction states, covers every possible user scenario—both click-click and drag-drop—in a deterministic and unified way. It forms the complete blueprint for the game's new, robust, and maximally simplified input handling and selection architecture.

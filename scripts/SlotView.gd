@@ -7,7 +7,7 @@ var _location: LocationIdentifier
 var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _window_group_id: int = 0
 
-func _ready():
+func _ready() -> void:
 	# Add a simple stylebox to make the empty slot visible.
 	var style = StyleBoxFlat.new()
 	style.set_bg_color(Color(0,0,0,0.2))
@@ -15,21 +15,21 @@ func _ready():
 	style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
 	add_theme_stylebox_override("panel", style)
 
-func _exit_tree():
+func _exit_tree() -> void:
 	# If a drag is active while this slot is being freed, end it to prevent leaks
 	if GlobalInteractionRouter.is_drag_active():
 		GlobalInteractionRouter.end_drag(false)
 		GlobalInteractionRouter.end_drag_visuals(false)
 
-func _notification(what):
+func _notification(what) -> void:
 	pass
 
-func populate(loc: LocationIdentifier):
+func populate(loc: LocationIdentifier) -> void:
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 ## Configure the interaction context for this slot
-func set_interaction_context(interaction_mode: StringName, window_group_id: int = 0):
+func set_interaction_context(interaction_mode: StringName, window_group_id: int = 0) -> void:
 	_interaction_mode = interaction_mode
 	_window_group_id = window_group_id
 
@@ -45,7 +45,7 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	context.window_group_id = _window_group_id
 	return context
 
-func _gui_input(event: InputEvent):
+func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
@@ -65,7 +65,7 @@ func _can_drop_data(_at_position, data) -> bool:
 		
 	return data is Dictionary and data.has("source_loc")
 
-func _drop_data(_at_position, data):
+func _drop_data(_at_position, data) -> void:
 	# Check if this is an inspection-only context
 	if _interaction_mode == &"INSPECTION_ONLY":
 		return

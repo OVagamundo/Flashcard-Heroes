@@ -24,14 +24,14 @@ var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
-func _ready():
+func _ready() -> void:
 	var bus = get_node("/root/SignalBus")
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
 		bus.unit_stats_changed.connect(_on_unit_stats_changed)
 
-func _exit_tree():
+func _exit_tree() -> void:
 	# Proactively disconnect signals and end any active drag to prevent leaks
 	var bus = get_node_or_null("/root/SignalBus")
 	if is_instance_valid(bus):
@@ -47,7 +47,7 @@ func _exit_tree():
 		GlobalInteractionRouter.end_drag(false)
 		GlobalInteractionRouter.end_drag_visuals(false)
 
-func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false):
+func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false) -> void:
 	self._location = loc
 	self._instance_uuid = instance.ball_uuid
 	self._is_inspectable = is_inspectable
@@ -71,15 +71,15 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 	_update_item_slots()
 	_apply_selection_feedback()
 
-func set_is_enemy(is_enemy: bool):
+func set_is_enemy(is_enemy: bool) -> void:
 	if is_instance_valid(icon_rect):
 		icon_rect.flip_h = is_enemy
 
-func set_is_interactive(is_interactive: bool):
+func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive
 
 ## Configure the interaction context for this view
-func set_interaction_context(interaction_mode: StringName, entity_type: StringName, window_group_id: int = 0):
+func set_interaction_context(interaction_mode: StringName, entity_type: StringName, window_group_id: int = 0) -> void:
 	_interaction_mode = interaction_mode
 	_entity_type = entity_type
 	_window_group_id = window_group_id
@@ -96,7 +96,7 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	context.window_group_id = _window_group_id
 	return context
 
-func _update_stats():
+func _update_stats() -> void:
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance): 
 		return
@@ -113,7 +113,7 @@ func _update_stats():
 	hp_label.text = new_hp_text
 	pwr_label.text = new_pwr_text
 
-func _update_item_slots():
+func _update_item_slots() -> void:
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance):
 		return
@@ -169,13 +169,13 @@ func _find_slot_anchor() -> Control:
 	# If all else fails, return self as Control (this should never happen in normal operation)
 	return self
 
-func _on_unit_stats_changed(unit_uuid: String):
+func _on_unit_stats_changed(unit_uuid: String) -> void:
 	if _instance_uuid == unit_uuid:
 		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			_update_stats()
 
-func _gui_input(event: InputEvent):
+func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location): return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
@@ -230,18 +230,6 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Delegate drag visuals to GIR helper (replaces InteractionManager)
 	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
 
-	# Safe window pruning on drag start:
-	# - If this view is inside an inspection window, prune only that window's children
-	#   to remove higher-level windows without freeing the source or drag preview.
-	# - If not inside any inspection window, close all inspection windows.
-	# This restores prior UX while honoring the rule to not close the source window itself.
-	if WindowManager:
-		var parent_window: Control = WindowManager.find_ancestor_window_for_view(self)
-		if is_instance_valid(parent_window):
-			WindowManager.close_children_of(parent_window)
-		else:
-			WindowManager.close_all_inspection_windows()
-
 	# Notify GIR of drag origin so it can interpret the eventual drop
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
 	GlobalInteractionRouter.start_drag(origin_ctx)
@@ -256,7 +244,7 @@ func _can_drop_data(_at_position, data) -> bool:
 		
 	return data is Dictionary and data.has("source_loc")
 
-func _drop_data(_at_position, data):
+func _drop_data(_at_position, data) -> void:
 	# For drag and drop, we need to handle this as a direct action
 	# since the source location comes from the drag data, not the current view
 	# Create a target interaction context and route via GIR
@@ -267,18 +255,18 @@ func _drop_data(_at_position, data):
 	# action was handled and call GlobalInteractionRouter.end_drag(true/false)
 	# accordingly. This prevents the source from remaining hidden after invalid actions.
 
-func _on_view_selected(view: Control, _loc: LocationIdentifier):
+func _on_view_selected(view: Control, _loc: LocationIdentifier) -> void:
 	if view == self:
 		_is_selected = true
 		_apply_selection_feedback()
 
-func _on_view_deselected(view: Control):
+func _on_view_deselected(view: Control) -> void:
 	if view == self:
 		_is_selected = false
 		_apply_selection_feedback()
 
 
-func _apply_selection_feedback():
+func _apply_selection_feedback() -> void:
 	if not is_inside_tree(): return
 	var stylebox: StyleBoxFlat = get_theme_stylebox("panel").duplicate()
 	if _is_selected:
@@ -294,7 +282,7 @@ func _apply_selection_feedback():
 		stylebox.border_width_bottom = 0
 	add_theme_stylebox_override("panel", stylebox)
 
-func _notification(what: int):
+func _notification(what: int) -> void:
 	# Fallback: if a drag ends without any drop target handling it, restore visuals
 	if what == NOTIFICATION_DRAG_END:
 		# Reset local drag flag

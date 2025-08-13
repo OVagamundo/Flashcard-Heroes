@@ -5,16 +5,16 @@ signal turn_animation_finished
 
 const TURN_STEP_DELAY = 0.8 # The original delay from BattleManager
 
-func _ready():
+func _ready() -> void:
 	add_to_group("battle_animator")
 
-func play_turn(events: Array[CombatEvent]):
+func play_turn(events: Array[CombatEvent]) -> void:
 	if events.is_empty():
 		emit_signal("turn_animation_finished")
 		return
 	await _animate_events(events)
 
-func _animate_events(events: Array[CombatEvent]):
+func _animate_events(events: Array[CombatEvent]) -> void:
 	for event in events:
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:

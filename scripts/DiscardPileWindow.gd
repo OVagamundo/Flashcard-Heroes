@@ -9,16 +9,16 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 
 const DISCARD_PILE_CONTAINER_TAG = &"DiscardPile"
 
-func _ready():
+func _ready() -> void:
 	panel_container.gui_input.connect(_on_panel_gui_input)
 
-func _on_panel_gui_input(event: InputEvent):
+func _on_panel_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Prune only child inspection windows of this window to avoid global closures
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	var discard_pile_data: Array = context.get("inventory", [])
 	
 	for child in discard_grid.get_children():

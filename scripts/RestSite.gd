@@ -9,7 +9,7 @@ enum TrainingType { NONE, HP, PWR }
 var _current_training: TrainingType = TrainingType.NONE
 var _last_minigame_results: Dictionary = {}
 
-func _ready():
+func _ready() -> void:
 	train_hp_button.pressed.connect(_on_train_pressed.bind(TrainingType.HP))
 	train_pwr_button.pressed.connect(_on_train_pressed.bind(TrainingType.PWR))
 	leave_button.pressed.connect(_on_leave_pressed)
@@ -18,7 +18,7 @@ func _ready():
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 
-func _on_train_pressed(type: TrainingType):
+func _on_train_pressed(type: TrainingType) -> void:
 	_current_training = type
 	train_hp_button.disabled = true
 	train_pwr_button.disabled = true
@@ -27,7 +27,7 @@ func _on_train_pressed(type: TrainingType):
 	if is_instance_valid(GameManager.run_state):
 		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
-func _on_flashcard_completed(results: Dictionary):
+func _on_flashcard_completed(results: Dictionary) -> void:
 	# TDD Section 9.4: Rest Site "Train" Flow
 	if _current_training == TrainingType.NONE:
 		return
@@ -45,7 +45,7 @@ func _on_flashcard_completed(results: Dictionary):
 		"populate_args": ["Training Complete!", "Your Hero gained +%d %s." % [stat_gain, stat_type], "Continue"]
 	})
 
-func _on_results_acknowledged():
+func _on_results_acknowledged() -> void:
 	"""Called when player acknowledges the training results"""
 	if _current_training == TrainingType.NONE: return
 	
@@ -64,11 +64,11 @@ func _on_results_acknowledged():
 	train_hp_button.disabled = false
 	train_pwr_button.disabled = false
 
-func _on_leave_pressed():
+func _on_leave_pressed() -> void:
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if SignalBus.flashcard_minigame_completed.is_connected(_on_flashcard_completed):
 		SignalBus.flashcard_minigame_completed.disconnect(_on_flashcard_completed)
 	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):

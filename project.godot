@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 SignalBus="*res://scripts/SignalBus.gd"
+C="*res://scripts/Constants.gd"
 UUIDUtils="*res://scripts/UUIDUtils.gd"
 Database="*res://scripts/Database.gd"
 GameManager="*res://scripts/GameManager.gd"

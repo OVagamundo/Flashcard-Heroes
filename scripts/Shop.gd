@@ -12,7 +12,7 @@ var _current_shop_instances: Array = []
 var _selected_cost: int = 0
 var _price_labels_container: HBoxContainer
 
-func _ready():
+func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
 	SignalBus.selection_changed.connect(_on_selection_changed)
 
@@ -30,7 +30,7 @@ func _ready():
 	# Add background input handling for the new InteractionContext system
 	gui_input.connect(_on_gui_input)
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	_current_shop_instances = context.get("shop_instances", [])
 	var reroll_cost: int = context.get("reroll_cost", 1)
 	reroll_button.text = "Reroll (%d Gold)" % reroll_cost
@@ -81,7 +81,7 @@ func _find_instance_for_slot(slot_index: int) -> GachaBallInstance:
 	return null
 
 ## Handle selection changes from the new InteractionContext system
-func _on_selection_changed(new_location: LocationIdentifier):
+func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	if new_location and new_location.container == &"Shop":
 		var instance = _find_instance_for_slot(new_location.index)
 		if is_instance_valid(instance):
@@ -94,7 +94,7 @@ func _on_selection_changed(new_location: LocationIdentifier):
 	buy_button.disabled = true
 	_selected_cost = 0
 
-func _on_buy_pressed():
+func _on_buy_pressed() -> void:
 	# Get the currently selected location from the new InteractionManager
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
 	var selected_loc = selected_ctx.location if selected_ctx else null
@@ -103,14 +103,14 @@ func _on_buy_pressed():
 		if is_instance_valid(instance):
 			SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
 
-func _on_reroll_pressed():
+func _on_reroll_pressed() -> void:
 	SignalBus.emit_signal("shop_reroll_requested")
 
-func _on_leave_pressed():
+func _on_leave_pressed() -> void:
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
-func _on_gui_input(event: InputEvent):
+func _on_gui_input(event: InputEvent) -> void:
 	# Handle background clicks using the new InteractionContext system
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Create and emit InteractionContext for shop background

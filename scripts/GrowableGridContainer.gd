@@ -10,7 +10,7 @@ var _free_list: Array[int] = []
 var _growth_amount: int = 16
 
 ## Initialize with an initial size (default 16 per TDD Initial Size Rule)
-func _init(initial_size: int = 16):
+func _init(initial_size: int = 16) -> void:
 	_data.resize(initial_size)
 	for i in range(initial_size):
 		_data[i] = ""

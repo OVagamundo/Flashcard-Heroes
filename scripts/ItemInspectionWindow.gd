@@ -11,7 +11,7 @@ var _location: LocationIdentifier
 var _window_group_id: int = 1  # Inspection window group
 var _stable_anchor: Control = null  # Stable anchor for positioning
 
-func _ready():
+func _ready() -> void:
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
@@ -24,7 +24,7 @@ func _ready():
 	if is_instance_valid(internal_background):
 		internal_background.mouse_filter = MOUSE_FILTER_STOP
 		internal_background.gui_input.connect(_on_internal_background_gui_input)
-func _gui_input(event: InputEvent):
+func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
@@ -34,7 +34,7 @@ func _gui_input(event: InputEvent):
 
 
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
 	_location = context.get("location")
@@ -71,7 +71,7 @@ func populate(context: Dictionary):
 	# Store the full definition for the child window to use.
 	description_label.set_meta("effect_definition", item_def)
 
-func _on_description_meta_clicked(meta):
+func _on_description_meta_clicked(meta) -> void:
 	if meta == "effect":
 		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
@@ -93,12 +93,12 @@ func _on_description_meta_clicked(meta):
 			get_viewport().set_input_as_handled()
 			accept_event()
 
-func _on_description_gui_input(event: InputEvent):
+func _on_description_gui_input(event: InputEvent) -> void:
 	# No-op: non-link clicks should bubble to the window root to trigger pruning.
 	# Link clicks are handled in _on_description_meta_clicked and are consumed there.
 	pass
 
-func _on_internal_background_gui_input(event: InputEvent):
+func _on_internal_background_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
@@ -108,7 +108,7 @@ func get_location() -> LocationIdentifier:
 	return _location
 
 ## Set up stable anchor pattern for robust positioning
-func _setup_stable_anchor():
+func _setup_stable_anchor() -> void:
 	if is_instance_valid(_source_view):
 		# Find the nearest stable container (SlotView or PanelContainer)
 		_stable_anchor = _find_stable_anchor(_source_view)
@@ -122,25 +122,25 @@ func _find_stable_anchor(original_anchor: Control) -> Control:
 	# If the original anchor is already a stable container, use it
 	if original_anchor.get_class() == "SlotView" or original_anchor.get_class() == "PanelContainer":
 		return original_anchor
-	
+		
 	# Otherwise, find the nearest stable container parent
 	var current = original_anchor
 	while is_instance_valid(current) and current != get_tree().root:
 		if current.get_class() == "SlotView" or current.get_class() == "PanelContainer":
 			return current
 		current = current.get_parent()
-	
+		
 	# If no stable container found, fall back to the original anchor
 	return original_anchor
 
 ## Handle anchor movement for dynamic positioning
-func _on_anchor_moved():
+func _on_anchor_moved() -> void:
 	if is_instance_valid(_stable_anchor):
 		# Reposition window relative to anchor
 		global_position = _calculate_position_relative_to_anchor()
 
 ## Handle anchor being freed
-func _on_anchor_freed():
+func _on_anchor_freed() -> void:
 	# Defer briefly to allow UI to settle (e.g., during inventory reflow) before deciding to close.
 	# This avoids premature self-closing that can bypass WindowManager suppression during actions.
 	var self_ref = self

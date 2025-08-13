@@ -179,17 +179,60 @@ func remove_instance(uuid: String) -> bool:
 	var loc := instance.get_location()
 	if not is_instance_valid(loc):
 		return false
-	if loc.container == &"equipped_item":
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		# Clearing from equipped slot
 		var parent_unit := get_instance_by_uuid(loc.unit_uuid)
 		if not is_instance_valid(parent_unit):
 			return false
 		if loc.index < 0 or loc.index >= parent_unit.equipped_item_uuids.size():
 			return false
+		# Remove bonuses before clearing mapping; equipped slots are logical
+		parent_unit.unequip_item_bonus(instance)
 		parent_unit.equipped_item_uuids[loc.index] = ""
 		instance.equipped_on_uuid = ""
 		instance.equipped_slot_index = -1
+		# Notify that the parent unit's inventory changed so stats/UI can refresh
+		SignalBus.emit_signal("unit_inventory_changed", parent_unit.ball_uuid)
 	else:
+		# If removing a UNIT, first unequip and rehome all equipped items atomically
+		var def := instance.get_definition()
+		if is_instance_valid(def) and def.category == &"UNIT":
+			var items_to_rehome: Array[GachaBallInstance] = []
+			for i in range(instance.equipped_item_uuids.size()):
+				var it_uuid := instance.equipped_item_uuids[i]
+				if it_uuid.is_empty():
+					continue
+				var it := get_instance_by_uuid(it_uuid)
+				if is_instance_valid(it):
+					items_to_rehome.append(it)
+			# Capacity precheck to guarantee atomicity
+			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+			if not is_instance_valid(inv):
+				return false
+			var inv_uuids := inv.get_all_uuids()
+			var free_count := 0
+			for u in inv_uuids:
+				if String(u).is_empty():
+					free_count += 1
+			if free_count < items_to_rehome.size():
+				return false
+			# Perform rehome now that capacity is guaranteed
+			for i in range(instance.equipped_item_uuids.size()):
+				var it_uuid2 := instance.equipped_item_uuids[i]
+				if it_uuid2.is_empty():
+					continue
+				var it2 := get_instance_by_uuid(it_uuid2)
+				if not is_instance_valid(it2):
+					continue
+				instance.equipped_item_uuids[i] = ""
+				it2.equipped_on_uuid = ""
+				it2.equipped_slot_index = -1
+				var empty := inv.find_first_empty_slot()
+				if empty == -1:
+					return false
+				inv.set_uuid(empty, it2.ball_uuid)
+				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
+				it2.location_slot_index = empty
 		var container := get_container(loc.container)
 		if not is_instance_valid(container):
 			return false
@@ -211,7 +254,7 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 	if not is_instance_valid(instance):
 		return false
 	# Equipping path
-	if target_loc.container == &"equipped_item":
+	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var unit_instance: GachaBallInstance = run_instances.get(target_loc.unit_uuid)
 		if not is_instance_valid(unit_instance):
 			return false
@@ -222,7 +265,7 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 	if not is_instance_valid(from_container) or not is_instance_valid(to_container):
 		return false
 	# Clear from source index (Index)
-	if source_loc.container != &"equipped_item":
+	if source_loc.container != C.CONTAINER_EQUIPPED_ITEM:
 		if from_container.get_uuid(source_loc.index) == instance.ball_uuid:
 			from_container.set_uuid(source_loc.index, "")
 	# Place into target index (Index)
@@ -248,14 +291,14 @@ func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifi
 	if not is_instance_valid(a) or not is_instance_valid(b):
 		return false
 	# If swapping with an equipped slot
-	if target_loc.container == &"equipped_item":
+	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		# Equip A onto target unit; move B to source slot
 		var target_unit: GachaBallInstance = run_instances.get(target_loc.unit_uuid)
 		if not is_instance_valid(target_unit):
 			return false
 		var target_slot := target_loc.index
 		# Remove A from its source index
-		if source_loc.container != &"equipped_item":
+		if source_loc.container != C.CONTAINER_EQUIPPED_ITEM:
 			var src_container: DataContainer = get_container(source_loc.container)
 			if not is_instance_valid(src_container):
 				return false
@@ -265,7 +308,7 @@ func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifi
 		var moved_b_to_source := false
 		if is_instance_valid(b) and b.ball_uuid != "":
 			# If B is currently equipped, clear its equip slot
-			if b.get_location().container == &"equipped_item":
+			if b.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
 				var parent: GachaBallInstance = run_instances.get(target_loc.unit_uuid)
 				if is_instance_valid(parent) and target_slot >= 0 and target_slot < parent.equipped_item_uuids.size():
 					parent.equipped_item_uuids[target_slot] = ""
@@ -374,7 +417,7 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 			SignalBus.emit_signal("unit_inventory_changed", prev_parent.ball_uuid)
 	# If item currently in a container, remove it from index
 	var item_loc := item.get_location()
-	if is_instance_valid(item_loc) and item_loc.container != &"equipped_item":
+	if is_instance_valid(item_loc) and item_loc.container != C.CONTAINER_EQUIPPED_ITEM:
 		var src_container := get_container(item_loc.container)
 		if is_instance_valid(src_container) and src_container.get_uuid(item_loc.index) == item.ball_uuid:
 			src_container.set_uuid(item_loc.index, "")
@@ -398,7 +441,7 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 		unit.equipped_item_uuids[target_slot] = item.ball_uuid
 	item.equipped_on_uuid = unit.ball_uuid
 	item.equipped_slot_index = target_slot
-	item.location_container_tag = &"equipped_item"
+	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
 	# Apply item bonuses
 	unit.equip_item_bonus(item)
@@ -436,7 +479,7 @@ func _validate_state_consistency() -> bool:
 				push_error("Container references missing instance %s" % u)
 				return false
 			# Equipped items should not appear in container slots
-			if inst.get_location().container == &"equipped_item":
+			if inst.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
 				push_error("Equipped item %s appears in a container slot" % u)
 				return false
 	# Validate instances' truth against index
@@ -447,7 +490,7 @@ func _validate_state_consistency() -> bool:
 		var loc := inst.get_location()
 		if not is_instance_valid(loc):
 			continue
-		if loc.container == &"equipped_item":
+		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 			var parent: GachaBallInstance = run_instances.get(loc.unit_uuid)
 			if not is_instance_valid(parent):
 				push_error("Equipped parent missing for %s" % u)

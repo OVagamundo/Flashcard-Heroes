@@ -14,14 +14,14 @@ var _is_battle_context: bool = false
 var _data_source: Dictionary
 var _grids_initialized: bool = false
 
-func _ready():
+func _ready() -> void:
 	panel_container.gui_input.connect(_on_panel_gui_input)
 	SignalBus.inventory_ui_refresh_requested.connect(_on_ui_refresh)
 	tier_1_grid.gui_input.connect(_on_grid_gui_input)
 	tier_2_grid.gui_input.connect(_on_grid_gui_input)
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if SignalBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):
 		SignalBus.inventory_ui_refresh_requested.disconnect(_on_ui_refresh)
 	# Disconnect child gui_input hooks if still connected
@@ -38,7 +38,7 @@ func _exit_tree():
 		GlobalInteractionRouter.end_drag(false)
 		GlobalInteractionRouter.end_drag_visuals(false)
 
-func populate(context: Dictionary):
+func populate(context: Dictionary) -> void:
 	title_label.text = context.get("title", "Inventory")
 	_is_battle_context = context.get("is_battle_context", false)
 	_data_source = context.get("inventory")
@@ -46,13 +46,13 @@ func populate(context: Dictionary):
 	# Trigger the initial population and drawing of the grids.
 	_populate_grids()
 
-func _on_ui_refresh():
+func _on_ui_refresh() -> void:
 	if not self.visible:
 		return
 	# On refresh, just re-populate the content of the existing slots.
 	_populate_grids()
 
-func _on_panel_gui_input(event: InputEvent):
+func _on_panel_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		if GlobalInteractionRouter.is_drag_active():
 			GlobalInteractionRouter.end_drag(false)
@@ -71,7 +71,7 @@ func _on_panel_gui_input(event: InputEvent):
 		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
-func _on_grid_gui_input(event: InputEvent):
+func _on_grid_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Only clear selection if the click is not on a SlotView
 		var target = get_viewport().gui_get_focus_owner()
@@ -89,7 +89,7 @@ func _on_grid_gui_input(event: InputEvent):
 			SignalBus.emit_signal("interaction_context_received", context)
 			get_viewport().set_input_as_handled()
 
-func _initialize_grids_if_needed():
+func _initialize_grids_if_needed() -> void:
 	if _grids_initialized:
 		return
 	
@@ -108,10 +108,10 @@ func _initialize_grids_if_needed():
 			# Configure interaction context for run inventory slots (FULLY_INTERACTIVE)
 			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 			
-	
+		
 	_grids_initialized = true
 
-func _populate_grids():
+func _populate_grids() -> void:
 	if not _data_source:
 		return
 
@@ -173,4 +173,3 @@ func _populate_grids():
 				gacha_view.populate(loc, instance, true)
 				# Configure interaction context for run inventory (FULLY_INTERACTIVE)
 				gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
-				

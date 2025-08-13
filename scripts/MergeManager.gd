@@ -47,7 +47,7 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 	var tgt_group: StringName = GlobalInteractionRouter.get_context_group(target_loc.container)
 	if src_group != tgt_group:
 		# Exception: allow merges that target an equipped item slot (handled by InventoryManager as needed).
-		if not (target_loc.container == &"equipped_item" and source_loc.container != &"equipped_item"):
+		if not (target_loc.container == C.CONTAINER_EQUIPPED_ITEM and source_loc.container != C.CONTAINER_EQUIPPED_ITEM):
 			return null
 
 	# Get definitions for both instances

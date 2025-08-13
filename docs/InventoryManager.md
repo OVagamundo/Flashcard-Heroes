@@ -22,7 +22,7 @@ This addendum documents the finalized flow for ambiguous actions (Swap/Merge) pr
 - __Suppression before action__: In `InventoryManager._on_choice_made(...)`, before calling `_swap` or `_merge`, suppression is explicitly activated for the relevant inspection window:
   1) Resolve `anchor_view` using `WindowManager.find_view_for_location(target_loc)` with fallback to `source_loc`.
   2) Resolve `parent_window` via `WindowManager.find_ancestor_window_for_view(anchor_view)`.
-  3) Call `GlobalInteractionRouter._activate_close_suppression_for_window_id(parent_window.get_instance_id(), duration_ms)`.
+  3) Call `GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_window.get_instance_id(), duration_msec)`.
   4) Choose duration to cover deferred anchor checks (currently ~420ms for unit-context actions such as `equipped_item`, `PlayerLineup`, `PlayerBench`; ~320ms otherwise).
 - __Execute__: Perform `_merge(source_loc, target_loc, recipe_id)` or `_swap(source_loc, target_loc)`, emit selection/data-change signals as usual. No direct window-close is performed here.
 
@@ -35,14 +35,14 @@ This addendum documents the finalized flow for ambiguous actions (Swap/Merge) pr
 
 - `WindowManager.find_view_for_location(loc: LocationIdentifier) -> Control`
 - `WindowManager.find_ancestor_window_for_view(view: Control) -> Control`
-- `GlobalInteractionRouter._activate_close_suppression_for_window_id(window_id: int, duration_ms: int)`
+- `GlobalInteractionRouter.activate_close_suppression_for_window_id(window_id: int, duration_msec: int)`
 
-Note: The GIR suppression helper is currently a private method used intentionally here to guarantee correct timing. A small public wrapper may be introduced later to formalize this contract.
+Note: The GIR suppression helper is now a public API: `activate_close_suppression_for_window_id(...)`. Use it directly.
 
 ### Do/Don't
 
 - __Do not__ re-route the `choice_made` decision back through GIR’s `REQUEST_ACTION` (would duplicate prompts and complicate suppression timing).
-- __Do not__ close windows on drag start. Window closure must occur via background clicks or GIR/WindowManager APIs. Drag end triggers short-lived suppression to cover deferred checks.
+- On drag start, GIR prunes only the child inspection windows of the anchor (parent) window via `WindowManager.close_children_of(parent_window)`. The parent window remains open.
 
 2. The Definitive Rules of Action & Gameplay
 This is the core logic that the InventoryManager enforces. It follows a strict priority checklist to determine and validate the player's intent for any interaction between two locations.

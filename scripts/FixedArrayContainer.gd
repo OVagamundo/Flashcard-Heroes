@@ -7,7 +7,7 @@ var _data: Array[String] = []
 var _size: int
 
 ## Initialize with a fixed size
-func _init(initial_size: int):
+func _init(initial_size: int) -> void:
 	_size = initial_size
 	_data.resize(initial_size)
 	for i in range(initial_size):

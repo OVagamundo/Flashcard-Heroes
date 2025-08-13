@@ -13,7 +13,7 @@ var resolved_targets: Array[String]
 ## The original context of the event that started this chain (e.g., `{"attacker_uuid": "...", "damage_taken": 5}`).
 var trigger_context: Dictionary
 
-func _init(p_source_uuid: String, p_ability_id: StringName, p_effect_definition: EffectDefinition, p_resolved_targets: Array[String], p_trigger_context: Dictionary = {}):
+func _init(p_source_uuid: String, p_ability_id: StringName, p_effect_definition: EffectDefinition, p_resolved_targets: Array[String], p_trigger_context: Dictionary = {}) -> void:
 	source_uuid = p_source_uuid
 	ability_id = p_ability_id
 	effect_definition = p_effect_definition
