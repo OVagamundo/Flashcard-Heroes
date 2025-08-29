@@ -41,7 +41,7 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	var stat_type = "HP" if _current_training == TrainingType.HP else "PWR"
 	
 	# Display ResultsPopup
-	var popup = WindowManager.open_modal_window(&"ResultsPopup", {
+	var _popup = WindowManager.open_modal_window(&"ResultsPopup", {
 		"populate_args": ["Training Complete!", "Your Hero gained +%d %s." % [stat_gain, stat_type], "Continue"]
 	})
 
@@ -69,7 +69,7 @@ func _on_leave_pressed() -> void:
 	queue_free()
 
 func _exit_tree() -> void:
-	if SignalBus.flashcard_minigame_completed.is_connected(_on_flashcard_completed):
-		SignalBus.flashcard_minigame_completed.disconnect(_on_flashcard_completed)
+	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
+		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
 	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):
-		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged) 
+		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged)

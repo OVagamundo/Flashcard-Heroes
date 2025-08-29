@@ -111,6 +111,11 @@ func remove_instance_by_uuid(uuid: String) -> void:
 # Atomic mutation API
 # ------------------------------------------------------------------
 
+# Trinkets: routing and exclusivity
+# TODO: When trinkets are introduced, route TRINKET-category instances to a dedicated
+#  'player_trinkets' container and keep an 'active_trinkets' list synchronized for
+#  AbilityResolver lookups. Do NOT enforce exclusivity here; player-only trinkets are
+#  valid on the player side. Enforce duplicate prevention and max slots at this layer.
 func add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
 	# Adds an instance to the given container/index atomically.
 	if not is_instance_valid(instance):
@@ -552,6 +557,9 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		_containers[container_name] = GrowableGridContainer.new(16)
 
 	# --- Add starter units/items to inventory ---
+	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the
+	#  dedicated 'player_trinkets' container (not RunInventoryT*) and keep 'active_trinkets' in sync.
+	#  Do not enforce exclusivity here; player-only trinkets are valid for starters on the player side.
 	var starters: Array[StringName] = [
 		&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
 		&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",

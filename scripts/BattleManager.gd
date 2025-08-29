@@ -179,12 +179,21 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 		container.set_uuid(index, battle_copy.ball_uuid)
 		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
+	# Trinkets: enemy population and exclusivity
+	# TODO: When populating enemy_trinkets for this battle, enforce exclusivity by excluding any
+	#  definition with is_player_exclusive == true or legacy aliases: PLAYER_ONLY, PLAYER_TRINKET_ONLY,
+	#  PLAYER_EXCLUSIVE_TRINKET. Apply this filtering at build time so AbilityResolver never sees
+	#  ineligible enemy trinkets.
 	_setup_enemy_lineup(encounter_def)
 	
 	# Trigger on_battle_start for all units
 	_trigger_battle_start_abilities()
 
 func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
+	# TODO [Trinkets]: Populate enemy_trinkets here (5 slots, inspection-only). When building the
+	#  list, filter out any definitions that are player-exclusive: either is_player_exclusive == true
+	#  on the definition or legacy tag aliases in def.tags: PLAYER_ONLY, PLAYER_TRINKET_ONLY,
+	#  PLAYER_EXCLUSIVE_TRINKET. In debug, optionally auto-fill with eligible trinkets if empty.
 	if encounter_def:
 		# Use the provided encounter definition
 		var lineup_container: DataContainer = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)

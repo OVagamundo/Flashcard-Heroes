@@ -1,10 +1,14 @@
 Abilities, Trinkets & Combat Systems: Definitive Technical Document (V6.0)
 Document Purpose: This document serves as the canonical technical blueprint for the game's Ability System and its applications, including Trinkets. It defines the architecture, data schemas, system responsibilities, and interaction contracts. It is a guideline for implementation, not an implementation plan itself.
+
+**Global Note:** Items and Trinkets are passive/reactive only. They have no direct activation mechanic and only respond to emitted triggers. Player trinkets are stored in the fixed-size `RunState.player_trinkets` container (5 slots). AbilityResolver and the UI read directly from this container.
+
 Part 1 of 3: Core Architecture & The Ability Vocabulary
 Section A: Core Philosophy & Architecture
 The game's combat and passive effects are governed by a unified, data-driven, and event-driven architecture. This ensures that all interactions are predictable, extensible, and managed through a deterministic flow, whether they originate from a Unit, an Item, or a Trinket.
 Data-Driven Design: The system's behavior is defined by data Resource files (.tres) rather than being hardcoded. Abilities, conditions, effects, and the entities that own them are all defined as resources. This is the cornerstone of the system's extensibility, allowing for content creation primarily through the Godot editor. New code is only required for fundamentally new mechanics (i.e., new Effect or Condition scripts).
 Event-Driven Flow: The system is reactive. Abilities do not actively poll the game state. Instead, they are designed to react to discrete gameplay events (Triggers) broadcast by the BattleManager at specific moments in the combat loop (e.g., the start of a turn, a unit taking damage).
+Passive/Reactive Sources: Items and Trinkets have no direct activation mechanic. Their abilities begin to apply when equipped and only respond to emitted triggers.
 Stateless Logic: The AbilityResolver is a stateless service. It acts as a central switchboard, receiving a trigger and a context dictionary, processing it against the current game state, and outputting EffectRequests. It retains no information between triggers, ensuring every action is deterministic based on the state at that moment.
 Decoupled Execution (Simulation vs. Presentation): The system strictly separates state mutation from visual presentation. This is the Simulation & Animator Contract. The BattleManager first simulates the outcome of an action, modifying all relevant game data silently. Only after the simulation is complete is a summary of these changes (a list of CombatEvent objects) passed to the BattleAnimator. The animator is then responsible for presenting these events to the player with appropriate pacing and emitting the final UI update signals.
 The flow is a strict, ordered pipeline from a gameplay event to a change in the game state, followed by its presentation to the player.
@@ -39,6 +43,7 @@ on_kill	When a unit's action defeats another unit.	{ "source_uuid": String (kill
 on_death	When a unit's HP is reduced to 0 or less.	{ "source_uuid": String (dying unit) }
 on_ally_death	For all allies when an allied unit dies.	{ "fainting_ally_uuid": String, "fainting_ally_location": LocationIdentifier }
 on_turn_end	At the end of each turn cycle, after all units have acted.	{ "turn_number": int }
+on_minigame_open	Immediately before opening the Flashcard minigame (player-side only; immediate path).	{ "bonus_seconds": int }
 Target StringName	Description
 Self/Source Targets	
 SELF	The source of the ability (e.g., the unit that was hurt, the unit whose turn it is).
@@ -48,7 +53,7 @@ Contextual Targets
 TRIGGERING_ENTITY	The "other" entity in a reactive trigger (e.g., the attacker in an on_hurt event).
 FAINTING_ALLY	The specific ally whose death triggered an on_ally_death event.
 Positional Targets	
-FRONTMOST_ALLY	The allied unit in the frontmost position (lowest index for player, highest for enemy).
+FRONTMOST_ALLY	The allied unit in the frontmost position (highest index for player, lowest for enemy).
 FRONTMOST_ENEMY	The enemy unit in the frontmost position.
 ALLY_BEHIND	The allied unit in the slot directly behind the source.
 ADJACENT_ALLIES	The allies directly in front of and behind the source.
@@ -61,8 +66,10 @@ Condition StringName	Description & BattleManager Logic	Parameters
 TEAM_SIZE_LESS_THAN_ENEMY	Compares the count of units in the player's lineup vs. the enemy's lineup.	{}
 SLOT_AHEAD_IS_EMPTY	Checks if the combat slot directly in front of the source unit is unoccupied.	{}
 TARGET_HP_GREATER_THAN_SELF_HP	In an on_attack context, compares the HP of the target_uuid to the source_uuid.	{}
-TRIGGERING_DAMAGE_WAS_NOT_LETHAL	In an on_hurt trigger, checks if (unit.current_hp - damage_taken) > 0.	{}
+TRIGGERING_DAMAGE_WAS_NON_LETHAL	In an on_hurt trigger, checks if (unit.current_hp - damage_taken) > 0.	{}
 ONCE_PER_TURN	Checks a dictionary in BattleManager to see if the ability ID has already been recorded for the current turn. If not, it records it and returns true.	{}
+
+Note: Legacy alias `TRIGGERING_DAMAGE_WAS_NOT_LETHAL` may appear in older data; treat it as `TRIGGERING_DAMAGE_WAS_NON_LETHAL`.
 Effect Scripts: The available actions are defined by scripts extending EffectDefinition:
 BasicAttackEffect.gd
 EffectDealDamage.gd
@@ -72,6 +79,9 @@ EffectSummonRandomUnit.gd
 EffectApplyStatus.gd (For Status Effects)
 Stat Scaling: Effects like EffectDealDamage and EffectModifyStat support stat-scaling parameters. The parameters dictionary can contain keys like pwr_multiplier, hp_multiplier, and base_value. The formula is:
 final_value = base_value + (source.current_pwr * pwr_multiplier) + (source.current_hp * hp_multiplier)
+
+Trinket-specific Effects:
+- EffectAddMinigameTime.gd — parameters: { seconds: int }. Used only on the immediate path for `on_minigame_open` to accumulate to `context.bonus_seconds`.
 
 System Applications & Combat Integration
 This part builds upon the foundational architecture and vocabulary defined in Part 1. It details the specific rules governing how Units, Items, and the Trinket System utilize the Ability System, and it clarifies the precise contract between abilities and the combat loop.
@@ -93,8 +103,8 @@ For global triggers like on_turn_start, there is no instance source, so the sour
 Targeting Constraint: Due to the lack of a consistent positional source for global triggers, enemy Trinket abilities MUST NOT use targeting types that depend on a source's position (e.g., ADJACENT_ALLIES, ALLY_BEHIND) unless the trigger guarantees a source (like on_hurt). They are restricted to global, contextual, or attribute-based targets (e.g., ALL_ENEMIES, RANDOM_ENEMY, FRONTMOST_ENEMY, TRIGGERING_ENTITY).
 Discovery & Integration:
 AbilityResolver.process_trigger performs two additional loops after processing GachaBall instances:
-It queries GameManager.run_state.active_trinkets, using the Hero's UUID as the source for each ability.
-It queries BattleManager.get_enemy_trinkets(), determining the source based on the trigger context for each ability.
+It iterates the `GameManager.run_state.player_trinkets` container (equipped trinkets in slot order), using the Hero's UUID as the source for each ability.
+It queries `BattleManager.get_enemy_trinkets()`, determining the source based on the trigger context for each ability.
 Section D: Combat Integration & Execution Flow
 This section defines the strict contract between the Ability System and the BattleManager, ensuring predictable and visually coherent combat.
 A unit's primary action during the Combat Phase is determined by its on_attack abilities. This rule ensures every unit always has a valid action.
@@ -126,7 +136,8 @@ Section E: Trinket Acquisition & Lifecycle
 This section defines the mechanics that govern the player's progression through the Trinket system during a run.
 Trigger Condition: A Mini-Boss encounter is triggered to appear on the path choice screen when the player's active_deck_ids count in RunState crosses a specific threshold for the first time. The formula for this check is: (active_cards - 10) % max(1, int(total_cards * 0.05)) == 0. This check is performed by PathChoice.gd upon loading, and the result is stored in RunState.miniboss_milestones_achieved to prevent re-triggering.
 Path Generation: When triggered, the PathChoice scene will clear any normal nodes and present a single, mandatory "Mini-Boss Battle" node.
-Encounter Generation: The Mini-Boss encounter uses the standard EncounterGenerator but with an increased budget (Day * 5 + 5 Gold). The generator can also equip the enemy team with Trinkets from its budget.
+Encounter Generation: The Mini-Boss encounter uses the standard EncounterGenerator but with an increased budget (Day * 5 + 5 Gold).
+Enemy trinkets are specified explicitly via EncounterDefinition.enemy_trinket_ids; there is no generator-side auto-injection in production.
 Frequency: This system is designed to result in exactly 5 Mini-Boss encounters over the course of a full run where all flashcards are eventually added to the active deck.
 State Tracking: When the player selects the Mini-Boss node, a flag is_miniboss_pending is set to true in RunState.
 Victory Condition: Upon winning the battle, GameManager checks the is_miniboss_pending flag. If true, it initiates the Trinket reward flow instead of the standard GachaBall reward flow.
@@ -138,13 +149,13 @@ The "Take Gold Instead" button is made invisible, as there is no gold alternativ
 Player Choice & Equipping:
 The player selects one of the three Trinkets.
 Upon confirmation, a reward_chosen signal is emitted with a payload like {"type": "trinket", "trinket_id": "Trinket1A"}.
-GameManager handles this signal and instructs RunState to add the chosen trinket_id to the first available empty "" slot in its active_trinkets array.
+GameManager handles this signal and instructs RunState to add the chosen trinket to the first available empty slot in the `player_trinkets` container. AbilityResolver and UI read from this container.
 The run_data_changed signal is emitted, causing the Main.gd UI to update and display the newly equipped Trinket in the top bar.
 Section F: UI Contract & Interaction Model
 This section defines how Trinkets are presented to the player and the rules for interacting with them.
 Location: A dedicated HBoxContainer in the TopArea of the main UI.
 Structure: Contains 5 persistent SlotView children.
-Population: Main.gd subscribes to the run_data_changed signal. When the signal is received, it repopulates the slots with TrinketView instances based on the contents of RunState.active_trinkets.
+Population: Main.gd subscribes to the run_data_changed signal. When the signal is received, it repopulates the slots with TrinketView instances based on the contents of RunState.player_trinkets.
 Interaction Contract:
 The TrinketViews are configured in INSPECTION_ONLY mode.
 A single click on a TrinketView opens the TrinketInspectionWindow for that Trinket, anchored to the view.
@@ -159,3 +170,24 @@ All other interactions are disabled.
 Function: A contextual window responsible for displaying the detailed information of a TrinketDefinition.
 Content: Displays the Trinket's name, icon, description, and a formatted list of its AbilityDefinition descriptions.
 Lifecycle: It is managed entirely by the WindowManager and adheres to all standard contextual window rules (hierarchical grouping, pruning, global closing, etc.). It is opened via a call to WindowManager.open_trinket_inspection_window(trinket_def, anchor_view).
+
+Trinket Tag Schema & Code Hooks
+This section defines the canonical tags/flags used to describe Trinket exclusivity and the precise integration points where filtering is enforced.
+
+Schema
+- CATEGORY: TRINKET. Items intended to be used as trinkets must either be defined as a TrinketDefinition resource or have category TRINKET.
+- is_player_exclusive: bool. Authoritative flag on TrinketDefinition to prevent enemy assignment.
+- Tag aliases (legacy support): PLAYER_ONLY, PLAYER_TRINKET_ONLY, PLAYER_EXCLUSIVE_TRINKET. Presence of any of these tags implies player-exclusive behavior and must be treated the same as is_player_exclusive = true.
+
+Enforcement Rules
+- Player side (RunState/rewards): No exclusivity filtering is required beyond duplicate prevention. Player-only trinkets are valid for rewards and equipping.
+- Enemy side (encounter generation/battle): Must exclude any trinket with is_player_exclusive = true OR with any alias tag above.
+
+Code Integration Hooks
+- AbilityResolver sourcing: Iterate `GameManager.run_state.player_trinkets` for player trinkets (source = Hero) and `BattleManager.get_enemy_trinkets()` for enemy trinkets (source from trigger context as applicable).
+- RunState: Route TRINKET-category instances to the dedicated `player_trinkets` container (5 slots). AbilityResolver/UI read directly from this container. Exclusivity is NOT enforced on the player side; only duplicate prevention per team applies.
+- BattleManager: During battle setup, populate an enemy_trinkets array for display/processing. Enforce exclusivity filtering when building this list (see TODO in BattleManager._setup_battle()).
+
+Notes
+- Team awareness is derived from equip location: player_trinkets belong to the player; enemy_trinkets belong to the enemy team.
+- Resolution semantics: Trinket effects resolve immediately at trigger time via the Effect Queue; see CombatSystem.md for details.

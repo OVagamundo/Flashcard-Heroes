@@ -58,6 +58,8 @@ Fired when a requested action fails validation.
 The combat loop is orchestrated by `scripts/BattleManager.gd`. Below are the operational details not covered elsewhere.
 
 ### Phases & Flow
+- __TURN START__: At the very beginning of each team's turn, before any queue population, the manager emits the trinket/ability trigger:
+  - `AbilityResolver.process_trigger("on_turn_start", { "team": "PLAYER" | "ENEMY" })`
 - __MANAGEMENT -> COMBAT__: When `BattleManager._on_end_turn_requested()` fires during the `MANAGEMENT` phase, it:
   - Calls `_populate_effect_queue()` to enqueue all attacks for the turn.
   - Switches to `COMBAT` via `_change_phase(Phases.COMBAT)`.

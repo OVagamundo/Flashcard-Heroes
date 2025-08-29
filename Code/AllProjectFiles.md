@@ -2785,12 +2785,21 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 		container.set_uuid(index, battle_copy.ball_uuid)
 		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
+	# Trinkets: enemy population and exclusivity
+	# TODO: When populating enemy_trinkets for this battle, enforce exclusivity by excluding any
+	#  definition with is_player_exclusive == true or legacy aliases: PLAYER_ONLY, PLAYER_TRINKET_ONLY,
+	#  PLAYER_EXCLUSIVE_TRINKET. Apply this filtering at build time so AbilityResolver never sees
+	#  ineligible enemy trinkets.
 	_setup_enemy_lineup(encounter_def)
 	
 	# Trigger on_battle_start for all units
 	_trigger_battle_start_abilities()
 
 func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
+	# TODO [Trinkets]: Populate enemy_trinkets here (5 slots, inspection-only). When building the
+	#  list, filter out any definitions that are player-exclusive: either is_player_exclusive == true
+	#  on the definition or legacy tag aliases in def.tags: PLAYER_ONLY, PLAYER_TRINKET_ONLY,
+	#  PLAYER_EXCLUSIVE_TRINKET. In debug, optionally auto-fill with eligible trinkets if empty.
 	if encounter_def:
 		# Use the provided encounter definition
 		var lineup_container: DataContainer = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
@@ -9677,6 +9686,11 @@ func remove_instance_by_uuid(uuid: String) -> void:
 # Atomic mutation API
 # ------------------------------------------------------------------
 
+# Trinkets: routing and exclusivity
+# TODO: When trinkets are introduced, route TRINKET-category instances to a dedicated
+#  'player_trinkets' container and keep an 'active_trinkets' list synchronized for
+#  AbilityResolver lookups. Do NOT enforce exclusivity here; player-only trinkets are
+#  valid on the player side. Enforce duplicate prevention and max slots at this layer.
 func add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
 	# Adds an instance to the given container/index atomically.
 	if not is_instance_valid(instance):
@@ -10118,6 +10132,9 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		_containers[container_name] = GrowableGridContainer.new(16)
 
 	# --- Add starter units/items to inventory ---
+	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the
+	#  dedicated 'player_trinkets' container (not RunInventoryT*) and keep 'active_trinkets' in sync.
+	#  Do not enforce exclusivity here; player-only trinkets are valid for starters on the player side.
 	var starters: Array[StringName] = [
 		&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
 		&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",

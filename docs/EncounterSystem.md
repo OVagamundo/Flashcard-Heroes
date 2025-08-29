@@ -55,3 +55,23 @@ Fired when a requested action fails validation.
 6. Invariants
 Stateless Operation: The manager must never store its own state between actions.
 The Golden Rule: All state change instructions sent to data owners must be designed to be atomic, ensuring that both the DataContainer (index) and the GachaBallInstance (truth) are updated together.
+
+## Encounter System (Schema Addendum)
+
+This section documents the EncounterDefinition addition needed for enemy trinkets.
+
+### EncounterDefinition (additions)
+
+- `enemy_trinket_ids: Array[StringName] = []`
+  - IDs must exist in `Database.trinkets` (loaded from `res://resources/trinkets/`).
+  - Duplicates by definition should be avoided; the battle setup deduplicates by definition ID.
+  - Player-exclusive trinkets (tags/flags like `is_player_exclusive` or legacy aliases) are ignored on load for enemies.
+
+### Battle Setup Integration
+
+- During battle setup, `BattleManager._setup_enemy_trinkets_from_encounter(enc)` reads `enc.enemy_trinket_ids` and builds the in-battle enemy trinket list.
+- No generator-side auto-injection: enemy trinkets come strictly from the `EncounterDefinition` data.
+
+### Testing Notes
+
+- For deterministic tests, specify `enemy_trinket_ids` directly on the test `EncounterDefinition` resource to validate enemy trinket behaviors.
