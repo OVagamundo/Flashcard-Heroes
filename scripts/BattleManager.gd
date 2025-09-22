@@ -90,6 +90,9 @@ func _connect_signals() -> void:
 func start_battle(encounter_def: EncounterDefinition) -> void:
 	# Clear any existing selection when entering battle
 	SignalBus.emit_signal("selection_clear_requested")
+	# Create a fresh battle state with copies of units from run state.
+	# IMPORTANT: The battle operates on these copies, leaving the original run state untouched.
+	# Any changes to units during battle (HP, stats, etc.) will be discarded when the battle ends.
 	_setup_battle(encounter_def)
 	GameManager.is_in_battle = true
 	SignalBus.emit_signal("battle_state_changed", true)
@@ -103,6 +106,10 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	call_deferred("_change_phase", Phases.START_OF_TURN)
 
 func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
+	# IMPORTANT: When setting up a battle, we create fresh copies of all units from the run state.
+	# These battle copies should start with their base stats (from their definition) and then have
+	# equipment bonuses applied. Any stat changes from previous battles should be discarded.
+	# This ensures battles always start from a clean, deterministic state.
 	_battle_instances.clear()
 	_containers.clear()
 	_effect_queue.clear()
@@ -114,16 +121,24 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 	var permanent_to_battle_uuid_map: Dictionary = {}
 
-	# First pass: Create all battle copies and map their new UUIDs, except for the hero (use persistent instance for hero)
+	# First pass: Create all battle copies and map their new UUIDs
 	var hero_instance: GachaBallInstance = null
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = String(def.id).to_lower() == "hero" or ((def is GachaBallDefinition) and def.tags and def.tags.has("hero"))
 		if is_hero:
 			hero_instance = perm_inst
-			# Add the hero instance to _battle_instances so UI can find it during battle
-			_battle_instances[perm_inst.ball_uuid] = perm_inst
-			continue # Don't create a battle copy for the hero
+			# Create a battle copy for the hero to prevent stat changes from persisting
+			var hero_battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
+			if is_instance_valid(hero_battle_copy):
+				_battle_instances[hero_battle_copy.ball_uuid] = hero_battle_copy
+				permanent_to_battle_uuid_map[perm_inst.ball_uuid] = hero_battle_copy.ball_uuid
+			continue
+		
+		# Skip trinkets - they don't need battle copies and don't have base stats
+		if def.category == &"TRINKET":
+			continue
+			
 		var battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
 		if not is_instance_valid(battle_copy): continue
 		_battle_instances[battle_copy.ball_uuid] = battle_copy
@@ -154,13 +169,18 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 		var perm_loc = GameManager.run_state.get_location_for_uuid(perm_inst.ball_uuid)
 		if not is_instance_valid(perm_loc): continue
 		if is_hero:
-			# Place the persistent hero instance directly in the PlayerLineup at position 0
-			# Hero always starts at position 0 regardless of previous battle positions
-			# NOTE: Do NOT update the hero's location - it should remain pointing to run state
-			var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-			container.set_uuid(0, perm_inst.ball_uuid)
-			# Skip _update_instance_location for persistent hero to preserve run state location
+			# Place the hero's battle copy in PlayerLineup at position 0
+			var hero_battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
+			if hero_battle_uuid:
+				var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+				container.set_uuid(0, hero_battle_uuid)
+				_update_instance_location(hero_battle_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
 			continue
+		
+		# Skip trinkets - they don't have battle copies
+		if def.category == &"TRINKET":
+			continue
+			
 		var battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
 		if not battle_uuid: continue
 		var battle_copy = _battle_instances[battle_uuid]
@@ -958,10 +978,6 @@ func _bm_validate_state_consistency() -> bool:
 		var inst: GachaBallInstance = _battle_instances[u]
 		if not is_instance_valid(inst):
 			continue
-		# Skip trinket instances from validation as they have special location handling
-		var def = inst.get_definition()
-		if is_instance_valid(def) and def.has_method("get") and def.get("category") == &"TRINKET":
-			continue
 		var loc := inst.get_location()
 		if not is_instance_valid(loc):
 			continue
@@ -985,7 +1001,7 @@ func _bm_validate_state_consistency() -> bool:
 			if loc.index < 0 or loc.index >= all2.size():
 				push_error("Location index out of bounds for %s: %s:%d (capacity=%d)" % [u, String(loc.container), loc.index, all2.size()])
 				return false
-			var actual := c2.get_uuid(loc.index)
+			var actual = c2.get_uuid(loc.index)
 			if actual != u:
 				push_error("Location/content mismatch for %s: loc %s:%d has %s" % [u, String(loc.container), loc.index, actual])
 				return false
@@ -1356,7 +1372,12 @@ func _restore_hero_location_to_run_state() -> void:
 
 func _on_battle_victory() -> void:
 	print("[DEBUG] Battle victory detected")
+	# Only restore the hero's location in the run state.
+	# The hero's stats (HP, power, etc.) remain as they were before the battle.
+	# All other battle state (including unit HP changes) is discarded.
 	_restore_hero_location_to_run_state()
+	# Note: All battle instances (including the hero's battle copy) will be garbage collected
+	# when the battle scene is freed, leaving the original hero instance unchanged.
 
 ## Resolve targets for an effect based on target type and context.
 ## @param source_uuid: String - The UUID of the source instance

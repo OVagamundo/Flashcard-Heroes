@@ -67,10 +67,16 @@ func create_battle_copy() -> GachaBallInstance:
 	# CRITICAL: Explicitly copy the definition ID.
 	copy.definition_id = self.definition_id
 
-	# Copy stats 
-	copy.current_hp = self.current_hp
-	copy.current_pwr = self.current_pwr
-	# Copy equipment state
+	# Reset to base stats from definition (ignoring any changes from previous battles)
+	var def = get_definition()
+	if is_instance_valid(def):
+		copy.current_hp = def.base_hp
+		copy.current_pwr = def.base_pwr
+	else:
+		copy.current_hp = self.current_hp
+		copy.current_pwr = self.current_pwr
+	
+	# Copy equipment state - equipment bonuses will be applied when recalculate_stats is called
 	copy.equipped_on_uuid = self.equipped_on_uuid
 	copy.equipped_slot_index = self.equipped_slot_index
 	copy.equipped_item_uuids = self.equipped_item_uuids.duplicate()
