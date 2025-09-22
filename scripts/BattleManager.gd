@@ -17,10 +17,13 @@ const BATTLE_CONTAINER_TAGS = {
 	ENEMY_LINEUP = &"EnemyLineup",
 	ENEMY_BENCH = &"EnemyBench",
 	BATTLE_DISCARD_PILE = &"DiscardPile",
+	ENEMY_TRINKETS = &"EnemyTrinkets",
+	PLAYER_TRINKETS = &"PlayerTrinkets",
 }
 
 var _battle_instances: Dictionary = {}
 var _containers: Dictionary = {}
+var enemy_trinkets: Array[GachaBallInstance] = []
 
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
@@ -28,6 +31,8 @@ const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 const CombatEvent = preload("res://scripts/CombatEvent.gd")
 var _gacha_tokens: int = 0
 var _last_minigame_results: Dictionary = {}
+var _current_turn: int = 0
+var _turn_start_abilities_triggered: bool = false
 @onready var _animator: Node = $"../BattleAnimator"
 
 func _resolve_animator() -> void:
@@ -102,7 +107,9 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	_containers.clear()
 	_effect_queue.clear()
 	_battle_over_emitted = false
+	_current_turn = 0  # Initialize turn counter
 	_gacha_tokens = 0
+	enemy_trinkets.clear()
 	
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 	var permanent_to_battle_uuid_map: Dictionary = {}
@@ -111,7 +118,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	var hero_instance: GachaBallInstance = null
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
-		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
+		var is_hero = String(def.id).to_lower() == "hero" or ((def is GachaBallDefinition) and def.tags and def.tags.has("hero"))
 		if is_hero:
 			hero_instance = perm_inst
 			# Add the hero instance to _battle_instances so UI can find it during battle
@@ -143,14 +150,16 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	# Third pass: Place all instances in their correct, stable locations.
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
-		var is_hero = String(def.id).to_lower() == "hero" or (def.tags and def.tags.has("hero"))
+		var is_hero = String(def.id).to_lower() == "hero" or ((def is GachaBallDefinition) and def.tags and def.tags.has("hero"))
 		var perm_loc = GameManager.run_state.get_location_for_uuid(perm_inst.ball_uuid)
 		if not is_instance_valid(perm_loc): continue
 		if is_hero:
-			# Place the persistent hero instance directly in the PlayerLineup
+			# Place the persistent hero instance directly in the PlayerLineup at position 0
+			# Hero always starts at position 0 regardless of previous battle positions
+			# NOTE: Do NOT update the hero's location - it should remain pointing to run state
 			var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-			container.set_uuid(perm_loc.index, perm_inst.ball_uuid)
-			_update_instance_location(perm_inst.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, perm_loc.index)
+			container.set_uuid(0, perm_inst.ball_uuid)
+			# Skip _update_instance_location for persistent hero to preserve run state location
 			continue
 		var battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
 		if not battle_uuid: continue
@@ -160,8 +169,13 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 			continue
 		var target_container_name: StringName
 		if perm_loc.container.begins_with("RunInventoryT"):
-			var tier = perm_inst.get_definition().tier
-			target_container_name = &"BattleInventoryT%d" % tier
+			var perm_def = perm_inst.get_definition()
+			if perm_def is GachaBallDefinition:
+				var tier = perm_def.tier
+				target_container_name = &"BattleInventoryT%d" % tier
+			else:
+				# Skip non-GachaBallDefinition items (e.g., trinkets)
+				continue
 		else:
 			match perm_loc.container:
 				RS.RUN_CONTAINER_TAGS.PLAYER_LINEUP:
@@ -185,6 +199,24 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	#  PLAYER_EXCLUSIVE_TRINKET. Apply this filtering at build time so AbilityResolver never sees
 	#  ineligible enemy trinkets.
 	_setup_enemy_lineup(encounter_def)
+
+	# Create a test enemy trinket (Healing Amulet) as per implementation doc Phase 2
+	var trinket_def = Database.get_definition(&"trinket_healing_amulet")
+	if is_instance_valid(trinket_def):
+		var trinket_inst = GachaBallInstance.new()
+		trinket_inst.initialize_from_trinket(trinket_def)
+		_battle_instances[trinket_inst.ball_uuid] = trinket_inst
+		var et_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+		if is_instance_valid(et_container):
+			var idx := et_container.find_first_empty_slot()
+			if idx == -1:
+				idx = 0
+			et_container.set_uuid(idx, trinket_inst.ball_uuid)
+			_update_instance_location(trinket_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
+			enemy_trinkets.append(trinket_inst)
+
+	# Copy player trinkets from run state to battle instances
+	_setup_player_trinkets()
 	
 	# Trigger on_battle_start for all units
 	_trigger_battle_start_abilities()
@@ -236,6 +268,37 @@ func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
 			lineup_container.set_uuid(i, enemy_inst.ball_uuid)
 			_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
 
+## Copy player trinkets from run state to battle instances
+func _setup_player_trinkets() -> void:
+	if not is_instance_valid(GameManager.run_state):
+		return
+	
+	var player_trinkets_container = GameManager.run_state.get_container(RS.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+	if not is_instance_valid(player_trinkets_container):
+		return
+	
+	var battle_trinkets_container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
+	var slot_index = 0
+	
+	for trinket_uuid in player_trinkets_container.get_all_non_empty_uuids():
+		var perm_trinket = GameManager.get_instance_by_uuid(trinket_uuid)
+		if not is_instance_valid(perm_trinket):
+			continue
+		
+		# Create battle copy of the trinket
+		var battle_trinket = GachaBallInstance.new()
+		var trinket_def = perm_trinket.get_definition()
+		if is_instance_valid(trinket_def):
+			battle_trinket.initialize_from_trinket(trinket_def)
+			_battle_instances[battle_trinket.ball_uuid] = battle_trinket
+			
+			# Place in battle trinkets container
+			if slot_index < 5:  # Player trinkets container has 5 slots
+				battle_trinkets_container.set_uuid(slot_index, battle_trinket.ball_uuid)
+				_update_instance_location(battle_trinket.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, slot_index)
+				slot_index += 1
+				print("[DEBUG] Copied player trinket to battle: ", trinket_def.id, " at slot ", slot_index - 1)
+
 func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
 		return _containers[container_name]
@@ -251,6 +314,10 @@ func get_container(container_name: StringName) -> DataContainer:
 			new_container = FixedArrayContainer.new(12)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
 			new_container = GrowableGridContainer.new(16)
+		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
+			new_container = FixedArrayContainer.new(5)
+		BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
+			new_container = FixedArrayContainer.new(5)
 		_: # Default case for BattleInventoryT*
 			if container_name.begins_with("BattleInventoryT"):
 				new_container = GrowableGridContainer.new(16)
@@ -363,7 +430,9 @@ func _reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container):
 		return false
 	var instances_to_move = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).filter(
-		func(inst): return inst.get_definition().tier == tier_to_reshuffle and _is_player_owned(inst)
+		func(inst): 
+			var inst_def = inst.get_definition()
+			return (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst)
 	)
 	if instances_to_move.is_empty():
 		return false
@@ -889,6 +958,10 @@ func _bm_validate_state_consistency() -> bool:
 		var inst: GachaBallInstance = _battle_instances[u]
 		if not is_instance_valid(inst):
 			continue
+		# Skip trinket instances from validation as they have special location handling
+		var def = inst.get_definition()
+		if is_instance_valid(def) and def.has_method("get") and def.get("category") == &"TRINKET":
+			continue
 		var loc := inst.get_location()
 		if not is_instance_valid(loc):
 			continue
@@ -950,14 +1023,21 @@ func _change_phase(new_phase: Phases) -> void:
 	SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
 	match _current_battle_phase:
 		Phases.START_OF_TURN:
+			# Increment turn counter and reset turn start flag
+			_current_turn += 1
+			_turn_start_abilities_triggered = false
+			print("[DEBUG] Starting turn ", _current_turn)
+			
 			# Grant base 5 tokens for the turn
 			_gacha_tokens += 5
 			SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+			
 			# The flashcard mini-game is the first event of the turn.
 			# TDD Section 9.4: Battle Flow
+			# Turn start abilities will be triggered AFTER the mini-game in _on_results_acknowledged()
 			if is_instance_valid(GameManager.run_state):
 				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
-			# Note: The combat phase will now be triggered by _on_flashcard_completed
+			# Note: The management phase will be triggered by _on_results_acknowledged
 		Phases.MANAGEMENT:
 			# Re-enable draw buttons when entering management phase
 			SignalBus.emit_signal("battle_inventory_changed")
@@ -1029,16 +1109,26 @@ func _populate_effect_queue() -> void:
 					_effect_queue.append(request)
 
 func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent]) -> void:
-	# Validate source is still alive
-	var source = get_instance_by_uuid(request.source_uuid)
-	if not is_instance_valid(source) or source.current_hp <= 0:
-		return
+	# Validate source is still alive (allow empty source UUID for trinket effects)
+	var source = null
+	if not request.source_uuid.is_empty():
+		source = get_instance_by_uuid(request.source_uuid)
+		if not is_instance_valid(source) or source.current_hp <= 0:
+			return
 	# Retarget dynamically if first target is dead or invalid
 	var exec_targets: Array[String] = []
 	exec_targets.append_array(request.resolved_targets)
 	if exec_targets.size() > 0:
 		var first_target = get_instance_by_uuid(exec_targets[0])
-		var attacker_is_player = _is_player_unit(source)
+		# Determine team context for retargeting (handle trinket effects with no source)
+		var attacker_is_player: bool
+		if is_instance_valid(source):
+			attacker_is_player = _is_player_unit(source)
+		elif request.trigger_context.has("team"):
+			attacker_is_player = (String(request.trigger_context.get("team")) == "PLAYER")
+		else:
+			attacker_is_player = false  # Default fallback
+		
 		if not is_instance_valid(first_target) or first_target.current_hp <= 0:
 			var new_target_inst = _get_frontmost_target(attacker_is_player)
 			if is_instance_valid(new_target_inst):
@@ -1247,19 +1337,43 @@ func _is_battle_over() -> bool:
 				"victory": player_won
 			}
 			SignalBus.emit_signal("battle_ended", results)
-		return true
+			if player_won:
+				_on_battle_victory()
+		return true  # Always return true if battle is over, regardless of signal emission
 	return false
+
+func _restore_hero_location_to_run_state() -> void:
+	"""Restore hero's location to original run state location after battle ends."""
+	if not is_instance_valid(GameManager.run_state):
+		return
+	
+	var hero_instance = GameManager.run_state.hero_instance
+	if is_instance_valid(hero_instance):
+		# Restore hero to its original run state location (PlayerLineup:0)
+		hero_instance.location_container_tag = GameManager.run_state.RUN_CONTAINER_TAGS.PLAYER_LINEUP
+		hero_instance.location_slot_index = 0
+		print("[DEBUG] Restored hero location to run state: PlayerLineup:0")
+
+func _on_battle_victory() -> void:
+	print("[DEBUG] Battle victory detected")
+	_restore_hero_location_to_run_state()
 
 ## Resolve targets for an effect based on target type and context.
 ## @param source_uuid: String - The UUID of the source instance
 ## @param target_type: StringName - The type of target to resolve (e.g., "SELF", "FRONTMOST_ENEMY")
 ## @param context: Dictionary - The context of the event
 ## @return Array[String] - Array of target UUIDs
+
 func resolve_target(source_uuid: String, target_type: StringName, context: Dictionary) -> Array[String]:
 	var source_instance = get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source_instance):
+	var is_player_team := false
+	if context.has("team"):
+		is_player_team = (String(context.get("team")) == "PLAYER")
+	elif is_instance_valid(source_instance):
+		is_player_team = _is_player_unit(source_instance)
+	else:
 		return []
-	
+
 	match target_type:
 		C.TARGET_SELF:
 			return [source_uuid]
@@ -1282,21 +1396,24 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 				return [triggering_uuid]
 			return []
 		C.TARGET_FRONTMOST_ENEMY:
-			var is_source_player = _is_player_unit(source_instance)
-			var target = _get_frontmost_target(!is_source_player)
+			var target = _get_frontmost_target(is_player_team)
 			if is_instance_valid(target):
 				return [target.ball_uuid]
 			return []
+		# Support frontmost ally for trinket effects
+		&"FRONTMOST_ALLY":
+			var target2 = _get_frontmost_target(!is_player_team)  # Invert to target allies, not enemies
+			if is_instance_valid(target2):
+				return [target2.ball_uuid]
+			return []
 		C.TARGET_RANDOM_ENEMY:
-			var is_source_player = _is_player_unit(source_instance)
-			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 			if not enemies.is_empty():
 				var random_enemy = enemies[randi() % enemies.size()]
 				return [random_enemy.ball_uuid]
 			return []
 		C.TARGET_RANDOM_ALLY:
-			var is_source_player = _is_player_unit(source_instance)
-			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 			if not allies.is_empty():
 				var random_ally = allies[randi() % allies.size()]
 				return [random_ally.ball_uuid]
@@ -1316,8 +1433,7 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 				uuids.append(ally.ball_uuid)
 			return uuids
 		C.TARGET_ALL_ALLIES:
-			var is_source_player = _is_player_unit(source_instance)
-			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 			var uuids: Array[String] = []
 			for ally in allies:
 				uuids.append(ally.ball_uuid)
@@ -1496,6 +1612,36 @@ func _trigger_battle_start_abilities() -> void:
 		var battle_start_context: Dictionary = {"source_uuid": unit.ball_uuid}
 		AbilityResolver.process_trigger(&"on_battle_start", battle_start_context)
 
+## Trigger on_turn_start abilities for all units and trinkets.
+func _trigger_turn_start_abilities() -> void:
+	if _turn_start_abilities_triggered:
+		print("[DEBUG] _trigger_turn_start_abilities() called but already triggered this turn, skipping")
+		return
+		
+	print("[DEBUG] _trigger_turn_start_abilities() called for turn ", _current_turn)
+	_turn_start_abilities_triggered = true  # Set flag here to prevent multiple calls
+	
+	# Trigger turn start abilities for units (each unit gets its own context)
+	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	for unit in all_units:
+		var turn_start_context: Dictionary = {"source_uuid": unit.ball_uuid}
+		AbilityResolver.process_trigger(&"on_turn_start", turn_start_context)
+	
+	# Trigger turn start abilities for trinkets (global call - trinkets will be processed once)
+	var global_turn_start_context: Dictionary = {"turn": _current_turn}
+	AbilityResolver.process_trigger(&"on_turn_start", global_turn_start_context)
+	
+	print("[DEBUG] Effect queue size after trigger: ", _effect_queue.size())
+
+## Process turn start effects synchronously without triggering phase changes.
+func _process_turn_start_effects() -> void:
+	print("[DEBUG] _process_turn_start_effects() called, queue size: ", _effect_queue.size())
+	# Process effects immediately and synchronously for turn start abilities
+	while not _effect_queue.is_empty():
+		var request: EffectRequest = _effect_queue.pop_back()
+		print("[DEBUG] Processing effect request: ", request.effect_definition, " targets: ", request.resolved_targets)
+		_resolve_single_effect_request(request, [])  # No animation events needed for turn start
+
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
 	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
@@ -1509,7 +1655,9 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
 	var dest_container = get_container(dest_container_tag)
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container): return
 	var instances_to_move = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).filter(
-		func(inst): return inst.get_definition().tier == tier_to_reshuffle and _is_player_owned(inst)
+		func(inst): 
+			var inst_def = inst.get_definition()
+			return (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst)
 	)
 	if instances_to_move.is_empty(): return
 	SignalBus.emit_signal("battle_log_event", "Reshuffling Tier %d discard pile..." % tier_to_reshuffle)
@@ -1601,6 +1749,15 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 
 func _on_results_acknowledged() -> void:
 	"""Called when player acknowledges the results popup"""
+	
+	# Trigger turn start abilities AFTER mini-game completion, but only from turn 2 onwards
+	if _current_turn >= 2 and not _turn_start_abilities_triggered:
+		print("[DEBUG] Turn ", _current_turn, " - triggering turn start abilities after mini-game")
+		_trigger_turn_start_abilities()
+		_process_turn_start_effects()
+	else:
+		print("[DEBUG] Turn ", _current_turn, " - skipping turn start abilities (first turn or already triggered)")
+	
 	_change_phase(Phases.MANAGEMENT)
 	
 	var correct_answers: int = _last_minigame_results.get("correct_answers", 0)

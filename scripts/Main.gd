@@ -1,6 +1,8 @@
 # res://scripts/Main.gd
 extends Control
 
+const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var inspect_inventory_button: Button = %InspectInventoryButton
 @onready var draw_tier1_button: Button = %DrawTier1Button
@@ -10,6 +12,8 @@ extends Control
 @onready var gold_label: Label = $VBoxContainer/TopArea/HBoxContainer/GoldLabel
 @onready var days_label: Label = $VBoxContainer/TopArea/HBoxContainer/DaysLabel
 @onready var tokens_label: Label = $VBoxContainer/TopArea/HBoxContainer/TokensLabel
+
+@onready var player_trinket_bar: HBoxContainer = $VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
@@ -45,6 +49,7 @@ func _ready() -> void:
 	if is_instance_valid(GameManager.run_state):
 		_on_gold_changed(GameManager.run_state.gold)
 		_update_day_label(GameManager.run_state.day)
+		_populate_player_trinkets()
 
 func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area
@@ -161,6 +166,36 @@ func _on_run_data_changed() -> void:
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 		_on_gold_changed(GameManager.run_state.gold)
+		_populate_player_trinkets()
+
+func _populate_player_trinkets() -> void:
+	if not is_instance_valid(GameManager.run_state):
+		return
+	var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+	if not is_instance_valid(trinket_container):
+		return
+	var slots = player_trinket_bar.get_children()
+	for i in range(slots.size()):
+		var slot_view = slots[i]
+		if not is_instance_valid(slot_view):
+			continue
+		for child in slot_view.get_children():
+			child.queue_free()
+		var loc = LocationIdentifier.new()
+		loc.container = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+		loc.index = i
+		if slot_view.has_method("populate"):
+			slot_view.populate(loc)
+			if slot_view.has_method("set_interaction_context"):
+				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+		var instance = GameManager.get_instance_from_location(loc)
+		if is_instance_valid(instance):
+			var view = GachaBallViewScene.instantiate()
+			slot_view.add_child(view)
+			if view.has_method("populate"):
+				view.populate(loc, instance, true, true)
+			if view.has_method("set_interaction_context"):
+				view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
 
 func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	# Find the BattleManager in the loaded scene and start the battle

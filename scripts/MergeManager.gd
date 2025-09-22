@@ -56,7 +56,9 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
 		return null
 
-	# Merging across different tiers is not allowed.
+	# Merging across different tiers is not allowed. Skip if either definition lacks tier.
+	if not (def_a is GachaBallDefinition) or not (def_b is GachaBallDefinition):
+		return null
 	if def_a.tier != def_b.tier:
 		return null
 

@@ -77,6 +77,30 @@ func create_battle_copy() -> GachaBallInstance:
 
 	return copy
 
+	# --- Trinket Initialization ---
+	# Initialize this instance from a TrinketDefinition (no base stats, no item slots).
+	# Copies ability_definitions into abilities so AbilityResolver can process them.
+func initialize_from_trinket(trinket_def: Resource) -> void:
+	if not is_instance_valid(trinket_def):
+		return
+	# Use the trinket's id as definition_id so Database.get_definition can resolve metadata if needed.
+	self.definition_id = trinket_def.id if "id" in trinket_def else &""
+	self.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
+	# Copy ability definitions directly onto the instance abilities array
+	if "ability_definitions" in trinket_def and trinket_def.ability_definitions != null:
+		self.abilities = trinket_def.ability_definitions.duplicate(true)
+	else:
+		self.abilities = []
+	# Neutralize stats and equipment for trinkets
+	self.current_hp = 0
+	self.current_pwr = 0
+	self.equipped_on_uuid = ""
+	self.equipped_slot_index = -1
+	self.equipped_item_uuids.clear()
+	# Initialize location properties to avoid validation errors
+	self.location_container_tag = &""
+	self.location_slot_index = -1
+
 # --- Equipment Stat Modification ---
 func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
@@ -121,7 +145,7 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 	var previous_pwr = self.current_pwr
 
 	# Calculate new effective maximum stats (base + item bonuses)
-	var effective_max_hp = definition.base_hp
+	var _effective_max_hp = definition.base_hp  # Not used after fix, but kept for future reference
 	var effective_max_pwr = definition.base_pwr
 
 	# Add bonuses from each equipped item by looking up its UUID in the provided database.
@@ -131,12 +155,12 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 			if is_instance_valid(item_instance):
 				var item_def = item_instance.get_definition()
 				if is_instance_valid(item_def):
-					effective_max_hp += item_def.bonus_hp
+					_effective_max_hp += item_def.bonus_hp
 					effective_max_pwr += item_def.bonus_pwr
 
-	# Preserve current HP/PWR, but clamp to new effective maximum
-	var new_hp = min(previous_hp, effective_max_hp)
-	var new_pwr = min(previous_pwr, effective_max_pwr)
+	# Preserve current HP/PWR - only clamp PWR to maximum, allow HP to exceed max due to healing
+	var new_hp = previous_hp  # Preserve current HP (can exceed max due to healing effects)
+	var new_pwr = min(previous_pwr, effective_max_pwr)  # Clamp PWR to effective maximum
 
 	self.current_hp = new_hp
 	self.current_pwr = new_pwr

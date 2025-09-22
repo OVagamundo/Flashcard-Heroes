@@ -6,6 +6,7 @@ extends Node
 
 var units: Dictionary = {} # Key: StringName(id), Value: GachaBallDefinition
 var items: Dictionary = {} # Key: StringName(id), Value: GachaBallDefinition
+var trinkets: Dictionary = {} # Key: StringName(id), Value: TrinketDefinition
 var recipes: Dictionary = {} # Key: StringName(id), Value: MergeRecipe
 var decks: Dictionary = {} # Key: StringName(id), Value: FlashcardDeckDefinition
 var abilities: Dictionary = {} # Key: StringName(id), Value: AbilityDefinition
@@ -19,6 +20,7 @@ func _ready() -> void:
 	# Populate all data dictionaries at startup.
 	_load_resources_from_path("res://resources/units/", units)
 	_load_resources_from_path("res://resources/items/", items)
+	_load_resources_from_path("res://resources/trinkets/", trinkets)
 	_load_resources_from_path("res://resources/recipes/", recipes)
 	_load_resources_from_path("res://resources/abilities/", abilities)
 	_load_reward_pool_definitions()
@@ -91,8 +93,8 @@ func _load_translations() -> void:
 
 
 
-## A central helper to find any GachaBallDefinition by its ID, regardless of category.
-func get_definition(id: StringName) -> GachaBallDefinition:
+## A central helper to find any definition by its ID (Unit, Item, Trinket).
+func get_definition(id: StringName) -> Resource:
 	var definition: GachaBallDefinition = units.get(id)
 	if definition:
 		return definition
@@ -101,10 +103,14 @@ func get_definition(id: StringName) -> GachaBallDefinition:
 	if definition:
 		return definition
 
+	var trinket_def = trinkets.get(id)
+	if trinket_def:
+		return trinket_def
+
 	return null
 
-## A helper to get a GachaBallDefinition from a deck by card ID
-func get_definition_from_deck(card_id: StringName) -> GachaBallDefinition:
+## A helper to get a definition from a deck by card ID
+func get_definition_from_deck(card_id: StringName) -> Resource:
 	return get_definition(card_id)
 
 ## A helper to get flashcard data from a deck by card ID

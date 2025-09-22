@@ -9,6 +9,7 @@ extends Resource
 ## A dictionary containing the specific parameters for this effect's execution.
 ## This supports both flat values (e.g., `{"damage": 3}`) and stat-scaling values. See TDD for stat-scaling structure.
 @export var parameters: Dictionary
+@export var target_type: StringName
 
 ## The core method that all concrete effect scripts must implement.
 ## It receives all necessary information to perform its action.

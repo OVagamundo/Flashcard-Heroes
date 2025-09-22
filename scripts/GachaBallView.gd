@@ -64,8 +64,17 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 	
 	visible = true
 	icon_rect.texture = definition.icon
-	tier_label.text = "T%d" % definition.tier
-	tooltip_text = tr(definition.display_name_key)
+	var tier_text = "T1"  # Default for trinkets
+	if definition is GachaBallDefinition:
+		tier_text = "T%d" % definition.tier
+	tier_label.text = tier_text
+	# TrinketDefinition uses name_key; GachaBallDefinition uses display_name_key
+	var loc_key: String = ""
+	if definition is GachaBallDefinition:
+		loc_key = String(definition.display_name_key)
+	else:
+		loc_key = String(definition.name_key)
+	tooltip_text = tr(loc_key)
 	
 	_update_stats()
 	_update_item_slots()
@@ -114,35 +123,43 @@ func _update_stats() -> void:
 	pwr_label.text = new_pwr_text
 
 func _update_item_slots() -> void:
+	# Clear existing slot views
+	for child in item_grid.get_children():
+		child.queue_free()
+	
+	# Only show item slots for GachaBallDefinition (units/items), not trinkets
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance):
 		return
 		
-	for child in item_grid.get_children():
-		child.queue_free()
-	
 	var definition = instance.get_definition()
-	if not is_instance_valid(definition) or definition.item_slot_count == 0:
+	if not is_instance_valid(definition) or not (definition is GachaBallDefinition):
 		return
-
-	for i in range(definition.item_slot_count):
-		var slot_panel = Panel.new()
-		slot_panel.custom_minimum_size = Vector2(12, 12)
+	
+	# Only show slots for units (not items)
+	if definition.category != "UNIT":
+		return
 		
+	# Create item slots for units
+	for i in range(definition.item_slot_count):
+		var slot_view = Control.new()
+		slot_view.custom_minimum_size = Vector2(16, 16)
+		
+		# Show equipped item icon if any
 		var item_uuid = instance.get_equipped_item_uuid(i)
-
 		if not item_uuid.is_empty():
 			var item_instance = GameManager.get_instance_by_uuid(item_uuid)
 			if is_instance_valid(item_instance):
 				var item_def = item_instance.get_definition()
-				if is_instance_valid(item_def):
+				if is_instance_valid(item_def) and item_def.icon:
 					var icon = TextureRect.new()
 					icon.texture = item_def.icon
 					icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-					slot_panel.add_child(icon)
+					slot_view.add_child(icon)
 					icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		item_grid.add_child(slot_panel)
+		
+		item_grid.add_child(slot_view)
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)

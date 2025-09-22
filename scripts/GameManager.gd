@@ -69,11 +69,11 @@ func _on_battle_ended(results: Dictionary) -> void:
 	# 1) Flip global battle state off and broadcast.
 	is_in_battle = false
 	SignalBus.emit_signal("battle_state_changed", false)
-	# 2) If victory, pre-generate rewards now so the modal can be instant.
 	var is_victory: bool = bool(results.get("victory", false))
+	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
 		SignalBus.emit_signal("battle_won_rewards_pending")
-	# 3) Open the hermetic end-of-battle modal.
+	# 4) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
@@ -121,7 +121,11 @@ func _on_battle_victory_acknowledged() -> void:
 	for inst in _temporary_reward_master_dict.values():
 		var def = inst.get_definition()
 		if is_instance_valid(def):
-			sum_tiers += def.tier
+			# Some definitions (e.g., TrinketDefinition) may not have 'tier'.
+			var add_tier: int = 0
+			if def is GachaBallDefinition:
+				add_tier = int(def.tier)
+			sum_tiers += add_tier
 	_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
 
 	# Signal the UI to display the pre-generated rewards.
@@ -139,7 +143,17 @@ func _on_reward_chosen(payload) -> void:
 			var selected_instance = _temporary_reward_master_dict[chosen_uuid]
 			var def = selected_instance.get_definition()
 			
-			var container_name = &"RunInventoryT%d" % def.tier
+			# Clear the temporary reward location before adding to run state
+			selected_instance.location_container_tag = &""
+			selected_instance.location_slot_index = -1
+			
+			# Route based on category/type; Trinkets go to dedicated player trinkets container
+			var container_name: StringName
+			if is_instance_valid(def) and def.category == &"TRINKET":
+				container_name = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+			else:
+				var tier_val: int = (int(def.tier) if (def is GachaBallDefinition) else 1)
+				container_name = &"RunInventoryT%d" % tier_val
 			# Atomic add handles index/registry/truth updates and signals
 			run_state.add_instance(selected_instance, container_name, -1)
 			
@@ -300,7 +314,13 @@ func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
 
 	var purchased_instance = _temporary_shop_master_dict[instance_uuid]
 	var def = purchased_instance.get_definition()
-	var container_name = &"RunInventoryT%d" % def.tier
+	# Route based on category/type; Trinkets go to dedicated player trinkets container
+	var container_name: StringName
+	if is_instance_valid(def) and def.category == &"TRINKET":
+		container_name = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+	else:
+		var tier_val: int = (int(def.tier) if (def is GachaBallDefinition) else 1)
+		container_name = &"RunInventoryT%d" % tier_val
 	# Atomic add handles container slot selection and registry updates
 	run_state.add_instance(purchased_instance, container_name, -1)
 

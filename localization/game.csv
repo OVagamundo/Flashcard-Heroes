@@ -20,3 +20,6 @@ ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.
 item.effect.hp,Add (HP) HP to the unit.
 item.effect.pwr,Add (PWR) PWR to the unit.
 item.effect.both,Add (HP) HP and (PWR) PWR to the unit.
+trinket.healing_amulet.name,Healing Amulet
+trinket.healing_amulet.desc,A simple but reliable enchanted charm.
+ability.healing_amulet.desc,Heals the frontmost ally unit by 2HP

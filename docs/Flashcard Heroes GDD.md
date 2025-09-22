@@ -17,7 +17,7 @@ The game fluidly transitions between states (e.g., Path Choice ↔ Battle) while
 Hero Health (HP): The current health of the player's Hero Unit serves as the overall health for the entire run. If it reaches 0, the run ends. It persists between all encounters.
 Gold: The primary transactional currency for a run, used at Shop nodes. It is lost at the end of a run.
 Gacha Tokens: A temporary, encounter-focused currency used to activate Gacha Machines. It is primarily earned from the Flashcard Mini-Game during a battle and resets to zero after each encounter is resolved.
-#### 4. Flashcard System (Updated)
+#### 4. Flashcard System
 
 This system is the core mechanic for generating Gacha Tokens and driving player progression. It is designed as a high-speed, high-reward mini-game that tests the player's recall under pressure.
 
@@ -27,7 +27,7 @@ This system is the core mechanic for generating Gacha Tokens and driving player 
 *   **Card Introduction:** Each time the flashcard mini-game is triggered (in battle or at a Rest Site), one new card is drawn in order from the Main Deck and added to the Active Deck for the remainder of the run. This new card is first presented to the player on an information screen showing its question, answer, and a brief explanation. The player must click a "Got It!" button to dismiss this screen and begin the mini-game.
 
 **4.2. Mini-Game Mechanics**
-*   **Trigger:** The mini-game is automatically triggered at the start of the player's turn during the Management Phase in battles, and when choosing to "Train" at a Rest Site.
+*   **Trigger:** The mini-game is automatically triggered at the start of the player's turn before the Management Phase in battles, and when choosing to "Train" at a Rest Site.
 *   **UI:** The mini-game appears as a large modal pop-up window, disabling all other game interactions until it is complete.
 *   **Gameplay Flow:**
     1.  If a new card is being introduced, it is shown first.
@@ -138,7 +138,7 @@ To ensure varied and scaling challenges, COMMON and ELITE battle nodes do not us
 - **Leaving:** Players can exit the shop at any time to return to Path Selection
 Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
-Rest Site Node: A recovery node where the player chooses one action: Rest (heal Hero), Train (triggers the flashcard mini-game where every two correct answers permanently increases a chosen stat by 1), or Gamble.
+Rest Site Node: A recovery node where the player chooses one action: Rest and eat (permanent HP gain for Hero), Train (permanent PWR gain for Hero), or gamble (adds gold to the player's gold count). All actions trigger the flashcard mini-game where every two correct answers permanently increases a chosen stat by 1.
 9.4. Event-Driven Ability System
 Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
 

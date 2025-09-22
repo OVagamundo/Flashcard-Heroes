@@ -200,7 +200,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 				"parent_window_id": context.source_view_instance_id
 			}))
 			
-		&"UNIT", &"ITEM":
+		&"UNIT", &"ITEM", &"TRINKET":
 			commands.append_array(_handle_gachaball_interaction(context))
 			
 		&"EMPTY_SLOT":
@@ -706,7 +706,7 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 		return &"EquippedGrid"
 
 	# Inspection-only containers (no actions allowed)
-	if container_name in [&"EnemyLineup", &"DiscardPile"]:
+	if container_name in [&"EnemyLineup", &"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets"]:
 		return &"InspectionOnly"
 
 	return &"Unknown"

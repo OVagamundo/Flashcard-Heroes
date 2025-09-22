@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/sprites/trinkets/Trinket1A.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="4_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_HealingAmulet_1"]
+script = ExtResource("4_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"FRONTMOST_ALLY"
+
+[sub_resource type="Resource" id="Ability_HealingAmulet_1"]
+script = ExtResource("3_ability")
+trigger = &"on_turn_start"
+description_key = "ability.healing_amulet.desc"
+effects = Array[Resource]([SubResource("EffectModifyStat_HealingAmulet_1")])
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_healing_amulet"
+name_key = "trinket.healing_amulet.name"
+description_key = "trinket.healing_amulet.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([SubResource("Ability_HealingAmulet_1")])

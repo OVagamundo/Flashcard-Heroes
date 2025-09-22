@@ -2,8 +2,8 @@
 class_name BattleView
 extends Control
 
-const GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const SlotView = preload("res://scenes/SlotView.tscn")
+const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
@@ -13,6 +13,7 @@ const SlotView = preload("res://scenes/SlotView.tscn")
 @onready var gacha_token_label: Label = %GachaTokenLabel
 @onready var discard_pile_button: Button = %DiscardPileButton
 @onready var end_turn_button: Button = %EndTurnButton
+@onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
 
 # --- Node References ---
 var battle_manager: BattleManager
@@ -80,6 +81,7 @@ func _redraw_board() -> void:
 	_populate_container(player_bench, "PlayerBench", false)
 	_populate_container(item_inventory, "ItemInventory", false)
 	_populate_container(enemy_lineup, "EnemyLineup", true)
+	_populate_enemy_trinkets()
 
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):
@@ -120,7 +122,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			instance = battle_manager.get_instance(uuid)
 
 		if is_instance_valid(instance):
-			var view = GachaBallView.instantiate()
+			var view = GachaBallViewScene.instantiate()
 			slot.add_child(view)
 			
 			# --- THIS IS THE LINE TO CHANGE ---
@@ -198,3 +200,28 @@ func _gui_input(event) -> void:
 		context.window_group_id = 0  # Main battle scene
 		
 		SignalBus.emit_signal("interaction_context_received", context)
+
+func _populate_enemy_trinkets() -> void:
+	if not is_instance_valid(battle_manager):
+		return
+	var slots = enemy_trinket_bar.get_children()
+	for i in range(slots.size()):
+		var slot_view = slots[i]
+		for child in slot_view.get_children():
+			child.queue_free()
+		var loc = LocationIdentifier.new()
+		loc.container = &"EnemyTrinkets"
+		loc.index = i
+		if slot_view.has_method("populate"):
+			slot_view.populate(loc)
+			if slot_view.has_method("set_interaction_context"):
+				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+		if i < battle_manager.enemy_trinkets.size():
+			var instance = battle_manager.enemy_trinkets[i]
+			if is_instance_valid(instance):
+				var view = GachaBallViewScene.instantiate()
+				slot_view.add_child(view)
+				if view.has_method("populate"):
+					view.populate(loc, instance, true, true)
+				if view.has_method("set_interaction_context"):
+					view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)

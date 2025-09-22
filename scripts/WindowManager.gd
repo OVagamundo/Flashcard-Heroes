@@ -441,12 +441,10 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 			context = {"source_view": source_view, "instance": instance, "location": loc}
 			if loc.container == &"EnemyLineup":
 				context["is_enemy_context"] = true
-				# Prefer left of the enemy unit (enemy lineup is on the right half of the screen).
-				payload["positioning_hint"] = "left_of_anchor"
 		elif def.category == &"ITEM":
 			window_type = &"ItemInspection"
 			context = {"source_view": source_view, "instance": instance, "location": loc}
-			# When the item is equipped, the correct positioning basis is the parent UnitInspection window,
+			# Equipped items: prefer positioning relative to the parent UnitInspectionWindow,
 			# not the tiny equipped slot view. Provide a hint so positioning prefers the parent window rect.
 			if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 				# Augment context so WindowManager can resolve the correct parent window reliably.
@@ -455,6 +453,9 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 					context["is_inside_unit_inspection"] = true
 					context["target_parent_window_id"] = unit_parent.get_instance_id()
 				payload["positioning_hint"] = "use_parent_window"
+		elif def.category == &"TRINKET":
+			window_type = &"ItemInspection"  # Reuse ItemInspection for trinkets
+			context = {"source_view": source_view, "instance": instance, "location": loc}
 		else: return {}
 	elif source_view.has_meta("effect_definition"):
 		var effect_def: Variant = source_view.get_meta("effect_definition")

@@ -24,7 +24,8 @@ static var RUN_CONTAINER_TAGS: Dictionary = {
 	HERO = &"Hero",
 	PLAYER_LINEUP = &"PlayerLineup",
 	PLAYER_BENCH = &"PlayerBench",
-	PLAYER_ITEM_INVENTORY = &"ItemInventory"
+	PLAYER_ITEM_INVENTORY = &"ItemInventory",
+	PLAYER_TRINKETS = &"PlayerTrinkets"
 }
 
 # ------------------------------------------------------------------
@@ -97,6 +98,9 @@ func get_container(container_name: StringName) -> DataContainer:
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
 		_containers[container_name] = FixedArrayContainer.new(12)
 		return _containers[container_name]
+	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
+		_containers[container_name] = FixedArrayContainer.new(5)
+		return _containers[container_name]
 	
 	return null
 
@@ -120,6 +124,25 @@ func add_instance(instance: GachaBallInstance, container_name: StringName, index
 	# Adds an instance to the given container/index atomically.
 	if not is_instance_valid(instance):
 		return false
+	# Trinket routing: if the instance's definition is a TRINKET, route to PlayerTrinkets container.
+	var def_for_routing = instance.get_definition()
+	if is_instance_valid(def_for_routing) and def_for_routing.category == &"TRINKET":
+		var trinket_container := get_container(RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+		if not is_instance_valid(trinket_container):
+			return false
+		var trinket_slot := trinket_container.find_first_empty_slot()
+		if trinket_slot == -1:
+			return false
+		trinket_container.set_uuid(trinket_slot, instance.ball_uuid)
+		instance.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+		instance.location_slot_index = trinket_slot
+		run_instances[instance.ball_uuid] = instance
+		if OS.is_debug_build():
+			_validate_state_consistency()
+		SignalBus.emit_signal("run_data_changed")
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
+		return true
+
 	var container = get_container(container_name)
 	if not is_instance_valid(container):
 		return false
@@ -556,6 +579,14 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		var container_name: StringName = &"RunInventoryT%d" % t
 		_containers[container_name] = GrowableGridContainer.new(16)
 
+	# Create player trinket container and add starter trinket (Healing Amulet)
+	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(5)
+	var healing_amulet_def = Database.get_definition(&"trinket_healing_amulet")
+	if is_instance_valid(healing_amulet_def):
+		var trinket_inst := GachaBallInstance.new()
+		trinket_inst.initialize_from_trinket(healing_amulet_def)
+		add_instance(trinket_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+
 	# --- Add starter units/items to inventory ---
 	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the
 	#  dedicated 'player_trinkets' container (not RunInventoryT*) and keep 'active_trinkets' in sync.
@@ -575,6 +606,11 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		var inst := GachaBallInstance.new()
 		inst.initialize(def)
 		
-		var container_name: StringName = &"RunInventoryT%d" % def.tier
+		var container_name: StringName
+		if def.category == &"TRINKET":
+			container_name = RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+		else:
+			var tier_val: int = (int(def.tier) if (def is GachaBallDefinition) else 1)
+			container_name = &"RunInventoryT%d" % tier_val
 		# Use atomic add to register and place instance
 		add_instance(inst, container_name, -1)

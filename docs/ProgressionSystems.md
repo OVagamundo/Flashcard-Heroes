@@ -1,57 +1,40 @@
-Inventory Manager
-Version: 1.1
+Progression Systems
+Version: 1.0
 Status: Active
 1. Purpose & Responsibility
-The Inventory Manager is a stateless logic controller that executes all GachaBall manipulation actions. It acts as the "verb" system for the player's inventory and battle board. Its core responsibilities are:
-Executing REQUEST_ACTION commands issued by the Global Interaction Router (GIR).
-Determining the player's intent (Move, Swap, Equip, or Merge) based on the context of the action.
-Handling ambiguity by requesting a ChoiceWindow when an action could be either a Merge or a Swap.
-Performing all gameplay validation for the requested action.
-Instructing the appropriate data owner (RunState or BattleManager) to perform the state change if the action is valid.
-The Inventory Manager does not own any data. It queries the data owners for the current state, performs its logic, and commands the owners to mutate their state.
-2. Commands Handled
-The Inventory Manager listens for a single, powerful command routed from the GIR.
-Command ID	Payload Structure	Internal Validation & Actions	Events Raised
-REQUEST_ACTION	{ "source_uuid": String, "target_uuid": String }	1. Fetch Context: Retrieves instances for the source and target from the appropriate data owner. <br> 2. Determine Intent: Determines the potential action based on the priority: Merge > Equip > Swap/Move. <br> 3. Handle Ambiguity: If the action is determined to be a GachaBall on another GachaBall, it checks if a valid MergeRecipe exists. <br>      a. If YES: The action is ambiguous. The manager calls WindowManager.open_modal_window("ChoiceWindow", ...) and halts further processing. It will wait for a merge_choice_made signal. <br>      b. If NO: The action is unambiguously a Swap, Move, or Equip. It proceeds directly to validation. <br> 4. Validate & Execute: For unambiguous actions, it performs validation and instructs the data owner to update state.	inventory_action_invalid, instance_moved, instance_merged
-3. Handling Asynchronous User Choices
-When an action is ambiguous, the manager relies on signals to resume its operation after the player has made a choice.
-Listens for Signal: merge_choice_made(chosen_action: String, source_uuid: String, target_uuid: String)
-Action on Signal:
-Receives the signal from the ChoiceWindow.
-Based on the chosen_action ("merge" or "swap"), it proceeds to the specific validation and execution logic for that action, as detailed in Section 4.
-4. Inventory Actions
-These are the final execution steps, performed only after the player's intent is unambiguous.
-4.1 Merge
-Trigger: The merge_choice_made signal is received with chosen_action = "merge".
-Validation: Confirms the merge is still valid.
-Execution: Instructs the data owner to:
-Destroy the two ingredient instances.
-Create the new result instance.
-Transfer all equipped items from the ingredients to the new unit.
-Place the result instance in the target's original slot.
-4.2 Equip
-Trigger: An ITEM is dropped onto a UNIT (unambiguous REQUEST_ACTION).
-Validation:
-Confirms the target unit has an empty item slot.
-Confirms the source item is in a valid inventory location.
-Execution: Instructs the data owner to update the item's location properties, moving it to the unit's equipped_item_uuids array.
-4.3 Swap
-Trigger: A GachaBall is dropped on another where no merge is possible, OR the merge_choice_made signal is received with chosen_action = "swap".
-Validation:
-Confirms both entities can legally occupy the other's starting position.
-Execution: Instructs the data owner to exchange the location properties of the two instances.
-4.4 Move
-Trigger: A GachaBall is dropped onto an EMPTY_SLOT (unambiguous REQUEST_ACTION).
-Validation:
-Confirms the GachaBall can legally occupy the target slot.
-Execution: Instructs the data owner to update the GachaBall's location properties to the new slot.
-5. Public Signals
-instance_moved(instance_uuid: String, from_location: LocationIdentifier, to_location: LocationIdentifier)
-Fired after a successful Move or Swap action. For a swap, this is fired for each instance.
-instance_merged(ingredient_uuids: Array[String], result_instance: GachaBallInstance)
-Fired after a successful Merge action.
-inventory_action_invalid(source_uuid: String, target_uuid: String, reason_key: String)
-Fired when a requested action fails validation.
-6. Invariants
-Stateless Operation: The manager must never store its own state between actions.
-The Golden Rule: All state change instructions sent to data owners must be designed to be atomic, ensuring that both the DataContainer (index) and the GachaBallInstance (truth) are updated together.
+The Progression Systems govern the player's advancement both within a single run and across multiple playthroughs. These systems are designed to create a scaling challenge and provide long-term replayability. They are divided into two distinct categories:
+Run Progression (Difficulty Scaling): How the game's challenge increases during a single run.
+Meta-Progression (Unlocks): How players permanently unlock new content for all future runs.
+2. Run Progression: The "Day" & Encounter Budget
+The primary mechanism for difficulty scaling within a run is the "Day" counter, which is tracked in the RunState.
+Core Mechanic:
+The Day counter advances by one each time the player resolves a node on the path (Battle, Shop, Event, etc.).
+The Day value is the primary input for the Encounter Budget System, which dynamically generates enemy teams for non-boss battles.
+Encounter Budget System
+This system ensures that the challenge of COMMON and ELITE battle nodes scales directly with the player's progress through a run.
+Budget Calculation: The GameManager calculates the gold budget for an encounter before invoking the EncounterGenerator.
+Base Budget: Day * 5 Gold
+Elite Multiplier: For ELITE nodes, the total budget is multiplied by 1.5.
+Generator's Role: The EncounterGenerator uses this budget to "purchase" a team of units and items from the pool of all available GachaBallDefinition resources. For more details, see docs/EncounterSystem.md.
+Effect of Scaling: As the Day counter increases, the budget grows, resulting in enemy teams that are progressively more powerful. In later days, players will face enemies that have:
+More numerous or higher-tier units.
+Increased base stats (if defined on higher-tier units).
+More or better-equipped items.
+(Potentially) Powerful enemy leaders with team-wide passive abilities.
+3. Meta-Progression: Achievements & The Codex
+Meta-progression provides long-term goals that persist between runs. This system is centered around completing in-game Achievements.
+Achievements
+Definition: An Achievement is a specific goal for the player to complete (e.g., "Defeat the Final Boss with the Warrior Hero," "Perform 10 unique merges in a single run").
+Unlocks: Completing an Achievement permanently unlocks new content for all future runs. This content can include:
+New playable Heroes.
+New Flashcard Decks.
+New GachaBall types (Units and Items) added to the general pool.
+New Trinkets.
+New MergeRecipe definitions.
+Tracking: The player's completed achievements are stored in a persistent save file, separate from any in-run state.
+The Codex & UI
+Achievements Screen: Accessible from the main menu, this screen lists all possible achievements (both locked and unlocked). It shows the requirements for each and the specific content it unlocks upon completion.
+The Codex: An in-game encyclopedia that serves as a comprehensive reference for all content the player has unlocked. It is a key part of the player's sense of long-term accomplishment. The Codex includes:
+A bestiary of all encountered units.
+A catalog of all seen items.
+A "Recipe Book" that automatically records all MergeRecipe definitions the player has successfully used or unlocked. This allows players to reference valid merges without having to memorize them.

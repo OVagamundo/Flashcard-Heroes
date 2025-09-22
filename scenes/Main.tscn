@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://crndwktdbp0rc"]
+[gd_scene load_steps=6 format=3 uid="uid://crndwktdbp0rc"]
 
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
 [ext_resource type="Script" uid="uid://ban2qfgbvx5bs" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
 bg_color = Color(0.1, 0.1, 0.2, 1)
@@ -83,6 +84,21 @@ vertical_alignment = 1
 [node name="Control3" type="Control" parent="VBoxContainer/TopArea/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="PlayerTrinketBar" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="TrinketSlot0" parent="VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot1" parent="VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot2" parent="VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot3" parent="VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot4" parent="VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar" instance=ExtResource("5_slotview")]
 
 [node name="ContentArea" type="SubViewportContainer" parent="VBoxContainer"]
 unique_name_in_owner = true

@@ -51,17 +51,29 @@ func populate(context: Dictionary) -> void:
 	# Set up stable anchor pattern
 	_setup_stable_anchor()
 
-	name_label.text = tr(item_def.display_name_key)
-	var description_text = tr(item_def.description_key)
+	# Handle both TrinketDefinition and GachaBallDefinition (items)
+	var name_key: String
+	var desc_key: String
+	if item_def is GachaBallDefinition:
+		name_key = item_def.display_name_key
+		desc_key = item_def.description_key
+	else:
+		# TrinketDefinition uses name_key instead of display_name_key
+		name_key = item_def.name_key
+		desc_key = item_def.description_key
 	
-	# Add item effect description
+	name_label.text = tr(name_key)
+	var description_text = tr(desc_key)
+	
+	# Add item effect description (only for GachaBallDefinition items)
 	var effect_desc = ""
-	if item_def.bonus_hp > 0 and item_def.bonus_pwr > 0:
-		effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
-	elif item_def.bonus_hp > 0:
-		effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
-	elif item_def.bonus_pwr > 0:
-		effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
+	if item_def is GachaBallDefinition:
+		if item_def.bonus_hp > 0 and item_def.bonus_pwr > 0:
+			effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
+		elif item_def.bonus_hp > 0:
+			effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
+		elif item_def.bonus_pwr > 0:
+			effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
 	
 	if not effect_desc.is_empty():
 		description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, effect_desc]

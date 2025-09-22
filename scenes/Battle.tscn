@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://ccwelqtvctrxe"]
+[gd_scene load_steps=6 format=3 uid="uid://ccwelqtvctrxe"]
 
 [ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 [ext_resource type="PackedScene" uid="uid://bdsj2fjaq3w5c" path="res://scenes/BattleLog.tscn" id="4_battle_log"]
 [ext_resource type="Script" path="res://scripts/BattleAnimator.gd" id="2_battle_animator_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -189,6 +190,21 @@ mouse_filter = 1
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 mouse_filter = 1
+
+[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="TrinketSlot0" parent="TeamAreas/EnemyArea/EnemyTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot1" parent="TeamAreas/EnemyArea/EnemyTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot2" parent="TeamAreas/EnemyArea/EnemyTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot3" parent="TeamAreas/EnemyArea/EnemyTrinketBar" instance=ExtResource("5_slotview")]
+
+[node name="TrinketSlot4" parent="TeamAreas/EnemyArea/EnemyTrinketBar" instance=ExtResource("5_slotview")]
 
 [node name="Control2" type="Control" parent="TeamAreas/EnemyArea"]
 layout_mode = 2

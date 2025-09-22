@@ -1,57 +1,53 @@
-Inventory Manager
-Version: 1.1
+Shop System
+Version: 1.0
 Status: Active
 1. Purpose & Responsibility
-The Inventory Manager is a stateless logic controller that executes all GachaBall manipulation actions. It acts as the "verb" system for the player's inventory and battle board. Its core responsibilities are:
-Executing REQUEST_ACTION commands issued by the Global Interaction Router (GIR).
-Determining the player's intent (Move, Swap, Equip, or Merge) based on the context of the action.
-Handling ambiguity by requesting a ChoiceWindow when an action could be either a Merge or a Swap.
-Performing all gameplay validation for the requested action.
-Instructing the appropriate data owner (RunState or BattleManager) to perform the state change if the action is valid.
-The Inventory Manager does not own any data. It queries the data owners for the current state, performs its logic, and commands the owners to mutate their state.
-2. Commands Handled
-The Inventory Manager listens for a single, powerful command routed from the GIR.
-Command ID	Payload Structure	Internal Validation & Actions	Events Raised
-REQUEST_ACTION	{ "source_uuid": String, "target_uuid": String }	1. Fetch Context: Retrieves instances for the source and target from the appropriate data owner. <br> 2. Determine Intent: Determines the potential action based on the priority: Merge > Equip > Swap/Move. <br> 3. Handle Ambiguity: If the action is determined to be a GachaBall on another GachaBall, it checks if a valid MergeRecipe exists. <br>      a. If YES: The action is ambiguous. The manager calls WindowManager.open_modal_window("ChoiceWindow", ...) and halts further processing. It will wait for a merge_choice_made signal. <br>      b. If NO: The action is unambiguously a Swap, Move, or Equip. It proceeds directly to validation. <br> 4. Validate & Execute: For unambiguous actions, it performs validation and instructs the data owner to update state.	inventory_action_invalid, instance_moved, instance_merged
-3. Handling Asynchronous User Choices
-When an action is ambiguous, the manager relies on signals to resume its operation after the player has made a choice.
-Listens for Signal: merge_choice_made(chosen_action: String, source_uuid: String, target_uuid: String)
-Action on Signal:
-Receives the signal from the ChoiceWindow.
-Based on the chosen_action ("merge" or "swap"), it proceeds to the specific validation and execution logic for that action, as detailed in Section 4.
-4. Inventory Actions
-These are the final execution steps, performed only after the player's intent is unambiguous.
-4.1 Merge
-Trigger: The merge_choice_made signal is received with chosen_action = "merge".
-Validation: Confirms the merge is still valid.
-Execution: Instructs the data owner to:
-Destroy the two ingredient instances.
-Create the new result instance.
-Transfer all equipped items from the ingredients to the new unit.
-Place the result instance in the target's original slot.
-4.2 Equip
-Trigger: An ITEM is dropped onto a UNIT (unambiguous REQUEST_ACTION).
-Validation:
-Confirms the target unit has an empty item slot.
-Confirms the source item is in a valid inventory location.
-Execution: Instructs the data owner to update the item's location properties, moving it to the unit's equipped_item_uuids array.
-4.3 Swap
-Trigger: A GachaBall is dropped on another where no merge is possible, OR the merge_choice_made signal is received with chosen_action = "swap".
-Validation:
-Confirms both entities can legally occupy the other's starting position.
-Execution: Instructs the data owner to exchange the location properties of the two instances.
-4.4 Move
-Trigger: A GachaBall is dropped onto an EMPTY_SLOT (unambiguous REQUEST_ACTION).
-Validation:
-Confirms the GachaBall can legally occupy the target slot.
-Execution: Instructs the data owner to update the GachaBall's location properties to the new slot.
-5. Public Signals
-instance_moved(instance_uuid: String, from_location: LocationIdentifier, to_location: LocationIdentifier)
-Fired after a successful Move or Swap action. For a swap, this is fired for each instance.
-instance_merged(ingredient_uuids: Array[String], result_instance: GachaBallInstance)
-Fired after a successful Merge action.
-inventory_action_invalid(source_uuid: String, target_uuid: String, reason_key: String)
-Fired when a requested action fails validation.
-6. Invariants
-Stateless Operation: The manager must never store its own state between actions.
-The Golden Rule: All state change instructions sent to data owners must be designed to be atomic, ensuring that both the DataContainer (index) and the GachaBallInstance (truth) are updated together.
+The Shop System provides the primary economic hub for a run, allowing the player to spend Gold to purchase new GachaBall instances for their permanent Run Inventory. The system is responsible for:
+Generating a random, temporary stock of GachaBalls for purchase.
+Handling the player's purchase and reroll actions.
+Managing the state of the shop during a single Shop Node visit.
+Ensuring all purchased items are correctly added to the RunState.
+2. System Architecture & Data Flow
+The shop's logic is distributed between the persistent GameManager and the scene-specific Shop.tscn UI. This follows the principle of a "dumb" view, where the UI is only responsible for rendering state and emitting user intents.
+GameManager's Role (State Authority)
+The GameManager serves as the authoritative controller for the shop's state during a node visit. It does not use a separate ShopManager.
+Temporary State Variables:
+_temporary_shop_master_dict: Dictionary: Holds the actual GachaBallInstance objects available for purchase.
+_temporary_shop_container: DataContainer: A FixedArrayContainer of size 3 that holds the UUIDs of the items in the shop slots, acting as a performant index.
+_reroll_cost: int: Tracks the current cost to reroll, which increases with each use within the same shop visit.
+Shop.tscn's Role (View)
+The Shop.tscn scene and its script (Shop.gd) are responsible for the presentation layer.
+Renders State: It populates its SlotView children based on the data provided by the GameManager.
+Emits Intents: It does not perform any game logic. Instead, it emits signals like shop_purchase_requested or shop_reroll_requested when the player clicks buttons.
+Handles Interaction: Player interactions (clicks, double-clicks) with the GachaBalls are routed through the Global Interaction Router (GIR). The shop context is configured with an interaction_mode of SELECTION_ONLY, meaning items can be selected for purchase but not moved or dragged.
+3. Key Logic Flows
+A. Entering a Shop
+Node Selection: The player selects a SHOP node from the Path Choice screen.
+State Initialization: The GameManager's _enter_shop() method is called.
+It resets the _reroll_cost to its base value (1 Gold).
+It calls _generate_shop_stock() to create 3 new, random GachaBallInstance objects and populates its temporary state variables.
+Scene Display: The GameManager requests the SceneManager to display the Shop.tscn. It passes the generated stock and reroll cost to the scene for initial rendering.
+B. Purchasing an Item
+Player Action: The player selects an item and clicks the "Buy" button.
+Intent Emitted: The Shop.gd script emits the shop_purchase_requested(instance_uuid, cost) signal.
+Validation: The GameManager receives the signal. It validates that:
+The player has enough Gold.
+The instance_uuid exists in its _temporary_shop_master_dict.
+State Change (The Golden Rule): If valid, the GameManager performs the state change:
+It deducts the cost from the RunState.gold.
+It moves the GachaBallInstance from its _temporary_shop_master_dict to the permanent RunState.run_instances dictionary.
+It updates the instance's location properties to place it in the correct RunInventoryT<n> container.
+It removes the UUID from the _temporary_shop_container, leaving the shop slot empty.
+UI Refresh: The GameManager emits a shop_stock_refreshed signal, causing the Shop.tscn to update its view, showing the empty slot.
+C. Rerolling Stock
+Player Action: The player clicks the "Reroll" button.
+Intent Emitted: The Shop.gd script emits the shop_reroll_requested signal.
+Validation: The GameManager receives the signal and validates that the player has enough Gold to pay the current _reroll_cost.
+State Change: If valid, the GameManager:
+Deducts the _reroll_cost from RunState.gold.
+Increments the _reroll_cost by 1 for the next reroll.
+Clears its temporary shop dictionaries and calls _generate_shop_stock() to create a new set of 3 items.
+UI Refresh: The GameManager emits shop_stock_refreshed with the new stock, causing the Shop.tscn to display the new items and the updated reroll cost.
+D. Inspection
+Although the interaction_mode is SELECTION_ONLY, players can still inspect items.
+A double-click on a GachaBall in the shop will be interpreted by the GIR as a valid inspection request, which will generate an OPEN_INSPECTION_WINDOW command for the WindowManager to execute. This allows players to view item details before purchasing.

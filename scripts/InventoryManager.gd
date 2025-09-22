@@ -291,7 +291,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		placed_container = target_loc.container
 		placed_index = target_loc.index
 	# Case 3: Draw pool tier-up -> place in higher-tier container first empty slot
-	elif result_def.tier > source_instance.get_definition().tier:
+	elif ("tier" in result_def) and ("tier" in source_instance.get_definition()) and result_def.tier > source_instance.get_definition().tier:
 		var prefix = "BattleInventoryT" if GameManager.is_in_battle else "RunInventoryT"
 		var new_container_tag = &"%s%d" % [prefix, result_def.tier]
 		# Use atomic add with index -1 (first empty)
@@ -394,10 +394,14 @@ func _is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locat
 
 	if target_container_name.begins_with("RunInventoryT"):
 		var container_tier = target_container_name.substr(len("RunInventoryT")).to_int()
-		if def.tier != container_tier: return false
+		# Definitions without 'tier' (e.g., TrinketDefinition) are not allowed in tiered inventory containers
+		if not ("tier" in def) or def.tier != container_tier:
+			return false
 	if target_container_name.begins_with("BattleInventoryT"):
 		var container_tier_b = target_container_name.substr(len("BattleInventoryT")).to_int()
-		if def.tier != container_tier_b: return false
+		# Definitions without 'tier' (e.g., TrinketDefinition) are not allowed in tiered inventory containers
+		if not ("tier" in def) or def.tier != container_tier_b:
+			return false
 
 	if target_container_name in [&"PlayerLineup", &"PlayerBench"] and def.category == &"ITEM":
 		return false

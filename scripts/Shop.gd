@@ -64,7 +64,9 @@ func populate(context: Dictionary) -> void:
 		# Always create a price label for each slot to maintain positioning
 		var price_label = Label.new()
 		if is_instance_valid(inst_for_slot):
-			price_label.text = "%d Gold" % inst_for_slot.get_definition().tier
+			var shop_def = inst_for_slot.get_definition()
+			var price = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
+			price_label.text = "%d Gold" % price
 		else:
 			price_label.text = ""  # Empty text for slots without items
 		price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -85,7 +87,8 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	if new_location and new_location.container == &"Shop":
 		var instance = _find_instance_for_slot(new_location.index)
 		if is_instance_valid(instance):
-			_selected_cost = instance.get_definition().tier
+			var shop_def = instance.get_definition()
+			_selected_cost = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
 			buy_button.text = "Buy (%d Gold)" % _selected_cost
 			buy_button.disabled = false
 			return
