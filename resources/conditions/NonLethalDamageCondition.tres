@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ConditionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="1_condition"]
+
+[resource]
+script = ExtResource("1_condition")
+id = &"cond_damage_was_non_lethal"
+condition_type = &"DAMAGE_WAS_NON_LETHAL"
+parameters = {}
+invert_result = false

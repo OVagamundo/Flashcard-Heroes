@@ -22,7 +22,18 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
-	var new_hp = max(0, target_instance.current_hp - damage)
+	var old_hp = target_instance.current_hp
+	var new_hp = max(0, old_hp - damage)
+	var target_name = "unknown"
+	var target_def = target_instance.get_definition()
+	if is_instance_valid(target_def):
+		if "display_name_key" in target_def:
+			target_name = tr(target_def.display_name_key)
+		elif "name" in target_def:
+			target_name = tr(target_def.name)
+		elif "id" in target_def:
+			target_name = String(target_def.id)
+	print("[DEBUG] %s takes %d damage. HP: %d -> %d" % [target_name, damage, old_hp, new_hp])
 	if is_simulation and target_instance.has_method("set_current_hp_silent"):
 		target_instance.set_current_hp_silent(new_hp)
 	else:
@@ -36,8 +47,25 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		battle_manager.trigger_on_kill(source_instance.ball_uuid, target_instance.ball_uuid)
 
 	# Inform UI and log systems (suppressed when simulating)
-	var src_name = tr(source_instance.get_definition().display_name_key)
-	var tgt_name = tr(target_instance.get_definition().display_name_key)
+	var src_name = "unknown"
+	var src_def = source_instance.get_definition()
+	if is_instance_valid(src_def):
+		if "display_name_key" in src_def:
+			src_name = tr(src_def.display_name_key)
+		elif "name" in src_def:
+			src_name = tr(src_def.name)
+		elif "id" in src_def:
+			src_name = String(src_def.id)
+	
+	var tgt_name = "unknown"
+	var tgt_def = target_instance.get_definition()
+	if is_instance_valid(tgt_def):
+		if "display_name_key" in tgt_def:
+			tgt_name = tr(tgt_def.display_name_key)
+		elif "name" in tgt_def:
+			tgt_name = tr(tgt_def.name)
+		elif "id" in tgt_def:
+			tgt_name = String(tgt_def.id)
 	var msg = "%s deals %d dmg to %s" % [src_name, damage, tgt_name]
 	if not is_simulation:
 		SignalBus.battle_log_event.emit(msg)

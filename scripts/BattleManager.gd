@@ -9,6 +9,7 @@ var _current_battle_phase: Phases
 var _effect_queue: Array[EffectRequest] = []
 var _is_processing_effect: bool = false
 var _battle_over_emitted: bool = false
+var _battle_over_deferred: bool = false
 
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
@@ -28,7 +29,6 @@ var enemy_trinkets: Array[GachaBallInstance] = []
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
 const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
-const CombatEvent = preload("res://scripts/CombatEvent.gd")
 var _gacha_tokens: int = 0
 var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
@@ -83,6 +83,9 @@ func _connect_signals() -> void:
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
 	SignalBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
+	# Apply deaths after animator finishes death fades
+	if SignalBus.has_signal("apply_deaths_requested") and not SignalBus.is_connected("apply_deaths_requested", _on_apply_deaths_requested):
+		SignalBus.apply_deaths_requested.connect(_on_apply_deaths_requested)
 	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 
@@ -114,6 +117,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	_containers.clear()
 	_effect_queue.clear()
 	_battle_over_emitted = false
+	_battle_over_deferred = false
 	_current_turn = 0  # Initialize turn counter
 	_gacha_tokens = 0
 	enemy_trinkets.clear()
@@ -1060,7 +1064,10 @@ func _change_phase(new_phase: Phases) -> void:
 		Phases.COMBAT:
 			pass
 		Phases.END_OF_TURN:
-			pass
+			print("[DEBUG] End of turn ", _current_turn, " - triggering turn end abilities and advancing")
+			# Fire on_turn_end for all units, then immediately advance to next START_OF_TURN
+			_trigger_turn_end_abilities()
+			_change_phase(Phases.START_OF_TURN)
 
 func _count_requests_for_source(uuid: String) -> int:
 	var c := 0
@@ -1070,10 +1077,12 @@ func _count_requests_for_source(uuid: String) -> int:
 	return c
 
 func _populate_effect_queue() -> void:
+	print("[DEBUG] _populate_effect_queue() called - setting up combat")
 	_effect_queue.clear()
 	
 	# Process enemy attacks
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	print("[DEBUG] Enemy lineup size: ", enemy_lineup.size())
 	for attacker in enemy_lineup:
 		var target = _get_frontmost_target(false)
 		if is_instance_valid(target):
@@ -1129,45 +1138,106 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 	var source = null
 	if not request.source_uuid.is_empty():
 		source = get_instance_by_uuid(request.source_uuid)
-		if not is_instance_valid(source) or source.current_hp <= 0:
+		if not is_instance_valid(source):
 			return
-	# Retarget dynamically if first target is dead or invalid
+		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
+		var src_def = source.get_definition()
+		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
+			return
+	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
 	var exec_targets: Array[String] = []
 	exec_targets.append_array(request.resolved_targets)
-	if exec_targets.size() > 0:
+	var is_basic_attack := (request.ability_id == &"basic_attack")
+	if is_basic_attack and exec_targets.size() > 0:
 		var first_target = get_instance_by_uuid(exec_targets[0])
-		# Determine team context for retargeting (handle trinket effects with no source)
-		var attacker_is_player: bool
-		if is_instance_valid(source):
-			attacker_is_player = _is_player_unit(source)
-		elif request.trigger_context.has("team"):
-			attacker_is_player = (String(request.trigger_context.get("team")) == "PLAYER")
-		else:
-			attacker_is_player = false  # Default fallback
-		
 		if not is_instance_valid(first_target) or first_target.current_hp <= 0:
+			var attacker_is_player: bool = false
+			if is_instance_valid(source):
+				attacker_is_player = _is_player_unit(source)
 			var new_target_inst = _get_frontmost_target(attacker_is_player)
 			if is_instance_valid(new_target_inst):
 				exec_targets[0] = new_target_inst.ball_uuid
 			else:
 				return
-	# Execute without emitting UI; capture basic damage if returned
+	# Execute without emitting UI; capture results for events
 	var damage := 0
 	if is_instance_valid(request.effect_definition):
 		var sim_ctx = request.trigger_context.duplicate(true)
 		sim_ctx["is_simulation"] = true
+		sim_ctx["ability_id"] = request.ability_id
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
-		if typeof(res) == TYPE_INT:
-			damage = int(res)
-			# Construct the same log message as BasicAttackEffect for compatibility
-			if exec_targets.size() > 0:
+		# Preferred: structured stat change results
+		if typeof(res) == TYPE_DICTIONARY:
+			var effect_data: Dictionary = res
+			var stat: String = String(effect_data.get("stat", ""))
+			var amount: int = int(effect_data.get("amount", 0))
+			var targets: Array = effect_data.get("targets", [])
+			if stat == "hp" and not targets.is_empty():
 				var src_inst = get_instance_by_uuid(request.source_uuid)
-				var tgt_inst = get_instance_by_uuid(exec_targets[0])
-				if is_instance_valid(src_inst) and is_instance_valid(tgt_inst):
-					var src_name = tr(src_inst.get_definition().display_name_key)
-					var tgt_name = tr(tgt_inst.get_definition().display_name_key)
-					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [src_name, damage, tgt_name]}))
-					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"target_uuids": [tgt_inst.ball_uuid]}))
+				var source_name := ""
+				if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
+					var src_def = src_inst.get_definition()
+					if "display_name_key" in src_def:
+						source_name = tr(src_def.display_name_key)
+					elif "name" in src_def:
+						source_name = tr(src_def.name)
+					elif "id" in src_def:
+						source_name = String(src_def.id)
+				var tgt_inst = get_instance_by_uuid(String(targets[0]))
+				var target_name := ""
+				if is_instance_valid(tgt_inst) and is_instance_valid(tgt_inst.get_definition()):
+					var tgt_def = tgt_inst.get_definition()
+					if "display_name_key" in tgt_def:
+						target_name = tr(tgt_def.display_name_key)
+					elif "name" in tgt_def:
+						target_name = tr(tgt_def.name)
+					elif "id" in tgt_def:
+						target_name = String(tgt_def.id)
+				if amount >= 0:
+					if source_name != "" and target_name != "":
+						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, target_name, amount]}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp"}))
+				else:
+					var dealt: int = abs(amount)
+					if source_name != "" and target_name != "":
+						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, target_name]}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp"}))
+					# If this damage was lethal (target now at or below 0), enqueue a DEATH event
+					var post_tgt := get_instance_by_uuid(String(targets[0]))
+					if is_instance_valid(post_tgt) and post_tgt.current_hp <= 0:
+						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [post_tgt.ball_uuid]}))
+		# Legacy: integer damage
+		elif typeof(res) == TYPE_INT:
+			damage = int(res)
+			if exec_targets.size() > 0:
+				var src_inst2 = get_instance_by_uuid(request.source_uuid)
+				var tgt_inst2 = get_instance_by_uuid(exec_targets[0])
+				if is_instance_valid(src_inst2) and is_instance_valid(tgt_inst2):
+					var src_name2 = ""
+					var src_def2 = src_inst2.get_definition()
+					if is_instance_valid(src_def2):
+						if "display_name_key" in src_def2:
+							src_name2 = tr(src_def2.display_name_key)
+						elif "name" in src_def2:
+							src_name2 = tr(src_def2.name)
+						elif "id" in src_def2:
+							src_name2 = String(src_def2.id)
+					var tgt_name2 = ""
+					var tgt_def2 = tgt_inst2.get_definition()
+					if is_instance_valid(tgt_def2):
+						if "display_name_key" in tgt_def2:
+							tgt_name2 = tr(tgt_def2.display_name_key)
+						elif "name" in tgt_def2:
+							tgt_name2 = tr(tgt_def2.name)
+						elif "id" in tgt_def2:
+							tgt_name2 = String(tgt_def2.id)
+					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [src_name2, damage, tgt_name2]}))
+					# Legacy damage: encode as negative amount for consistency
+					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": [tgt_inst2.ball_uuid], "amount": -damage, "stat": "hp"}))
+					# If lethal, enqueue DEATH
+					var post_tgt2 := get_instance_by_uuid(exec_targets[0])
+					if is_instance_valid(post_tgt2) and post_tgt2.current_hp <= 0:
+						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [post_tgt2.ball_uuid]}))
 	# Apply deaths and enqueue inventory sync if needed
 	_check_for_deaths(true, out_events)
 
@@ -1175,49 +1245,49 @@ func _process_effect_queue() -> void:
 	if _is_processing_effect: return
 	_is_processing_effect = true
 	_resolve_animator()
-	# Process one request at a time so data and UI advance in lockstep per unit.
+	var all_events: Array[CombatEvent] = []
+	# Snapshot HP before simulation so animator can apply per-event changes visibly
+	var hp_snapshot: Dictionary = {}
+	for k in _battle_instances.keys():
+		var maybe_inst: GachaBallInstance = _battle_instances[k]
+		if not is_instance_valid(maybe_inst):
+			continue
+		var def = maybe_inst.get_definition()
+		if is_instance_valid(def) and def.category == &"UNIT":
+			hp_snapshot[maybe_inst.ball_uuid] = maybe_inst.current_hp
+
+	# 1. Process the entire queue and collect all events.
 	while not _effect_queue.is_empty():
-		var events: Array[CombatEvent] = []
 		var request: EffectRequest = _effect_queue.pop_back()
-		_resolve_single_effect_request(request, events)
+		var current_events: Array[CombatEvent] = []
+		_resolve_single_effect_request(request, current_events)
+		all_events.append_array(current_events)
 
-		# Play just this request's events, then continue to the next.
-		if is_instance_valid(_animator):
-			await _animator.play_turn(events)
-		else:
-			# Fallback: directly emit events with pacing if animator missing
-			for e in events:
-				match e.type:
-					CombatEvent.Type.LOG_MESSAGE:
-						SignalBus.emit_signal("battle_log_event", e.text)
-					CombatEvent.Type.DAMAGE:
-						if e.target_uuids.size() > 0:
-							SignalBus.emit_signal("unit_stats_changed", e.target_uuids[0])
-					CombatEvent.Type.INVENTORY_SYNC:
-						SignalBus.emit_signal("battle_inventory_changed")
-				await get_tree().process_frame
-				await get_tree().create_timer(0.8).timeout
-
+		# If the battle would end mid-queue, stop collecting and defer emission
 		if _is_battle_over():
+			_battle_over_deferred = true
 			break
 
-	_is_processing_effect = false
-	_on_turn_animation_finished()
-
+	# 2. After all logic is processed, play all animations at once.
+	if not all_events.is_empty():
+		if _animator.has_method("set_hp_snapshot"):
+			_animator.set_hp_snapshot(hp_snapshot)
+		_animator.play_turn(all_events)
+	else:
+		# If there were no events to animate, we must manually finish the turn.
+		_on_turn_animation_finished()
 func _on_turn_animation_finished() -> void:
-	# If we're mid-processing per-effect animations, ignore intermediate finished signals.
-	if _is_processing_effect:
-		return
-	# Reset processing flag after animations complete
+	# This signal is the single source of truth for when the combat phase's
+	# presentation is complete. It is safe to proceed to the next phase.
 	_is_processing_effect = false
-	# After all animations, advance phases unless battle ended
-	if _is_battle_over():
-		return
-	# Trigger end-of-turn abilities and advance
-	_trigger_turn_end_abilities()
-	_change_phase(Phases.END_OF_TURN)
-	await get_tree().create_timer(0.1).timeout
-	_change_phase(Phases.START_OF_TURN)
+	if _current_battle_phase == Phases.COMBAT:
+		# If a battle over condition was detected during simulation, emit it now
+		if _battle_over_deferred:
+			_battle_over_deferred = false
+			# Emit and transition to BATTLE_OVER now that visuals are done
+			_emit_battle_over()
+			return
+		_change_phase(Phases.END_OF_TURN)
 
 func _move_instance_to_discard(instance: GachaBallInstance) -> void:
 	if not is_instance_valid(instance): return
@@ -1272,91 +1342,122 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	for unit in player_units:
 		if unit.current_hp <= 0:
 			something_changed = true
-			
-			# Trigger on_death for the dying unit
-			var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
-			AbilityResolver.process_trigger(&"on_death", death_context)
-			
-			# Trigger on_ally_death for all other units
-			var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-			for ally in all_units:
-				if ally.ball_uuid != unit.ball_uuid:
-					var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
-					AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
-			
-			# First move equipped items to discard while ownership still resolves via equipped parent
-			for item_uuid in unit.equipped_item_uuids:
-				if not item_uuid.is_empty():
-					var item_instance := get_instance(item_uuid)
-					if is_instance_valid(item_instance):
-						_move_instance_to_discard(item_instance)
-			# Clear the unit's slots locally (parent mapping was cleared per-item above)
-			unit.equipped_item_uuids.fill("")
-			# Now move the dead unit itself to discard (removes from lineup and updates location atomically)
-			_move_instance_to_discard(unit)
+			if not is_simulation:
+				# Trigger on_death for the dying unit
+				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
+				AbilityResolver.process_trigger(&"on_death", death_context)
+				# Trigger on_ally_death for all other units
+				var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+				for ally in all_units:
+					if ally.ball_uuid != unit.ball_uuid:
+						var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+				# Move equipped items to discard while ownership resolves via equipped parent
+				for item_uuid in unit.equipped_item_uuids:
+					if not item_uuid.is_empty():
+						var item_instance := get_instance(item_uuid)
+						if is_instance_valid(item_instance):
+							_move_instance_to_discard(item_instance)
+				# Clear the unit's slots locally
+				unit.equipped_item_uuids.fill("")
+				# Move the dead unit itself to discard
+				_move_instance_to_discard(unit)
 		
 	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
 			something_changed = true
-			
-			# Trigger on_death for the dying unit
-			var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
-			AbilityResolver.process_trigger(&"on_death", death_context)
-			
-			# Trigger on_ally_death for all other units
-			var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-			for ally in all_units:
-				if ally.ball_uuid != unit.ball_uuid:
-					var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
-					AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
-			
-			# Ensure enemy-equipped items do not outlive their parent.
-			# Clear equipped linkage and erase enemy items from the registry BEFORE removing the unit.
-			# This prevents validator errors where items claim a parent that has been erased.
-			for item_uuid in unit.equipped_item_uuids:
-				if item_uuid.is_empty():
-					continue
-				var item_instance := get_instance(item_uuid)
-				if is_instance_valid(item_instance):
-					# Clear the item's equipped linkage and logical location
-					item_instance.equipped_on_uuid = ""
-					item_instance.equipped_slot_index = -1
-					_update_instance_location(item_instance.ball_uuid, &"", -1)
-					# Enemy items are destroyed on parent death; remove from registry
-					if _battle_instances.has(item_instance.ball_uuid):
-						_battle_instances.erase(item_instance.ball_uuid)
-			# Clear the enemy unit's local slots (we are about to remove the unit)
-			unit.equipped_item_uuids.fill("")
-			
-			_remove_instance_from_container(unit)
-			if _battle_instances.has(unit.ball_uuid):
-				_battle_instances.erase(unit.ball_uuid)
+			if not is_simulation:
+				# Trigger on_death for the dying unit
+				var death_context2: Dictionary = {"source_uuid": unit.ball_uuid}
+				AbilityResolver.process_trigger(&"on_death", death_context2)
+				# Trigger on_ally_death for all other units
+				var all_units2 = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+				for ally in all_units2:
+					if ally.ball_uuid != unit.ball_uuid:
+						var ally_death_context2: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
+				# Ensure enemy-equipped items do not outlive their parent.
+				for item_uuid in unit.equipped_item_uuids:
+					if item_uuid.is_empty():
+						continue
+					var item_instance2 := get_instance(item_uuid)
+					if is_instance_valid(item_instance2):
+						# Clear the item's equipped linkage and logical location
+						item_instance2.equipped_on_uuid = ""
+						item_instance2.equipped_slot_index = -1
+						_update_instance_location(item_instance2.ball_uuid, &"", -1)
+						# Enemy items are destroyed on parent death; remove from registry
+						if _battle_instances.has(item_instance2.ball_uuid):
+							_battle_instances.erase(item_instance2.ball_uuid)
+				# Clear the enemy unit's local slots
+				unit.equipped_item_uuids.fill("")
+				_remove_instance_from_container(unit)
+				if _battle_instances.has(unit.ball_uuid):
+					_battle_instances.erase(unit.ball_uuid)
 		
-	if something_changed:
-		if is_simulation:
-			if out_events != null:
-				out_events.append(CombatEvent.new(CombatEvent.Type.INVENTORY_SYNC))
-		else:
-			SignalBus.emit_signal("battle_inventory_changed")
+	if something_changed and not is_simulation:
+		SignalBus.emit_signal("battle_inventory_changed")
+
+func _on_apply_deaths_requested(dead_unit_uuids: Array) -> void:
+	if dead_unit_uuids == null:
+		return
+	for uuid in dead_unit_uuids:
+		var unit := get_instance_by_uuid(String(uuid))
+		if not is_instance_valid(unit):
+			continue
+		# Apply the same non-simulation removal rules as in _check_for_deaths
+		var def = unit.get_definition()
+		if is_instance_valid(def) and def.category == &"UNIT":
+			if _is_in_player_container_tag(unit.location_container_tag):
+				# Player unit: move equipped items to discard then move unit to discard
+				for item_uuid in unit.equipped_item_uuids:
+					if not item_uuid.is_empty():
+						var item_instance := get_instance(item_uuid)
+						if is_instance_valid(item_instance):
+							_move_instance_to_discard(item_instance)
+				unit.equipped_item_uuids.fill("")
+				_move_instance_to_discard(unit)
+			else:
+				# Enemy unit: clear equipped linkage and erase items, then remove unit
+				for item_uuid2 in unit.equipped_item_uuids:
+					if item_uuid2.is_empty():
+						continue
+					var item2 := get_instance(item_uuid2)
+					if is_instance_valid(item2):
+						item2.equipped_on_uuid = ""
+						item2.equipped_slot_index = -1
+						_update_instance_location(item2.ball_uuid, &"", -1)
+						if _battle_instances.has(item2.ball_uuid):
+							_battle_instances.erase(item2.ball_uuid)
+				unit.equipped_item_uuids.fill("")
+				_remove_instance_from_container(unit)
+				if _battle_instances.has(unit.ball_uuid):
+					_battle_instances.erase(unit.ball_uuid)
+	# After removals, refresh UI
+	SignalBus.emit_signal("battle_inventory_changed")
+	# If battle is now over, defer victory to end of animations
+	if _current_battle_phase == Phases.COMBAT and _is_battle_over():
+		_battle_over_deferred = true
 
 func _is_battle_over() -> bool:
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	if player_lineup.is_empty() or enemy_lineup.is_empty():
-		_current_battle_phase = Phases.BATTLE_OVER
-		if not _battle_over_emitted:
-			_battle_over_emitted = true
-			SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
-			var player_won := not player_lineup.is_empty()
-			var results: Dictionary = {
-				"victory": player_won
-			}
-			SignalBus.emit_signal("battle_ended", results)
-			if player_won:
-				_on_battle_victory()
-		return true  # Always return true if battle is over, regardless of signal emission
-	return false
+	var over := player_lineup.is_empty() or enemy_lineup.is_empty()
+	return over
+
+func _emit_battle_over() -> void:
+	# Transition to BATTLE_OVER and emit results once animations are finished.
+	_current_battle_phase = Phases.BATTLE_OVER
+	if not _battle_over_emitted:
+		_battle_over_emitted = true
+		SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
+		var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+		var player_won := not player_lineup.is_empty()
+		var results: Dictionary = {"victory": player_won}
+		SignalBus.emit_signal("battle_ended", results)
+		if player_won:
+			_on_battle_victory()
 
 func _restore_hero_location_to_run_state() -> void:
 	"""Restore hero's location to original run state location after battle ends."""
@@ -1386,13 +1487,26 @@ func _on_battle_victory() -> void:
 ## @return Array[String] - Array of target UUIDs
 
 func resolve_target(source_uuid: String, target_type: StringName, context: Dictionary) -> Array[String]:
+	print("[DEBUG] resolve_target called: source=", source_uuid, " target_type=", target_type)
 	var source_instance = get_instance_by_uuid(source_uuid)
+	print("[DEBUG] source_instance valid: ", is_instance_valid(source_instance))
 	var is_player_team := false
 	if context.has("team"):
 		is_player_team = (String(context.get("team")) == "PLAYER")
 	elif is_instance_valid(source_instance):
-		is_player_team = _is_player_unit(source_instance)
+		var src_def = source_instance.get_definition()
+		if is_instance_valid(src_def):
+			if src_def.category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
+				var holder = get_instance_by_uuid(source_instance.equipped_on_uuid)
+				if is_instance_valid(holder):
+					is_player_team = _is_player_unit(holder)
+			elif src_def.category == &"TRINKET":
+				# Determine team from container tag
+				is_player_team = (source_instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
+			else:
+				is_player_team = _is_player_unit(source_instance)
 	else:
+		print("[DEBUG] resolve_target returning empty - no valid source instance")
 		return []
 
 	match target_type:
@@ -1401,8 +1515,10 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 		C.TARGET_HOLDER:
 			# For items, return the unit they're equipped to
 			if source_instance.get_definition().category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
+				print("[DEBUG] TARGET_HOLDER for item: ", source_uuid, " equipped to: ", source_instance.equipped_on_uuid)
 				return [source_instance.equipped_on_uuid]
 			# For units, return self
+			print("[DEBUG] TARGET_HOLDER for unit: ", source_uuid, " returning self")
 			return [source_uuid]
 		C.TARGET_ATTACK_TARGET:
 			# Return the target from the attack context
@@ -1423,10 +1539,26 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 			return []
 		# Support frontmost ally for trinket effects
 		&"FRONTMOST_ALLY":
-			var target2 = _get_frontmost_target(!is_player_team)  # Invert to target allies, not enemies
-			if is_instance_valid(target2):
-				return [target2.ball_uuid]
-			return []
+			# Per docs: Player frontmost = rightmost (highest index). Enemy frontmost = leftmost (lowest index).
+			var ally_lineup_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var living_allies = get_instances_in_container(ally_lineup_tag).filter(func(unit): return unit.current_hp > 0)
+			if living_allies.is_empty():
+				return []
+			var best_unit: GachaBallInstance = living_allies[0]
+			var best_index: int = get_location_for_uuid(best_unit.ball_uuid).index
+			for u in living_allies:
+				var idx: int = get_location_for_uuid(u.ball_uuid).index
+				if is_player_team:
+					# Pick highest index
+					if idx > best_index:
+						best_unit = u
+						best_index = idx
+				else:
+					# Pick lowest index
+					if idx < best_index:
+						best_unit = u
+						best_index = idx
+			return [best_unit.ball_uuid]
 		C.TARGET_RANDOM_ENEMY:
 			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 			if not enemies.is_empty():
@@ -1491,6 +1623,13 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 				var target_instance = get_instance_by_uuid(target_uuid)
 				if is_instance_valid(target_instance):
 					result = target_instance.current_hp > source_instance.current_hp
+		C.COND_DAMAGE_WAS_NON_LETHAL:
+			# Check if the unit that took damage is still alive (HP > 0)
+			# For equipped items, we need to check the damaged unit from context, not the item itself
+			var damaged_unit_uuid = context.get("source_uuid", "")
+			var damaged_unit = get_instance_by_uuid(damaged_unit_uuid) if not damaged_unit_uuid.is_empty() else source_instance
+			result = damaged_unit.current_hp > 0 if is_instance_valid(damaged_unit) else false
+			print("[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = ", damaged_unit_uuid, " HP = ", damaged_unit.current_hp if is_instance_valid(damaged_unit) else "invalid", " result = ", result)
 		_:
 			result = false
 	
@@ -1499,15 +1638,35 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 
 ## Enqueue an effect request for processing.
 ## @param effect_request: EffectRequest - The effect request to enqueue
-func enqueue_effect_request(effect_request: EffectRequest) -> void:
-	if is_instance_valid(effect_request):
-		_effect_queue.append(effect_request)
+func enqueue_effect_request(request: EffectRequest) -> void:
+	# Use push_back to add to the end of the array, treating it as a stack.
+	# The _process_effect_queue uses pop_back(), so this ensures new effects
+	# are processed in a Last-In, First-Out (LIFO) order.
+	_effect_queue.push_back(request)
 
 ## Get an instance by UUID.
 ## @param uuid: String - The UUID of the instance
 ## @return GachaBallInstance - The instance, or null if not found
 func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	return _battle_instances.get(uuid, null)
+
+## Get the Hero's UUID (player's unit at slot 0, or first available player unit).
+func get_hero_uuid() -> String:
+	var player_lineup = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	if is_instance_valid(player_lineup):
+		var hero_uuid = player_lineup.get_uuid(0)
+		print("[DEBUG] get_hero_uuid() slot 0: '", hero_uuid, "'")
+		if not hero_uuid.is_empty():
+			return hero_uuid
+		
+		# Fallback: find first non-empty slot in player lineup
+		for i in range(player_lineup.get_size()):
+			var uuid = player_lineup.get_uuid(i)
+			if not uuid.is_empty():
+				print("[DEBUG] get_hero_uuid() fallback to slot ", i, ": '", uuid, "'")
+				return uuid
+	print("[DEBUG] get_hero_uuid() - no valid player lineup container or no units found")
+	return ""
 
 ## Check if a unit is on the player's side.
 ## @param instance: GachaBallInstance - The instance to check
@@ -1614,6 +1773,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		"damage_taken": damage_amount,
 		"attacker_uuid": attacker_uuid
 	}
+	print("[DEBUG] BattleManager.trigger_on_hurt called for unit: ", target_uuid, " damage: ", damage_amount)
 	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
 
 ## Trigger on_kill event for a unit that killed another unit.
@@ -1642,26 +1802,16 @@ func _trigger_turn_start_abilities() -> void:
 	print("[DEBUG] _trigger_turn_start_abilities() called for turn ", _current_turn)
 	_turn_start_abilities_triggered = true  # Set flag here to prevent multiple calls
 	
-	# Trigger turn start abilities for units (each unit gets its own context)
-	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	for unit in all_units:
-		var turn_start_context: Dictionary = {"source_uuid": unit.ball_uuid}
-		AbilityResolver.process_trigger(&"on_turn_start", turn_start_context)
-	
-	# Trigger turn start abilities for trinkets (global call - trinkets will be processed once)
-	var global_turn_start_context: Dictionary = {"turn": _current_turn}
-	AbilityResolver.process_trigger(&"on_turn_start", global_turn_start_context)
+	# Trigger turn start abilities for all instances using unified processing
+	var turn_start_context: Dictionary = {"turn": _current_turn}
+	AbilityResolver.process_trigger(&"on_turn_start", turn_start_context)
 	
 	print("[DEBUG] Effect queue size after trigger: ", _effect_queue.size())
+	
+	# Process turn start effects using the standard simulation pipeline
+	if not _effect_queue.is_empty():
+		_process_effect_queue()
 
-## Process turn start effects synchronously without triggering phase changes.
-func _process_turn_start_effects() -> void:
-	print("[DEBUG] _process_turn_start_effects() called, queue size: ", _effect_queue.size())
-	# Process effects immediately and synchronously for turn start abilities
-	while not _effect_queue.is_empty():
-		var request: EffectRequest = _effect_queue.pop_back()
-		print("[DEBUG] Processing effect request: ", request.effect_definition, " targets: ", request.resolved_targets)
-		_resolve_single_effect_request(request, [])  # No animation events needed for turn start
 
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
@@ -1710,10 +1860,14 @@ func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
 	return living_targets[0] if attacker_is_player else living_targets[-1]
 
 func _on_end_turn_requested() -> void:
+	print("[DEBUG] End turn requested, current phase: ", get_current_phase_name())
 	if _current_battle_phase == Phases.MANAGEMENT:
+		print("[DEBUG] Transitioning to COMBAT phase")
 		_populate_effect_queue()
 		_change_phase(Phases.COMBAT)
 		_process_effect_queue()
+	else:
+		print("[DEBUG] End turn ignored - not in MANAGEMENT phase")
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	# Only recalculate stats for the specific unit that changed
@@ -1775,7 +1929,6 @@ func _on_results_acknowledged() -> void:
 	if _current_turn >= 2 and not _turn_start_abilities_triggered:
 		print("[DEBUG] Turn ", _current_turn, " - triggering turn start abilities after mini-game")
 		_trigger_turn_start_abilities()
-		_process_turn_start_effects()
 	else:
 		print("[DEBUG] Turn ", _current_turn, " - skipping turn start abilities (first turn or already triggered)")
 	

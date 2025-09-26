@@ -23,13 +23,29 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			"hp":
 				var old_hp = inst.current_hp
 				var new_hp = max(0, inst.current_hp + base_value)
-				print("[DEBUG] EffectModifyStat healing ", inst.get_definition().display_name_key, " from ", old_hp, " to ", new_hp)
-				if is_simulation and inst.has_method("set_current_hp_silent"):
-					inst.set_current_hp_silent(new_hp)
-				else:
+				var ability_id = context.get("ability_id", "unknown_ability")
+				var target_name = "unknown"
+				var target_def = inst.get_definition()
+				if is_instance_valid(target_def):
+					if "display_name_key" in target_def:
+						target_name = target_def.display_name_key
+					elif "name" in target_def:
+						target_name = target_def.name
+					elif "id" in target_def:
+						target_name = target_def.id
+				var log_msg = "EffectModifyStat: %s changed for %s from %d to %d (Source: %s)" % [stat, target_name, old_hp, new_hp, ability_id]
+				print("[DEBUG] ", log_msg)
+				if not is_simulation:
 					inst.set_current_hp(new_hp)
+				# Other stats can be added here when implemented
 			_:
 				pass
-	# Optionally notify UI; BattleView generally listens to unit_stats_changed which set_current_hp emits.
-	SignalBus.emit_signal("battle_inventory_changed")
+	# During simulation, return structured result for BattleManager to create events.
+	if is_simulation:
+		return {
+			"stat": stat,
+			"amount": base_value,
+			"targets": targets
+		}
+	# Non-simulation return (legacy compatibility)
 	return base_value

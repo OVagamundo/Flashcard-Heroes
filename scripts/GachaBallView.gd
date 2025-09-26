@@ -30,6 +30,12 @@ func _ready() -> void:
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
 		bus.unit_stats_changed.connect(_on_unit_stats_changed)
+		if bus.has_signal("unit_flash_effect"):
+			bus.connect("unit_flash_effect", _on_unit_flash_effect)
+		if bus.has_signal("unit_bump_attack"):
+			bus.connect("unit_bump_attack", _on_unit_bump_attack)
+		if bus.has_signal("unit_death_fade"):
+			bus.connect("unit_death_fade", _on_unit_death_fade)
 
 func _exit_tree() -> void:
 	# Proactively disconnect signals and end any active drag to prevent leaks
@@ -41,6 +47,12 @@ func _exit_tree() -> void:
 			bus.disconnect("view_deselected", _on_view_deselected)
 		if bus.unit_stats_changed.is_connected(_on_unit_stats_changed):
 			bus.unit_stats_changed.disconnect(_on_unit_stats_changed)
+		if bus.has_signal("unit_flash_effect") and bus.is_connected("unit_flash_effect", _on_unit_flash_effect):
+			bus.disconnect("unit_flash_effect", _on_unit_flash_effect)
+		if bus.has_signal("unit_bump_attack") and bus.is_connected("unit_bump_attack", _on_unit_bump_attack):
+			bus.disconnect("unit_bump_attack", _on_unit_bump_attack)
+		if bus.has_signal("unit_death_fade") and bus.is_connected("unit_death_fade", _on_unit_death_fade):
+			bus.disconnect("unit_death_fade", _on_unit_death_fade)
 
 	# If this view is being freed during a drag, centrally end the drag and visuals
 	if GlobalInteractionRouter.is_drag_active():
@@ -281,6 +293,44 @@ func _on_view_deselected(view: Control) -> void:
 	if view == self:
 		_is_selected = false
 		_apply_selection_feedback()
+
+func _on_unit_flash_effect(unit_uuid: String, flash_color: Color) -> void:
+	# Only respond if this view represents the unit
+	if _instance_uuid == unit_uuid:
+		_flash_unit_color(flash_color)
+
+func _flash_unit_color(flash_color: Color) -> void:
+	# Briefly flash the panel to the given color and back
+	var original_modulate: Color = modulate
+	modulate = flash_color
+	var tween = create_tween()
+	tween.tween_property(self, "modulate", original_modulate, 0.3)
+
+func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
+	# Only respond if this view represents the attacker
+	if _instance_uuid != unit_uuid:
+		return
+	# Small bump distance to avoid overlapping allies
+	var distance := 10.0
+	var start_pos: Vector2 = position
+	var bump_target := start_pos + (direction.normalized() * distance)
+	# Kill any existing position tweens by setting immediately to start
+	position = start_pos
+	var tween = create_tween()
+	# Quick move forward
+	tween.tween_property(self, "position", bump_target, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Then return
+	tween.tween_property(self, "position", start_pos, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+func _on_unit_death_fade(unit_uuid: String) -> void:
+	# Only respond if this view represents the dying unit
+	if _instance_uuid != unit_uuid:
+		return
+	# Flash red if not already, then fade out alpha for visual clarity
+	var start_modulate: Color = modulate
+	var fade_tween = create_tween()
+	# Ensure we are visible, then fade to 0 alpha
+	fade_tween.tween_property(self, "modulate:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 
 func _apply_selection_feedback() -> void:
