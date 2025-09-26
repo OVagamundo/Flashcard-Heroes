@@ -23,3 +23,7 @@ item.effect.both,Add (HP) HP and (PWR) PWR to the unit.
 trinket.healing_amulet.name,Healing Amulet
 trinket.healing_amulet.desc,A simple but reliable enchanted charm.
 ability.healing_amulet.desc,Heals the frontmost ally unit by 2HP
+ability.item_tier2c_passive_heal.name,Regeneration
+ability.item_tier2c_passive_heal.desc,When this unit takes non-lethal damage, heal 1 HP.
+ability.unit_tier1a_passive_heal.name,Resilience
+ability.unit_tier1a_passive_heal.desc,When this unit takes non-lethal damage, heal 1 HP.

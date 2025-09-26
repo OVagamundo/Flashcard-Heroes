@@ -26,8 +26,10 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 					if is_instance_valid(item):
 						print("[DEBUG] Equipped item: ", item_uuid, " definition: ", item.get_definition().id)
 
-	# Loop 1: GachaBallInstances (Units & Equipped Items)
+	# Process abilities in stacking order: Units first, then equipped items, then trinkets
 	var all_instances = battle_manager.get_all_instances()
+	
+	# Phase 1: Process unit abilities first (for proper stacking order)
 	for instance_uuid in all_instances:
 		var instance = all_instances.get(instance_uuid)
 		if not is_instance_valid(instance):
@@ -38,55 +40,119 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if definition.ability_definitions.is_empty():
 			continue
 		
-		# For equipped items with on_hurt triggers, only process if the item is equipped to the unit that took damage
-		if definition.category == &"ITEM" and trigger == &"on_hurt":
-			var damaged_unit_uuid = context.get("source_uuid", "")
-			if not instance.equipped_on_uuid.is_empty() and instance.equipped_on_uuid == damaged_unit_uuid:
-				if trigger == &"on_hurt":
-					print("[DEBUG] Found on_hurt ability on equipped item: ", instance_uuid, " definition: ", definition.id, " equipped to: ", damaged_unit_uuid)
-				for ability in definition.ability_definitions:
-					if ability.trigger == trigger:
-						print("[DEBUG] Processing equipped item ability: ", ability.id, " for item: ", instance_uuid)
-						print("[DEBUG] Item equipped_on_uuid: ", instance.equipped_on_uuid, " equipped_slot_index: ", instance.equipped_slot_index)
-						_process_ability(ability, instance_uuid, battle_manager, context)
-		else:
-			# Process abilities normally for units, trinkets, and other triggers
+		# Only process units in this phase
+		if definition.category == &"UNIT":
+			# For on_hurt triggers, only process if this is the unit that took damage
+			if trigger == &"on_hurt":
+				var damaged_unit_uuid = context.get("source_uuid", "")
+				if instance_uuid != damaged_unit_uuid:
+					continue
+			
 			for ability in definition.ability_definitions:
 				if ability.trigger == trigger:
 					if trigger == &"on_hurt":
-						print("[DEBUG] Found on_hurt ability on instance: ", instance_uuid, " definition: ", definition.id)
+						print("[DEBUG] Found on_hurt ability on damaged unit: ", instance_uuid, " definition: ", definition.id)
+					_process_ability(ability, instance_uuid, battle_manager, context)
+	
+	# Phase 2: Process equipped item abilities (in slot order for deterministic stacking)
+	# Collect all equipped items that match the trigger
+	var equipped_items_to_process = []
+	for instance_uuid in all_instances:
+		var instance = all_instances.get(instance_uuid)
+		if not is_instance_valid(instance):
+			continue
+		var definition = instance.get_definition()
+		if not is_instance_valid(definition) or not ("ability_definitions" in definition):
+			continue
+		if definition.ability_definitions.is_empty():
+			continue
+		
+		# Only collect equipped items in this phase
+		if definition.category == &"ITEM" and not instance.equipped_on_uuid.is_empty():
+			# For on_hurt triggers, only process if the item is equipped to the unit that took damage
+			if trigger == &"on_hurt":
+				var damaged_unit_uuid = context.get("source_uuid", "")
+				if instance.equipped_on_uuid != damaged_unit_uuid:
+					continue
+			
+			# Check if this item has abilities for this trigger
+			var has_matching_ability = false
+			for ability in definition.ability_definitions:
+				if ability.trigger == trigger:
+					has_matching_ability = true
+					break
+			
+			if has_matching_ability:
+				equipped_items_to_process.append({
+					"instance_uuid": instance_uuid,
+					"instance": instance,
+					"definition": definition,
+					"slot_index": instance.equipped_slot_index
+				})
+	
+	# Sort by slot index to ensure deterministic order
+	equipped_items_to_process.sort_custom(func(a, b): return a.slot_index < b.slot_index)
+	
+	# Process equipped items in slot order
+	for item_data in equipped_items_to_process:
+		var instance_uuid = item_data.instance_uuid
+		var instance = item_data.instance
+		var definition = item_data.definition
+		
+		print("[DEBUG] Processing equipped item: ", instance_uuid, " definition: ", definition.id, " equipped to: ", instance.equipped_on_uuid, " slot: ", instance.equipped_slot_index)
+		for ability in definition.ability_definitions:
+			if ability.trigger == trigger:
+				print("[DEBUG] Processing equipped item ability: ", ability.id, " for item: ", instance_uuid)
+				_process_ability(ability, instance_uuid, battle_manager, context)
+	
+	# Phase 3: Process trinket abilities
+	for instance_uuid in all_instances:
+		var instance = all_instances.get(instance_uuid)
+		if not is_instance_valid(instance):
+			continue
+		var definition = instance.get_definition()
+		if not is_instance_valid(definition) or not ("ability_definitions" in definition):
+			continue
+		if definition.ability_definitions.is_empty():
+			continue
+		
+		# Only process trinkets in this phase
+		if definition.category == &"TRINKET":
+			for ability in definition.ability_definitions:
+				if ability.trigger == trigger:
+					if trigger == &"on_hurt":
+						print("[DEBUG] Found on_hurt ability on trinket: ", instance_uuid, " definition: ", definition.id)
 					
 					# Apply trinket source rules per AbilitySystem.md
 					var source_uuid_for_ability = instance_uuid
-					if definition.category == &"TRINKET":
-						var source_instance = battle_manager.get_instance_by_uuid(instance_uuid)
-						print("[DEBUG] Trinket source resolution for: ", instance_uuid)
-						if is_instance_valid(source_instance):
-							print("[DEBUG] Trinket container: ", source_instance.location_container_tag)
-							if source_instance.location_container_tag == battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
-								# Player trinkets: Hero is always the source
-								var hero_uuid = battle_manager.get_hero_uuid()
-								print("[DEBUG] Player trinket - Hero UUID: '", hero_uuid, "'")
-								if not hero_uuid.is_empty():
-									source_uuid_for_ability = hero_uuid
-								else:
-									print("[DEBUG] WARNING: Hero UUID is empty for player trinket!")
+					var source_instance = battle_manager.get_instance_by_uuid(instance_uuid)
+					print("[DEBUG] Trinket source resolution for: ", instance_uuid)
+					if is_instance_valid(source_instance):
+						print("[DEBUG] Trinket container: ", source_instance.location_container_tag)
+						if source_instance.location_container_tag == battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
+							# Player trinkets: Hero is always the source
+							var hero_uuid = battle_manager.get_hero_uuid()
+							print("[DEBUG] Player trinket - Hero UUID: '", hero_uuid, "'")
+							if not hero_uuid.is_empty():
+								source_uuid_for_ability = hero_uuid
 							else:
-								# Enemy trinkets: source depends on trigger context
-								if context.has("source_uuid"):
-									source_uuid_for_ability = context.get("source_uuid")
-									print("[DEBUG] Enemy trinket - using context source: ", source_uuid_for_ability)
-								else:
-									# For global triggers, use first enemy unit as source for targeting
-									var enemy_units = battle_manager.get_instances_in_container(battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-									if not enemy_units.is_empty():
-										source_uuid_for_ability = enemy_units[0].ball_uuid
-										print("[DEBUG] Enemy trinket - using first enemy as source: ", source_uuid_for_ability)
-									else:
-										source_uuid_for_ability = ""
-										print("[DEBUG] Enemy trinket - no enemy units found, using empty source")
+								print("[DEBUG] WARNING: Hero UUID is empty for player trinket!")
 						else:
-							print("[DEBUG] WARNING: Invalid trinket source instance for: ", instance_uuid)
+							# Enemy trinkets: source depends on trigger context
+							if context.has("source_uuid"):
+								source_uuid_for_ability = context.get("source_uuid")
+								print("[DEBUG] Enemy trinket - using context source: ", source_uuid_for_ability)
+							else:
+								# For global triggers, use first enemy unit as source for targeting
+								var enemy_units = battle_manager.get_instances_in_container(battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+								if not enemy_units.is_empty():
+									source_uuid_for_ability = enemy_units[0].ball_uuid
+									print("[DEBUG] Enemy trinket - using first enemy as source: ", source_uuid_for_ability)
+								else:
+									source_uuid_for_ability = ""
+									print("[DEBUG] Enemy trinket - no enemy units found, using empty source")
+					else:
+						print("[DEBUG] WARNING: Invalid trinket source instance for: ", instance_uuid)
 					
 					_process_ability(ability, source_uuid_for_ability, battle_manager, context)
 

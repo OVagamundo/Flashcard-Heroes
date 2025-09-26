@@ -9,347 +9,89 @@ WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished whe
 [DEBUG] End turn requested, current phase: MANAGEMENT
 [DEBUG] Transitioning to COMBAT phase
 [DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 5
-[DEBUG] Apprentice takes 3 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758892661_7929 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758892661_7929", "damage_taken": 3, "attacker_uuid": "hero_1758892661_8575" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Squire takes 4 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892661_7769 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892661_7769", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758892661_8363" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Knight takes 2 damage. HP: 4 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892661_8363 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892661_8363", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758892661_2349" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892661_0307", ""]
-[DEBUG] Equipped item: item_t2_c_1758892661_0307 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892661_0307 definition: item_t2_c equipped to: unit_t2_c_1758892661_8363
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892661_0307
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758892661_8363 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892661_0307
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758892661_8363 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758892661_0307 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758892661_0307 equipped to: unit_t2_c_1758892661_8363
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t2_c_1758892661_8363"]
-[DEBUG] EffectModifyStat: hp changed for unit_t2_c.name from 2 to 3 (Source: item_tier2c_passive_heal)
-[DEBUG] Knight takes 1 damage. HP: 2 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892661_8363 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892661_8363", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758892661_6434" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892661_0307", ""]
-[DEBUG] Equipped item: item_t2_c_1758892661_0307 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892661_0307 definition: item_t2_c equipped to: unit_t2_c_1758892661_8363
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892661_0307
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758892661_8363 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892661_0307
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758892661_8363 HP = 1 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758892661_0307 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758892661_0307 equipped to: unit_t2_c_1758892661_8363
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t2_c_1758892661_8363"]
-[DEBUG] EffectModifyStat: hp changed for unit_t2_c.name from 1 to 2 (Source: item_tier2c_passive_heal)
-[DEBUG] Knight takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892661_8363 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892661_8363", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758892661_1615" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892661_0307", ""]
-[DEBUG] Equipped item: item_t2_c_1758892661_0307 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892661_0307 definition: item_t2_c equipped to: unit_t2_c_1758892661_8363
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892661_0307
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758892661_8363 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892661_0307
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758892661_8363 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] End of turn 1 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 2
-[DEBUG] Turn 2 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892661_2913
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1758892661_1615
-[DEBUG] _process_ability called for ability:  source: unit_t1_b_1758892661_1615
-[DEBUG] resolve_target called: source=unit_t1_b_1758892661_1615 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758892661_1615"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892661_5979
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 3: 'hero_1758892661_8575'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758892661_8575'
-[DEBUG] _process_ability called for ability:  source: hero_1758892661_8575
-[DEBUG] resolve_target called: source=hero_1758892661_8575 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1758892661_8575"]
-[DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for hero.name from 11 to 13 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t1_b.name from 2 to 4 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 3
-[DEBUG] Squire takes 3 damage. HP: 4 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892661_1615 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892661_1615", "damage_taken": 3, "attacker_uuid": "hero_1758892661_8575" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Squire takes 3 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892661_1615 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892661_1615", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758892661_0435" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Knight takes 2 damage. HP: 3 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892661_0435 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892661_0435", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758892661_2349" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[DEBUG] Knight takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892661_0435 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892661_0435", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758892661_6434" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[DEBUG] End of turn 2 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 3
-[DEBUG] Turn 3 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 3
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892661_2913
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1758892661_6434
-[DEBUG] _process_ability called for ability:  source: unit_t1_b_1758892661_6434
-[DEBUG] resolve_target called: source=unit_t1_b_1758892661_6434 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758892661_6434"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892661_5979
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 3: 'hero_1758892661_8575'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758892661_8575'
-[DEBUG] _process_ability called for ability:  source: hero_1758892661_8575
-[DEBUG] resolve_target called: source=hero_1758892661_8575 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1758892661_8575"]
-[DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for hero.name from 13 to 15 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t1_b.name from 2 to 4 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
 [DEBUG] Enemy lineup size: 2
-[DEBUG] Squire takes 3 damage. HP: 4 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892661_6434 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892661_6434", "damage_taken": 3, "attacker_uuid": "hero_1758892661_8575" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Hero takes 2 damage. HP: 15 -> 13
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758892661_8575 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758892661_8575", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758892661_2349" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892661_8532", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758892661_8532 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892661_8532 definition: item_t2_c equipped to: hero_1758892661_8575
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892661_8532
-[DEBUG] Item equipped_on_uuid: hero_1758892661_8575 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892661_8532
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758892661_8575 HP = 13 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758892661_8532 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758892661_8532 equipped to: hero_1758892661_8575
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758892661_8575"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 13 to 14 (Source: item_tier2c_passive_heal)
-[DEBUG] Hero takes 1 damage. HP: 13 -> 12
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758892661_8575 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758892661_8575", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758892661_6434" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892661_8532", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758892661_8532 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892661_8532 definition: item_t2_c equipped to: hero_1758892661_8575
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892661_8532
-[DEBUG] Item equipped_on_uuid: hero_1758892661_8575 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892661_8532
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758892661_8575 HP = 12 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758892661_8532 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758892661_8532 equipped to: hero_1758892661_8575
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758892661_8575"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 12 to 13 (Source: item_tier2c_passive_heal)
-[DEBUG] End of turn 3 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 4
-[DEBUG] Turn 4 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 4
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892661_2913
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1758892661_6434
-[DEBUG] _process_ability called for ability:  source: unit_t1_b_1758892661_6434
-[DEBUG] resolve_target called: source=unit_t1_b_1758892661_6434 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758892661_6434"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892661_5979
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 3: 'hero_1758892661_8575'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758892661_8575'
-[DEBUG] _process_ability called for ability:  source: hero_1758892661_8575
-[DEBUG] resolve_target called: source=hero_1758892661_8575 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1758892661_8575"]
-[DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for hero.name from 14 to 16 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t1_b.name from 1 to 3 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 2
-[DEBUG] Squire takes 3 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892661_6434 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892661_6434", "damage_taken": 3, "attacker_uuid": "hero_1758892661_8575" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Apprentice takes 4 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758892661_2349 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758892661_2349", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758892661_0435" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Battle victory detected
-[DEBUG] Restored hero location to run state: PlayerLineup:0
-[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
-[DEBUG] Starting turn 1
-[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 5
-[DEBUG] Squire takes 3 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892832_9572 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892832_9572", "damage_taken": 3, "attacker_uuid": "hero_1758892832_0546" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Apprentice takes 6 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758892832_3387 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758892832_3387", "damage_taken": 6, "attacker_uuid": "unit_t2_c_1758892832_4875" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Knight takes 6 damage. HP: 6 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892832_4875 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892832_4875", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1758892832_7717" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892832_1465", "item_t3_d_1758892832_7991"]
-[DEBUG] Equipped item: item_t2_c_1758892832_1465 definition: item_t2_c
-[DEBUG] Equipped item: item_t3_d_1758892832_7991 definition: item_t3_d
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892832_1465 definition: item_t2_c equipped to: unit_t2_c_1758892832_4875
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892832_1465
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758892832_4875 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892832_1465
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758892832_4875 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Hero takes 6 damage. HP: 11 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758892832_0546 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758892832_0546", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1758892832_0162" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892832_1646", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758892832_1646 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892832_1646 definition: item_t2_c equipped to: hero_1758892832_0546
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892832_1646
-[DEBUG] Item equipped_on_uuid: hero_1758892832_0546 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892832_1646
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758892832_0546 HP = 5 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758892832_1646 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758892832_1646 equipped to: hero_1758892832_0546
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758892832_0546"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 5 to 6 (Source: item_tier2c_passive_heal)
-[DEBUG] Hero takes 1 damage. HP: 5 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758892832_0546 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758892832_0546", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758892832_2878" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758892832_1646", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758892832_1646 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758892832_1646 definition: item_t2_c equipped to: hero_1758892832_0546
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758892832_1646
-[DEBUG] Item equipped_on_uuid: hero_1758892832_0546 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758892832_1646
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758892832_0546 HP = 4 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758892832_1646 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758892832_1646 equipped to: hero_1758892832_0546
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758892832_0546"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 4 to 5 (Source: item_tier2c_passive_heal)
-[DEBUG] End of turn 1 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 2
-[DEBUG] Turn 2 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892832_6800
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1758892832_2878
-[DEBUG] _process_ability called for ability:  source: unit_t1_b_1758892832_2878
-[DEBUG] resolve_target called: source=unit_t1_b_1758892832_2878 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758892832_2878"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892832_3574
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 4: 'hero_1758892832_0546'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758892832_0546'
-[DEBUG] _process_ability called for ability:  source: hero_1758892832_0546
-[DEBUG] resolve_target called: source=hero_1758892832_0546 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1758892832_0546"]
-[DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for hero.name from 6 to 8 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t1_b.name from 2 to 4 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 3
-[DEBUG] Squire takes 4 damage. HP: 4 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758892832_2878 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758892832_2878", "damage_taken": 4, "attacker_uuid": "hero_1758892832_0546" }
-[DEBUG] Damaged unit equipped items: [""]
 [DEBUG] unit_t3_d.name takes 3 damage. HP: 6 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758892832_0162 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758892832_0162", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758892832_4875" }
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928501_2211 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928501_2211", "damage_taken": 3, "attacker_uuid": "hero_1758928501_9792" }
 [DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758892832_0162 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758892832_0162", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758892832_3187" }
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 3 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928501_2211 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928501_2211", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758928501_7974" }
 [DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 7 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758892832_7717 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758892832_7717", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758892832_6411" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1758892832_4336", "", "", ""]
-[DEBUG] Equipped item: item_t1_a_1758892832_4336 definition: item_t1_a
-[DEBUG] Knight takes 6 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758892832_6411 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758892832_6411", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1758892832_7717" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[DEBUG] End of turn 2 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 3
-[DEBUG] Turn 3 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 3
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892832_6800
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1758892832_7717
-[DEBUG] _process_ability called for ability:  source: unit_t3_d_1758892832_7717
-[DEBUG] resolve_target called: source=unit_t3_d_1758892832_7717 target_type=FRONTMOST_ALLY
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 2 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928501_2211 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928501_2211", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758928501_3343" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEBUG] unit_t3_d.name takes 3 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928501_2211 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928501_2211", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758928501_5138" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEBUG] Apprentice takes 1 damage. HP: 2 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758928501_5138 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758928501_5138", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758928501_6470" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1758928501_0601"]
+[DEBUG] Equipped item: item_t2_c_1758928501_0601 definition: item_t2_c
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1758928501_5138 definition: unit_t1_a
+[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1758928501_5138
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758928501_5138 HP = 1 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=unit_t1_a_1758928501_5138 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1758892832_7717"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758892832_3574
+[DEBUG] TARGET_HOLDER for unit: unit_t1_a_1758928501_5138 returning self
+[DEBUG] AbilityResolver effect: <Resource#-9223371962548484671> target_type: HOLDER resolved_targets: ["unit_t1_a_1758928501_5138"]
+[DEBUG] Processing equipped item: item_t2_c_1758928501_0601 definition: item_t2_c equipped to: unit_t1_a_1758928501_5138 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758928501_0601
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758928501_0601
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758928501_5138 HP = 1 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1758928501_0601 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1758928501_0601 equipped to: unit_t1_a_1758928501_5138
+[DEBUG] AbilityResolver effect: <Resource#-9223371960619104816> target_type: HOLDER resolved_targets: ["unit_t1_a_1758928501_5138"]
+[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 1 to 2 (Source: item_tier2c_passive_heal)
+[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 1 to 2 (Source: unit_tier1a_passive_heal)
+[DEBUG] End of turn 1 - triggering turn end abilities and advancing
+[DEBUG] Starting turn 2
+[DEBUG] Turn 2 - triggering turn start abilities after mini-game
+[DEBUG] _trigger_turn_start_abilities() called for turn 2
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758928501_7292
+[DEBUG] Trinket container: EnemyTrinkets
+[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1758928501_6470
+[DEBUG] _process_ability called for ability:  source: unit_t1_b_1758928501_6470
+[DEBUG] resolve_target called: source=unit_t1_b_1758928501_6470 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959176264236> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758928501_6470"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758928501_9424
 [DEBUG] Trinket container: PlayerTrinkets
 [DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 2: 'hero_1758892832_0546'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758892832_0546'
-[DEBUG] _process_ability called for ability:  source: hero_1758892832_0546
-[DEBUG] resolve_target called: source=hero_1758892832_0546 target_type=FRONTMOST_ALLY
+[DEBUG] get_hero_uuid() fallback to slot 2: 'hero_1758928501_9792'
+[DEBUG] Player trinket - Hero UUID: 'hero_1758928501_9792'
+[DEBUG] _process_ability called for ability:  source: hero_1758928501_9792
+[DEBUG] resolve_target called: source=hero_1758928501_9792 target_type=FRONTMOST_ALLY
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t2_c_1758892832_3187"]
+[DEBUG] AbilityResolver effect: <Resource#-9223371959176264236> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_a_1758928501_5138"]
 [DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for unit_t2_c.name from 3 to 5 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 4 to 6 (Source: )
+[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 3 to 5 (Source: )
+[DEBUG] EffectModifyStat: hp changed for unit_t1_b.name from 3 to 5 (Source: )
 [DEBUG] End turn requested, current phase: MANAGEMENT
 [DEBUG] Transitioning to COMBAT phase
 [DEBUG] _populate_effect_queue() called - setting up combat
 [DEBUG] Enemy lineup size: 1
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 6 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758892832_7717 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758892832_7717", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758892832_4875" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1758892832_4336", "", "", ""]
-[DEBUG] Equipped item: item_t1_a_1758892832_4336 definition: item_t1_a
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758892832_7717 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758892832_7717", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758892832_3187" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1758892832_4336", "", "", ""]
-[DEBUG] Equipped item: item_t1_a_1758892832_4336 definition: item_t1_a
+[DEBUG] Squire takes 3 damage. HP: 5 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758928501_6470 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758928501_6470", "damage_taken": 3, "attacker_uuid": "hero_1758928501_9792" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1758928501_5305"]
+[DEBUG] Equipped item: item_t1_a_1758928501_5305 definition: item_t1_a
+[DEBUG] Squire takes 1 damage. HP: 2 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758928501_6470 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758928501_6470", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758928501_7974" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1758928501_5305"]
+[DEBUG] Equipped item: item_t1_a_1758928501_5305 definition: item_t1_a
+[DEBUG] Squire takes 1 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1758928501_6470 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1758928501_6470", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758928501_3343" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1758928501_5305"]
+[DEBUG] Equipped item: item_t1_a_1758928501_5305 definition: item_t1_a
 [DEBUG] Battle victory detected
 [DEBUG] Restored hero location to run state: PlayerLineup:0
 [DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
@@ -358,476 +100,62 @@ WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished whe
 [DEBUG] End turn requested, current phase: MANAGEMENT
 [DEBUG] Transitioning to COMBAT phase
 [DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 6
+[DEBUG] Enemy lineup size: 3
+[DEBUG] Knight takes 3 damage. HP: 3 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758928627_0412 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758928627_0412", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758928627_2912" }
+[DEBUG] Damaged unit equipped items: ["", ""]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 8 -> 6
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928627_7147 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928627_7147", "damage_taken": 2, "attacker_uuid": "hero_1758928627_4387" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1758928627_6898", "", "", ""]
+[DEBUG] Equipped item: item_t3_d_1758928627_6898 definition: item_t3_d
 [DEBUG] unit_t3_d.name takes 3 damage. HP: 6 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_2653 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_2653", "damage_taken": 3, "attacker_uuid": "hero_1758893103_9114" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] unit_t3_d.name takes 7 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_2653 damage: 7
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_2653", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1758893103_9850" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] unit_t3_d.name takes 4 damage. HP: 8 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_9850 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_9850", "damage_taken": 4, "attacker_uuid": "unit_t1_a_1758893103_0613" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4761", "item_t1_a_1758893103_1396", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4761 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_a_1758893103_1396 definition: item_t1_a
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4761 definition: item_t2_c equipped to: unit_t3_d_1758893103_9850
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4761
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_9850 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4761
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_9850 HP = 4 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_4761 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_4761 equipped to: unit_t3_d_1758893103_9850
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893103_9850"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 4 to 5 (Source: item_tier2c_passive_heal)
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 4 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_9850 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_9850", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758893103_6446" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4761", "item_t1_a_1758893103_1396", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4761 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_a_1758893103_1396 definition: item_t1_a
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4761 definition: item_t2_c equipped to: unit_t3_d_1758893103_9850
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4761
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_9850 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4761
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_9850 HP = 1 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_4761 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_4761 equipped to: unit_t3_d_1758893103_9850
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893103_9850"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 1 to 2 (Source: item_tier2c_passive_heal)
-[DEBUG] unit_t3_d.name takes 8 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_9850 damage: 8
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_9850", "damage_taken": 8, "attacker_uuid": "unit_t3_d_1758893103_7604" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4761", "item_t1_a_1758893103_1396", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4761 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_a_1758893103_1396 definition: item_t1_a
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4761 definition: item_t2_c equipped to: unit_t3_d_1758893103_9850
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4761
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_9850 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4761
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_9850 HP = 0 result = false
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928627_7147 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928627_7147", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758928627_1469" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1758928627_6898", "", "", ""]
+[DEBUG] Equipped item: item_t3_d_1758928627_6898 definition: item_t3_d
+[DEBUG] unit_t3_d.name takes 3 damage. HP: 3 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758928627_7147 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758928627_7147", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758928627_7963" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1758928627_6898", "", "", ""]
+[DEBUG] Equipped item: item_t3_d_1758928627_6898 definition: item_t3_d
+[DEBUG] Apprentice takes 2 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758928627_7963 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758928627_7963", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1758928627_1658" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1758928627_3564"]
+[DEBUG] Equipped item: item_t2_c_1758928627_3564 definition: item_t2_c
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1758928627_7963 definition: unit_t1_a
+[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1758928627_7963
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758928627_7963 HP = 0 result = false
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
+[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
+[DEBUG] Processing equipped item: item_t2_c_1758928627_3564 definition: item_t2_c equipped to: unit_t1_a_1758928627_7963 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758928627_3564
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758928627_3564
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758928627_7963 HP = 0 result = false
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
 [DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Hero takes 2 damage. HP: 11 -> 9
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758893103_9114 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758893103_9114", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758893103_0107" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_7758", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_7758 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_7758 definition: item_t2_c equipped to: hero_1758893103_9114
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_7758
-[DEBUG] Item equipped_on_uuid: hero_1758893103_9114 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_7758
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758893103_9114 HP = 9 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_7758 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_7758 equipped to: hero_1758893103_9114
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758893103_9114"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 9 to 10 (Source: item_tier2c_passive_heal)
-[DEBUG] Hero takes 6 damage. HP: 9 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758893103_9114 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758893103_9114", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1758893103_0054" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_7758", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_7758 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_7758 definition: item_t2_c equipped to: hero_1758893103_9114
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_7758
-[DEBUG] Item equipped_on_uuid: hero_1758893103_9114 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_7758
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758893103_9114 HP = 3 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_7758 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_7758 equipped to: hero_1758893103_9114
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758893103_9114"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 3 to 4 (Source: item_tier2c_passive_heal)
 [DEBUG] End of turn 1 - triggering turn end abilities and advancing
 [DEBUG] Starting turn 2
 [DEBUG] Turn 2 - triggering turn start abilities after mini-game
 [DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758893103_4027
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758928627_0445
 [DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1758893103_0054
-[DEBUG] _process_ability called for ability:  source: unit_t3_d_1758893103_0054
-[DEBUG] resolve_target called: source=unit_t3_d_1758893103_0054 target_type=FRONTMOST_ALLY
+[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1758928627_1658
+[DEBUG] _process_ability called for ability:  source: unit_t1_b_1758928627_1658
+[DEBUG] resolve_target called: source=unit_t1_b_1758928627_1658 target_type=FRONTMOST_ALLY
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1758893103_0054"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758893103_8462
+[DEBUG] AbilityResolver effect: <Resource#-9223371959176264236> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758928627_1658"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758928627_0399
 [DEBUG] Trinket container: PlayerTrinkets
 [DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 4: 'hero_1758893103_9114'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758893103_9114'
-[DEBUG] _process_ability called for ability:  source: hero_1758893103_9114
-[DEBUG] resolve_target called: source=hero_1758893103_9114 target_type=FRONTMOST_ALLY
+[DEBUG] get_hero_uuid() fallback to slot 2: 'unit_t2_c_1758928627_2912'
+[DEBUG] Player trinket - Hero UUID: 'unit_t2_c_1758928627_2912'
+[DEBUG] _process_ability called for ability:  source: unit_t2_c_1758928627_2912
+[DEBUG] resolve_target called: source=unit_t2_c_1758928627_2912 target_type=FRONTMOST_ALLY
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1758893103_9114"]
+[DEBUG] AbilityResolver effect: <Resource#-9223371959176264236> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t2_c_1758928627_1469"]
 [DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for hero.name from 5 to 7 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 6 to 8 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 5
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 8 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_0054 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_0054", "damage_taken": 3, "attacker_uuid": "hero_1758893103_9114" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] unit_t3_d.name takes 4 damage. HP: 5 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_0054 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_0054", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758893103_1405" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] unit_t3_d.name takes 4 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_0054 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_0054", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758893103_6646" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEBUG] Knight takes 4 damage. HP: 4 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758893103_6646 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758893103_6646", "damage_taken": 4, "attacker_uuid": "unit_t1_a_1758893103_0613" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_7691", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_7691 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_7691 definition: item_t2_c equipped to: unit_t2_c_1758893103_6646
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_7691
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758893103_6646 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_7691
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758893103_6646 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Knight takes 3 damage. HP: 4 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758893103_1405 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758893103_1405", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758893103_6446" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_6204", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_6204 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_6204 definition: item_t2_c equipped to: unit_t2_c_1758893103_1405
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_6204
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758893103_1405 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_6204
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758893103_1405 HP = 1 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_6204 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_6204 equipped to: unit_t2_c_1758893103_1405
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t2_c_1758893103_1405"]
-[DEBUG] EffectModifyStat: hp changed for unit_t2_c.name from 1 to 2 (Source: item_tier2c_passive_heal)
-[DEBUG] Knight takes 8 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758893103_1405 damage: 8
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758893103_1405", "damage_taken": 8, "attacker_uuid": "unit_t3_d_1758893103_7604" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_6204", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_6204 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_6204 definition: item_t2_c equipped to: unit_t2_c_1758893103_1405
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_6204
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758893103_1405 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_6204
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758893103_1405 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Hero takes 2 damage. HP: 7 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758893103_9114 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758893103_9114", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758893103_0107" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_7758", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_7758 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_7758 definition: item_t2_c equipped to: hero_1758893103_9114
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_7758
-[DEBUG] Item equipped_on_uuid: hero_1758893103_9114 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_7758
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758893103_9114 HP = 5 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_7758 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_7758 equipped to: hero_1758893103_9114
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758893103_9114"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 5 to 6 (Source: item_tier2c_passive_heal)
-[DEBUG] End of turn 2 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 3
-[DEBUG] Turn 3 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 3
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758893103_4027
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_a_1758893103_0107
-[DEBUG] _process_ability called for ability:  source: unit_t1_a_1758893103_0107
-[DEBUG] resolve_target called: source=unit_t1_a_1758893103_0107 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_a_1758893103_0107"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758893103_8462
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 3: 'hero_1758893103_9114'
-[DEBUG] Player trinket - Hero UUID: 'hero_1758893103_9114'
-[DEBUG] _process_ability called for ability:  source: hero_1758893103_9114
-[DEBUG] resolve_target called: source=hero_1758893103_9114 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1758893103_9114"]
-[DEBUG] Effect queue size after trigger: 2
-[DEBUG] EffectModifyStat: hp changed for hero.name from 6 to 8 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 1 to 3 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 4
-[DEBUG] Apprentice takes 3 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758893103_0107 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758893103_0107", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1758893103_7794" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 7 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_7604 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_7604", "damage_taken": 3, "attacker_uuid": "hero_1758893103_9114" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4318", "item_t1_b_1758893103_6150", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4318 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_b_1758893103_6150 definition: item_t1_b
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4318 definition: item_t2_c equipped to: unit_t3_d_1758893103_7604
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4318
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_7604 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4318
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_7604 HP = 4 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_4318 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_4318 equipped to: unit_t3_d_1758893103_7604
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893103_7604"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 4 to 5 (Source: item_tier2c_passive_heal)
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 4 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_7604 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_7604", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758893103_4234" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4318", "item_t1_b_1758893103_6150", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4318 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_b_1758893103_6150 definition: item_t1_b
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4318 definition: item_t2_c equipped to: unit_t3_d_1758893103_7604
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4318
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_7604 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4318
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_7604 HP = 3 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_4318 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_4318 equipped to: unit_t3_d_1758893103_7604
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893103_7604"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 3 to 4 (Source: item_tier2c_passive_heal)
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 3 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_7604 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_7604", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758893103_5945" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4318", "item_t1_b_1758893103_6150", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4318 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_b_1758893103_6150 definition: item_t1_b
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4318 definition: item_t2_c equipped to: unit_t3_d_1758893103_7604
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4318
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_7604 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4318
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_7604 HP = 1 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_4318 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_4318 equipped to: unit_t3_d_1758893103_7604
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893103_7604"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 1 to 2 (Source: item_tier2c_passive_heal)
-[DEBUG] unit_t3_d.name takes 4 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893103_7604 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893103_7604", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758893103_1405" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_4318", "item_t1_b_1758893103_6150", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893103_4318 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_b_1758893103_6150 definition: item_t1_b
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_4318 definition: item_t2_c equipped to: unit_t3_d_1758893103_7604
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_4318
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893103_7604 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_4318
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893103_7604 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Knight takes 4 damage. HP: 4 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758893103_1405 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758893103_1405", "damage_taken": 4, "attacker_uuid": "unit_t1_a_1758893103_0613" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893300_2143", ""]
-[DEBUG] Equipped item: item_t2_c_1758893300_2143 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893300_2143 definition: item_t2_c equipped to: unit_t2_c_1758893103_1405
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893300_2143
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758893103_1405 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893300_2143
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758893103_1405 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Apprentice takes 3 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758893103_5945 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758893103_5945", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758893103_6446" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] End of turn 3 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 4
-[DEBUG] Turn 4 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 4
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758893103_4027
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_a_1758893103_6446
-[DEBUG] _process_ability called for ability:  source: unit_t1_a_1758893103_6446
-[DEBUG] resolve_target called: source=unit_t1_a_1758893103_6446 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_a_1758893103_6446"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1758893103_8462
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: ''
-[DEBUG] get_hero_uuid() fallback to slot 1: 'unit_t2_c_1758893103_7794'
-[DEBUG] Player trinket - Hero UUID: 'unit_t2_c_1758893103_7794'
-[DEBUG] _process_ability called for ability:  source: unit_t2_c_1758893103_7794
-[DEBUG] resolve_target called: source=unit_t2_c_1758893103_7794 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371960250006066> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1758893103_4234"]
-[DEBUG] Effect queue size after trigger: 2
+[DEBUG] EffectModifyStat: hp changed for unit_t2_c.name from 3 to 5 (Source: )
 [DEBUG] EffectModifyStat: hp changed for unit_t1_b.name from 2 to 4 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 2 to 4 (Source: )
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 2
-[DEBUG] Apprentice takes 1 damage. HP: 4 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758893103_6446 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758893103_6446", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758893103_4234" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_8084"]
-[DEBUG] Equipped item: item_t2_c_1758893103_8084 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_8084 definition: item_t2_c equipped to: unit_t1_a_1758893103_6446
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_8084
-[DEBUG] Item equipped_on_uuid: unit_t1_a_1758893103_6446 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_8084
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758893103_6446 HP = 3 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_8084 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_8084 equipped to: unit_t1_a_1758893103_6446
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t1_a_1758893103_6446"]
-[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 3 to 4 (Source: item_tier2c_passive_heal)
-[DEBUG] Apprentice takes 2 damage. HP: 3 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758893103_6446 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758893103_6446", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1758893103_0699" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_8084"]
-[DEBUG] Equipped item: item_t2_c_1758893103_8084 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_8084 definition: item_t2_c equipped to: unit_t1_a_1758893103_6446
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_8084
-[DEBUG] Item equipped_on_uuid: unit_t1_a_1758893103_6446 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_8084
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758893103_6446 HP = 1 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893103_8084 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893103_8084 equipped to: unit_t1_a_1758893103_6446
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t1_a_1758893103_6446"]
-[DEBUG] EffectModifyStat: hp changed for unit_t1_a.name from 1 to 2 (Source: item_tier2c_passive_heal)
-[DEBUG] Apprentice takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758893103_6446 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758893103_6446", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1758893103_5728" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893103_8084"]
-[DEBUG] Equipped item: item_t2_c_1758893103_8084 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893103_8084 definition: item_t2_c equipped to: unit_t1_a_1758893103_6446
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893103_8084
-[DEBUG] Item equipped_on_uuid: unit_t1_a_1758893103_6446 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893103_8084
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1758893103_6446 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Apprentice takes 3 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1758893103_0613 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1758893103_0613", "damage_taken": 3, "attacker_uuid": "hero_1758893103_9114" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1758893103_0687"]
-[DEBUG] Equipped item: item_t3_d_1758893103_0687 definition: item_t3_d
-[DEBUG] Battle victory detected
-[DEBUG] Restored hero location to run state: PlayerLineup:0
-[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
-[DEBUG] Starting turn 1
-[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 6
-[DEBUG] unit_t3_d.name takes 3 damage. HP: 9 -> 6
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893461_2639 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893461_2639", "damage_taken": 3, "attacker_uuid": "hero_1758893461_2126" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893461_0721", "item_t1_b_1758893461_0438", "item_t3_d_1758893461_1032", "item_t1_b_1758893461_1275"]
-[DEBUG] Equipped item: item_t2_c_1758893461_0721 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_b_1758893461_0438 definition: item_t1_b
-[DEBUG] Equipped item: item_t3_d_1758893461_1032 definition: item_t3_d
-[DEBUG] Equipped item: item_t1_b_1758893461_1275 definition: item_t1_b
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893461_0721 definition: item_t2_c equipped to: unit_t3_d_1758893461_2639
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893461_0721
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893461_2639 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893461_0721
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893461_2639 HP = 6 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893461_0721 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893461_0721 equipped to: unit_t3_d_1758893461_2639
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893461_2639"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 6 to 7 (Source: item_tier2c_passive_heal)
-[DEBUG] unit_t3_d.name takes 4 damage. HP: 6 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1758893461_2639 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1758893461_2639", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758893461_2773" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893461_0721", "item_t1_b_1758893461_0438", "item_t3_d_1758893461_1032", "item_t1_b_1758893461_1275"]
-[DEBUG] Equipped item: item_t2_c_1758893461_0721 definition: item_t2_c
-[DEBUG] Equipped item: item_t1_b_1758893461_0438 definition: item_t1_b
-[DEBUG] Equipped item: item_t3_d_1758893461_1032 definition: item_t3_d
-[DEBUG] Equipped item: item_t1_b_1758893461_1275 definition: item_t1_b
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893461_0721 definition: item_t2_c equipped to: unit_t3_d_1758893461_2639
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893461_0721
-[DEBUG] Item equipped_on_uuid: unit_t3_d_1758893461_2639 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893461_0721
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1758893461_2639 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893461_0721 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893461_0721 equipped to: unit_t3_d_1758893461_2639
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["unit_t3_d_1758893461_2639"]
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 2 to 3 (Source: item_tier2c_passive_heal)
-[DEBUG] Knight takes 4 damage. HP: 4 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1758893461_2773 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1758893461_2773", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1758893461_6559" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893461_7450", ""]
-[DEBUG] Equipped item: item_t2_c_1758893461_7450 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893461_7450 definition: item_t2_c equipped to: unit_t2_c_1758893461_2773
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893461_7450
-[DEBUG] Item equipped_on_uuid: unit_t2_c_1758893461_2773 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893461_7450
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1758893461_2773 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] Hero takes 6 damage. HP: 11 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758893461_2126 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758893461_2126", "damage_taken": 6, "attacker_uuid": "unit_t2_c_1758893461_8049" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893461_4506", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893461_4506 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893461_4506 definition: item_t2_c equipped to: hero_1758893461_2126
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893461_4506
-[DEBUG] Item equipped_on_uuid: hero_1758893461_2126 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893461_4506
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758893461_2126 HP = 5 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893461_4506 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893461_4506 equipped to: hero_1758893461_2126
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758893461_2126"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 5 to 6 (Source: item_tier2c_passive_heal)
-[DEBUG] Hero takes 3 damage. HP: 5 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758893461_2126 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758893461_2126", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758893461_8696" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893461_4506", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893461_4506 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893461_4506 definition: item_t2_c equipped to: hero_1758893461_2126
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893461_4506
-[DEBUG] Item equipped_on_uuid: hero_1758893461_2126 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893461_4506
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758893461_2126 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1758893461_4506 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1758893461_4506 equipped to: hero_1758893461_2126
-[DEBUG] AbilityResolver effect: <Resource#-9223371961692846648> target_type: HOLDER resolved_targets: ["hero_1758893461_2126"]
-[DEBUG] EffectModifyStat: hp changed for hero.name from 2 to 3 (Source: item_tier2c_passive_heal)
-[DEBUG] Hero takes 3 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1758893461_2126 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1758893461_2126", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1758893461_5355" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1758893461_4506", "", "", "", ""]
-[DEBUG] Equipped item: item_t2_c_1758893461_4506 definition: item_t2_c
-[DEBUG] Found on_hurt ability on equipped item: item_t2_c_1758893461_4506 definition: item_t2_c equipped to: hero_1758893461_2126
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1758893461_4506
-[DEBUG] Item equipped_on_uuid: hero_1758893461_2126 equipped_slot_index: 0
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1758893461_4506
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1758893461_2126 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
