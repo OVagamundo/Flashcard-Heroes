@@ -5,6 +5,18 @@ extends Node
 ## Its primary responsibility is to translate game events into EffectRequests.
 
 ## Process a trigger event and generate EffectRequests for all matching abilities.
+##
+## Ordering & Filtering contract (kept in sync with docs/AbilitySystem.md & docs/CombatSystem.md):
+## 1) Units first
+##    - For on_hurt specifically, only the damaged unit (context.source_uuid) may process unit-level abilities.
+## 2) Equipped Items second
+##    - Only items actually equipped are eligible.
+##    - For on_hurt, only items equipped on the damaged unit are eligible.
+##    - Items are processed in ascending equipped_slot_index to make stacked effects deterministic.
+## 3) Trinkets last
+##    - Player trinkets source the Hero for targeting; enemy trinkets derive source from trigger context when available.
+##
+## Each matching ability produces a separate EffectRequest to preserve per-source visual events.
 ## @param trigger: StringName - The trigger type (e.g., "on_attack", "on_death")
 ## @param context: Dictionary - The context of the event (e.g., {"source_uuid": "...", "target_uuid": "..."})
 func process_trigger(trigger: StringName, context: Dictionary) -> void:
@@ -30,6 +42,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 	var all_instances = battle_manager.get_all_instances()
 	
 	# Phase 1: Process unit abilities first (for proper stacking order)
+	# Note: for on_hurt we strictly filter to the damaged unit to avoid cross-unit triggers.
 	for instance_uuid in all_instances:
 		var instance = all_instances.get(instance_uuid)
 		if not is_instance_valid(instance):
@@ -55,6 +68,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 					_process_ability(ability, instance_uuid, battle_manager, context)
 	
 	# Phase 2: Process equipped item abilities (in slot order for deterministic stacking)
+	# We collect and sort by equipped_slot_index to ensure a stable, predictable order of activation.
 	# Collect all equipped items that match the trigger
 	var equipped_items_to_process = []
 	for instance_uuid in all_instances:
@@ -106,6 +120,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				_process_ability(ability, instance_uuid, battle_manager, context)
 	
 	# Phase 3: Process trinket abilities
+	# Player trinkets: source is the Hero; Enemy trinkets: source depends on trigger context.
 	for instance_uuid in all_instances:
 		var instance = all_instances.get(instance_uuid)
 		if not is_instance_valid(instance):

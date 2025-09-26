@@ -13,10 +13,10 @@ Stateless Logic: The AbilityResolver is a stateless service. It acts as a centra
 Decoupled Execution (Simulation vs. Presentation): The system strictly separates state mutation from visual presentation. This is the Simulation & Animator Contract. The BattleManager first simulates the outcome of an action, modifying all relevant game data silently. Only after the simulation is complete is a summary of these changes (a list of CombatEvent objects) passed to the BattleAnimator. The animator is then responsible for presenting these events to the player with appropriate pacing and emitting the final UI update signals.
 The flow is a strict, ordered pipeline from a gameplay event to a change in the game state, followed by its presentation to the player.
 Game Event Occurs: A significant moment in battle happens (e.g., a unit's HP is reduced to 0).
-Trigger Emission: The BattleManager broadcasts the corresponding trigger (e.g., on_death) along with a context dictionary containing relevant data (e.g., source_uuid of the dying unit). This broadcast is a direct call to AbilityResolver.process_trigger.
+Trigger Emission: The BattleManager broadcasts the corresponding trigger (e.g., on_death) along with a context dictionary containing relevant data (e.g., `source_uuid` of the damaged unit for `on_hurt`). This broadcast is a direct call to `AbilityResolver.process_trigger`.
 Ability Discovery: The AbilityResolver queries all potential sources for abilities that subscribe to the emitted trigger. This includes active GachaBallInstances (Units and their equipped Items), active player TrinketDefinitions, and active enemy TrinketDefinitions.
-Condition Validation: For each discovered ability, the AbilityResolver asks the BattleManager to validate its ConditionDefinition against the current game state and the trigger context.
-Effect Enqueueing: If the condition passes, the AbilityResolver resolves the ability's target(s) and creates an EffectRequest which is sent to the BattleManager's effect queue.
+Condition Validation: For each discovered ability, the AbilityResolver asks the BattleManager to validate its ConditionDefinition against the current game state and the trigger context. For `DAMAGE_WAS_NON_LETHAL`, `scripts/BattleManager.gd` checks that the unit referenced by `context.source_uuid` remains alive (`current_hp > 0`) after damage is applied. Legacy alias `TRIGGERING_DAMAGE_WAS_NON_LETHAL` maps to the same semantic check.
+Effect Enqueueing: If the condition passes, the AbilityResolver resolves the ability's target(s) and creates an EffectRequest which is sent to the BattleManager's effect queue. Each matching ability always produces a separate EffectRequest for granular, stackable presentation.
 Effect Resolution (Simulation): The BattleManager processes its queue, executing each EffectRequest in a simulation context.
 Event Collection & Presentation: The BattleManager captures the results of the simulation as CombatEvent objects and passes them to the BattleAnimator, which replays them with visual pacing and emits the final UI signals (battle_log_event, unit_stats_changed, etc.).
 AbilityDefinition.gd (Resource): The central "ability" resource. It is the glue that holds the other components together.
@@ -88,7 +88,15 @@ This part builds upon the foundational architecture and vocabulary defined in Pa
 Section C: Specific Applications & Source Rules
 This section defines the rules for how abilities are discovered and how their "source" is determined, which is critical for targeting.
 Source: The GachaBallInstance of the Unit is always the source of its own abilities and the abilities of all Items it has equipped. This provides a clear, unambiguous origin point for all effects. A single GachaBallInstance is passed as the source_uuid to the AbilityResolver.
-Discovery: The AbilityResolver iterates through all active GachaBallInstances on the board. For each unit, it checks both the unit's own ability_definitions and the ability_definitions of each of its equipped items.
+Discovery & Deterministic Order: The AbilityResolver iterates deterministically through active sources in three phases for any trigger:
+1) Units (category `UNIT`).
+2) Equipped Items (category `ITEM`) that are actually equipped; items are processed in ascending `equipped_slot_index` to ensure stable stacking order.
+3) Trinkets (category `TRINKET`).
+
+on_hurt Filtering: For the `on_hurt` trigger specifically, discovery is additionally filtered so that:
+- Only the damaged unit (whose UUID equals `context.source_uuid`) may process unit-level `on_hurt` abilities in Phase 1.
+- Only items whose `equipped_on_uuid == context.source_uuid` may process item-level `on_hurt` abilities in Phase 2.
+- Trinkets follow the existing trinket source rules below.
 Targeting: All targeting types are valid. Because the source is always a GachaBallInstance, it has a concrete position on the battlefield from which to resolve relative targets (like ALLY_BEHIND, ADJACENT_ALLIES, etc.).
 Trinkets are a special application of the Ability System with unique rules for sourcing and targeting, representing powerful, run-wide passive effects.
 Data Schema: Trinkets are defined by TrinketDefinition.gd, a separate resource from GachaBallDefinition.gd. This prevents schema bloating and keeps the systems distinct. The is_player_exclusive flag in the definition is critical for preventing certain Trinkets from being used in enemy encounter generation.

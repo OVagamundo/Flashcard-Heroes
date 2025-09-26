@@ -69,6 +69,7 @@ Signals Emitted by Animator
   - Refresh only the affected unit’s UI (HP labels/bars, status icons). Avoid global refreshes.
 - `SignalBus.battle_inventory_changed()`
   - Update lineup/bench grids (e.g., remove dead units) and reflow as needed.
+ - Stacked effects note: For stacked resolutions (e.g., multiple heals from unit and items on a single `on_hurt`), multiple events will be replayed sequentially. Expect multiple back-to-back emissions of `battle_log_event` and `unit_stats_changed` for the same unit. Do not aggregate; render each distinctly so players can count stacks.
 
 Simulation Suppression
 - During combat simulation, effects must not emit UI signals. They use silent setters (e.g., `set_current_hp_silent`) to avoid triggering UI indirectly.
@@ -76,10 +77,12 @@ Simulation Suppression
 
 View Guidance
 - Subscribe to the three signals at initialization time; unsubscribe on `_exit_tree()`.
-- Keep updates idempotent and incremental. Example:
   - On `unit_stats_changed(uuid)`: update only the corresponding `GachaBallView` widgets.
   - On `battle_inventory_changed()`: rebuild only the affected container(s).
 - Do not block the main thread inside signal handlers; the animator yields a frame after each emission to allow UI to render.
+ - Stacked effects: Render updates in arrival order (Unit → Items by slot → Trinkets). Animate each small HP change individually (brief pulse/flash); do not skip intermediate values even when updates arrive in quick succession. Rapid repeated `unit_stats_changed` for the same unit is expected during stacked resolutions.
 
 Diagnostics
 - Prefer visual indicators and lightweight counters over `print()` logging (global prints were removed). Consider optional, scoped debug labels within UI that can be toggled.
+
+ 

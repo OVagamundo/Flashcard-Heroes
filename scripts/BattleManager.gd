@@ -1241,6 +1241,15 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 	# Apply deaths and enqueue inventory sync if needed
 	_check_for_deaths(true, out_events)
 
+## Process all queued EffectRequests.
+##
+## Ordering & Presentation contract:
+## - Requests are enqueued by AbilityResolver in deterministic order for reactive triggers:
+##   1) Unit abilities; 2) Equipped item abilities in ascending equipped_slot_index; 3) Trinkets.
+## - We push_back() and later pop_back() (LIFO). Combined with the Resolver's ordering, this
+##   yields the intended visual sequence for both turn-attacks and reactive stacks.
+## - We simulate first, building CombatEvents, then hand the entire list to BattleAnimator,
+##   which replays each event step-by-step so stacked effects appear as separate visuals.
 func _process_effect_queue() -> void:
 	if _is_processing_effect: return
 	_is_processing_effect = true
@@ -1639,6 +1648,14 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 ## Enqueue an effect request for processing.
 ## @param effect_request: EffectRequest - The effect request to enqueue
 func enqueue_effect_request(request: EffectRequest) -> void:
+	## Enqueue a request at the end of the array.
+	##
+	## Ordering note:
+	## - AbilityResolver generates requests in a deterministic order for reactive triggers
+	##   (Units → Equipped Items by ascending equipped_slot_index → Trinkets).
+	## - We push_back() here and later pop_back() in _process_effect_queue(), giving LIFO processing.
+	## - Combined, this preserves a predictable visual order for stacked effects without
+	##   needing a secondary sort in BattleManager.
 	# Use push_back to add to the end of the array, treating it as a stack.
 	# The _process_effect_queue uses pop_back(), so this ensures new effects
 	# are processed in a Last-In, First-Out (LIFO) order.
