@@ -77,10 +77,18 @@ signal unit_stats_changed(unit_uuid: String)
 ## @param flash_color: Color - The color to flash to
 signal unit_flash_effect(unit_uuid: String, flash_color: Color)
 
+## Emitted when a unit's flash animation completes
+## @param unit_uuid: String - The UUID of the unit that finished flashing
+signal unit_flash_finished(unit_uuid: String)
+
 ## Emitted to request a short pre-hit "bump" animation from the attacker.
 ## @param unit_uuid: String - The attacker unit UUID
 ## @param direction: Vector2 - Screen-space direction to bump (e.g., right for player, left for enemy)
 signal unit_bump_attack(unit_uuid: String, direction: Vector2)
+
+## Emitted when a unit's bump animation completes
+## @param unit_uuid: String - The UUID of the unit that finished bumping
+signal unit_bump_finished(unit_uuid: String)
 
 ## Emitted by the animator after playing death fades so the BattleManager can
 ## actually remove dead units from containers/registry.
@@ -90,6 +98,10 @@ signal apply_deaths_requested(dead_unit_uuids: Array)
 ## Request that a unit view plays its death fade animation (visual only).
 ## The actual removal from data happens via apply_deaths_requested after fade.
 signal unit_death_fade(unit_uuid: String)
+
+## Emitted when a unit's death fade animation completes
+## @param unit_uuid: String - The UUID of the unit that finished fading
+signal unit_death_fade_finished(unit_uuid: String)
 
 ## Emitted when battle inventory changes (units/items added/removed)
 signal battle_inventory_changed

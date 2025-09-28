@@ -104,6 +104,10 @@ func _calculate_stat_scaled_value(param_dict: Dictionary, source_instance: Gacha
 	var final_value = base_value
 	final_value += source_instance.current_pwr * pwr_multiplier
 	final_value += source_instance.current_hp * hp_multiplier
-	final_value += source_instance.base_hp * base_hp_multiplier
+	
+	# Access base_hp through the definition, not the instance
+	var source_definition = source_instance.get_definition()
+	if is_instance_valid(source_definition):
+		final_value += source_definition.base_hp * base_hp_multiplier
 	
 	return floor(final_value)

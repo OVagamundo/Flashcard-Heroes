@@ -10,7 +10,7 @@ unit_t1_b.desc,A loyal squire.
 unit_t2_c.name,Knight
 unit_t2_c.desc,A valiant knight.
 item_t1_a.name,Small HP Potion
-item_t1_a.desc,Restores a small amount of HP.
+item_t1_a.desc,Equipped: +1 HP to the holder; at the start of each turn the holder heals 2 HP. Trigger: on_turn_start; Target: Holder; Stacking: each copy heals separately; Overheal: healing can raise current HP above its starting value.
 item_t1_b.name,Small PWR Potion
 item_t1_b.desc,Restores a small amount of PWR.
 item_t2_c.name,Large HP Potion
@@ -22,8 +22,12 @@ item.effect.pwr,Add (PWR) PWR to the unit.
 item.effect.both,Add (HP) HP and (PWR) PWR to the unit.
 trinket.healing_amulet.name,Healing Amulet
 trinket.healing_amulet.desc,A simple but reliable enchanted charm.
-ability.healing_amulet.desc,Heals the frontmost ally unit by 2HP
+ability.healing_amulet.desc,Heals the frontmost ally unit by 2 HP.
 ability.item_tier2c_passive_heal.name,Regeneration
-ability.item_tier2c_passive_heal.desc,When this unit takes non-lethal damage, heal 1 HP.
+ability.item_tier2c_passive_heal.desc,On Hurt (non-lethal): Heal this unit by 1 HP. Target: Self. Condition: Damage was non-lethal.
 ability.unit_tier1a_passive_heal.name,Resilience
-ability.unit_tier1a_passive_heal.desc,When this unit takes non-lethal damage, heal 1 HP.
+ability.unit_tier1a_passive_heal.desc,On Hurt (non-lethal): Heal this unit by 1 HP. Target: Self. Condition: Damage was non-lethal.
+ability.unit_tier1b_counter_on_hurt.name,Retaliation
+ability.unit_tier1b_counter_on_hurt.desc,On Hurt: Counter-attack the attacker for damage equal to this unit's current PWR. Target: Attacker. Triggers even if this unit would die. Limit: Once per attacker per turn.
+ability.item_tier1a_turn_start_heal.name,Restoration
+ability.item_tier1a_turn_start_heal.desc,On Turn Start: Heal the holder for 2 HP. Target: Holder. Triggers each turn while this item remains equipped. Stacking: Each copy of this item heals separately. Overheal: Healing can raise current HP above its starting value. Order: Resolves after unit abilities and before trinkets.

@@ -1,18 +1,4 @@
-Inventory Manager
-Version: 1.1
-Status: Active
-1. Purpose & Responsibility
-The Inventory Manager is a stateless logic controller that executes all GachaBall manipulation actions. It acts as the "verb" system for the player's inventory and battle board. Its core responsibilities are:
-Executing REQUEST_ACTION commands issued by the Global Interaction Router (GIR).
-Determining the player's intent (Move, Swap, Equip, or Merge) based on the context of the action.
-Handling ambiguity by requesting a ChoiceWindow when an action could be either a Merge or a Swap.
-Performing all gameplay validation for the requested action.
-Instructing the appropriate data owner (RunState or BattleManager) to perform the state change if the action is valid.
-The Inventory Manager does not own any data. It queries the data owners for the current state, performs its logic, and commands the owners to mutate their state.
-2. Commands Handled
-The Inventory Manager listens for a single, powerful command routed from the GIR.
-Command ID	Payload Structure	Internal Validation & Actions	Events Raised
-REQUEST_ACTION	{ "source_uuid": String, "target_uuid": String }	1. Fetch Context: Retrieves instances for the source and target from the appropriate data owner. <br> 2. Determine Intent: Determines the potential action based on the priority: Merge > Equip > Swap/Move. <br> 3. Handle Ambiguity: If the action is determined to be a GachaBall on another GachaBall, it checks if a valid MergeRecipe exists. <br>      a. If YES: The action is ambiguous. The manager calls WindowManager.open_modal_window("ChoiceWindow", ...) and halts further processing. It will wait for a merge_choice_made signal. <br>      b. If NO: The action is unambiguously a Swap, Move, or Equip. It proceeds directly to validation. <br> 4. Validate & Execute: For unambiguous actions, it performs validation and instructs the data owner to update state.	inventory_action_invalid, instance_moved, instance_merged
+## Combat System
 3. Handling Asynchronous User Choices
 When an action is ambiguous, the manager relies on signals to resume its operation after the player has made a choice.
 Listens for Signal: merge_choice_made(chosen_action: String, source_uuid: String, target_uuid: String)
@@ -53,8 +39,6 @@ Fired after a successful Merge action.
 inventory_action_invalid(source_uuid: String, target_uuid: String, reason_key: String)
 Fired when a requested action fails validation.
 
-## Combat System
-
 The combat loop is orchestrated by `scripts/BattleManager.gd`. Below are the operational details not covered elsewhere.
 
 ### Phases & Flow
@@ -88,24 +72,40 @@ The combat loop is orchestrated by `scripts/BattleManager.gd`. Below are the ope
   - Skips a request if the `source` is invalid or dead.
   - Retargets if the current target is invalid or dead by calling `_get_frontmost_target()` based on the attacker's side. If no valid target exists, the request is skipped.
 - Execution: For each request, the effect is executed in simulation: `request.effect_definition.execute(source_uuid, exec_targets, self, sim_ctx)` where `sim_ctx.is_simulation = true`. This updates data silently and returns any result payload (e.g., damage) used to build `CombatEvent`s.
-- Timing: Pacing is handled by `scripts/BattleAnimator.gd` with a step delay of ~0.8s per event. `BattleManager` awaits the animator per request; if animator is missing, a fallback emits the same UI signals with a frame yield + 0.8s timer per event.
+- Pacing: `scripts/BattleAnimator.gd` replays the collected `CombatEvent`s for the request using animation-driven timing. There is no global fixed delay between events. Each event's animation duration determines pacing:
+  - DAMAGE: attacker bump (~0.16s) then target flash (~0.30s)
+  - HEAL: target flash (~0.30s)
+  - DEATH: death fade (~0.28s) followed by `apply_deaths_requested`
+  - INVENTORY_SYNC/LOG_MESSAGE: instant (frame-yield only)
+  If the animator is missing, the manager falls back to timers that match the same per-event durations.
 
-### Animator & Event Replay (2025-08-11)
+### Animator & Event Replay (2025-09-27)
 - Simulation vs. Presentation: `BattleManager` simulates one request at a time, building an `Array[CombatEvent]` for just that action. It then calls and awaits `BattleAnimator.play_turn(events)` before moving to the next request.
-- Event Types (in `scripts/CombatEvent.gd`):
   - `LOG_MESSAGE` `{ text: String }` → emits `SignalBus.battle_log_event(text)`
-  - `DAMAGE` `{ target_uuids: Array[String] }` → emits `SignalBus.unit_stats_changed(uuid)` for each
+  - `DAMAGE` `{ target_uuids: Array[String], amount: int, source_uuid: String }` → emits `unit_flash_effect` and updates HP
   - `INVENTORY_SYNC` `{}` → emits `SignalBus.battle_inventory_changed()` (e.g., unit removal after death)
+  - `DEATH` `{ target_uuids: Array[String] }` → emits `unit_death_fade` then `apply_deaths_requested`
 - Animator Behavior (in `scripts/BattleAnimator.gd`):
-  - For each event: emit the mapped UI signal(s), `await get_tree().process_frame`, then wait `TURN_STEP_DELAY = 0.8` seconds.
-  - Emits `turn_animation_finished` after finishing the given array. `BattleManager` awaits `play_turn(...)` per request, so UI updates are synchronized step-by-step.
-- Deaths: `_check_for_deaths(true, events)` runs after each simulated request to enqueue an `INVENTORY_SYNC` when removals are needed.
+  - For each event: emit the mapped UI signal(s), then await only that event's animation duration (see Pacing table above). Note: The animator awaits completion signals (`unit_flash_finished`, `unit_bump_finished`, `unit_death_fade_finished`) emitted by views when their tweens complete. Timeout fallbacks matching the animation durations provide robustness. Death animations work perfectly with signals because units emit completion signals before being removed via `apply_deaths_requested`.
+- Deaths & Selective Deferral:
+  - During simulation, `BattleManager` checks for lethal units after each effect resolution.
+  - Units without lethal counter-attack capability immediately enqueue a `DEATH` event.
+  - Units with lethal counter-attack capability have their `DEATH` deferred until after their counter-attack finishes. The manager tracks these UUIDs and emits their `DEATH` as soon as their counter actions complete, ensuring visual order: damage → counter → death.
 - Phase Safety: `BattleManager._on_turn_animation_finished()` ignores intermediate animator signals while `_is_processing_effect` is true; phase advancement happens only after the effect queue fully drains.
-
 ### Enqueuing Attacks
 - Basic Attack: `_populate_effect_queue()` resolves the `basic_attack` effect from `Database`. If missing, it falls back to `res://scripts/BasicAttackEffect.gd`.
 - Request shape: `EffectRequest.new(source_uuid, ability_key, effect_definition, [target_uuid], trigger_context)`.
 - Ability Triggers: For each attacker, the manager emits the `on_attack` trigger through `AbilityResolver.process_trigger("on_attack", context)`. Abilities may produce additional `EffectRequest`s via `BattleManager.enqueue_effect_request()`.
+
+### Counter-Attacks & Loop Prevention
+- Lethal Counters: `on_hurt` abilities (e.g., counter-attacks) can trigger even if the damaged unit is at or below 0 HP; death processing is deferred for such units until their counter resolves.
+- Per-Attacker Limit: `BattleManager` enforces a per-attacker counter limit using `has_counter_attacked(source_uuid, attacker_uuid)` and `mark_counter_attack(...)`. A unit may counter each distinct attacker once per turn. The tracking dictionary is cleared at `START_OF_TURN`.
+
+### Signals used by the Animator
+- `SignalBus.unit_bump_attack(unit_uuid, dir: Vector2)`
+- `SignalBus.unit_flash_effect(unit_uuid, color: Color)`
+- `SignalBus.unit_death_fade(unit_uuid)` → followed by `SignalBus.apply_deaths_requested([uuid])`
+- `SignalBus.battle_inventory_changed()`
 
 6. Invariants
 Stateless Operation: The manager must never store its own state between actions.

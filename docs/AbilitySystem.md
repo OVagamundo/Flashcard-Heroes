@@ -7,10 +7,10 @@ Part 1 of 3: Core Architecture & The Ability Vocabulary
 Section A: Core Philosophy & Architecture
 The game's combat and passive effects are governed by a unified, data-driven, and event-driven architecture. This ensures that all interactions are predictable, extensible, and managed through a deterministic flow, whether they originate from a Unit, an Item, or a Trinket.
 Data-Driven Design: The system's behavior is defined by data Resource files (.tres) rather than being hardcoded. Abilities, conditions, effects, and the entities that own them are all defined as resources. This is the cornerstone of the system's extensibility, allowing for content creation primarily through the Godot editor. New code is only required for fundamentally new mechanics (i.e., new Effect or Condition scripts).
-Event-Driven Flow: The system is reactive. Abilities do not actively poll the game state. Instead, they are designed to react to discrete gameplay events (Triggers) broadcast by the BattleManager at specific moments in the combat loop (e.g., the start of a turn, a unit taking damage).
+Event-Driven Flow: The system is reactive. Abilities do not actively poll the game state. Instead, they are designed to react to discrete gameplay events (Triggers) broadcast by the BattleManager at specific moments in the combat loop (e.g., the start of a turn, a unit taking damage). Certain reactive abilities (e.g., counter-attacks on `on_hurt`) may be permitted to trigger even when the damage received is lethal; death processing is selectively deferred until those reactive abilities complete.
 Passive/Reactive Sources: Items and Trinkets have no direct activation mechanic. Their abilities begin to apply when equipped and only respond to emitted triggers.
 Stateless Logic: The AbilityResolver is a stateless service. It acts as a central switchboard, receiving a trigger and a context dictionary, processing it against the current game state, and outputting EffectRequests. It retains no information between triggers, ensuring every action is deterministic based on the state at that moment.
-Decoupled Execution (Simulation vs. Presentation): The system strictly separates state mutation from visual presentation. This is the Simulation & Animator Contract. The BattleManager first simulates the outcome of an action, modifying all relevant game data silently. Only after the simulation is complete is a summary of these changes (a list of CombatEvent objects) passed to the BattleAnimator. The animator is then responsible for presenting these events to the player with appropriate pacing and emitting the final UI update signals.
+Decoupled Execution (Simulation vs. Presentation): The system strictly separates state mutation from visual presentation. This is the Simulation & Animator Contract. The BattleManager first simulates the outcome of an action, modifying all relevant game data silently. Only after the simulation is complete is a summary of these changes (a list of CombatEvent objects) passed to the BattleAnimator. The animator is then responsible for presenting these events to the player with animation-driven pacing (no fixed global delay). Each event’s animation duration governs the delay until the next event.
 The flow is a strict, ordered pipeline from a gameplay event to a change in the game state, followed by its presentation to the player.
 Game Event Occurs: A significant moment in battle happens (e.g., a unit's HP is reduced to 0).
 Trigger Emission: The BattleManager broadcasts the corresponding trigger (e.g., on_death) along with a context dictionary containing relevant data (e.g., `source_uuid` of the damaged unit for `on_hurt`). This broadcast is a direct call to `AbilityResolver.process_trigger`.
@@ -51,6 +51,7 @@ HOLDER	For Items, this is the unit equipping it. For Units or Trinkets, it is th
 ATTACK_TARGET	The direct target of an on_attack trigger.
 Contextual Targets	
 TRIGGERING_ENTITY	The "other" entity in a reactive trigger (e.g., the attacker in an on_hurt event).
+ATTACKER	Specifically resolves to the `attacker_uuid` from the trigger context. Used by counter-attack abilities to target the original attacker.
 FAINTING_ALLY	The specific ally whose death triggered an on_ally_death event.
 Positional Targets	
 FRONTMOST_ALLY	The allied unit in the frontmost position (highest index for player, lowest for enemy).
@@ -67,6 +68,7 @@ TEAM_SIZE_LESS_THAN_ENEMY	Compares the count of units in the player's lineup vs.
 SLOT_AHEAD_IS_EMPTY	Checks if the combat slot directly in front of the source unit is unoccupied.	{}
 TARGET_HP_GREATER_THAN_SELF_HP	In an on_attack context, compares the HP of the target_uuid to the source_uuid.	{}
 TRIGGERING_DAMAGE_WAS_NON_LETHAL	In an on_hurt trigger, checks if (unit.current_hp - damage_taken) > 0.	{}
+DAMAGE_WAS_RECEIVED	In an `on_hurt` trigger, always returns true (the trigger is authoritative that damage occurred). Allows abilities to be configured to trigger even on lethal damage.	{}
 ONCE_PER_TURN	Checks a dictionary in BattleManager to see if the ability ID has already been recorded for the current turn. If not, it records it and returns true.	{}
 
 Note: Legacy alias `TRIGGERING_DAMAGE_WAS_NOT_LETHAL` may appear in older data; treat it as `TRIGGERING_DAMAGE_WAS_NON_LETHAL`.
@@ -97,6 +99,13 @@ on_hurt Filtering: For the `on_hurt` trigger specifically, discovery is addition
 - Only the damaged unit (whose UUID equals `context.source_uuid`) may process unit-level `on_hurt` abilities in Phase 1.
 - Only items whose `equipped_on_uuid == context.source_uuid` may process item-level `on_hurt` abilities in Phase 2.
 - Trinkets follow the existing trinket source rules below.
+
+Lethal Counters: Abilities configured to use `DAMAGE_WAS_RECEIVED` may trigger even if the incoming damage was lethal. In such cases, `BattleManager` defers the `DEATH` event for the damaged unit until after its reactive abilities (e.g., a counter-attack targeting `ATTACKER`) have been simulated and enqueued. This guarantees the visual order: incoming damage → counter-attack → defender death.
+
+Per-Attacker Limit (Loop Prevention): To prevent counter ping-pong, `BattleManager` enforces a per-attacker counter limit for the duration of a turn. A unit may counter-attack each distinct attacker at most once per turn. Implementation points:
+- `has_counter_attacked(unit_uuid, attacker_uuid) -> bool`
+- `mark_counter_attack(unit_uuid, attacker_uuid) -> void`
+- `clear_counter_tracking()` (invoked at `START_OF_TURN`)
 Targeting: All targeting types are valid. Because the source is always a GachaBallInstance, it has a concrete position on the battlefield from which to resolve relative targets (like ALLY_BEHIND, ADJACENT_ALLIES, etc.).
 Trinkets are a special application of the Ability System with unique rules for sourcing and targeting, representing powerful, run-wide passive effects.
 Data Schema: Trinkets are defined by TrinketDefinition.gd, a separate resource from GachaBallDefinition.gd. This prevents schema bloating and keeps the systems distinct. The is_player_exclusive flag in the definition is critical for preventing certain Trinkets from being used in enemy encounter generation.
@@ -122,9 +131,9 @@ Fallback: If no effects were enqueued (either because the unit has no on_attack 
 This defines the mandatory separation of logic and presentation, which is essential for paced, animated combat.
 Two-Stage Pipeline:
 Simulation: The BattleManager executes an EffectRequest. The effect script mutates the game data silently (e.g., tgt.set_current_hp_silent(new_hp)). It must respect a context.is_simulation flag to suppress all direct UI signal emissions.
-Presentation: The BattleManager captures the results of the simulation (damage dealt, units killed, etc.) as CombatEvent objects. It passes this list to the BattleAnimator. The animator is responsible for replaying these events with visual pacing and is the sole emitter of UI signals.
+Presentation: The BattleManager captures the results of the simulation (damage dealt, units killed, etc.) as CombatEvent objects. It passes this list to the BattleAnimator. The animator is responsible for replaying these events with animation-driven pacing. Each event animates and completes before the next begins; there is no global fixed delay.
 Invariants & Rules:
-Effect scripts MUST NOT emit UI signals (e.g., SignalBus.battle_log_event).
+Effect scripts MUST NOT emit UI signals (e.g., SignalBus.battle_log_event). Presentation is centralized in the animator.
 Effect scripts MUST still emit gameplay triggers (e.g., battle_manager.trigger_on_hurt(...)) during the simulation phase. This is critical to allow for ability chaining and reactive effects.
 The BattleAnimator is the only source for combat UI signals: battle_log_event, unit_stats_changed, and battle_inventory_changed.
 Application: Status effects are applied via an EffectApplyStatus.gd script. They are stored as a dictionary on the GachaBallInstance, mapping the status ID to the number of stacks.

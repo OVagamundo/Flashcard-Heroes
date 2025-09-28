@@ -53,17 +53,14 @@ func populate(context: Dictionary) -> void:
 
 	# Handle both TrinketDefinition and GachaBallDefinition (items)
 	var name_key: String
-	var desc_key: String
 	if item_def is GachaBallDefinition:
 		name_key = item_def.display_name_key
-		desc_key = item_def.description_key
 	else:
 		# TrinketDefinition uses name_key instead of display_name_key
 		name_key = item_def.name_key
-		desc_key = item_def.description_key
 	
 	name_label.text = tr(name_key)
-	var description_text = tr(desc_key)
+	# Omit base flavor description for items; we will show only stats and abilities.
 	
 	# Add item effect description (only for GachaBallDefinition items)
 	var effect_desc = ""
@@ -75,14 +72,35 @@ func populate(context: Dictionary) -> void:
 		elif item_def.bonus_pwr > 0:
 			effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
 	
+	# Build abilities section: list all abilities with name and localized description
+	var abilities_block := ""
+	if "ability_definitions" in item_def and item_def.ability_definitions.size() > 0:
+		var abilities_lines: Array[String] = []
+		for ability in item_def.ability_definitions:
+			if not is_instance_valid(ability):
+				continue
+			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
+			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+			if not ability_name.is_empty() or not ability_desc.is_empty():
+				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+		abilities_block = "\n".join(abilities_lines)
+
+	var full_text: String = ""
 	if not effect_desc.is_empty():
-		description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, effect_desc]
+		full_text += effect_desc
+	if not abilities_block.is_empty():
+		if not full_text.is_empty():
+			full_text += "\n\n"
+		full_text += abilities_block
+	if not full_text.is_empty():
+		full_text += "\n\n[url=effect]EFFECTS[/url]"
 	else:
-		description_label.text = "%s\n\n[url=effect]EFFECTS[/url]" % description_text
+		full_text = "[url=effect]EFFECTS[/url]"
+
+	description_label.text = full_text
 	
 	# Store the full definition for the child window to use.
 	description_label.set_meta("effect_definition", item_def)
-
 func _on_description_meta_clicked(meta) -> void:
 	if meta == "effect":
 		var definition: Variant = description_label.get_meta("effect_definition")

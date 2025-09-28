@@ -80,13 +80,7 @@ func populate(context: Dictionary) -> void:
 	_setup_stable_anchor()
 
 	name_label.text = tr(unit_definition.display_name_key)
-	var description_text = tr(unit_definition.description_key)
-	
-	# Add basic attack description for units
-	var basic_attack_desc = tr("ability.basic_attack.desc")
-	# Replace (PWR) with the actual power value
-	basic_attack_desc = basic_attack_desc.replace("(PWR)", str(_instance.current_pwr))
-	
+	# Description content is built in _update_description()
 	_update_description()
 
 	# --- Core UI Population Logic ---
@@ -244,13 +238,41 @@ func _update_description() -> void:
 		return
 	
 	var description_text = tr(unit_definition.description_key)
-	
-	# Add basic attack description for units
+
+	# Basic attack description (always present for units)
 	var basic_attack_desc = tr("ability.basic_attack.desc")
-	# Replace (PWR) with the actual power value
-	basic_attack_desc = basic_attack_desc.replace("(PWR)", str(_instance.current_pwr))
-	
-	description_label.text = "%s\n\n%s\n\n[url=effect]EFFECTS[/url]" % [description_text, basic_attack_desc]
+	# Replace placeholder with numeric damage and PWR hint (e.g., 2 (PWR))
+	basic_attack_desc = basic_attack_desc.replace("(PWR)", "%s (PWR)" % str(_instance.current_pwr))
+
+	# Build abilities section: list all abilities with name and localized description
+	var abilities_lines: Array[String] = []
+	if "ability_definitions" in unit_definition and unit_definition.ability_definitions.size() > 0:
+		for ability in unit_definition.ability_definitions:
+			if not is_instance_valid(ability):
+				continue
+			# Skip Basic Attack here to avoid duplicate (we show it separately above)
+			if "id" in ability and String(ability.id) == "basic_attack":
+				continue
+			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
+			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+			# Replace common placeholders with current stats where applicable
+			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr))
+			# Special case: counter-attack ability should show numeric damage with PWR hint
+			if "id" in ability and String(ability.id) == "unit_tier1b_counter_on_hurt":
+				# If the text mentions "current PWR", append explicit numeric damage hint
+				if ability_desc.find("current PWR") != -1:
+					ability_desc = ability_desc.replace("current PWR", "%s (PWR)" % str(_instance.current_pwr))
+			if not ability_name.is_empty() or not ability_desc.is_empty():
+				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+
+	var abilities_block := "\n".join(abilities_lines)
+	var full_text: String = description_text
+	full_text += "\n\n" + basic_attack_desc
+	if not abilities_block.is_empty():
+		full_text += "\n\n" + abilities_block
+	full_text += "\n\n[url=effect]EFFECTS[/url]"
+
+	description_label.text = full_text
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
 func _on_unit_stats_changed(unit_uuid: String) -> void:

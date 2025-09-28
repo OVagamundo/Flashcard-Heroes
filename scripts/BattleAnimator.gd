@@ -3,11 +3,8 @@ extends Node
 
 signal turn_animation_finished
 
-const TURN_STEP_DELAY = 0.8 # The original delay from BattleManager
-const PRE_HIT_DELAY = 0.12 # Short delay so bump precedes damage application
-const DEATH_FADE_DURATION = 0.3 # Duration for death fade before removal
-
 var _hp_snapshot: Dictionary = {}
+var _current_animation_uuid: String = ""  # Track which unit is currently animating
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -32,49 +29,64 @@ func play_turn(events: Array[CombatEvent]) -> void:
 	await _animate_events(events)
 
 func _animate_events(events: Array[CombatEvent]) -> void:
+	# Connect to animation completion signals for this turn
+	_connect_animation_signals()
+	
 	for event in events:
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
 				SignalBus.emit_signal("battle_log_event", event.text)
+				# Log messages are instant, no animation to wait for
 
 			CombatEvent.Type.DAMAGE:
 				# Pre-hit: small attacker bump toward the opponent, then apply damage
 				if event.target_uuids.size() > 0:
 					var target_uuid := event.target_uuids[0]
-					_emit_bump(event.source_uuid)
-					await get_tree().create_timer(PRE_HIT_DELAY).timeout
+					
+					# Bump animation (if source exists)
+					if not event.source_uuid.is_empty():
+						_current_animation_uuid = event.source_uuid
+						_emit_bump(event.source_uuid)
+						await _wait_for_animation_completion("bump", event.source_uuid)
+					
+					# Apply damage and flash animation
 					_apply_hp_delta(target_uuid, event.amount)
+					_current_animation_uuid = target_uuid
 					if SignalBus.has_signal("unit_flash_effect"):
-						# Use a light red tint for damage; pure white can be invisible on default themes
 						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
+						await _wait_for_animation_completion("flash", target_uuid)
 
 			CombatEvent.Type.HEAL:
-				# Apply numeric HP delta and update UI in sync with flash
+				# Apply numeric HP delta and flash animation
 				if event.target_uuids.size() > 0:
 					var target_uuid2 := event.target_uuids[0]
 					_apply_hp_delta(target_uuid2, event.amount)
+					_current_animation_uuid = target_uuid2
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
+						await _wait_for_animation_completion("flash", target_uuid2)
 
 			CombatEvent.Type.INVENTORY_SYNC:
 				# This triggers the removal of the dead unit's view from the UI.
 				SignalBus.emit_signal("battle_inventory_changed")
+				# Inventory sync is instant, no animation to wait for
 
 			CombatEvent.Type.DEATH:
 				# Play death fade on target, then request removal
 				if event.target_uuids.size() > 0:
 					var dead_uuid := event.target_uuids[0]
+					_current_animation_uuid = dead_uuid
 					if SignalBus.has_signal("unit_death_fade"):
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
-					# Wait for fade to complete, then request data removal
-					await get_tree().create_timer(DEATH_FADE_DURATION).timeout
+						await _wait_for_animation_completion("death_fade", dead_uuid)
 					if SignalBus.has_signal("apply_deaths_requested"):
 						SignalBus.emit_signal("apply_deaths_requested", [dead_uuid])
 
-		# Let the UI process the emitted signal this frame, then wait for the step delay.
+		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
-		await get_tree().create_timer(TURN_STEP_DELAY).timeout
-		
+	
+	# Disconnect animation signals when done
+	_disconnect_animation_signals()
 	emit_signal("turn_animation_finished")
 
 func _apply_hp_delta(target_uuid: String, amount: int) -> void:
@@ -119,3 +131,64 @@ func _emit_bump(attacker_uuid: String) -> void:
 func _get_battle_manager() -> Node:
 	var node = get_tree().get_first_node_in_group("battle_manager")
 	return node
+
+func _connect_animation_signals() -> void:
+	# Connect to animation completion signals with filtering
+	if not SignalBus.unit_flash_finished.is_connected(_on_unit_flash_finished):
+		SignalBus.unit_flash_finished.connect(_on_unit_flash_finished)
+	if not SignalBus.unit_bump_finished.is_connected(_on_unit_bump_finished):
+		SignalBus.unit_bump_finished.connect(_on_unit_bump_finished)
+	if not SignalBus.unit_death_fade_finished.is_connected(_on_unit_death_fade_finished):
+		SignalBus.unit_death_fade_finished.connect(_on_unit_death_fade_finished)
+
+func _disconnect_animation_signals() -> void:
+	# Disconnect animation completion signals
+	if SignalBus.unit_flash_finished.is_connected(_on_unit_flash_finished):
+		SignalBus.unit_flash_finished.disconnect(_on_unit_flash_finished)
+	if SignalBus.unit_bump_finished.is_connected(_on_unit_bump_finished):
+		SignalBus.unit_bump_finished.disconnect(_on_unit_bump_finished)
+	if SignalBus.unit_death_fade_finished.is_connected(_on_unit_death_fade_finished):
+		SignalBus.unit_death_fade_finished.disconnect(_on_unit_death_fade_finished)
+
+# Signal handlers that filter by current animation UUID
+func _on_unit_flash_finished(unit_uuid: String) -> void:
+	# Only respond if this is the unit we're currently waiting for
+	if unit_uuid == _current_animation_uuid:
+		_current_animation_uuid = ""
+
+func _on_unit_bump_finished(unit_uuid: String) -> void:
+	# Only respond if this is the unit we're currently waiting for
+	if unit_uuid == _current_animation_uuid:
+		_current_animation_uuid = ""
+
+func _on_unit_death_fade_finished(unit_uuid: String) -> void:
+	# Only respond if this is the unit we're currently waiting for
+	if unit_uuid == _current_animation_uuid:
+		_current_animation_uuid = ""
+
+# Robust animation waiting with timeout fallback
+func _wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
+	var timeout_duration: float
+	match animation_type:
+		"bump":
+			timeout_duration = 0.16
+		"flash":
+			timeout_duration = 0.30
+		"death_fade":
+			timeout_duration = 0.28
+		_:
+			timeout_duration = 0.30  # Default fallback
+	
+	# Create timeout timer
+	var timeout_timer = get_tree().create_timer(timeout_duration)
+	
+	# Wait for either the signal (via _current_animation_uuid being cleared) or timeout
+	while _current_animation_uuid == expected_uuid and timeout_timer.time_left > 0:
+		await get_tree().process_frame
+	
+	# If we timed out, log it for debugging
+	if _current_animation_uuid == expected_uuid:
+		print("[BattleAnimator] Animation timeout for ", animation_type, " on unit ", expected_uuid)
+	
+	# Ensure UUID is cleared
+	_current_animation_uuid = ""

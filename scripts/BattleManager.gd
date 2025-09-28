@@ -2,14 +2,14 @@ class_name BattleManager
 extends Node
 
 const RS = preload("res://scripts/RunState.gd")
-
 enum Phases { START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER }
 var _current_battle_phase: Phases
 
 var _effect_queue: Array[EffectRequest] = []
 var _is_processing_effect: bool = false
-var _battle_over_emitted: bool = false
 var _battle_over_deferred: bool = false
+var _battle_over_emitted: bool = false
+var _counter_attack_tracking: Dictionary = {}  # Track counter-attacks per unit per attacker
 
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
@@ -1046,6 +1046,8 @@ func _change_phase(new_phase: Phases) -> void:
 			# Increment turn counter and reset turn start flag
 			_current_turn += 1
 			_turn_start_abilities_triggered = false
+			# Clear counter-attack tracking for the new turn
+			clear_counter_tracking()
 			print("[DEBUG] Starting turn ", _current_turn)
 			
 			# Grant base 5 tokens for the turn
@@ -1133,7 +1135,7 @@ func _populate_effect_queue() -> void:
 					var request = EffectRequest.new(attacker.ball_uuid, &"basic_attack", basic_attack_effect, [target.ball_uuid], context)
 					_effect_queue.append(request)
 
-func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent]) -> void:
+func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary = {}) -> void:
 	# Validate source is still alive (allow empty source UUID for trinket effects)
 	var source = null
 	if not request.source_uuid.is_empty():
@@ -1141,9 +1143,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		if not is_instance_valid(source):
 			return
 		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
+		# Exception: allow counter-attacks to execute even from dead units (lethal counter-attacks)
 		var src_def = source.get_definition()
 		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
-			return
+			# Allow counter-attacks to execute even when the source unit is dead
+			if not request.ability_id.contains("counter"):
+				return
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
 	var exec_targets: Array[String] = []
 	exec_targets.append_array(request.resolved_targets)
@@ -1202,10 +1207,8 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					if source_name != "" and target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, target_name]}))
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp"}))
-					# If this damage was lethal (target now at or below 0), enqueue a DEATH event
-					var post_tgt := get_instance_by_uuid(String(targets[0]))
-					if is_instance_valid(post_tgt) and post_tgt.current_hp <= 0:
-						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [post_tgt.ball_uuid]}))
+					# Note: DEATH events are deferred until after all reactive abilities are processed
+					# This ensures counter-attacks happen before death animations
 		# Legacy: integer damage
 		elif typeof(res) == TYPE_INT:
 			damage = int(res)
@@ -1234,12 +1237,11 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [src_name2, damage, tgt_name2]}))
 					# Legacy damage: encode as negative amount for consistency
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": [tgt_inst2.ball_uuid], "amount": -damage, "stat": "hp"}))
-					# If lethal, enqueue DEATH
-					var post_tgt2 := get_instance_by_uuid(exec_targets[0])
-					if is_instance_valid(post_tgt2) and post_tgt2.current_hp <= 0:
-						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [post_tgt2.ball_uuid]}))
+					# Note: DEATH events are deferred until after all reactive abilities are processed
+					# This ensures counter-attacks happen before death animations
 	# Apply deaths and enqueue inventory sync if needed
-	_check_for_deaths(true, out_events)
+	# Special handling: defer death events for units with counter-attacks to allow final strikes
+	_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 
 ## Process all queued EffectRequests.
 ##
@@ -1255,6 +1257,8 @@ func _process_effect_queue() -> void:
 	_is_processing_effect = true
 	_resolve_animator()
 	var all_events: Array[CombatEvent] = []
+	# Track which units have already had DEATH events created to prevent duplicates
+	var death_events_created: Dictionary = {}
 	# Snapshot HP before simulation so animator can apply per-event changes visibly
 	var hp_snapshot: Dictionary = {}
 	for k in _battle_instances.keys():
@@ -1269,13 +1273,24 @@ func _process_effect_queue() -> void:
 	while not _effect_queue.is_empty():
 		var request: EffectRequest = _effect_queue.pop_back()
 		var current_events: Array[CombatEvent] = []
-		_resolve_single_effect_request(request, current_events)
+		_resolve_single_effect_request(request, current_events, death_events_created)
 		all_events.append_array(current_events)
+		
+		# Check if any counter-attack units have completed their abilities and should die now
+		_process_completed_counter_deaths(all_events, death_events_created)
 
 		# If the battle would end mid-queue, stop collecting and defer emission
 		if _is_battle_over():
 			_battle_over_deferred = true
 			break
+
+	# 1.5. Process any remaining deferred deaths from counter-attack units
+	# Note: Most counter-attack deaths should be processed immediately after their counter-attacks
+	if has_meta("deferred_deaths"):
+		var deferred_deaths: Array = get_meta("deferred_deaths")
+		for uuid in deferred_deaths:
+			_create_death_event_if_needed(uuid, all_events, death_events_created)
+		remove_meta("deferred_deaths")
 
 	# 2. After all logic is processed, play all animations at once.
 	if not all_events.is_empty():
@@ -1351,7 +1366,11 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	for unit in player_units:
 		if unit.current_hp <= 0:
 			something_changed = true
-			if not is_simulation:
+			if is_simulation and out_events != null:
+				# During simulation, ONLY add DEATH event - do not process actual death yet
+				# This keeps the unit visible for counter-attacks
+				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
+			elif not is_simulation:
 				# Trigger on_death for the dying unit
 				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
 				AbilityResolver.process_trigger(&"on_death", death_context)
@@ -1376,7 +1395,11 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
 			something_changed = true
-			if not is_simulation:
+			if is_simulation and out_events != null:
+				# During simulation, ONLY add DEATH event - do not process actual death yet
+				# This keeps the unit visible for counter-attacks
+				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
+			elif not is_simulation:
 				# Trigger on_death for the dying unit
 				var death_context2: Dictionary = {"source_uuid": unit.ball_uuid}
 				AbilityResolver.process_trigger(&"on_death", death_context2)
@@ -1407,6 +1430,167 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 		
 	if something_changed and not is_simulation:
 		SignalBus.emit_signal("battle_inventory_changed")
+
+## Check if a unit has already counter-attacked a specific attacker this turn
+func has_counter_attacked(unit_uuid: String, attacker_uuid: String) -> bool:
+	var counter_key = unit_uuid + "_vs_" + attacker_uuid
+	return _counter_attack_tracking.has(counter_key)
+
+## Mark that a unit has counter-attacked a specific attacker
+func mark_counter_attack(unit_uuid: String, attacker_uuid: String) -> void:
+	var counter_key = unit_uuid + "_vs_" + attacker_uuid
+	_counter_attack_tracking[counter_key] = true
+
+## Clear counter-attack tracking (called at start of each turn)
+func clear_counter_tracking() -> void:
+	_counter_attack_tracking.clear()
+
+## Check if a unit has counter-attack abilities that could trigger on lethal damage
+func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
+	if not is_instance_valid(unit):
+		return false
+	
+	var definition = unit.get_definition()
+	if not is_instance_valid(definition):
+		return false
+	
+	# Check unit's own abilities for counter-attacks
+	for ability in definition.ability_definitions:
+		if is_instance_valid(ability) and ability.trigger == &"on_hurt":
+			# Check if it's a counter-attack ability (uses ATTACKER target or has "counter" in ID)
+			for effect in ability.effects:
+				if is_instance_valid(effect) and effect.target_type == C.TARGET_ATTACKER:
+					return true
+			if ability.id.contains("counter"):
+				return true
+	
+	return false
+
+## Enhanced death checking that defers death events for units with counter-attacks
+func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_events = null, death_tracking = null) -> void:
+	var something_changed = false
+	var deferred_deaths: Array[String] = []  # Units whose deaths should be deferred
+	
+	# Check player units
+	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
+	for unit in player_units:
+		if unit.current_hp <= 0:
+			something_changed = true
+			if is_simulation and out_events != null:
+				# Check if this unit has counter-attacks that could trigger
+				if _has_lethal_counter_abilities(unit):
+					# Defer death event for units with counter-attacks
+					deferred_deaths.append(unit.ball_uuid)
+				else:
+					# Immediate death event for units without counter-attacks
+					if death_tracking != null:
+						_create_death_event_if_needed(unit.ball_uuid, out_events, death_tracking)
+					else:
+						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
+			elif not is_simulation:
+				# Normal death processing for non-simulation
+				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
+				AbilityResolver.process_trigger(&"on_death", death_context)
+				var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+				for ally in all_units:
+					if ally.ball_uuid != unit.ball_uuid:
+						var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+				for item_uuid in unit.equipped_item_uuids:
+					if not item_uuid.is_empty():
+						var item_instance := get_instance(item_uuid)
+						if is_instance_valid(item_instance):
+							_move_instance_to_discard(item_instance)
+				unit.equipped_item_uuids.fill("")
+				_move_instance_to_discard(unit)
+	
+	# Check enemy units (same logic)
+	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
+	for unit in enemy_units:
+		if unit.current_hp <= 0:
+			something_changed = true
+			if is_simulation and out_events != null:
+				if _has_lethal_counter_abilities(unit):
+					deferred_deaths.append(unit.ball_uuid)
+				else:
+					if death_tracking != null:
+						_create_death_event_if_needed(unit.ball_uuid, out_events, death_tracking)
+					else:
+						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
+			elif not is_simulation:
+				var death_context2: Dictionary = {"source_uuid": unit.ball_uuid}
+				AbilityResolver.process_trigger(&"on_death", death_context2)
+				var all_units2 = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+				for ally in all_units2:
+					if ally.ball_uuid != unit.ball_uuid:
+						var ally_death_context2: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
+				for item_uuid in unit.equipped_item_uuids:
+					if item_uuid.is_empty():
+						continue
+					var item_instance2 := get_instance(item_uuid)
+					if is_instance_valid(item_instance2):
+						item_instance2.equipped_on_uuid = ""
+						item_instance2.equipped_slot_index = -1
+						_update_instance_location(item_instance2.ball_uuid, &"", -1)
+						if _battle_instances.has(item_instance2.ball_uuid):
+							_battle_instances.erase(item_instance2.ball_uuid)
+				unit.equipped_item_uuids.fill("")
+				_remove_instance_from_container(unit)
+				if _battle_instances.has(unit.ball_uuid):
+					_battle_instances.erase(unit.ball_uuid)
+	
+	# Store deferred deaths for processing after their counter-attacks complete
+	if not deferred_deaths.is_empty():
+		# Store current deferred deaths, merging with any existing ones
+		var existing_deferred: Array = get_meta("deferred_deaths", [])
+		existing_deferred.append_array(deferred_deaths)
+		set_meta("deferred_deaths", existing_deferred)
+	
+	if something_changed and not is_simulation:
+		SignalBus.emit_signal("battle_inventory_changed")
+
+## Helper function to create DEATH events only once per unit
+func _create_death_event_if_needed(unit_uuid: String, out_events: Array, death_tracking: Dictionary) -> void:
+	if death_tracking.has(unit_uuid):
+		return  # Already created death event for this unit
+	
+	death_tracking[unit_uuid] = true
+	out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit_uuid]}))
+
+## Check if any deferred counter-attack units have completed their abilities and should now die
+func _process_completed_counter_deaths(out_events = null, death_tracking = null) -> void:
+	if not has_meta("deferred_deaths"):
+		return
+	
+	var deferred_deaths: Array = get_meta("deferred_deaths")
+	var remaining_deferred: Array = []
+	
+	for uuid in deferred_deaths:
+		var unit = get_instance_by_uuid(uuid)
+		if not is_instance_valid(unit):
+			continue
+			
+		# Check if this unit still has pending counter-attack abilities in the queue
+		var has_pending_counters = false
+		for request in _effect_queue:
+			if request.source_uuid == uuid and request.ability_id.contains("counter"):
+				has_pending_counters = true
+				break
+		
+		# If no pending counter-attacks, this unit can die now
+		if not has_pending_counters:
+			if out_events != null and death_tracking != null:
+				_create_death_event_if_needed(uuid, out_events, death_tracking)
+		else:
+			# Still has pending counter-attacks, keep deferred
+			remaining_deferred.append(uuid)
+	
+	# Update the deferred deaths list
+	if remaining_deferred.is_empty():
+		remove_meta("deferred_deaths")
+	else:
+		set_meta("deferred_deaths", remaining_deferred)
 
 func _on_apply_deaths_requested(dead_unit_uuids: Array) -> void:
 	if dead_unit_uuids == null:
@@ -1541,6 +1725,16 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 			if not triggering_uuid.is_empty():
 				return [triggering_uuid]
 			return []
+		C.TARGET_ATTACKER:
+			# Return the original attacker from the context (for counter-attacks)
+			# This enables reactive abilities to target the unit that dealt damage
+			var attacker_uuid: String = context.get("attacker_uuid", "")
+			if not attacker_uuid.is_empty():
+				var attacker_instance = get_instance_by_uuid(attacker_uuid)
+				# Only target the attacker if they are still alive (prevents infinite loops with dead units)
+				if is_instance_valid(attacker_instance) and attacker_instance.current_hp > 0:
+					return [attacker_uuid]
+			return []
 		C.TARGET_FRONTMOST_ENEMY:
 			var target = _get_frontmost_target(is_player_team)
 			if is_instance_valid(target):
@@ -1639,6 +1833,10 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 			var damaged_unit = get_instance_by_uuid(damaged_unit_uuid) if not damaged_unit_uuid.is_empty() else source_instance
 			result = damaged_unit.current_hp > 0 if is_instance_valid(damaged_unit) else false
 			print("[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = ", damaged_unit_uuid, " HP = ", damaged_unit.current_hp if is_instance_valid(damaged_unit) else "invalid", " result = ", result)
+		C.COND_DAMAGE_WAS_RECEIVED:
+			# Always true when processing on_hurt triggers - damage was received regardless of lethal outcome
+			# This enables counter-attacks to trigger even when the damage is lethal
+			result = true
 		_:
 			result = false
 	

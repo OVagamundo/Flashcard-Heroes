@@ -178,6 +178,20 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 ## @param battle_manager: Node - The current battle manager
 func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary) -> void:
 	print("[DEBUG] _process_ability called for ability: ", ability.id, " source: ", source_uuid)
+	
+	# Loop prevention for counter-attacks: prevent infinite ping-pong counters
+	# Track counter-attacks per attacker to allow countering different attackers
+	if ability.id.contains("counter"):
+		var attacker_uuid = context.get("attacker_uuid", "")
+		if not attacker_uuid.is_empty():
+			# Check if this unit has already counter-attacked this specific attacker
+			if battle_manager.has_counter_attacked(source_uuid, attacker_uuid):
+				print("[DEBUG] Skipping counter-attack - already countered this attacker: ", ability.id, " attacker: ", attacker_uuid)
+				return
+			
+			# Mark this attacker as countered by this unit
+			battle_manager.mark_counter_attack(source_uuid, attacker_uuid)
+	
 	# Check condition if present
 	if is_instance_valid(ability.condition):
 		var condition_result = battle_manager.check_condition(ability.condition, source_uuid, context)
@@ -196,12 +210,17 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		print("[DEBUG] AbilityResolver effect: ", effect, " target_type: ", effect.target_type, " resolved_targets: ", resolved_targets)
 		
 		# Create EffectRequest
+		# For counter-attack abilities, mark the context to identify counter-attack effects
+		var effect_context = context.duplicate()
+		if ability.id.contains("counter"):
+			effect_context["is_counter"] = true
+		
 		var effect_request = EffectRequest.new(
 			source_uuid,
 			ability.id,
 			effect,
 			resolved_targets,
-			context
+			effect_context
 		)
 		
 		# Enqueue the request

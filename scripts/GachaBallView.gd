@@ -305,6 +305,8 @@ func _flash_unit_color(flash_color: Color) -> void:
 	modulate = flash_color
 	var tween = create_tween()
 	tween.tween_property(self, "modulate", original_modulate, 0.3)
+	# Emit completion signal when flash finishes
+	tween.finished.connect(_on_flash_tween_finished)
 
 func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	# Only respond if this view represents the attacker
@@ -321,6 +323,8 @@ func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	tween.tween_property(self, "position", bump_target, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	# Then return
 	tween.tween_property(self, "position", start_pos, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	# Emit completion signal when bump finishes
+	tween.finished.connect(_on_bump_tween_finished)
 
 func _on_unit_death_fade(unit_uuid: String) -> void:
 	# Only respond if this view represents the dying unit
@@ -331,6 +335,8 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	var fade_tween = create_tween()
 	# Ensure we are visible, then fade to 0 alpha
 	fade_tween.tween_property(self, "modulate:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	# Emit completion signal when death fade finishes
+	fade_tween.finished.connect(_on_death_fade_tween_finished)
 
 
 func _apply_selection_feedback() -> void:
@@ -357,3 +363,13 @@ func _notification(what: int) -> void:
 		if GlobalInteractionRouter.is_drag_active():
 			GlobalInteractionRouter.end_drag(false)
 			GlobalInteractionRouter.end_drag_visuals(false)
+
+# Animation completion callbacks that emit global signals
+func _on_flash_tween_finished() -> void:
+	SignalBus.emit_signal("unit_flash_finished", _instance_uuid)
+
+func _on_bump_tween_finished() -> void:
+	SignalBus.emit_signal("unit_bump_finished", _instance_uuid)
+
+func _on_death_fade_tween_finished() -> void:
+	SignalBus.emit_signal("unit_death_fade_finished", _instance_uuid)
