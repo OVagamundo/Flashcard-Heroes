@@ -35,7 +35,10 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						target_name = target_def.id
 				var log_msg = "EffectModifyStat: %s changed for %s from %d to %d (Source: %s)" % [stat, target_name, old_hp, new_hp, ability_id]
 				print("[DEBUG] ", log_msg)
-				if not is_simulation:
+				# Update HP silently during simulation, loudly during non-simulation
+				if is_simulation and inst.has_method("set_current_hp_silent"):
+					inst.set_current_hp_silent(new_hp)
+				else:
 					inst.set_current_hp(new_hp)
 				# Other stats can be added here when implemented
 			_:

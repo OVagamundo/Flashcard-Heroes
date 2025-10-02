@@ -123,7 +123,10 @@ func _on_anchor_freed() -> void:
 	# Defer briefly to allow UI to settle (e.g., during inventory reflow) before deciding to close.
 	# This avoids premature self-closing that bypasses WindowManager suppression during actions.
 	var self_ref = self
-	await get_tree().create_timer(0.25).timeout
+	var tree = get_tree()
+	if not is_instance_valid(tree):
+		return
+	await tree.create_timer(0.25).timeout
 	if not is_instance_valid(self_ref) or not is_instance_valid(self):
 		return
 	# Try to re-establish a stable anchor from the current source view

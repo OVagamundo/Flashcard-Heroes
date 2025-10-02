@@ -49,7 +49,9 @@ layout_mode = 2
 
 [node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
+autowrap_mode = 3
 meta_underlined = false

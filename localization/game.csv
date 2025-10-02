@@ -10,13 +10,15 @@ unit_t1_b.desc,A loyal squire.
 unit_t2_c.name,Knight
 unit_t2_c.desc,A valiant knight.
 item_t1_a.name,Small HP Potion
-item_t1_a.desc,Equipped: +1 HP to the holder; at the start of each turn the holder heals 2 HP. Trigger: on_turn_start; Target: Holder; Stacking: each copy heals separately; Overheal: healing can raise current HP above its starting value.
+item_t1_a.desc,Placeholder
 item_t1_b.name,Small PWR Potion
-item_t1_b.desc,Restores a small amount of PWR.
+item_t1_b.desc,Placeholder
 item_t2_c.name,Large HP Potion
 item_t2_c.desc,Restores a large amount of HP and PWR.
 ability.basic_attack.name,Basic Attack
 ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.
+ability.item_tier1b_extra_attack.name,Extra Attack
+ability.item_tier1b_extra_attack.desc,When attacking if target has more HP than holder then perform an extra attack. Target: Attack Target. Condition: Target HP greater than Holder HP. Triggers each attack. Stacking: each item copy adds one extra attack.
 item.effect.hp,Add (HP) HP to the unit.
 item.effect.pwr,Add (PWR) PWR to the unit.
 item.effect.both,Add (HP) HP and (PWR) PWR to the unit.

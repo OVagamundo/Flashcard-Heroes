@@ -81,6 +81,7 @@ func populate(context: Dictionary) -> void:
 				continue
 			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
 			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+			print("[ItemInspection] Ability: %s | Key: %s | Desc: %s" % [ability.id, ability.description_key, ability_desc])
 			if not ability_name.is_empty() or not ability_desc.is_empty():
 				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 		abilities_block = "\n".join(abilities_lines)

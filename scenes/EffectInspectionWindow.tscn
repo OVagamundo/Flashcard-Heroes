@@ -65,3 +65,4 @@ size_flags_vertical = 1
 bbcode_enabled = true
 text = "This is the detailed description of the effect."
 fit_content = true
+autowrap_mode = 3

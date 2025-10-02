@@ -88,6 +88,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				var damaged_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != damaged_unit_uuid:
 					continue
+			# For on_attack triggers, only process if the item is equipped to the attacking unit
+			elif trigger == &"on_attack":
+				var attacking_unit_uuid = context.get("source_uuid", "")
+				if instance.equipped_on_uuid != attacking_unit_uuid:
+					continue
 			
 			# Check if this item has abilities for this trigger
 			var has_matching_ability = false
@@ -117,7 +122,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
 				print("[DEBUG] Processing equipped item ability: ", ability.id, " for item: ", instance_uuid)
-				_process_ability(ability, instance_uuid, battle_manager, context)
+				# For on_attack abilities from equipped items, the holder is the source (e.g., Double Strike)
+				# For on_hurt abilities, the damaged unit (holder) is already the source
+				# This ensures items grant abilities to their holder, not act as independent attackers
+				var ability_source_uuid = instance.equipped_on_uuid if trigger == &"on_attack" else instance_uuid
+				_process_ability(ability, ability_source_uuid, battle_manager, context)
 	
 	# Phase 3: Process trinket abilities
 	# Player trinkets: source is the Hero; Enemy trinkets: source depends on trigger context.
@@ -220,7 +229,8 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			ability.id,
 			effect,
 			resolved_targets,
-			effect_context
+			effect_context,
+			ability.priority  # Pass priority from ability definition
 		)
 		
 		# Enqueue the request

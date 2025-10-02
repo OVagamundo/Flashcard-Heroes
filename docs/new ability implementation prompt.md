@@ -1,101 +1,104 @@
-Here is the complete and final implementation plan for the new "Double Strike" ability on Tier1ItemB, including the descriptive text for UI inspection and a verification plan.
-Implementation Goal
-The goal is to enhance the Tier1ItemB item. In addition to its existing static +1 Power bonus, it will gain a new passive ability: "If the holder's attack target has more HP than the holder, the holder will attack a second time." This will be a completely data-driven change, requiring no new code.
-Step 1: Create the Ability Definition Resource
-This resource defines the new "Double Strike" ability's logic.
-Create a new file in the resources/abilities/ directory.
-Name the file: ItemTier1B_DoubleStrike.tres
-Add the following content:
+Implementation Prompt: New Passive Ability 'Morale Boost' for UnitTier2C
+Objective: Implement a new passive ability for the UnitTier2C unit.
+Ability Description:
+Name: Morale Boost
+Trigger: When an allied unit is defeated.
+Effect: The unit with this ability gains +1 HP and +1 PWR.
+Notes: There is no limit to the number of times this can activate per battle.
+Implementation Steps:
+The existing system architecture fully supports this ability with one minor script modification and the addition of data resources. No changes to BattleManager or AbilityResolver are required.
+Step 1: Generalize the EffectModifyStat.gd Script
+Our current EffectModifyStat.gd script only handles the "hp" stat. It must be updated to also handle "pwr" to make it a generic stat modification tool.
+File to Modify: scripts/EffectModifyStat.gd
+Action: Add a pwr case to the match statement.
 code
-Tres
+Gdscript
+# scripts/EffectModifyStat.gd
+
+...
+		match stat:
+			"hp":
+				var old_hp = inst.current_hp
+				var new_hp = max(0, inst.current_hp + base_value)
+				if is_simulation and inst.has_method("set_current_hp_silent"):
+					inst.set_current_hp_silent(new_hp)
+				else:
+					inst.set_current_hp(new_hp)
+			
++			# ADD THIS BLOCK
++			"pwr":
++				var old_pwr = inst.current_pwr
++				inst.current_pwr = max(0, inst.current_pwr + base_value)
++				if not is_simulation:
++					SignalBus.emit_signal("unit_stats_changed", inst.ball_uuid)
++			# END ADDED BLOCK
+			
+			_:
+				pass
+...
+Step 2: Create the New Ability Resource File
+Create a new AbilityDefinition resource that links the on_ally_death trigger to two separate EffectModifyStat effects (one for HP, one for PWR).
+Create New File: resources/abilities/UnitTier2C_AllyDeathBuff.tres
+Content:
+code
+Ini
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
-[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="2_condition"]
-[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="3_effect"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
 
-[sub_resource type="Resource" id="Condition_TargetHPGreaterThanSelf_1"]
-script = ExtResource("2_condition")
-condition_type = &"TARGET_HP_GREATER_THAN_SELF_HP"
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"SELF"
 
-[sub_resource type="Resource" id="Effect_BasicAttackAgain_1"]
-script = ExtResource("3_effect")
-target_type = &"ATTACK_TARGET"
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"SELF"
 
 [resource]
 script = ExtResource("1_ability")
-id = &"item_tier1b_double_strike"
-name_key = "ability.item_tier1b_double_strike.name"
-description_key = "ability.item_tier1b_double_strike.desc"
-trigger = &"on_attack"
-condition = SubResource("Condition_TargetHPGreaterThanSelf_1")
-effects = Array[Resource]([SubResource("Effect_BasicAttackAgain_1")])
-Step 2: Update the Localization File
-This step provides the user-facing text for the new ability.
-Open the file: localization/game.csv
-Add these two new lines to the end of the file:
+id = &"unit_tier2c_ally_death_buff"
+name_key = "ability.unit_tier2c_ally_death_buff.name"
+description_key = "ability.unit_tier2c_ally_death_buff.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
+Step 3: Attach the Ability to UnitTier2C
+Modify the unit's resource file to include the new ability.
+File to Modify: resources/units/UnitTier2C.tres
+Action: Add the new ability to its ability_definitions array. The entire file content should be as follows:
 code
-Csv
-ability.item_tier1b_double_strike.name,"Frenzy"
-ability.item_tier1b_double_strike.desc,"If the target has more HP than the holder, attack again."
-Step 3: Update the Item Definition (ItemTier1B)
-This step integrates the new ability into the item itself.
-Open the file: resources/items/ItemTier1B.tres
-Replace the entire file content with the following, which adds the ExtResource link and updates the ability_definitions array:
-code
-Tres
+Ini
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/items/Tier1ItemB.png" id="2_icon"]
-[ext_resource type="Resource" path="res://resources/abilities/ItemTier1B_DoubleStrike.tres" id="3_ability"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier2unitC.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff.tres" id="3_ability"]
 
 [resource]
 script = ExtResource("1_script")
-id = &"item_t1_b"
-display_name_key = "item_t1_b.name"
-description_key = "item_t1_b.desc"
+id = &"unit_t2_c"
+display_name_key = "unit_t2_c.name"
+description_key = "unit_t2_c.desc"
 icon = ExtResource("2_icon")
-tier = 1
-cost = 1
-category = &"ITEM"
-item_slot_count = 0
-base_hp = 0
-base_pwr = 0
+tier = 2
+cost = 2
+category = &"UNIT"
+item_slot_count = 2
+base_hp = 3
+base_pwr = 3
 bonus_hp = 0
-bonus_pwr = 1
-ability_definitions = Array[Resource]([ExtResource("3_ability")])
-Step 4: UI Inspection Text Generation
-Based on the documentation (ReactiveUI.md and Flashcard Heroes GDD.md), the ItemInspectionWindow.gd script will dynamically generate the following descriptive text when a player inspects Tier1ItemB. This is a representation of the final UI output, not a file to be created.
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability")]
+Step 4: Add Localization Text
+Add the UI text for the ability's name and description.
+File to Modify: localization/game.csv
+Action: Append the following lines to the end of the file.
 code
-Code
-[font_size=18]Spiked Gauntlet[/font_size]
----
-Grants +1 (PWR).
-
-[b]Frenzy[/b]: If the target has more HP than the holder, attack again.
-Breakdown of how this is generated by the existing UI code:
-ItemInspectionWindow.gd first generates the stat bonus line by checking the item's bonus_pwr and using the item.effect.pwr localization key.
-It then iterates through the ability_definitions array.
-For each ability, it fetches the name_key ("ability.item_tier1b_double_strike.name") and description_key ("ability.item_tier1b_double_strike.desc") and formats them using BBCode for the RichTextLabel.
-Step 5: Verification and Testing Plan
-This plan ensures the ability works as intended and confirms that the existing systems correctly handle all interactions.
-Basic Functionality Test:
-Equip ItemTier1B on a unit with 5 HP.
-End the turn so it attacks an enemy with 6 or more HP.
-Expected Result: The unit should perform its attack animation twice. The target should take damage twice. The battle log should show two separate damage entries.
-Condition Failure Test:
-Equip ItemTier1B on a unit with 5 HP.
-End the turn so it attacks an enemy with 5 or less HP.
-Expected Result: The unit should attack only once.
-Edge Case: Overkill Test:
-Equip the item on a powerful unit that can defeat its target in one hit. The target must still have more HP than the attacker before the hit.
-Expected Result: The unit will attack the first target once, defeating it. The second attack, which was already enqueued, should automatically retarget to the new frontmost enemy. This confirms the BattleManager's retargeting logic is working.
-Edge Case: Counter-Attack Interaction Test:
-Equip ItemTier1B on a unit.
-Have it attack an enemy UnitTier1B (the unit with a counter-attack) that has more HP.
-Expected Result: The visual and logical sequence should be:
-Your unit attacks (First Strike).
-The enemy unit takes damage and immediately counter-attacks.
-Your unit performs its second attack (from the Frenzy ability).
-The enemy unit takes damage again but does not counter-attack a second time, confirming the "per-attacker limit" is functioning.
+Csv
+ability.unit_tier2c_ally_death_buff.name,"Morale Boost"
+ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."
+Notes for the Developer:
+This is primarily a data-driven change, confirming the health of the ability system architecture.
+Visual Feedback: Due to the current implementation of CombatEvent, the +1 HP gain will trigger a green "heal" flash on the unit. The +1 PWR gain will be correctly applied to the unit's data and its UI label will update, but there will be no distinct animation for the PWR gain itself. This is expected behavior.

@@ -18,3 +18,11 @@ extends Resource
 @export var effects: Array[EffectDefinition]
 ## The localization key for the ability's description text.
 @export var description_key: String
+
+## Execution priority. Higher numbers resolve first. Default 0 for all existing abilities.
+## Priority Tiers (Design Reference):
+##  100: REACTIVE_DEFENSIVE (e.g., Heal on hurt)
+##   50: REACTIVE_OFFENSIVE (e.g., Counter-attack)
+##    0: DEFAULT (All existing abilities)
+## -100: FOLLOW_UP (e.g., Double Strike, multi-hit follow-ups)
+@export var priority: int = 0

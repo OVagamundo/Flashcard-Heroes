@@ -19,13 +19,18 @@ func play_turn(events: Array[CombatEvent]) -> void:
 		emit_signal("turn_animation_finished")
 		return
 	# Restore HP from snapshot so subsequent per-event changes are visible.
-	# Skip missing instances (e.g., already removed by simulation due to death).
+	# Only restore units that were ALIVE at start of turn (snapshot > 0)
+	# Skip units that were already dead (snapshot = 0) - they stay dead
 	var bm := _get_battle_manager()
 	if is_instance_valid(bm):
 		for uuid in _hp_snapshot.keys():
 			var inst: GachaBallInstance = bm.get_instance(String(uuid))
 			if is_instance_valid(inst):
-				inst.set_current_hp_silent(int(_hp_snapshot[uuid]))
+				var snapshot_hp = int(_hp_snapshot[uuid])
+				# Restore if unit was alive at start of turn, regardless of current HP
+				# This allows units that died during simulation to show incremental damage
+				if snapshot_hp > 0:
+					inst.set_current_hp_silent(snapshot_hp)
 	await _animate_events(events)
 
 func _animate_events(events: Array[CombatEvent]) -> void:
@@ -39,33 +44,44 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# Log messages are instant, no animation to wait for
 
 			CombatEvent.Type.DAMAGE:
-				# Pre-hit: small attacker bump toward the opponent, then apply damage
+				# Emit bump, then flash animation
+				# Apply HP delta incrementally so each attack shows its own damage
 				if event.target_uuids.size() > 0:
 					var target_uuid := event.target_uuids[0]
-					
-					# Bump animation (if source exists)
-					if not event.source_uuid.is_empty():
+					_emit_bump(event.source_uuid)
+					if not String(event.source_uuid).is_empty():
+						# Wait for half of the bump animation (0.5s)
+						await get_tree().create_timer(0.5).timeout
+						# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
+						_apply_hp_delta(target_uuid, event.amount)
+						# Start damage flash while bump is finishing
+						if SignalBus.has_signal("unit_flash_effect"):
+							SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
+						# Wait for both bump and flash to complete
 						_current_animation_uuid = event.source_uuid
-						_emit_bump(event.source_uuid)
 						await _wait_for_animation_completion("bump", event.source_uuid)
-					
-					# Apply damage and flash animation
-					_apply_hp_delta(target_uuid, event.amount)
-					_current_animation_uuid = target_uuid
-					if SignalBus.has_signal("unit_flash_effect"):
-						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
+						_current_animation_uuid = target_uuid
 						await _wait_for_animation_completion("flash", target_uuid)
+					else:
+						# No bump, just flash
+						_current_animation_uuid = target_uuid
+						# Apply HP delta NOW so UI updates incrementally
+						_apply_hp_delta(target_uuid, event.amount)
+						if SignalBus.has_signal("unit_flash_effect"):
+							SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
+							await _wait_for_animation_completion("flash", target_uuid)
 
 			CombatEvent.Type.HEAL:
-				# Apply numeric HP delta and flash animation
+				# Flash animation only - apply HP delta incrementally
 				if event.target_uuids.size() > 0:
 					var target_uuid2 := event.target_uuids[0]
-					_apply_hp_delta(target_uuid2, event.amount)
 					_current_animation_uuid = target_uuid2
+					# Apply HP delta NOW so UI updates incrementally (each heal shows its own amount)
+					_apply_hp_delta(target_uuid2, event.amount)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
 						await _wait_for_animation_completion("flash", target_uuid2)
-
+			
 			CombatEvent.Type.INVENTORY_SYNC:
 				# This triggers the removal of the dead unit's view from the UI.
 				SignalBus.emit_signal("battle_inventory_changed")
@@ -171,13 +187,13 @@ func _wait_for_animation_completion(animation_type: String, expected_uuid: Strin
 	var timeout_duration: float
 	match animation_type:
 		"bump":
-			timeout_duration = 0.16
+			timeout_duration = 1.1  # Bump is 1.0s
 		"flash":
-			timeout_duration = 0.30
+			timeout_duration = 1.1  # Flash is 1.0s
 		"death_fade":
-			timeout_duration = 0.28
+			timeout_duration = 1.1  # Death fade is 1.0s
 		_:
-			timeout_duration = 0.30  # Default fallback
+			timeout_duration = 1.1  # Default fallback
 	
 	# Create timeout timer
 	var timeout_timer = get_tree().create_timer(timeout_duration)

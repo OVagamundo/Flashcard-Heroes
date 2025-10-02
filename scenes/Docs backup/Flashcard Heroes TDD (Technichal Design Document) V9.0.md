@@ -1,4 +1,3 @@
-@ -0,0 +1,147 @@
 # Flashcard Heroes - Technical Design Document (V8.0)
 
 **Version:** 8.0  

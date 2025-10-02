@@ -3,183 +3,1435 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished when instantiating: 'res://scenes/Loadout.tscn'.
    at: instantiate (scene/resources/packed_scene.cpp:178)
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking if target has more HP than holder then perform an extra attack. Target: Attack Target. Condition: Target HP greater than Holder HP. Triggers each attack. Stacking: each item copy adds one extra attack.
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking if target has more HP than holder then perform an extra attack. Target: Attack Target. Condition: Target HP greater than Holder HP. Triggers each attack. Stacking: each item copy adds one extra attack.
+[ItemInspection] Ability: item_tier2c_passive_heal | Key: ability.item_tier2c_passive_heal.desc | Desc: On Hurt (non-lethal): Heal this unit by 1 HP. Target: Self. Condition: Damage was non-lethal.
 [DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
 [DEBUG] Starting turn 1
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#369736288404>
+[RESULTS ACK] Player clicked Okay on results popup
 [DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
+[RESULTS ACK] Transitioning to MANAGEMENT phase
 [DEBUG] End turn requested, current phase: MANAGEMENT
 [DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 3
-[DEBUG] Knight takes 2 damage. HP: 4 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759059902_6711 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759059902_6711", "damage_taken": 2, "attacker_uuid": "hero_1759059902_4898" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1759059902_9954", ""]
-[DEBUG] Equipped item: item_t1_a_1759059902_9954 definition: item_t1_a
-[DEBUG] Knight takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759059902_6711 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759059902_6711", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759059902_4055" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1759059902_9954", ""]
-[DEBUG] Equipped item: item_t1_a_1759059902_9954 definition: item_t1_a
-[DEBUG] Apprentice takes 2 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759059902_3233 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759059902_3233", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759059902_9680" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759059902_3233 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759059902_3233
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759059902_3233 HP = 0 result = false
+
+========== TURN 1 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Hero (UUID: hero_175) - HP: 12, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+      [Item Slot 2] Small HP Potion
+      [Item Slot 3] Large HP Potion
+  [1] Squire (UUID: unit_t1_) - HP: 2, PWR: 2
+      [Item Slot 0] Small PWR Potion
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 7, PWR: 7
+      [Item Slot 0] Large HP Potion
+  [1] unit_t3_d.name (UUID: unit_t3_) - HP: 7, PWR: 7
+      [Item Slot 0] Large HP Potion
+[BATTLE STATE] Action order: ["hero", "unit_t1_b", "unit_t3_d", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Hero's Turn ======
+[COMBAT] Hero (HP: 12, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439739_6393 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_6393
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[DEBUG] Processing equipped item: item_t1_b_1759439739_4519 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_4519
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 7 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_7395 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_7395", "damage_taken": 5, "attacker_uuid": "hero_1759439739_6647" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_8363", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_8363 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_8363 definition: item_t2_c equipped to: unit_t3_d_1759439739_7395 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_8363
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_8363
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_7395 HP = 2 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_8363 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_8363 equipped to: unit_t3_d_1759439739_7395
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["unit_t3_d_1759439739_7395"]
+[COMBAT]     → LOG: Hero deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 2)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 2 to 3 (Source: item_tier2c_passive_heal)
+[COMBAT]     → LOG: Large HP Potion heals unit_t3_d.name for 1 HP
+[COMBAT]     → HEAL: unit_t3_d.name healed 1 HP (HP: 3)
+
+[COMBAT] ====== Actor #2: Squire's Turn ======
+[COMBAT] Squire (HP: 2, PWR: 2) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439739_8375 definition: item_t1_b equipped to: unit_t1_b_1759439739_9670 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_8375
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t1_b_1759439739_9670
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t1_b_1759439739_9670 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["unit_t3_d_1759439739_7395"]
+[COMBAT] Processing 2 pending reactions for Squire...
+[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 3 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_7395 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_7395", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759439739_9670" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_8363", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_8363 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_8363 definition: item_t2_c equipped to: unit_t3_d_1759439739_7395 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_8363
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_8363
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_7395 HP = 1 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_8363 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_8363 equipped to: unit_t3_d_1759439739_7395
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["unit_t3_d_1759439739_7395"]
+[COMBAT]     → LOG: Squire deals 2 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 1)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 1 to 2 (Source: item_tier2c_passive_heal)
+[COMBAT]     → LOG: Large HP Potion heals unit_t3_d.name for 1 HP
+[COMBAT]     → HEAL: unit_t3_d.name healed 1 HP (HP: 2)
+[COMBAT]   Reaction #3: Squire uses 'item_tier1b_extra_attack' (priority -100) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_7395 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_7395", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759439739_9670" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_8363", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_8363 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_8363 definition: item_t2_c equipped to: unit_t3_d_1759439739_7395 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_8363
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_8363
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_7395 HP = 0 result = false
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
-[DEBUG] Apprentice takes 2 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759059902_1393 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759059902_1393", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759059902_5617" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759059902_1393 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759059902_1393
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759059902_1393 HP = 0 result = false
+[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 2 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 0)
+[COMBAT]     → DEATH: unit_t3_d.name has died
+
+[COMBAT] ====== Actor #3: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 7, PWR: 7) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Squire"]
+[DEBUG] Squire takes 7 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759439739_9670 damage: 7
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759439739_9670", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1759439739_0164" }
+[DEBUG] Damaged unit equipped items: ["item_t1_b_1759439739_8375"]
+[DEBUG] Equipped item: item_t1_b_1759439739_8375 definition: item_t1_b
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759439739_9670 definition: unit_t1_b
+[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759439739_9670
+[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
+[DEBUG] resolve_target called: source=unit_t1_b_1759439739_9670 target_type=ATTACKER
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371961743178296> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759439739_0164"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 7 dmg to Squire
+[COMBAT]     → DAMAGE: Squire took 7 damage (HP: 0)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
+[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 7 -> 5
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_0164 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_0164", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759439739_9670" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_2501", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_2501 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_2501 definition: item_t2_c equipped to: unit_t3_d_1759439739_0164 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_2501
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_2501
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_0164 HP = 5 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_2501 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_2501 equipped to: unit_t3_d_1759439739_0164
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["unit_t3_d_1759439739_0164"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 2 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 5)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]   Reaction #3: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 5 to 6 (Source: item_tier2c_passive_heal)
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Large HP Potion heals unit_t3_d.name for 1 HP
+[COMBAT]     → HEAL: unit_t3_d.name healed 1 HP (HP: 6)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT] Actor #4: unit_t3_d.name (HP: 0) is DEAD, skipping turn
+[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759439739_7395"]
+[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 1
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759439739_9670"]
+[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 1
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = false
+[DEBUG] End of turn 1 - triggering turn end abilities and starting next turn
+[DEBUG] Starting turn 2
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#678135072840>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 2 - triggering turn start abilities after mini-game
+[DEBUG] _trigger_turn_start_abilities() called for turn 2
+[DEBUG] Processing equipped item: item_t1_a_1759439739_2328 definition: item_t1_a equipped to: hero_1759439739_6647 slot: 2
+[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759439739_2328
+[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759439739_2328
+[DEBUG] resolve_target called: source=item_t1_a_1759439739_2328 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t1_a_1759439739_2328 equipped to: hero_1759439739_6647
+[DEBUG] AbilityResolver effect: <Resource#-9223371959159487013> target_type: HOLDER resolved_targets: ["hero_1759439739_6647"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759439739_5949
+[DEBUG] Trinket container: EnemyTrinkets
+[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1759439739_0164
+[DEBUG] _process_ability called for ability:  source: unit_t3_d_1759439739_0164
+[DEBUG] resolve_target called: source=unit_t3_d_1759439739_0164 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1759439739_0164"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759439739_6929
+[DEBUG] Trinket container: PlayerTrinkets
+[DEBUG] get_hero_uuid() slot 0: 'hero_1759439739_6647'
+[DEBUG] Player trinket - Hero UUID: 'hero_1759439739_6647'
+[DEBUG] _process_ability called for ability:  source: hero_1759439739_6647
+[DEBUG] resolve_target called: source=hero_1759439739_6647 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759439739_6647"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 12 to 14 (Source: item_tier1a_turn_start_heal)
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 6 to 8 (Source: )
+[DEBUG] EffectModifyStat: hp changed for hero.name from 14 to 16 (Source: )
+[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
+[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 2 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Hero (UUID: hero_175) - HP: 16, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+      [Item Slot 2] Small HP Potion
+      [Item Slot 3] Large HP Potion
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 8, PWR: 7
+      [Item Slot 0] Large HP Potion
+[BATTLE STATE] Action order: ["hero", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Hero's Turn ======
+[COMBAT] Hero (HP: 16, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439739_6393 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_6393
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[DEBUG] Processing equipped item: item_t1_b_1759439739_4519 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_4519
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 8 -> 3
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_0164 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_0164", "damage_taken": 5, "attacker_uuid": "hero_1759439739_6647" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_2501", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_2501 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_2501 definition: item_t2_c equipped to: unit_t3_d_1759439739_0164 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_2501
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_2501
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_0164 HP = 3 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_2501 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_2501 equipped to: unit_t3_d_1759439739_0164
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["unit_t3_d_1759439739_0164"]
+[COMBAT]     → LOG: Hero deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 3)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 3 to 4 (Source: item_tier2c_passive_heal)
+[COMBAT]     → LOG: Large HP Potion heals unit_t3_d.name for 1 HP
+[COMBAT]     → HEAL: unit_t3_d.name healed 1 HP (HP: 4)
+
+[COMBAT] ====== Actor #2: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 4, PWR: 7) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 7 damage. HP: 16 -> 9
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439739_6647 damage: 7
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439739_6647", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1759439739_0164" }
+[DEBUG] Damaged unit equipped items: ["item_t1_b_1759439739_6393", "item_t1_b_1759439739_4519", "item_t1_a_1759439739_2328", "item_t2_c_1759439739_4320", ""]
+[DEBUG] Equipped item: item_t1_b_1759439739_6393 definition: item_t1_b
+[DEBUG] Equipped item: item_t1_b_1759439739_4519 definition: item_t1_b
+[DEBUG] Equipped item: item_t1_a_1759439739_2328 definition: item_t1_a
+[DEBUG] Equipped item: item_t2_c_1759439739_4320 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_4320 definition: item_t2_c equipped to: hero_1759439739_6647 slot: 3
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_4320
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_4320
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439739_6647 HP = 9 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_4320 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_4320 equipped to: hero_1759439739_6647
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["hero_1759439739_6647"]
+[COMBAT]     → LOG: unit_t3_d.name deals 7 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 7 damage (HP: 9)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 9 to 10 (Source: item_tier2c_passive_heal)
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 10)
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = false
+[DEBUG] End of turn 2 - triggering turn end abilities and starting next turn
+[DEBUG] Starting turn 3
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 2, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#748079286088>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 3 - triggering turn start abilities after mini-game
+[DEBUG] _trigger_turn_start_abilities() called for turn 3
+[DEBUG] Processing equipped item: item_t1_a_1759439739_2328 definition: item_t1_a equipped to: hero_1759439739_6647 slot: 2
+[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759439739_2328
+[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759439739_2328
+[DEBUG] resolve_target called: source=item_t1_a_1759439739_2328 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t1_a_1759439739_2328 equipped to: hero_1759439739_6647
+[DEBUG] AbilityResolver effect: <Resource#-9223371959159487013> target_type: HOLDER resolved_targets: ["hero_1759439739_6647"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759439739_5949
+[DEBUG] Trinket container: EnemyTrinkets
+[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1759439739_0164
+[DEBUG] _process_ability called for ability:  source: unit_t3_d_1759439739_0164
+[DEBUG] resolve_target called: source=unit_t3_d_1759439739_0164 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1759439739_0164"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759439739_6929
+[DEBUG] Trinket container: PlayerTrinkets
+[DEBUG] get_hero_uuid() slot 0: 'hero_1759439739_6647'
+[DEBUG] Player trinket - Hero UUID: 'hero_1759439739_6647'
+[DEBUG] _process_ability called for ability:  source: hero_1759439739_6647
+[DEBUG] resolve_target called: source=hero_1759439739_6647 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759439739_6647"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 10 to 12 (Source: item_tier1a_turn_start_heal)
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 4 to 6 (Source: )
+[DEBUG] EffectModifyStat: hp changed for hero.name from 12 to 14 (Source: )
+[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
+[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 3 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Hero (UUID: hero_175) - HP: 14, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+      [Item Slot 2] Small HP Potion
+      [Item Slot 3] Large HP Potion
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 7
+      [Item Slot 0] Large HP Potion
+[BATTLE STATE] Action order: ["hero", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Hero's Turn ======
+[COMBAT] Hero (HP: 14, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439739_6393 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_6393
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[DEBUG] Processing equipped item: item_t1_b_1759439739_4519 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_4519
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 6 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_0164 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_0164", "damage_taken": 5, "attacker_uuid": "hero_1759439739_6647" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_2501", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_2501 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_2501 definition: item_t2_c equipped to: unit_t3_d_1759439739_0164 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_2501
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_2501
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_0164 HP = 1 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_2501 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_2501 equipped to: unit_t3_d_1759439739_0164
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["unit_t3_d_1759439739_0164"]
+[COMBAT]     → LOG: Hero deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 1)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 1 to 2 (Source: item_tier2c_passive_heal)
+[COMBAT]     → LOG: Large HP Potion heals unit_t3_d.name for 1 HP
+[COMBAT]     → HEAL: unit_t3_d.name healed 1 HP (HP: 2)
+
+[COMBAT] ====== Actor #2: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 2, PWR: 7) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 7 damage. HP: 14 -> 7
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439739_6647 damage: 7
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439739_6647", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1759439739_0164" }
+[DEBUG] Damaged unit equipped items: ["item_t1_b_1759439739_6393", "item_t1_b_1759439739_4519", "item_t1_a_1759439739_2328", "item_t2_c_1759439739_4320", ""]
+[DEBUG] Equipped item: item_t1_b_1759439739_6393 definition: item_t1_b
+[DEBUG] Equipped item: item_t1_b_1759439739_4519 definition: item_t1_b
+[DEBUG] Equipped item: item_t1_a_1759439739_2328 definition: item_t1_a
+[DEBUG] Equipped item: item_t2_c_1759439739_4320 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_4320 definition: item_t2_c equipped to: hero_1759439739_6647 slot: 3
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_4320
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_4320
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439739_6647 HP = 7 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439739_4320 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439739_4320 equipped to: hero_1759439739_6647
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["hero_1759439739_6647"]
+[COMBAT]     → LOG: unit_t3_d.name deals 7 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 7 damage (HP: 7)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 7 to 8 (Source: item_tier2c_passive_heal)
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 8)
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = false
+[DEBUG] End of turn 3 - triggering turn end abilities and starting next turn
+[DEBUG] Starting turn 4
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#848625141635>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 4 - triggering turn start abilities after mini-game
+[DEBUG] _trigger_turn_start_abilities() called for turn 4
+[DEBUG] Processing equipped item: item_t1_a_1759439739_2328 definition: item_t1_a equipped to: hero_1759439739_6647 slot: 2
+[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759439739_2328
+[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759439739_2328
+[DEBUG] resolve_target called: source=item_t1_a_1759439739_2328 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t1_a_1759439739_2328 equipped to: hero_1759439739_6647
+[DEBUG] AbilityResolver effect: <Resource#-9223371959159487013> target_type: HOLDER resolved_targets: ["hero_1759439739_6647"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759439739_5949
+[DEBUG] Trinket container: EnemyTrinkets
+[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1759439739_0164
+[DEBUG] _process_ability called for ability:  source: unit_t3_d_1759439739_0164
+[DEBUG] resolve_target called: source=unit_t3_d_1759439739_0164 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1759439739_0164"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759439739_6929
+[DEBUG] Trinket container: PlayerTrinkets
+[DEBUG] get_hero_uuid() slot 0: 'hero_1759439739_6647'
+[DEBUG] Player trinket - Hero UUID: 'hero_1759439739_6647'
+[DEBUG] _process_ability called for ability:  source: hero_1759439739_6647
+[DEBUG] resolve_target called: source=hero_1759439739_6647 target_type=FRONTMOST_ALLY
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759439739_6647"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 8 to 10 (Source: item_tier1a_turn_start_heal)
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 2 to 4 (Source: )
+[DEBUG] EffectModifyStat: hp changed for hero.name from 10 to 12 (Source: )
+[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
+[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 4 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Hero (UUID: hero_175) - HP: 12, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+      [Item Slot 2] Small HP Potion
+      [Item Slot 3] Large HP Potion
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 4, PWR: 7
+      [Item Slot 0] Large HP Potion
+[BATTLE STATE] Action order: ["hero", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Hero's Turn ======
+[COMBAT] Hero (HP: 12, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439739_6393 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_6393
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[DEBUG] Processing equipped item: item_t1_b_1759439739_4519 definition: item_t1_b equipped to: hero_1759439739_6647 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439739_4519
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759439739_6647
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 4 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439739_0164 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439739_0164", "damage_taken": 5, "attacker_uuid": "hero_1759439739_6647" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439739_2501", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439739_2501 definition: item_t2_c
+[DEBUG] Processing equipped item: item_t2_c_1759439739_2501 definition: item_t2_c equipped to: unit_t3_d_1759439739_0164 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439739_2501
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439739_2501
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t3_d_1759439739_0164 HP = 0 result = false
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
+[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Hero deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 0)
+[COMBAT]     → DEATH: unit_t3_d.name has died
+[COMBAT] Actor #2: unit_t3_d.name (HP: 0) is DEAD, skipping turn
+[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759439739_0164"]
+[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 0
+[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = true
+[ANIMATION FINISHED] Emitting battle over!
 [DEBUG] Battle victory detected
 [DEBUG] Restored hero location to run state: PlayerLineup:0
 [DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
 [DEBUG] Starting turn 1
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#1036865505532>
+[RESULTS ACK] Player clicked Okay on results popup
 [DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
+[RESULTS ACK] Transitioning to MANAGEMENT phase
 [DEBUG] End turn requested, current phase: MANAGEMENT
 [DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 2
-[DEBUG] Knight takes 2 damage. HP: 5 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759059956_9596 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759059956_9596", "damage_taken": 2, "attacker_uuid": "hero_1759059956_5687" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759059956_2532", ""]
-[DEBUG] Equipped item: item_t3_d_1759059956_2532 definition: item_t3_d
-[DEBUG] Knight takes 2 damage. HP: 3 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759059956_9596 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759059956_9596", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759059956_6993" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759059956_2532", ""]
-[DEBUG] Equipped item: item_t3_d_1759059956_2532 definition: item_t3_d
-[DEBUG] Knight takes 3 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759059956_9596 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759059956_9596", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1759059956_3211" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759059956_2532", ""]
-[DEBUG] Equipped item: item_t3_d_1759059956_2532 definition: item_t3_d
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 7 -> 6
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759059956_2259 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759059956_2259", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759059956_2530" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759059956_7402", "item_t1_a_1759059956_5946", "", ""]
-[DEBUG] Equipped item: item_t1_b_1759059956_7402 definition: item_t1_b
-[DEBUG] Equipped item: item_t1_a_1759059956_5946 definition: item_t1_a
-[DEBUG] Squire takes 7 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759059956_2530 damage: 7
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759059956_2530", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1759059956_2259" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759059956_2530 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759059956_2530
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759059956_2530 target_type=ATTACKER
+
+========== TURN 1 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Hero (UUID: hero_175) - HP: 12, PWR: 3
+      [Item Slot 0] Large HP Potion
+      [Item Slot 1] Small HP Potion
+  [1] Knight (UUID: unit_t2_) - HP: 3, PWR: 3
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 7, PWR: 7
+      [Item Slot 0] Small HP Potion
+      [Item Slot 1] Small PWR Potion
+  [1] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
+  [2] Squire (UUID: unit_t1_) - HP: 2, PWR: 2
+      [Item Slot 0] Small PWR Potion
+  [3] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+  [4] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 3
+      [Item Slot 0] Small PWR Potion
+  [5] Knight (UUID: unit_t2_) - HP: 3, PWR: 3
+[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t2_c", "unit_t1_a", "unit_t3_d", "unit_t1_b", "unit_t1_b", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Hero's Turn ======
+[COMBAT] Hero (HP: 12, PWR: 3) preparing to act
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 3 damage. HP: 7 -> 4
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439858_9100 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439858_9100", "damage_taken": 3, "attacker_uuid": "hero_1759439858_8842" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759439858_5767", "item_t1_b_1759439858_2007", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759439858_5767 definition: item_t1_a
+[DEBUG] Equipped item: item_t1_b_1759439858_2007 definition: item_t1_b
+[COMBAT]     → LOG: Hero deals 3 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 3 damage (HP: 4)
+
+[COMBAT] ====== Actor #2: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 3) preparing to act
+[COMBAT] Processing 1 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 3 damage. HP: 4 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439858_9100 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439858_9100", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1759439858_7245" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759439858_5767", "item_t1_b_1759439858_2007", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759439858_5767 definition: item_t1_a
+[DEBUG] Equipped item: item_t1_b_1759439858_2007 definition: item_t1_b
+[COMBAT]     → LOG: Knight deals 3 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 3 damage (HP: 1)
+
+[COMBAT] ====== Actor #3: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 3) preparing to act
+[COMBAT] Processing 1 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
+[DEBUG] Knight takes 3 damage. HP: 3 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759439858_7245 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759439858_7245", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1759439858_0661" }
+[DEBUG] Damaged unit equipped items: ["", ""]
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 3 dmg to Knight
+[COMBAT]     → DAMAGE: Knight took 3 damage (HP: 0)
+[COMBAT]     → DEATH: Knight has died
+
+[COMBAT] ====== Actor #4: Apprentice's Turn ======
+[COMBAT] Apprentice (HP: 1, PWR: 3) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439858_2419 definition: item_t1_b equipped to: unit_t1_a_1759439858_7326 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439858_2419
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t1_a_1759439858_7326
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t1_a_1759439858_7326 target_type=ATTACK_TARGET
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961743178296> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759059956_2259"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 6 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759059956_2259 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759059956_2259", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759059956_2530" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759059956_7402", "item_t1_a_1759059956_5946", "", ""]
-[DEBUG] Equipped item: item_t1_b_1759059956_7402 definition: item_t1_b
-[DEBUG] Equipped item: item_t1_a_1759059956_5946 definition: item_t1_a
-[DEBUG] End of turn 1 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 2
-[DEBUG] Turn 2 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Processing equipped item: item_t1_a_1759059956_5946 definition: item_t1_a equipped to: unit_t3_d_1759059956_2259 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759059956_5946
-[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759059956_5946
-[DEBUG] resolve_target called: source=item_t1_a_1759059956_5946 target_type=HOLDER
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["hero_1759439858_8842"]
+[COMBAT] Processing 2 pending reactions for Apprentice...
+[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 3 damage. HP: 12 -> 9
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439858_8842 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439858_8842", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1759439858_7326" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439858_4683", "item_t1_a_1759439858_2562", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439858_4683 definition: item_t2_c
+[DEBUG] Equipped item: item_t1_a_1759439858_2562 definition: item_t1_a
+[DEBUG] Processing equipped item: item_t2_c_1759439858_4683 definition: item_t2_c equipped to: hero_1759439858_8842 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439858_4683
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439858_4683
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439858_8842 HP = 9 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439858_4683 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t1_a_1759059956_5946 equipped to: unit_t3_d_1759059956_2259
-[DEBUG] AbilityResolver effect: <Resource#-9223371959344036392> target_type: HOLDER resolved_targets: ["unit_t3_d_1759059956_2259"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759059956_2544
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1759059956_2259
-[DEBUG] _process_ability called for ability:  source: unit_t3_d_1759059956_2259
-[DEBUG] resolve_target called: source=unit_t3_d_1759059956_2259 target_type=FRONTMOST_ALLY
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439858_4683 equipped to: hero_1759439858_8842
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["hero_1759439858_8842"]
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Apprentice deals 3 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 3 damage (HP: 9)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 9 to 10 (Source: item_tier2c_passive_heal)
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 10)
+[COMBAT]   Reaction #3: Apprentice uses 'item_tier1b_extra_attack' (priority -100) on ["Hero"]
+[DEBUG] Hero takes 3 damage. HP: 10 -> 7
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439858_8842 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439858_8842", "damage_taken": 3, "attacker_uuid": "unit_t1_a_1759439858_7326" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439858_4683", "item_t1_a_1759439858_2562", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439858_4683 definition: item_t2_c
+[DEBUG] Equipped item: item_t1_a_1759439858_2562 definition: item_t1_a
+[DEBUG] Processing equipped item: item_t2_c_1759439858_4683 definition: item_t2_c equipped to: hero_1759439858_8842 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439858_4683
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439858_4683
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439858_8842 HP = 7 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439858_4683 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958538730032> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1759059956_2259"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759059956_5615
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: 'hero_1759059956_5687'
-[DEBUG] Player trinket - Hero UUID: 'hero_1759059956_5687'
-[DEBUG] _process_ability called for ability:  source: hero_1759059956_5687
-[DEBUG] resolve_target called: source=hero_1759059956_5687 target_type=FRONTMOST_ALLY
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439858_4683 equipped to: hero_1759439858_8842
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["hero_1759439858_8842"]
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Apprentice deals 3 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 3 damage (HP: 7)
+[COMBAT]   Reaction #4: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 7 to 8 (Source: item_tier2c_passive_heal)
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 8)
+
+[COMBAT] ====== Actor #5: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 6, PWR: 6) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 6 damage. HP: 8 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439858_8842 damage: 6
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439858_8842", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759439858_9210" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439858_4683", "item_t1_a_1759439858_2562", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439858_4683 definition: item_t2_c
+[DEBUG] Equipped item: item_t1_a_1759439858_2562 definition: item_t1_a
+[DEBUG] Processing equipped item: item_t2_c_1759439858_4683 definition: item_t2_c equipped to: hero_1759439858_8842 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439858_4683
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439858_4683
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439858_8842 HP = 2 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439858_4683 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958538730032> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t2_c_1759059956_3211"]
-[DEBUG] Effect queue size after trigger: 3
-[DEBUG] EffectModifyStat: hp changed for unit_t2_c.name from 3 to 5 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 5 to 7 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 5 to 7 (Source: item_tier1a_turn_start_heal)
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-[DEBUG] _populate_effect_queue() called - setting up combat
-[DEBUG] Enemy lineup size: 1
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 9 -> 7
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759059956_2259 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759059956_2259", "damage_taken": 2, "attacker_uuid": "hero_1759059956_5687" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759059956_7402", "item_t1_a_1759059956_5946", "", ""]
-[DEBUG] Equipped item: item_t1_b_1759059956_7402 definition: item_t1_b
-[DEBUG] Equipped item: item_t1_a_1759059956_5946 definition: item_t1_a
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 7 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759059956_2259 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759059956_2259", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759059956_3239" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759059956_7402", "item_t1_a_1759059956_5946", "", ""]
-[DEBUG] Equipped item: item_t1_b_1759059956_7402 definition: item_t1_b
-[DEBUG] Equipped item: item_t1_a_1759059956_5946 definition: item_t1_a
-[DEBUG] Squire takes 7 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759059956_3239 damage: 7
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759059956_3239", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1759059956_2259" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759059956_0900"]
-[DEBUG] Equipped item: item_t2_c_1759059956_0900 definition: item_t2_c
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759059956_3239 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759059956_3239
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759059956_3239 target_type=ATTACKER
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439858_4683 equipped to: hero_1759439858_8842
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["hero_1759439858_8842"]
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 6 damage (HP: 2)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 2 to 3 (Source: item_tier2c_passive_heal)
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 3)
+
+[COMBAT] ====== Actor #6: Squire's Turn ======
+[COMBAT] Squire (HP: 2, PWR: 2) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439858_9832 definition: item_t1_b equipped to: unit_t1_b_1759439858_4128 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439858_9832
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t1_b_1759439858_4128
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t1_b_1759439858_4128 target_type=ATTACK_TARGET
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961743178296> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759059956_2259"]
-[DEBUG] Processing equipped item: item_t2_c_1759059956_0900 definition: item_t2_c equipped to: unit_t1_b_1759059956_3239 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759059956_0900
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759059956_0900
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_b_1759059956_3239 HP = 0 result = false
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["hero_1759439858_8842"]
+[COMBAT] Processing 2 pending reactions for Squire...
+[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 2 damage. HP: 3 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439858_8842 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439858_8842", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759439858_4128" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439858_4683", "item_t1_a_1759439858_2562", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439858_4683 definition: item_t2_c
+[DEBUG] Equipped item: item_t1_a_1759439858_2562 definition: item_t1_a
+[DEBUG] Processing equipped item: item_t2_c_1759439858_4683 definition: item_t2_c equipped to: hero_1759439858_8842 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439858_4683
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439858_4683
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439858_8842 HP = 1 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759439858_4683 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759439858_4683 equipped to: hero_1759439858_8842
+[DEBUG] AbilityResolver effect: <Resource#-9223371960132565549> target_type: HOLDER resolved_targets: ["hero_1759439858_8842"]
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 2 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 1)
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 1 to 2 (Source: item_tier2c_passive_heal)
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 2)
+[COMBAT]   Reaction #3: Squire uses 'item_tier1b_extra_attack' (priority -100) on ["Hero"]
+[DEBUG] Hero takes 2 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439858_8842 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439858_8842", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759439858_4128" }
+[DEBUG] Damaged unit equipped items: ["item_t2_c_1759439858_4683", "item_t1_a_1759439858_2562", "", "", ""]
+[DEBUG] Equipped item: item_t2_c_1759439858_4683 definition: item_t2_c
+[DEBUG] Equipped item: item_t1_a_1759439858_2562 definition: item_t1_a
+[DEBUG] Processing equipped item: item_t2_c_1759439858_4683 definition: item_t2_c equipped to: hero_1759439858_8842 slot: 0
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759439858_4683
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759439858_4683
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759439858_8842 HP = 0 result = false
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
 [DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 5 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759059956_2259 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759059956_2259", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759059956_3239" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759059956_7402", "item_t1_a_1759059956_5946", "", ""]
-[DEBUG] Equipped item: item_t1_b_1759059956_7402 definition: item_t1_b
-[DEBUG] Equipped item: item_t1_a_1759059956_5946 definition: item_t1_a
-[DEBUG] End of turn 2 - triggering turn end abilities and advancing
-[DEBUG] Starting turn 3
-[DEBUG] Turn 3 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 3
-[DEBUG] Processing equipped item: item_t1_a_1759059956_5946 definition: item_t1_a equipped to: unit_t3_d_1759059956_2259 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759059956_5946
-[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759059956_5946
-[DEBUG] resolve_target called: source=item_t1_a_1759059956_5946 target_type=HOLDER
+[DEATH CHECK] Hero has 0 HP
+[DEATH CHECK] Hero has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 2 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 0)
+[COMBAT]     → DEATH: Hero has died
+
+[COMBAT] ====== Actor #7: Squire's Turn ======
+[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
+[COMBAT] Processing 0 pending reactions for Squire...
+
+[COMBAT] ====== Actor #8: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 1, PWR: 7) preparing to act
+[COMBAT] Processing 0 pending reactions for unit_t3_d.name...
+[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759439858_7245"]
+[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 6
+[APPLY DEATHS] Removing 1 dead units: ["hero_1759439858_8842"]
+[APPLY DEATHS] After removal - Player lineup size: 0, Enemy lineup size: 6
+[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = true
+[ANIMATION FINISHED] Emitting battle over!
+WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished when instantiating: 'res://scenes/Loadout.tscn'.
+   at: instantiate (scene/resources/packed_scene.cpp:178)
+[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
+[DEBUG] Starting turn 1
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 0, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#1430089893695>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
+[RESULTS ACK] Transitioning to MANAGEMENT phase
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 1 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Hero (UUID: hero_175) - HP: 11, PWR: 2
+      [Item Slot 0] Small HP Potion
+  [1] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
+[BATTLE STATE] Enemy Lineup:
+  [0] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
+  [1] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+  [2] Knight (UUID: unit_t2_) - HP: 3, PWR: 4
+      [Item Slot 0] Small PWR Potion
+  [3] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+[BATTLE STATE] Action order: ["hero", "unit_t1_b", "unit_t3_d", "unit_t2_c", "unit_t3_d", "unit_t1_a"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Hero's Turn ======
+[COMBAT] Hero (HP: 11, PWR: 2) preparing to act
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Apprentice"]
+[DEBUG] Apprentice takes 2 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759439920_9905 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759439920_9905", "damage_taken": 2, "attacker_uuid": "hero_1759439920_0617" }
+[DEBUG] Damaged unit equipped items: [""]
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759439920_9905 definition: unit_t1_a
+[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759439920_9905
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759439920_9905 HP = 0 result = false
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
+[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Hero deals 2 dmg to Apprentice
+[COMBAT]     → DAMAGE: Apprentice took 2 damage (HP: 0)
+[COMBAT]     → DEATH: Apprentice has died
+
+[COMBAT] ====== Actor #2: Squire's Turn ======
+[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
+[COMBAT] Processing 1 pending reactions for Squire...
+[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 6 -> 5
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439920_2663 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439920_2663", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759439920_0518" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 5)
+
+[COMBAT] ====== Actor #3: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 6, PWR: 6) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Squire"]
+[DEBUG] Squire takes 6 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759439920_0518 damage: 6
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759439920_0518", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759439920_0215" }
+[DEBUG] Damaged unit equipped items: [""]
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759439920_0518 definition: unit_t1_b
+[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759439920_0518
+[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
+[DEBUG] resolve_target called: source=unit_t1_b_1759439920_0518 target_type=ATTACKER
 [DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t1_a_1759059956_5946 equipped to: unit_t3_d_1759059956_2259
-[DEBUG] AbilityResolver effect: <Resource#-9223371959344036392> target_type: HOLDER resolved_targets: ["unit_t3_d_1759059956_2259"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759059956_2544
+[DEBUG] AbilityResolver effect: <Resource#-9223371961743178296> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759439920_0215"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Squire
+[COMBAT]     → DAMAGE: Squire took 6 damage (HP: 0)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
+[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 6 -> 5
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759439920_0215 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759439920_0215", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759439920_0518" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 5)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+
+[COMBAT] ====== Actor #4: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 4) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759439920_4151 definition: item_t1_b equipped to: unit_t2_c_1759439920_5751 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759439920_4151
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759439920_5751
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t2_c_1759439920_5751 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["hero_1759439920_0617"]
+[COMBAT] Processing 2 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 4 damage. HP: 11 -> 7
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439920_0617 damage: 4
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439920_0617", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759439920_5751" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759439920_4588", "", "", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759439920_4588 definition: item_t1_a
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 4 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 4 damage (HP: 7)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]   Reaction #2: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["Hero"]
+[DEBUG] Hero takes 4 damage. HP: 7 -> 3
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439920_0617 damage: 4
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439920_0617", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759439920_5751" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759439920_4588", "", "", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759439920_4588 definition: item_t1_a
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 4 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 4 damage (HP: 3)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+
+[COMBAT] ====== Actor #5: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 5, PWR: 6) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 6 damage. HP: 3 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759439920_0617 damage: 6
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759439920_0617", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759439920_2663" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759439920_4588", "", "", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759439920_4588 definition: item_t1_a
+[DEATH CHECK] Hero has 0 HP
+[DEATH CHECK] Hero has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 6 damage (HP: 0)
+[COMBAT]     → DEATH: Hero has died
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT] Actor #6: Apprentice (HP: 0) is DEAD, skipping turn
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_a_1759439920_9905"]
+[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 3
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759439920_0518"]
+[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 3
+[APPLY DEATHS] Removing 1 dead units: ["hero_1759439920_0617"]
+[APPLY DEATHS] After removal - Player lineup size: 0, Enemy lineup size: 3
+[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = true
+[ANIMATION FINISHED] Emitting battle over!
+WARNING: Parent path './CenterContainer' for node 'BeginButton' has vanished when instantiating: 'res://scenes/Loadout.tscn'.
+   at: instantiate (scene/resources/packed_scene.cpp:178)
+[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
+[DEBUG] Starting turn 1
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#1691445364671>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
+[RESULTS ACK] Transitioning to MANAGEMENT phase
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 1 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
+  [1] Knight (UUID: unit_t2_) - HP: 3, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+  [2] Hero (UUID: hero_175) - HP: 12, PWR: 3
+      [Item Slot 0] Small HP Potion
+      [Item Slot 1] Large HP Potion
+[BATTLE STATE] Enemy Lineup:
+  [0] Knight (UUID: unit_t2_) - HP: 3, PWR: 3
+  [1] Knight (UUID: unit_t2_) - HP: 3, PWR: 4
+      [Item Slot 0] Small PWR Potion
+[BATTLE STATE] Action order: ["unit_t1_a", "unit_t2_c", "hero", "unit_t2_c", "unit_t2_c"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Apprentice's Turn ======
+[COMBAT] Apprentice (HP: 1, PWR: 2) preparing to act
+[COMBAT] Processing 1 pending reactions for Apprentice...
+[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Knight"]
+[DEBUG] Knight takes 2 damage. HP: 3 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759440003_8511 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759440003_8511", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759440003_8616" }
+[DEBUG] Damaged unit equipped items: ["", ""]
+[COMBAT]     → LOG: Apprentice deals 2 dmg to Knight
+[COMBAT]     → DAMAGE: Knight took 2 damage (HP: 1)
+
+[COMBAT] ====== Actor #2: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759440003_3150 definition: item_t1_b equipped to: unit_t2_c_1759440003_8287 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440003_3150
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440003_8287
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[DEBUG] Processing equipped item: item_t1_b_1759440003_8441 definition: item_t1_b equipped to: unit_t2_c_1759440003_8287 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440003_8441
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440003_8287
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Processing 1 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
+[DEBUG] Knight takes 5 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759440003_8511 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759440003_8511", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440003_8287" }
+[DEBUG] Damaged unit equipped items: ["", ""]
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 5 dmg to Knight
+[COMBAT]     → DAMAGE: Knight took 5 damage (HP: 0)
+[COMBAT]     → DEATH: Knight has died
+
+[COMBAT] ====== Actor #3: Hero's Turn ======
+[COMBAT] Hero (HP: 12, PWR: 3) preparing to act
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Knight"]
+[DEBUG] Knight takes 3 damage. HP: 3 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759440003_9736 damage: 3
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759440003_9736", "damage_taken": 3, "attacker_uuid": "hero_1759440003_4597" }
+[DEBUG] Damaged unit equipped items: ["item_t1_b_1759440003_0204", ""]
+[DEBUG] Equipped item: item_t1_b_1759440003_0204 definition: item_t1_b
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] Knight has 0 HP
+[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Hero deals 3 dmg to Knight
+[COMBAT]     → DAMAGE: Knight took 3 damage (HP: 0)
+[COMBAT]     → DEATH: Knight has died
+[COMBAT] Actor #4: Knight (HP: 0) is DEAD, skipping turn
+[COMBAT] Actor #5: Knight (HP: 0) is DEAD, skipping turn
+[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759440003_8511"]
+[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 1
+[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759440003_9736"]
+[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 0
+[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = true
+[ANIMATION FINISHED] Emitting battle over!
+[DEBUG] Battle victory detected
+[DEBUG] Restored hero location to run state: PlayerLineup:0
+[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
+[DEBUG] Starting turn 1
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#2187329538053>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
+[RESULTS ACK] Transitioning to MANAGEMENT phase
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 1 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Knight (UUID: unit_t2_) - HP: 3, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+  [1] Hero (UUID: hero_175) - HP: 11, PWR: 2
+      [Item Slot 0] Small HP Potion
+  [2] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
+  [3] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
+  [4] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+  [1] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+  [2] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+  [3] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
+  [4] Knight (UUID: unit_t2_) - HP: 3, PWR: 4
+      [Item Slot 0] Small PWR Potion
+[BATTLE STATE] Action order: ["unit_t2_c", "hero", "unit_t1_a", "unit_t1_b", "unit_t1_b", "unit_t2_c", "unit_t3_d", "unit_t3_d", "unit_t3_d", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759440072_3870 definition: item_t1_b equipped to: unit_t2_c_1759440072_3249 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440072_3870
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440072_3249
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t2_c_1759440072_3249 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["unit_t3_d_1759440072_3023"]
+[DEBUG] Processing equipped item: item_t1_b_1759440072_8366 definition: item_t1_b equipped to: unit_t2_c_1759440072_3249 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440072_8366
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440072_3249
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t2_c_1759440072_3249 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["unit_t3_d_1759440072_3023"]
+[COMBAT] Processing 3 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 6 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_3023 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_3023", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440072_3249" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[COMBAT]     → LOG: Knight deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 1)
+[COMBAT]   Reaction #2: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_3023 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_3023", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440072_3249" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 0)
+[COMBAT]     → DEATH: unit_t3_d.name has died
+[COMBAT]   Reaction #3: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 0 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_3023 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_3023", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440072_3249" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 0)
+
+[COMBAT] ====== Actor #2: Hero's Turn ======
+[COMBAT] Hero (HP: 11, PWR: 2) preparing to act
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 6 -> 4
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_4000 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_4000", "damage_taken": 2, "attacker_uuid": "hero_1759440072_4207" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Hero deals 2 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 4)
+
+[COMBAT] ====== Actor #3: Apprentice's Turn ======
+[COMBAT] Apprentice (HP: 1, PWR: 2) preparing to act
+[COMBAT] Processing 1 pending reactions for Apprentice...
+[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 4 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_4000 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_4000", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759440072_9125" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Apprentice deals 2 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 2)
+
+[COMBAT] ====== Actor #4: Squire's Turn ======
+[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
+[COMBAT] Processing 1 pending reactions for Squire...
+[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 2 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_4000 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_4000", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759440072_8876" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 1)
+
+[COMBAT] ====== Actor #5: Squire's Turn ======
+[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
+[COMBAT] Processing 1 pending reactions for Squire...
+[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_4000 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_4000", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759440072_2102" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 0)
+[COMBAT]     → DEATH: unit_t3_d.name has died
+
+[COMBAT] ====== Actor #6: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 4) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759440072_3700 definition: item_t1_b equipped to: unit_t2_c_1759440072_6570 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440072_3700
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440072_6570
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
+[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Processing 1 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Squire"]
+[DEBUG] Squire takes 4 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759440072_2102 damage: 4
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759440072_2102", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759440072_6570" }
+[DEBUG] Damaged unit equipped items: [""]
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759440072_2102 definition: unit_t1_b
+[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759440072_2102
+[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
+[DEBUG] resolve_target called: source=unit_t1_b_1759440072_2102 target_type=ATTACKER
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371961743178296> target_type: ATTACKER resolved_targets: ["unit_t2_c_1759440072_6570"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 4 dmg to Squire
+[COMBAT]     → DAMAGE: Squire took 4 damage (HP: 0)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
+[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Knight"]
+[DEBUG] Knight takes 1 damage. HP: 3 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759440072_6570 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759440072_6570", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759440072_2102" }
+[DEBUG] Damaged unit equipped items: ["item_t1_b_1759440072_3700", ""]
+[DEBUG] Equipped item: item_t1_b_1759440072_3700 definition: item_t1_b
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 1 dmg to Knight
+[COMBAT]     → DAMAGE: Knight took 1 damage (HP: 2)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+
+[COMBAT] ====== Actor #7: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 6, PWR: 6) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Squire"]
+[DEBUG] Squire takes 6 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759440072_8876 damage: 6
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759440072_8876", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759440072_5579" }
+[DEBUG] Damaged unit equipped items: [""]
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759440072_8876 definition: unit_t1_b
+[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759440072_8876
+[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
+[DEBUG] resolve_target called: source=unit_t1_b_1759440072_8876 target_type=ATTACKER
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371961743178296> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759440072_5579"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Squire
+[COMBAT]     → DAMAGE: Squire took 6 damage (HP: 0)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 1 damage. HP: 6 -> 5
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_5579 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_5579", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759440072_8876" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 5)
+[DEFERRED DEATHS] Processing 3 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+
+[COMBAT] ====== Actor #8: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 6, PWR: 6) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Apprentice"]
+[DEBUG] Apprentice takes 6 damage. HP: 1 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759440072_9125 damage: 6
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759440072_9125", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759440072_0606" }
+[DEBUG] Damaged unit equipped items: [""]
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759440072_9125 definition: unit_t1_a
+[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759440072_9125
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759440072_9125 HP = 0 result = false
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
+[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
+[DEATH CHECK] Apprentice has 0 HP
+[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Apprentice
+[COMBAT]     → DAMAGE: Apprentice took 6 damage (HP: 0)
+[COMBAT]     → DEATH: Apprentice has died
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT] Actor #9: unit_t3_d.name (HP: 0) is DEAD, skipping turn
+[COMBAT] Actor #10: unit_t3_d.name (HP: 0) is DEAD, skipping turn
+[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759440072_3023"]
+[APPLY DEATHS] After removal - Player lineup size: 5, Enemy lineup size: 4
+[BattleAnimator] Animation timeout for flash on unit unit_t3_d_1759440072_3023
+[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759440072_4000"]
+[APPLY DEATHS] After removal - Player lineup size: 5, Enemy lineup size: 3
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759440072_2102"]
+[APPLY DEATHS] After removal - Player lineup size: 4, Enemy lineup size: 3
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759440072_8876"]
+[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 3
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_a_1759440072_9125"]
+[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 3
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = false
+[DEBUG] End of turn 1 - triggering turn end abilities and starting next turn
+[DEBUG] Starting turn 2
+[FLASHCARD] Mini-game completed with results: { "correct_answers": 2, "incorrect_answers": 0 }
+[FLASHCARD] Opening ResultsPopup
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#2673097049879>
+[RESULTS ACK] Player clicked Okay on results popup
+[DEBUG] Turn 2 - triggering turn start abilities after mini-game
+[DEBUG] _trigger_turn_start_abilities() called for turn 2
+[DEBUG] Processing equipped item: item_t1_a_1759440072_8804 definition: item_t1_a equipped to: hero_1759440072_4207 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759440072_8804
+[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759440072_8804
+[DEBUG] resolve_target called: source=item_t1_a_1759440072_8804 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t1_a_1759440072_8804 equipped to: hero_1759440072_4207
+[DEBUG] AbilityResolver effect: <Resource#-9223371959159487013> target_type: HOLDER resolved_targets: ["hero_1759440072_4207"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759440072_5074
 [DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1759059956_2259
-[DEBUG] _process_ability called for ability:  source: unit_t3_d_1759059956_2259
-[DEBUG] resolve_target called: source=unit_t3_d_1759059956_2259 target_type=FRONTMOST_ALLY
+[DEBUG] Enemy trinket - using first enemy as source: unit_t3_d_1759440072_0606
+[DEBUG] _process_ability called for ability:  source: unit_t3_d_1759440072_0606
+[DEBUG] resolve_target called: source=unit_t3_d_1759440072_0606 target_type=FRONTMOST_ALLY
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958538730032> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1759059956_2259"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759059956_5615
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t3_d_1759440072_0606"]
+[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759440072_6051
 [DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: 'hero_1759059956_5687'
-[DEBUG] Player trinket - Hero UUID: 'hero_1759059956_5687'
-[DEBUG] _process_ability called for ability:  source: hero_1759059956_5687
-[DEBUG] resolve_target called: source=hero_1759059956_5687 target_type=FRONTMOST_ALLY
+[DEBUG] get_hero_uuid() slot 0: 'unit_t2_c_1759440072_3249'
+[DEBUG] Player trinket - Hero UUID: 'unit_t2_c_1759440072_3249'
+[DEBUG] _process_ability called for ability:  source: unit_t2_c_1759440072_3249
+[DEBUG] resolve_target called: source=unit_t2_c_1759440072_3249 target_type=FRONTMOST_ALLY
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958538730032> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759059956_5687"]
-[DEBUG] Effect queue size after trigger: 3
-[DEBUG] EffectModifyStat: hp changed for hero.name from 10 to 12 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 3 to 5 (Source: )
-[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 3 to 5 (Source: item_tier1a_turn_start_heal)
+[DEBUG] AbilityResolver effect: <Resource#-9223371958354180650> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759440072_4207"]
+[DEBUG] EffectModifyStat: hp changed for hero.name from 11 to 13 (Source: item_tier1a_turn_start_heal)
+[DEBUG] EffectModifyStat: hp changed for unit_t3_d.name from 6 to 8 (Source: )
+[DEBUG] EffectModifyStat: hp changed for hero.name from 13 to 15 (Source: )
+[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
+[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
+[DEBUG] End turn requested, current phase: MANAGEMENT
+[DEBUG] Transitioning to COMBAT phase
+
+========== TURN 2 COMBAT START ==========
+[BATTLE STATE] Player Lineup:
+  [0] Knight (UUID: unit_t2_) - HP: 3, PWR: 5
+      [Item Slot 0] Small PWR Potion
+      [Item Slot 1] Small PWR Potion
+  [1] Hero (UUID: hero_175) - HP: 15, PWR: 2
+      [Item Slot 0] Small HP Potion
+[BATTLE STATE] Enemy Lineup:
+  [0] unit_t3_d.name (UUID: unit_t3_) - HP: 8, PWR: 6
+  [1] unit_t3_d.name (UUID: unit_t3_) - HP: 5, PWR: 6
+  [2] Knight (UUID: unit_t2_) - HP: 2, PWR: 4
+      [Item Slot 0] Small PWR Potion
+[BATTLE STATE] Action order: ["unit_t2_c", "hero", "unit_t2_c", "unit_t3_d", "unit_t3_d"]
+==========================================
+
+
+[COMBAT] ====== Actor #1: Knight's Turn ======
+[COMBAT] Knight (HP: 3, PWR: 5) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759440072_3870 definition: item_t1_b equipped to: unit_t2_c_1759440072_3249 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440072_3870
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440072_3249
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t2_c_1759440072_3249 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["unit_t3_d_1759440072_0606"]
+[DEBUG] Processing equipped item: item_t1_b_1759440072_8366 definition: item_t1_b equipped to: unit_t2_c_1759440072_3249 slot: 1
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440072_8366
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440072_3249
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t2_c_1759440072_3249 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["unit_t3_d_1759440072_0606"]
+[COMBAT] Processing 3 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 8 -> 3
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_0606 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_0606", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440072_3249" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[COMBAT]     → LOG: Knight deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 3)
+[COMBAT]   Reaction #2: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 3 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_0606 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_0606", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440072_3249" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 0)
+[COMBAT]     → DEATH: unit_t3_d.name has died
+[COMBAT]   Reaction #3: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 5 damage. HP: 0 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_0606 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_0606", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759440072_3249" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 5 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 5 damage (HP: 0)
+
+[COMBAT] ====== Actor #2: Hero's Turn ======
+[COMBAT] Hero (HP: 15, PWR: 2) preparing to act
+[COMBAT] Processing 1 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
+[DEBUG] unit_t3_d.name takes 2 damage. HP: 5 -> 3
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759440072_5579 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759440072_5579", "damage_taken": 2, "attacker_uuid": "hero_1759440072_4207" }
+[DEBUG] Damaged unit equipped items: ["", "", "", ""]
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Hero deals 2 dmg to unit_t3_d.name
+[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 3)
+
+[COMBAT] ====== Actor #3: Knight's Turn ======
+[COMBAT] Knight (HP: 2, PWR: 4) preparing to act
+[DEBUG] Processing equipped item: item_t1_b_1759440072_3700 definition: item_t1_b equipped to: unit_t2_c_1759440072_6570 slot: 0
+[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759440072_3700
+[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759440072_6570
+[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
+[DEBUG] resolve_target called: source=unit_t2_c_1759440072_6570 target_type=ATTACK_TARGET
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371959629249064> target_type: ATTACK_TARGET resolved_targets: ["hero_1759440072_4207"]
+[COMBAT] Processing 2 pending reactions for Knight...
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 4 damage. HP: 15 -> 11
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759440072_4207 damage: 4
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759440072_4207", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759440072_6570" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759440072_8804", "", "", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759440072_8804 definition: item_t1_a
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 4 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 4 damage (HP: 11)
+[COMBAT]   Reaction #2: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["Hero"]
+[DEBUG] Hero takes 4 damage. HP: 11 -> 7
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759440072_4207 damage: 4
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759440072_4207", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759440072_6570" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759440072_8804", "", "", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759440072_8804 definition: item_t1_a
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: Knight deals 4 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 4 damage (HP: 7)
+
+[COMBAT] ====== Actor #4: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 3, PWR: 6) preparing to act
+[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 6 damage. HP: 7 -> 1
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759440072_4207 damage: 6
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759440072_4207", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759440072_5579" }
+[DEBUG] Damaged unit equipped items: ["item_t1_a_1759440072_8804", "", "", "", ""]
+[DEBUG] Equipped item: item_t1_a_1759440072_8804 definition: item_t1_a
+[DEATH CHECK] unit_t3_d.name has 0 HP
+[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
+[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 6 damage (HP: 1)
+[COMBAT] Actor #5: unit_t3_d.name (HP: 0) is DEAD, skipping turn
+[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759440072_0606"]
+[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 2
+[BattleAnimator] Animation timeout for flash on unit unit_t3_d_1759440072_0606
+[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
+[ANIMATION FINISHED] _battle_over_deferred = false
+[DEBUG] End of turn 2 - triggering turn end abilities and starting next turn
+[DEBUG] Starting turn 3
