@@ -16,20 +16,22 @@ item_t1_b.desc,Placeholder
 item_t2_c.name,Large HP Potion
 item_t2_c.desc,Restores a large amount of HP and PWR.
 ability.basic_attack.name,Basic Attack
-ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.
+ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy. 
 ability.item_tier1b_extra_attack.name,Extra Attack
-ability.item_tier1b_extra_attack.desc,When attacking if target has more HP than holder then perform an extra attack. Target: Attack Target. Condition: Target HP greater than Holder HP. Triggers each attack. Stacking: each item copy adds one extra attack.
+ability.item_tier1b_extra_attack.desc,"When attacking, if target has more HP than holder then perform an extra attack."
 item.effect.hp,Add (HP) HP to the unit.
 item.effect.pwr,Add (PWR) PWR to the unit.
 item.effect.both,Add (HP) HP and (PWR) PWR to the unit.
 trinket.healing_amulet.name,Healing Amulet
 trinket.healing_amulet.desc,A simple but reliable enchanted charm.
-ability.healing_amulet.desc,Heals the frontmost ally unit by 2 HP.
+ability.healing_amulet.desc,"At the start of the turn, Heals the frontmost ally unit by 2 HP."
 ability.item_tier2c_passive_heal.name,Regeneration
-ability.item_tier2c_passive_heal.desc,On Hurt (non-lethal): Heal this unit by 1 HP. Target: Self. Condition: Damage was non-lethal.
+ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP."
 ability.unit_tier1a_passive_heal.name,Resilience
-ability.unit_tier1a_passive_heal.desc,On Hurt (non-lethal): Heal this unit by 1 HP. Target: Self. Condition: Damage was non-lethal.
+ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by 1 HP."
 ability.unit_tier1b_counter_on_hurt.name,Retaliation
-ability.unit_tier1b_counter_on_hurt.desc,On Hurt: Counter-attack the attacker for damage equal to this unit's current PWR. Target: Attacker. Triggers even if this unit would die. Limit: Once per attacker per turn.
+ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker for damage equal to this unit's current PWR. Triggers on final time when the damage to this unit is lethal."
 ability.item_tier1a_turn_start_heal.name,Restoration
-ability.item_tier1a_turn_start_heal.desc,On Turn Start: Heal the holder for 2 HP. Target: Holder. Triggers each turn while this item remains equipped. Stacking: Each copy of this item heals separately. Overheal: Healing can raise current HP above its starting value. Order: Resolves after unit abilities and before trinkets.
+ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP."
+ability.unit_tier2c_ally_death_buff.name,Morale Boost
+ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."

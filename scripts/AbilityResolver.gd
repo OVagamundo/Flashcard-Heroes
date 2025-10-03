@@ -32,15 +32,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		var damaged_unit = battle_manager.get_instance_by_uuid(damaged_unit_uuid)
 		if is_instance_valid(damaged_unit):
 			print("[DEBUG] Damaged unit equipped items: ", damaged_unit.equipped_item_uuids)
-			for item_uuid in damaged_unit.equipped_item_uuids:
-				if not item_uuid.is_empty():
-					var item = battle_manager.get_instance_by_uuid(item_uuid)
-					if is_instance_valid(item):
-						print("[DEBUG] Equipped item: ", item_uuid, " definition: ", item.get_definition().id)
+			# (Optional) verbose per-item logging removed to avoid undefined references
 
 	# Process abilities in stacking order: Units first, then equipped items, then trinkets
 	var all_instances = battle_manager.get_all_instances()
-	
+
 	# Phase 1: Process unit abilities first (for proper stacking order)
 	# Note: for on_hurt we strictly filter to the damaged unit to avoid cross-unit triggers.
 	for instance_uuid in all_instances:
@@ -52,7 +48,6 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			continue
 		if definition.ability_definitions.is_empty():
 			continue
-		
 		# Only process units in this phase
 		if definition.category == &"UNIT":
 			# For on_hurt triggers, only process if this is the unit that took damage
@@ -60,13 +55,17 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				var damaged_unit_uuid = context.get("source_uuid", "")
 				if instance_uuid != damaged_unit_uuid:
 					continue
-			
+			# For on_ally_death, only process the specific ally this trigger was emitted for
+			elif trigger == &"on_ally_death":
+				var ally_uuid = context.get("source_uuid", "")
+				if instance_uuid != ally_uuid:
+					continue
 			for ability in definition.ability_definitions:
 				if ability.trigger == trigger:
 					if trigger == &"on_hurt":
 						print("[DEBUG] Found on_hurt ability on damaged unit: ", instance_uuid, " definition: ", definition.id)
 					_process_ability(ability, instance_uuid, battle_manager, context)
-	
+
 	# Phase 2: Process equipped item abilities (in slot order for deterministic stacking)
 	# We collect and sort by equipped_slot_index to ensure a stable, predictable order of activation.
 	# Collect all equipped items that match the trigger
@@ -80,7 +79,6 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			continue
 		if definition.ability_definitions.is_empty():
 			continue
-		
 		# Only collect equipped items in this phase
 		if definition.category == &"ITEM" and not instance.equipped_on_uuid.is_empty():
 			# For on_hurt triggers, only process if the item is equipped to the unit that took damage
@@ -93,14 +91,12 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				var attacking_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != attacking_unit_uuid:
 					continue
-			
 			# Check if this item has abilities for this trigger
 			var has_matching_ability = false
 			for ability in definition.ability_definitions:
 				if ability.trigger == trigger:
 					has_matching_ability = true
 					break
-			
 			if has_matching_ability:
 				equipped_items_to_process.append({
 					"instance_uuid": instance_uuid,
@@ -182,24 +178,10 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 
 
 ## Process a single ability and create EffectRequests for its effects.
-## @param ability: AbilityDefinition - The ability to process
 ## @param source_uuid: String - The UUID of the source instance
 ## @param battle_manager: Node - The current battle manager
 func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary) -> void:
 	print("[DEBUG] _process_ability called for ability: ", ability.id, " source: ", source_uuid)
-	
-	# Loop prevention for counter-attacks: prevent infinite ping-pong counters
-	# Track counter-attacks per attacker to allow countering different attackers
-	if ability.id.contains("counter"):
-		var attacker_uuid = context.get("attacker_uuid", "")
-		if not attacker_uuid.is_empty():
-			# Check if this unit has already counter-attacked this specific attacker
-			if battle_manager.has_counter_attacked(source_uuid, attacker_uuid):
-				print("[DEBUG] Skipping counter-attack - already countered this attacker: ", ability.id, " attacker: ", attacker_uuid)
-				return
-			
-			# Mark this attacker as countered by this unit
-			battle_manager.mark_counter_attack(source_uuid, attacker_uuid)
 	
 	# Check condition if present
 	if is_instance_valid(ability.condition):

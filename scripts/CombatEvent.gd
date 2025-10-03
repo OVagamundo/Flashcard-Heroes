@@ -7,7 +7,9 @@ enum Type {
 	DAMAGE,         # A unit takes damage (for UI stat updates)
 	HEAL,           # A unit is healed (for UI stat updates)
 	DEATH,          # A unit died; play death animation before removal
-	INVENTORY_SYNC  # A full UI refresh is needed for death removals
+	INVENTORY_SYNC, # A full UI refresh is needed for death removals
+	STAT_BUFF,      # Legacy name for non-HP stat increase
+	STRENGTHEN      # Preferred name for non-HP stat increase (e.g., PWR buff)
 }
 
 var type: Type

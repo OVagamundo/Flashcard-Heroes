@@ -10,7 +10,6 @@ var _pending_reactions: Array[EffectRequest] = []  # New priority-driven queue
 var _is_processing_effect: bool = false
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
-var _counter_attack_tracking: Dictionary = {}  # Track counter-attacks per unit per attacker
 
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
@@ -1048,8 +1047,6 @@ func _change_phase(new_phase: Phases) -> void:
 			# Increment turn counter and reset turn start flag
 			_current_turn += 1
 			_turn_start_abilities_triggered = false
-			# Clear counter-attack tracking for the new turn
-			clear_counter_tracking()
 			print("[DEBUG] Starting turn ", _current_turn)
 			
 			# Grant base 5 tokens for the turn
@@ -1153,9 +1150,10 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			var stat: String = String(effect_data.get("stat", ""))
 			var amount: int = int(effect_data.get("amount", 0))
 			var targets: Array = effect_data.get("targets", [])
-			if stat == "hp" and not targets.is_empty():
+			var source_name := ""
+			var target_name := ""
+			if not targets.is_empty():
 				var src_inst = get_instance_by_uuid(request.source_uuid)
-				var source_name := ""
 				if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
 					var src_def = src_inst.get_definition()
 					if "display_name_key" in src_def:
@@ -1165,7 +1163,6 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					elif "id" in src_def:
 						source_name = String(src_def.id)
 				var tgt_inst = get_instance_by_uuid(String(targets[0]))
-				var target_name := ""
 				if is_instance_valid(tgt_inst) and is_instance_valid(tgt_inst.get_definition()):
 					var tgt_def = tgt_inst.get_definition()
 					if "display_name_key" in tgt_def:
@@ -1174,6 +1171,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						target_name = tr(tgt_def.name)
 					elif "id" in tgt_def:
 						target_name = String(tgt_def.id)
+			if stat == "hp" and not targets.is_empty():
 				if amount >= 0:
 					if source_name != "" and target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, target_name, amount]}))
@@ -1185,6 +1183,11 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp"}))
 					# Note: DEATH events are deferred until after all reactive abilities are processed
 					# This ensures counter-attacks happen before death animations
+			elif stat == "pwr" and amount > 0 and not targets.is_empty():
+				if target_name != "":
+					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s gains %d PWR" % [target_name, amount]}))
+				# Emit STAT_BUFF (compat) event for PWR increases
+				out_events.append(CombatEvent.new(CombatEvent.Type.STAT_BUFF, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "pwr"}))
 		# Legacy: integer damage
 		elif typeof(res) == TYPE_INT:
 			damage = int(res)
@@ -1460,11 +1463,15 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 				# Trigger on_death for the dying unit
 				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
 				AbilityResolver.process_trigger(&"on_death", death_context)
-				# Trigger on_ally_death for all other units
-				var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-				for ally in all_units:
+				# Trigger on_ally_death ONLY for other player units (same team)
+				var player_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+				for ally in player_allies:
 					if ally.ball_uuid != unit.ball_uuid:
-						var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+						var ally_death_context: Dictionary = {
+							"source_uuid": ally.ball_uuid,
+							"fainting_ally_uuid": unit.ball_uuid,
+							"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
+						}
 						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				# Move equipped items to discard while ownership resolves via equipped parent
 				for item_uuid in unit.equipped_item_uuids:
@@ -1489,11 +1496,15 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 				# Trigger on_death for the dying unit
 				var death_context2: Dictionary = {"source_uuid": unit.ball_uuid}
 				AbilityResolver.process_trigger(&"on_death", death_context2)
-				# Trigger on_ally_death for all other units
-				var all_units2 = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-				for ally in all_units2:
+				# Trigger on_ally_death ONLY for other enemy units (same team)
+				var enemy_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+				for ally in enemy_allies:
 					if ally.ball_uuid != unit.ball_uuid:
-						var ally_death_context2: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+						var ally_death_context2: Dictionary = {
+							"source_uuid": ally.ball_uuid,
+							"fainting_ally_uuid": unit.ball_uuid,
+							"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
+						}
 						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
 				# Ensure enemy-equipped items do not outlive their parent.
 				for item_uuid in unit.equipped_item_uuids:
@@ -1516,20 +1527,6 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 		
 	if something_changed and not is_simulation:
 		SignalBus.emit_signal("battle_inventory_changed")
-
-## Check if a unit has already counter-attacked a specific attacker this turn
-func has_counter_attacked(unit_uuid: String, attacker_uuid: String) -> bool:
-	var counter_key = unit_uuid + "_vs_" + attacker_uuid
-	return _counter_attack_tracking.has(counter_key)
-
-## Mark that a unit has counter-attacked a specific attacker
-func mark_counter_attack(unit_uuid: String, attacker_uuid: String) -> void:
-	var counter_key = unit_uuid + "_vs_" + attacker_uuid
-	_counter_attack_tracking[counter_key] = true
-
-## Clear counter-attack tracking (called at start of each turn)
-func clear_counter_tracking() -> void:
-	_counter_attack_tracking.clear()
 
 ## Check if a unit has counter-attack abilities that could trigger on lethal damage
 func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
@@ -1566,6 +1563,23 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 			print("[DEATH CHECK] %s has 0 HP" % unit_name)
 			something_changed = true
 			if is_simulation and out_events != null:
+				# Emit death-related triggers once during simulation so reactions can resolve
+				if death_tracking != null:
+					var sim_flag_key: String = "death_triggers_emitted_" + unit.ball_uuid
+					if not death_tracking.has(sim_flag_key):
+						# on_death for the dying unit
+						AbilityResolver.process_trigger(&"on_death", {"source_uuid": unit.ball_uuid})
+						# on_ally_death for same-team allies
+						var player_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+						for ally in player_allies:
+							if ally.ball_uuid != unit.ball_uuid:
+								var ally_ctx := {
+									"source_uuid": ally.ball_uuid,
+									"fainting_ally_uuid": unit.ball_uuid,
+									"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
+								}
+								AbilityResolver.process_trigger(&"on_ally_death", ally_ctx)
+						death_tracking[sim_flag_key] = true
 				# Check if this unit has counter-attacks that could trigger
 				if _has_lethal_counter_abilities(unit):
 					# Defer death event for units with counter-attacks
@@ -1579,14 +1593,7 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 					else:
 						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
 			elif not is_simulation:
-				# Normal death processing for non-simulation
-				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
-				AbilityResolver.process_trigger(&"on_death", death_context)
-				var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-				for ally in all_units:
-					if ally.ball_uuid != unit.ball_uuid:
-						var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
-						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+				# Triggers already handled during simulation; perform cleanup only.
 				for item_uuid in unit.equipped_item_uuids:
 					if not item_uuid.is_empty():
 						var item_instance := get_instance(item_uuid)
@@ -1604,6 +1611,23 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 			print("[DEATH CHECK] %s has 0 HP" % unit_name2)
 			something_changed = true
 			if is_simulation and out_events != null:
+				# Emit death-related triggers once during simulation so reactions can resolve
+				if death_tracking != null:
+					var sim_flag_key2: String = "death_triggers_emitted_" + unit.ball_uuid
+					if not death_tracking.has(sim_flag_key2):
+						# on_death for the dying unit
+						AbilityResolver.process_trigger(&"on_death", {"source_uuid": unit.ball_uuid})
+						# on_ally_death for same-team allies (enemy side)
+						var enemy_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+						for ally in enemy_allies:
+							if ally.ball_uuid != unit.ball_uuid:
+								var ally_ctx2 := {
+									"source_uuid": ally.ball_uuid,
+									"fainting_ally_uuid": unit.ball_uuid,
+									"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
+								}
+								AbilityResolver.process_trigger(&"on_ally_death", ally_ctx2)
+						death_tracking[sim_flag_key2] = true
 				if _has_lethal_counter_abilities(unit):
 					print("[DEATH CHECK] %s has counter-attacks, deferring death" % unit_name2)
 					deferred_deaths.append(unit.ball_uuid)
@@ -1614,13 +1638,7 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 					else:
 						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
 			elif not is_simulation:
-				var death_context2: Dictionary = {"source_uuid": unit.ball_uuid}
-				AbilityResolver.process_trigger(&"on_death", death_context2)
-				var all_units2 = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-				for ally in all_units2:
-					if ally.ball_uuid != unit.ball_uuid:
-						var ally_death_context2: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
-						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
+				# Triggers already handled during simulation; perform cleanup only.
 				for item_uuid in unit.equipped_item_uuids:
 					if item_uuid.is_empty():
 						continue

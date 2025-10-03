@@ -72,16 +72,25 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							await _wait_for_animation_completion("flash", target_uuid)
 
 			CombatEvent.Type.HEAL:
-				# Flash animation only - apply HP delta incrementally
+				# HP-only: apply HP delta incrementally with green flash
 				if event.target_uuids.size() > 0:
 					var target_uuid2 := event.target_uuids[0]
 					_current_animation_uuid = target_uuid2
-					# Apply HP delta NOW so UI updates incrementally (each heal shows its own amount)
 					_apply_hp_delta(target_uuid2, event.amount)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
 						await _wait_for_animation_completion("flash", target_uuid2)
-			
+
+			CombatEvent.Type.STAT_BUFF:
+				# PWR buff: apply PWR delta with blue flash
+				if event.target_uuids.size() > 0:
+					var target_uuid3 := event.target_uuids[0]
+					_current_animation_uuid = target_uuid3
+					_apply_pwr_delta(target_uuid3, event.amount)
+					if SignalBus.has_signal("unit_flash_effect"):
+						SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(0.6, 0.8, 1.0))
+						await _wait_for_animation_completion("flash", target_uuid3)
+
 			CombatEvent.Type.INVENTORY_SYNC:
 				# This triggers the removal of the dead unit's view from the UI.
 				SignalBus.emit_signal("battle_inventory_changed")
@@ -120,6 +129,21 @@ func _apply_hp_delta(target_uuid: String, amount: int) -> void:
 	# Clamp to minimum zero; allow overheal as per recalc rules
 	new_hp = max(0, new_hp)
 	inst.set_current_hp(new_hp)
+
+func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
+	var bm := _get_battle_manager()
+	if not is_instance_valid(bm):
+		return
+	var inst: GachaBallInstance = bm.get_instance(target_uuid)
+	if not is_instance_valid(inst):
+		return
+	var def = inst.get_definition()
+	if not is_instance_valid(def) or def.category != &"UNIT":
+		return
+	# Apply PWR delta and emit stats changed for UI
+	var new_pwr: int = max(0, inst.current_pwr + amount)
+	inst.current_pwr = new_pwr
+	SignalBus.emit_signal("unit_stats_changed", target_uuid)
 
 func _emit_bump(attacker_uuid: String) -> void:
 	if attacker_uuid == null or String(attacker_uuid).is_empty():

@@ -1,43 +1,88 @@
-Implementation Prompt: New Passive Ability 'Morale Boost' for UnitTier2C
-Objective: Implement a new passive ability for the UnitTier2C unit.
+Implementation Prompt: New Passive Ability 'Morale Boost' for UnitTier2C (Revised & Verified)
+Objective: Implement a new passive ability for the UnitTier2C unit. This prompt is a complete and verified plan that corrects issues from a previous attempt.
 Ability Description:
 Name: Morale Boost
-Trigger: When an allied unit is defeated.
+Trigger: When an allied unit (a unit on the same team) is defeated.
 Effect: The unit with this ability gains +1 HP and +1 PWR.
 Notes: There is no limit to the number of times this can activate per battle.
-Implementation Steps:
-The existing system architecture fully supports this ability with one minor script modification and the addition of data resources. No changes to BattleManager or AbilityResolver are required.
+Critical Prerequisite: Fix the on_ally_death Trigger
+The first reported bug (triggering on enemy death) is caused by a latent issue in BattleManager.gd where the on_ally_death trigger is incorrectly broadcast to all units on the battlefield instead of just the dying unit's teammates. This must be corrected before implementing the new ability.
+File to Modify: scripts/BattleManager.gd
+Function to Modify: _check_for_deaths
+You will apply a similar fix in two places within this function.
+1. Inside the loop for Player Unit Deaths:
+Find this block:
+code
+Gdscript
+// Trigger on_ally_death for all other units
+var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+for ally in all_units:
+    if ally.ball_uuid != unit.ball_uuid:
+        var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+        AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+Replace it with this corrected block:
+code
+Gdscript
+// CORRECTED: When a player unit dies, only notify other player units.
+var player_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+for ally in player_allies:
+    if ally.ball_uuid != unit.ball_uuid:
+        var ally_death_context: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+        AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+2. Inside the loop for Enemy Unit Deaths:
+Find this block:
+code
+Gdscript
+// Trigger on_ally_death for all other units
+var all_units2 = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+for ally in all_units2:
+    if ally.ball_uuid != unit.ball_uuid:
+        var ally_death_context2: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+        AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
+Replace it with this corrected block:
+code
+Gdscript
+// CORRECTED: When an enemy unit dies, only notify other enemy units.
+var enemy_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+for ally in enemy_allies:
+    if ally.ball_uuid != unit.ball_uuid:
+        var ally_death_context2: Dictionary = {"source_uuid": ally.ball_uuid, "dead_ally_uuid": unit.ball_uuid}
+        AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
+Implementation Steps
 Step 1: Generalize the EffectModifyStat.gd Script
-Our current EffectModifyStat.gd script only handles the "hp" stat. It must be updated to also handle "pwr" to make it a generic stat modification tool.
+Update this script to handle PWR modification. This change is safe and makes the effect more versatile.
 File to Modify: scripts/EffectModifyStat.gd
-Action: Add a pwr case to the match statement.
+Action: Add a pwr case to the match stat: block.
 code
 Gdscript
 # scripts/EffectModifyStat.gd
-
 ...
 		match stat:
 			"hp":
 				var old_hp = inst.current_hp
 				var new_hp = max(0, inst.current_hp + base_value)
+				# Update HP silently during simulation, loudly during non-simulation
 				if is_simulation and inst.has_method("set_current_hp_silent"):
 					inst.set_current_hp_silent(new_hp)
 				else:
 					inst.set_current_hp(new_hp)
 			
-+			# ADD THIS BLOCK
-+			"pwr":
-+				var old_pwr = inst.current_pwr
-+				inst.current_pwr = max(0, inst.current_pwr + base_value)
-+				if not is_simulation:
-+					SignalBus.emit_signal("unit_stats_changed", inst.ball_uuid)
-+			# END ADDED BLOCK
+			# ADD THIS BLOCK TO HANDLE POWER MODIFICATION
+			"pwr":
+				# This is an increment, not an assignment, preventing fixed-value bugs.
+				inst.current_pwr += base_value
+				inst.current_pwr = max(0, inst.current_pwr) # Ensure PWR doesn't go below zero.
+				
+				# Emit signal outside of simulation so UI updates.
+				if not is_simulation:
+					SignalBus.emit_signal("unit_stats_changed", inst.ball_uuid)
+			# END OF ADDED BLOCK
 			
 			_:
 				pass
 ...
 Step 2: Create the New Ability Resource File
-Create a new AbilityDefinition resource that links the on_ally_death trigger to two separate EffectModifyStat effects (one for HP, one for PWR).
+Create a new AbilityDefinition resource that links the on_ally_death trigger to two separate EffectModifyStat effects.
 Create New File: resources/abilities/UnitTier2C_AllyDeathBuff.tres
 Content:
 code
@@ -67,7 +112,7 @@ effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource
 Step 3: Attach the Ability to UnitTier2C
 Modify the unit's resource file to include the new ability.
 File to Modify: resources/units/UnitTier2C.tres
-Action: Add the new ability to its ability_definitions array. The entire file content should be as follows:
+Action: The entire file content should be as follows:
 code
 Ini
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
@@ -99,6 +144,24 @@ code
 Csv
 ability.unit_tier2c_ally_death_buff.name,"Morale Boost"
 ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."
-Notes for the Developer:
-This is primarily a data-driven change, confirming the health of the ability system architecture.
-Visual Feedback: Due to the current implementation of CombatEvent, the +1 HP gain will trigger a green "heal" flash on the unit. The +1 PWR gain will be correctly applied to the unit's data and its UI label will update, but there will be no distinct animation for the PWR gain itself. This is expected behavior.
+Verification Plan
+After implementing the changes, perform the following tests to confirm correctness and prevent the previous bugs.
+Test Case 1: Ally Death (Correct Trigger)
+Start a battle with UnitTier2C (3 HP, 3 PWR) and another player unit (e.g., UnitTier1A) on the lineup.
+Let the allied UnitTier1A be defeated.
+Expected Result: UnitTier2C's stats should increase to 4 HP and 4 PWR.
+Test Case 2: Enemy Death (Correct Filtering)
+Start a battle with only UnitTier2C (3 HP, 3 PWR) on the player's lineup.
+Defeat any enemy unit.
+Expected Result: UnitTier2C's stats should remain unchanged at 3 HP and 3 PWR. This confirms the prerequisite fix is working.
+Debugging Step (If the PWR value is incorrect):
+If you observe the PWR being set to a fixed value again, temporarily add a print statement inside the pwr case in scripts/EffectModifyStat.gd to diagnose the issue:
+code
+Gdscript
+"pwr":
+    var old_pwr = inst.current_pwr
+    # --- TEMPORARY DEBUG LOG ---
+    print("EffectModifyStat DEBUG: Unit '", inst.get_definition().id, "' Old PWR: ", old_pwr, ", Gaining: ", base_value)
+    # ---------------------------
+    inst.current_pwr += base_value
+    inst.current_pwr = max(0, inst.current_pwr)
