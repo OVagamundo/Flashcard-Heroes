@@ -1094,7 +1094,11 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var target = _get_frontmost_target(is_player)
 	if not is_instance_valid(target): return
 
-	var context: Dictionary = {"source_uuid": attacker.ball_uuid, "target_uuid": target.ball_uuid}
+	var context: Dictionary = {
+		"source_uuid": attacker.ball_uuid,
+		"target_uuid": target.ball_uuid,
+		"target_initial_hp": target.current_hp
+	}
 	
 	# Trigger on_attack abilities (e.g., Double Strike)
 	AbilityResolver.process_trigger(&"on_attack", context)
@@ -1150,6 +1154,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			var stat: String = String(effect_data.get("stat", ""))
 			var amount: int = int(effect_data.get("amount", 0))
 			var targets: Array = effect_data.get("targets", [])
+			var skip_bump: bool = bool(effect_data.get("skip_bump", false))
 			var source_name := ""
 			var target_name := ""
 			if not targets.is_empty():
@@ -1175,12 +1180,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				if amount >= 0:
 					if source_name != "" and target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, target_name, amount]}))
-					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp"}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp", "skip_bump": skip_bump}))
 				else:
 					var dealt: int = abs(amount)
 					if source_name != "" and target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, target_name]}))
-					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp"}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "hp", "skip_bump": skip_bump}))
 					# Note: DEATH events are deferred until after all reactive abilities are processed
 					# This ensures counter-attacks happen before death animations
 			elif stat == "pwr" and amount > 0 and not targets.is_empty():

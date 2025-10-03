@@ -44,32 +44,27 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# Log messages are instant, no animation to wait for
 
 			CombatEvent.Type.DAMAGE:
-				# Emit bump, then flash animation
+				# Emit bump (unless flagged to skip), then flash animation
 				# Apply HP delta incrementally so each attack shows its own damage
 				if event.target_uuids.size() > 0:
 					var target_uuid := event.target_uuids[0]
-					_emit_bump(event.source_uuid)
-					if not String(event.source_uuid).is_empty():
+					var source_uuid_str := String(event.source_uuid)
+					var should_bump: bool = (not event.skip_bump) and (not source_uuid_str.is_empty())
+					if should_bump:
+						_emit_bump(event.source_uuid)
 						# Wait for half of the bump animation (0.5s)
 						await get_tree().create_timer(0.5).timeout
-						# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
-						_apply_hp_delta(target_uuid, event.amount)
-						# Start damage flash while bump is finishing
-						if SignalBus.has_signal("unit_flash_effect"):
-							SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
-						# Wait for both bump and flash to complete
+					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
+					_apply_hp_delta(target_uuid, event.amount)
+					# Start damage flash while bump (if any) is finishing
+					if SignalBus.has_signal("unit_flash_effect"):
+						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
+					# Wait for any bump and then the flash to complete
+					if should_bump:
 						_current_animation_uuid = event.source_uuid
 						await _wait_for_animation_completion("bump", event.source_uuid)
-						_current_animation_uuid = target_uuid
-						await _wait_for_animation_completion("flash", target_uuid)
-					else:
-						# No bump, just flash
-						_current_animation_uuid = target_uuid
-						# Apply HP delta NOW so UI updates incrementally
-						_apply_hp_delta(target_uuid, event.amount)
-						if SignalBus.has_signal("unit_flash_effect"):
-							SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
-							await _wait_for_animation_completion("flash", target_uuid)
+					_current_animation_uuid = target_uuid
+					await _wait_for_animation_completion("flash", target_uuid)
 
 			CombatEvent.Type.HEAL:
 				# HP-only: apply HP delta incrementally with green flash

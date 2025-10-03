@@ -35,3 +35,5 @@ ability.item_tier1a_turn_start_heal.name,Restoration
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP."
 ability.unit_tier2c_ally_death_buff.name,Morale Boost
 ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."
+ability.item_tier3d_overflow.name,"Overflow"
+ability.item_tier3d_overflow.desc,"Excess damage from lethal attacks is dealt to the adjacent unit behind the target."

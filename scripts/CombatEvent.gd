@@ -18,6 +18,7 @@ var source_uuid: String = ""
 var target_uuids: Array[String] = []
 var amount: int = 0
 var stat: String = ""
+var skip_bump: bool = false
 
 func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.type = p_type
@@ -34,3 +35,4 @@ func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	# Optional numeric/stat context
 	self.amount = int(p_context.get("amount", 0))
 	self.stat = String(p_context.get("stat", ""))
+	self.skip_bump = bool(p_context.get("skip_bump", false))

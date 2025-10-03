@@ -5,7 +5,7 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 [DEBUG] Starting turn 1
 [FLASHCARD] Mini-game completed with results: { "correct_answers": 3, "incorrect_answers": 0 }
 [FLASHCARD] Opening ResultsPopup
-[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#334051150023>
+[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#294758909477>
 [RESULTS ACK] Player clicked Okay on results popup
 [DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
 [RESULTS ACK] Transitioning to MANAGEMENT phase
@@ -14,469 +14,163 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 ========== TURN 1 COMBAT START ==========
 [BATTLE STATE] Player Lineup:
-  [0] Hero (UUID: hero_175) - HP: 11, PWR: 2
-      [Item Slot 0] Small HP Potion
-  [1] Knight (UUID: unit_t2_) - HP: 4, PWR: 4
-      [Item Slot 0] Small HP Potion
-      [Item Slot 1] Small PWR Potion
-  [2] Squire (UUID: unit_t1_) - HP: 2, PWR: 2
-      [Item Slot 0] Small PWR Potion
-  [3] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
+  [0] Hero (UUID: hero_175) - HP: 15, PWR: 7
+      [Item Slot 0] item_t3_d.name
+      [Item Slot 1] item_t3_d.name
+      [Item Slot 2] Large HP Potion
 [BATTLE STATE] Enemy Lineup:
-  [0] Knight (UUID: unit_t2_) - HP: 3, PWR: 3
+  [0] Squire (UUID: unit_t1_) - HP: 2, PWR: 2
+      [Item Slot 0] Small PWR Potion
   [1] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [2] Knight (UUID: unit_t2_) - HP: 3, PWR: 3
-  [3] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
-  [4] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
+  [2] Knight (UUID: unit_t2_) - HP: 5, PWR: 4
+      [Item Slot 0] Large HP Potion
+      [Item Slot 1] Small HP Potion
+  [3] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
+  [4] unit_t3_d.name (UUID: unit_t3_) - HP: 7, PWR: 7
+      [Item Slot 0] Large HP Potion
   [5] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
-[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t1_b", "unit_t1_b", "unit_t1_a", "unit_t1_b", "unit_t3_d", "unit_t2_c", "unit_t1_b", "unit_t2_c"]
+[BATTLE STATE] Action order: ["hero", "unit_t1_a", "unit_t3_d", "unit_t1_a", "unit_t2_c", "unit_t1_b", "unit_t1_b"]
 ==========================================
 
 
 [COMBAT] ====== Actor #1: Hero's Turn ======
-[COMBAT] Hero (HP: 11, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Hero...
-[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 2 damage. HP: 3 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526772_2226 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526772_2226", "damage_taken": 2, "attacker_uuid": "hero_1759526772_9594" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[COMBAT]     → LOG: Hero deals 2 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 2 damage (HP: 1)
-
-[COMBAT] ====== Actor #2: Knight's Turn ======
-[COMBAT] Knight (HP: 4, PWR: 4) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759526772_8473 definition: item_t1_b equipped to: unit_t2_c_1759526789_8786 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759526772_8473
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759526789_8786
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
-[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 4 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526772_2226 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526772_2226", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759526789_8786" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_6398
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
+[COMBAT] Hero (HP: 15, PWR: 7) preparing to act
+[DEBUG] Processing equipped item: item_t3_d_1759534879_5047 definition: item_t3_d equipped to: hero_1759534879_8938 slot: 0
+[DEBUG] Processing equipped item ability: item_tier3d_overflow_adjacent for item: item_t3_d_1759534879_5047
+[DEBUG] _process_ability called for ability: item_tier3d_overflow_adjacent source: hero_1759534879_8938
+[DEBUG] resolve_target called: source=hero_1759534879_8938 target_type=ATTACK_TARGET
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
+[DEBUG] AbilityResolver effect: <Resource#-9223371959578917419> target_type: ATTACK_TARGET resolved_targets: ["unit_t1_b_1759534879_4898"]
+[DEBUG] Processing equipped item: item_t3_d_1759534879_6396 definition: item_t3_d equipped to: hero_1759534879_8938 slot: 1
+[DEBUG] Processing equipped item ability: item_tier3d_overflow_adjacent for item: item_t3_d_1759534879_6396
+[DEBUG] _process_ability called for ability: item_tier3d_overflow_adjacent source: hero_1759534879_8938
+[DEBUG] resolve_target called: source=hero_1759534879_8938 target_type=ATTACK_TARGET
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 4 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 4 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-[COMBAT]   Reaction #2: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 4)
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-
-[COMBAT] ====== Actor #3: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 2) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759526772_9133 definition: item_t1_b equipped to: unit_t1_b_1759526772_9683 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759526772_9133
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t1_b_1759526772_9683
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
-[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526772_2515 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526772_2515", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759526772_9683" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526772_2515 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526772_2515
+[DEBUG] AbilityResolver effect: <Resource#-9223371959578917419> target_type: ATTACK_TARGET resolved_targets: ["unit_t1_b_1759534879_4898"]
+[COMBAT] Processing 3 pending reactions for Hero...
+[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Squire"]
+[DEBUG] Squire takes 7 damage. HP: 2 -> 0
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759534879_4898 damage: 7
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759534879_4898", "damage_taken": 7, "attacker_uuid": "hero_1759534879_8938" }
+[DEBUG] Damaged unit equipped items: ["item_t1_b_1759534879_8433"]
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759534879_4898 definition: unit_t1_b
+[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759534879_4898
 [DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526772_2515 target_type=ATTACKER
+[DEBUG] resolve_target called: source=unit_t1_b_1759534879_4898 target_type=ATTACKER
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t1_b_1759526772_9683"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[DEBUG] AbilityResolver effect: <Resource#-9223371961659292215> target_type: ATTACKER resolved_targets: ["hero_1759534879_8938"]
 [DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_2226
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_2226 target_type=SELF
+[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759534879_5523
+[DEBUG] resolve_target called: source=unit_t2_c_1759534879_5523 target_type=SELF
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_2226"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_2226 target_type=SELF
+[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759534879_5523"]
+[DEBUG] resolve_target called: source=unit_t2_c_1759534879_5523 target_type=SELF
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_2226"]
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_6398
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
+[DEBUG] AbilityResolver effect: <Resource#-9223371961172752948> target_type: SELF resolved_targets: ["unit_t2_c_1759534879_5523"]
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 2 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 2 damage (HP: 0)
+[COMBAT]     → LOG: Hero deals 7 dmg to Squire
+[COMBAT]     → DAMAGE: Squire took 7 damage (HP: 0)
 [DEFERRED DEATHS] Processing 1 deferred deaths
 [DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 1 damage. HP: 2 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526772_9683 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526772_9683", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_2515" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759526772_9133"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526772_9683 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526772_9683
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526772_9683 target_type=ATTACKER
+[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 2 damage. HP: 15 -> 13
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759534879_8938 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759534879_8938", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759534879_4898" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1759534879_5047", "item_t3_d_1759534879_6396", "item_t2_c_1759534879_3112", "", ""]
+[DEBUG] Processing equipped item: item_t2_c_1759534879_3112 definition: item_t2_c equipped to: hero_1759534879_8938 slot: 2
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759534879_3112
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759534879_3112
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759534879_8938 HP = 13 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759534879_3112 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: []
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759534879_3112 equipped to: hero_1759534879_8938
+[DEBUG] AbilityResolver effect: <Resource#-9223371959075600934> target_type: HOLDER resolved_targets: ["hero_1759534879_8938"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 1 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 1 damage (HP: 1)
+[COMBAT]     → LOG: Squire deals 2 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 13)
 [DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Knight heals Knight for 1 HP
+[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
+[DEFERRED DEATHS] Processing 1 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 5)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [COMBAT]     → LOG: Knight gains 1 PWR
 [DEFERRED DEATHS] Processing 1 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #7: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on []
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[COMBAT]   Reaction #5: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 14)
 [DEFERRED DEATHS] Processing 1 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #4: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 1 damage. HP: 5 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526772_6398 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526772_6398", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_7110" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 1 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 1 damage (HP: 4)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #5: Apprentice's Turn ======
-[COMBAT] Apprentice (HP: 1, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Apprentice...
-[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526772_7110 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526772_7110", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759526772_1408" }
+[COMBAT]   Reaction #6: Hero uses 'item_tier3d_overflow_adjacent' (priority -10) on ["Squire"]
+[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759534879_4379 damage: 5
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759534879_4379", "damage_taken": 5, "attacker_uuid": "hero_1759534879_8938" }
 [DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526772_7110 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526772_7110
+[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759534879_4379 definition: unit_t1_b
+[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759534879_4379
 [DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526772_7110 target_type=ATTACKER
+[DEBUG] resolve_target called: source=unit_t1_b_1759534879_4379 target_type=ATTACKER
 [DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t1_a_1759526772_1408"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526789_8786
-[DEBUG] resolve_target called: source=unit_t2_c_1759526789_8786 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526789_8786"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526789_8786 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526789_8786"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[DEBUG] AbilityResolver effect: <Resource#-9223371961659292215> target_type: ATTACKER resolved_targets: ["hero_1759534879_8938"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Apprentice deals 2 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 2 damage (HP: 0)
+[DEATH CHECK] Squire has 0 HP
+[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759534879_5523
+[DEBUG] resolve_target called: source=unit_t2_c_1759534879_5523 target_type=SELF
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759534879_5523"]
+[DEBUG] resolve_target called: source=unit_t2_c_1759534879_5523 target_type=SELF
+[DEBUG] source_instance valid: true
+[DEBUG] AbilityResolver effect: <Resource#-9223371961172752948> target_type: SELF resolved_targets: ["unit_t2_c_1759534879_5523"]
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Hero deals 5 dmg to Squire
+[COMBAT]     → DAMAGE: Squire took 5 damage (HP: 0)
 [DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526772_1408 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526772_1408", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_7110" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526772_1408 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526772_1408
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526772_1408 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
+[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
+[COMBAT]   Reaction #7: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 1 damage. HP: 14 -> 13
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759534879_8938 damage: 1
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759534879_8938", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759534879_4379" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1759534879_5047", "item_t3_d_1759534879_6396", "item_t2_c_1759534879_3112", "", ""]
+[DEBUG] Processing equipped item: item_t2_c_1759534879_3112 definition: item_t2_c equipped to: hero_1759534879_8938 slot: 2
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759534879_3112
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759534879_3112
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759534879_8938 HP = 13 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759534879_3112 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759534879_3112 equipped to: hero_1759534879_8938
+[DEBUG] AbilityResolver effect: <Resource#-9223371959075600934> target_type: HOLDER resolved_targets: ["hero_1759534879_8938"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_2226
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_2226 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_2226"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_2226 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_2226"]
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_6398
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 1 damage (HP: 0)
-[COMBAT]     → DEATH: Apprentice has died
+[COMBAT]     → LOG: Squire deals 1 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 1 damage (HP: 13)
 [DEFERRED DEATHS] Processing 3 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 5)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #7: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 5)
-[DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [COMBAT]   Reaction #8: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
+[COMBAT]     → LOG: Knight heals Knight for 1 HP
+[COMBAT]     → HEAL: Knight healed 1 HP (HP: 7)
 [DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #6: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526772_9683 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526772_9683", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_0382" }
-[DEBUG] Damaged unit equipped items: ["item_t1_b_1759526772_9133"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526772_9683 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526772_9683
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526772_9683 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t1_b_1759526772_0382"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526789_8786
-[DEBUG] resolve_target called: source=unit_t2_c_1759526789_8786 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526789_8786"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526789_8786 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526789_8786"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 1 damage (HP: 0)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526772_0382 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526772_0382", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759526772_9683" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526772_0382 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526772_0382
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526772_0382 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: []
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_2226
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_2226 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_2226"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_2226 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_2226"]
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_6398
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 2 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 2 damage (HP: 0)
-[DEFERRED DEATHS] Processing 5 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
-[DEFERRED DEATHS] Processing 5 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 6 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #5: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on []
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEFERRED DEATHS] Processing 7 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #7: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #8: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [COMBAT]   Reaction #9: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
@@ -484,1962 +178,187 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
 [COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 4 deferred deaths
+[DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]   Reaction #10: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 14)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]   Reaction #11: Hero uses 'item_tier3d_overflow_adjacent' (priority -10) on ["Squire"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 
-[COMBAT] ====== Actor #7: unit_t3_d.name's Turn ======
-[COMBAT] unit_t3_d.name (HP: 6, PWR: 6) preparing to act
-[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
-[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 6 damage. HP: 6 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526789_8786 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526789_8786", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759526772_4074" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1759526772_2606", "item_t1_b_1759526772_8473"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 6 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #8: Knight's Turn ======
-[COMBAT] Knight (HP: 6, PWR: 3) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 3 damage. HP: 11 -> 8
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759526772_9594 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759526772_9594", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1759526772_6398" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1759526772_5379", "", "", "", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 3 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 3 damage (HP: 8)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT] Actor #9: Squire (HP: 0) is DEAD, skipping turn
-[COMBAT] Actor #10: Knight (HP: 0) is DEAD, skipping turn
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759526772_2226"]
-[APPLY DEATHS] After removal - Player lineup size: 4, Enemy lineup size: 5
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526772_2515"]
-[APPLY DEATHS] After removal - Player lineup size: 4, Enemy lineup size: 4
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_a_1759526772_1408"]
-[APPLY DEATHS] After removal - Player lineup size: 4, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526772_7110"]
-[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526772_9683"]
-[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526772_0382"]
-[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 2
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759526789_8786"]
-[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 2
-[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
-[ANIMATION FINISHED] _battle_over_deferred = false
-[DEBUG] End of turn 1 - triggering turn end abilities and starting next turn
-[DEBUG] Starting turn 2
-[FLASHCARD] Mini-game completed with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FLASHCARD] Opening ResultsPopup
-[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#871945472750>
-[RESULTS ACK] Player clicked Okay on results popup
-[DEBUG] Turn 2 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Processing equipped item: item_t1_a_1759526772_5379 definition: item_t1_a equipped to: hero_1759526772_9594 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759526772_5379
-[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759526772_5379
-[DEBUG] resolve_target called: source=item_t1_a_1759526772_5379 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t1_a_1759526772_5379 equipped to: hero_1759526772_9594
-[DEBUG] AbilityResolver effect: <Resource#-9223371958924605986> target_type: HOLDER resolved_targets: ["hero_1759526772_9594"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759526772_6876
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t2_c_1759526772_6398
-[DEBUG] _process_ability called for ability:  source: unit_t2_c_1759526772_6398
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958119299623> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759526772_1787
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: 'hero_1759526772_9594'
-[DEBUG] Player trinket - Hero UUID: 'hero_1759526772_9594'
-[DEBUG] _process_ability called for ability:  source: hero_1759526772_9594
-[DEBUG] resolve_target called: source=hero_1759526772_9594 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958119299623> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759526772_9594"]
-[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
-[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-
-========== TURN 2 COMBAT START ==========
-[BATTLE STATE] Player Lineup:
-  [0] Hero (UUID: hero_175) - HP: 12, PWR: 2
-      [Item Slot 0] Small HP Potion
-  [1] Knight (UUID: unit_t2_) - HP: 4, PWR: 5
-      [Item Slot 0] Large HP Potion
-      [Item Slot 1] Small PWR Potion
-  [2] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
-  [3] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [4] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [5] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-[BATTLE STATE] Enemy Lineup:
-  [0] Knight (UUID: unit_t2_) - HP: 8, PWR: 7
-  [1] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
-[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t1_a", "unit_t1_b", "unit_t1_b", "unit_t1_b", "unit_t3_d", "unit_t2_c"]
-==========================================
-
-
-[COMBAT] ====== Actor #1: Hero's Turn ======
-[COMBAT] Hero (HP: 12, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Hero...
-[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 2 damage. HP: 8 -> 6
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526772_6398 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526772_6398", "damage_taken": 2, "attacker_uuid": "hero_1759526772_9594" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[COMBAT]     → LOG: Hero deals 2 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 2 damage (HP: 6)
-
-[COMBAT] ====== Actor #2: Knight's Turn ======
-[COMBAT] Knight (HP: 4, PWR: 5) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759526772_9133 definition: item_t1_b equipped to: unit_t2_c_1759526772_5104 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759526772_9133
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759526772_5104
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_5104 target_type=ATTACK_TARGET
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371959394368037> target_type: ATTACK_TARGET resolved_targets: ["unit_t2_c_1759526772_6398"]
-[COMBAT] Processing 2 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 5 damage. HP: 6 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526772_6398 damage: 5
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526772_6398", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759526772_5104" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[COMBAT]     → LOG: Knight deals 5 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 5 damage (HP: 1)
-[COMBAT]   Reaction #2: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["Knight"]
-[DEBUG] Knight takes 5 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526772_6398 damage: 5
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526772_6398", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759526772_5104" }
-[DEBUG] Damaged unit equipped items: ["", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 5 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 5 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-
-[COMBAT] ====== Actor #3: Apprentice's Turn ======
+[COMBAT] ====== Actor #2: Apprentice's Turn ======
 [COMBAT] Apprentice (HP: 1, PWR: 2) preparing to act
 [COMBAT] Processing 1 pending reactions for Apprentice...
-[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 6 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526772_4074 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526772_4074", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759526772_0409" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice deals 2 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 4)
+[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 2 damage. HP: 14 -> 12
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759534879_8938 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759534879_8938", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759534879_1307" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1759534879_5047", "item_t3_d_1759534879_6396", "item_t2_c_1759534879_3112", "", ""]
+[DEBUG] Processing equipped item: item_t2_c_1759534879_3112 definition: item_t2_c equipped to: hero_1759534879_8938 slot: 2
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759534879_3112
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759534879_3112
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759534879_8938 HP = 12 result = true
+[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
+[DEBUG] resolve_target called: source=item_t2_c_1759534879_3112 target_type=HOLDER
+[DEBUG] source_instance valid: true
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759534879_3112 equipped to: hero_1759534879_8938
+[DEBUG] AbilityResolver effect: <Resource#-9223371959075600934> target_type: HOLDER resolved_targets: ["hero_1759534879_8938"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Apprentice deals 2 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 12)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 13)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 
-[COMBAT] ====== Actor #4: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 4 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526772_4074 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526772_4074", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_8450" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 3)
-
-[COMBAT] ====== Actor #5: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 3 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526772_4074 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526772_4074", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_9683" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 2)
-
-[COMBAT] ====== Actor #6: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 2 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526772_4074 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526772_4074", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_7110" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 1)
-
-[COMBAT] ====== Actor #7: unit_t3_d.name's Turn ======
-[COMBAT] unit_t3_d.name (HP: 1, PWR: 6) preparing to act
+[COMBAT] ====== Actor #3: unit_t3_d.name's Turn ======
+[COMBAT] unit_t3_d.name (HP: 7, PWR: 7) preparing to act
 [COMBAT] Processing 1 pending reactions for unit_t3_d.name...
-[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 6 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526772_7110 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526772_7110", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759526772_4074" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526772_7110 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526772_7110
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526772_7110 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759526772_4074"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_5104
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_5104 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_5104"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_5104 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_5104"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 6 damage (HP: 0)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526772_4074 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526772_4074", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526772_7110" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] unit_t3_d.name has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526772_6398
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526772_6398 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526772_6398"]
-[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 0)
-[COMBAT]     → DEATH: unit_t3_d.name has died
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] unit_t3_d.name has 0 HP
-[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 5)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] unit_t3_d.name has 0 HP
-[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT] Actor #8: Knight (HP: 0) is DEAD, skipping turn
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759526772_6398"]
-[APPLY DEATHS] After removal - Player lineup size: 6, Enemy lineup size: 1
-[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759526772_4074"]
-[APPLY DEATHS] After removal - Player lineup size: 6, Enemy lineup size: 0
-[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526772_7110"]
-[APPLY DEATHS] After removal - Player lineup size: 5, Enemy lineup size: 0
-[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
-[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
-[ANIMATION FINISHED] _battle_over_deferred = true
-[ANIMATION FINISHED] Emitting battle over!
-[DEBUG] Battle victory detected
-[DEBUG] Restored hero location to run state: PlayerLineup:0
-[ItemInspection] Ability:  | Key: ability.healing_amulet.desc | Desc: At the start of the turn, Heals the frontmost ally unit by 2 HP.
-[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
-[DEBUG] Starting turn 1
-[FLASHCARD] Mini-game completed with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FLASHCARD] Opening ResultsPopup
-[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#1437874522827>
-[RESULTS ACK] Player clicked Okay on results popup
-[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
-[RESULTS ACK] Transitioning to MANAGEMENT phase
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-
-========== TURN 1 COMBAT START ==========
-[BATTLE STATE] Player Lineup:
-  [0] Hero (UUID: hero_175) - HP: 10, PWR: 2
-  [1] Knight (UUID: unit_t2_) - HP: 5, PWR: 4
-      [Item Slot 0] Small HP Potion
-      [Item Slot 1] Large HP Potion
-  [2] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [3] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [4] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-[BATTLE STATE] Enemy Lineup:
-  [0] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [1] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
-  [2] Apprentice (UUID: unit_t1_) - HP: 3, PWR: 4
-      [Item Slot 0] item_t3_d.name
-  [3] Knight (UUID: unit_t2_) - HP: 5, PWR: 5
-      [Item Slot 0] item_t3_d.name
-  [4] unit_t3_d.name (UUID: unit_t3_) - HP: 6, PWR: 6
-  [5] Apprentice (UUID: unit_t1_) - HP: 1, PWR: 2
-[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t1_b", "unit_t1_b", "unit_t1_b", "unit_t1_a", "unit_t3_d", "unit_t2_c", "unit_t1_a", "unit_t1_a", "unit_t1_b"]
-==========================================
-
-
-[COMBAT] ====== Actor #1: Hero's Turn ======
-[COMBAT] Hero (HP: 10, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Hero...
-[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526957_0366 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526957_0366", "damage_taken": 2, "attacker_uuid": "hero_1759526957_0510" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526957_0366 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526957_0366
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526957_0366 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["hero_1759526957_0510"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_9407
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Hero deals 2 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 2 damage (HP: 0)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 1 damage. HP: 10 -> 9
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759526957_0510 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759526957_0510", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_0366" }
-[DEBUG] Damaged unit equipped items: ["", "", "", "", ""]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 1 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 1 damage (HP: 9)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #2: Knight's Turn ======
-[COMBAT] Knight (HP: 5, PWR: 4) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 4 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_2452 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_2452", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759526957_6073" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_2452 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_2452
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_2452 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_9407
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 4 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 4 damage (HP: 0)
-[COMBAT]     → DEATH: Apprentice has died
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 7)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #3: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 1 damage. HP: 3 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_0395 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_0395", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_3901" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_7431"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_0395 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_0395
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_0395 HP = 2 result = true
+[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 7 damage. HP: 13 -> 6
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759534879_8938 damage: 7
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759534879_8938", "damage_taken": 7, "attacker_uuid": "unit_t3_d_1759534879_3977" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1759534879_5047", "item_t3_d_1759534879_6396", "item_t2_c_1759534879_3112", "", ""]
+[DEBUG] Processing equipped item: item_t2_c_1759534879_3112 definition: item_t2_c equipped to: hero_1759534879_8938 slot: 2
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759534879_3112
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759534879_3112
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759534879_8938 HP = 6 result = true
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=unit_t1_a_1759526957_0395 target_type=HOLDER
+[DEBUG] resolve_target called: source=item_t2_c_1759534879_3112 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for unit: unit_t1_a_1759526957_0395 returning self
-[DEBUG] AbilityResolver effect: <Resource#-9223371962196163135> target_type: HOLDER resolved_targets: ["unit_t1_a_1759526957_0395"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 1 damage (HP: 2)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Apprentice uses 'unit_tier1a_passive_heal' (priority 0) on ["Apprentice"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice heals Apprentice for 1 HP
-[COMBAT]     → HEAL: Apprentice healed 1 HP (HP: 3)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #4: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 1 damage. HP: 3 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_0395 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_0395", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_2987" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_7431"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_0395 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_0395
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_0395 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=unit_t1_a_1759526957_0395 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for unit: unit_t1_a_1759526957_0395 returning self
-[DEBUG] AbilityResolver effect: <Resource#-9223371962196163135> target_type: HOLDER resolved_targets: ["unit_t1_a_1759526957_0395"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 1 damage (HP: 2)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Apprentice uses 'unit_tier1a_passive_heal' (priority 0) on ["Apprentice"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice heals Apprentice for 1 HP
-[COMBAT]     → HEAL: Apprentice healed 1 HP (HP: 3)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #5: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 1 damage. HP: 3 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_0395 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_0395", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_3913" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_7431"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_0395 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_0395
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_0395 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=unit_t1_a_1759526957_0395 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for unit: unit_t1_a_1759526957_0395 returning self
-[DEBUG] AbilityResolver effect: <Resource#-9223371962196163135> target_type: HOLDER resolved_targets: ["unit_t1_a_1759526957_0395"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 1 damage (HP: 2)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Apprentice uses 'unit_tier1a_passive_heal' (priority 0) on ["Apprentice"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice heals Apprentice for 1 HP
-[COMBAT]     → HEAL: Apprentice healed 1 HP (HP: 3)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #6: Apprentice's Turn ======
-[COMBAT] Apprentice (HP: 1, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Apprentice...
-[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526957_3913 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526957_3913", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759526957_5715" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526957_3913 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526957_3913
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526957_3913 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t1_a_1759526957_5715"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_6073
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_6073 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_6073 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice deals 2 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 2 damage (HP: 0)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 1 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_5715 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_5715", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_3913" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_5715 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_5715
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_5715 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759534879_3112 equipped to: hero_1759534879_8938
+[DEBUG] AbilityResolver effect: <Resource#-9223371959075600934> target_type: HOLDER resolved_targets: ["hero_1759534879_8938"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_9407
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 1 damage (HP: 0)
-[COMBAT]     → DEATH: Apprentice has died
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
+[COMBAT]     → LOG: unit_t3_d.name deals 7 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 7 damage (HP: 6)
 [DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
+[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
+[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 7)
 [DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 8)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #7: unit_t3_d.name's Turn ======
-[COMBAT] unit_t3_d.name (HP: 6, PWR: 6) preparing to act
-[COMBAT] Processing 1 pending reactions for unit_t3_d.name...
-[COMBAT]   Reaction #1: unit_t3_d.name uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 6 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526957_2987 damage: 6
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526957_2987", "damage_taken": 6, "attacker_uuid": "unit_t3_d_1759526957_3338" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526957_2987 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526957_2987
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526957_2987 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t3_d_1759526957_3338"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_6073
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_6073 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_6073 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: unit_t3_d.name deals 6 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 6 damage (HP: 0)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 6 -> 5
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526957_3338 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526957_3338", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_2987" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 5)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 7)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #8: Knight's Turn ======
-[COMBAT] Knight (HP: 8, PWR: 5) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 5 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759526957_3901 damage: 5
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759526957_3901", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759526957_9407" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759526957_3901 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759526957_3901
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526957_3901 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_6073
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_6073 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_6073 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 5 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 5 damage (HP: 0)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 1 damage. HP: 8 -> 7
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526957_9407 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526957_9407", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_3901" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_2169", ""]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 1 damage (HP: 7)
-[DEFERRED DEATHS] Processing 5 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 8)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #9: Apprentice's Turn ======
-[COMBAT] Apprentice (HP: 3, PWR: 4) preparing to act
-[COMBAT] Processing 1 pending reactions for Apprentice...
-[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 4 damage. HP: 8 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526957_6073 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526957_6073", "damage_taken": 4, "attacker_uuid": "unit_t1_a_1759526957_0395" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1759526957_0057", "item_t2_c_1759526957_6332"]
-[DEBUG] Processing equipped item: item_t2_c_1759526957_6332 definition: item_t2_c equipped to: unit_t2_c_1759526957_6073 slot: 1
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759526957_6332
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759526957_6332
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1759526957_6073 HP = 4 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759526957_6332 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759526957_6332 equipped to: unit_t2_c_1759526957_6073
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice deals 4 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 4 damage (HP: 4)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Large HP Potion heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 5)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT] Actor #10: Apprentice (HP: 0) is DEAD, skipping turn
-[COMBAT] Actor #11: Squire (HP: 0) is DEAD, skipping turn
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526957_0366"]
-[APPLY DEATHS] After removal - Player lineup size: 5, Enemy lineup size: 5
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_a_1759526957_2452"]
-[APPLY DEATHS] After removal - Player lineup size: 5, Enemy lineup size: 4
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_a_1759526957_5715"]
-[APPLY DEATHS] After removal - Player lineup size: 5, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526957_3913"]
-[APPLY DEATHS] After removal - Player lineup size: 4, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526957_2987"]
-[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759526957_3901"]
-[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 3
-[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
-[ANIMATION FINISHED] _battle_over_deferred = false
-[DEBUG] End of turn 1 - triggering turn end abilities and starting next turn
-[DEBUG] Starting turn 2
-[FLASHCARD] Mini-game completed with results: { "correct_answers": 2, "incorrect_answers": 0 }
-[FLASHCARD] Opening ResultsPopup
-[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#1969611606054>
-[RESULTS ACK] Player clicked Okay on results popup
-[DEBUG] Turn 2 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Processing equipped item: item_t1_a_1759526957_0057 definition: item_t1_a equipped to: unit_t2_c_1759526957_6073 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759526957_0057
-[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759526957_0057
-[DEBUG] resolve_target called: source=item_t1_a_1759526957_0057 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t1_a_1759526957_0057 equipped to: unit_t2_c_1759526957_6073
-[DEBUG] AbilityResolver effect: <Resource#-9223371958924605986> target_type: HOLDER resolved_targets: ["unit_t2_c_1759526957_6073"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759526957_0920
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_a_1759526957_0395
-[DEBUG] _process_ability called for ability:  source: unit_t1_a_1759526957_0395
-[DEBUG] resolve_target called: source=unit_t1_a_1759526957_0395 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958119299623> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_a_1759526957_0395"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759526957_5559
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: 'hero_1759526957_0510'
-[DEBUG] Player trinket - Hero UUID: 'hero_1759526957_0510'
-[DEBUG] _process_ability called for ability:  source: hero_1759526957_0510
-[DEBUG] resolve_target called: source=hero_1759526957_0510 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958119299623> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t2_c_1759526957_6073"]
-[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
-[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-
-========== TURN 2 COMBAT START ==========
-[BATTLE STATE] Player Lineup:
-  [0] Hero (UUID: hero_175) - HP: 9, PWR: 2
-  [1] Knight (UUID: unit_t2_) - HP: 3, PWR: 4
-      [Item Slot 0] Small PWR Potion
-  [2] Knight (UUID: unit_t2_) - HP: 9, PWR: 7
-      [Item Slot 0] Small HP Potion
-      [Item Slot 1] Large HP Potion
-  [3] Apprentice (UUID: unit_t1_) - HP: 2, PWR: 2
-      [Item Slot 0] Small HP Potion
-  [4] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [5] Squire (UUID: unit_t1_) - HP: 2, PWR: 2
-      [Item Slot 0] Small PWR Potion
-[BATTLE STATE] Enemy Lineup:
-  [0] Apprentice (UUID: unit_t1_) - HP: 5, PWR: 4
-      [Item Slot 0] item_t3_d.name
-  [1] Knight (UUID: unit_t2_) - HP: 7, PWR: 8
-      [Item Slot 0] item_t3_d.name
-  [2] unit_t3_d.name (UUID: unit_t3_) - HP: 5, PWR: 6
-[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t2_c", "unit_t1_a", "unit_t1_b", "unit_t1_b", "unit_t3_d", "unit_t2_c", "unit_t1_a"]
-==========================================
-
-
-[COMBAT] ====== Actor #1: Hero's Turn ======
-[COMBAT] Hero (HP: 9, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Hero...
-[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 2 damage. HP: 5 -> 3
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_0395 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_0395", "damage_taken": 2, "attacker_uuid": "hero_1759526957_0510" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_7431"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_0395 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_0395
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_0395 HP = 3 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=unit_t1_a_1759526957_0395 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for unit: unit_t1_a_1759526957_0395 returning self
-[DEBUG] AbilityResolver effect: <Resource#-9223371962196163135> target_type: HOLDER resolved_targets: ["unit_t1_a_1759526957_0395"]
-[COMBAT]     → LOG: Hero deals 2 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 2 damage (HP: 3)
-[COMBAT]   Reaction #2: Apprentice uses 'unit_tier1a_passive_heal' (priority 0) on ["Apprentice"]
-[COMBAT]     → LOG: Apprentice heals Apprentice for 1 HP
-[COMBAT]     → HEAL: Apprentice healed 1 HP (HP: 4)
-
-[COMBAT] ====== Actor #2: Knight's Turn ======
-[COMBAT] Knight (HP: 3, PWR: 4) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759526957_7506 definition: item_t1_b equipped to: unit_t2_c_1759527100_6049 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759526957_7506
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759527100_6049
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
-[DEBUG] resolve_target called: source=unit_t2_c_1759527100_6049 target_type=ATTACK_TARGET
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371959394368037> target_type: ATTACK_TARGET resolved_targets: ["unit_t1_a_1759526957_0395"]
-[COMBAT] Processing 2 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Apprentice"]
-[DEBUG] Apprentice takes 4 damage. HP: 4 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_0395 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_0395", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759527100_6049" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_7431"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_0395 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_0395
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_0395 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
-[DEATH CHECK] Apprentice has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_9407
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 4 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 4 damage (HP: 0)
-[COMBAT]     → DEATH: Apprentice has died
-[COMBAT]   Reaction #2: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 8)
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[COMBAT]   Reaction #4: Knight uses 'item_tier1b_extra_attack' (priority -100) on ["Apprentice"]
-[DEBUG] Apprentice takes 4 damage. HP: 0 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_a_1759526957_0395 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_a_1759526957_0395", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759527100_6049" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_7431"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_a_1759526957_0395 definition: unit_t1_a
-[DEBUG] _process_ability called for ability: unit_tier1a_passive_heal source: unit_t1_a_1759526957_0395
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_a_1759526957_0395 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: unit_tier1a_passive_heal
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 4 dmg to Apprentice
-[COMBAT]     → DAMAGE: Apprentice took 4 damage (HP: 0)
-
-[COMBAT] ====== Actor #3: Knight's Turn ======
-[COMBAT] Knight (HP: 9, PWR: 7) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 7 damage. HP: 8 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526957_9407 damage: 7
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526957_9407", "damage_taken": 7, "attacker_uuid": "unit_t2_c_1759526957_6073" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_2169", ""]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 7 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 7 damage (HP: 1)
 
 [COMBAT] ====== Actor #4: Apprentice's Turn ======
-[COMBAT] Apprentice (HP: 2, PWR: 2) preparing to act
+[COMBAT] Apprentice (HP: 1, PWR: 2) preparing to act
 [COMBAT] Processing 1 pending reactions for Apprentice...
-[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 2 damage. HP: 1 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759526957_9407 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759526957_9407", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759526957_9124" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759526957_2169", ""]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Apprentice deals 2 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 2 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-
-[COMBAT] ====== Actor #5: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 1 damage. HP: 5 -> 4
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526957_3338 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526957_3338", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759526957_3901" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 1 damage (HP: 4)
-
-[COMBAT] ====== Actor #6: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 2) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759526957_1386 definition: item_t1_b equipped to: unit_t1_b_1759526957_4344 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759526957_1386
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t1_b_1759526957_4344
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759526957_4344 target_type=ATTACK_TARGET
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371959394368037> target_type: ATTACK_TARGET resolved_targets: ["unit_t3_d_1759526957_3338"]
-[COMBAT] Processing 2 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 4 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526957_3338 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526957_3338", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759526957_4344" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 2 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 2)
-[COMBAT]   Reaction #2: Squire uses 'item_tier1b_extra_attack' (priority -100) on ["unit_t3_d.name"]
-[DEBUG] unit_t3_d.name takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t3_d_1759526957_3338 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t3_d_1759526957_3338", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759526957_4344" }
-[DEBUG] Damaged unit equipped items: ["", "", "", ""]
-[DEATH CHECK] Apprentice has 0 HP
-[DEATH CHECK] Apprentice has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] unit_t3_d.name has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759526957_9407
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759526957_9407 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759526957_9407"]
-[DEATH CHECK] unit_t3_d.name has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 2 dmg to unit_t3_d.name
-[COMBAT]     → DAMAGE: unit_t3_d.name took 2 damage (HP: 0)
-[COMBAT]     → DEATH: unit_t3_d.name has died
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[COMBAT] Actor #7: unit_t3_d.name (HP: 0) is DEAD, skipping turn
-[COMBAT] Actor #8: Knight (HP: 0) is DEAD, skipping turn
-[COMBAT] Actor #9: Apprentice (HP: 0) is DEAD, skipping turn
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_a_1759526957_0395"]
-[APPLY DEATHS] After removal - Player lineup size: 6, Enemy lineup size: 2
-[BattleAnimator] Animation timeout for flash on unit unit_t1_a_1759526957_0395
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759526957_9407"]
-[APPLY DEATHS] After removal - Player lineup size: 6, Enemy lineup size: 1
-[APPLY DEATHS] Removing 1 dead units: ["unit_t3_d_1759526957_3338"]
-[APPLY DEATHS] After removal - Player lineup size: 6, Enemy lineup size: 0
-[APPLY DEATHS] Battle is over! Setting _battle_over_deferred = true
-[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
-[ANIMATION FINISHED] _battle_over_deferred = true
-[ANIMATION FINISHED] Emitting battle over!
-[DEBUG] Battle victory detected
-[DEBUG] Restored hero location to run state: PlayerLineup:0
-[DEBUG] Copied player trinket to battle: trinket_healing_amulet at slot 0
-[DEBUG] Starting turn 1
-[FLASHCARD] Mini-game completed with results: { "correct_answers": 2, "incorrect_answers": 0 }
-[FLASHCARD] Opening ResultsPopup
-[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#2505425554367>
-[RESULTS ACK] Player clicked Okay on results popup
-[DEBUG] Turn 1 - skipping turn start abilities (first turn or already triggered)
-[RESULTS ACK] Transitioning to MANAGEMENT phase
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-
-========== TURN 1 COMBAT START ==========
-[BATTLE STATE] Player Lineup:
-  [0] Hero (UUID: hero_175) - HP: 11, PWR: 4
-      [Item Slot 0] Large HP Potion
-      [Item Slot 1] Small PWR Potion
-  [1] Knight (UUID: unit_t2_) - HP: 4, PWR: 4
-      [Item Slot 0] Large HP Potion
-[BATTLE STATE] Enemy Lineup:
-  [0] Knight (UUID: unit_t2_) - HP: 6, PWR: 5
-      [Item Slot 0] item_t3_d.name
-      [Item Slot 1] Small HP Potion
-  [1] Squire (UUID: unit_t1_) - HP: 3, PWR: 2
-      [Item Slot 0] Large HP Potion
-  [2] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [3] Squire (UUID: unit_t1_) - HP: 3, PWR: 2
-      [Item Slot 0] Large HP Potion
-  [4] Knight (UUID: unit_t2_) - HP: 3, PWR: 4
-      [Item Slot 0] Small PWR Potion
-  [5] Knight (UUID: unit_t2_) - HP: 5, PWR: 3
-      [Item Slot 0] Small HP Potion
-      [Item Slot 1] Small HP Potion
-[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t2_c", "unit_t2_c", "unit_t1_b", "unit_t1_b", "unit_t1_b", "unit_t2_c"]
-==========================================
-
-
-[COMBAT] ====== Actor #1: Hero's Turn ======
-[COMBAT] Hero (HP: 11, PWR: 4) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759527718_0180 definition: item_t1_b equipped to: hero_1759527718_0716 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759527718_0180
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759527718_0716
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
-[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
-[COMBAT] Processing 1 pending reactions for Hero...
-[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 4 damage. HP: 6 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_5985 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_5985", "damage_taken": 4, "attacker_uuid": "hero_1759527718_0716" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759527718_6259", "item_t1_a_1759527718_8742"]
-[COMBAT]     → LOG: Hero deals 4 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 4 damage (HP: 2)
-
-[COMBAT] ====== Actor #2: Knight's Turn ======
-[COMBAT] Knight (HP: 4, PWR: 4) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 4 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_5985 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_5985", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759527718_3418" }
-[DEBUG] Damaged unit equipped items: ["item_t3_d_1759527718_6259", "item_t1_a_1759527718_8742"]
-[DEATH CHECK] Knight has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_5241
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_5241 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_5241"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_5241 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_5241"]
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_4298
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_4298 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_4298 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 4 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 4 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-[COMBAT]   Reaction #2: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 4)
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight gains 1 PWR
-
-[COMBAT] ====== Actor #3: Knight's Turn ======
-[COMBAT] Knight (HP: 6, PWR: 3) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 3 damage. HP: 4 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_3418 damage: 3
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_3418", "damage_taken": 3, "attacker_uuid": "unit_t2_c_1759527718_4298" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_1251", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_1251 definition: item_t2_c equipped to: unit_t2_c_1759527718_3418 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_1251
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_1251
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1759527718_3418 HP = 1 result = true
+[COMBAT]   Reaction #1: Apprentice uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 2 damage. HP: 7 -> 5
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759534879_8938 damage: 2
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759534879_8938", "damage_taken": 2, "attacker_uuid": "unit_t1_a_1759534879_7602" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1759534879_5047", "item_t3_d_1759534879_6396", "item_t2_c_1759534879_3112", "", ""]
+[DEBUG] Processing equipped item: item_t2_c_1759534879_3112 definition: item_t2_c equipped to: hero_1759534879_8938 slot: 2
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759534879_3112
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759534879_3112
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759534879_8938 HP = 5 result = true
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_1251 target_type=HOLDER
+[DEBUG] resolve_target called: source=item_t2_c_1759534879_3112 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_1251 equipped to: unit_t2_c_1759527718_3418
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["unit_t2_c_1759527718_3418"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 3 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 3 damage (HP: 1)
-[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Knight"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Large HP Potion heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 2)
-
-[COMBAT] ====== Actor #4: Knight's Turn ======
-[COMBAT] Knight (HP: 4, PWR: 4) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759527718_6807 definition: item_t1_b equipped to: unit_t2_c_1759527718_5241 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759527718_6807
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759527718_5241
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
-[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 4 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_3418 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_3418", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759527718_5241" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_1251", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_1251 definition: item_t2_c equipped to: unit_t2_c_1759527718_3418 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_1251
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_1251
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1759527718_3418 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Knight deals 4 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 4 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-
-[COMBAT] ====== Actor #5: Squire's Turn ======
-[COMBAT] Squire (HP: 3, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 2 damage. HP: 11 -> 9
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759527718_0716 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759527718_0716", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_7278" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_7623", "item_t1_b_1759527718_0180", "", "", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_7623 definition: item_t2_c equipped to: hero_1759527718_0716 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_7623
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_7623
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759527718_0716 HP = 9 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_7623 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_7623 equipped to: hero_1759527718_0716
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["hero_1759527718_0716"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 2 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 9)
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759534879_3112 equipped to: hero_1759534879_8938
+[DEBUG] AbilityResolver effect: <Resource#-9223371959075600934> target_type: HOLDER resolved_targets: ["hero_1759534879_8938"]
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[COMBAT]     → LOG: Apprentice deals 2 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 5)
+[DEFERRED DEATHS] Processing 2 deferred deaths
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
+[DEATH CHECK] Squire has 0 HP
+[DEATH CHECK] Squire has counter-attacks, deferring death
 [COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
-[COMBAT]     → HEAL: Hero healed 1 HP (HP: 10)
-
-[COMBAT] ====== Actor #6: Squire's Turn ======
-[COMBAT] Squire (HP: 2, PWR: 1) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 1 damage. HP: 10 -> 9
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759527718_0716 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759527718_0716", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759527718_4480" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_7623", "item_t1_b_1759527718_0180", "", "", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_7623 definition: item_t2_c equipped to: hero_1759527718_0716 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_7623
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_7623
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759527718_0716 HP = 9 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_7623 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_7623 equipped to: hero_1759527718_0716
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["hero_1759527718_0716"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 1 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 1 damage (HP: 9)
-[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
-[COMBAT]     → HEAL: Hero healed 1 HP (HP: 10)
-
-[COMBAT] ====== Actor #7: Squire's Turn ======
-[COMBAT] Squire (HP: 3, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 2 damage. HP: 10 -> 8
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759527718_0716 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759527718_0716", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_0420" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_7623", "item_t1_b_1759527718_0180", "", "", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_7623 definition: item_t2_c equipped to: hero_1759527718_0716 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_7623
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_7623
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759527718_0716 HP = 8 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_7623 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_7623 equipped to: hero_1759527718_0716
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["hero_1759527718_0716"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Squire deals 2 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 8)
-[COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
-[COMBAT]     → HEAL: Hero healed 1 HP (HP: 9)
-[COMBAT] Actor #8: Knight (HP: 0) is DEAD, skipping turn
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759527718_5985"]
-[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 5
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759527718_3418"]
-[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 5
-[ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
-[ANIMATION FINISHED] _battle_over_deferred = false
-[DEBUG] End of turn 1 - triggering turn end abilities and starting next turn
-[DEBUG] Starting turn 2
-[FLASHCARD] Mini-game completed with results: { "correct_answers": 2, "incorrect_answers": 0 }
-[FLASHCARD] Opening ResultsPopup
-[FLASHCARD] ResultsPopup opened: ResultsPopup:<Control#2801878959621>
-[RESULTS ACK] Player clicked Okay on results popup
-[DEBUG] Turn 2 - triggering turn start abilities after mini-game
-[DEBUG] _trigger_turn_start_abilities() called for turn 2
-[DEBUG] Processing equipped item: item_t1_a_1759527718_4488 definition: item_t1_a equipped to: unit_t2_c_1759527718_4298 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759527718_4488
-[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759527718_4488
-[DEBUG] resolve_target called: source=item_t1_a_1759527718_4488 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t1_a_1759527718_4488 equipped to: unit_t2_c_1759527718_4298
-[DEBUG] AbilityResolver effect: <Resource#-9223371958924605986> target_type: HOLDER resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEBUG] Processing equipped item: item_t1_a_1759527718_7477 definition: item_t1_a equipped to: unit_t2_c_1759527718_4298 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1a_turn_start_heal for item: item_t1_a_1759527718_7477
-[DEBUG] _process_ability called for ability: item_tier1a_turn_start_heal source: item_t1_a_1759527718_7477
-[DEBUG] resolve_target called: source=item_t1_a_1759527718_7477 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t1_a_1759527718_7477 equipped to: unit_t2_c_1759527718_4298
-[DEBUG] AbilityResolver effect: <Resource#-9223371958924605986> target_type: HOLDER resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759527718_4360
-[DEBUG] Trinket container: EnemyTrinkets
-[DEBUG] Enemy trinket - using first enemy as source: unit_t1_b_1759527718_0420
-[DEBUG] _process_ability called for ability:  source: unit_t1_b_1759527718_0420
-[DEBUG] resolve_target called: source=unit_t1_b_1759527718_0420 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958119299623> target_type: FRONTMOST_ALLY resolved_targets: ["unit_t1_b_1759527718_0420"]
-[DEBUG] Trinket source resolution for: trinket_healing_amulet_1759527718_0234
-[DEBUG] Trinket container: PlayerTrinkets
-[DEBUG] get_hero_uuid() slot 0: 'hero_1759527718_0716'
-[DEBUG] Player trinket - Hero UUID: 'hero_1759527718_0716'
-[DEBUG] _process_ability called for ability:  source: hero_1759527718_0716
-[DEBUG] resolve_target called: source=hero_1759527718_0716 target_type=FRONTMOST_ALLY
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371958119299623> target_type: FRONTMOST_ALLY resolved_targets: ["hero_1759527718_0716"]
-[ANIMATION FINISHED] Turn animations complete, current phase: START_OF_TURN
-[ANIMATION FINISHED] Turn start abilities complete, transitioning to MANAGEMENT
-[DEBUG] End turn requested, current phase: MANAGEMENT
-[DEBUG] Transitioning to COMBAT phase
-
-========== TURN 2 COMBAT START ==========
-[BATTLE STATE] Player Lineup:
-  [0] Hero (UUID: hero_175) - HP: 11, PWR: 4
-      [Item Slot 0] Large HP Potion
-      [Item Slot 1] Small PWR Potion
-  [1] Knight (UUID: unit_t2_) - HP: 4, PWR: 4
-      [Item Slot 0] Large HP Potion
-  [2] Squire (UUID: unit_t1_) - HP: 3, PWR: 2
-      [Item Slot 0] Large HP Potion
-[BATTLE STATE] Enemy Lineup:
-  [0] Squire (UUID: unit_t1_) - HP: 5, PWR: 2
-      [Item Slot 0] Large HP Potion
-  [1] Squire (UUID: unit_t1_) - HP: 2, PWR: 1
-  [2] Squire (UUID: unit_t1_) - HP: 3, PWR: 2
-      [Item Slot 0] Large HP Potion
-  [3] Knight (UUID: unit_t2_) - HP: 4, PWR: 5
-      [Item Slot 0] Small PWR Potion
-  [4] Knight (UUID: unit_t2_) - HP: 10, PWR: 4
-      [Item Slot 0] Small HP Potion
-      [Item Slot 1] Small HP Potion
-[BATTLE STATE] Action order: ["hero", "unit_t2_c", "unit_t1_b", "unit_t2_c", "unit_t2_c", "unit_t1_b", "unit_t1_b", "unit_t1_b"]
-==========================================
-
-
-[COMBAT] ====== Actor #1: Hero's Turn ======
-[COMBAT] Hero (HP: 11, PWR: 4) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759527718_0180 definition: item_t1_b equipped to: hero_1759527718_0716 slot: 1
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759527718_0180
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: hero_1759527718_0716
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
-[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
-[COMBAT] Processing 1 pending reactions for Hero...
-[COMBAT]   Reaction #1: Hero uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 4 damage. HP: 5 -> 1
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759527718_0420 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759527718_0420", "damage_taken": 4, "attacker_uuid": "hero_1759527718_0716" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_3642"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759527718_0420 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759527718_0420
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759527718_0420 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["hero_1759527718_0716"]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_3642 definition: item_t2_c equipped to: unit_t1_b_1759527718_0420 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_3642
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_3642
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_b_1759527718_0420 HP = 1 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_3642 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_3642 equipped to: unit_t1_b_1759527718_0420
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["unit_t1_b_1759527718_0420"]
-[COMBAT]     → LOG: Hero deals 4 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 4 damage (HP: 1)
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 2 damage. HP: 11 -> 9
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759527718_0716 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759527718_0716", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_0420" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_7623", "item_t1_b_1759527718_0180", "", "", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_7623 definition: item_t2_c equipped to: hero_1759527718_0716 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_7623
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_7623
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759527718_0716 HP = 9 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_7623 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_7623 equipped to: hero_1759527718_0716
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["hero_1759527718_0716"]
-[COMBAT]     → LOG: Squire deals 2 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 9)
-[COMBAT]   Reaction #3: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Squire"]
-[COMBAT]     → LOG: Large HP Potion heals Squire for 1 HP
-[COMBAT]     → HEAL: Squire healed 1 HP (HP: 2)
-[COMBAT]   Reaction #4: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
-[COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
-[COMBAT]     → HEAL: Hero healed 1 HP (HP: 10)
-
-[COMBAT] ====== Actor #2: Knight's Turn ======
-[COMBAT] Knight (HP: 4, PWR: 4) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 4 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759527718_0420 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759527718_0420", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759527718_3932" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_3642"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759527718_0420 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759527718_0420
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759527718_0420 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t2_c_1759527718_3932"]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_3642 definition: item_t2_c equipped to: unit_t1_b_1759527718_0420 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_3642
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_3642
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_b_1759527718_0420 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_5241
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_5241 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_5241"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_5241 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_5241"]
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_4298
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_4298 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_4298 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight deals 4 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 4 damage (HP: 0)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 2 damage. HP: 4 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_3932 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_3932", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_0420" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_1200", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_1200 definition: item_t2_c equipped to: unit_t2_c_1759527718_3932 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_1200
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_1200
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1759527718_3932 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_1200 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_1200 equipped to: unit_t2_c_1759527718_3932
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["unit_t2_c_1759527718_3932"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 2 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 2 damage (HP: 2)
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 6)
 [DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 5)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 11)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #7: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Large HP Potion heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 3)
-[DEFERRED DEATHS] Processing 1 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #3: Squire's Turn ======
-[COMBAT] Squire (HP: 3, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 2 damage. HP: 2 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759527718_4480 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759527718_4480", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_7984" }
-[DEBUG] Damaged unit equipped items: [""]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759527718_4480 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759527718_4480
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759527718_4480 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t1_b_1759527718_7984"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_5241
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_5241 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_5241"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_5241 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_5241"]
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_4298
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_4298 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_4298 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 2 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 2 damage (HP: 0)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 1 damage. HP: 3 -> 2
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759527718_7984 damage: 1
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759527718_7984", "damage_taken": 1, "attacker_uuid": "unit_t1_b_1759527718_4480" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_1349"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759527718_7984 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759527718_7984
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759527718_7984 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: []
-[DEBUG] Processing equipped item: item_t2_c_1759527718_1349 definition: item_t2_c equipped to: unit_t1_b_1759527718_7984 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_1349
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_1349
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_b_1759527718_7984 HP = 2 result = true
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_1349 target_type=HOLDER
-[DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_1349 equipped to: unit_t1_b_1759527718_7984
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["unit_t1_b_1759527718_7984"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 1 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 1 damage (HP: 2)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 6)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #5: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 12)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #6: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #7: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on []
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #8: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Squire"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Large HP Potion heals Squire for 1 HP
-[COMBAT]     → HEAL: Squire healed 1 HP (HP: 3)
-[DEFERRED DEATHS] Processing 2 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #4: Knight's Turn ======
-[COMBAT] Knight (HP: 12, PWR: 4) preparing to act
-[COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Squire"]
-[DEBUG] Squire takes 4 damage. HP: 3 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t1_b_1759527718_7984 damage: 4
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t1_b_1759527718_7984", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759527718_4298" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_1349"]
-[DEBUG] Found on_hurt ability on damaged unit: unit_t1_b_1759527718_7984 definition: unit_t1_b
-[DEBUG] _process_ability called for ability: unit_tier1b_counter_on_hurt source: unit_t1_b_1759527718_7984
-[DEBUG] Condition check for DAMAGE_WAS_RECEIVED result: true
-[DEBUG] resolve_target called: source=unit_t1_b_1759527718_7984 target_type=ATTACKER
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961676069432> target_type: ATTACKER resolved_targets: ["unit_t2_c_1759527718_4298"]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_1349 definition: item_t2_c equipped to: unit_t1_b_1759527718_7984 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_1349
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_1349
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t1_b_1759527718_7984 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEATH CHECK] Squire has 0 HP
-[DEBUG] _process_ability called for ability: unit_tier2c_ally_death_buff source: unit_t2_c_1759527718_3932
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_3932 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961206307382> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_3932"]
-[DEBUG] resolve_target called: source=unit_t2_c_1759527718_3932 target_type=SELF
-[DEBUG] source_instance valid: true
-[DEBUG] AbilityResolver effect: <Resource#-9223371961189530165> target_type: SELF resolved_targets: ["unit_t2_c_1759527718_3932"]
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight deals 4 dmg to Squire
-[COMBAT]     → DAMAGE: Squire took 4 damage (HP: 0)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire still has pending counters, keeping deferred
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #2: Squire uses 'unit_tier1b_counter_on_hurt' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 2 damage. HP: 12 -> 10
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_4298 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_4298", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_7984" }
-[DEBUG] Damaged unit equipped items: ["item_t1_a_1759527718_4488", "item_t1_a_1759527718_7477"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 2 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 2 damage (HP: 10)
-[DEFERRED DEATHS] Processing 4 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #3: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight heals Knight for 1 HP
-[COMBAT]     → HEAL: Knight healed 1 HP (HP: 4)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[COMBAT]   Reaction #4: Knight uses 'unit_tier2c_ally_death_buff' (priority 0) on ["Knight"]
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight gains 1 PWR
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 
 [COMBAT] ====== Actor #5: Knight's Turn ======
-[COMBAT] Knight (HP: 6, PWR: 5) preparing to act
-[DEBUG] Processing equipped item: item_t1_b_1759527718_6807 definition: item_t1_b equipped to: unit_t2_c_1759527718_5241 slot: 0
-[DEBUG] Processing equipped item ability: item_tier1b_extra_attack for item: item_t1_b_1759527718_6807
-[DEBUG] _process_ability called for ability: item_tier1b_extra_attack source: unit_t2_c_1759527718_5241
-[DEBUG] Condition check for TARGET_HP_GREATER_THAN_SELF_HP result: false
-[DEBUG] Condition failed, skipping ability: item_tier1b_extra_attack
+[COMBAT] Knight (HP: 7, PWR: 4) preparing to act
 [COMBAT] Processing 1 pending reactions for Knight...
-[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Knight"]
-[DEBUG] Knight takes 5 damage. HP: 4 -> 0
-[DEBUG] BattleManager.trigger_on_hurt called for unit: unit_t2_c_1759527718_3932 damage: 5
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "unit_t2_c_1759527718_3932", "damage_taken": 5, "attacker_uuid": "unit_t2_c_1759527718_5241" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_1200", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_1200 definition: item_t2_c equipped to: unit_t2_c_1759527718_3932 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_1200
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_1200
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = unit_t2_c_1759527718_3932 HP = 0 result = false
-[DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: false
-[DEBUG] Condition failed, skipping ability: item_tier2c_passive_heal
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Knight deals 5 dmg to Knight
-[COMBAT]     → DAMAGE: Knight took 5 damage (HP: 0)
-[COMBAT]     → DEATH: Knight has died
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-
-[COMBAT] ====== Actor #6: Squire's Turn ======
-[COMBAT] Squire (HP: 3, PWR: 2) preparing to act
-[COMBAT] Processing 1 pending reactions for Squire...
-[COMBAT]   Reaction #1: Squire uses 'basic_attack' (priority 0) on ["Hero"]
-[DEBUG] Hero takes 2 damage. HP: 10 -> 8
-[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759527718_0716 damage: 2
-[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759527718_0716", "damage_taken": 2, "attacker_uuid": "unit_t1_b_1759527718_7278" }
-[DEBUG] Damaged unit equipped items: ["item_t2_c_1759527718_7623", "item_t1_b_1759527718_0180", "", "", ""]
-[DEBUG] Processing equipped item: item_t2_c_1759527718_7623 definition: item_t2_c equipped to: hero_1759527718_0716 slot: 0
-[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759527718_7623
-[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759527718_7623
-[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759527718_0716 HP = 8 result = true
+[COMBAT]   Reaction #1: Knight uses 'basic_attack' (priority 0) on ["Hero"]
+[DEBUG] Hero takes 4 damage. HP: 6 -> 2
+[DEBUG] BattleManager.trigger_on_hurt called for unit: hero_1759534879_8938 damage: 4
+[DEBUG] AbilityResolver processing on_hurt trigger with context: { "source_uuid": "hero_1759534879_8938", "damage_taken": 4, "attacker_uuid": "unit_t2_c_1759534879_5523" }
+[DEBUG] Damaged unit equipped items: ["item_t3_d_1759534879_5047", "item_t3_d_1759534879_6396", "item_t2_c_1759534879_3112", "", ""]
+[DEBUG] Processing equipped item: item_t2_c_1759534879_3112 definition: item_t2_c equipped to: hero_1759534879_8938 slot: 2
+[DEBUG] Processing equipped item ability: item_tier2c_passive_heal for item: item_t2_c_1759534879_3112
+[DEBUG] _process_ability called for ability: item_tier2c_passive_heal source: item_t2_c_1759534879_3112
+[DEBUG] COND_DAMAGE_WAS_NON_LETHAL check: damaged unit = hero_1759534879_8938 HP = 2 result = true
 [DEBUG] Condition check for DAMAGE_WAS_NON_LETHAL result: true
-[DEBUG] resolve_target called: source=item_t2_c_1759527718_7623 target_type=HOLDER
+[DEBUG] resolve_target called: source=item_t2_c_1759534879_3112 target_type=HOLDER
 [DEBUG] source_instance valid: true
-[DEBUG] TARGET_HOLDER for item: item_t2_c_1759527718_7623 equipped to: hero_1759527718_0716
-[DEBUG] AbilityResolver effect: <Resource#-9223371959897684522> target_type: HOLDER resolved_targets: ["hero_1759527718_0716"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
+[DEBUG] TARGET_HOLDER for item: item_t2_c_1759534879_3112 equipped to: hero_1759534879_8938
+[DEBUG] AbilityResolver effect: <Resource#-9223371959075600934> target_type: HOLDER resolved_targets: ["hero_1759534879_8938"]
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
-[COMBAT]     → LOG: Squire deals 2 dmg to Hero
-[COMBAT]     → DAMAGE: Hero took 2 damage (HP: 8)
-[DEFERRED DEATHS] Processing 3 deferred deaths
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT]     → LOG: Knight deals 4 dmg to Hero
+[COMBAT]     → DAMAGE: Hero took 4 damage (HP: 2)
+[DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [COMBAT]   Reaction #2: Large HP Potion uses 'item_tier2c_passive_heal' (priority 0) on ["Hero"]
-[DEATH CHECK] Knight has 0 HP
-[DEATH CHECK] Knight has no counter-attacks, creating immediate DEATH event
-[DEATH CHECK] Squire has 0 HP
-[DEATH CHECK] Squire has counter-attacks, deferring death
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [DEATH CHECK] Squire has 0 HP
 [DEATH CHECK] Squire has counter-attacks, deferring death
 [COMBAT]     → LOG: Large HP Potion heals Hero for 1 HP
-[COMBAT]     → HEAL: Hero healed 1 HP (HP: 9)
-[DEFERRED DEATHS] Processing 3 deferred deaths
+[COMBAT]     → HEAL: Hero healed 1 HP (HP: 3)
+[DEFERRED DEATHS] Processing 2 deferred deaths
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
 [DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
-[DEFERRED DEATHS] Squire has no pending counters, creating DEATH event now
+[COMBAT] Actor #6: Squire (HP: 0) is DEAD, skipping turn
 [COMBAT] Actor #7: Squire (HP: 0) is DEAD, skipping turn
-[COMBAT] Actor #8: Squire (HP: 0) is DEAD, skipping turn
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759527718_0420"]
-[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 4
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759527718_4480"]
-[APPLY DEATHS] After removal - Player lineup size: 3, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759527718_7984"]
-[APPLY DEATHS] After removal - Player lineup size: 2, Enemy lineup size: 3
-[APPLY DEATHS] Removing 1 dead units: ["unit_t2_c_1759527718_3932"]
-[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 3
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759534879_4898"]
+[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 5
+[APPLY DEATHS] Removing 1 dead units: ["unit_t1_b_1759534879_4379"]
+[APPLY DEATHS] After removal - Player lineup size: 1, Enemy lineup size: 4
 [ANIMATION FINISHED] Turn animations complete, current phase: COMBAT
 [ANIMATION FINISHED] _battle_over_deferred = false
-[DEBUG] End of turn 2 - triggering turn end abilities and starting next turn
-[DEBUG] Starting turn 3
+[DEBUG] End of turn 1 - triggering turn end abilities and starting next turn
+[DEBUG] Starting turn 2
+WARNING: 1 RID of type "CanvasItem" was leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2677)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)
