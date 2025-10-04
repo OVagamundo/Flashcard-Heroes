@@ -33,6 +33,13 @@ func find_first_empty_slot() -> int:
 			return i
 	return -1
 
+## Returns the index of the specified UUID, or -1 if not found
+func get_index_of_uuid(uuid: String) -> int:
+	for i in range(_size):
+		if _data[i] == uuid:
+			return i
+	return -1
+
 ## Checks if an index is within bounds
 func is_valid_index(index: int) -> bool:
 	return index >= 0 and index < _size

@@ -1120,11 +1120,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		if not is_instance_valid(source):
 			return
 		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
-		# Exception: allow counter-attacks to execute even from dead units (lethal counter-attacks)
+		# Exceptions: allow lethal reactive abilities (e.g., counter-attacks, resilient aura) to run post-mortem
 		var src_def = source.get_definition()
 		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
-			# Allow counter-attacks to execute even when the source unit is dead
-			if not request.ability_id.contains("counter"):
+			var ability_id_str := String(request.ability_id)
+			var allows_lethal_execution := ability_id_str.contains("counter") or ability_id_str == "unit_tier3d_resilient_aura"
+			if not allows_lethal_execution:
 				return
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
 	var exec_targets: Array[String] = []
@@ -1189,11 +1190,21 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					# Note: DEATH events are deferred until after all reactive abilities are processed
 					# This ensures counter-attacks happen before death animations
 			elif stat == "pwr" and amount > 0 and not targets.is_empty():
-				if target_name != "":
-					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s gains %d PWR" % [target_name, amount]}))
-				# Emit STAT_BUFF (compat) event for PWR increases
-				out_events.append(CombatEvent.new(CombatEvent.Type.STAT_BUFF, {"source_uuid": request.source_uuid, "target_uuids": targets, "amount": amount, "stat": "pwr"}))
-		# Legacy: integer damage
+				for target_uuid in targets:
+					var tgt_inst3 = get_instance_by_uuid(String(target_uuid))
+					var name_for_target := ""
+					if is_instance_valid(tgt_inst3) and is_instance_valid(tgt_inst3.get_definition()):
+						var tgt_def3 = tgt_inst3.get_definition()
+						if "display_name_key" in tgt_def3:
+							name_for_target = tr(tgt_def3.display_name_key)
+						elif "name" in tgt_def3:
+							name_for_target = tr(tgt_def3.name)
+						elif "id" in tgt_def3:
+							name_for_target = String(tgt_def3.id)
+					if name_for_target != "":
+						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s gains %d PWR" % [name_for_target, amount]}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.STAT_BUFF, {"source_uuid": request.source_uuid, "target_uuids": [target_uuid], "amount": amount, "stat": "pwr"}))
+			# Legacy: integer damage
 		elif typeof(res) == TYPE_INT:
 			damage = int(res)
 			if exec_targets.size() > 0:
@@ -1223,9 +1234,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {"source_uuid": request.source_uuid, "target_uuids": [tgt_inst2.ball_uuid], "amount": -damage, "stat": "hp"}))
 					# Note: DEATH events are deferred until after all reactive abilities are processed
 					# This ensures counter-attacks happen before death animations
-	# Apply deaths and enqueue inventory sync if needed
-	# Special handling: defer death events for units with counter-attacks to allow final strikes
-	_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+		# Apply deaths and enqueue inventory sync if needed
+		# Special handling: defer death events for units with counter-attacks to allow final strikes
+		_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
@@ -1544,13 +1555,16 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 	
 	# Check unit's own abilities for counter-attacks
 	for ability in definition.ability_definitions:
-		if is_instance_valid(ability) and ability.trigger == &"on_hurt":
-			# Check if it's a counter-attack ability (uses ATTACKER target or has "counter" in ID)
-			for effect in ability.effects:
-				if is_instance_valid(effect) and effect.target_type == C.TARGET_ATTACKER:
-					return true
-			if ability.id.contains("counter"):
+		if not is_instance_valid(ability) or ability.trigger != &"on_hurt":
+			continue
+		if String(ability.id) == "unit_tier3d_resilient_aura":
+			return true
+		# Check if it's a counter-attack ability (uses ATTACKER target or has "counter" in ID)
+		for effect in ability.effects:
+			if is_instance_valid(effect) and effect.target_type == C.TARGET_ATTACKER:
 				return true
+		if ability.id.contains("counter"):
+			return true
 	
 	return false
 
@@ -2047,6 +2061,8 @@ func _is_player_owned(instance: GachaBallInstance) -> bool:
 ## @param source_instance: GachaBallInstance - The source unit
 ## @return GachaBallInstance - The ally behind, or null if none
 func _get_ally_behind(source_instance: GachaBallInstance) -> GachaBallInstance:
+	if not is_instance_valid(source_instance):
+		return null
 	var container_name = source_instance.location_container_tag
 	var container = get_container(container_name)
 	if not is_instance_valid(container):

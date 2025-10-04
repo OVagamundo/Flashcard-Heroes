@@ -37,3 +37,5 @@ ability.unit_tier2c_ally_death_buff.name,Morale Boost
 ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."
 ability.item_tier3d_overflow.name,"Overflow"
 ability.item_tier3d_overflow.desc,"Excess damage from lethal attacks is dealt to the adjacent unit behind the target."
+ability.unit_tier3d_resilient_aura.name,"Resilient Aura"
+ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies."

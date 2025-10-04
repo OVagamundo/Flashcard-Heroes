@@ -16,6 +16,11 @@ func find_first_empty_slot() -> int:
 	push_error("DataContainer.find_first_empty_slot() must be overridden")
 	return -1
 
+## Returns the index of the specified UUID, or -1 if not found
+func get_index_of_uuid(_uuid: String) -> int:
+	push_error("DataContainer.get_index_of_uuid() must be overridden")
+	return -1
+
 ## Checks if an index is within bounds
 func is_valid_index(index: int) -> bool:
 	push_error("DataContainer.is_valid_index() must be overridden")
