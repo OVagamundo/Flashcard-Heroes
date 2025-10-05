@@ -106,9 +106,9 @@ signal unit_death_fade_finished(unit_uuid: String)
 ## Emitted when battle inventory changes (units/items added/removed)
 signal battle_inventory_changed
 
-## Emitted when battle log should display a message
-## @param message: String - The message to display
-signal battle_log_event(message: String)
+## Emitted for each combat animation event (driven by BattleAnimator)
+## @param event: CombatEvent - The animation event being played
+signal log_animation_event(event: CombatEvent)
 
 ## Emitted when battle state changes
 ## @param is_in_battle: bool - Whether in battle

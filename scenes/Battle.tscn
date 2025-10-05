@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://ccwelqtvctrxe"]
+[gd_scene load_steps=5 format=3 uid="uid://ccwelqtvctrxe"]
 
 [ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
-[ext_resource type="PackedScene" uid="uid://bdsj2fjaq3w5c" path="res://scenes/BattleLog.tscn" id="4_battle_log"]
 [ext_resource type="Script" path="res://scripts/BattleAnimator.gd" id="2_battle_animator_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 
@@ -129,9 +128,6 @@ mouse_filter = 1
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 mouse_filter = 1
-
-[node name="BattleLog" parent="TeamAreas/PlayerArea" instance=ExtResource("4_battle_log")]
-layout_mode = 2
 
 [node name="Control3" type="Control" parent="TeamAreas/PlayerArea"]
 layout_mode = 2

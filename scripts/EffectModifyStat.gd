@@ -15,31 +15,35 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	if base_value == 0:
 		return null
 	var is_simulation: bool = context.get("is_simulation", false)
-	for t in targets:
-		var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
-		if not is_instance_valid(inst):
-			continue
-		match stat:
-			"hp":
-				var new_hp = max(0, inst.current_hp + base_value)
-				# Update HP silently during simulation, loudly during non-simulation
-				if is_simulation and inst.has_method("set_current_hp_silent"):
-					inst.set_current_hp_silent(new_hp)
-				else:
-					inst.set_current_hp(new_hp)
-			"pwr":
-				# Do NOT mutate current_pwr during simulation; animator will apply per-event deltas
-				if not is_simulation:
-					inst.current_pwr = max(0, inst.current_pwr + base_value)
-					SignalBus.emit_signal("unit_stats_changed", inst.ball_uuid)
-			_:
-				pass
-	# During simulation, return structured result for BattleManager to create events.
+	# During simulation, validate targets and return structured data without mutating state
 	if is_simulation:
+		# Filter out invalid targets
+		var valid_targets: Array[String] = []
+		for t in targets:
+			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
+			if is_instance_valid(inst):
+				valid_targets.append(t)
+		if valid_targets.is_empty():
+			return null
 		return {
 			"stat": stat,
 			"amount": base_value,
-			"targets": targets
+			"targets": valid_targets
 		}
+	# Non-simulation: apply stat changes immediately
+	else:
+		for t in targets:
+			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
+			if not is_instance_valid(inst):
+				continue
+			match stat:
+				"hp":
+					var new_hp = max(0, inst.current_hp + base_value)
+					inst.set_current_hp(new_hp)
+				"pwr":
+					inst.current_pwr = max(0, inst.current_pwr + base_value)
+					SignalBus.emit_signal("unit_stats_changed", inst.ball_uuid)
+				_:
+					pass
 	# Non-simulation return (legacy compatibility)
 	return base_value

@@ -36,12 +36,12 @@ func play_turn(events: Array[CombatEvent]) -> void:
 func _animate_events(events: Array[CombatEvent]) -> void:
 	# Connect to animation completion signals for this turn
 	_connect_animation_signals()
-	
+
 	for event in events:
+		SignalBus.log_animation_event.emit(event)
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
-				SignalBus.emit_signal("battle_log_event", event.text)
-				# Log messages are instant, no animation to wait for
+				pass # Log messages are instant, no animation to wait for
 
 			CombatEvent.Type.DAMAGE:
 				# Emit bump (unless flagged to skip), then flash animation
@@ -61,15 +61,13 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
 					# Wait for any bump and then the flash to complete
 					if should_bump:
-						_current_animation_uuid = event.source_uuid
 						await _wait_for_animation_completion("bump", event.source_uuid)
 					_current_animation_uuid = target_uuid
 					await _wait_for_animation_completion("flash", target_uuid)
 
 			CombatEvent.Type.HEAL:
 				# HP-only: apply HP delta incrementally with green flash
-				if event.target_uuids.size() > 0:
-					var target_uuid2 := event.target_uuids[0]
+				for target_uuid2 in event.target_uuids:
 					_current_animation_uuid = target_uuid2
 					_apply_hp_delta(target_uuid2, event.amount)
 					if SignalBus.has_signal("unit_flash_effect"):
@@ -78,8 +76,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.STAT_BUFF:
 				# PWR buff: apply PWR delta with blue flash
-				if event.target_uuids.size() > 0:
-					var target_uuid3 := event.target_uuids[0]
+				for target_uuid3 in event.target_uuids:
 					_current_animation_uuid = target_uuid3
 					_apply_pwr_delta(target_uuid3, event.amount)
 					if SignalBus.has_signal("unit_flash_effect"):

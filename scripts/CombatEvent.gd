@@ -19,6 +19,8 @@ var target_uuids: Array[String] = []
 var amount: int = 0
 var stat: String = ""
 var skip_bump: bool = false
+var source_name: String = ""
+var target_names: Array[String] = []
 
 func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.type = p_type
@@ -36,3 +38,11 @@ func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.amount = int(p_context.get("amount", 0))
 	self.stat = String(p_context.get("stat", ""))
 	self.skip_bump = bool(p_context.get("skip_bump", false))
+	self.source_name = String(p_context.get("source_name", ""))
+	self.target_names = []
+	var raw_target_names: Variant = p_context.get("target_names", [])
+	if raw_target_names is Array:
+		for n in raw_target_names:
+			self.target_names.append(String(n))
+	elif raw_target_names is String:
+		self.target_names.append(String(raw_target_names))

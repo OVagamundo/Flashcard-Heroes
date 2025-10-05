@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://crndwktdbp0rc"]
+[gd_scene load_steps=7 format=3 uid="uid://crndwktdbp0rc"]
 
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
 [ext_resource type="Script" uid="uid://ban2qfgbvx5bs" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
+[ext_resource type="PackedScene" path="res://scenes/BattleLogOverlay.tscn" id="6_battle_log_overlay"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
 bg_color = Color(0.1, 0.1, 0.2, 1)
@@ -18,6 +19,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_cdefg")
+
+[node name="BattleLogOverlay" parent="." instance=ExtResource("6_battle_log_overlay")]
 
 [node name="SelectionClearArea" type="Control" parent="."]
 anchors_preset = 0
