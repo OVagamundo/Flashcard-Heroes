@@ -186,6 +186,9 @@ func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	if _temporary_reward_master_dict.has(uuid):
 		return _temporary_reward_master_dict[uuid]
 
+	if _temporary_shop_master_dict.has(uuid):
+		return _temporary_shop_master_dict[uuid]
+
 	# 2. Check battle or run context
 	if is_in_battle and is_instance_valid(_active_battle_manager):
 		return _active_battle_manager.get_instance(uuid)

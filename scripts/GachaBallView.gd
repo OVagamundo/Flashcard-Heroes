@@ -72,7 +72,9 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 		return
 	
 	# Set entity type based on definition category
-	_entity_type = definition.category
+	print("Setting entity type from definition.category: ", definition.category)
+	_entity_type = StringName(definition.category) if definition.category is String else definition.category
+	print("_entity_type after set: ", _entity_type, " (type: ", typeof(_entity_type), ")")
 	
 	visible = true
 	icon_rect.texture = definition.icon
@@ -118,21 +120,44 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	return context
 
 func _update_stats() -> void:
-	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
-	if not is_instance_valid(instance): 
-		return
-	var definition = instance.get_definition()
-	if not definition or definition.category != &"UNIT":
-		hp_label.visible = false
-		pwr_label.visible = false
-		return
+	# Always hide by default
+	hp_label.visible = false
+	pwr_label.visible = false
 	
+	# Get the instance and validate
+	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
+	if not is_instance_valid(instance):
+		print("No valid instance for UUID: ", _instance_uuid)
+		return
+
+	var definition = instance.get_definition()
+	if not is_instance_valid(definition):
+		print("No valid definition for instance: ", _instance_uuid)
+		return
+
+	print("Entity type: ", _entity_type, " (should be &\"UNIT\" for units)")
+	# Safely get the category for debugging
+	# Only show stats for units (not items or trinkets)
+	var category = definition.get("category") if definition and definition.has_method("get") else null
+	if not category:
+		print("No valid category in definition")
+		return
+		
+	# Ensure we're comparing StringNames
+	var unit_type = StringName("UNIT")
+	var category_name = StringName(category) if typeof(category) == TYPE_STRING else category
+	print("Checking category - value: ", category_name, " (type: ", typeof(category_name), ")")
+	
+	if category_name != unit_type:
+		print("Not showing stats - definition category is not UNIT (category: %s, type: %s)" % [str(category_name), typeof(category_name)])
+		return
+
+	# Show HP and PWR for units
 	hp_label.visible = true
 	pwr_label.visible = true
-	var new_hp_text = "HP: %d" % instance.current_hp
-	var new_pwr_text = "PWR: %d" % instance.current_pwr
-	hp_label.text = new_hp_text
-	pwr_label.text = new_pwr_text
+	hp_label.text = "HP: %d" % instance.current_hp
+	pwr_label.text = "PWR: %d" % instance.current_pwr
+	print("Showing stats - HP: ", instance.current_hp, " PWR: ", instance.current_pwr)
 
 func _update_item_slots() -> void:
 	# Clear existing slot views
@@ -273,7 +298,7 @@ func _can_drop_data(_at_position, data) -> bool:
 		
 	return data is Dictionary and data.has("source_loc")
 
-func _drop_data(_at_position, data) -> void:
+func _drop_data(_at_position, _data) -> void:
 	# For drag and drop, we need to handle this as a direct action
 	# since the source location comes from the drag data, not the current view
 	# Create a target interaction context and route via GIR
@@ -331,7 +356,7 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	if _instance_uuid != unit_uuid:
 		return
 	# Flash red if not already, then fade out alpha for visual clarity
-	var start_modulate: Color = modulate
+	var _start_modulate: Color = modulate  # Store starting modulate for potential future use
 	var fade_tween = create_tween()
 	# Ensure we are visible, then fade to 0 alpha
 	fade_tween.tween_property(self, "modulate:a", 0.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)

@@ -64,8 +64,7 @@ func populate(context: Dictionary) -> void:
 			# THE CRITICAL FIX: The last argument must be 'false' to enable
 			# standard inventory interactions (select, double-click, drag).
 			gacha_view.populate(loc, inst, true, false)
-			# Set up interaction context for the new system
-			gacha_view.set_interaction_context(&"SELECTION_ONLY", &"ITEM", 0)
+			# The populate() call above already sets the correct entity type from the definition
 
 func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	var is_valid_selection = new_location and new_location.container == &"Rewards"

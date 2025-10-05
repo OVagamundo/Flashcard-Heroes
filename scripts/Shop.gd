@@ -35,6 +35,20 @@ func populate(context: Dictionary) -> void:
 	var reroll_cost: int = context.get("reroll_cost", 1)
 	reroll_button.text = "Reroll (%d Gold)" % reroll_cost
 
+	# Debug: Print info about the instances we received
+	print("Shop received instances: ", _current_shop_instances.size())
+	for i in range(_current_shop_instances.size()):
+		var inst = _current_shop_instances[i]
+		if is_instance_valid(inst):
+			var def = inst.get_definition()
+			print("  [%d] UUID: %s, Type: %s, HP: %d, PWR: %d" % [
+				i, 
+				inst.ball_uuid, 
+				def.id if is_instance_valid(def) else "No Def",
+				inst.current_hp,
+				inst.current_pwr
+			])
+
 	# Clear existing price labels
 	for child in _price_labels_container.get_children():
 		child.queue_free()
@@ -48,18 +62,27 @@ func populate(context: Dictionary) -> void:
 
 		var loc = LocationIdentifier.new(&"Shop", i)
 		slot_view.populate(loc)
-		# Set up interaction context for the slot
 		slot_view.set_interaction_context(&"SELECTION_ONLY", 0)
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
-			# Add GachaBallView directly to SlotView (exactly like Reward.gd)
+			# Debug: Print instance info before populating the view
+			var def = inst_for_slot.get_definition()
+			print("Populating slot ", i, " with instance: ", 
+				def.id if is_instance_valid(def) else "No Def", 
+				" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
+			
 			var gacha_view = GachaBallViewScene.instantiate()
 			slot_view.add_child(gacha_view)
-			# THE CRITICAL FIX: The last argument must be 'false' to enable double-click inspection.
+			
+			# Ensure the instance has valid stats before populating
+			if inst_for_slot.current_hp <= 0 or inst_for_slot.current_pwr <= 0:
+				print("Warning: Instance has invalid stats, resetting from definition")
+				if is_instance_valid(def):
+					inst_for_slot.current_hp = def.base_hp
+					inst_for_slot.current_pwr = def.base_pwr
+			
 			gacha_view.populate(loc, inst_for_slot, true, false)
-			# Set up interaction context for the new system
-			gacha_view.set_interaction_context(&"SELECTION_ONLY", &"ITEM", 0)
 		
 		# Always create a price label for each slot to maintain positioning
 		var price_label = Label.new()
