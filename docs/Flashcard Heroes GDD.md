@@ -138,7 +138,7 @@ To ensure varied and scaling challenges, COMMON and ELITE battle nodes do not us
 - **Leaving:** Players can exit the shop at any time to return to Path Selection
 Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
-Rest Site Node: A recovery node where the player chooses one action: Rest and eat (permanent HP gain for Hero), Train (permanent PWR gain for Hero), or gamble (adds gold to the player's gold count). All actions trigger the flashcard mini-game where every two correct answers permanently increases a chosen stat by 1.
+Rest Site Node: A recovery node where the player chooses one action: Rest and eat (permanent HP gain for Hero), Train (permanent PWR gain for Hero), or gamble (adds gold to the player's gold count). Choosing to "Train" (either for a permanent HP or PWR gain for the Hero) triggers the flashcard mini-game. At the Rest Site, every two correct answers in this mini-game will permanently increase the chosen stat by 1 for the remainder of the run.
 9.4. Event-Driven Ability System
 Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
 
@@ -150,8 +150,8 @@ Abilities are the core of tactical combat, defining how units behave beyond thei
 
 **Targeting**: Rules that define who is affected by the effect, such as SELF, RANDOM_ENEMY, ADJACENT_ALLIES, or the specific TRIGGERING_ENTITY (e.g., the unit that just attacked this one).
 
-**Default Attack Fallback Rule:**
-A unit's primary action during the Combat Phase is determined by its ON_ATTACK abilities. If a unit has one or more abilities tied to the ON_ATTACK trigger, the game will check their conditions. If any condition is met, that ability will execute as the unit's action. However, if a unit has no ON_ATTACK abilities, or if none of their conditions are met, the unit will perform a Default Basic Attack. This standard attack deals damage equal to the unit's current PWR to the single frontmost enemy unit. This ensures every unit always has a valid action to take on its turn.
+**Action & Default Attack Rule:**
+A unit's action during the Combat Phase begins by emitting an ON_ATTACK trigger. Any of the unit's abilities that subscribe to this trigger are processed first. These abilities might modify the unit's stats, add other effects to the combat queue, or alter the board state. After these ON_ATTACK abilities are resolved, the unit proceeds to perform its Default Basic Attack, which deals damage equal to the unit's current PWR to the single frontmost enemy. This additive process ensures that every unit always has a standard attack action, which can be augmented or modified by its special abilities.
 9.5. Status Effects
 Temporary conditions applied to units during battle that have positive or negative effects, such as "Burn" (damage over time) or "Weaken" (reduced Power).
 9.6. Synergy System
