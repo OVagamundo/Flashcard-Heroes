@@ -1065,10 +1065,10 @@ func _populate_actor_queue() -> void:
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	
 	# With FIFO (pop_front), first in = first out
-	# Add players in normal order (left-to-right execution)
+	# Add players in reverse order (right-to-left execution)
+	player_lineup.reverse()
 	_actor_queue.append_array(player_lineup)
-	# Add enemies reversed (right-to-left execution)
-	enemy_lineup.reverse()
+	# Add enemies in normal order (left-to-right execution)
 	_actor_queue.append_array(enemy_lineup)
 
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
