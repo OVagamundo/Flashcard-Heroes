@@ -166,7 +166,7 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 
 	# Preserve current HP/PWR - only clamp PWR to maximum, allow HP to exceed max due to healing
 	var new_hp = previous_hp  # Preserve current HP (can exceed max due to healing effects)
-	var new_pwr = min(previous_pwr, effective_max_pwr)  # Clamp PWR to effective maximum
+	var new_pwr = previous_pwr # Allow PWR to scale indefinitely (needed for merge logic)
 
 	self.current_hp = new_hp
 	self.current_pwr = new_pwr

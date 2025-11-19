@@ -18,25 +18,39 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	var merged_instance := GachaBallInstance.new()
 	merged_instance.initialize(result_definition)
 	
+	# Update stats to be the sum of the parents' current stats
+	var total_hp = instance_a.current_hp + instance_b.current_hp
+	var total_pwr = instance_a.current_pwr + instance_b.current_pwr
+	
+	merged_instance.current_hp = total_hp
+	merged_instance.current_pwr = total_pwr
+	
 	# Gather all equipped item INSTANCES from parents by passing the correct database.
 	var all_parent_items: Array[GachaBallInstance] = []
 	all_parent_items.append_array(_get_equipped_item_instances(instance_a, all_instances_db))
 	all_parent_items.append_array(_get_equipped_item_instances(instance_b, all_instances_db))
 
-	# Equip the gathered items onto the new unit by copying their UUIDs.
-	for i in range(min(all_parent_items.size(), merged_instance.equipped_item_uuids.size())):
-		var item_to_equip: GachaBallInstance = all_parent_items[i]
-		# Unequip from old parent
-		item_to_equip.equipped_on_uuid = ""
-		item_to_equip.equipped_slot_index = -1
-		merged_instance.equipped_item_uuids[i] = item_to_equip.ball_uuid
-		# Re-equip to new parent
-		item_to_equip.equipped_on_uuid = merged_instance.ball_uuid
-		item_to_equip.equipped_slot_index = i
+	# Subtract bonuses from all parent items to avoid double-dipping when they are re-equipped.
+	# We want the new unit to inherit (Base + Buffs/Damage), and then let the items add their bonuses back.
+	for item in all_parent_items:
+		var item_def = item.get_definition()
+		if is_instance_valid(item_def):
+			total_hp -= item_def.bonus_hp
+			total_pwr -= item_def.bonus_pwr
+
+	merged_instance.current_hp = total_hp
+	merged_instance.current_pwr = total_pwr
+
+	merged_instance.current_hp = total_hp
+	merged_instance.current_pwr = total_pwr
+
+	# Return the items so the caller can equip them properly using the data owner's API.
+	# We do NOT equip them here to avoid state conflicts (e.g. "slot occupied" logic in equip_item).
+	var items_to_equip: Array[GachaBallInstance] = all_parent_items
 		
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
 
-	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove}
+	return {"merged_instance": merged_instance, "parents_to_remove": parents_to_remove, "items_to_equip": items_to_equip}
 
 
 func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:

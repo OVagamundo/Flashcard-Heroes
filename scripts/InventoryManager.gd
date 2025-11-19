@@ -218,11 +218,17 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	var result_def = Database.get_definition(recipe.result_id)
 	if not is_instance_valid(result_def): return
 
-	var new_instance = GachaBallInstance.new()
-	new_instance.initialize(result_def)
+	# Use MergeManager to calculate the result (including stat inheritance logic)
+	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
+	if merge_result.is_empty():
+		return
+
+	var new_instance: GachaBallInstance = merge_result["merged_instance"]
+	var parents_to_remove: Array = merge_result["parents_to_remove"]
+	
 	# Collect items equipped on parents (if any) to equip onto a UNIT result later
-	var all_parent_items: Array[GachaBallInstance] = MergeManager._get_equipped_item_instances(source_instance, all_instances_db)
-	all_parent_items.append_array(MergeManager._get_equipped_item_instances(target_instance, all_instances_db))
+	# MergeManager returns the list of items that should be equipped.
+	var all_parent_items: Array = merge_result.get("items_to_equip", [])
 
 	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM

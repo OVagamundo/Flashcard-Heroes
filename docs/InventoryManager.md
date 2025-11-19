@@ -123,6 +123,17 @@ Statement: The destination of a newly created merged GachaBall depends on where 
 Mechanism (Board Merge): If two units are merged on the PlayerLineup or PlayerBench, the new, higher-tier unit is placed in the target's original slot. Same for items merged in the ItemInventory container.
 Mechanism (Inventory Merge): If two Tier 1 gachaballs are merged in the RunInventoryT1 container, the new Tier 2 gachaball is placed in the first available slot of the RunInventoryT2 container, the same is valid for merging tier 2 gachaballs that will be placed in the RunInventoryT3 container.
 Rationale: Creates a strategic distinction. Merging on the board is a tactical replacement. Merging in the inventory changes the probabilities of the next draw while in battle, or if done in the Run inventory, it changes your collection (or "deck") permanently for future battles.
+
+Rule I7: The Merge Stat Inheritance Rule
+Statement: When two units are merged, the resulting unit inherits the combined current stats (HP and PWR) of both parent units, minus any item bonuses that will be reapplied.
+Mechanism:
+1. The MergeManager calculates the merged unit's stats as: `total_hp = parent_a.current_hp + parent_b.current_hp - item_bonuses` and `total_pwr = parent_a.current_pwr + parent_b.current_pwr - item_bonuses`.
+2. Item bonuses are subtracted during merge calculation to avoid "double dipping" when items are re-equipped on the new unit.
+3. The MergeManager returns a list of items that should be equipped on the new unit, but does not link them directly to avoid state conflicts.
+4. The InventoryManager receives the merged unit with correct stats and the list of items, then equips the items using the data owner's atomic equip API.
+5. When items are equipped or unequipped, `GachaBallInstance.recalculate_stats` is called, which preserves the unit's current stats without clamping them to base values.
+
+Rationale: This allows merged units to scale indefinitely, creating a strategic progression where units grow more powerful through successive merges. The stat preservation system ensures that a unit's power is never lost due to equipment changes, maintaining the value of merge investments.
 3. Gacha Draw & Discard Lifecycle (Battle-Only)
 These are system-driven actions that manipulate GachaBalls during the battle phase. They are triggered by signals, not direct player inventory actions.
 The Gacha Draw Mechanism

@@ -134,12 +134,18 @@ All user gestures and inputs are processed through a unified, decoupled system.
 ### 5.3 Merge Flow
 
 1.  The Global Interaction Router (GIR) processes a user gesture and places a `REQUEST_ACTION` command (with `source_uuid` and `target_uuid`) onto the command queue, intended for the `InventoryManager`.
-2.  `InventoryManager` executes the command. It instructs the data owner (`RunState` or `BattleManager`) to perform an atomic operation:
-    a. Create the new `result_instance`.
-    b. Place it in the correct destination slot.
-    c. Update all data containers and instance location properties.
-    d. Transfer equipped items from ingredients to the result.
-    e. Destroy the ingredient instances.
+2.  The `InventoryManager` queries the `MergeManager` to determine if a valid recipe exists. If it does, the manager calls `MergeManager.calculate_merge_result`, which:
+    a. Calculates the merged unit's stats as the sum of both parents' current HP and PWR, minus any equipped item bonuses to prevent "double dipping".
+    b. Initializes the new unit instance with its definition (setting base stats).
+    c. Applies the calculated combined stats to the new unit.
+    d. Returns the merged unit instance and a list of items that should be equipped (without linking them).
+3.  The `InventoryManager` receives the result and:
+    a. Places the merged unit in the correct destination slot.
+    b. Equips the returned items using the data owner's atomic equip API (which adds bonuses back).
+    c. Updates all data containers and instance location properties.
+    d. Destroys the ingredient instances.
+4.  When items are equipped via `BattleManager.bm_equip_item` or `RunState.equip_item`, the unit's `current_hp` and `current_pwr` are modified by calling `equip_item_bonus`, which adds the item's bonuses to the current stats.
+5.  The `unit_inventory_changed` signal triggers `GachaBallInstance.recalculate_stats`, which preserves the unit's current stats without clamping PWR to base values, allowing merged units to scale indefinitely.
 
 ### 5.4 Post-Battle Reward Flow
 
