@@ -21,10 +21,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 			# Use atomic equip API
 			var owner = _get_data_owner()
 			if is_instance_valid(owner):
-				if GameManager.is_in_battle:
-					owner.bm_equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
-				else:
-					owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
+				owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
 			GlobalInteractionRouter.end_drag(true)
 			return
 
@@ -41,10 +38,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
 					if s_group2 == &"InventoryGrid" and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
 						# Use atomic equip with explicit slot
-						if GameManager.is_in_battle:
-							data_owner.bm_equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
-						else:
-							data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+						data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 						GlobalInteractionRouter.end_drag(true)
 						return
 
@@ -156,20 +150,14 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 		var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
 		if is_instance_valid(parent_unit):
 			# Atomic equip handles removal and signaling
-			if GameManager.is_in_battle:
-				data_owner.bm_equip_item(instance_to_move.ball_uuid, parent_unit.ball_uuid, target_loc.index)
-			else:
-				data_owner.equip_item(instance_to_move.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+			data_owner.equip_item(instance_to_move.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 			SignalBus.emit_signal("selection_clear_requested")
 			return
 
 	# Default move behaviour for normal containers
 	var owner = _get_data_owner()
 	if not is_instance_valid(owner): return
-	if GameManager.is_in_battle:
-		owner.bm_move_instance(source_loc, target_loc)
-	else:
-		owner.move_instance(source_loc, target_loc)
+	owner.move_instance(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
@@ -182,10 +170,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
 	# Use atomic swap APIs
-	if GameManager.is_in_battle:
-		data_owner.bm_swap_instances(source_loc, target_loc)
-	else:
-		data_owner.swap_instances(source_loc, target_loc)
+	data_owner.swap_instances(source_loc, target_loc)
 
 	SignalBus.emit_signal("selection_clear_requested")
 
@@ -217,10 +202,7 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	# Use atomic equip API (slot resolved above)
 	var owner = _get_data_owner()
 	if is_instance_valid(owner):
-		if GameManager.is_in_battle:
-			owner.bm_equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
-		else:
-			owner.equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
+		owner.equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
@@ -254,40 +236,23 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	# For all merges except equipping two items on the same unit, remove source/target first
 	var is_same_unit_item_merge := source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid
 	if not is_same_unit_item_merge:
-		if GameManager.is_in_battle:
-			data_owner.bm_remove_instance(source_instance.ball_uuid)
-			data_owner.bm_remove_instance(target_instance.ball_uuid)
-		else:
-			data_owner.remove_instance(source_instance.ball_uuid)
-			data_owner.remove_instance(target_instance.ball_uuid)
+		data_owner.remove_instance(source_instance.ball_uuid)
+		data_owner.remove_instance(target_instance.ball_uuid)
 
 	# Case 1: Most specific. Merging two items on the same unit -> remove both items, then equip the new item on same unit slot
 	if is_same_unit_item_merge:
 		# Remove old items first (safe for equipped items)
-		if GameManager.is_in_battle:
-			data_owner.bm_remove_instance(source_instance.ball_uuid)
-			data_owner.bm_remove_instance(target_instance.ball_uuid)
-		else:
-			data_owner.remove_instance(source_instance.ball_uuid)
-			data_owner.remove_instance(target_instance.ball_uuid)
+		data_owner.remove_instance(source_instance.ball_uuid)
+		data_owner.remove_instance(target_instance.ball_uuid)
 		# Register new item temporarily into ItemInventory, then equip onto the unit slot
 		var temp_container: StringName = &"ItemInventory"
-		if GameManager.is_in_battle:
-			data_owner.bm_add_instance(new_instance, temp_container, -1)
-		else:
-			data_owner.add_instance(new_instance, temp_container, -1)
-		if GameManager.is_in_battle:
-			data_owner.bm_equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
-		else:
-			data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
+		data_owner.add_instance(new_instance, temp_container, -1)
+		data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
 		placed_container = C.CONTAINER_EQUIPPED_ITEM
 		placed_index = target_loc.index
 	# Case 2: Merging on the board (Lineup/Bench/ItemInventory) -> place result into target slot
 	elif is_board_merge:
-		if GameManager.is_in_battle:
-			data_owner.bm_add_instance(new_instance, target_loc.container, target_loc.index)
-		else:
-			data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
+		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
 		placed_container = target_loc.container
 		placed_index = target_loc.index
 	# Case 3: Draw pool tier-up -> place in higher-tier container first empty slot
@@ -295,18 +260,12 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		var prefix = "BattleInventoryT" if GameManager.is_in_battle else "RunInventoryT"
 		var new_container_tag = &"%s%d" % [prefix, result_def.tier]
 		# Use atomic add with index -1 (first empty)
-		if GameManager.is_in_battle:
-			data_owner.bm_add_instance(new_instance, new_container_tag, -1)
-		else:
-			data_owner.add_instance(new_instance, new_container_tag, -1)
+		data_owner.add_instance(new_instance, new_container_tag, -1)
 		placed_container = new_container_tag
 		placed_index = -1
 	# Case 4: Default same-tier draw pool -> place in target's old slot
 	else:
-		if GameManager.is_in_battle:
-			data_owner.bm_add_instance(new_instance, target_loc.container, target_loc.index)
-		else:
-			data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
+		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
 		placed_container = target_loc.container
 		placed_index = target_loc.index
 
@@ -317,10 +276,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			var it: GachaBallInstance = all_parent_items[i]
 			if not is_instance_valid(it):
 				continue
-			if GameManager.is_in_battle:
-				data_owner.bm_equip_item(it.ball_uuid, new_instance.ball_uuid, i)
-			else:
-				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
+			data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
 
 	# (removals were performed earlier for all non-same-unit item merges)
 
@@ -457,10 +413,7 @@ func _atomic_move_instance(instance: GachaBallInstance, from_loc: LocationIdenti
 	var owner = _get_data_owner()
 	if not is_instance_valid(owner):
 		return
-	if GameManager.is_in_battle:
-		owner.bm_move_instance(from_loc, to_loc)
-	else:
-		owner.move_instance(from_loc, to_loc)
+	owner.move_instance(from_loc, to_loc)
 	# Optional extra validation (atomic APIs already validate in debug builds)
 	if OS.is_debug_build():
 		_validate_state_consistency()

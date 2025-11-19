@@ -26,10 +26,14 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		return
 
 	# Process abilities in stacking order: Units first, then equipped items, then trinkets
+	# Optimization: Iterate once and bucket instances to avoid O(3N) lookups.
 	var all_instances = battle_manager.get_all_instances()
+	
+	var unit_instances: Array[Dictionary] = []
+	var equipped_item_instances: Array[Dictionary] = []
+	var trinket_instances: Array[Dictionary] = []
 
-	# Phase 1: Process unit abilities first (for proper stacking order)
-	# Note: for on_hurt we strictly filter to the damaged unit to avoid cross-unit triggers.
+	# Single pass to categorize all instances
 	for instance_uuid in all_instances:
 		var instance = all_instances.get(instance_uuid)
 		if not is_instance_valid(instance):
@@ -39,66 +43,60 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			continue
 		if definition.ability_definitions.is_empty():
 			continue
-		# Only process units in this phase
+
 		if definition.category == &"UNIT":
-			# For on_hurt triggers, only process if this is the unit that took damage
-			if trigger == &"on_hurt":
-				var damaged_unit_uuid = context.get("source_uuid", "")
-				if instance_uuid != damaged_unit_uuid:
-					continue
-			# For on_ally_death, only process the specific ally this trigger was emitted for
-			elif trigger == &"on_ally_death":
-				var ally_uuid = context.get("source_uuid", "")
-				if instance_uuid != ally_uuid:
-					continue
-			for ability in definition.ability_definitions:
-				if ability.trigger == trigger:
-					_process_ability(ability, instance_uuid, battle_manager, context)
-
-	# Phase 2: Process equipped item abilities (in slot order for deterministic stacking)
-	# We collect and sort by equipped_slot_index to ensure a stable, predictable order of activation.
-	# Collect all equipped items that match the trigger
-	var equipped_items_to_process = []
-	for instance_uuid in all_instances:
-		var instance = all_instances.get(instance_uuid)
-		if not is_instance_valid(instance):
-			continue
-		var definition = instance.get_definition()
-		if not is_instance_valid(definition) or not ("ability_definitions" in definition):
-			continue
-		if definition.ability_definitions.is_empty():
-			continue
-		# Only collect equipped items in this phase
-		if definition.category == &"ITEM" and not instance.equipped_on_uuid.is_empty():
-			# For on_hurt triggers, only process if the item is equipped to the unit that took damage
+			unit_instances.append({"uuid": instance_uuid, "inst": instance, "def": definition})
+		elif definition.category == &"ITEM" and not instance.equipped_on_uuid.is_empty():
+			# Pre-filter items that don't match the trigger context to save processing
 			if trigger == &"on_hurt":
 				var damaged_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != damaged_unit_uuid:
 					continue
-			# For on_attack triggers, only process if the item is equipped to the attacking unit
 			elif trigger == &"on_attack":
 				var attacking_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != attacking_unit_uuid:
 					continue
-			# Check if this item has abilities for this trigger
-			var has_matching_ability = false
+			
+			# Check if item has matching ability before adding
+			var has_matching = false
 			for ability in definition.ability_definitions:
 				if ability.trigger == trigger:
-					has_matching_ability = true
+					has_matching = true
 					break
-			if has_matching_ability:
-				equipped_items_to_process.append({
+			if has_matching:
+				equipped_item_instances.append({
 					"instance_uuid": instance_uuid,
 					"instance": instance,
 					"definition": definition,
 					"slot_index": instance.equipped_slot_index
 				})
+		elif definition.category == &"TRINKET":
+			trinket_instances.append({"uuid": instance_uuid, "inst": instance, "def": definition})
+
+	# Phase 1: Process unit abilities
+	for data in unit_instances:
+		var instance_uuid = data.uuid
+		var definition = data.def
+		
+		# For on_hurt triggers, only process if this is the unit that took damage
+		if trigger == &"on_hurt":
+			var damaged_unit_uuid = context.get("source_uuid", "")
+			if instance_uuid != damaged_unit_uuid:
+				continue
+		# For on_ally_death, only process the specific ally this trigger was emitted for
+		elif trigger == &"on_ally_death":
+			var ally_uuid = context.get("source_uuid", "")
+			if instance_uuid != ally_uuid:
+				continue
+				
+		for ability in definition.ability_definitions:
+			if ability.trigger == trigger:
+				_process_ability(ability, instance_uuid, battle_manager, context)
+
+	# Phase 2: Process equipped item abilities (sorted by slot)
+	equipped_item_instances.sort_custom(func(a, b): return a.slot_index < b.slot_index)
 	
-	# Sort by slot index to ensure deterministic order
-	equipped_items_to_process.sort_custom(func(a, b): return a.slot_index < b.slot_index)
-	
-	# Process equipped items in slot order
-	for item_data in equipped_items_to_process:
+	for item_data in equipped_item_instances:
 		var instance_uuid = item_data.instance_uuid
 		var instance = item_data.instance
 		var definition = item_data.definition
@@ -107,39 +105,31 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			if ability.trigger == trigger:
 				var ability_source_uuid = instance.equipped_on_uuid if trigger == &"on_attack" else instance_uuid
 				_process_ability(ability, ability_source_uuid, battle_manager, context)
-	
+
 	# Phase 3: Process trinket abilities
-	for instance_uuid in all_instances:
-		var instance = all_instances.get(instance_uuid)
-		if not is_instance_valid(instance):
-			continue
-		var definition = instance.get_definition()
-		if not is_instance_valid(definition) or not ("ability_definitions" in definition):
-			continue
-		if definition.ability_definitions.is_empty():
-			continue
+	for data in trinket_instances:
+		var instance_uuid = data.uuid
+		var instance = data.inst
+		var definition = data.def
 		
-		# Only process trinkets in this phase
-		if definition.category == &"TRINKET":
-			for ability in definition.ability_definitions:
-				if ability.trigger == trigger:
-					# Apply trinket source rules per AbilitySystem.md
-					var source_uuid_for_ability = instance_uuid
-					var source_instance = battle_manager.get_instance_by_uuid(instance_uuid)
-					if is_instance_valid(source_instance):
-						if source_instance.location_container_tag == battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
-							var hero_uuid = battle_manager.get_hero_uuid()
-							if not hero_uuid.is_empty():
-								source_uuid_for_ability = hero_uuid
-						else:
-							if context.has("source_uuid"):
-								source_uuid_for_ability = context.get("source_uuid")
-							else:
-								var enemy_units = battle_manager.get_instances_in_container(battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-								if not enemy_units.is_empty():
-									source_uuid_for_ability = enemy_units[0].ball_uuid
-					
-					_process_ability(ability, source_uuid_for_ability, battle_manager, context)
+		for ability in definition.ability_definitions:
+			if ability.trigger == trigger:
+				# Apply trinket source rules per AbilitySystem.md
+				var source_uuid_for_ability = instance_uuid
+				
+				if instance.location_container_tag == battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
+					var hero_uuid = battle_manager.get_hero_uuid()
+					if not hero_uuid.is_empty():
+						source_uuid_for_ability = hero_uuid
+				else:
+					if context.has("source_uuid"):
+						source_uuid_for_ability = context.get("source_uuid")
+					else:
+						var enemy_units = battle_manager.get_instances_in_container(battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+						if not enemy_units.is_empty():
+							source_uuid_for_ability = enemy_units[0].ball_uuid
+				
+				_process_ability(ability, source_uuid_for_ability, battle_manager, context)
 
 
 ## Process a single ability and create EffectRequests for its effects.

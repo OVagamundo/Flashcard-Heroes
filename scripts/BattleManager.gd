@@ -2235,3 +2235,22 @@ func _on_results_acknowledged() -> void:
 	else:
 		# No abilities to execute, go directly to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
+
+# ------------------------------------------------------------------
+# Polymorphic Adapter API (Matches RunState interface)
+# ------------------------------------------------------------------
+
+func add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
+	return bm_add_instance(instance, container_name, index)
+
+func remove_instance(uuid: String) -> bool:
+	return bm_remove_instance(uuid)
+
+func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
+	return bm_move_instance(source_loc, target_loc)
+
+func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
+	return bm_swap_instances(source_loc, target_loc)
+
+func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
+	return bm_equip_item(item_uuid, unit_uuid, slot_index)

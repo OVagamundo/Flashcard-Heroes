@@ -651,20 +651,6 @@ func _find_view_by_instance_id(instance_id: int) -> Control:
 			n = n.get_parent()
 		if n is Control:
 			return n as Control
-	# Fallback: recursive tree search (slower, but robust during scene changes)
-	var root = get_tree().root
-	return _find_view_recursive(root, instance_id)
-
-## Recursively search for a view with the given instance ID
-func _find_view_recursive(node: Node, target_id: int) -> Control:
-	if node is Control and node.get_instance_id() == target_id:
-		return node as Control
-	
-	for child in node.get_children():
-		var result = _find_view_recursive(child, target_id)
-		if result:
-			return result
-	
 	return null
 
 ## Public API for external systems to set selection

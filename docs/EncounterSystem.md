@@ -75,3 +75,28 @@ This section documents the EncounterDefinition addition needed for enemy trinket
 ### Testing Notes
 
 - For deterministic tests, specify `enemy_trinket_ids` directly on the test `EncounterDefinition` resource to validate enemy trinket behaviors.
+
+## Encounter Generation Algorithm (V9.2)
+
+The `EncounterGenerator` uses a "Constrained Random Build" algorithm with a robust gap-filling step to generate dynamic enemy teams.
+
+### Algorithm Phases
+
+1.  **Setup & Pooling:**
+    *   Loads all non-hero GachaBallDefinitions.
+    *   Separates them into `available_units` and `available_items`, sorted by cost.
+
+2.  **Mandatory Spend:**
+    *   Ensures at least 50% of the budget is spent on units to prevent item-heavy, unit-light encounters.
+
+3.  **Flexible Spending:**
+    *   Iteratively buys random affordable units or items until the budget is nearly full.
+    *   Respects unit caps (max 6) and item slot limits.
+
+4.  **Gap Filling (Robustness):**
+    *   If budget remains, explicitly searches for "filler" units or items that fit the remaining budget exactly or closely.
+    *   Prioritizes expensive fillers first to maximize efficiency.
+
+5.  **Fallback Mechanism:**
+    *   If generation fails or produces an invalid encounter, a `_create_fallback_encounter` method is called.
+    *   This method safely looks up a valid Tier 1 unit (e.g., via Database query) rather than relying on hardcoded IDs, ensuring playability even with data changes.

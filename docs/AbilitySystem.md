@@ -67,10 +67,10 @@ Part 2 of 3: System Applications & Combat Integration
 Section C: Specific Applications & Source Rules
 This section defines the rules for how abilities are discovered and sourced.
 Source: The GachaBallInstance of a Unit is always the source of its own abilities and the abilities of all Items it has equipped.
-Discovery & Deterministic Order: The AbilityResolver iterates through active sources in three phases:
-Units (category UNIT).
-Equipped Items (category ITEM), processed in ascending equipped_slot_index for stable stacking.
-Trinkets (category TRINKET).
+Discovery & Deterministic Order: The AbilityResolver uses a single-pass O(N) optimization to categorize all active instances into buckets. It then processes them in a specific order to ensure deterministic behavior:
+1.  Units (category UNIT).
+2.  Equipped Items (category ITEM), sorted by `equipped_slot_index` for stable stacking.
+3.  Trinkets (category TRINKET).
 on_hurt Filtering: For the on_hurt trigger, discovery is strictly filtered:
 Only the damaged unit (whose UUID matches the trigger context) may process its own on_hurt abilities.
 Only items equipped on that specific damaged unit may process their on_hurt abilities.

@@ -1,9 +1,9 @@
-Window Manager - V2.2 (Service Architecture)
-Version: 2.2
+Window Manager - V2.3 (Service Architecture)
+Version: 2.3
 Status: Canonical
 This document specifies the architecture and behavior of the WindowManager, a core UI system in Flashcard Heroes.
 1. Purpose & Core Philosophy
-The Window Manager is a pure "service" manager. Its sole purpose is to manage the lifecycle, state, and positioning of all pop-up windows. It acts as a direct executor for commands issued by the Global Interaction Router (GIR).
+The Window Manager is a pure "service" manager. Its sole purpose is to manage the lifecycle, state, and positioning of all pop-up windows. It acts as a direct executor for commands issued by the Global Interaction Router (GIR), utilizing centralized positioning logic to ensure all windows remain within the viewport.
 It is crucial to distinguish between Content Scenes and Windows:
 Content Scenes (Shop, RestSite, Battle, PathChoice): These are full-screen views that are loaded into the main content area of the game. They are not managed by the WindowManager.
 Windows (InventoryWindow, UnitInspectionWindow, ChoiceWindow, etc.): These are pop-up elements that appear on top of a Content Scene. These are the sole responsibility of the WindowManager.

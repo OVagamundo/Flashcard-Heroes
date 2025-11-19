@@ -1,9 +1,17 @@
 @ -0,0 +1,147 @@
-# Flashcard Heroes - Technical Design Document (V8.0)
+# Flashcard Heroes - Technical Design Document (V9.2)
 
-**Version:** 8.0  
-**Status:** Active  
-**Architectural Update:** This version incorporates the Global Interaction Router (GIR) as the canonical input handling system. The `InteractionManager` is now deprecated and replaced by the `SelectionManager` and the GIR command-based architecture.
+**Version:** 9.2
+**Status:** Active
+**Architectural Update (V9.2):** This version introduces further optimizations and robustness improvements:
+1.  **Optimized Ability Resolution:** `AbilityResolver` now uses a single-pass O(N) bucketing algorithm instead of multiple O(N) passes, improving performance for complex board states.
+2.  **Robust Encounter Generation:** `EncounterGenerator` now uses a "gap-filling" algorithm to maximize budget usage and includes a safe fallback mechanism for generation failures.
+3.  **Explicit Dependency Injection:** `GameManager` and `Main` now use an explicit registration pattern (`register_main_node`) to prevent fragile scene tree lookups.
+
+**Architectural Update (V9.1):**
+1.  **Polymorphic Inventory API:** `InventoryManager` now interacts with `RunState` and `BattleManager` via a unified interface.
+2.  **Centralized Window Positioning:** `WindowManager` uses shared logic for viewport clamping.
+3.  **Optimized View Lookup:** `GlobalInteractionRouter` uses O(1) lookups.
 
 <!-- TOC -->
 - [Part 1: Core Architecture & Principles](#part-1-core-architecture--principles)

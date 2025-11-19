@@ -1,0 +1,66 @@
+Graphic Design Document: Flashcard Heroes
+1. Core Philosophy: Design by Synthesis
+The visual identity of Flashcard Heroes is built on a rigorous, constraint-based system. Every Gachamon is a visual synthesis of its core components: Tier, Color, Element, and Shape. This document is not a collection of suggestions, but a rulebook. The artist's role is to follow these rules to create assets that are clear, consistent, and intuitive to the player. The goal is a straightforward pipeline where the design is the logical outcome of a specific "recipe."
+2. The Core Pillars: Color, Element & Shape
+Six base colors form the foundation of the game's trait and elemental system. Each is inextricably linked to a primary shape that informs all design choices.
+Color	Trait / Role	Element	Base Shape	Visual Keywords
+Red	Physical Offense (Warrior)	Fire	▲ Triangle	Aggressive, Sharp, Spiked, Piercing, Dynamic
+Blue	Defense (Defender)	Earth/Stone	■ Square	Sturdy, Blocky, Plated, Defensive, Solid
+Green	Support / Utility	Nature/Life	● Circle	Organic, Flowing, Round, Natural, Regenerative
+Yellow	Ranged Offense	Air/Wind	◆ Diamond, arrow	Aerodynamic, Sleek, Swift, Tapered, Precise
+Magenta	Magical (Flex)	Arcane/Spirit	⬢ Hexagon	Geometric, Symmetrical, Mystical, Crystalline
+Cyan	Healer / Protector	Water/Ice	Wave, Blob	Protective, Nurturing, Spreading
+3. The Tier System: Visual Evolution
+The tier system dictates a Gachamon's physical and thematic complexity. Each tier has a mandatory checklist of features.
+Tier 1: Elemental Creatures
+Form: Non-humanoid. Must resemble a simple lifeform (elemental, insect, crustacean, plant, mineral).
+Anatomy: Iconic & Simple. May lack distinct limbs; anatomy is secondary to the core shape.
+Features: Monochromatic. Design uses 2-3 shades of its single base color besides the base warm white and cold black that will be used throughout the design. No crafted items or accessories are permitted.
+Shape Expression: The unit is its base shape in its purest form. A Blue unit should have a fundamentally squareish silhouette for instance.
+Tier 2: Complex Animals
+Form: Non-humanoid. Must be based on a complex animal (mammal, reptile, bird, etc.) but not be like the any single animal that already exists.
+Anatomy: Defined. Must have clear animalistic anatomy (head, torso, limbs).
+Features: Color Blended. Must visibly incorporate its two base colors. Features naturalistic details (fur, scales, chitin, bark) and "natural armor" (thicker hide, shells, bone plates). No crafted weapons/armor.
+Shape Expression: The base shapes of its parent units must be integrated into its anatomy (e.g., a bear with square, blocky shoulders and a rounded, organic body).
+Tier 3: Anthropomorphic Heroes
+Form: A little more Humanoid. Must be bipedal with human-like posture and proportions.
+Anatomy: Sentient & Skilled. The design must communicate a "class" or role (knight, mage, rogue).
+Features: Rich Palette & Gear. Employs the most complex color blends based on the units used to create it in the merging process (tier one units merge to form tier two units, tier two units merge to form tier three units). Crafted gear is mandatory (armor, clothing) and it must wield a defined weapon or tool or the own body should have equipment like appearance as if the creature itself evolved to have armor or weapons in it's body.
+Shape Expression: The base shapes are expressed through the design of its armor, weapon, and class emblems (e.g., a samurai with triangular armor plates and a square-hilted katana).
+4. Synthesis Rules: Creating Merged Units
+Rule of Shape Dominance
+A merged unit's primary silhouette is always dictated by the shape of its dominant color (the one with the most "parts" in its recipe). Secondary elements modify this core silhouette but do not override it.
+Example: A Tier 3 Gachamon from Red(▲) + Red(▲) + Blue(■) is majority Red. Its core body shape must be triangular. The Blue/Square element will manifest as blocky armor or a square shield attached to the triangular frame.
+Rule of Color Hierarchy
+The color palette is applied in a strict order of dominance:
+Primary Color: Applied to the largest areas (torso, main body).
+Secondary Color: Applied to smaller, distinct areas (limbs, accent armor, markings).
+Blended/Tertiary Color (e.g., Orange, Purple): Reserved only for energy effects, glows, auras, weapon trails, or small gradients where two color zones meet.
+5. Pixel Art & Palette Specification
+Global Palette: All assets must adhere to a strict 32-color global palette. This ensures visual cohesion across the entire game.
+Shading Style: Strictly Flat Colors. No gradients, anti-aliasing, or "anime-style" soft shading. Depth is achieved by using distinct color values.
+Hue Shifting: Shading should follow a "colder shadows, warmer highlights" principle. Shadows should shift slightly towards blue/purple, while highlights shift slightly towards yellow/orange relative to the base color.
+Outlines: All units must have a thin, simple, single dark color outline to ensure clarity and a consistent style.
+Portrait Resolution: All unit portraits will be designed within a consistent square canvas (e.g., 96x96 pixels).
+6. Card & UI Graphic Design
+Card Anatomy & Rules
+Card Size: All cards are the same size.
+Card Outline: A very simple, thin, monochromatic border.
+Portrait: Static, non-animated pixel art. The portrait can be a bust or partial body shot, but must clearly represent the unit.
+Background: The background of the card is a flat field of color(s) derived from the unit.
+Tier 1: Solid background of the unit's base color designs with warm white.
+Tier 2: A simple split or two-tone background of the unit's two base colors designs with warm white.
+Tier 3: A more complex blend or subtle pattern using the unit's constituent colors designs with warm white.
+Stats Display:
+No Labels. The card will display only two numerical values for HP and Power.
+Visual Distinction: The values must be visually distinct. HP should be in a different color then Power. they should both have the same weight.
+Font: Must use a clear, monochromatic, pixel-art friendly font.
+7. Appendix A: The Gachamon Design Checklist
+To design any unit, follow this exact process to ensure 100% compliance with the guidelines.
+Define the Recipe: State the inputs (e.g., Tier 2, Green(●) + Blue(■)).
+Consult Tier Checklist: Check the mandatory features for that Tier (Form, Anatomy, Features, Shape Expression).
+Apply Shape Dominance Rule: Determine the primary silhouette. If 50/50, the shapes must be equally blended.
+Develop Core Concept: Synthesize the Tier, Shapes, and Elements into a concept (e.g., "A Tier 2 bear-like creature made of living stone and vines").
+Apply Color Hierarchy Rule: Assign the Primary, Secondary, and Blended colors to the concept's anatomy and features.
+Execute Pixel Art: Draw the unit portrait adhering to all palette, shading, and outline specifications.
+Assemble the Card: Place the final portrait onto a card background that matches its Tier and color recipe. Add the two numerical stat values according to the UI rules.

@@ -43,33 +43,8 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 
-[locale]
-
-locale_filter=PackedStringArray()
-translation_remaps=PackedStringArray("res://localization/game.csv")
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
-
-[internationalization]
-
-locale/fallback="en"
-font_override/use_system_fonts=false
-
-[locale]
-
-locale_filter=PackedStringArray("en", "ja")
-translation_remaps=PackedStringArray("res://localization/game.csv")
-
-[rendering/textures/webp_compression]
-
-lossy_quality=0.9
-
 [export]
 
-; 0 = none, 1 = zstd, 2 = zlib, 3 = gzip
 resources/compress/mode=1
 resources/compress/min_size=2048
 
@@ -79,17 +54,29 @@ include_filter="*.ttf,*.otf,*.woff,*.woff2"
 
 [export_presets.export.Web.override]
 
-resources/compress/mode=0  # Don't compress fonts
+resources/compress/mode=0
+res://assets/fonts/NotoSansJP-VariableFont_wght.ttf=""
+res://assets/fonts/static/NotoSansJP-Black.ttf=""
+res://assets/fonts/static/NotoSansJP-Bold.ttf=""
+res://assets/fonts/static/NotoSansJP-ExtraBold.ttf=""
+res://assets/fonts/static/NotoSansJP-ExtraLight.ttf=""
+res://assets/fonts/static/NotoSansJP-Light.ttf=""
+res://assets/fonts/static/NotoSansJP-Medium.ttf=""
+res://assets/fonts/static/NotoSansJP-Regular.ttf=""
+res://assets/fonts/static/NotoSansJP-SemiBold.ttf=""
+res://assets/fonts/static/NotoSansJP-Thin.ttf=""
 
-[export_presets.export.Web.files]
+[internationalization]
 
-"res://assets/fonts/NotoSansJP-VariableFont_wght.ttf"=""
-"res://assets/fonts/static/NotoSansJP-Black.ttf"=""
-"res://assets/fonts/static/NotoSansJP-Bold.ttf"=""
-"res://assets/fonts/static/NotoSansJP-ExtraBold.ttf"=""
-"res://assets/fonts/static/NotoSansJP-ExtraLight.ttf"=""
-"res://assets/fonts/static/NotoSansJP-Light.ttf"=""
-"res://assets/fonts/static/NotoSansJP-Medium.ttf"=""
-"res://assets/fonts/static/NotoSansJP-Regular.ttf"=""
-"res://assets/fonts/static/NotoSansJP-SemiBold.ttf"=""
-"res://assets/fonts/static/NotoSansJP-Thin.ttf"=""
+font_override/use_system_fonts=false
+
+[locale]
+
+locale_filter=PackedStringArray("en", "ja")
+translation_remaps=PackedStringArray("res://localization/game.csv")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/webp_compression/lossy_quality=0.9

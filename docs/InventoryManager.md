@@ -1,9 +1,9 @@
-Inventory & Gacha Systems - V2.3 (Unified)
-Version: 2.3
+Inventory & Gacha Systems - V2.4 (Unified)
+Version: 2.4
 Status: Canonical
-This document describes the architecture and definitive rules for all GachaBall manipulation systems, including inventory actions (Move, Swap, Equip, Merge), the Gacha draw mechanism, and the Discard Pile lifecycle. The InventoryManager is the central, stateless service that executes the logic described herein.
+This document describes the architecture and definitive rules for all GachaBall manipulation systems, including inventory actions (Move, Swap, Equip, Merge), the Gacha draw mechanism, and the Discard Pile lifecycle. The InventoryManager is the central, stateless logic controller that executes the logic described herein.
 1. Purpose & Core Philosophy
-The InventoryManager is a stateless logic controller. It is the "verb" system for all GachaBall instances. Its sole purpose is to execute commands and signals related to GachaBall manipulation, validate them against a strict set of gameplay rules, and instruct the appropriate data owner (RunState or BattleManager) to perform the state change.
+The InventoryManager is a stateless logic controller. It is the "verb" system for all GachaBall instances. Its sole purpose is to execute commands and signals related to GachaBall manipulation, validate them against a strict set of gameplay rules, and instruct the appropriate data owner (RunState or BattleManager) to perform the state change via a unified polymorphic API.
 Core Principles:
 Stateless Operation: The manager never stores its own state between actions. It always queries the current game state from the data owners.
 Authoritative Validation: The manager is the final authority on whether a gameplay action is legal.

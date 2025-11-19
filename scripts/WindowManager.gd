@@ -549,80 +549,74 @@ func _close_all_windows() -> void:
 
 func _calculate_window_position(source_view: Control, new_window: Control) -> Vector2:
 	if not is_instance_valid(source_view): return Vector2.ZERO
-	var viewport_rect = get_viewport().get_visible_rect()
-	var vp_center = viewport_rect.get_center()
 	var src = _get_screen_rect(source_view)
 	var win_sz = _get_window_size(new_window)
+	var viewport_rect = get_viewport().get_visible_rect()
+	var vp_center = viewport_rect.get_center()
+	
 	# Horizontal: place on the side opposite to the source half
 	var place_right: bool = src.get_center().x <= vp_center.x
 	var x: float = (src.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (src.position.x - win_sz.x - INSPECTION_WINDOW_MARGIN)
+	
 	# Vertical alignment: align to top if source is on the top half; else align bottom
 	var align_top: bool = src.get_center().y <= vp_center.y
 	var y: float = src.position.y if align_top else (src.end.y - win_sz.y)
-	# Clamp fully within viewport with a small margin
-	var margin: float = INSPECTION_WINDOW_MARGIN
-	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - win_sz.x - margin)
-	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - win_sz.y - margin)
-	return Vector2(x, y)
+	
+	return _clamp_window_to_viewport(Vector2(x, y), win_sz)
 
 # Position child relative to its anchor, but decide side/top based on the parent window's quadrant.
 func _calculate_child_window_position_from_anchor(parent_window: Control, anchor: Control, child_window: Control) -> Vector2:
-	var viewport_rect = get_viewport().get_visible_rect()
-	var vp_center = viewport_rect.get_center()
 	var parent_rect = _get_screen_rect(parent_window)
 	var anchor_rect = _get_screen_rect(anchor)
 	var child_sz = _get_window_size(child_window)
+	var viewport_rect = get_viewport().get_visible_rect()
+	var vp_center = viewport_rect.get_center()
+	
 	# Decide side/top using the ANCHOR's quadrant to keep behavior consistent with root-anchored windows.
 	var place_right: bool = anchor_rect.get_center().x <= vp_center.x
 	var x: float = (anchor_rect.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (anchor_rect.position.x - child_sz.x - INSPECTION_WINDOW_MARGIN)
+	
 	var align_top: bool = anchor_rect.get_center().y <= vp_center.y
 	var y: float = anchor_rect.position.y if align_top else (anchor_rect.end.y - child_sz.y)
-	# Clamp fully within viewport
-	var margin: float = INSPECTION_WINDOW_MARGIN
-	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - child_sz.x - margin)
-	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
-	return Vector2(x, y)
+	
+	return _clamp_window_to_viewport(Vector2(x, y), child_sz)
 
 # Position helper to center a window over its anchor, clamped to the viewport with a small margin
 func _calculate_centered_over_anchor(anchor: Control, new_window: Control) -> Vector2:
-	var viewport_rect = get_viewport().get_visible_rect()
 	var anchor_rect = _get_screen_rect(anchor)
 	var window_size = _get_window_size(new_window)
 	var desired = anchor_rect.get_center() - window_size / 2.0
-	# Clamp within viewport with margin
-	var margin: float = INSPECTION_WINDOW_MARGIN
-	desired.x = clampf(desired.x, viewport_rect.position.x + margin, viewport_rect.end.x - window_size.x - margin)
-	desired.y = clampf(desired.y, viewport_rect.position.y + margin, viewport_rect.end.y - window_size.y - margin)
-	return desired
+	return _clamp_window_to_viewport(desired, window_size)
 
 # Position helper to place window centered horizontally above the anchor (top-center), clamped to viewport
 func _calculate_top_center_over_anchor(anchor: Control, new_window: Control) -> Vector2:
 	var viewport_rect = get_viewport().get_visible_rect()
 	var anchor_rect = _get_screen_rect(anchor)
 	var window_size = _get_window_size(new_window)
-	# Center horizontally; prefer above the anchor, but flip below if insufficient space.
 	var margin: float = INSPECTION_WINDOW_MARGIN
-	var viewport_left: float = float(viewport_rect.position.x) + margin
-	var viewport_right: float = float(viewport_rect.end.x) - window_size.x - margin
-	var viewport_top: float = float(viewport_rect.position.y) + margin
-	var viewport_bottom: float = float(viewport_rect.end.y) - window_size.y - margin
-
-	var x: float = clampf(anchor_rect.get_center().x - window_size.x / 2.0, viewport_left, viewport_right)
+	
+	# Center horizontally
+	var x: float = anchor_rect.get_center().x - window_size.x / 2.0
+	
+	# Vertical: prefer above, flip if needed
 	var above_y: float = anchor_rect.position.y - window_size.y - margin
 	var below_y: float = anchor_rect.end.y + margin
+	
+	var viewport_top: float = float(viewport_rect.position.y) + margin
+	var viewport_bottom: float = float(viewport_rect.end.y) - window_size.y - margin
+	
 	var y: float
 	if above_y >= viewport_top:
 		y = above_y
 	elif below_y <= viewport_bottom:
 		y = below_y
 	else:
-		# Neither fits fully; choose the option with more available space then clamp
+		# Neither fits fully; choose the option with more available space
 		var space_above: float = float(anchor_rect.position.y) - float(viewport_rect.position.y) - margin
 		var space_below: float = float(viewport_rect.end.y) - float(anchor_rect.end.y) - margin
 		y = above_y if space_above >= space_below else below_y
-	# Final clamp within viewport
-	y = clampf(y, viewport_top, viewport_bottom)
-	return Vector2(x, y)
+		
+	return _clamp_window_to_viewport(Vector2(x, y), window_size)
 
 # Position helper to place window to the left of the anchor with sensible vertical alignment and viewport clamping.
 func _calculate_left_of_anchor(anchor: Control, new_window: Control) -> Vector2:
@@ -631,21 +625,17 @@ func _calculate_left_of_anchor(anchor: Control, new_window: Control) -> Vector2:
 	var win_sz = _get_window_size(new_window)
 	var margin: float = INSPECTION_WINDOW_MARGIN
 	var viewport_left: float = float(viewport_rect.position.x) + margin
-	var viewport_right: float = float(viewport_rect.end.x) - win_sz.x - margin
-	var viewport_top: float = float(viewport_rect.position.y) + margin
-	var viewport_bottom: float = float(viewport_rect.end.y) - win_sz.y - margin
-
+	
 	# Try left of anchor; if it doesn't fit, fall back to right of anchor.
 	var x_left: float = anchor_rect.position.x - win_sz.x - margin
 	var x: float = x_left if x_left >= viewport_left else (anchor_rect.end.x + margin)
+	
 	# Vertical alignment: align top if anchor is in top half, else align bottom.
 	var vp_center_y: float = float(viewport_rect.get_center().y)
 	var align_top: bool = anchor_rect.get_center().y <= vp_center_y
 	var y: float = (anchor_rect.position.y if align_top else (anchor_rect.end.y - win_sz.y))
-	# Clamp fully within viewport
-	x = clampf(x, viewport_left, viewport_right)
-	y = clampf(y, viewport_top, viewport_bottom)
-	return Vector2(x, y)
+	
+	return _clamp_window_to_viewport(Vector2(x, y), win_sz)
 
 func _get_screen_rect(ctrl: Control) -> Rect2:
 	if not is_instance_valid(ctrl):
@@ -719,3 +709,10 @@ func _get_modal_layer() -> CanvasLayer:
 			_modal_layer.name = "ModalLayerFailsafe"
 			get_tree().root.add_child(_modal_layer)
 	return _modal_layer
+
+func _clamp_window_to_viewport(pos: Vector2, size: Vector2) -> Vector2:
+	var viewport_rect = get_viewport().get_visible_rect()
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	var x = clampf(pos.x, viewport_rect.position.x + margin, viewport_rect.end.x - size.x - margin)
+	var y = clampf(pos.y, viewport_rect.position.y + margin, viewport_rect.end.y - size.y - margin)
+	return Vector2(x, y)

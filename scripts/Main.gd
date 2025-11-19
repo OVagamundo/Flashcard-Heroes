@@ -24,6 +24,8 @@ const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 var _current_content_node: Node = null
 
 func _ready() -> void:
+	GameManager.register_main_node(self) # Register self with GameManager
+	
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
 	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
 	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
@@ -50,6 +52,9 @@ func _ready() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_update_day_label(GameManager.run_state.day)
 		_populate_player_trinkets()
+
+func _exit_tree() -> void:
+	GameManager.unregister_main_node()
 
 func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area

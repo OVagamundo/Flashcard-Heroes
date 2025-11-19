@@ -11,91 +11,10 @@ _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
 Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Shop received instances: 3
-  [0] UUID: unit_t1_b_1762214751_2225, Type: unit_t1_b, HP: 1, PWR: 2
-  [1] UUID: unit_t3_d_1762214751_5843, Type: unit_t3_d, HP: 6, PWR: 6
-  [2] UUID: unit_t1_a_1762214751_6878, Type: unit_t1_a, HP: 2, PWR: 1
-Populating slot 0 with instance: unit_t1_b (HP: 1, PWR: 2)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Populating slot 1 with instance: unit_t3_d (HP: 6, PWR: 6)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Populating slot 2 with instance: unit_t1_a (HP: 2, PWR: 1)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Shop received instances: 2
-  [0] UUID: unit_t1_b_1762214751_2225, Type: unit_t1_b, HP: 1, PWR: 2
-  [1] UUID: unit_t3_d_1762214751_5843, Type: unit_t3_d, HP: 6, PWR: 6
-Populating slot 0 with instance: unit_t1_b (HP: 1, PWR: 2)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Populating slot 1 with instance: unit_t3_d (HP: 6, PWR: 6)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Shop received instances: 1
-  [0] UUID: unit_t3_d_1762214751_5843, Type: unit_t3_d, HP: 6, PWR: 6
-Populating slot 1 with instance: unit_t3_d (HP: 6, PWR: 6)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Shop received instances: 0
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Applying stat change - Type: HP, Gain: 2
-modify_unit_base_stats - Before - UUID: hero_1762214745_8316, Base HP: 10, Base PWR: 2, Current HP: 10, Current PWR: 2
-  Applying base stat changes - HP: +2, PWR: +0
-modify_unit_base_stats - After  - UUID: hero_1762214745_8316, Base HP: 12, Base PWR: 2, Current HP: 12, Current PWR: 2
+Applying stat change - Type: HP, Gain: 1
+modify_unit_base_stats - Before - UUID: hero_1763578677_2187, Base HP: 10, Base PWR: 2, Current HP: 10, Current PWR: 2
+  Applying base stat changes - HP: +1, PWR: +0
+modify_unit_base_stats - After  - UUID: hero_1763578677_2187, Base HP: 11, Base PWR: 2, Current HP: 11, Current PWR: 2
 Emitting signals for permanent stat change
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
@@ -107,127 +26,25 @@ _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
 Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Shop received instances: 3
+  [0] UUID: item_t3_d_1763578691_7466, Type: item_t3_d, HP: 0, PWR: 0
+  [1] UUID: item_t1_a_1763578691_0666, Type: item_t1_a, HP: 0, PWR: 0
+  [2] UUID: unit_t3_d_1763578691_4025, Type: unit_t3_d, HP: 6, PWR: 6
+Populating slot 0 with instance: item_t3_d (HP: 0, PWR: 0)
+Warning: Instance has invalid stats, resetting from definition
 Setting entity type from definition.category: ITEM
 _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
 Checking category - value: ITEM (type: 21)
 Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
+Populating slot 1 with instance: item_t1_a (HP: 0, PWR: 0)
+Warning: Instance has invalid stats, resetting from definition
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Populating slot 2 with instance: unit_t3_d (HP: 6, PWR: 6)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -238,16 +55,738 @@ _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
 Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Shop received instances: 2
+  [0] UUID: item_t3_d_1763578691_7466, Type: item_t3_d, HP: 0, PWR: 0
+  [1] UUID: unit_t3_d_1763578691_4025, Type: unit_t3_d, HP: 6, PWR: 6
+Populating slot 0 with instance: item_t3_d (HP: 0, PWR: 0)
+Warning: Instance has invalid stats, resetting from definition
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Populating slot 2 with instance: unit_t3_d (HP: 6, PWR: 6)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Shop received instances: 3
+  [0] UUID: item_t2_c_1763578695_6421, Type: item_t2_c, HP: 0, PWR: 0
+  [1] UUID: unit_t1_a_1763578695_6383, Type: unit_t1_a, HP: 2, PWR: 1
+  [2] UUID: unit_t1_b_1763578695_8359, Type: unit_t1_b, HP: 1, PWR: 2
+Populating slot 0 with instance: item_t2_c (HP: 0, PWR: 0)
+Warning: Instance has invalid stats, resetting from definition
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Populating slot 1 with instance: unit_t1_a (HP: 2, PWR: 1)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 2 PWR: 1
+Populating slot 2 with instance: unit_t1_b (HP: 1, PWR: 2)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Shop received instances: 2
+  [0] UUID: item_t2_c_1763578695_6421, Type: item_t2_c, HP: 0, PWR: 0
+  [1] UUID: unit_t1_b_1763578695_8359, Type: unit_t1_b, HP: 1, PWR: 2
+Populating slot 0 with instance: item_t2_c (HP: 0, PWR: 0)
+Warning: Instance has invalid stats, resetting from definition
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Populating slot 2 with instance: unit_t1_b (HP: 1, PWR: 2)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Shop received instances: 1
+  [0] UUID: item_t2_c_1763578695_6421, Type: item_t2_c, HP: 0, PWR: 0
+Populating slot 0 with instance: item_t2_c (HP: 0, PWR: 0)
+Warning: Instance has invalid stats, resetting from definition
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: ITEM
 _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
@@ -258,41 +797,6 @@ _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -312,32 +816,72 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
+Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -347,7 +891,527 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -357,7 +1421,97 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
 Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: ITEM
 _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
@@ -372,37 +1526,7 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -412,7 +1536,102 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
 Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: ITEM
 _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
@@ -427,37 +1646,7 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -467,7 +1656,7 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
+Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: ITEM
 _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
@@ -478,36 +1667,66 @@ _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
 Checking category - value: ITEM (type: 21)
 Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -517,7 +1736,37 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -527,22 +1776,62 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
 Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -552,48 +1841,32 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
+Showing stats - HP: 2 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
 Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -604,6 +1877,36 @@ _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
 Checking category - value: ITEM (type: 21)
 Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: ITEM
 _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
@@ -613,12 +1916,47 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
 Showing stats - HP: 1 PWR: 2
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -628,17 +1966,12 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
+Showing stats - HP: 2 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -648,12 +1981,147 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 11 PWR: 2
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 4
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 11 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -669,187 +2137,11 @@ _entity_type after set: ITEM (type: 21)
 Entity type: ITEM (should be &"UNIT" for units)
 Checking category - value: ITEM (type: 21)
 Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
+Showing stats - HP: 7 PWR: 7
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -865,56 +2157,57 @@ _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
+Showing stats - HP: 2 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
 Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
+Showing stats - HP: 12 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -930,62 +2223,51 @@ _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: ITEM
-_entity_type after set: ITEM (type: 21)
-Entity type: ITEM (should be &"UNIT" for units)
-Checking category - value: ITEM (type: 21)
-Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
+Showing stats - HP: 2 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
 Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -1000,37 +2282,17 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
 Showing stats - HP: 1 PWR: 2
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
+Showing stats - HP: 2 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -1038,121 +2300,31 @@ Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 2
+Showing stats - HP: 5 PWR: 7
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 1
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 7
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 2
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 4 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 4
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 5
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 8 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 5
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Showing stats - HP: 5 PWR: 7
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 5 PWR: 3
@@ -1161,187 +2333,60 @@ Checking category - value: UNIT (type: 21)
 Showing stats - HP: 5 PWR: 4
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 8
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
+Showing stats - HP: 6 PWR: 7
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 2
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
+Showing stats - HP: 3 PWR: 7
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 4
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 2 PWR: 3
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 8
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 3
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 3 PWR: 4
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 8
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 4
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 5
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 8
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 12 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 5
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 4 PWR: 5
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 5
-[BattleAnimator] Animation timeout for flash on unit unit_t1_b_1762214772_3263
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 6
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 5
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 6
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 3 PWR: 6
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 10 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 10 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 3
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 6
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Setting entity type from definition.category: TRINKET
-_entity_type after set: TRINKET (type: 21)
-Entity type: TRINKET (should be &"UNIT" for units)
-Checking category - value: TRINKET (type: 21)
-Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 7
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 3
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 10 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 5 PWR: 4
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 2 PWR: 1
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 0 PWR: 2
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 7
-Setting entity type from definition.category: UNIT
-_entity_type after set: UNIT (type: 21)
-Entity type: UNIT (should be &"UNIT" for units)
-Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -1353,16 +2398,25 @@ Showing stats - HP: 6 PWR: 4
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 6 PWR: 5
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 4
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 5
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 5
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 10 PWR: 2
+Showing stats - HP: 4 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 5
+Showing stats - HP: 12 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -1372,12 +2426,32 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 7
+Showing stats - HP: 2 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 5
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -1385,10 +2459,113 @@ Checking category - value: TRINKET (type: 21)
 Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 7 PWR: 7
+Showing stats - HP: 5 PWR: 5
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 7 PWR: 8
+Showing stats - HP: 5 PWR: 6
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 2
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 4 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 6
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 4
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 4
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 6
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 0 PWR: 1
@@ -1396,7 +2573,46 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 10 PWR: 2
+Showing stats - HP: 5 PWR: 4
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 12 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 1
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 4
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 5
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 1
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
@@ -1406,12 +2622,22 @@ Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 7 PWR: 8
+Showing stats - HP: 12 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 6 PWR: 6
+Showing stats - HP: 1 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)
@@ -1425,22 +2651,542 @@ Checking category - value: UNIT (type: 21)
 Showing stats - HP: 7 PWR: 6
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 1 PWR: 6
+Showing stats - HP: 8 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 10 PWR: 2
+Showing stats - HP: 9 PWR: 6
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
-Showing stats - HP: 7 PWR: 8
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
 Setting entity type from definition.category: UNIT
 _entity_type after set: UNIT (type: 21)
 Entity type: UNIT (should be &"UNIT" for units)
 Checking category - value: UNIT (type: 21)
 Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 6
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 2
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 2
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 2 PWR: 3
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 7
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 4
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 7
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 8
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 3
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 9 PWR: 4
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 8
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 8
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 10 PWR: 4
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 10 PWR: 5
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 8
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 8 PWR: 9
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 5 PWR: 9
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 0 PWR: 9
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 7 PWR: 6
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 10 PWR: 5
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 3 PWR: 8
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
+Setting entity type from definition.category: UNIT
+_entity_type after set: UNIT (type: 21)
+Entity type: UNIT (should be &"UNIT" for units)
+Checking category - value: UNIT (type: 21)
+Showing stats - HP: 6 PWR: 6
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+Setting entity type from definition.category: ITEM
+_entity_type after set: ITEM (type: 21)
+Entity type: ITEM (should be &"UNIT" for units)
+Checking category - value: ITEM (type: 21)
+Not showing stats - definition category is not UNIT (category: ITEM, type: 21)
+[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
+Setting entity type from definition.category: TRINKET
+_entity_type after set: TRINKET (type: 21)
+Entity type: TRINKET (should be &"UNIT" for units)
+Checking category - value: TRINKET (type: 21)
+Not showing stats - definition category is not UNIT (category: TRINKET, type: 21)
 Setting entity type from definition.category: TRINKET
 _entity_type after set: TRINKET (type: 21)
 Entity type: TRINKET (should be &"UNIT" for units)

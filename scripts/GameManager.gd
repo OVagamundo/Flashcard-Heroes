@@ -20,6 +20,8 @@ var _temporary_shop_master_dict: Dictionary = {}
 var _temporary_shop_container: DataContainer = null
 var _reroll_cost: int = 1
 
+var _active_main_node: Node = null # ADD THIS LINE
+
 # These functions are deprecated - use get_instance_from_location instead
 
 func _ready() -> void:
@@ -43,6 +45,12 @@ func register_battle_manager(bm: Node) -> void:
 
 func unregister_battle_manager() -> void:
 	_active_battle_manager = null
+
+func register_main_node(node: Node) -> void:
+	_active_main_node = node
+
+func unregister_main_node() -> void:
+	_active_main_node = null
 
 func get_pending_rewards() -> Dictionary:
 	return {
@@ -113,7 +121,7 @@ func _on_battle_victory_acknowledged() -> void:
 	if _is_processing_victory: 
 		return # Debounce guard
 	_is_processing_victory = true
-
+	
 	# Day should only increment when path choice scene loads, not here
 	
 	# Rewards are already generated. We just need to calculate the gold.
@@ -266,29 +274,26 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				budget = int(floor(budget * 1.5))
 			
 			var encounter_def = EncounterGenerator.generate_encounter(budget)
-			# Use Main.gd to handle scene loading
-			var main_node = get_tree().get_root().find_child("Main", true, false)
-			if is_instance_valid(main_node):
-				main_node._on_battle_start_requested(encounter_def)
+			# Use registered Main node
+			if is_instance_valid(_active_main_node):
+				_active_main_node._on_battle_start_requested(encounter_def)
 		"SHOP":
 			_enter_shop()
 		"REST":
-			# Use Main.gd to handle scene loading
-			var main_node = get_tree().get_root().find_child("Main", true, false)
-			if is_instance_valid(main_node):
-				main_node._clear_content_area()
+			# Use registered Main node
+			if is_instance_valid(_active_main_node):
+				_active_main_node._clear_content_area()
 				var instance = REST_SITE_SCENE.instantiate()
-				main_node._current_content_node = instance
-				main_node.content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+				_active_main_node._current_content_node = instance
+				_active_main_node.content_area.get_node("SubViewport/MarginContainer").add_child(instance)
 
 func _enter_shop() -> void:
 	_reroll_cost = 1
 	_generate_shop_stock()
 	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
-	# Use Main.gd to handle scene loading
-	var main_node = get_tree().get_root().find_child("Main", true, false)
-	if is_instance_valid(main_node):
-		main_node._on_shop_scene_requested(context)
+	# Use registered Main node
+	if is_instance_valid(_active_main_node):
+		_active_main_node._on_shop_scene_requested(context)
 
 func _generate_shop_stock() -> void:
 	_temporary_shop_master_dict.clear()

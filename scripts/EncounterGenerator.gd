@@ -78,7 +78,28 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 				purchased_items.append(purchase)
 			spent_budget += purchase.cost
 
-				# Store this result if it's better than the last one
+		# Optimization: Explicitly try to fill small gaps in the budget
+		if spent_budget < budget:
+			var remaining = budget - spent_budget
+			# Try to find a cheap item or unit that fits exactly or close to it
+			var fillers = available_items.filter(func(i): return i.cost <= remaining)
+			if fillers.is_empty() and purchased_units.size() < 6:
+				fillers = available_units.filter(func(u): return u.cost <= remaining)
+			
+			if not fillers.is_empty():
+				fillers.sort_custom(func(a, b): return a.cost > b.cost) # Try most expensive first
+				var filler = fillers[0]
+				if filler.category == &"UNIT":
+					purchased_units.append(filler)
+				else:
+					# Only add item if we have slots
+					var slots = 0
+					for u in purchased_units: slots += u.item_slot_count
+					if purchased_items.size() < slots:
+						purchased_items.append(filler)
+						spent_budget += filler.cost
+
+		# Store this result if it's better than the last one
 		if spent_budget > best_build.spent:
 			best_build = {"units": purchased_units, "items": purchased_items, "spent": spent_budget}
 
@@ -124,7 +145,14 @@ func _create_fallback_encounter() -> EncounterDefinition:
 	fallback.id = "fallback_encounter_%d" % Time.get_unix_time_from_system()
 	
 	# Add a basic enemy if available
+	# Robustness: Look up a valid Tier 1 unit instead of hardcoding ID
 	var basic_enemy = Database.get_definition(&"Tier1unitA")
+	if not is_instance_valid(basic_enemy):
+		# Try to find ANY unit
+		var all_units = Database.units.values()
+		if not all_units.is_empty():
+			basic_enemy = all_units[0]
+			
 	if is_instance_valid(basic_enemy):
 		var placement: Dictionary = {"id": basic_enemy.id, "position": 0, "items": []}
 		fallback.enemy_placements.append(placement)
