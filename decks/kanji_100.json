@@ -1,0 +1,607 @@
+{
+    "deck_id": "kanji_100",
+    "display_name": "Top 100 Kanji",
+    "description": "The 100 most common Japanese Kanji characters",
+    "cards": [
+        {
+            "id": "KANJI_001",
+            "question": "日",
+            "answer": "day/sun",
+            "explanation": "nichi, hi - day, sun"
+        },
+        {
+            "id": "KANJI_002",
+            "question": "一",
+            "answer": "one",
+            "explanation": "ichi, hito - one"
+        },
+        {
+            "id": "KANJI_003",
+            "question": "国",
+            "answer": "country",
+            "explanation": "koku, kuni - country"
+        },
+        {
+            "id": "KANJI_004",
+            "question": "人",
+            "answer": "person",
+            "explanation": "jin, hito - person"
+        },
+        {
+            "id": "KANJI_005",
+            "question": "年",
+            "answer": "year",
+            "explanation": "nen, toshi - year"
+        },
+        {
+            "id": "KANJI_006",
+            "question": "大",
+            "answer": "big",
+            "explanation": "dai, oo - big"
+        },
+        {
+            "id": "KANJI_007",
+            "question": "十",
+            "answer": "ten",
+            "explanation": "juu, too - ten"
+        },
+        {
+            "id": "KANJI_008",
+            "question": "二",
+            "answer": "two",
+            "explanation": "ni, futa - two"
+        },
+        {
+            "id": "KANJI_009",
+            "question": "本",
+            "answer": "book/origin",
+            "explanation": "hon, moto - book, origin"
+        },
+        {
+            "id": "KANJI_010",
+            "question": "中",
+            "answer": "middle",
+            "explanation": "chuu, naka - middle, inside"
+        },
+        {
+            "id": "KANJI_011",
+            "question": "長",
+            "answer": "long",
+            "explanation": "chou, naga - long"
+        },
+        {
+            "id": "KANJI_012",
+            "question": "出",
+            "answer": "exit",
+            "explanation": "shutsu, de - exit, leave"
+        },
+        {
+            "id": "KANJI_013",
+            "question": "三",
+            "answer": "three",
+            "explanation": "san, mi - three"
+        },
+        {
+            "id": "KANJI_014",
+            "question": "時",
+            "answer": "time",
+            "explanation": "ji, toki - time"
+        },
+        {
+            "id": "KANJI_015",
+            "question": "行",
+            "answer": "go",
+            "explanation": "kou, i - go"
+        },
+        {
+            "id": "KANJI_016",
+            "question": "見",
+            "answer": "see",
+            "explanation": "ken, mi - see"
+        },
+        {
+            "id": "KANJI_017",
+            "question": "月",
+            "answer": "month/moon",
+            "explanation": "getsu, tsuki - month, moon"
+        },
+        {
+            "id": "KANJI_018",
+            "question": "分",
+            "answer": "minute/part",
+            "explanation": "bun, wa - minute, part"
+        },
+        {
+            "id": "KANJI_019",
+            "question": "後",
+            "answer": "after",
+            "explanation": "go, ato - after"
+        },
+        {
+            "id": "KANJI_020",
+            "question": "前",
+            "answer": "before",
+            "explanation": "zen, mae - before"
+        },
+        {
+            "id": "KANJI_021",
+            "question": "生",
+            "answer": "life",
+            "explanation": "sei, i - life, birth"
+        },
+        {
+            "id": "KANJI_022",
+            "question": "五",
+            "answer": "five",
+            "explanation": "go, itsu - five"
+        },
+        {
+            "id": "KANJI_023",
+            "question": "間",
+            "answer": "interval",
+            "explanation": "kan, aida - interval, between"
+        },
+        {
+            "id": "KANJI_024",
+            "question": "上",
+            "answer": "up",
+            "explanation": "jou, ue - up, above"
+        },
+        {
+            "id": "KANJI_025",
+            "question": "東",
+            "answer": "east",
+            "explanation": "tou, higashi - east"
+        },
+        {
+            "id": "KANJI_026",
+            "question": "四",
+            "answer": "four",
+            "explanation": "shi, yon - four"
+        },
+        {
+            "id": "KANJI_027",
+            "question": "今",
+            "answer": "now",
+            "explanation": "kon, ima - now"
+        },
+        {
+            "id": "KANJI_028",
+            "question": "金",
+            "answer": "gold/money",
+            "explanation": "kin, kane - gold, money"
+        },
+        {
+            "id": "KANJI_029",
+            "question": "九",
+            "answer": "nine",
+            "explanation": "kyuu, kokono - nine"
+        },
+        {
+            "id": "KANJI_030",
+            "question": "入",
+            "answer": "enter",
+            "explanation": "nyuu, hai - enter"
+        },
+        {
+            "id": "KANJI_031",
+            "question": "学",
+            "answer": "study",
+            "explanation": "gaku, mana - study"
+        },
+        {
+            "id": "KANJI_032",
+            "question": "高",
+            "answer": "high",
+            "explanation": "kou, taka - high"
+        },
+        {
+            "id": "KANJI_033",
+            "question": "円",
+            "answer": "yen/circle",
+            "explanation": "en, maru - yen, circle"
+        },
+        {
+            "id": "KANJI_034",
+            "question": "子",
+            "answer": "child",
+            "explanation": "shi, ko - child"
+        },
+        {
+            "id": "KANJI_035",
+            "question": "外",
+            "answer": "outside",
+            "explanation": "gai, soto - outside"
+        },
+        {
+            "id": "KANJI_036",
+            "question": "八",
+            "answer": "eight",
+            "explanation": "hachi, ya - eight"
+        },
+        {
+            "id": "KANJI_037",
+            "question": "六",
+            "answer": "six",
+            "explanation": "roku, mu - six"
+        },
+        {
+            "id": "KANJI_038",
+            "question": "下",
+            "answer": "down",
+            "explanation": "ka, shita - down, below"
+        },
+        {
+            "id": "KANJI_039",
+            "question": "来",
+            "answer": "come",
+            "explanation": "rai, ku - come"
+        },
+        {
+            "id": "KANJI_040",
+            "question": "気",
+            "answer": "spirit",
+            "explanation": "ki - spirit, air"
+        },
+        {
+            "id": "KANJI_041",
+            "question": "小",
+            "answer": "small",
+            "explanation": "shou, chii - small"
+        },
+        {
+            "id": "KANJI_042",
+            "question": "七",
+            "answer": "seven",
+            "explanation": "shichi, nana - seven"
+        },
+        {
+            "id": "KANJI_043",
+            "question": "山",
+            "answer": "mountain",
+            "explanation": "san, yama - mountain"
+        },
+        {
+            "id": "KANJI_044",
+            "question": "話",
+            "answer": "talk",
+            "explanation": "wa, hana - talk"
+        },
+        {
+            "id": "KANJI_045",
+            "question": "女",
+            "answer": "woman",
+            "explanation": "jo, onna - woman"
+        },
+        {
+            "id": "KANJI_046",
+            "question": "北",
+            "answer": "north",
+            "explanation": "hoku, kita - north"
+        },
+        {
+            "id": "KANJI_047",
+            "question": "午",
+            "answer": "noon",
+            "explanation": "go - noon"
+        },
+        {
+            "id": "KANJI_048",
+            "question": "百",
+            "answer": "hundred",
+            "explanation": "hyaku - hundred"
+        },
+        {
+            "id": "KANJI_049",
+            "question": "書",
+            "answer": "write",
+            "explanation": "sho, ka - write"
+        },
+        {
+            "id": "KANJI_050",
+            "question": "先",
+            "answer": "before",
+            "explanation": "sen, saki - before"
+        },
+        {
+            "id": "KANJI_051",
+            "question": "名",
+            "answer": "name",
+            "explanation": "mei, na - name"
+        },
+        {
+            "id": "KANJI_052",
+            "question": "川",
+            "answer": "river",
+            "explanation": "sen, kawa - river"
+        },
+        {
+            "id": "KANJI_053",
+            "question": "千",
+            "answer": "thousand",
+            "explanation": "sen, chi - thousand"
+        },
+        {
+            "id": "KANJI_054",
+            "question": "水",
+            "answer": "water",
+            "explanation": "sui, mizu - water"
+        },
+        {
+            "id": "KANJI_055",
+            "question": "半",
+            "answer": "half",
+            "explanation": "han, naka - half"
+        },
+        {
+            "id": "KANJI_056",
+            "question": "男",
+            "answer": "man",
+            "explanation": "dan, otoko - man"
+        },
+        {
+            "id": "KANJI_057",
+            "question": "西",
+            "answer": "west",
+            "explanation": "sei, nishi - west"
+        },
+        {
+            "id": "KANJI_058",
+            "question": "電",
+            "answer": "electricity",
+            "explanation": "den - electricity"
+        },
+        {
+            "id": "KANJI_059",
+            "question": "校",
+            "answer": "school",
+            "explanation": "kou - school"
+        },
+        {
+            "id": "KANJI_060",
+            "question": "語",
+            "answer": "language",
+            "explanation": "go, kata - language"
+        },
+        {
+            "id": "KANJI_061",
+            "question": "土",
+            "answer": "soil",
+            "explanation": "do, tsuchi - soil, earth"
+        },
+        {
+            "id": "KANJI_062",
+            "question": "木",
+            "answer": "tree",
+            "explanation": "moku, ki - tree"
+        },
+        {
+            "id": "KANJI_063",
+            "question": "聞",
+            "answer": "hear",
+            "explanation": "bun, ki - hear, listen"
+        },
+        {
+            "id": "KANJI_064",
+            "question": "食",
+            "answer": "eat",
+            "explanation": "shoku, ta - eat"
+        },
+        {
+            "id": "KANJI_065",
+            "question": "車",
+            "answer": "car",
+            "explanation": "sha, kuruma - car"
+        },
+        {
+            "id": "KANJI_066",
+            "question": "何",
+            "answer": "what",
+            "explanation": "ka, nani - what"
+        },
+        {
+            "id": "KANJI_067",
+            "question": "南",
+            "answer": "south",
+            "explanation": "nan, minami - south"
+        },
+        {
+            "id": "KANJI_068",
+            "question": "万",
+            "answer": "ten thousand",
+            "explanation": "man - ten thousand"
+        },
+        {
+            "id": "KANJI_069",
+            "question": "毎",
+            "answer": "every",
+            "explanation": "mai - every"
+        },
+        {
+            "id": "KANJI_070",
+            "question": "白",
+            "answer": "white",
+            "explanation": "haku, shiro - white"
+        },
+        {
+            "id": "KANJI_071",
+            "question": "天",
+            "answer": "heaven",
+            "explanation": "ten, ama - heaven"
+        },
+        {
+            "id": "KANJI_072",
+            "question": "母",
+            "answer": "mother",
+            "explanation": "bo, haha - mother"
+        },
+        {
+            "id": "KANJI_073",
+            "question": "火",
+            "answer": "fire",
+            "explanation": "ka, hi - fire"
+        },
+        {
+            "id": "KANJI_074",
+            "question": "右",
+            "answer": "right",
+            "explanation": "u, migi - right"
+        },
+        {
+            "id": "KANJI_075",
+            "question": "読",
+            "answer": "read",
+            "explanation": "doku, yo - read"
+        },
+        {
+            "id": "KANJI_076",
+            "question": "友",
+            "answer": "friend",
+            "explanation": "yuu, tomo - friend"
+        },
+        {
+            "id": "KANJI_077",
+            "question": "左",
+            "answer": "left",
+            "explanation": "sa, hidari - left"
+        },
+        {
+            "id": "KANJI_078",
+            "question": "休",
+            "answer": "rest",
+            "explanation": "kyuu, yasu - rest"
+        },
+        {
+            "id": "KANJI_079",
+            "question": "父",
+            "answer": "father",
+            "explanation": "fu, chichi - father"
+        },
+        {
+            "id": "KANJI_080",
+            "question": "雨",
+            "answer": "rain",
+            "explanation": "u, ame - rain"
+        },
+        {
+            "id": "KANJI_081",
+            "question": "道",
+            "answer": "way",
+            "explanation": "dou, michi - way, road"
+        },
+        {
+            "id": "KANJI_082",
+            "question": "駅",
+            "answer": "station",
+            "explanation": "eki - station"
+        },
+        {
+            "id": "KANJI_083",
+            "question": "会",
+            "answer": "meet",
+            "explanation": "kai, a - meet"
+        },
+        {
+            "id": "KANJI_084",
+            "question": "同",
+            "answer": "same",
+            "explanation": "dou, ona - same"
+        },
+        {
+            "id": "KANJI_085",
+            "question": "事",
+            "answer": "matter",
+            "explanation": "ji, koto - matter"
+        },
+        {
+            "id": "KANJI_086",
+            "question": "自",
+            "answer": "self",
+            "explanation": "ji, mizuka - self"
+        },
+        {
+            "id": "KANJI_087",
+            "question": "社",
+            "answer": "company",
+            "explanation": "sha, yashiro - company, shrine"
+        },
+        {
+            "id": "KANJI_088",
+            "question": "発",
+            "answer": "departure",
+            "explanation": "hatsu - departure"
+        },
+        {
+            "id": "KANJI_089",
+            "question": "者",
+            "answer": "person",
+            "explanation": "sha, mono - person"
+        },
+        {
+            "id": "KANJI_090",
+            "question": "地",
+            "answer": "ground",
+            "explanation": "chi, ji - ground"
+        },
+        {
+            "id": "KANJI_091",
+            "question": "業",
+            "answer": "business",
+            "explanation": "gyou, waza - business"
+        },
+        {
+            "id": "KANJI_092",
+            "question": "方",
+            "answer": "direction",
+            "explanation": "hou, kata - direction"
+        },
+        {
+            "id": "KANJI_093",
+            "question": "新",
+            "answer": "new",
+            "explanation": "shin, atara - new"
+        },
+        {
+            "id": "KANJI_094",
+            "question": "場",
+            "answer": "place",
+            "explanation": "jou, ba - place"
+        },
+        {
+            "id": "KANJI_095",
+            "question": "員",
+            "answer": "member",
+            "explanation": "in - member"
+        },
+        {
+            "id": "KANJI_096",
+            "question": "立",
+            "answer": "stand",
+            "explanation": "ritsu, ta - stand"
+        },
+        {
+            "id": "KANJI_097",
+            "question": "開",
+            "answer": "open",
+            "explanation": "kai, hira - open"
+        },
+        {
+            "id": "KANJI_098",
+            "question": "手",
+            "answer": "hand",
+            "explanation": "shu, te - hand"
+        },
+        {
+            "id": "KANJI_099",
+            "question": "力",
+            "answer": "power",
+            "explanation": "ryoku, chikara - power"
+        },
+        {
+            "id": "KANJI_100",
+            "question": "目",
+            "answer": "eye",
+            "explanation": "moku, me - eye"
+        }
+    ]
+}

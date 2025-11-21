@@ -6,6 +6,9 @@ extends Control
 
 signal minigame_complete(results: Dictionary) # Internal signal for the window itself
 
+# Load the Japanese font directly from the TTF file
+const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Regular.ttf")
+
 @onready var question_label: Label = %QuestionLabel
 @onready var choices_grid: GridContainer = %ChoicesGrid
 @onready var timer_label: Label = %TimerLabel
@@ -160,6 +163,7 @@ func _show_next_question() -> void:
 			var button = Button.new()
 			button.text = choice_data.get("answer", "Error")
 			button.custom_minimum_size = Vector2(250, 80)
+			button.add_theme_font_override("font", JAPANESE_FONT)
 			button.add_theme_font_size_override("font_size", 60)
 			button.pressed.connect(_on_choice_selected.bind(choice_id))
 			choices_grid.add_child(button)

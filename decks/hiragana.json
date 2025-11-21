@@ -1,0 +1,631 @@
+{
+    "deck_id": "hiragana_main",
+    "display_name": "Hiragana",
+    "description": "Learn Japanese hiragana characters",
+    "cards": [
+        {
+            "id": "HIRA_001",
+            "question": "あ",
+            "answer": "a",
+            "explanation": "The vowel 'a', as in 'father'."
+        },
+        {
+            "id": "HIRA_002",
+            "question": "い",
+            "answer": "i",
+            "explanation": "The vowel 'i', as in 'see'."
+        },
+        {
+            "id": "HIRA_003",
+            "question": "う",
+            "answer": "u",
+            "explanation": "The vowel 'u', as in 'flute'."
+        },
+        {
+            "id": "HIRA_004",
+            "question": "え",
+            "answer": "e",
+            "explanation": "The vowel 'e', as in 'egg'."
+        },
+        {
+            "id": "HIRA_005",
+            "question": "お",
+            "answer": "o",
+            "explanation": "The vowel 'o', as in 'boat'."
+        },
+        {
+            "id": "HIRA_006",
+            "question": "か",
+            "answer": "ka",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_007",
+            "question": "き",
+            "answer": "ki",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_008",
+            "question": "く",
+            "answer": "ku",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_009",
+            "question": "け",
+            "answer": "ke",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_010",
+            "question": "こ",
+            "answer": "ko",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_011",
+            "question": "さ",
+            "answer": "sa",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_012",
+            "question": "し",
+            "answer": "shi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_013",
+            "question": "す",
+            "answer": "su",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_014",
+            "question": "せ",
+            "answer": "se",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_015",
+            "question": "そ",
+            "answer": "so",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_016",
+            "question": "た",
+            "answer": "ta",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_017",
+            "question": "ち",
+            "answer": "chi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_018",
+            "question": "つ",
+            "answer": "tsu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_019",
+            "question": "て",
+            "answer": "te",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_020",
+            "question": "と",
+            "answer": "to",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_021",
+            "question": "な",
+            "answer": "na",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_022",
+            "question": "に",
+            "answer": "ni",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_023",
+            "question": "ぬ",
+            "answer": "nu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_024",
+            "question": "ね",
+            "answer": "ne",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_025",
+            "question": "の",
+            "answer": "no",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_026",
+            "question": "は",
+            "answer": "ha",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_027",
+            "question": "ひ",
+            "answer": "hi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_028",
+            "question": "ふ",
+            "answer": "fu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_029",
+            "question": "へ",
+            "answer": "he",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_030",
+            "question": "ほ",
+            "answer": "ho",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_031",
+            "question": "ま",
+            "answer": "ma",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_032",
+            "question": "み",
+            "answer": "mi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_033",
+            "question": "む",
+            "answer": "mu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_034",
+            "question": "め",
+            "answer": "me",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_035",
+            "question": "も",
+            "answer": "mo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_036",
+            "question": "や",
+            "answer": "ya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_037",
+            "question": "ゆ",
+            "answer": "yu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_038",
+            "question": "よ",
+            "answer": "yo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_039",
+            "question": "ら",
+            "answer": "ra",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_040",
+            "question": "り",
+            "answer": "ri",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_041",
+            "question": "る",
+            "answer": "ru",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_042",
+            "question": "れ",
+            "answer": "re",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_043",
+            "question": "ろ",
+            "answer": "ro",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_044",
+            "question": "わ",
+            "answer": "wa",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_045",
+            "question": "を",
+            "answer": "wo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_046",
+            "question": "ん",
+            "answer": "n",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_047",
+            "question": "が",
+            "answer": "ga",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_048",
+            "question": "ぎ",
+            "answer": "gi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_049",
+            "question": "ぐ",
+            "answer": "gu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_050",
+            "question": "げ",
+            "answer": "ge",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_051",
+            "question": "ご",
+            "answer": "go",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_052",
+            "question": "ざ",
+            "answer": "za",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_053",
+            "question": "じ",
+            "answer": "ji",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_054",
+            "question": "ず",
+            "answer": "zu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_055",
+            "question": "ぜ",
+            "answer": "ze",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_056",
+            "question": "ぞ",
+            "answer": "zo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_057",
+            "question": "だ",
+            "answer": "da",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_058",
+            "question": "ぢ",
+            "answer": "ji",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_059",
+            "question": "づ",
+            "answer": "zu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_060",
+            "question": "で",
+            "answer": "de",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_061",
+            "question": "ど",
+            "answer": "do",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_062",
+            "question": "ば",
+            "answer": "ba",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_063",
+            "question": "び",
+            "answer": "bi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_064",
+            "question": "ぶ",
+            "answer": "bu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_065",
+            "question": "べ",
+            "answer": "be",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_066",
+            "question": "ぼ",
+            "answer": "bo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_067",
+            "question": "ぱ",
+            "answer": "pa",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_068",
+            "question": "ぴ",
+            "answer": "pi",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_069",
+            "question": "ぷ",
+            "answer": "pu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_070",
+            "question": "ぺ",
+            "answer": "pe",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_071",
+            "question": "ぽ",
+            "answer": "po",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_072",
+            "question": "きゃ",
+            "answer": "kya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_073",
+            "question": "きゅ",
+            "answer": "kyu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_074",
+            "question": "きょ",
+            "answer": "kyo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_075",
+            "question": "しゃ",
+            "answer": "sha",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_076",
+            "question": "しゅ",
+            "answer": "shu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_077",
+            "question": "しょ",
+            "answer": "sho",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_078",
+            "question": "ちゃ",
+            "answer": "cha",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_079",
+            "question": "ちゅ",
+            "answer": "chu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_080",
+            "question": "ちょ",
+            "answer": "cho",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_081",
+            "question": "にゃ",
+            "answer": "nya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_082",
+            "question": "にゅ",
+            "answer": "nyu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_083",
+            "question": "にょ",
+            "answer": "nyo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_084",
+            "question": "ひゃ",
+            "answer": "hya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_085",
+            "question": "ひゅ",
+            "answer": "hyu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_086",
+            "question": "ひょ",
+            "answer": "hyo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_087",
+            "question": "みゃ",
+            "answer": "mya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_088",
+            "question": "みゅ",
+            "answer": "myu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_089",
+            "question": "みょ",
+            "answer": "myo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_090",
+            "question": "りゃ",
+            "answer": "rya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_091",
+            "question": "りゅ",
+            "answer": "ryu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_092",
+            "question": "りょ",
+            "answer": "ryo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_093",
+            "question": "ぎゃ",
+            "answer": "gya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_094",
+            "question": "ぎゅ",
+            "answer": "gyu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_095",
+            "question": "ぎょ",
+            "answer": "gyo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_096",
+            "question": "じゃ",
+            "answer": "ja",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_097",
+            "question": "じゅ",
+            "answer": "ju",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_098",
+            "question": "じょ",
+            "answer": "jo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_099",
+            "question": "びゃ",
+            "answer": "bya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_100",
+            "question": "びゅ",
+            "answer": "byu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_101",
+            "question": "びょ",
+            "answer": "byo",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_102",
+            "question": "ぴゃ",
+            "answer": "pya",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_103",
+            "question": "ぴゅ",
+            "answer": "pyu",
+            "explanation": ""
+        },
+        {
+            "id": "HIRA_104",
+            "question": "ぴょ",
+            "answer": "pyo",
+            "explanation": ""
+        }
+    ]
+}

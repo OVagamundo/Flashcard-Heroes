@@ -620,16 +620,23 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		add_instance(self.hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
 	
 	# Initialize flashcard progress for the selected deck
-	var deck_card_ids = Database.flashcard_definitions.keys()
+	var deck_card_ids = Database.get_cards_for_deck(deck_id)
+	# Fallback if deck not found or empty (shouldn't happen with valid UI)
+	if deck_card_ids.is_empty():
+		# Try to fallback to all cards if deck lookup fails
+		deck_card_ids = Database.flashcard_definitions.keys()
+		
 	for card_id in deck_card_ids:
 		if not flashcard_progress.has(card_id):
 			var progress = FlashcardProgress.new()
 			flashcard_progress[card_id] = progress
 	
 	# Populate the initial active deck with the first 10 cards
-	var all_card_ids = flashcard_progress.keys()
-	for i in range(min(10, all_card_ids.size())):
-		active_deck_ids.append(all_card_ids[i])
+	# Note: In a real SRS, we might want to load existing progress, but for a new run
+	# we start fresh or load from a persistent profile (out of scope for this task).
+	# For now, we just take the first 10 cards of the deck.
+	for i in range(min(10, deck_card_ids.size())):
+		active_deck_ids.append(deck_card_ids[i])
 	
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:

@@ -12,6 +12,8 @@ var decks: Dictionary = {} # Key: StringName(id), Value: FlashcardDeckDefinition
 var abilities: Dictionary = {} # Key: StringName(id), Value: AbilityDefinition
 ## Flashcard definitions loaded from JSON files
 var flashcard_definitions: Dictionary = {} # Key: StringName(id), Value: Dictionary (question, answer, explanation)
+## Deck definitions loaded from JSON files
+var deck_definitions: Dictionary = {} # Key: StringName(deck_id), Value: Dictionary (metadata + card_ids)
 
 func _ready() -> void:
 	# Load translations first
@@ -129,14 +131,21 @@ func get_hero_definitions() -> Array[GachaBallDefinition]:
 func get_all_deck_metadata() -> Array[Dictionary]:
 	var deck_meta: Array[Dictionary] = []
 	
-	# For now, return the katakana deck metadata
-	deck_meta.append({
-		"deck_id": "katakana_main",
-		"display_name": "Katakana",
-		"description": "Learn Japanese katakana characters"
-	})
+	for deck_id in deck_definitions:
+		var deck = deck_definitions[deck_id]
+		deck_meta.append({
+			"deck_id": deck.deck_id,
+			"display_name": deck.display_name,
+			"description": deck.get("description", "")
+		})
 	
 	return deck_meta
+
+## Returns the list of card IDs for a specific deck
+func get_cards_for_deck(deck_id: StringName) -> Array[StringName]:
+	if deck_definitions.has(deck_id):
+		return deck_definitions[deck_id].card_ids
+	return []
 
 ## Loads all GachaBallDefinitions from the reward pool and adds them to the units/items dictionaries
 ## This ensures all possible reward definitions are properly registered with the database
@@ -176,14 +185,30 @@ func _load_flashcard_definitions() -> void:
 				var parse_result = json.parse(json_string)
 				if parse_result == OK:
 					var deck_data = json.data
-					if deck_data.has("cards"):
+					if deck_data.has("deck_id") and deck_data.has("cards"):
+						var deck_id = StringName(deck_data.deck_id)
+						var card_ids: Array[StringName] = []
+						
 						for card in deck_data.cards:
 							if card.has("id") and card.has("question") and card.has("answer"):
-								flashcard_definitions[StringName(card.id)] = {
+								var card_id = StringName(card.id)
+								card_ids.append(card_id)
+								
+								# Store card definition globally (last write wins if duplicates exist across decks, 
+								# which is acceptable for now or we could namespace them)
+								flashcard_definitions[card_id] = {
 									"question": card.question,
 									"answer": card.answer,
 									"explanation": card.get("explanation", "")
 								}
+						
+						# Store deck definition
+						deck_definitions[deck_id] = {
+							"deck_id": deck_id,
+							"display_name": deck_data.get("display_name", deck_id),
+							"description": deck_data.get("description", ""),
+							"card_ids": card_ids
+						}
 				else:
 					pass
 			else:
