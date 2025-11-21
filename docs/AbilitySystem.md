@@ -31,6 +31,9 @@ parameters: Dictionary - Data needed for the check.
 invert_result: bool - If true, flips the result of the check.
 EffectDefinition.gd (Resource): The base class for a script that performs an action.
 parameters: Dictionary - Data for the effect, including stat-scaling formulas.
+Execution Contract: The `execute` method must handle two modes based on `context.is_simulation`:
+- **Simulation Mode (`is_simulation = true`)**: MUST NOT mutate game state. MUST return a Dictionary containing structured data (stat, amount, targets) for `CombatEvent` creation.
+- **Execution Mode (`is_simulation = false`)**: MUST mutate game state (apply damage/healing) directly. Returns the numeric amount applied (legacy).
 EffectRequest.gd (Resource): A data packet containing all information needed to execute one effect, including its priority.
 Section B: The Canonical Ability Vocabulary
 This section defines the complete set of Triggers, Targets, Conditions, and Effects available.
@@ -101,3 +104,37 @@ Enemy Side: EncounterGenerator and BattleManager must exclude any trinket where 
 Code Integration Hooks:
 AbilityResolver: Iterates GameManager.run_state.player_trinkets for player trinkets and BattleManager.get_enemy_trinkets() for enemy trinkets.
 RunState: Routes TRINKET-category instances to the dedicated player_trinkets container (5 slots).
+
+Part 4 of 4: Status Effects System
+Section F: Status Effects Architecture
+Status effects are stackable, persistent debuffs/buffs stored on GachaBallInstance and displayed in the UI.
+
+Storage:
+Each GachaBallInstance has a status_effects Dictionary: { StringName (effect_id): int (stack_count) }
+Stacks are managed via three methods:
+- add_status_effect(effect_id, amount): Adds/removes stacks (positive = add, negative = remove). Automatically cleans up when stacks ≤ 0.
+- get_status_effect_amount(effect_id): Returns current stack count (0 if not present).
+- clear_status_effect(effect_id): Removes all stacks of the effect.
+
+Application:
+Poison is applied via the Poison Vial trinket (trinket_poison_vial).
+When a team has the Poison Vial equipped, all damage dealt by that team applies 1 poison stack to the target.
+This is handled in BattleManager._resolve_single_effect_request:
+1. When creating a DAMAGE event, it checks if the source team has a Poison Vial via _has_team_trinket().
+2. If true, sets apply_poison: true flag on the CombatEvent.
+3. BattleAnimator applies the poison stack when animating damage via _apply_poison_stack().
+
+Processing & Decay:
+Poison is processed at the END of each turn in BattleManager._trigger_turn_end_abilities:
+1. For each poisoned unit, deal damage equal to poison_stacks.
+2. Create DAMAGE events (with skip_bump: true to avoid visual bump).
+3. After damage, reduce stacks by half (rounded down): new_stacks = floor(poison_stacks / 2).
+4. If new_stacks = 0, clear the status effect entirely.
+
+Lifecycle:
+Poison persists across turns until it decays to 0.
+Status effects are cleared when a unit returns to the discard pile via reset_battle_stats().
+
+UI Display:
+GachaBallView displays poison stacks as a purple label overlaying the unit icon.
+Updated automatically via SignalBus.unit_stats_changed when stacks change.

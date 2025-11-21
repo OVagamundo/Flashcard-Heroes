@@ -153,7 +153,20 @@ Abilities are the core of tactical combat, defining how units behave beyond thei
 **Action & Default Attack Rule:**
 A unit's action during the Combat Phase begins by emitting an ON_ATTACK trigger. Any of the unit's abilities that subscribe to this trigger are processed first. These abilities might modify the unit's stats, add other effects to the combat queue, or alter the board state. After these ON_ATTACK abilities are resolved, the unit proceeds to perform its Default Basic Attack, which deals damage equal to the unit's current PWR to the single frontmost enemy. This additive process ensures that every unit always has a standard attack action, which can be augmented or modified by its special abilities.
 9.5. Status Effects
-Temporary conditions applied to units during battle that have positive or negative effects, such as "Burn" (damage over time) or "Weaken" (reduced Power).
+Temporary conditions applied to units during battle that have positive or negative effects. The system is designed to be extensible, supporting a wide variety of effects similar to other deckbuilders.
+
+**Core Mechanics:**
+- **Stacking:** Most effects stack intensity or duration.
+- **Decay:** Effects typically decay at the end of the turn.
+- **Visuals:** Each effect has a distinct icon and overlay color.
+
+**Effect Types (Planned & Implemented):**
+- **Poison (Implemented):** Deals damage equal to stacks at end of turn, then halves stacks.
+- **Weaken (Planned):** Reduces damage dealt by X%.
+- **Vulnerable (Planned):** Increases damage taken by X%.
+- **Burn (Planned):** Deals flat damage at end of turn, reduces by 1.
+- **Regen (Planned):** Heals HP at end of turn.
+- **Stun (Planned):** Prevents action for one turn.
 9.6. Synergy System
 Passive bonuses are activated based on the number of unique units sharing specific tags (e.g., "Warrior," "Mage") currently in the player's Lineup.
 10. Progression Systems

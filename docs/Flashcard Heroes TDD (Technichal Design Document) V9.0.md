@@ -87,6 +87,11 @@ The game logic is modularized into distinct systems and managers, each with a cl
     -   (See `docs/FlashcardSystem.md`)
 -   **Dynamic Encounter Generation System:** Programmatically generates enemy teams for non-boss battles based on a budget.
     -   (See `docs/EncounterGenerationSystem.md`)
+-   **Status Effects System:** Manages temporary buffs/debuffs on units.
+    -   **Storage:** `GachaBallInstance.status_effects` dictionary (EffectID -> Stacks).
+    -   **Application:** `add_status_effect()` handles stacking and removal.
+    -   **Processing:** `BattleManager` processes effects (damage, decay) at specific phases (e.g., End of Turn).
+    -   **Extensibility:** Designed to support arbitrary effects via data-driven IDs.
 
 ### 3.2 Interaction & UI Managers
 

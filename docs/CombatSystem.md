@@ -45,3 +45,17 @@ SignalBus.unit_bump_attack(unit_uuid, dir: Vector2)
 SignalBus.unit_flash_effect(unit_uuid, color: Color)
 SignalBus.unit_death_fade(unit_uuid) -> followed by SignalBus.apply_deaths_requested([uuid])
 SignalBus.battle_inventory_changed()
+
+Test Mode Integration
+The Test Environment modifies the standard battle flow to allow for controlled setup:
+1.  **Initial Phase**: Unlike normal gameplay which may auto-start Turn 1, Test Mode initializes in the **MANAGEMENT** phase. This allows the user to spawn units and trinkets before the first turn begins.
+2.  **Turn 1 Start**: The user must manually click "End Turn" to start the first turn.
+3.  **Flow Override**: The "End Turn" action in Test Mode triggers `_on_results_acknowledged()` instead of a standard phase change. This ensures that `on_turn_start` abilities (which normally fire after the minigame results) are correctly triggered for the first turn.
+
+Status Effects Processing
+Status effects (currently only Poison) are processed at the END of each turn, before on_turn_end abilities:
+1.  **Damage Application**: Each poisoned unit takes damage equal to its poison stack count.
+2.  **Event Creation**: DAMAGE events are created with skip_bump: true (no attacker bump animation).
+3.  **Decay**: After damage, poison stacks are halved (rounded down). If stacks reach 0, the effect is cleared.
+4.  **Death Handling**: If poison damage reduces a unit to 0 HP, standard death events are created.
+5.  **Order**: Status effects → on_turn_end abilities → phase transition.
