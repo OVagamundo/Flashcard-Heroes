@@ -24,7 +24,13 @@ var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
+
 func _ready() -> void:
+	# Reorder UI: Move StatsContainer (HP/PWR) to the top (index 0)
+	var vbox = get_node("VBoxContainer")
+	var stats_container = vbox.get_node("StatsContainer")
+	vbox.move_child(stats_container, 0)
+	
 	var bus = get_node("/root/SignalBus")
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
@@ -72,12 +78,21 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 		return
 	
 	# Set entity type based on definition category
-	print("Setting entity type from definition.category: ", definition.category)
 	_entity_type = StringName(definition.category) if definition.category is String else definition.category
-	print("_entity_type after set: ", _entity_type, " (type: ", typeof(_entity_type), ")")
 	
 	visible = true
 	icon_rect.texture = definition.icon
+	
+	# Fix for huge trinket icons: Only apply scaling constraint for TRINKETs.
+	# Units and Items should use default scaling to preserve their intended size.
+	if _entity_type == &"TRINKET":
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	else:
+		# Restore defaults for Units/Items
+		icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_SCALE
+
 	var tier_text = "T1"  # Default for trinkets
 	if definition is GachaBallDefinition:
 		tier_text = "T%d" % definition.tier
@@ -127,29 +142,22 @@ func _update_stats() -> void:
 	# Get the instance and validate
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance):
-		print("No valid instance for UUID: ", _instance_uuid)
 		return
 
 	var definition = instance.get_definition()
 	if not is_instance_valid(definition):
-		print("No valid definition for instance: ", _instance_uuid)
 		return
 
-	print("Entity type: ", _entity_type, " (should be &\"UNIT\" for units)")
-	# Safely get the category for debugging
 	# Only show stats for units (not items or trinkets)
 	var category = definition.get("category") if definition and definition.has_method("get") else null
 	if not category:
-		print("No valid category in definition")
 		return
 		
 	# Ensure we're comparing StringNames
 	var unit_type = StringName("UNIT")
 	var category_name = StringName(category) if typeof(category) == TYPE_STRING else category
-	print("Checking category - value: ", category_name, " (type: ", typeof(category_name), ")")
 	
 	if category_name != unit_type:
-		print("Not showing stats - definition category is not UNIT (category: %s, type: %s)" % [str(category_name), typeof(category_name)])
 		return
 
 	# Show HP and PWR for units
@@ -157,46 +165,39 @@ func _update_stats() -> void:
 	pwr_label.visible = true
 	hp_label.text = "HP: %d" % instance.current_hp
 	pwr_label.text = "PWR: %d" % instance.current_pwr
-	print("Showing stats - HP: ", instance.current_hp, " PWR: ", instance.current_pwr)
 
 func _update_item_slots() -> void:
-	# Clear existing slot views
+	# REDESIGNED: Now shows status effects instead of item icons
+	# Clear existing displays
 	for child in item_grid.get_children():
 		child.queue_free()
 	
-	# Only show item slots for GachaBallDefinition (units/items), not trinkets
+	# Get the instance
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance):
 		return
 		
 	var definition = instance.get_definition()
-	if not is_instance_valid(definition) or not (definition is GachaBallDefinition):
+	if not is_instance_valid(definition):
 		return
 	
-	# Only show slots for units (not items)
+	# Only show status effects for units (not items or trinkets)
 	if definition.category != "UNIT":
 		return
-		
-	# Create item slots for units
-	for i in range(definition.item_slot_count):
-		var slot_view = Control.new()
-		slot_view.custom_minimum_size = Vector2(16, 16)
-		
-		# Show equipped item icon if any
-		var item_uuid = instance.get_equipped_item_uuid(i)
-		if not item_uuid.is_empty():
-			var item_instance = GameManager.get_instance_by_uuid(item_uuid)
-			if is_instance_valid(item_instance):
-				var item_def = item_instance.get_definition()
-				if is_instance_valid(item_def) and item_def.icon:
-					var icon = TextureRect.new()
-					icon.texture = item_def.icon
-					icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-					icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-					slot_view.add_child(icon)
-					icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		
-		item_grid.add_child(slot_view)
+	
+	# Display status effects as large numbers
+	# Show poison stacks if present (as purple number)
+	var poison_stacks = instance.get_status_effect_amount(&"poison")
+	print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
+	if poison_stacks > 0:
+		var poison_label = Label.new()
+		poison_label.text = str(poison_stacks)
+		poison_label.add_theme_font_size_override("font_size", 24)
+		poison_label.modulate = Color.MEDIUM_PURPLE
+		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		poison_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		item_grid.add_child(poison_label)
+		print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -228,6 +229,7 @@ func _on_unit_stats_changed(unit_uuid: String) -> void:
 		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			_update_stats()
+			_update_item_slots()  # Update poison display when status effects change
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location): return

@@ -41,9 +41,12 @@ signal battle_scene_requested(encounter_def: EncounterDefinition)
 ## Emitted when rest site scene is requested
 signal rest_site_scene_requested
 
+# Battle events
+
 ## Emitted when reward scene is requested
 ## @param context: Dictionary - Reward context
 signal reward_scene_requested(context: Dictionary)
+
 
 ## Emitted when flashcard minigame scene is requested
 ## @param run_state: RunState - The current run state

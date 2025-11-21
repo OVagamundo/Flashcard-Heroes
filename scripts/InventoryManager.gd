@@ -17,13 +17,20 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 		var tdef = early_target_instance.get_definition()
 		# Rule I3: Allow equipping from any InventoryGrid onto a UNIT on the board
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and s_group == &"InventoryGrid" and target_loc.container in [&"PlayerLineup", &"PlayerBench"]:
+		var allowed_containers = [&"PlayerLineup", &"PlayerBench"]
+		# In test mode, also allow equipping on enemy units
+		if GameManager.is_test_mode:
+			allowed_containers.append(&"EnemyLineup")
+			allowed_containers.append(&"EnemyBench")
+		
+		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and s_group == &"InventoryGrid" and target_loc.container in allowed_containers:
 			# Use atomic equip API
 			var owner = _get_data_owner()
 			if is_instance_valid(owner):
 				owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
 			GlobalInteractionRouter.end_drag(true)
 			return
+
 
 	# Early-case: Allow equipping items by dropping onto an equipped_item slot (empty or same-unit slot)
 	if is_instance_valid(early_source_instance) and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:

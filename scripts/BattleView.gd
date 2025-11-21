@@ -134,9 +134,14 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			if container_name == &"EnemyLineup":
 				var def = instance.get_definition()
 				if is_instance_valid(def):
-					view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
+					# In test mode, allow full interaction with enemy units
+					if battle_manager.is_test_mode:
+						view.set_interaction_context(&"FULLY_INTERACTIVE", def.category, 0)
+					else:
+						view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
 
 			view.set_is_enemy(is_enemy)
+
 			view.set_meta("location_identifier", loc)
 		else:
 			# If this slot is already a SlotView instance, simply update its location metadata.
@@ -145,8 +150,13 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				slot.set_meta("location_identifier", loc)
 				# EnemyLineup must be inspection-only: configure SlotView accordingly
 				if container_name == &"EnemyLineup":
-					slot.set_interaction_context(&"INSPECTION_ONLY", 0)
+					# In test mode, allow full interaction with enemy slots
+					if battle_manager.is_test_mode:
+						slot.set_interaction_context(&"FULLY_INTERACTIVE", 0)
+					else:
+						slot.set_interaction_context(&"INSPECTION_ONLY", 0)
 				continue
+
 			# Otherwise replace placeholder PanelContainer with a proper SlotView prefab.
 			var SlotViewScene := preload("res://scenes/SlotView.tscn")
 			var parent := slot.get_parent()

@@ -28,6 +28,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 	# Process abilities in stacking order: Units first, then equipped items, then trinkets
 	# Optimization: Iterate once and bucket instances to avoid O(3N) lookups.
 	var all_instances = battle_manager.get_all_instances()
+	print("DEBUG: AbilityResolver processing trigger '", trigger, "' with ", all_instances.size(), " total instances")
 	
 	var unit_instances: Array[Dictionary] = []
 	var equipped_item_instances: Array[Dictionary] = []
@@ -71,6 +72,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 					"slot_index": instance.equipped_slot_index
 				})
 		elif definition.category == &"TRINKET":
+			print("DEBUG: Found trinket: ", definition.id, " in container: ", instance.location_container_tag)
 			trinket_instances.append({"uuid": instance_uuid, "inst": instance, "def": definition})
 
 	# Phase 1: Process unit abilities
@@ -107,13 +109,16 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				_process_ability(ability, ability_source_uuid, battle_manager, context)
 
 	# Phase 3: Process trinket abilities
+	print("DEBUG: Processing ", trinket_instances.size(), " trinket abilities for trigger: ", trigger)
 	for data in trinket_instances:
 		var instance_uuid = data.uuid
 		var instance = data.inst
 		var definition = data.def
+		# print("DEBUG: Checking trinket: ", definition.id, " UUID: ", instance_uuid)
 		
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
+				print("DEBUG: Trinket ability match: ", ability.id)
 				# Apply trinket source rules per AbilitySystem.md
 				var source_uuid_for_ability = instance_uuid
 				

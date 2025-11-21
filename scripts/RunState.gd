@@ -636,13 +636,26 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		var container_name: StringName = &"RunInventoryT%d" % t
 		_containers[container_name] = GrowableGridContainer.new(16)
 
-	# Create player trinket container and add starter trinket (Healing Amulet)
+	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(5)
+
+	# In Test Mode, skip adding starter items and trinkets (except Hero)
+	if GameManager.is_test_mode:
+		return
+
+	# Add starter trinket (Healing Amulet)
 	var healing_amulet_def = Database.get_definition(&"trinket_healing_amulet")
 	if is_instance_valid(healing_amulet_def):
 		var trinket_inst := GachaBallInstance.new()
 		trinket_inst.initialize_from_trinket(healing_amulet_def)
 		add_instance(trinket_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+	
+	# [TESTING] Add Poison Vial to starting loadout
+	var poison_def = Database.get_definition(&"trinket_poison_vial")
+	if is_instance_valid(poison_def):
+		var poison_inst := GachaBallInstance.new()
+		poison_inst.initialize_from_trinket(poison_def)
+		add_instance(poison_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 
 	# --- Add starter units/items to inventory ---
 	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the

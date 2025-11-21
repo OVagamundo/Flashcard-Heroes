@@ -56,6 +56,11 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						await get_tree().create_timer(0.5).timeout
 					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
 					_apply_hp_delta(target_uuid, event.amount)
+					
+					# Apply poison if flagged (syncs with damage visual)
+					if event.apply_poison:
+						_apply_poison_stack(target_uuid)
+					
 					# Start damage flash while bump (if any) is finishing
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
@@ -136,6 +141,17 @@ func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
 	var new_pwr: int = max(0, inst.current_pwr + amount)
 	inst.current_pwr = new_pwr
 	SignalBus.emit_signal("unit_stats_changed", target_uuid)
+
+func _apply_poison_stack(target_uuid: String) -> void:
+	# Apply 1 poison stack to target when damage is animated
+	var bm := _get_battle_manager()
+	if not is_instance_valid(bm):
+		return
+	var inst: GachaBallInstance = bm.get_instance(target_uuid)
+	if is_instance_valid(inst):
+		print("[POISON ANIMATOR] Applying poison to: ", target_uuid, " Current stacks before: ", inst.get_status_effect_amount(&"poison"))
+		inst.add_status_effect(&"poison", 1)
+		print("[POISON ANIMATOR] Poison applied. Current stacks after: ", inst.get_status_effect_amount(&"poison"))
 
 func _emit_bump(attacker_uuid: String) -> void:
 	if attacker_uuid == null or String(attacker_uuid).is_empty():

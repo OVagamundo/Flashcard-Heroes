@@ -4,6 +4,7 @@ extends Control
 @onready var hero_button: OptionButton = %HeroOptionButton
 @onready var deck_button: OptionButton = %DeckOptionButton
 @onready var start_button: Button = %StartRunButton
+@onready var test_button: Button = %TestModeButton
 
 var _hero_defs: Array[GachaBallDefinition] = []
 var _deck_meta: Array[Dictionary] = []
@@ -12,6 +13,8 @@ func _ready() -> void:
 	_populate_heroes()
 	_populate_decks()
 	start_button.pressed.connect(_on_start_run_pressed)
+	test_button.pressed.connect(_on_test_mode_pressed)
+
 
 func _populate_heroes() -> void:
 	_hero_defs = Database.get_hero_definitions()
@@ -37,4 +40,25 @@ func _on_start_run_pressed() -> void:
 	var hero_id = _hero_defs[selected_hero_index].id
 	var deck_id = _deck_meta[selected_deck_index].deck_id
 
+	# Ensure test mode is off for normal runs
+	GameManager.is_test_mode = false
 	SignalBus.emit_signal("start_run_requested", hero_id, deck_id)
+
+
+func _on_test_mode_pressed() -> void:
+	var selected_hero_index = hero_button.selected
+	var selected_deck_index = deck_button.selected
+	
+	if selected_hero_index == -1 or selected_deck_index == -1:
+		return
+	
+	var hero_id = _hero_defs[selected_hero_index].id
+	var deck_id = _deck_meta[selected_deck_index].deck_id
+	
+	# Set test mode flag
+	GameManager.is_test_mode = true
+	
+	# Trigger normal run start
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id)
+
+

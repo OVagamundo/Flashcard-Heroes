@@ -27,6 +27,7 @@ var equipped_item_uuids: Array[String] = ["", "", ""]
 
 # --- Dynamic State Properties ---
 var dynamic_tags: Array[StringName] = [] # For status effects like "POISONED", "HONEY_ARMOR"
+var status_effects: Dictionary = {} # Key: StringName (effect_id), Value: int (stack_count)
 
 # --- Abilities ---
 var abilities: Array[AbilityDefinition] = []
@@ -59,6 +60,7 @@ func create_battle_copy() -> GachaBallInstance:
 	# Deep copy mutable types
 	copy.abilities = self.abilities.duplicate(true)
 	copy.dynamic_tags = self.dynamic_tags.duplicate(true)
+	copy.status_effects = self.status_effects.duplicate(true)
 	
 	# Assign new unique ID for the battle context
 	copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
@@ -70,8 +72,15 @@ func create_battle_copy() -> GachaBallInstance:
 	# Reset to base stats from definition (ignoring any changes from previous battles)
 	var def = get_definition()
 	if is_instance_valid(def):
-		copy.current_hp = def.base_hp
-		copy.current_pwr = def.base_pwr
+		if def is GachaBallDefinition:
+			copy.current_hp = def.base_hp
+			copy.current_pwr = def.base_pwr
+		elif "base_hp" in def and "base_pwr" in def:
+			copy.current_hp = def.base_hp
+			copy.current_pwr = def.base_pwr
+		else:
+			copy.current_hp = 0
+			copy.current_pwr = 0
 	else:
 		copy.current_hp = self.current_hp
 		copy.current_pwr = self.current_pwr
@@ -135,11 +144,25 @@ func set_current_hp_silent(new_hp: int) -> void:
 	self.current_hp = new_hp
 
 func reset_battle_stats() -> void:
+	# Restore HP and PWR to base values (without equipment bonuses)
 	var definition = get_definition()
-	if not is_instance_valid(definition):
-		return
-	self.current_hp = definition.base_hp
-	self.current_pwr = definition.base_pwr
+	if is_instance_valid(definition):
+		if definition is GachaBallDefinition:
+			current_hp = definition.base_hp
+			current_pwr = definition.base_pwr
+		elif "base_hp" in definition and "base_pwr" in definition:
+			# Non-unit definitions (items, trinkets) may have 0 HP/PWR
+			current_hp = definition.base_hp
+			current_pwr = definition.base_pwr
+		else:
+			current_hp = 0
+			current_pwr = 0
+	
+	# Clear all status effects (poison, etc.)
+	status_effects.clear()
+	
+	# Reset dynamic tags
+	dynamic_tags.clear()
 
 # --- Stat Recalculation ---
 func recalculate_stats(all_instances_db: Dictionary) -> void:
@@ -151,8 +174,16 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 	var previous_pwr = self.current_pwr
 
 	# Calculate new effective maximum stats (base + item bonuses)
-	var _effective_max_hp = definition.base_hp  # Not used after fix, but kept for future reference
-	var effective_max_pwr = definition.base_pwr
+	var _effective_max_hp = 0
+	var effective_max_pwr = 0
+	
+	if definition is GachaBallDefinition:
+		_effective_max_hp = definition.base_hp
+		effective_max_pwr = definition.base_pwr
+	elif "base_hp" in definition and "base_pwr" in definition:
+		_effective_max_hp = definition.base_hp
+		effective_max_pwr = definition.base_pwr
+
 
 	# Add bonuses from each equipped item by looking up its UUID in the provided database.
 	for item_uuid in equipped_item_uuids:
@@ -189,6 +220,28 @@ func has_tag(tag: StringName) -> bool:
 		return true
 	# Then check dynamic tags on this instance.
 	return dynamic_tags.has(tag)
+
+# --- Status Effect Helpers ---
+func add_status_effect(effect_id: StringName, amount: int) -> void:
+	if amount == 0: return
+	
+	var current = status_effects.get(effect_id, 0)
+	var new_amount = current + amount
+	
+	if new_amount <= 0:
+		status_effects.erase(effect_id)
+	else:
+		status_effects[effect_id] = new_amount
+		
+	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
+func get_status_effect_amount(effect_id: StringName) -> int:
+	return status_effects.get(effect_id, 0)
+
+func clear_status_effect(effect_id: StringName) -> void:
+	if status_effects.has(effect_id):
+		status_effects.erase(effect_id)
+		SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
 
 # --- Location Helpers ---
 # Assembles the definitive location of this instance based on its state.
@@ -227,5 +280,5 @@ func get_ability(index: int) -> AbilityDefinition:
 	return null
 
 # --- Utilities ---
-func get_definition() -> GachaBallDefinition:
+func get_definition() -> Resource:
 	return Database.get_definition(definition_id)

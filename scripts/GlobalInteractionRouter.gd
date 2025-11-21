@@ -672,7 +672,7 @@ func get_context_group(container_name: StringName) -> StringName:
 ## Internal container functional group resolver
 func _get_container_functional_group(container_name: StringName) -> StringName:
 	# Battle board containers
-	if container_name in [&"PlayerLineup", &"PlayerBench"]:
+	if container_name in [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]:
 		return &"BattleBoard"
 
 	# Inventory containers (can interact with each other)
@@ -692,8 +692,9 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 		return &"EquippedGrid"
 
 	# Inspection-only containers (no actions allowed)
-	if container_name in [&"EnemyLineup", &"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets"]:
+	if container_name in [&"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets"]:
 		return &"InspectionOnly"
+
 
 	return &"Unknown"
 

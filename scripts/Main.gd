@@ -18,6 +18,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
+
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
 const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 
@@ -25,7 +26,6 @@ var _current_content_node: Node = null
 
 func _ready() -> void:
 	GameManager.register_main_node(self) # Register self with GameManager
-	
 	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
 	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
 	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
@@ -45,7 +45,10 @@ func _ready() -> void:
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 
+
+
 	_on_battle_state_changed(false)
+
 	SignalBus.emit_signal("path_choice_scene_requested")
 
 	if is_instance_valid(GameManager.run_state):
@@ -138,6 +141,9 @@ func _on_battle_inventory_changed() -> void:
 	draw_tier1_button.disabled = false
 	draw_tier2_button.disabled = false
 	draw_tier3_button.disabled = false
+	
+	# Refresh player trinkets as they might have changed (e.g. in Test Mode)
+	_populate_player_trinkets()
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	draw_tier1_button.visible = is_in_battle

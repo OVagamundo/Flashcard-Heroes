@@ -21,6 +21,7 @@ var stat: String = ""
 var skip_bump: bool = false
 var source_name: String = ""
 var target_names: Array[String] = []
+var apply_poison: bool = false  # If true, apply 1 poison stack to target when this damage is animated
 
 func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.type = p_type
@@ -46,3 +47,4 @@ func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 			self.target_names.append(String(n))
 	elif raw_target_names is String:
 		self.target_names.append(String(raw_target_names))
+	self.apply_poison = bool(p_context.get("apply_poison", false))

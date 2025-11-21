@@ -9,7 +9,9 @@ const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 
 var run_state: RunState
 var is_in_battle: bool = false # The global authority on whether a battle is active.
+var is_test_mode: bool = false # Global flag for test environment
 var _active_battle_manager: Node = null # ADD THIS LINE
+
 var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0

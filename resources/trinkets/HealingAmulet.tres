@@ -12,6 +12,7 @@ target_type = &"FRONTMOST_ALLY"
 
 [sub_resource type="Resource" id="Ability_HealingAmulet_1"]
 script = ExtResource("3_ability")
+id = &"trinket_healing_amulet_heal"
 trigger = &"on_turn_start"
 description_key = "ability.healing_amulet.desc"
 effects = Array[Resource]([SubResource("EffectModifyStat_HealingAmulet_1")])

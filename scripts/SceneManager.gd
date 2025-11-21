@@ -11,6 +11,7 @@ const SCENE_PATHS = {
 	"BattleContent": "res://scenes/Battle.tscn"
 }
 
+
 var current_scene: Node = null
 
 func _ready() -> void:
@@ -21,6 +22,7 @@ func _ready() -> void:
 	SignalBus.loadout_scene_requested.connect(_on_loadout_scene_requested)
 	SignalBus.main_scene_requested.connect(_on_main_scene_requested)
 
+
 func _on_title_scene_requested() -> void:
 	_change_scene_to(SCENE_PATHS["Title"])
 
@@ -29,6 +31,8 @@ func _on_loadout_scene_requested() -> void:
 
 func _on_main_scene_requested() -> void:
 	_change_scene_to(SCENE_PATHS["Main"])
+
+
 
 
 
