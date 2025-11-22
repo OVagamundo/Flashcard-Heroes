@@ -21,8 +21,9 @@ The results payload is a dictionary: { "correct_answers": int, "incorrect_answer
 3. Mini-Game Flow
 When start_minigame is called, the FlashcardManager executes the following sequence:
 Card Introduction (If Applicable):
-The manager checks if a new card needs to be introduced to the Active Deck for this session.
-If so, it first displays a dedicated information screen showing the new card's question, answer, and explanation. The player must click a "Got It!" button to proceed. This new card is then added to the Active Deck for the remainder of the run.
+The manager now introduces **exactly one new card at the start of each mini‑game session** until every card from the main deck has been added.
+The new card is shown on an introduction screen with its question, answer, and explanation. The player clicks "Got It!" to continue.
+The card is permanently added to `RunState.active_deck_ids` and to the session's `_active_deck` list, ensuring it persists across runs.
 Start Timer:
 A global session timer of 3 seconds begins. This timer is for the entire quiz, not per question.
 The mini-game UI appears as a large modal window, disabling all other game interactions.

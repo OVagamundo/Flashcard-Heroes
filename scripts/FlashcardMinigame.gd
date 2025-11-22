@@ -57,19 +57,26 @@ func populate(context: Dictionary) -> void:
 
 func _check_for_new_card() -> void:
 	"""Check if a new card should be introduced to the active deck"""
-	# TDD: Card Introduction - one new card is drawn in order from the Main Deck
-	# For now, we'll implement a simple version - introduce a new card every 3 sessions
-	# In a full implementation, this would track which cards have been introduced
+	# TDD: Card Introduction - one new card is introduced per minigame session
+	# until all cards from the Main Deck have been introduced
 	
-	# Add a new card to the active deck
+	if not is_instance_valid(_run_state):
+		_is_introducing_new_card = false
+		return
+	
+	# Find a card that's not yet in the active deck
 	var all_cards = _run_state.flashcard_progress.keys()
 	for card_id in all_cards:
-		if not _active_deck.has(card_id):
+		if not _run_state.active_deck_ids.has(card_id):
 			_new_card_id = card_id
+			# Permanently add to RunState's active deck (persists across sessions)
+			_run_state.active_deck_ids.append(card_id)
+			# Also add to our local copy for this session
 			_active_deck.append(card_id)
 			_is_introducing_new_card = true
 			return
 	
+	# No new cards to introduce - all cards are already in the active deck
 	_is_introducing_new_card = false
 
 func _show_card_introduction() -> void:

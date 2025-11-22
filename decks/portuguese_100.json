@@ -1,0 +1,607 @@
+{
+    "deck_id": "portuguese_100",
+    "display_name": "Portuguese Sentences 100",
+    "description": "100 most common everyday Portuguese sentences (3 words each)",
+    "cards": [
+        {
+            "id": "PORT_SENT_001",
+            "question": "Eu estou bem",
+            "answer": "I am fine",
+            "explanation": "Simple statement of well‑being"
+        },
+        {
+            "id": "PORT_SENT_002",
+            "question": "Como vai você",
+            "answer": "How are you",
+            "explanation": "Common greeting"
+        },
+        {
+            "id": "PORT_SENT_003",
+            "question": "Obrigado por isso",
+            "answer": "Thank you for that",
+            "explanation": "Expression of gratitude"
+        },
+        {
+            "id": "PORT_SENT_004",
+            "question": "Desculpe pelo atraso",
+            "answer": "Sorry for the delay",
+            "explanation": "Apology"
+        },
+        {
+            "id": "PORT_SENT_005",
+            "question": "Onde fica o banheiro",
+            "answer": "Where is the bathroom",
+            "explanation": "Asking location"
+        },
+        {
+            "id": "PORT_SENT_006",
+            "question": "Quanto custa isso",
+            "answer": "How much is this",
+            "explanation": "Asking price"
+        },
+        {
+            "id": "PORT_SENT_007",
+            "question": "Preciso de ajuda",
+            "answer": "I need help",
+            "explanation": "Requesting assistance"
+        },
+        {
+            "id": "PORT_SENT_008",
+            "question": "Vamos sair hoje",
+            "answer": "Let's go out today",
+            "explanation": "Invitation"
+        },
+        {
+            "id": "PORT_SENT_009",
+            "question": "Eu quero água",
+            "answer": "I want water",
+            "explanation": "Requesting a drink"
+        },
+        {
+            "id": "PORT_SENT_010",
+            "question": "Estou com fome",
+            "answer": "I am hungry",
+            "explanation": "Expressing hunger"
+        },
+        {
+            "id": "PORT_SENT_011",
+            "question": "Estou cansado agora",
+            "answer": "I am tired now",
+            "explanation": "Expressing fatigue"
+        },
+        {
+            "id": "PORT_SENT_012",
+            "question": "Vamos ao cinema",
+            "answer": "Let's go to the cinema",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_013",
+            "question": "Eu gosto de música",
+            "answer": "I like music",
+            "explanation": "Expressing preference"
+        },
+        {
+            "id": "PORT_SENT_014",
+            "question": "Ele está aqui",
+            "answer": "He is here",
+            "explanation": "Statement of presence"
+        },
+        {
+            "id": "PORT_SENT_015",
+            "question": "Ela chegou tarde",
+            "answer": "She arrived late",
+            "explanation": "Statement of arrival"
+        },
+        {
+            "id": "PORT_SENT_016",
+            "question": "Nós vamos viajar",
+            "answer": "We are going to travel",
+            "explanation": "Future plan"
+        },
+        {
+            "id": "PORT_SENT_017",
+            "question": "Preciso de carro",
+            "answer": "I need a car",
+            "explanation": "Requesting a vehicle"
+        },
+        {
+            "id": "PORT_SENT_018",
+            "question": "Você tem tempo",
+            "answer": "Do you have time",
+            "explanation": "Asking availability"
+        },
+        {
+            "id": "PORT_SENT_019",
+            "question": "Vou comprar pão",
+            "answer": "I will buy bread",
+            "explanation": "Intent to purchase"
+        },
+        {
+            "id": "PORT_SENT_020",
+            "question": "Ele gosta de futebol",
+            "answer": "He likes soccer",
+            "explanation": "Expressing interest"
+        },
+        {
+            "id": "PORT_SENT_021",
+            "question": "Ela trabalha aqui",
+            "answer": "She works here",
+            "explanation": "Job location"
+        },
+        {
+            "id": "PORT_SENT_022",
+            "question": "Eu preciso dormir",
+            "answer": "I need to sleep",
+            "explanation": "Expressing need"
+        },
+        {
+            "id": "PORT_SENT_023",
+            "question": "Vamos fazer isso",
+            "answer": "Let's do it",
+            "explanation": "Encouragement"
+        },
+        {
+            "id": "PORT_SENT_024",
+            "question": "Ele está doente",
+            "answer": "He is sick",
+            "explanation": "Health status"
+        },
+        {
+            "id": "PORT_SENT_025",
+            "question": "Ela está feliz",
+            "answer": "She is happy",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_026",
+            "question": "Eu não sei",
+            "answer": "I don't know",
+            "explanation": "Admission of ignorance"
+        },
+        {
+            "id": "PORT_SENT_027",
+            "question": "Você pode ajudar",
+            "answer": "Can you help",
+            "explanation": "Request"
+        },
+        {
+            "id": "PORT_SENT_028",
+            "question": "Ele quer sair",
+            "answer": "He wants to go out",
+            "explanation": "Desire"
+        },
+        {
+            "id": "PORT_SENT_029",
+            "question": "Ela quer ficar",
+            "answer": "She wants to stay",
+            "explanation": "Desire"
+        },
+        {
+            "id": "PORT_SENT_030",
+            "question": "Vamos comer agora",
+            "answer": "Let's eat now",
+            "explanation": "Invitation to eat"
+        },
+        {
+            "id": "PORT_SENT_031",
+            "question": "Eu preciso estudar",
+            "answer": "I need to study",
+            "explanation": "Obligation"
+        },
+        {
+            "id": "PORT_SENT_032",
+            "question": "Ele está estudando",
+            "answer": "He is studying",
+            "explanation": "Current action"
+        },
+        {
+            "id": "PORT_SENT_033",
+            "question": "Ela está lendo",
+            "answer": "She is reading",
+            "explanation": "Current action"
+        },
+        {
+            "id": "PORT_SENT_034",
+            "question": "Eu gosto de ler",
+            "answer": "I like to read",
+            "explanation": "Preference"
+        },
+        {
+            "id": "PORT_SENT_035",
+            "question": "Vamos ao parque",
+            "answer": "Let's go to the park",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_036",
+            "question": "Ele corre rápido",
+            "answer": "He runs fast",
+            "explanation": "Observation"
+        },
+        {
+            "id": "PORT_SENT_037",
+            "question": "Ela fala bem",
+            "answer": "She speaks well",
+            "explanation": "Observation"
+        },
+        {
+            "id": "PORT_SENT_038",
+            "question": "Eu preciso comprar",
+            "answer": "I need to buy",
+            "explanation": "Intent"
+        },
+        {
+            "id": "PORT_SENT_039",
+            "question": "Você tem dinheiro",
+            "answer": "Do you have money",
+            "explanation": "Question about resources"
+        },
+        {
+            "id": "PORT_SENT_040",
+            "question": "Ele tem carro",
+            "answer": "He has a car",
+            "explanation": "Statement of possession"
+        },
+        {
+            "id": "PORT_SENT_041",
+            "question": "Ela tem gato",
+            "answer": "She has a cat",
+            "explanation": "Statement of possession"
+        },
+        {
+            "id": "PORT_SENT_042",
+            "question": "Eu quero viajar",
+            "answer": "I want to travel",
+            "explanation": "Desire"
+        },
+        {
+            "id": "PORT_SENT_043",
+            "question": "Vamos fazer pausa",
+            "answer": "Let's take a break",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_044",
+            "question": "Ele está cansado",
+            "answer": "He is tired",
+            "explanation": "State"
+        },
+        {
+            "id": "PORT_SENT_045",
+            "question": "Ela está animada",
+            "answer": "She is excited",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_046",
+            "question": "Eu não gosto",
+            "answer": "I don't like it",
+            "explanation": "Dislike"
+        },
+        {
+            "id": "PORT_SENT_047",
+            "question": "Você gosta disso",
+            "answer": "Do you like this",
+            "explanation": "Question"
+        },
+        {
+            "id": "PORT_SENT_048",
+            "question": "Ele está trabalhando",
+            "answer": "He is working",
+            "explanation": "Current activity"
+        },
+        {
+            "id": "PORT_SENT_049",
+            "question": "Ela está cozinhando",
+            "answer": "She is cooking",
+            "explanation": "Current activity"
+        },
+        {
+            "id": "PORT_SENT_050",
+            "question": "Eu preciso descansar",
+            "answer": "I need to rest",
+            "explanation": "Need"
+        },
+        {
+            "id": "PORT_SENT_051",
+            "question": "Vamos ao restaurante",
+            "answer": "Let's go to the restaurant",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_052",
+            "question": "Ele tem medo",
+            "answer": "He is afraid",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_053",
+            "question": "Ela tem medo",
+            "answer": "She is afraid",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_054",
+            "question": "Eu estou feliz",
+            "answer": "I am happy",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_055",
+            "question": "Você está pronto",
+            "answer": "Are you ready",
+            "explanation": "Readiness"
+        },
+        {
+            "id": "PORT_SENT_056",
+            "question": "Ele está pronto",
+            "answer": "He is ready",
+            "explanation": "Readiness"
+        },
+        {
+            "id": "PORT_SENT_057",
+            "question": "Ela está pronta",
+            "answer": "She is ready",
+            "explanation": "Readiness"
+        },
+        {
+            "id": "PORT_SENT_058",
+            "question": "Eu preciso ir",
+            "answer": "I need to go",
+            "explanation": "Obligation"
+        },
+        {
+            "id": "PORT_SENT_059",
+            "question": "Vamos conversar agora",
+            "answer": "Let's talk now",
+            "explanation": "Invitation"
+        },
+        {
+            "id": "PORT_SENT_060",
+            "question": "Ele está ouvindo",
+            "answer": "He is listening",
+            "explanation": "Current action"
+        },
+        {
+            "id": "PORT_SENT_061",
+            "question": "Ela está falando",
+            "answer": "She is speaking",
+            "explanation": "Current action"
+        },
+        {
+            "id": "PORT_SENT_062",
+            "question": "Eu quero aprender",
+            "answer": "I want to learn",
+            "explanation": "Desire"
+        },
+        {
+            "id": "PORT_SENT_063",
+            "question": "Você pode esperar",
+            "answer": "Can you wait",
+            "explanation": "Request"
+        },
+        {
+            "id": "PORT_SENT_064",
+            "question": "Ele pode ajudar",
+            "answer": "He can help",
+            "explanation": "Capability"
+        },
+        {
+            "id": "PORT_SENT_065",
+            "question": "Ela pode cantar",
+            "answer": "She can sing",
+            "explanation": "Capability"
+        },
+        {
+            "id": "PORT_SENT_066",
+            "question": "Eu preciso correr",
+            "answer": "I need to run",
+            "explanation": "Obligation"
+        },
+        {
+            "id": "PORT_SENT_067",
+            "question": "Vamos jogar futebol",
+            "answer": "Let's play soccer",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_068",
+            "question": "Ele está estudando",
+            "answer": "He is studying",
+            "explanation": "Current activity"
+        },
+        {
+            "id": "PORT_SENT_069",
+            "question": "Ela está estudando",
+            "answer": "She is studying",
+            "explanation": "Current activity"
+        },
+        {
+            "id": "PORT_SENT_070",
+            "question": "Eu preciso estudar",
+            "answer": "I need to study",
+            "explanation": "Obligation"
+        },
+        {
+            "id": "PORT_SENT_071",
+            "question": "Você tem um carro",
+            "answer": "Do you have a car",
+            "explanation": "Question about possession"
+        },
+        {
+            "id": "PORT_SENT_072",
+            "question": "Ele tem um cachorro",
+            "answer": "He has a dog",
+            "explanation": "Statement of possession"
+        },
+        {
+            "id": "PORT_SENT_073",
+            "question": "Ela tem um gato",
+            "answer": "She has a cat",
+            "explanation": "Statement of possession"
+        },
+        {
+            "id": "PORT_SENT_074",
+            "question": "Eu quero um café",
+            "answer": "I want a coffee",
+            "explanation": "Request"
+        },
+        {
+            "id": "PORT_SENT_075",
+            "question": "Vamos ao mercado",
+            "answer": "Let's go to the market",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_076",
+            "question": "Ele está feliz",
+            "answer": "He is happy",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_077",
+            "question": "Ela está triste",
+            "answer": "She is sad",
+            "explanation": "Emotion"
+        },
+        {
+            "id": "PORT_SENT_078",
+            "question": "Eu estou cansado",
+            "answer": "I am tired",
+            "explanation": "State"
+        },
+        {
+            "id": "PORT_SENT_079",
+            "question": "Você está pronto",
+            "answer": "Are you ready",
+            "explanation": "Readiness"
+        },
+        {
+            "id": "PORT_SENT_080",
+            "question": "Ele está pronto",
+            "answer": "He is ready",
+            "explanation": "Readiness"
+        },
+        {
+            "id": "PORT_SENT_081",
+            "question": "Ela está pronta",
+            "answer": "She is ready",
+            "explanation": "Readiness"
+        },
+        {
+            "id": "PORT_SENT_082",
+            "question": "Eu preciso descansar",
+            "answer": "I need to rest",
+            "explanation": "Need"
+        },
+        {
+            "id": "PORT_SENT_083",
+            "question": "Vamos ao médico",
+            "answer": "Let's go to the doctor",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_084",
+            "question": "Ele tem febre",
+            "answer": "He has a fever",
+            "explanation": "Health"
+        },
+        {
+            "id": "PORT_SENT_085",
+            "question": "Ela tem dor",
+            "answer": "She has pain",
+            "explanation": "Health"
+        },
+        {
+            "id": "PORT_SENT_086",
+            "question": "Eu estou doente",
+            "answer": "I am sick",
+            "explanation": "Health"
+        },
+        {
+            "id": "PORT_SENT_087",
+            "question": "Você está doente",
+            "answer": "Are you sick",
+            "explanation": "Health question"
+        },
+        {
+            "id": "PORT_SENT_088",
+            "question": "Ele está aqui",
+            "answer": "He is here",
+            "explanation": "Presence"
+        },
+        {
+            "id": "PORT_SENT_089",
+            "question": "Ela está lá",
+            "answer": "She is there",
+            "explanation": "Presence"
+        },
+        {
+            "id": "PORT_SENT_090",
+            "question": "Eu preciso de ajuda",
+            "answer": "I need help",
+            "explanation": "Request"
+        },
+        {
+            "id": "PORT_SENT_091",
+            "question": "Você pode me ajudar",
+            "answer": "Can you help me",
+            "explanation": "Request"
+        },
+        {
+            "id": "PORT_SENT_092",
+            "question": "Ele pode vir",
+            "answer": "He can come",
+            "explanation": "Capability"
+        },
+        {
+            "id": "PORT_SENT_093",
+            "question": "Ela pode vir",
+            "answer": "She can come",
+            "explanation": "Capability"
+        },
+        {
+            "id": "PORT_SENT_094",
+            "question": "Vamos comprar isso",
+            "answer": "Let's buy this",
+            "explanation": "Suggestion"
+        },
+        {
+            "id": "PORT_SENT_095",
+            "question": "Eu quero comprar",
+            "answer": "I want to buy",
+            "explanation": "Desire"
+        },
+        {
+            "id": "PORT_SENT_096",
+            "question": "Você tem tempo",
+            "answer": "Do you have time",
+            "explanation": "Question"
+        },
+        {
+            "id": "PORT_SENT_097",
+            "question": "Ele tem tempo",
+            "answer": "He has time",
+            "explanation": "Statement"
+        },
+        {
+            "id": "PORT_SENT_098",
+            "question": "Ela tem tempo",
+            "answer": "She has time",
+            "explanation": "Statement"
+        },
+        {
+            "id": "PORT_SENT_099",
+            "question": "Eu preciso de água",
+            "answer": "I need water",
+            "explanation": "Request"
+        },
+        {
+            "id": "PORT_SENT_100",
+            "question": "Vamos começar agora",
+            "answer": "Let's start now",
+            "explanation": "Invitation"
+        }
+    ]
+}

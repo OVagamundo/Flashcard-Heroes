@@ -85,6 +85,7 @@ The game logic is modularized into distinct systems and managers, each with a cl
     -   (See `docs/AbilitySystem.md`)
 -   **Flashcard System:** Manages the high-speed learning mini-game and its associated rewards.
     -   (See `docs/FlashcardSystem.md`)
+    -   **New Decks Added:** `portuguese_100.json` (100 everyday Portuguese sentences) and `german_100.json` (100 everyday German sentences) with three‑word sentences.
 -   **Dynamic Encounter Generation System:** Programmatically generates enemy teams for non-boss battles based on a budget.
     -   (See `docs/EncounterGenerationSystem.md`)
 -   **Status Effects System:** Manages temporary buffs/debuffs on units.
