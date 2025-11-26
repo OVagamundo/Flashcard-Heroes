@@ -4,7 +4,8 @@ extends Node
 signal turn_animation_finished
 
 var _hp_snapshot: Dictionary = {}
-var _current_animation_uuid: String = ""  # Track which unit is currently animating
+var _current_animation_uuid: String = "" # Track which unit is currently animating
+var _dead_units: Dictionary = {} # Track units that have already animated death this turn
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -14,10 +15,25 @@ func set_hp_snapshot(snapshot: Dictionary) -> void:
 func _ready() -> void:
 	add_to_group("battle_animator")
 
+func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
+	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
+	# Extract HP snapshot for backward compatibility
+	var hp_only_snapshot: Dictionary = {}
+	for uuid in start_snapshot:
+		var data = start_snapshot[uuid]
+		if data is Dictionary and data.has("hp"):
+			hp_only_snapshot[uuid] = data["hp"]
+	
+	set_hp_snapshot(hp_only_snapshot)
+	await play_turn(turn_log)
+
 func play_turn(events: Array[CombatEvent]) -> void:
 	if events.is_empty():
 		emit_signal("turn_animation_finished")
 		return
+	
+	_dead_units.clear()
+	
 	# Restore HP from snapshot so subsequent per-event changes are visible.
 	# Only restore units that were ALIVE at start of turn (snapshot > 0)
 	# Skip units that were already dead (snapshot = 0) - they stay dead
@@ -46,24 +62,31 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 			CombatEvent.Type.DAMAGE:
 				# Emit bump (unless flagged to skip), then flash animation
 				# Apply HP delta incrementally so each attack shows its own damage
+				var payload = event.visual_payload
 				if event.target_uuids.size() > 0:
 					var target_uuid := event.target_uuids[0]
 					var source_uuid_str := String(event.source_uuid)
-					var should_bump: bool = (not event.skip_bump) and (not source_uuid_str.is_empty())
+					var skip_bump = bool(payload.get("skip_bump", false))
+					var amount = int(payload.get("amount", 0))
+					var should_bump: bool = (not skip_bump) and (not source_uuid_str.is_empty())
 					if should_bump:
 						_emit_bump(event.source_uuid)
 						# Wait for half of the bump animation (0.5s)
 						await get_tree().create_timer(0.5).timeout
 					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
-					_apply_hp_delta(target_uuid, event.amount)
+					_apply_hp_delta(target_uuid, amount)
 					
 					# Apply poison if flagged (syncs with damage visual)
-					if event.apply_poison:
+					var apply_poison = bool(payload.get("apply_poison", false))
+					if apply_poison:
 						_apply_poison_stack(target_uuid)
 					
 					# Start damage flash while bump (if any) is finishing
 					if SignalBus.has_signal("unit_flash_effect"):
-						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
+						var flash_color = Color(1.0, 0.6, 0.6) # Default red
+						if bool(payload.get("is_poison_damage", false)):
+							flash_color = Color(0.6, 0.2, 0.8) # Purple for poison
+						SignalBus.emit_signal("unit_flash_effect", target_uuid, flash_color)
 					# Wait for any bump and then the flash to complete
 					if should_bump:
 						await _wait_for_animation_completion("bump", event.source_uuid)
@@ -72,37 +95,41 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.HEAL:
 				# HP-only: apply HP delta incrementally with green flash
+				var payload = event.visual_payload
+				var amount = int(payload.get("amount", 0))
 				for target_uuid2 in event.target_uuids:
 					_current_animation_uuid = target_uuid2
-					_apply_hp_delta(target_uuid2, event.amount)
+					_apply_hp_delta(target_uuid2, amount)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
 						await _wait_for_animation_completion("flash", target_uuid2)
 
-			CombatEvent.Type.STAT_BUFF:
+			CombatEvent.Type.BUFF:
 				# PWR buff: apply PWR delta with blue flash
+				var payload = event.visual_payload
+				var amount = int(payload.get("amount", 0))
 				for target_uuid3 in event.target_uuids:
 					_current_animation_uuid = target_uuid3
-					_apply_pwr_delta(target_uuid3, event.amount)
+					_apply_pwr_delta(target_uuid3, amount)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(0.6, 0.8, 1.0))
 						await _wait_for_animation_completion("flash", target_uuid3)
 
-			CombatEvent.Type.INVENTORY_SYNC:
-				# This triggers the removal of the dead unit's view from the UI.
-				SignalBus.emit_signal("battle_inventory_changed")
-				# Inventory sync is instant, no animation to wait for
-
 			CombatEvent.Type.DEATH:
-				# Play death fade on target, then request removal
+				# Play death fade on target
 				if event.target_uuids.size() > 0:
 					var dead_uuid := event.target_uuids[0]
+					
+					# Prevent duplicate death animations for the same unit in this sequence
+					if _dead_units.has(dead_uuid):
+						continue
+						
+					_dead_units[dead_uuid] = true
 					_current_animation_uuid = dead_uuid
+					
 					if SignalBus.has_signal("unit_death_fade"):
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
 						await _wait_for_animation_completion("death_fade", dead_uuid)
-					if SignalBus.has_signal("apply_deaths_requested"):
-						SignalBus.emit_signal("apply_deaths_requested", [dead_uuid])
 
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
@@ -123,9 +150,12 @@ func _apply_hp_delta(target_uuid: String, amount: int) -> void:
 		return
 	var old_hp := inst.current_hp
 	var new_hp := old_hp + amount
-	# Clamp to minimum zero; allow overheal as per recalc rules
-	new_hp = max(0, new_hp)
+	# Do NOT clamp to 0 here. The simulation allows negative HP (overkill),
+	# so we must track it accurately to ensure subsequent heals/damage match the simulation.
+	# The UI view will handle clamping for display.
+	# print("DEBUG: _apply_hp_delta for ", target_uuid, " Amount: ", amount, " Old: ", old_hp, " New: ", new_hp)
 	inst.set_current_hp(new_hp)
+	SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "hp", new_hp)
 
 func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
 	var bm := _get_battle_manager()
@@ -139,7 +169,9 @@ func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
 		return
 	# Apply PWR delta and emit stats changed for UI
 	var new_pwr: int = max(0, inst.current_pwr + amount)
+	new_pwr = max(0, new_pwr)
 	inst.current_pwr = new_pwr
+	SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "pwr", new_pwr)
 	SignalBus.emit_signal("unit_stats_changed", target_uuid)
 
 func _apply_poison_stack(target_uuid: String) -> void:
@@ -149,9 +181,9 @@ func _apply_poison_stack(target_uuid: String) -> void:
 		return
 	var inst: GachaBallInstance = bm.get_instance(target_uuid)
 	if is_instance_valid(inst):
-		print("[POISON ANIMATOR] Applying poison to: ", target_uuid, " Current stacks before: ", inst.get_status_effect_amount(&"poison"))
 		inst.add_status_effect(&"poison", 1)
-		print("[POISON ANIMATOR] Poison applied. Current stacks after: ", inst.get_status_effect_amount(&"poison"))
+		# Emit signal so GachaBallView updates the poison label
+		SignalBus.emit_signal("unit_stats_changed", target_uuid)
 
 func _emit_bump(attacker_uuid: String) -> void:
 	if attacker_uuid == null or String(attacker_uuid).is_empty():
@@ -219,13 +251,13 @@ func _wait_for_animation_completion(animation_type: String, expected_uuid: Strin
 	var timeout_duration: float
 	match animation_type:
 		"bump":
-			timeout_duration = 1.1  # Bump is 1.0s
+			timeout_duration = 1.1 # Bump is 1.0s
 		"flash":
-			timeout_duration = 1.1  # Flash is 1.0s
+			timeout_duration = 1.1 # Flash is 1.0s
 		"death_fade":
-			timeout_duration = 1.1  # Death fade is 1.0s
+			timeout_duration = 1.1 # Death fade is 1.0s
 		_:
-			timeout_duration = 1.1  # Default fallback
+			timeout_duration = 1.1 # Default fallback
 	
 	# Create timeout timer
 	var timeout_timer = get_tree().create_timer(timeout_duration)

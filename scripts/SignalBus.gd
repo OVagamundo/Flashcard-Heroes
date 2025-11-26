@@ -75,7 +75,10 @@ signal battle_ended(results: Dictionary)
 ## @param unit_uuid: String - The UUID of the unit whose stats changed
 signal unit_stats_changed(unit_uuid: String)
 
-## Emitted when a unit should flash with a color effect (for damage/heal feedback)
+## VCR Pattern: Visual stat update for battle animations (doesn't modify logical state)
+signal unit_visual_stat_update(unit_uuid: String, new_value: int, delta: int, stat_type: String)
+
+## Triggers a flash effect on a unit with a specific color
 ## @param unit_uuid: String - The UUID of the unit to flash
 ## @param flash_color: Color - The color to flash to
 signal unit_flash_effect(unit_uuid: String, flash_color: Color)

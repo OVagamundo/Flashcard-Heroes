@@ -3,224 +3,42 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 WARNING: res://scenes/FlashcardMinigame.tscn:5 - ext_resource, invalid UID: uid://bkrxvpmgv0ru4 - using text path instead: res://assets/fonts/static/NotoSansJP-Regular.ttf
    at: load (scene/resources/resource_format_text.cpp:447)
-DEBUG: AbilityResolver processing trigger 'on_battle_start' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_battle_start
-DEBUG: AbilityResolver processing trigger 'on_battle_start' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_battle_start
-DEBUG: AbilityResolver processing trigger 'on_battle_start' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_battle_start
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-DEBUG: AbilityResolver processing trigger 'on_turn_start' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_turn_start
-DEBUG: Trinket ability match: trinket_healing_amulet_heal
-DEBUG: Resolving FRONTMOST_ALLY. Source: unit_t1_b_1763811369_6515 Is Player: false Allies: 2
-DEBUG: Trinket ability match: trinket_healing_amulet_heal
-DEBUG: Resolving FRONTMOST_ALLY. Source: hero_1763811369_0001 Is Player: true Allies: 1
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-DEBUG: AbilityResolver processing trigger 'on_attack' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_attack
-DEBUG: AbilityResolver processing trigger 'on_hurt' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_hurt
-[POISON LEGACY] Setting apply_poison flag. Source is player: true Target: unit_t1_b_1763811369_6515
-DEBUG: AbilityResolver processing trigger 'on_hurt' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_hurt
-[POISON LEGACY] Setting apply_poison flag. Source is player: false Target: unit_t2_c_1763811369_2122
-DEBUG: AbilityResolver processing trigger 'on_attack' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_attack
-DEBUG: AbilityResolver processing trigger 'on_hurt' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_hurt
-DEBUG: AbilityResolver processing trigger 'on_kill' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_kill
-[POISON LEGACY] Setting apply_poison flag. Source is player: true Target: unit_t1_b_1763811369_6515
-DEBUG: AbilityResolver processing trigger 'on_death' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_death
-DEBUG: AbilityResolver processing trigger 'on_ally_death' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_ally_death
-DEBUG: AbilityResolver processing trigger 'on_hurt' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_hurt
-[POISON LEGACY] Setting apply_poison flag. Source is player: false Target: hero_1763811369_0001
-DEBUG: AbilityResolver processing trigger 'on_attack' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_attack
-DEBUG: AbilityResolver processing trigger 'on_hurt' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_hurt
-DEBUG: AbilityResolver processing trigger 'on_kill' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_kill
-[POISON LEGACY] Setting apply_poison flag. Source is player: false Target: unit_t2_c_1763811369_2122
-DEBUG: AbilityResolver processing trigger 'on_death' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_death
-DEBUG: AbilityResolver processing trigger 'on_ally_death' with 25 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_ally_death
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 0
-[POISON ANIMATOR] Applying poison to: unit_t1_b_1763811369_6515 Current stacks before: 0
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[POISON ANIMATOR] Poison applied. Current stacks after: 1
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 0
-[POISON ANIMATOR] Applying poison to: unit_t2_c_1763811369_2122 Current stacks before: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[POISON ANIMATOR] Poison applied. Current stacks after: 1
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[POISON ANIMATOR] Applying poison to: unit_t1_b_1763811369_6515 Current stacks before: 1
-[UI UPDATE] _update_item_slots for unit_t1_b_1763811369_6515 Poison stacks: 2
-[UI UPDATE] Created poison label with 2 stacks
-[POISON ANIMATOR] Poison applied. Current stacks after: 2
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[POISON ANIMATOR] Applying poison to: hero_1763811369_0001 Current stacks before: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[POISON ANIMATOR] Poison applied. Current stacks after: 1
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[POISON ANIMATOR] Applying poison to: unit_t2_c_1763811369_2122 Current stacks before: 1
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_2122 Poison stacks: 2
-[UI UPDATE] Created poison label with 2 stacks
-[POISON ANIMATOR] Poison applied. Current stacks after: 2
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-DEBUG: _trigger_turn_end_abilities called
-DEBUG: Processing status effects for 2 units
-[POISON END TURN] Applying 1 damage to hero_1763811369_0001 (HP: 10 -> 9)
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 1
-[UI UPDATE] Created poison label with 1 stacks
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-DEBUG: Processing on_turn_end triggers
-DEBUG: AbilityResolver processing trigger 'on_turn_end' with 23 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_turn_end
-DEBUG: AbilityResolver processing trigger 'on_turn_end' with 23 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_turn_end
-DEBUG: Resolving 0 pending reactions
-DEBUG: Turn end has 2 events to animate
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-DEBUG: AbilityResolver processing trigger 'on_turn_start' with 23 total instances
-DEBUG: Found trinket: trinket_healing_amulet in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: EnemyTrinkets
-DEBUG: Found trinket: trinket_healing_amulet in container: PlayerTrinkets
-DEBUG: Found trinket: trinket_poison_vial in container: PlayerTrinkets
-DEBUG: Processing 4 trinket abilities for trigger: on_turn_start
-DEBUG: Trinket ability match: trinket_healing_amulet_heal
-DEBUG: Resolving FRONTMOST_ALLY. Source: unit_t2_c_1763811369_4591 Is Player: false Allies: 1
-DEBUG: Trinket ability match: trinket_healing_amulet_heal
-DEBUG: Resolving FRONTMOST_ALLY. Source: hero_1763811369_0001 Is Player: true Allies: 1
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for hero_1763811369_0001 Poison stacks: 0
-[UI UPDATE] _update_item_slots for unit_t2_c_1763811369_4591 Poison stacks: 0
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+
+=== BATTLE EVENT QUEUE ===
+[0] LOG_MESSAGE | Targets: [] | Payload: {  }
+[1] DAMAGE | Targets: ["unit_t2_c_1764168070_7801@EnemyLineup[1]"] | Payload: { "amount": -2, "stat": "hp", "apply_poison": true }
+[2] LOG_MESSAGE | Targets: [] | Payload: {  }
+[3] DAMAGE | Targets: ["unit_t2_c_1764168070_7801@EnemyLineup[1]"] | Payload: { "amount": -2, "stat": "hp", "apply_poison": true }
+[4] LOG_MESSAGE | Targets: [] | Payload: {  }
+[5] DAMAGE | Targets: ["unit_t2_c_1764168070_7801@EnemyLineup[1]"] | Payload: { "amount": -4, "stat": "hp", "apply_poison": true }
+[6] DEATH | Targets: ["unit_t2_c_1764168070_7801@EnemyLineup[1]"] | Payload: {  }
+[7] LOG_MESSAGE | Targets: [] | Payload: {  }
+[8] DAMAGE | Targets: ["unit_t3_d_1764168070_2337@EnemyLineup[2]"] | Payload: { "amount": -2, "stat": "hp", "apply_poison": true }
+[9] LOG_MESSAGE | Targets: [] | Payload: {  }
+[10] HEAL | Targets: ["unit_t1_a_1764168070_8828@EnemyLineup[3]"] | Payload: { "amount": 1, "stat": "hp", "skip_bump": false }
+[11] LOG_MESSAGE | Targets: [] | Payload: {  }
+[12] BUFF | Targets: ["unit_t1_a_1764168070_8828@EnemyLineup[3]"] | Payload: { "amount": 1, "stat": "pwr" }
+[13] LOG_MESSAGE | Targets: [] | Payload: {  }
+[14] DAMAGE | Targets: ["unit_t1_a_1764168070_4631@PlayerLineup[3]"] | Payload: { "amount": -6, "stat": "hp", "apply_poison": true }
+[15] DEATH | Targets: ["unit_t1_a_1764168070_4631@PlayerLineup[3]"] | Payload: {  }
+[16] LOG_MESSAGE | Targets: [] | Payload: {  }
+[17] HEAL | Targets: ["unit_t2_c_1764168070_8057@PlayerLineup[1]"] | Payload: { "amount": 1, "stat": "hp", "skip_bump": false }
+[18] LOG_MESSAGE | Targets: [] | Payload: {  }
+[19] BUFF | Targets: ["unit_t2_c_1764168070_8057@PlayerLineup[1]"] | Payload: { "amount": 1, "stat": "pwr" }
+[20] LOG_MESSAGE | Targets: [] | Payload: {  }
+[21] DAMAGE | Targets: ["unit_t2_c_1764168070_8057@PlayerLineup[1]"] | Payload: { "amount": -2, "stat": "hp", "apply_poison": true }
+[22] LOG_MESSAGE | Targets: [] | Payload: {  }
+[23] HEAL | Targets: ["unit_t2_c_1764168070_8057@PlayerLineup[1]"] | Payload: { "amount": 1, "stat": "hp", "skip_bump": false }
+[24] LOG_MESSAGE | Targets: [] | Payload: {  }
+[25] DAMAGE | Targets: ["unit_t2_c_1764168070_8057@PlayerLineup[1]"] | Payload: { "amount": -2, "stat": "hp", "apply_poison": true }
+[26] LOG_MESSAGE | Targets: [] | Payload: {  }
+[27] HEAL | Targets: ["unit_t2_c_1764168070_8057@PlayerLineup[1]"] | Payload: { "amount": 1, "stat": "hp", "skip_bump": false }
+==========================
+
+[POISON END TURN] Applying 2 damage to unit_t2_c_1764168070_8057 (HP: 4 -> 2)
+[POISON END TURN] Applying 1 damage to unit_t3_d_1764168070_2337 (HP: 4 -> 3)

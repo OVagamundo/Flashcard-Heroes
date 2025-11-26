@@ -81,6 +81,8 @@ The game logic is modularized into distinct systems and managers, each with a cl
     -   (See `docs/GachaBallSystem.md`)
 -   **Combat System:** Orchestrates the turn-based, auto-battler combat phases and logic.
     -   (See `docs/CombatSystem.md`)
+    -   **Architecture:** Uses a **Strict State-Event Decoupling** model ("Simulate First, Present Later") where the simulation is a black box that produces a causal `TurnLog` for the UI to play back.
+
 -   **Ability System:** A data-driven system for executing all special abilities in response to game events.
     -   (See `docs/AbilitySystem.md`)
 -   **Flashcard System:** Manages the high-speed learning mini-game and its associated rewards.

@@ -2842,7 +2842,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 	# Process abilities in stacking order: Units first, then equipped items, then trinkets
 	# Optimization: Iterate once and bucket instances to avoid O(3N) lookups.
 	var all_instances = battle_manager.get_all_instances()
-	# print("DEBUG: AbilityResolver processing trigger '", trigger, "' with ", all_instances.size(), " total instances")
+	print("DEBUG: AbilityResolver processing trigger '", trigger, "' with ", all_instances.size(), " total instances")
 	
 	var unit_instances: Array[Dictionary] = []
 	var equipped_item_instances: Array[Dictionary] = []
@@ -2886,14 +2886,13 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 					"slot_index": instance.equipped_slot_index
 				})
 		elif definition.category == &"TRINKET":
-			# print("DEBUG: Found trinket: ", definition.id, " in container: ", instance.location_container_tag)
+			print("DEBUG: Found trinket: ", definition.id, " in container: ", instance.location_container_tag)
 			trinket_instances.append({"uuid": instance_uuid, "inst": instance, "def": definition})
 
 	# Phase 1: Process unit abilities
 	for data in unit_instances:
 		var instance_uuid = data.uuid
 		var definition = data.def
-		var instance = data.inst
 		
 		# For on_hurt triggers, only process if this is the unit that took damage
 		if trigger == &"on_hurt":
@@ -2905,10 +2904,6 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			var ally_uuid = context.get("source_uuid", "")
 			if instance_uuid != ally_uuid:
 				continue
-		
-		# General Rule: Dead units cannot trigger abilities (except on_death)
-		if instance.current_hp <= 0 and trigger != &"on_death" and trigger != &"on_ally_death":
-			continue
 				
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
@@ -2928,7 +2923,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				_process_ability(ability, ability_source_uuid, battle_manager, context)
 
 	# Phase 3: Process trinket abilities
-	# print("DEBUG: Processing ", trinket_instances.size(), " trinket abilities for trigger: ", trigger)
+	print("DEBUG: Processing ", trinket_instances.size(), " trinket abilities for trigger: ", trigger)
 	for data in trinket_instances:
 		var instance_uuid = data.uuid
 		var instance = data.inst
@@ -2937,7 +2932,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
-				# print("DEBUG: Trinket ability match: ", ability.id)
+				print("DEBUG: Trinket ability match: ", ability.id)
 				# Apply trinket source rules per AbilitySystem.md
 				var source_uuid_for_ability = instance_uuid
 				
@@ -2964,7 +2959,7 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 	if is_instance_valid(ability.condition):
 		var condition_result = battle_manager.check_condition(ability.condition, source_uuid, context)
 		if not condition_result:
-			return # Condition failed, skip this ability
+			return  # Condition failed, skip this ability
 	
 	# Process each effect in the ability
 	for effect in ability.effects:
@@ -2986,7 +2981,7 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			effect,
 			resolved_targets,
 			effect_context,
-			ability.priority # Pass priority from ability definition
+			ability.priority  # Pass priority from ability definition
 		)
 		
 		# Enqueue the request
@@ -3131,8 +3126,7 @@ extends Node
 signal turn_animation_finished
 
 var _hp_snapshot: Dictionary = {}
-var _current_animation_uuid: String = "" # Track which unit is currently animating
-var _dead_units: Dictionary = {} # Track units that have already animated death this turn
+var _current_animation_uuid: String = ""  # Track which unit is currently animating
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -3142,25 +3136,10 @@ func set_hp_snapshot(snapshot: Dictionary) -> void:
 func _ready() -> void:
 	add_to_group("battle_animator")
 
-func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
-	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
-	# Extract HP snapshot for backward compatibility
-	var hp_only_snapshot: Dictionary = {}
-	for uuid in start_snapshot:
-		var data = start_snapshot[uuid]
-		if data is Dictionary and data.has("hp"):
-			hp_only_snapshot[uuid] = data["hp"]
-	
-	set_hp_snapshot(hp_only_snapshot)
-	await play_turn(turn_log)
-
 func play_turn(events: Array[CombatEvent]) -> void:
 	if events.is_empty():
 		emit_signal("turn_animation_finished")
 		return
-	
-	_dead_units.clear()
-	
 	# Restore HP from snapshot so subsequent per-event changes are visible.
 	# Only restore units that were ALIVE at start of turn (snapshot > 0)
 	# Skip units that were already dead (snapshot = 0) - they stay dead
@@ -3189,31 +3168,24 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 			CombatEvent.Type.DAMAGE:
 				# Emit bump (unless flagged to skip), then flash animation
 				# Apply HP delta incrementally so each attack shows its own damage
-				var payload = event.visual_payload
 				if event.target_uuids.size() > 0:
 					var target_uuid := event.target_uuids[0]
 					var source_uuid_str := String(event.source_uuid)
-					var skip_bump = bool(payload.get("skip_bump", false))
-					var amount = int(payload.get("amount", 0))
-					var should_bump: bool = (not skip_bump) and (not source_uuid_str.is_empty())
+					var should_bump: bool = (not event.skip_bump) and (not source_uuid_str.is_empty())
 					if should_bump:
 						_emit_bump(event.source_uuid)
 						# Wait for half of the bump animation (0.5s)
 						await get_tree().create_timer(0.5).timeout
 					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
-					_apply_hp_delta(target_uuid, amount)
+					_apply_hp_delta(target_uuid, event.amount)
 					
 					# Apply poison if flagged (syncs with damage visual)
-					var apply_poison = bool(payload.get("apply_poison", false))
-					if apply_poison:
+					if event.apply_poison:
 						_apply_poison_stack(target_uuid)
 					
 					# Start damage flash while bump (if any) is finishing
 					if SignalBus.has_signal("unit_flash_effect"):
-						var flash_color = Color(1.0, 0.6, 0.6) # Default red
-						if bool(payload.get("is_poison_damage", false)):
-							flash_color = Color(0.6, 0.2, 0.8) # Purple for poison
-						SignalBus.emit_signal("unit_flash_effect", target_uuid, flash_color)
+						SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.6, 0.6))
 					# Wait for any bump and then the flash to complete
 					if should_bump:
 						await _wait_for_animation_completion("bump", event.source_uuid)
@@ -3222,41 +3194,37 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.HEAL:
 				# HP-only: apply HP delta incrementally with green flash
-				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
 				for target_uuid2 in event.target_uuids:
 					_current_animation_uuid = target_uuid2
-					_apply_hp_delta(target_uuid2, amount)
+					_apply_hp_delta(target_uuid2, event.amount)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
 						await _wait_for_animation_completion("flash", target_uuid2)
 
-			CombatEvent.Type.BUFF:
+			CombatEvent.Type.STAT_BUFF:
 				# PWR buff: apply PWR delta with blue flash
-				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
 				for target_uuid3 in event.target_uuids:
 					_current_animation_uuid = target_uuid3
-					_apply_pwr_delta(target_uuid3, amount)
+					_apply_pwr_delta(target_uuid3, event.amount)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(0.6, 0.8, 1.0))
 						await _wait_for_animation_completion("flash", target_uuid3)
 
+			CombatEvent.Type.INVENTORY_SYNC:
+				# This triggers the removal of the dead unit's view from the UI.
+				SignalBus.emit_signal("battle_inventory_changed")
+				# Inventory sync is instant, no animation to wait for
+
 			CombatEvent.Type.DEATH:
-				# Play death fade on target
+				# Play death fade on target, then request removal
 				if event.target_uuids.size() > 0:
 					var dead_uuid := event.target_uuids[0]
-					
-					# Prevent duplicate death animations for the same unit in this sequence
-					if _dead_units.has(dead_uuid):
-						continue
-						
-					_dead_units[dead_uuid] = true
 					_current_animation_uuid = dead_uuid
-					
 					if SignalBus.has_signal("unit_death_fade"):
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
 						await _wait_for_animation_completion("death_fade", dead_uuid)
+					if SignalBus.has_signal("apply_deaths_requested"):
+						SignalBus.emit_signal("apply_deaths_requested", [dead_uuid])
 
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
@@ -3277,12 +3245,9 @@ func _apply_hp_delta(target_uuid: String, amount: int) -> void:
 		return
 	var old_hp := inst.current_hp
 	var new_hp := old_hp + amount
-	# Do NOT clamp to 0 here. The simulation allows negative HP (overkill),
-	# so we must track it accurately to ensure subsequent heals/damage match the simulation.
-	# The UI view will handle clamping for display.
-	# print("DEBUG: _apply_hp_delta for ", target_uuid, " Amount: ", amount, " Old: ", old_hp, " New: ", new_hp)
+	# Clamp to minimum zero; allow overheal as per recalc rules
+	new_hp = max(0, new_hp)
 	inst.set_current_hp(new_hp)
-	SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "hp", new_hp)
 
 func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
 	var bm := _get_battle_manager()
@@ -3296,9 +3261,7 @@ func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
 		return
 	# Apply PWR delta and emit stats changed for UI
 	var new_pwr: int = max(0, inst.current_pwr + amount)
-	new_pwr = max(0, new_pwr)
 	inst.current_pwr = new_pwr
-	SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "pwr", new_pwr)
 	SignalBus.emit_signal("unit_stats_changed", target_uuid)
 
 func _apply_poison_stack(target_uuid: String) -> void:
@@ -3308,9 +3271,9 @@ func _apply_poison_stack(target_uuid: String) -> void:
 		return
 	var inst: GachaBallInstance = bm.get_instance(target_uuid)
 	if is_instance_valid(inst):
+		print("[POISON ANIMATOR] Applying poison to: ", target_uuid, " Current stacks before: ", inst.get_status_effect_amount(&"poison"))
 		inst.add_status_effect(&"poison", 1)
-		# Emit signal so GachaBallView updates the poison label
-		SignalBus.emit_signal("unit_stats_changed", target_uuid)
+		print("[POISON ANIMATOR] Poison applied. Current stacks after: ", inst.get_status_effect_amount(&"poison"))
 
 func _emit_bump(attacker_uuid: String) -> void:
 	if attacker_uuid == null or String(attacker_uuid).is_empty():
@@ -3378,13 +3341,13 @@ func _wait_for_animation_completion(animation_type: String, expected_uuid: Strin
 	var timeout_duration: float
 	match animation_type:
 		"bump":
-			timeout_duration = 1.1 # Bump is 1.0s
+			timeout_duration = 1.1  # Bump is 1.0s
 		"flash":
-			timeout_duration = 1.1 # Flash is 1.0s
+			timeout_duration = 1.1  # Flash is 1.0s
 		"death_fade":
-			timeout_duration = 1.1 # Death fade is 1.0s
+			timeout_duration = 1.1  # Death fade is 1.0s
 		_:
-			timeout_duration = 1.1 # Default fallback
+			timeout_duration = 1.1  # Default fallback
 	
 	# Create timeout timer
 	var timeout_timer = get_tree().create_timer(timeout_duration)
@@ -3454,7 +3417,7 @@ func _translate_event_to_string(event: CombatEvent) -> String:
 			var healing = event.amount
 			return "%s heals %s for [color=green]%d HP[/color]." % [source_name, target_list_str, healing]
 
-		CombatEvent.Type.BUFF:
+		CombatEvent.Type.STAT_BUFF:
 			if target_names.is_empty():
 				return ""
 			var buff_amount = event.amount
@@ -3546,11 +3509,11 @@ class_name BattleManager
 extends Node
 
 const RS = preload("res://scripts/RunState.gd")
-enum Phases {START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER}
+enum Phases { START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER }
 var _current_battle_phase: Phases
 
-var _actor_queue: Array[GachaBallInstance] = [] # Dynamic list of units to act this turn
-var _pending_reactions: Array[EffectRequest] = [] # New priority-driven queue
+var _actor_queue: Array[GachaBallInstance] = []  # Dynamic list of units to act this turn
+var _pending_reactions: Array[EffectRequest] = []  # New priority-driven queue
 var _is_processing_effect: bool = false
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
@@ -3580,10 +3543,6 @@ var _gacha_tokens: int = 0
 var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
-
-# -----------------------------------------------------------------------------
-# INITIALIZATION & SETUP
-# -----------------------------------------------------------------------------
 @onready var _animator: Node = $"../BattleAnimator"
 
 func _resolve_animator() -> void:
@@ -3650,6 +3609,7 @@ func _emit_battle_inventory_changed() -> void:
 	SignalBus.emit_signal("battle_inventory_changed")
 
 
+
 func start_battle(encounter_def: EncounterDefinition) -> void:
 	# Clear any existing selection when entering battle
 	SignalBus.emit_signal("selection_clear_requested")
@@ -3682,7 +3642,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	_pending_reactions.clear()
 	_battle_over_emitted = false
 	_battle_over_deferred = false
-	_current_turn = 0 # Initialize turn counter
+	_current_turn = 0  # Initialize turn counter
 	_gacha_tokens = 0
 	enemy_trinkets.clear()
 	
@@ -3862,6 +3822,7 @@ func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
 			# Note: unit_stats_changed will be emitted after UI is populated
 	else:
 		# Fallback to hardcoded enemy lineup
+
 		var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
 		var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 		
@@ -3901,7 +3862,7 @@ func _setup_player_trinkets() -> void:
 			_battle_instances[battle_trinket.ball_uuid] = battle_trinket
 			
 			# Place in battle trinkets container
-			if slot_index < 5: # Player trinkets container has 5 slots
+			if slot_index < 5:  # Player trinkets container has 5 slots
 				battle_trinkets_container.set_uuid(slot_index, battle_trinket.ball_uuid)
 				_update_instance_location(battle_trinket.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, slot_index)
 				slot_index += 1
@@ -4037,7 +3998,7 @@ func _reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container):
 		return false
 	var instances_to_move = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).filter(
-		func(inst):
+		func(inst): 
 			var inst_def = inst.get_definition()
 			return (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst)
 	)
@@ -4540,7 +4501,7 @@ func _bm_validate_state_consistency() -> bool:
 			if occurrences.has(u):
 				push_error("Duplicate UUID %s also present at %s:%d" % [u, String(cname), i])
 				return false
-			occurrences[u] = [ {"container": cname, "index": i}]
+			occurrences[u] = [{"container": cname, "index": i}]
 			var inst: GachaBallInstance = _battle_instances.get(u)
 			if not is_instance_valid(inst):
 				push_error("Container references missing battle instance %s" % u)
@@ -4684,8 +4645,8 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var basic_attack_def = Database.get_ability_definition(&"basic_attack")
 	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
 		var basic_attack_request = EffectRequest.new(
-			attacker.ball_uuid, &"basic_attack", basic_attack_def.effects[0],
-			[target.ball_uuid], context, 0 # Priority 0 for basic attack
+			attacker.ball_uuid, &"basic_attack", basic_attack_def.effects[0], 
+			[target.ball_uuid], context, 0  # Priority 0 for basic attack
 		)
 		enqueue_effect_request(basic_attack_request)
 
@@ -4757,16 +4718,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						heal_target_name = target_names[0]
 					if source_name != "" and heal_target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, heal_target_name, amount]}))
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": resolved_targets,
-						"visual_payload": {
-							"amount": amount,
-							"stat": "hp",
-							"skip_bump": skip_bump
-						}
-					}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {"source_uuid": request.source_uuid, "source_name": source_name, "target_uuids": resolved_targets, "target_names": target_names, "amount": amount, "stat": "hp", "skip_bump": skip_bump}))
 				else:
 					var dealt: int = abs(amount)
 					var damage_target_name := ""
@@ -4785,16 +4737,21 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
 						should_apply_poison = _has_team_trinket(is_player_source, &"trinket_poison_vial")
 					
+					if should_apply_poison and resolved_targets.size() > 0:
+						print("[POISON] Setting apply_poison flag. Source is player: ", is_player_source, " Target: ", resolved_targets[0])
+					
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": request.source_uuid,
+						"source_name": source_name,
 						"target_uuids": resolved_targets,
-						"visual_payload": {
-							"amount": amount,
-							"stat": "hp",
-							"skip_bump": skip_bump,
-							"apply_poison": should_apply_poison
-						}
+						"target_names": target_names,
+						"amount": amount,
+						"stat": "hp",
+						"skip_bump": skip_bump,
+						"apply_poison": should_apply_poison
 					}))
+					# Note: DEATH events are deferred until after all reactive abilities are processed
+					# This ensures counter-attacks happen before death animations
 			elif stat == "pwr" and amount > 0 and not resolved_targets.is_empty():
 				for i in range(resolved_targets.size()):
 					var single_target_uuid := resolved_targets[i]
@@ -4803,15 +4760,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						name_for_target = target_names[i]
 					if name_for_target != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s gains %d PWR" % [name_for_target, amount]}))
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": [single_target_uuid],
-						"visual_payload": {
-							"amount": amount,
-							"stat": "pwr"
-						}
-					}))
+					out_events.append(CombatEvent.new(CombatEvent.Type.STAT_BUFF, {"source_uuid": request.source_uuid, "source_name": source_name, "target_uuids": [single_target_uuid], "target_names": [name_for_target], "amount": amount, "stat": "pwr"}))
 			# Legacy: integer damage
 		elif typeof(res) == TYPE_INT:
 			damage = int(res)
@@ -4844,17 +4793,15 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					var should_apply_poison = _has_team_trinket(is_player_source, &"trinket_poison_vial")
 					
 					if should_apply_poison:
-						pass
-						# print("[POISON LEGACY] Setting apply_poison flag. Source is player: ", is_player_source, " Target: ", tgt_inst2.ball_uuid)
+						print("[POISON LEGACY] Setting apply_poison flag. Source is player: ", is_player_source, " Target: ", tgt_inst2.ball_uuid)
+					
 					# Legacy damage: encode as negative amount for consistency
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": request.source_uuid,
 						"target_uuids": [tgt_inst2.ball_uuid],
-						"visual_payload": {
-							"amount": - damage,
-							"stat": "hp",
-							"apply_poison": should_apply_poison
-						}
+						"amount": -damage,
+						"stat": "hp",
+						"apply_poison": should_apply_poison
 					}))
 					
 					# Note: DEATH events are deferred until after all reactive abilities are processed
@@ -4865,19 +4812,6 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
-func get_board_snapshot() -> Dictionary:
-	var snapshot: Dictionary = {}
-	for uuid in _battle_instances:
-		var inst = _battle_instances[uuid]
-		if is_instance_valid(inst):
-			snapshot[uuid] = {
-				"hp": inst.current_hp,
-				"pwr": inst.current_pwr,
-				"def_id": inst.get_definition().id if inst.get_definition() else "",
-				"location": inst.get_location()
-			}
-	return snapshot
-
 func _resolve_combat_phase() -> void:
 	if _is_processing_effect: return
 	_is_processing_effect = true
@@ -4885,37 +4819,86 @@ func _resolve_combat_phase() -> void:
 	_resolve_animator()
 	_populate_actor_queue()
 	
-	# 1. Capture State BEFORE Simulation
-	var start_snapshot = get_board_snapshot()
-	var turn_log: Array[CombatEvent] = []
-	var death_tracking: Dictionary = {}
+	var all_events_for_animator: Array[CombatEvent] = []
+	var death_tracking: Dictionary = {}  # Shared across all effects in this turn to prevent duplicate death events
 	
-	var _actor_index = 0
+	# Capture HP snapshot BEFORE simulation so animations can show incremental changes
+	var hp_snapshot: Dictionary = {}
+	for k in _battle_instances.keys():
+		var maybe_inst = _battle_instances.get(k)
+		if is_instance_valid(maybe_inst) and maybe_inst.get_definition().category == &"UNIT":
+			hp_snapshot[maybe_inst.ball_uuid] = maybe_inst.current_hp
+	
+	var actor_index = 0
 	while not _actor_queue.is_empty():
 		var current_actor: GachaBallInstance = _actor_queue.pop_front()
-		_actor_index += 1
+		actor_index += 1
 		
 		if not is_instance_valid(current_actor):
 			continue
+		
+		var actor_def = current_actor.get_definition()
+		var actor_name = tr(actor_def.display_name_key) if "display_name_key" in actor_def else String(actor_def.id)
 		
 		if current_actor.current_hp <= 0:
 			continue
 
 		_enqueue_attack_for(current_actor)
 		
-		# Reaction loop
+		# Reaction loop: process all pending reactions before moving to next actor
+		var reaction_count = 0
 		while not _pending_reactions.is_empty():
+			# Sort by priority (highest first) on every iteration
 			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
 			var current_reaction = _pending_reactions.pop_front()
+			reaction_count += 1
+			
+			var src_inst = get_instance_by_uuid(current_reaction.source_uuid)
+			var src_name = "[Unknown]"
+			if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
+				var src_def = src_inst.get_definition()
+				src_name = tr(src_def.display_name_key) if "display_name_key" in src_def else String(src_def.id)
+			var tgt_names = []
+			for tgt_uuid in current_reaction.resolved_targets:
+				var tgt_inst = get_instance_by_uuid(tgt_uuid)
+				if is_instance_valid(tgt_inst) and is_instance_valid(tgt_inst.get_definition()):
+					var tgt_def = tgt_inst.get_definition()
+					tgt_names.append(tr(tgt_def.display_name_key) if "display_name_key" in tgt_def else String(tgt_def.id))
 			
 			var reaction_events: Array[CombatEvent] = []
 			_resolve_single_effect_request(current_reaction, reaction_events, death_tracking)
-			turn_log.append_array(reaction_events)
 			
-			# Process deferred deaths
+			# Log what happened in this reaction
+			for event in reaction_events:
+				match event.type:
+					CombatEvent.Type.DAMAGE:
+						var dmg_amount = abs(event.amount)
+						for dmg_tgt_uuid in event.target_uuids:
+							var dmg_tgt = get_instance_by_uuid(dmg_tgt_uuid)
+							if is_instance_valid(dmg_tgt):
+								var dmg_tgt_def = dmg_tgt.get_definition()
+								var dmg_tgt_name = tr(dmg_tgt_def.display_name_key) if "display_name_key" in dmg_tgt_def else String(dmg_tgt_def.id)
+					CombatEvent.Type.HEAL:
+						var heal_amount = event.amount
+						for heal_tgt_uuid in event.target_uuids:
+							var heal_tgt = get_instance_by_uuid(heal_tgt_uuid)
+							if is_instance_valid(heal_tgt):
+								var heal_tgt_def = heal_tgt.get_definition()
+								var heal_tgt_name = tr(heal_tgt_def.display_name_key) if "display_name_key" in heal_tgt_def else String(heal_tgt_def.id)
+					CombatEvent.Type.DEATH:
+						for death_tgt_uuid in event.target_uuids:
+							var death_tgt = get_instance_by_uuid(death_tgt_uuid)
+							if is_instance_valid(death_tgt):
+								var death_tgt_def = death_tgt.get_definition()
+								var death_tgt_name = tr(death_tgt_def.display_name_key) if "display_name_key" in death_tgt_def else String(death_tgt_def.id)
+			
+			all_events_for_animator.append_array(reaction_events)
+			
+			# Process any deferred deaths that can now be finalized (units that died but had counter-attacks)
+			# This happens after each reaction so deaths occur immediately after counter-attacks complete
 			var deferred_death_events: Array[CombatEvent] = []
 			_process_completed_counter_deaths(deferred_death_events, death_tracking)
-			turn_log.append_array(deferred_death_events)
+			all_events_for_animator.append_array(deferred_death_events)
 
 			if _is_battle_over():
 				_battle_over_deferred = true
@@ -4927,36 +4910,18 @@ func _resolve_combat_phase() -> void:
 			break
 
 	_is_processing_effect = false
-	_block_inventory_updates = false
-	
-	# 2. Send Log to Animator (The VCR Playback)
-	if not turn_log.is_empty():
-		print("\n=== BATTLE EVENT QUEUE ===")
-		for i in range(turn_log.size()):
-			var evt = turn_log[i]
-			var target_info = []
-			for uuid in evt.target_uuids:
-				var loc = get_location_for_uuid(uuid)
-				var loc_str = "Unknown"
-				if loc:
-					loc_str = "%s[%d]" % [loc.container, loc.index]
-				target_info.append("%s@%s" % [uuid, loc_str])
-			
-			print("[%d] %s | Targets: %s | Payload: %s" % [i, CombatEvent.Type.keys()[evt.type], target_info, evt.visual_payload])
-		print("==========================\n")
-		
-		_animator.play_turn_sequence(start_snapshot, turn_log)
+	_block_inventory_updates = false # Unblock UI updates
+	if not all_events_for_animator.is_empty():
+		# HP snapshot was captured BEFORE simulation, so animations show incremental changes
+		_animator.set_hp_snapshot(hp_snapshot)
+		_animator.play_turn(all_events_for_animator)
 	else:
 		_on_turn_animation_finished()
-
 func _on_turn_animation_finished() -> void:
 	# This signal is the single source of truth for when animations are complete.
 	# It is safe to proceed to the next phase.
 	_is_processing_effect = false
 	_block_inventory_updates = false # Ensure updates are unblocked when animations finish
-	
-	# Finalize deaths (remove zombies) without re-triggering abilities
-	_finalize_deaths()
 	
 	if _current_battle_phase == Phases.START_OF_TURN:
 		# Turn start abilities finished animating, transition to MANAGEMENT
@@ -5031,10 +4996,7 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				# This keeps the unit visible for counter-attacks
-				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
-					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {}
-				}))
+				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit
 				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
@@ -5067,10 +5029,7 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				# This keeps the unit visible for counter-attacks
-				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
-					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {}
-				}))
+				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit
 				var death_context2: Dictionary = {"source_uuid": unit.ball_uuid}
@@ -5134,7 +5093,7 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 ## Enhanced death checking that defers death events for units with counter-attacks
 func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_events = null, death_tracking = null) -> void:
 	var something_changed = false
-	var deferred_deaths: Array[String] = [] # Units whose deaths should be deferred
+	var deferred_deaths: Array[String] = []  # Units whose deaths should be deferred
 	
 	# Check player units
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
@@ -5168,10 +5127,7 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 					if death_tracking != null:
 						_create_death_event_if_needed(unit.ball_uuid, out_events, death_tracking)
 					else:
-						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
-							"target_uuids": [unit.ball_uuid],
-							"visual_payload": {}
-						}))
+						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
 			elif not is_simulation:
 				# Triggers already handled during simulation; perform cleanup only.
 				for item_uuid in unit.equipped_item_uuids:
@@ -5186,8 +5142,8 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
-			var _unit_def2 = unit.get_definition()
-			var _unit_name2 = tr(_unit_def2.display_name_key) if "display_name_key" in _unit_def2 else String(_unit_def2.id)
+			var unit_def2 = unit.get_definition()
+			var unit_name2 = tr(unit_def2.display_name_key) if "display_name_key" in unit_def2 else String(unit_def2.id)
 			something_changed = true
 			if is_simulation and out_events != null:
 				# Emit death-related triggers once during simulation so reactions can resolve
@@ -5213,10 +5169,7 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 					if death_tracking != null:
 						_create_death_event_if_needed(unit.ball_uuid, out_events, death_tracking)
 					else:
-						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
-							"target_uuids": [unit.ball_uuid],
-							"visual_payload": {}
-						}))
+						out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit.ball_uuid]}))
 			elif not is_simulation:
 				# Triggers already handled during simulation; perform cleanup only.
 				for item_uuid in unit.equipped_item_uuids:
@@ -5247,13 +5200,10 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 ## Helper function to create DEATH events only once per unit
 func _create_death_event_if_needed(unit_uuid: String, out_events: Array, death_tracking: Dictionary) -> void:
 	if death_tracking.has(unit_uuid):
-		return # Already created death event for this unit
+		return  # Already created death event for this unit
 	
 	death_tracking[unit_uuid] = true
-	out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
-		"target_uuids": [unit_uuid],
-		"visual_payload": {}
-	}))
+	out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {"target_uuids": [unit_uuid]}))
 
 ## Check if any deferred counter-attack units have completed their abilities and should now die
 func _process_completed_counter_deaths(out_events = null, death_tracking = null) -> void:
@@ -5269,8 +5219,8 @@ func _process_completed_counter_deaths(out_events = null, death_tracking = null)
 		if not is_instance_valid(unit):
 			continue
 		
-		var _unit_def = unit.get_definition()
-		var _unit_name = tr(_unit_def.display_name_key) if "display_name_key" in _unit_def else String(_unit_def.id)
+		var unit_def = unit.get_definition()
+		var unit_name = tr(unit_def.display_name_key) if "display_name_key" in unit_def else String(unit_def.id)
 			
 		# Check if this unit still has pending counter-attack abilities in the queue
 		var has_pending_counters = false
@@ -5331,8 +5281,8 @@ func _on_apply_deaths_requested(dead_unit_uuids: Array) -> void:
 	# After removals, refresh UI
 	_emit_battle_inventory_changed()
 	# If battle is now over, defer victory to end of animations
-	var _player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	var _enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	if _current_battle_phase == Phases.COMBAT and _is_battle_over():
 		_battle_over_deferred = true
 
@@ -5456,7 +5406,7 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 			# Per docs: Player frontmost = rightmost (highest index). Enemy frontmost = leftmost (lowest index).
 			var ally_lineup_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var living_allies = get_instances_in_container(ally_lineup_tag).filter(func(unit): return unit.current_hp > 0)
-			# print("DEBUG: Resolving FRONTMOST_ALLY. Source: ", source_uuid, " Is Player: ", is_player_team, " Allies: ", living_allies.size())
+			print("DEBUG: Resolving FRONTMOST_ALLY. Source: ", source_uuid, " Is Player: ", is_player_team, " Allies: ", living_allies.size())
 			if living_allies.is_empty():
 				return []
 			var best_unit: GachaBallInstance = living_allies[0]
@@ -5475,13 +5425,13 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 						best_index = idx
 			return [best_unit.ball_uuid]
 		C.TARGET_RANDOM_ENEMY:
-			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u): return u.current_hp > 0)
+			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 			if not enemies.is_empty():
 				var random_enemy = enemies[randi() % enemies.size()]
 				return [random_enemy.ball_uuid]
 			return []
 		C.TARGET_RANDOM_ALLY:
-			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 			if not allies.is_empty():
 				var random_ally = allies[randi() % allies.size()]
 				return [random_ally.ball_uuid]
@@ -5501,7 +5451,7 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 				uuids.append(ally.ball_uuid)
 			return uuids
 		C.TARGET_ALL_ALLIES:
-			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 			var uuids: Array[String] = []
 			for ally in allies:
 				uuids.append(ally.ball_uuid)
@@ -5516,7 +5466,7 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 ## @return bool - True if condition is met
 func check_condition(condition_def: ConditionDefinition, source_uuid: String, context: Dictionary) -> bool:
 	if not is_instance_valid(condition_def):
-		return true # No condition means always true
+		return true  # No condition means always true
 	
 	var source_instance = get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_instance):
@@ -5657,9 +5607,7 @@ func _get_ally_behind(source_instance: GachaBallInstance) -> GachaBallInstance:
 	if behind_index >= 0:
 		var behind_uuid = container.get_uuid(behind_index)
 		if not behind_uuid.is_empty():
-			var inst = get_instance_by_uuid(behind_uuid)
-			if is_instance_valid(inst) and inst.current_hp > 0:
-				return inst
+			return get_instance_by_uuid(behind_uuid)
 	
 	return null
 
@@ -5680,9 +5628,7 @@ func _get_slot_ahead(source_instance: GachaBallInstance) -> GachaBallInstance:
 	if ahead_index < container.get_all_uuids().size():
 		var ahead_uuid = container.get_uuid(ahead_index)
 		if not ahead_uuid.is_empty():
-			var inst = get_instance_by_uuid(ahead_uuid)
-			if is_instance_valid(inst) and inst.current_hp > 0:
-				return inst
+			return get_instance_by_uuid(ahead_uuid)
 	
 	return null
 
@@ -5736,7 +5682,7 @@ func _trigger_turn_start_abilities() -> void:
 	if _turn_start_abilities_triggered:
 		return
 		
-	_turn_start_abilities_triggered = true # Set flag here to prevent multiple calls
+	_turn_start_abilities_triggered = true  # Set flag here to prevent multiple calls
 	
 	# Trigger turn start abilities for all instances using unified processing
 	var turn_start_context: Dictionary = {"turn": _current_turn}
@@ -5759,8 +5705,12 @@ func _resolve_pending_reactions_only() -> void:
 	var all_events_for_animator: Array[CombatEvent] = []
 	var death_tracking: Dictionary = {}
 	
-	# Capture board snapshot BEFORE simulation
-	var start_snapshot = get_board_snapshot()
+	# Capture HP snapshot BEFORE simulation
+	var hp_snapshot: Dictionary = {}
+	for k in _battle_instances.keys():
+		var maybe_inst = _battle_instances.get(k)
+		if is_instance_valid(maybe_inst) and maybe_inst.get_definition().category == &"UNIT":
+			hp_snapshot[maybe_inst.ball_uuid] = maybe_inst.current_hp
 	
 	# Process all pending reactions (turn start abilities)
 	while not _pending_reactions.is_empty():
@@ -5771,26 +5721,28 @@ func _resolve_pending_reactions_only() -> void:
 	
 	_is_processing_effect = false
 	if not all_events_for_animator.is_empty():
-		_animator.play_turn_sequence(start_snapshot, all_events_for_animator)
+		_animator.set_hp_snapshot(hp_snapshot)
+		_animator.play_turn(all_events_for_animator)
 	else:
 		_on_turn_animation_finished()
 
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
-	# print("DEBUG: _trigger_turn_end_abilities called")
+	print("DEBUG: _trigger_turn_end_abilities called")
 	_block_inventory_updates = true # Block UI updates during turn end processing
 	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	var all_events: Array[CombatEvent] = []
 	var death_tracking: Dictionary = {}
 	
-	# Capture board snapshot for animation
-	var start_snapshot = get_board_snapshot()
+	# Capture HP snapshot for animation
+	var hp_snapshot: Dictionary = {}
+	for unit in all_units:
+		hp_snapshot[unit.ball_uuid] = unit.current_hp
 	
 	# 1. Process Status Effects (Poison)
 	# We inline the logic here to combine events into a single animation sequence
-	# print("DEBUG: Processing status effects for ", all_units.size(), " units")
+	print("DEBUG: Processing status effects for ", all_units.size(), " units")
 	for unit in all_units:
-		if unit.current_hp <= 0: continue # Skip dead units
 		var poison_stacks = unit.get_status_effect_amount(&"poison")
 		if poison_stacks > 0:
 			var damage = poison_stacks
@@ -5800,14 +5752,11 @@ func _trigger_turn_end_abilities() -> void:
 			var unit_name = _get_instance_display_name(unit)
 			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s takes %d poison dmg" % [unit_name, damage]}))
 			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-				"source_uuid": "",
+				"source_uuid": "", 
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": - damage,
-					"stat": "hp",
-					"skip_bump": true,
-					"is_poison_damage": true
-				}
+				"amount": -damage,
+				"stat": "hp",
+				"skip_bump": true
 			}))
 			
 			var new_stacks = floor(poison_stacks / 2.0)
@@ -5820,14 +5769,13 @@ func _trigger_turn_end_abilities() -> void:
 				_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)
 
 	# 2. Process on_turn_end triggers
-	# print("DEBUG: Processing on_turn_end triggers")
-	# 2. Process on_turn_end triggers
-	# print("DEBUG: Processing on_turn_end triggers")
-	# Call once globally; AbilityResolver iterates all units
-	AbilityResolver.process_trigger(&"on_turn_end", {})
+	print("DEBUG: Processing on_turn_end triggers")
+	for unit in all_units:
+		var turn_end_context: Dictionary = {"source_uuid": unit.ball_uuid}
+		AbilityResolver.process_trigger(&"on_turn_end", turn_end_context)
 	
 	# 3. Resolve pending reactions from on_turn_end
-	# print("DEBUG: Resolving ", _pending_reactions.size(), " pending reactions")
+	print("DEBUG: Resolving ", _pending_reactions.size(), " pending reactions")
 	while not _pending_reactions.is_empty():
 		var request: EffectRequest = _pending_reactions.pop_front()
 		var reaction_events: Array[CombatEvent] = []
@@ -5835,14 +5783,15 @@ func _trigger_turn_end_abilities() -> void:
 		all_events.append_array(reaction_events)
 	
 	# 4. Play animations or finish immediately
-	# print("DEBUG: Turn end has ", all_events.size(), " events to animate")
+	print("DEBUG: Turn end has ", all_events.size(), " events to animate")
 	if not all_events.is_empty():
 		_is_processing_effect = true
 		_resolve_animator()
-		_animator.play_turn_sequence(start_snapshot, all_events)
+		_animator.set_hp_snapshot(hp_snapshot)
+		_animator.play_turn(all_events)
 	else:
 		# No events to animate, proceed immediately
-		# print("DEBUG: No events, calling _on_turn_animation_finished directly")
+		print("DEBUG: No events, calling _on_turn_animation_finished directly")
 		_block_inventory_updates = false
 		_on_turn_animation_finished()
 
@@ -5857,7 +5806,7 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
 	var dest_container = get_container(dest_container_tag)
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container): return
 	var instances_to_move = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).filter(
-		func(inst):
+		func(inst): 
 			var inst_def = inst.get_definition()
 			return (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst)
 	)
@@ -5921,6 +5870,7 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 		unit_instance.equip_item_bonus(item_instance)
 
 
+
 func _emit_stats_changed_for_equipped_units() -> void:
 	# Emit unit_stats_changed for all units that have equipped items
 	for instance in _battle_instances.values():
@@ -5943,7 +5893,7 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	_last_minigame_results = results
 
 	var correct_answers: int = results.get("correct_answers", 0)
-	var gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
+	var gacha_gain = 5 + correct_answers  # TDD: gacha_gain = 5 (base) + results.correct_answers
 	
 	# Display ResultsPopup
 	var popup = WindowManager.open_modal_window(&"ResultsPopup", {
@@ -5998,45 +5948,6 @@ func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 		if trinket.definition_id == trinket_id:
 			return true
 	return false
-
-func _finalize_deaths() -> void:
-	# Removes units with <= 0 HP from containers and discard, WITHOUT triggering abilities.
-	# This is called after VCR playback to synchronize logical state with visual state.
-	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	var something_changed = false
-	
-	for unit in all_units:
-		if unit.current_hp <= 0:
-			something_changed = true
-			# 1. Move equipped items to discard (or destroy for enemies)
-			for item_uuid in unit.equipped_item_uuids:
-				if not item_uuid.is_empty():
-					var item_instance := get_instance(item_uuid)
-					if is_instance_valid(item_instance):
-						if _is_player_owned(unit):
-							_move_instance_to_discard(item_instance)
-						else:
-							# Enemy item cleanup
-							item_instance.equipped_on_uuid = ""
-							item_instance.equipped_slot_index = -1
-							_update_instance_location(item_instance.ball_uuid, &"", -1)
-							if _battle_instances.has(item_instance.ball_uuid):
-								_battle_instances.erase(item_instance.ball_uuid)
-
-			# 2. Clear slots
-			unit.equipped_item_uuids.fill("")
-			
-			# 3. Move unit to discard (Player) or Remove (Enemy)
-			if _is_player_owned(unit):
-				_move_instance_to_discard(unit)
-			else:
-				# Enemy cleanup
-				_remove_instance_from_container(unit)
-				if _battle_instances.has(unit.ball_uuid):
-					_battle_instances.erase(unit.ball_uuid)
-	
-	if something_changed:
-		_emit_battle_inventory_changed()
 
 ```
 
@@ -6366,69 +6277,51 @@ class_name CombatEvent
 extends Resource
 
 enum Type {
-	DAMAGE,
-	HEAL,
-	DEATH,
-	SUMMON, # Payload must contain snapshot of new unit
-	BUFF, # Payload: { "stat": "pwr", "amount": 1, "is_debuff": false }
-	MOVE, # Payload: { "from_slot": 1, "to_slot": 2 }
-	PROJECTILE, # Visual only: { "source_uuid": str, "target_uuid": str, "vfx_id": str }
-	VFX_POPUP, # Visual only: { "target_uuid": str, "text": str, "color": Color }
-	LOG_MESSAGE # Legacy support for text logs
+	LOG_MESSAGE,    # A message for the battle log
+	DAMAGE,         # A unit takes damage (for UI stat updates)
+	HEAL,           # A unit is healed (for UI stat updates)
+	DEATH,          # A unit died; play death animation before removal
+	INVENTORY_SYNC, # A full UI refresh is needed for death removals
+	STAT_BUFF,      # Legacy name for non-HP stat increase
+	STRENGTHEN      # Preferred name for non-HP stat increase (e.g., PWR buff)
 }
 
 var type: Type
-var source_uuid: String = "" # Logic UUID or "SYSTEM" or "TRINKET_ID"
-var target_uuids: Array[String] = []
-
-# The Absolute Truth Payload
-# MANDATORY KEYS for DAMAGE/HEAL: { "new_hp": int, "amount": int, "is_crit": bool }
-# MANDATORY KEYS for SUMMON: { "snapshot": Dictionary }
-var visual_payload: Dictionary = {}
-
-# Legacy fields for backward compatibility during refactor (marked for removal)
 var text: String = ""
+var source_uuid: String = ""
+var target_uuids: Array[String] = []
 var amount: int = 0
 var stat: String = ""
 var skip_bump: bool = false
 var source_name: String = ""
 var target_names: Array[String] = []
-var apply_poison: bool = false
+var apply_poison: bool = false  # If true, apply 1 poison stack to target when this damage is animated
 
 func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.type = p_type
-	
-	# Standard fields
-	self.source_uuid = String(p_context.get("source_uuid", ""))
-	
-	# Handle targets
+	self.text = p_context.get("text", "")
+	self.source_uuid = p_context.get("source_uuid", "")
+	# Coerce to typed Array[String]
 	self.target_uuids = []
-	var raw_targets = p_context.get("target_uuids", [])
+	var raw_targets: Variant = p_context.get("target_uuids", [])
 	if raw_targets is Array:
 		for u in raw_targets:
 			self.target_uuids.append(String(u))
 	elif raw_targets is String:
 		self.target_uuids.append(String(raw_targets))
-		
-	# Visual Payload (The new standard)
-	self.visual_payload = p_context.get("visual_payload", {})
-	
-	# Legacy field population for compatibility
-	self.text = String(p_context.get("text", ""))
+	# Optional numeric/stat context
 	self.amount = int(p_context.get("amount", 0))
 	self.stat = String(p_context.get("stat", ""))
 	self.skip_bump = bool(p_context.get("skip_bump", false))
 	self.source_name = String(p_context.get("source_name", ""))
-	self.apply_poison = bool(p_context.get("apply_poison", false))
-	
-	# Populate target names for legacy log
 	self.target_names = []
-	var raw_target_names = p_context.get("target_names", [])
+	var raw_target_names: Variant = p_context.get("target_names", [])
 	if raw_target_names is Array:
 		for n in raw_target_names:
 			self.target_names.append(String(n))
 	elif raw_target_names is String:
 		self.target_names.append(String(raw_target_names))
+	self.apply_poison = bool(p_context.get("apply_poison", false))
 
 ```
 
@@ -8514,10 +8407,6 @@ var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
-# Visual State (Puppet Mode)
-var _visual_hp: int = -1
-var _visual_pwr: int = -1
-
 
 func _ready() -> void:
 	# Reorder UI: Move StatsContainer (HP/PWR) to the top (index 0)
@@ -8529,18 +8418,13 @@ func _ready() -> void:
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
-		
-		# Connect stat changed signal to update poison stacks and HP/PWR during battle
 		bus.unit_stats_changed.connect(_on_unit_stats_changed)
-			
 		if bus.has_signal("unit_flash_effect"):
 			bus.connect("unit_flash_effect", _on_unit_flash_effect)
 		if bus.has_signal("unit_bump_attack"):
 			bus.connect("unit_bump_attack", _on_unit_bump_attack)
 		if bus.has_signal("unit_death_fade"):
 			bus.connect("unit_death_fade", _on_unit_death_fade)
-		if bus.has_signal("unit_visual_stat_update"):
-			bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
 
 func _exit_tree() -> void:
 	# Proactively disconnect signals and end any active drag to prevent leaks
@@ -8592,7 +8476,7 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 		icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_SCALE
 
-	var tier_text = "T1" # Default for trinkets
+	var tier_text = "T1"  # Default for trinkets
 	if definition is GachaBallDefinition:
 		tier_text = "T%d" % definition.tier
 	tier_label.text = tier_text
@@ -8662,38 +8546,8 @@ func _update_stats() -> void:
 	# Show HP and PWR for units
 	hp_label.visible = true
 	pwr_label.visible = true
-	
-	# If we have visual overrides, use them. Otherwise fall back to instance data (Management Phase)
-	var display_hp = _visual_hp if _visual_hp != -1 else instance.current_hp
-	var display_pwr = _visual_pwr if _visual_pwr != -1 else instance.current_pwr
-	
-	hp_label.text = "HP: %d" % max(0, display_hp)
-	pwr_label.text = "PWR: %d" % display_pwr
-
-# ------------------------------------------------------------------
-# Puppet API (Called by BattleAnimator)
-# ------------------------------------------------------------------
-
-func set_visual_state(snapshot: Dictionary) -> void:
-	# Snapshot keys: "hp", "pwr", "def_id"
-	if snapshot.has("hp"):
-		_visual_hp = int(snapshot["hp"])
-	if snapshot.has("pwr"):
-		_visual_pwr = int(snapshot["pwr"])
-	_update_stats()
-
-func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
-	# type: "hp" or "pwr"
-	var label = hp_label if type == "hp" else pwr_label
-	var start_val = _visual_hp if type == "hp" else _visual_pwr
-	
-	# Update internal visual state immediately so subsequent calls are correct
-	if type == "hp": _visual_hp = target_val
-	else: _visual_pwr = target_val
-	
-	# Tween the number
-	var tween = create_tween()
-	tween.tween_method(func(val): label.text = "%s: %d" % [type.to_upper(), val], start_val, target_val, 0.5)
+	hp_label.text = "HP: %d" % instance.current_hp
+	pwr_label.text = "PWR: %d" % instance.current_pwr
 
 func _update_item_slots() -> void:
 	# REDESIGNED: Now shows status effects instead of item icons
@@ -8717,7 +8571,7 @@ func _update_item_slots() -> void:
 	# Display status effects as large numbers
 	# Show poison stacks if present (as purple number)
 	var poison_stacks = instance.get_status_effect_amount(&"poison")
-	# print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
+	print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
 	if poison_stacks > 0:
 		var poison_label = Label.new()
 		poison_label.text = str(poison_stacks)
@@ -8726,7 +8580,7 @@ func _update_item_slots() -> void:
 		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		poison_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		item_grid.add_child(poison_label)
-		# print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
+		print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -8758,7 +8612,7 @@ func _on_unit_stats_changed(unit_uuid: String) -> void:
 		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			_update_stats()
-			_update_item_slots() # Update poison display when status effects change
+			_update_item_slots()  # Update poison display when status effects change
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location): return
@@ -8819,7 +8673,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
 	GlobalInteractionRouter.start_drag(origin_ctx)
 
-	return {"source_loc": _location}
+	return { "source_loc": _location }
 
 func _can_drop_data(_at_position, data) -> bool:
 	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
@@ -8864,14 +8718,6 @@ func _flash_unit_color(flash_color: Color) -> void:
 	# Emit completion signal when flash finishes
 	tween.finished.connect(_on_flash_tween_finished)
 
-func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void:
-	if uuid == _instance_uuid:
-		if stat == "hp":
-			_visual_hp = value
-		elif stat == "pwr":
-			_visual_pwr = value
-		_update_stats()
-
 func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	# Only respond if this view represents the attacker
 	if _instance_uuid != unit_uuid:
@@ -8895,7 +8741,7 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	if _instance_uuid != unit_uuid:
 		return
 	# Flash red if not already, then fade out alpha for visual clarity
-	var _start_modulate: Color = modulate # Store starting modulate for potential future use
+	var _start_modulate: Color = modulate  # Store starting modulate for potential future use
 	var fade_tween = create_tween()
 	# Ensure we are visible, then fade to 0 alpha
 	fade_tween.tween_property(self, "modulate:a", 0.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
@@ -12914,7 +12760,7 @@ func _ready() -> void:
 	_price_labels_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	_price_labels_container.add_theme_constant_override("separation", 20)
 	add_child(_price_labels_container)
-	move_child(_price_labels_container, 2) # Place after slots container
+	move_child(_price_labels_container, 2)  # Place after slots container
 	
 	# Add background input handling for the new InteractionContext system
 	gui_input.connect(_on_gui_input)
@@ -12925,18 +12771,18 @@ func populate(context: Dictionary) -> void:
 	reroll_button.text = "Reroll (%d Gold)" % reroll_cost
 
 	# Debug: Print info about the instances we received
-	# print("Shop received instances: ", _current_shop_instances.size())
+	print("Shop received instances: ", _current_shop_instances.size())
 	for i in range(_current_shop_instances.size()):
 		var inst = _current_shop_instances[i]
 		if is_instance_valid(inst):
-			var _def = inst.get_definition()
-			# print("  [%d] UUID: %s, Type: %s, HP: %d, PWR: %d" % [
-			# 	i,
-			# 	inst.ball_uuid,
-			# 	def.id if is_instance_valid(def) else "No Def",
-			# 	inst.current_hp,
-			# 	inst.current_pwr
-			# ])
+			var def = inst.get_definition()
+			print("  [%d] UUID: %s, Type: %s, HP: %d, PWR: %d" % [
+				i, 
+				inst.ball_uuid, 
+				def.id if is_instance_valid(def) else "No Def",
+				inst.current_hp,
+				inst.current_pwr
+			])
 
 	# Clear existing price labels
 	for child in _price_labels_container.get_children():
@@ -12957,9 +12803,9 @@ func populate(context: Dictionary) -> void:
 		if is_instance_valid(inst_for_slot):
 			# Debug: Print instance info before populating the view
 			var def = inst_for_slot.get_definition()
-			# print("Populating slot ", i, " with instance: ", 
-			# 	def.id if is_instance_valid(def) else "No Def", 
-			# 	" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
+			print("Populating slot ", i, " with instance: ", 
+				def.id if is_instance_valid(def) else "No Def", 
+				" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
 			
 			var gacha_view = GachaBallViewScene.instantiate()
 			slot_view.add_child(gacha_view)
@@ -12980,7 +12826,7 @@ func populate(context: Dictionary) -> void:
 			var price = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
 			price_label.text = "%d Gold" % price
 		else:
-			price_label.text = "" # Empty text for slots without items
+			price_label.text = ""  # Empty text for slots without items
 		price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		price_label.add_theme_font_size_override("font_size", 12)
 		price_label.custom_minimum_size = Vector2(120, 30)
@@ -13032,14 +12878,14 @@ func _on_gui_input(event: InputEvent) -> void:
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.location = null # No specific location for background
+		context.location = null  # No specific location for background
 		context.entity_uuid = ""
 		context.entity_type = &"WINDOW_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 0 # Main window group
+		context.window_group_id = 0  # Main window group
 		
 		SignalBus.emit_signal("interaction_context_received", context)
-		get_viewport().set_input_as_handled()
+		get_viewport().set_input_as_handled() 
 
 ```
 
@@ -13129,10 +12975,7 @@ signal battle_ended(results: Dictionary)
 ## @param unit_uuid: String - The UUID of the unit whose stats changed
 signal unit_stats_changed(unit_uuid: String)
 
-## VCR Pattern: Visual stat update for battle animations (doesn't modify logical state)
-signal unit_visual_stat_update(unit_uuid: String, new_value: int, delta: int, stat_type: String)
-
-## Triggers a flash effect on a unit with a specific color
+## Emitted when a unit should flash with a color effect (for damage/heal feedback)
 ## @param unit_uuid: String - The UUID of the unit to flash
 ## @param flash_color: Color - The color to flash to
 signal unit_flash_effect(unit_uuid: String, flash_color: Color)

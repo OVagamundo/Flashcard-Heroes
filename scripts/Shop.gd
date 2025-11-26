@@ -25,7 +25,7 @@ func _ready() -> void:
 	_price_labels_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	_price_labels_container.add_theme_constant_override("separation", 20)
 	add_child(_price_labels_container)
-	move_child(_price_labels_container, 2)  # Place after slots container
+	move_child(_price_labels_container, 2) # Place after slots container
 	
 	# Add background input handling for the new InteractionContext system
 	gui_input.connect(_on_gui_input)
@@ -36,18 +36,18 @@ func populate(context: Dictionary) -> void:
 	reroll_button.text = "Reroll (%d Gold)" % reroll_cost
 
 	# Debug: Print info about the instances we received
-	print("Shop received instances: ", _current_shop_instances.size())
+	# print("Shop received instances: ", _current_shop_instances.size())
 	for i in range(_current_shop_instances.size()):
 		var inst = _current_shop_instances[i]
 		if is_instance_valid(inst):
-			var def = inst.get_definition()
-			print("  [%d] UUID: %s, Type: %s, HP: %d, PWR: %d" % [
-				i, 
-				inst.ball_uuid, 
-				def.id if is_instance_valid(def) else "No Def",
-				inst.current_hp,
-				inst.current_pwr
-			])
+			var _def = inst.get_definition()
+			# print("  [%d] UUID: %s, Type: %s, HP: %d, PWR: %d" % [
+			# 	i,
+			# 	inst.ball_uuid,
+			# 	def.id if is_instance_valid(def) else "No Def",
+			# 	inst.current_hp,
+			# 	inst.current_pwr
+			# ])
 
 	# Clear existing price labels
 	for child in _price_labels_container.get_children():
@@ -68,9 +68,9 @@ func populate(context: Dictionary) -> void:
 		if is_instance_valid(inst_for_slot):
 			# Debug: Print instance info before populating the view
 			var def = inst_for_slot.get_definition()
-			print("Populating slot ", i, " with instance: ", 
-				def.id if is_instance_valid(def) else "No Def", 
-				" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
+			# print("Populating slot ", i, " with instance: ", 
+			# 	def.id if is_instance_valid(def) else "No Def", 
+			# 	" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
 			
 			var gacha_view = GachaBallViewScene.instantiate()
 			slot_view.add_child(gacha_view)
@@ -91,7 +91,7 @@ func populate(context: Dictionary) -> void:
 			var price = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
 			price_label.text = "%d Gold" % price
 		else:
-			price_label.text = ""  # Empty text for slots without items
+			price_label.text = "" # Empty text for slots without items
 		price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		price_label.add_theme_font_size_override("font_size", 12)
 		price_label.custom_minimum_size = Vector2(120, 30)
@@ -143,11 +143,11 @@ func _on_gui_input(event: InputEvent) -> void:
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
+		context.location = null # No specific location for background
 		context.entity_uuid = ""
 		context.entity_type = &"WINDOW_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 0  # Main window group
+		context.window_group_id = 0 # Main window group
 		
 		SignalBus.emit_signal("interaction_context_received", context)
-		get_viewport().set_input_as_handled() 
+		get_viewport().set_input_as_handled()

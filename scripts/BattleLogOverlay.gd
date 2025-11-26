@@ -41,7 +41,7 @@ func _translate_event_to_string(event: CombatEvent) -> String:
 			var healing = event.amount
 			return "%s heals %s for [color=green]%d HP[/color]." % [source_name, target_list_str, healing]
 
-		CombatEvent.Type.STAT_BUFF:
+		CombatEvent.Type.BUFF:
 			if target_names.is_empty():
 				return ""
 			var buff_amount = event.amount

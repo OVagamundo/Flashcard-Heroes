@@ -24,6 +24,10 @@ var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
+# Visual State (Puppet Mode)
+var _visual_hp: int = -1
+var _visual_pwr: int = -1
+
 
 func _ready() -> void:
 	# Reorder UI: Move StatsContainer (HP/PWR) to the top (index 0)
@@ -35,13 +39,18 @@ func _ready() -> void:
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
+		
+		# Connect stat changed signal to update poison stacks and HP/PWR during battle
 		bus.unit_stats_changed.connect(_on_unit_stats_changed)
+			
 		if bus.has_signal("unit_flash_effect"):
 			bus.connect("unit_flash_effect", _on_unit_flash_effect)
 		if bus.has_signal("unit_bump_attack"):
 			bus.connect("unit_bump_attack", _on_unit_bump_attack)
 		if bus.has_signal("unit_death_fade"):
 			bus.connect("unit_death_fade", _on_unit_death_fade)
+		if bus.has_signal("unit_visual_stat_update"):
+			bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
 
 func _exit_tree() -> void:
 	# Proactively disconnect signals and end any active drag to prevent leaks
@@ -93,7 +102,7 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 		icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_SCALE
 
-	var tier_text = "T1"  # Default for trinkets
+	var tier_text = "T1" # Default for trinkets
 	if definition is GachaBallDefinition:
 		tier_text = "T%d" % definition.tier
 	tier_label.text = tier_text
@@ -163,8 +172,38 @@ func _update_stats() -> void:
 	# Show HP and PWR for units
 	hp_label.visible = true
 	pwr_label.visible = true
-	hp_label.text = "HP: %d" % instance.current_hp
-	pwr_label.text = "PWR: %d" % instance.current_pwr
+	
+	# If we have visual overrides, use them. Otherwise fall back to instance data (Management Phase)
+	var display_hp = _visual_hp if _visual_hp != -1 else instance.current_hp
+	var display_pwr = _visual_pwr if _visual_pwr != -1 else instance.current_pwr
+	
+	hp_label.text = "HP: %d" % max(0, display_hp)
+	pwr_label.text = "PWR: %d" % display_pwr
+
+# ------------------------------------------------------------------
+# Puppet API (Called by BattleAnimator)
+# ------------------------------------------------------------------
+
+func set_visual_state(snapshot: Dictionary) -> void:
+	# Snapshot keys: "hp", "pwr", "def_id"
+	if snapshot.has("hp"):
+		_visual_hp = int(snapshot["hp"])
+	if snapshot.has("pwr"):
+		_visual_pwr = int(snapshot["pwr"])
+	_update_stats()
+
+func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
+	# type: "hp" or "pwr"
+	var label = hp_label if type == "hp" else pwr_label
+	var start_val = _visual_hp if type == "hp" else _visual_pwr
+	
+	# Update internal visual state immediately so subsequent calls are correct
+	if type == "hp": _visual_hp = target_val
+	else: _visual_pwr = target_val
+	
+	# Tween the number
+	var tween = create_tween()
+	tween.tween_method(func(val): label.text = "%s: %d" % [type.to_upper(), val], start_val, target_val, 0.5)
 
 func _update_item_slots() -> void:
 	# REDESIGNED: Now shows status effects instead of item icons
@@ -188,7 +227,7 @@ func _update_item_slots() -> void:
 	# Display status effects as large numbers
 	# Show poison stacks if present (as purple number)
 	var poison_stacks = instance.get_status_effect_amount(&"poison")
-	print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
+	# print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
 	if poison_stacks > 0:
 		var poison_label = Label.new()
 		poison_label.text = str(poison_stacks)
@@ -197,7 +236,7 @@ func _update_item_slots() -> void:
 		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		poison_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		item_grid.add_child(poison_label)
-		print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
+		# print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -229,7 +268,7 @@ func _on_unit_stats_changed(unit_uuid: String) -> void:
 		var instance = GameManager.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			_update_stats()
-			_update_item_slots()  # Update poison display when status effects change
+			_update_item_slots() # Update poison display when status effects change
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location): return
@@ -290,7 +329,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
 	GlobalInteractionRouter.start_drag(origin_ctx)
 
-	return { "source_loc": _location }
+	return {"source_loc": _location}
 
 func _can_drop_data(_at_position, data) -> bool:
 	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
@@ -335,6 +374,14 @@ func _flash_unit_color(flash_color: Color) -> void:
 	# Emit completion signal when flash finishes
 	tween.finished.connect(_on_flash_tween_finished)
 
+func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void:
+	if uuid == _instance_uuid:
+		if stat == "hp":
+			_visual_hp = value
+		elif stat == "pwr":
+			_visual_pwr = value
+		_update_stats()
+
 func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	# Only respond if this view represents the attacker
 	if _instance_uuid != unit_uuid:
@@ -358,7 +405,7 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	if _instance_uuid != unit_uuid:
 		return
 	# Flash red if not already, then fade out alpha for visual clarity
-	var _start_modulate: Color = modulate  # Store starting modulate for potential future use
+	var _start_modulate: Color = modulate # Store starting modulate for potential future use
 	var fade_tween = create_tween()
 	# Ensure we are visible, then fade to 0 alpha
 	fade_tween.tween_property(self, "modulate:a", 0.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
