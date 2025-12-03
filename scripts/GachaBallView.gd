@@ -25,8 +25,10 @@ var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
 # Visual State (Puppet Mode)
-var _visual_hp: int = -1
-var _visual_pwr: int = -1
+var _visual_hp: int = 0
+var _visual_pwr: int = 0
+var _visual_poison_stacks: int = 0
+var _bound_uuid: String = "" # UUID bound during populate()
 
 
 func _ready() -> void:
@@ -40,9 +42,7 @@ func _ready() -> void:
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
 		
-		# Connect stat changed signal to update poison stacks and HP/PWR during battle
-		bus.unit_stats_changed.connect(_on_unit_stats_changed)
-			
+		# Animation signals (BattleAnimator controls these)
 		if bus.has_signal("unit_flash_effect"):
 			bus.connect("unit_flash_effect", _on_unit_flash_effect)
 		if bus.has_signal("unit_bump_attack"):
@@ -51,6 +51,8 @@ func _ready() -> void:
 			bus.connect("unit_death_fade", _on_unit_death_fade)
 		if bus.has_signal("unit_visual_stat_update"):
 			bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
+		if bus.has_signal("unit_summon_fade"):
+			bus.connect("unit_summon_fade", _on_unit_summon_fade)
 
 func _exit_tree() -> void:
 	# Proactively disconnect signals and end any active drag to prevent leaks
@@ -60,38 +62,62 @@ func _exit_tree() -> void:
 			bus.disconnect("view_selected", _on_view_selected)
 		if bus.is_connected("view_deselected", _on_view_deselected):
 			bus.disconnect("view_deselected", _on_view_deselected)
-		if bus.unit_stats_changed.is_connected(_on_unit_stats_changed):
-			bus.unit_stats_changed.disconnect(_on_unit_stats_changed)
 		if bus.has_signal("unit_flash_effect") and bus.is_connected("unit_flash_effect", _on_unit_flash_effect):
 			bus.disconnect("unit_flash_effect", _on_unit_flash_effect)
 		if bus.has_signal("unit_bump_attack") and bus.is_connected("unit_bump_attack", _on_unit_bump_attack):
 			bus.disconnect("unit_bump_attack", _on_unit_bump_attack)
 		if bus.has_signal("unit_death_fade") and bus.is_connected("unit_death_fade", _on_unit_death_fade):
 			bus.disconnect("unit_death_fade", _on_unit_death_fade)
+		if bus.has_signal("unit_summon_fade") and bus.is_connected("unit_summon_fade", _on_unit_summon_fade):
+			bus.disconnect("unit_summon_fade", _on_unit_summon_fade)
 
 	# If this view is being freed during a drag, centrally end the drag and visuals
 	if GlobalInteractionRouter.is_drag_active():
 		GlobalInteractionRouter.end_drag(false)
 		GlobalInteractionRouter.end_drag_visuals(false)
 
-func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false) -> void:
+## Helper method for SlotView to check UUID
+func get_instance_uuid() -> String:
+	return _instance_uuid
+
+func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true, single_click_inspect: bool = false) -> void:
 	self._location = loc
-	self._instance_uuid = instance.ball_uuid
+	self._instance_uuid = visual_data.get("uuid", "")
+	self._bound_uuid = visual_data.get("uuid", "")
 	self._is_inspectable = is_inspectable
 	self._single_click_inspect = single_click_inspect
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
-	var definition = instance.get_definition()
-	if not is_instance_valid(definition):
+	if visual_data.is_empty():
 		visible = false
 		return
 	
 	# Set entity type based on definition category
-	_entity_type = StringName(definition.category) if definition.category is String else definition.category
+	var category = visual_data.get("category", "UNIT")
+	_entity_type = StringName(category)
 	
+	# Initialize visual state
+	_visual_hp = visual_data.get("hp", 0)
+	_visual_pwr = visual_data.get("pwr", 0)
+	_visual_poison_stacks = visual_data.get("poison_stacks", 0)
+	
+	# Set visual elements
+	if icon_rect:
+		icon_rect.texture = visual_data.get("icon")
+	
+	if tier_label:
+		var tier = visual_data.get("tier", 0)
+		tier_label.text = "T%d" % tier
+		# Set tier color
+		match tier:
+			0: tier_label.modulate = Color.WHITE
+			1: tier_label.modulate = Color.GREEN
+			2: tier_label.modulate = Color.BLUE
+			3: tier_label.modulate = Color.ORANGE
+	
+	_update_stats()
 	visible = true
-	icon_rect.texture = definition.icon
-	
+
 	# Fix for huge trinket icons: Only apply scaling constraint for TRINKETs.
 	# Units and Items should use default scaling to preserve their intended size.
 	if _entity_type == &"TRINKET":
@@ -102,21 +128,23 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 		icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
 		icon_rect.stretch_mode = TextureRect.STRETCH_SCALE
 
-	var tier_text = "T1" # Default for trinkets
-	if definition is GachaBallDefinition:
-		tier_text = "T%d" % definition.tier
-	tier_label.text = tier_text
-	# TrinketDefinition uses name_key; GachaBallDefinition uses display_name_key
-	var loc_key: String = ""
-	if definition is GachaBallDefinition:
-		loc_key = String(definition.display_name_key)
-	else:
-		loc_key = String(definition.name_key)
-	tooltip_text = tr(loc_key)
+	# Set tooltip from localization key
+	var loc_key: String = visual_data.get("display_name_key", "")
+	if not loc_key.is_empty():
+		tooltip_text = tr(loc_key)
 	
-	_update_stats()
 	_update_item_slots()
 	_apply_selection_feedback()
+
+
+func update_visuals(visual_data: Dictionary) -> void:
+	if visual_data.is_empty() or visual_data.get("uuid") != _instance_uuid:
+		return
+		
+	_visual_hp = visual_data.get("hp", 0)
+	_visual_pwr = visual_data.get("pwr", 0)
+	_visual_poison_stacks = visual_data.get("poison_stacks", 0)
+	_update_stats()
 
 func set_is_enemy(is_enemy: bool) -> void:
 	if is_instance_valid(icon_rect):
@@ -148,37 +176,24 @@ func _update_stats() -> void:
 	hp_label.visible = false
 	pwr_label.visible = false
 	
-	# Get the instance and validate
-	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
-	if not is_instance_valid(instance):
+	# Only show stats for UNITs (not items or trinkets)
+	if _entity_type != &"UNIT":
 		return
-
-	var definition = instance.get_definition()
-	if not is_instance_valid(definition):
-		return
-
-	# Only show stats for units (not items or trinkets)
-	var category = definition.get("category") if definition and definition.has_method("get") else null
-	if not category:
-		return
-		
-	# Ensure we're comparing StringNames
-	var unit_type = StringName("UNIT")
-	var category_name = StringName(category) if typeof(category) == TYPE_STRING else category
 	
-	if category_name != unit_type:
-		return
-
+	# DECOUPLED: No instance queries - view is fully self-contained
+	# _visual_hp, _visual_pwr are set during populate() and updated via animate_* methods
+	# This makes the view a "puppet" that only knows what events tell it
+	
 	# Show HP and PWR for units
 	hp_label.visible = true
 	pwr_label.visible = true
 	
-	# If we have visual overrides, use them. Otherwise fall back to instance data (Management Phase)
-	var display_hp = _visual_hp if _visual_hp != -1 else instance.current_hp
-	var display_pwr = _visual_pwr if _visual_pwr != -1 else instance.current_pwr
+	# Use visual state directly (never query instances)
+	hp_label.text = "HP: %d" % max(0, _visual_hp)
+	pwr_label.text = "PWR: %d" % _visual_pwr
 	
-	hp_label.text = "HP: %d" % max(0, display_hp)
-	pwr_label.text = "PWR: %d" % display_pwr
+	# Update status effect displays (poison, etc.)
+	_update_item_slots()
 
 # ------------------------------------------------------------------
 # Puppet API (Called by BattleAnimator)
@@ -190,7 +205,15 @@ func set_visual_state(snapshot: Dictionary) -> void:
 		_visual_hp = int(snapshot["hp"])
 	if snapshot.has("pwr"):
 		_visual_pwr = int(snapshot["pwr"])
+	if snapshot.has("poison_stacks"):
+		_visual_poison_stacks = int(snapshot["poison_stacks"])
 	_update_stats()
+
+func animate_poison_change(target_stacks: int) -> void:
+	print("[GachaBallView] animate_poison_change called for ", _instance_uuid, " with stacks: ", target_stacks, " _visual_hp=", _visual_hp)
+	_visual_poison_stacks = target_stacks
+	_update_stats()
+	print("[GachaBallView] after _update_stats, _visual_hp=", _visual_hp)
 
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	# type: "hp" or "pwr"
@@ -211,24 +234,18 @@ func _update_item_slots() -> void:
 	for child in item_grid.get_children():
 		child.queue_free()
 	
-	# Get the instance
-	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
-	if not is_instance_valid(instance):
-		return
-		
-	var definition = instance.get_definition()
-	if not is_instance_valid(definition):
-		return
-	
-	# Only show status effects for units (not items or trinkets)
-	if definition.category != "UNIT":
+	# Only show status effects for units
+	if _entity_type != &"UNIT":
 		return
 	
 	# Display status effects as large numbers
 	# Show poison stacks if present (as purple number)
-	var poison_stacks = instance.get_status_effect_amount(&"poison")
-	# print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
+	var poison_stacks = _visual_poison_stacks
+	
+	print("[GachaBallView] _update_item_slots for ", _instance_uuid, " - poison_stacks: ", poison_stacks)
+	
 	if poison_stacks > 0:
+		print("[GachaBallView] Creating poison label for ", _instance_uuid, " with ", poison_stacks, " stacks")
 		var poison_label = Label.new()
 		poison_label.text = str(poison_stacks)
 		poison_label.add_theme_font_size_override("font_size", 24)
@@ -236,7 +253,7 @@ func _update_item_slots() -> void:
 		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		poison_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		item_grid.add_child(poison_label)
-		# print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
+		print("[GachaBallView] Poison label added to item_grid. item_grid children count: ", item_grid.get_child_count())
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -409,8 +426,18 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	var fade_tween = create_tween()
 	# Ensure we are visible, then fade to 0 alpha
 	fade_tween.tween_property(self, "modulate:a", 0.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	# Emit completion signal when death fade finishes
 	fade_tween.finished.connect(_on_death_fade_tween_finished)
+
+func _on_unit_summon_fade(unit_uuid: String) -> void:
+	# Only respond if this view represents the summoned unit
+	if _instance_uuid != unit_uuid:
+		return
+	# Start invisible and fade in
+	modulate.a = 0.0
+	var fade_tween = create_tween()
+	fade_tween.tween_property(self, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Emit completion signal when summon fade finishes
+	fade_tween.finished.connect(_on_summon_fade_tween_finished)
 
 
 func _apply_selection_feedback() -> void:
@@ -447,3 +474,6 @@ func _on_bump_tween_finished() -> void:
 
 func _on_death_fade_tween_finished() -> void:
 	SignalBus.emit_signal("unit_death_fade_finished", _instance_uuid)
+
+func _on_summon_fade_tween_finished() -> void:
+	SignalBus.emit_signal("unit_summon_fade_finished", _instance_uuid)

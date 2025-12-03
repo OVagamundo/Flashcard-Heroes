@@ -23,7 +23,6 @@ func _ready() -> void:
 # This is a public function called by Main.gd at the correct time.
 func populate(context: Dictionary) -> void:
 	# This function now accepts a context dictionary with reward instances and gold amount.
-	
 	# Get reward instances and gold amount from the context
 	var reward_instances: Array = context.get("reward_instances", [])
 	_gold_amount = context.get("gold_amount", 0)
@@ -59,12 +58,10 @@ func populate(context: Dictionary) -> void:
 
 		# 5. If an instance exists, create its view and add it as a child to the SlotView.
 		if is_instance_valid(inst):
-			var gacha_view = GachaBallViewScene.instantiate()
-			slot_view.add_child(gacha_view)
-			# THE CRITICAL FIX: The last argument must be 'false' to enable
-			# standard inventory interactions (select, double-click, drag).
-			gacha_view.populate(loc, inst, true, false)
-			# The populate() call above already sets the correct entity type from the definition
+			# Use adapter to create visual data
+			var visual_data = VisualDataAdapter.create_visual_data(inst)
+			slot_view.set_content(visual_data, true, false, false)
+
 
 func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	var is_valid_selection = new_location and new_location.container == &"Rewards"
@@ -112,11 +109,11 @@ func _on_gui_input(event: InputEvent) -> void:
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
+		context.location = null # No specific location for background
 		context.entity_uuid = ""
 		context.entity_type = &"WINDOW_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 0  # Main window group
+		context.window_group_id = 0 # Main window group
 		
 		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()

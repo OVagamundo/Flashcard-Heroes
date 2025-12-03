@@ -72,9 +72,6 @@ func populate(context: Dictionary) -> void:
 			# 	def.id if is_instance_valid(def) else "No Def", 
 			# 	" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
 			
-			var gacha_view = GachaBallViewScene.instantiate()
-			slot_view.add_child(gacha_view)
-			
 			# Ensure the instance has valid stats before populating
 			if inst_for_slot.current_hp <= 0 or inst_for_slot.current_pwr <= 0:
 				print("Warning: Instance has invalid stats, resetting from definition")
@@ -82,7 +79,14 @@ func populate(context: Dictionary) -> void:
 					inst_for_slot.current_hp = def.base_hp
 					inst_for_slot.current_pwr = def.base_pwr
 			
-			gacha_view.populate(loc, inst_for_slot, true, false)
+			# Use adapter to create visual data
+			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
+			slot_view.set_content(visual_data, true, false, false)
+			
+			if slot_view.get_child_count() > 0:
+				var gacha_view = slot_view.get_child(0)
+				if gacha_view is GachaBallView:
+					gacha_view.set_interaction_context(&"SELECTION_ONLY", &"UNIT", 0)
 		
 		# Always create a price label for each slot to maintain positioning
 		var price_label = Label.new()

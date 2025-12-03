@@ -72,7 +72,18 @@ func _ready() -> void:
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
 
 func _redraw_board() -> void:
-	if not is_instance_valid(battle_manager): 
+	print("[BattleView] _redraw_board called! Current phase: ", battle_manager.get_current_phase() if is_instance_valid(battle_manager) else "NO BM")
+	if not is_instance_valid(battle_manager):
+		return
+	
+	# CRITICAL: NEVER redraw the board during animation phases!
+	# The BattleAnimator owns all views during these phases (Puppet Mode).
+	# Any board rebuild will destroy the registered views and break animations.
+	var current_phase = battle_manager.get_current_phase()
+	if current_phase == BattleManager.Phases.COMBAT or \
+	   current_phase == BattleManager.Phases.START_OF_TURN or \
+	   current_phase == BattleManager.Phases.END_OF_TURN:
+		print("[BattleView] BLOCKED _redraw_board - currently in animation phase: ", current_phase)
 		return
 	
 	_update_gacha_token_label(battle_manager.get_gacha_tokens())
@@ -89,7 +100,7 @@ func _redraw_board() -> void:
 		discard_pile_button.text = "Discard Pile (%d)" % discard_count
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
-	if not is_instance_valid(battle_manager): 
+	if not is_instance_valid(battle_manager):
 		return
 	
 	var data_container = battle_manager.get_container(container_name)
@@ -122,32 +133,36 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			instance = battle_manager.get_instance(uuid)
 
 		if is_instance_valid(instance):
-			var view = GachaBallViewScene.instantiate()
-			slot.add_child(view)
+			# Create visual data using the adapter
+			var visual_data = VisualDataAdapter.create_visual_data(instance)
 			
-			# --- THIS IS THE LINE TO CHANGE ---
-			# The third argument `is_inspectable` should be true, and the fourth argument
-			# `single_click_inspect` should also be true for enemies.
-			view.populate(loc, instance, true, is_enemy)
-			# --- END OF CHANGE ---
+			# Use SlotView's set_content to populate the view
+			# This handles instantiation and population of GachaBallView internally
+			slot.set_content(visual_data, true, is_enemy, is_enemy)
+			
 			# EnemyLineup must be inspection-only: configure GachaBallView accordingly
+			# Note: We need to access the child view to set interaction context if needed,
+			# but SlotView should ideally handle this. For now, we can access the child.
 			if container_name == &"EnemyLineup":
 				var def = instance.get_definition()
 				if is_instance_valid(def):
-					# In test mode, allow full interaction with enemy units
-					if battle_manager.is_test_mode:
-						view.set_interaction_context(&"FULLY_INTERACTIVE", def.category, 0)
-					else:
-						view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
+					if slot.get_child_count() > 0:
+						var view = slot.get_child(0)
+						if view is GachaBallView:
+							# In test mode, allow full interaction with enemy units
+							if battle_manager.is_test_mode:
+								view.set_interaction_context(&"FULLY_INTERACTIVE", def.category, 0)
+							else:
+								view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
 
-			view.set_is_enemy(is_enemy)
-
-			view.set_meta("location_identifier", loc)
+			slot.set_meta("location_identifier", loc)
 		else:
 			# If this slot is already a SlotView instance, simply update its location metadata.
 			if slot.get_script() == preload("res://scripts/SlotView.gd"):
 				slot.populate(loc)
 				slot.set_meta("location_identifier", loc)
+				# Ensure it's empty
+				slot.set_content({}, false, false, false)
 				# EnemyLineup must be inspection-only: configure SlotView accordingly
 				if container_name == &"EnemyLineup":
 					# In test mode, allow full interaction with enemy slots
@@ -197,17 +212,24 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 			if inspect_btn is Button:
 				inspect_btn.disabled = is_combat
 
+	# Only redraw when entering MANAGEMENT phase (after all animations complete)
+	# During animation phases (START_OF_TURN, COMBAT, END_OF_TURN), BattleAnimator
+	# owns all views and updates them based on recorded events. Redrawing during
+	# these phases destroys the views BattleAnimator is managing.
+	if phase_name == &"MANAGEMENT":
+		_redraw_board()
+
 func _gui_input(event) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Create and emit InteractionContext for battle background
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
+		context.location = null # No specific location for background
 		context.entity_uuid = ""
 		context.entity_type = &"GLOBAL_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 0  # Main battle scene
+		context.window_group_id = 0 # Main battle scene
 		
 		SignalBus.emit_signal("interaction_context_received", context)
 
@@ -229,9 +251,9 @@ func _populate_enemy_trinkets() -> void:
 		if i < battle_manager.enemy_trinkets.size():
 			var instance = battle_manager.enemy_trinkets[i]
 			if is_instance_valid(instance):
-				var view = GachaBallViewScene.instantiate()
-				slot_view.add_child(view)
-				if view.has_method("populate"):
-					view.populate(loc, instance, true, true)
-				if view.has_method("set_interaction_context"):
-					view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+				var visual_data = VisualDataAdapter.create_visual_data(instance)
+				slot_view.set_content(visual_data, true, true, false)
+				if slot_view.get_child_count() > 0:
+					var view = slot_view.get_child(0)
+					if view is GachaBallView and view.has_method("set_interaction_context"):
+						view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)

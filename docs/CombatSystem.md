@@ -24,6 +24,9 @@ The `BattleManager` acts as the authoritative simulation engine. It operates on 
 2.  **Execution:** Runs the turn logic (Attacks, Abilities, Deaths, Summons) instantly.
 3.  **Recording:** Generates a `CombatEvent` for *every* significant state change.
 4.  **No Side Effects:** The simulation **must not** manipulate the SceneTree, play sounds, or spawn visual nodes directly. It only mutates data and records events.
+5.  **Unified Stat Modification:** All stat changes (HP, PWR, Status Effects) must go through `BattleManager.apply_stat_delta()`.
+    *   **Rule:** Effects must **NEVER** set properties (e.g., `current_hp`) directly.
+    *   **Purpose:** This function updates the data model *and* returns the absolute value required for the `CombatEvent` visual payload, ensuring the snapshot is accurate.
 
 ### The Event Queue (TurnLog)
 The output of the simulation is a linear queue of `CombatEvent` objects. This queue represents the **Causal History** of the turn.
@@ -78,18 +81,116 @@ Events are generated sequentially as they happen. The `TurnLog` reflects the fin
 
 ---
 
+## 1.5 Snapshot Architecture: The "Rewind" Mechanism
+
+### The Problem
+During simulation, the game state mutates instantly. By the time presentation starts, units have already been damaged, killed, and removed. If views query live data (e.g., `unit.current_hp`), they see the "end of turn" state, not the step-by-step progression.
+
+### The Solution: Value-Based Snapshots
+Before simulation runs, `BattleManager` captures a **snapshot** of the entire board state. This snapshot contains **pure values only**—no object references.
+
+```gdscript
+# ✅ CORRECT: Value-based snapshot
+{
+    "unit_abc123": {
+        "uuid": "unit_abc123",
+        "hp": 10,
+        "pwr": 5,
+        "poison_stacks": 0,
+        "def_id": &"unit_t1_a",
+        "icon": <Texture>,
+        "tier": 1,
+        "category": &"UNIT",
+        "display_name_key": "unit_t1_a.name"
+    }
+}
+
+# ❌ WRONG: Object references
+{
+    "unit_abc123": {
+        "instance": <GachaBallInstance>,  # This becomes stale!
+        "location": <LocationIdentifier>   # This queries simulation!
+    }
+}
+```
+
+### Why No Object References?
+If the snapshot contains `GachaBallInstance` references, when the presentation layer accesses `instance.current_hp`, it reads the **mutated** value from the simulation, not the snapshot value. This breaks the VCR model.
+
+### Presentation Isolation
+During the presentation phase:
+- `BattleAnimator` populates `GachaBallView` nodes using snapshot values
+- Views store these values in `_visual_*` fields (e.g., `_visual_hp`)
+- Views **NEVER** call `get_instance()` or query `BattleManager`
+- All updates come from `CombatEvent` payloads
+
+> [!IMPORTANT]
+> **Zero-Tolerance Rule**: During COMBAT phase, presentation code must make **ZERO** queries to simulation data. Any `get_instance()` call is a violation.
+
+---
+
+## 1.6 Phase-Based UI Blocking
+
+The game uses **phase-based blocking** to prevent UI updates from interfering with animations.
+
+### Animation Phases
+These phases represent active animation playback:
+- `COMBAT`: Main turn animations
+- `START_OF_TURN`: Turn-start ability animations
+- `END_OF_TURN`: Poison/status effect animations
+
+### Interaction Phase
+- `MANAGEMENT`: Player can interact with UI
+
+### Blocking Mechanisms
+**BattleView**:
+```gdscript
+func _redraw_board() -> void:
+    var current_phase = battle_manager.get_current_phase()
+    if current_phase == Phases.COMBAT or \
+       current_phase == Phases.START_OF_TURN or \
+       current_phase == Phases.END_OF_TURN:
+        return  # Block rebuild during animations
+```
+
+**Why?** If `_redraw_board()` runs during COMBAT, it destroys and recreates `SlotView` nodes, invalidating the `BattleAnimator`'s `_visual_registry`. This breaks all animations mid-playback.
+
+### Event Ordering and Deferred Deaths
+
+**Causality Rule**: Events must appear in causal order.
+- ✅ Correct: `DAMAGE → DEATH → SUMMON`
+- ❌ Wrong: `DEATH → SUMMON → DAMAGE`
+
+**Deferred Death Mechanic**:
+When a unit reaches 0 HP, its `DEATH` event is **not** generated immediately. Instead:
+1. Unit HP reaches 0
+2. `on_death` triggers fire (e.g., summon item)
+3. All triggered reactions are processed
+4. **Then** the `DEATH` event is generated
+
+This ensures reactions (counter-attacks, summons) complete before the death animation plays.
+
+---
+
 ## 2. The Presentation Phase (`BattleAnimator`)
+
+
 
 
 The `BattleAnimator` is a dumb playback engine. It does not know rules; it only knows how to visualize events.
 
 ### Responsibilities
-1.  **State Restoration:** Before playback, it uses the **State Snapshot** to reset all Unit Views to their "Start of Turn" values (HP, Position, Status).
-2.  **Sequential Playback:** Iterates through the `TurnLog` one event at a time.
-3.  **Visual State Management:**
-    *   **Updates:** When a `DAMAGE` event plays, the Animator updates the target View's HP bar *visually* to match the event's `new_hp`.
-    *   **Mutations:** When a `SUMMON` event plays, the Animator performs the visual container swap (removing the dead unit view, spawning the new unit view).
-4.  **Blocking:** Waits for animations (e.g., projectile travel, death fade) to complete before processing the next event.
+1.  **Visual Registry (Puppet System):**
+    *   **Initialization:** At the start of a sequence, the Animator scans the scene tree to map UUIDs to `GachaBallView` nodes.
+    *   **Mechanism:** Uses `LocationIdentifier` objects from the snapshot to resolve the correct `Control` node in the scene.
+    *   **Storage:** Populates `_visual_registry` (Dictionary: UUID -> GachaBallView).
+    *   **Puppet Mode:** Views operate in "Puppet Mode" (strictly decoupled from live data) and are controlled strictly by the Animator. They are populated using `VisualDataAdapter` and updated via `CombatEvent` payloads.
+2.  **State Restoration:** Uses the **State Snapshot** to reset all Unit Views to their "Start of Turn" values before playback begins.
+3.  **Sequential Playback:** Iterates through the `TurnLog` one event at a time.
+4.  **Visual State Management:**
+    *   **Updates:** Resolves the target View via `_visual_registry` and updates it using the `visual_payload`.
+    *   **Mutations:** Resolves visual nodes via the Registry to perform container swaps (Summons/Deaths).
+5.  **Blocking:** Waits for animations (e.g., projectile travel, death fade) to complete before processing the next event.
 
 ### Visual Queueing
 The Animator maintains a **Visual Queue** of actions.
@@ -113,8 +214,14 @@ enum Type { DAMAGE, HEAL, DEATH, SUMMON, BUFF, ... }
 var type: Type
 var source_uuid: String
 var target_uuids: Array[String]
-var payload: Dictionary # Flexible data (e.g., { "damage": 10, "is_crit": true })
-var resultant_state: Dictionary # { target_uuid: { "hp": 50, "status": [...] } }
+var visual_payload: Dictionary 
+# Source of Truth for Views. Common keys:
+# - amount: int (The delta applied)
+# - stat: String ("hp", "pwr", "poison_stacks")
+# - targets_new_hp: Array[int] (Absolute HP values for each target)
+# - targets_new_poison: Array[int] (Absolute stack counts)
+# - skip_bump: bool (If true, suppresses hit reaction)
+var resultant_state: Dictionary 
 ```
 
 ### `StateSnapshot`
@@ -147,6 +254,39 @@ Captured at the start of the turn.
 *   **DO:** Read data from the `CombatEvent` payload.
 *   **DO NOT:** Read `BattleManager.get_instance(uuid).current_hp`. (This value is from the future!)
 *   **DO NOT:** Start animations on your own. Wait for the Animator.
+
+### No Defensive Code Policy
+
+> [!CAUTION]
+> **CRITICAL**: Defensive code is **NOT ALLOWED** in this codebase. If a condition "should never happen," use `assert()` to fail fast. Do not silently handle, skip, or log-and-continue.
+
+**What is Defensive Code?**  
+Code that checks for and handles "impossible" conditions—states that should never occur under correct program logic.
+
+**Why It's Prohibited**:
+1. **Masks Bugs**: Hides the root cause instead of exposing it
+2. **Silent Failures**: Program continues in invalid state
+3. **False Confidence**: Tests pass but bugs remain hidden
+4. **Technical Debt**: Accumulates workarounds instead of fixes
+
+**Examples**:
+```gdscript
+# ❌ DEFENSIVE CODE - NOT ALLOWED
+func apply_damage(unit: GachaBallInstance, amount: int) -> void:
+    if not is_instance_valid(unit):
+        return  # Silent failure - bug is hidden!
+    if amount < 0:
+        amount = 0  # Silently "fixing" bad input
+    unit.current_hp -= amount
+
+# ✅ CORRECT - FAIL FAST
+func apply_damage(unit: GachaBallInstance, amount: int) -> void:
+    assert(is_instance_valid(unit), "Unit must be valid")
+    assert(amount >= 0, "Damage amount must be non-negative")
+    unit.current_hp -= amount
+```
+
+**When to Use Defensive Code**: NEVER in game logic. The only exception is user input validation at system boundaries (e.g., validating file paths from config files).
 
 ---
 

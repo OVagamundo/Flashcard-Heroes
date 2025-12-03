@@ -34,13 +34,6 @@ The game's logic is built upon a mandatory hybrid architecture to guarantee data
 
 3.  **Managers are Authoritative Operators:** Managers contain the stateless logic (the "verbs") that operates on the data. They are responsible for correctly executing the **Golden Rule of State Synchronization**: any operation that moves an instance *must* update both the `DataContainer` (the index) and the `GachaBallInstance`'s properties (the truth) in a single, atomic operation.
 
-### 1.2 Circular Preload Dependency Prevention
-
-To prevent game crashes, the following pattern of Inversion of Control is mandatory:
-
--   **Rule:** Persistent Autoload singletons (e.g., `GameManager`) must **not** query the scene tree for transient objects (e.g., `BattleManager`) during preload.
--   **Pattern:** Transient objects must register themselves with persistent objects when they enter the scene tree (e.g., in `_ready`) and unregister themselves when they exit.
-
 ## Part 2: Data Schemas & Structures
 
 ### 2.1 Core Data Resources
@@ -54,6 +47,7 @@ To prevent game crashes, the following pattern of Inversion of Control is mandat
 -   **`AbilityDefinition.gd`**: (Resource) Defines an ability by linking a `trigger`, `condition`, and `effects`.
 -   **`EffectRequest.gd`**: (Resource) A request to execute an ability, placed on the effect queue.
 -   **`InteractionContext`**: (Immutable Packet) A standardized data packet sent from a UI view to the Global Interaction Router with every gesture. Its structure is defined in `docs/InputHandling(GIR).md`.
+-   **`LocationIdentifier`**: (Object) A lightweight object containing a `container` (StringName), `index` (int), and `unit_uuid` (String). Used as the universal key for locating instances in the Hybrid Architecture.
 
 ### 2.2 Location Container Tags
 
@@ -81,7 +75,16 @@ The game logic is modularized into distinct systems and managers, each with a cl
     -   (See `docs/GachaBallSystem.md`)
 -   **Combat System:** Orchestrates the turn-based, auto-battler combat phases and logic.
     -   (See `docs/CombatSystem.md`)
-    -   **Architecture:** Uses a **Strict State-Event Decoupling** model ("Simulate First, Present Later") where the simulation is a black box that produces a causal `TurnLog` for the UI to play back.
+    -   **Architecture:** Uses a **Strict State-Event Decoupling** model ("Simulate First, Present Later").
+    -   **Snapshot Architecture:** Before simulation, captures a value-based snapshot (no object references) of the entire board state.
+        - Views populate from snapshot values, never query live instances during COMBAT
+        - Prevents presentation from seeing "future" state after simulation mutates data
+    -   **Phase-Based UI Blocking:** During animation phases (COMBAT, START_OF_TURN, END_OF_TURN), UI updates are blocked to prevent destroying the Animator's visual registry.
+    -   **Event Causality:** Events must appear in causal order (DAMAGE → DEATH → SUMMON).
+    -   **Deferred Deaths:** DEATH events generate after all reactions (counter-attacks, summons) complete.
+    -   **Unified Stat Modification:** All stat changes (HP, PWR, Status) use `apply_stat_delta()` for consistency and correct snapshotting.
+    -   **Visual Registry:** The Animator scans the scene tree at the start of a turn to map UUIDs to `GachaBallView` nodes, storing them in a `_visual_registry`.
+    -   **Puppet Views:** During playback, Views operate in "Puppet Mode," strictly decoupled from live data. They are populated via `VisualDataAdapter` and updated strictly via `CombatEvent` payloads.
 
 -   **Ability System:** A data-driven system for executing all special abilities in response to game events.
     -   (See `docs/AbilitySystem.md`)
@@ -92,7 +95,7 @@ The game logic is modularized into distinct systems and managers, each with a cl
     -   (See `docs/EncounterGenerationSystem.md`)
 -   **Status Effects System:** Manages temporary buffs/debuffs on units.
     -   **Storage:** `GachaBallInstance.status_effects` dictionary (EffectID -> Stacks).
-    -   **Application:** `add_status_effect()` handles stacking and removal.
+    -   **Application:** `apply_stat_delta()` handles stacking, removal, and snapshotting.
     -   **Processing:** `BattleManager` processes effects (damage, decay) at specific phases (e.g., End of Turn).
     -   **Extensibility:** Designed to support arbitrary effects via data-driven IDs.
 

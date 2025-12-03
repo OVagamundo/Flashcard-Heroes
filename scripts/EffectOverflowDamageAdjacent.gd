@@ -22,15 +22,13 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	var new_hp: int = max(0, overflow_target.current_hp - overflow_damage)
 	var is_simulation: bool = bool(context.get("is_simulation", false))
-	if is_simulation and overflow_target.has_method("set_current_hp_silent"):
-		overflow_target.set_current_hp_silent(new_hp)
-	else:
+	if not is_simulation:
 		overflow_target.set_current_hp(new_hp)
 
 	battle_manager.trigger_on_hurt(overflow_target.ball_uuid, overflow_damage, String(context.get("source_uuid", "")))
 	return {
 		"stat": "hp",
-		"amount": -overflow_damage,
+		"amount": - overflow_damage,
 		"targets": [overflow_target.ball_uuid],
 		"skip_bump": true
 	}

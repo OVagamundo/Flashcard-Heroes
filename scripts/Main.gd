@@ -44,7 +44,7 @@ func _ready() -> void:
 	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
-
+	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 
 
 	_on_battle_state_changed(false)
@@ -67,11 +67,11 @@ func _on_content_area_gui_input(event: InputEvent) -> void:
 			var context = InteractionContext.new()
 			context.source_view_instance_id = get_instance_id()
 			context.event_type = &"SINGLE_CLICK"
-			context.location = null  # No specific location for background
+			context.location = null # No specific location for background
 			context.entity_uuid = ""
 			context.entity_type = &"GLOBAL_BACKGROUND"
 			context.interaction_mode = &"FULLY_INTERACTIVE"
-			context.window_group_id = 0  # Main game area
+			context.window_group_id = 0 # Main game area
 			SignalBus.emit_signal("interaction_context_received", context)
 		elif GlobalInteractionRouter.is_drag_active() and not event.is_pressed():
 			# Do NOT forcibly end drag on background release here; drop targets manage drag end.
@@ -117,7 +117,6 @@ func _on_inspect_inventory_pressed() -> void:
 	inspect_inventory_button.release_focus()
 
 
-
 func _on_draw_button_pressed(button: Button, tier: int) -> void:
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
@@ -142,6 +141,12 @@ func _on_battle_inventory_changed() -> void:
 	draw_tier2_button.disabled = false
 	draw_tier3_button.disabled = false
 	
+	# Check for combat phase lock
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm):
+		if bm.get("Phases") and bm.get_current_phase() == bm.Phases.COMBAT:
+			return
+
 	# Refresh player trinkets as they might have changed (e.g. in Test Mode)
 	_populate_player_trinkets()
 
@@ -149,6 +154,11 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	draw_tier1_button.visible = is_in_battle
 	draw_tier2_button.visible = is_in_battle
 	draw_tier3_button.visible = is_in_battle
+
+func _on_battle_phase_changed(phase_name: StringName) -> void:
+	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
+	if phase_name != &"COMBAT":
+		_populate_player_trinkets()
 
 func _on_gold_changed(new_amount: int) -> void:
 	if is_instance_valid(gold_label):
@@ -201,12 +211,12 @@ func _populate_player_trinkets() -> void:
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 		var instance = GameManager.get_instance_from_location(loc)
 		if is_instance_valid(instance):
-			var view = GachaBallViewScene.instantiate()
-			slot_view.add_child(view)
-			if view.has_method("populate"):
-				view.populate(loc, instance, true, true)
-			if view.has_method("set_interaction_context"):
-				view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+			var visual_data = VisualDataAdapter.create_visual_data(instance)
+			slot_view.set_content(visual_data, true, true, false)
+			if slot_view.get_child_count() > 0:
+				var view = slot_view.get_child(0)
+				if view is GachaBallView and view.has_method("set_interaction_context"):
+					view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
 
 func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	# Find the BattleManager in the loaded scene and start the battle

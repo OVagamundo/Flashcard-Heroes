@@ -39,12 +39,16 @@ func populate(context: Dictionary) -> void:
 			# Discard pile is inspection-only: disable selection/drag
 			slot_view.set_interaction_context(&"INSPECTION_ONLY", 1)
 			
-			var gacha_view = _GachaBallView.instantiate()
-			slot_view.add_child(gacha_view)
-			gacha_view.populate(loc, instance, true, true)
-			# Enforce inspection-only behavior for item views
-			gacha_view.set_is_interactive(false)
-			gacha_view.set_interaction_context(&"INSPECTION_ONLY", instance.get_definition().category, 1)
+			# Use adapter to create visual data
+			var visual_data = VisualDataAdapter.create_visual_data(instance)
+			slot_view.set_content(visual_data, true, true, false)
+			
+			# Enforce inspection-only behavior
+			if slot_view.get_child_count() > 0:
+				var gacha_view = slot_view.get_child(0)
+				if gacha_view is GachaBallView:
+					gacha_view.set_is_interactive(false)
+					gacha_view.set_interaction_context(&"INSPECTION_ONLY", instance.get_definition().category, 1)
 		else:
 			var slot_view = _SlotView.instantiate()
 			discard_grid.add_child(slot_view)

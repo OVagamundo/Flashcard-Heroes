@@ -49,8 +49,14 @@ func _ready() -> void:
 
 # This function is ONLY for true "Hermetic Modals" that halt game flow.
 func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
-	if not _window_scenes.has(type): return null
+	print("[WindowManager] open_modal_window called for type: ", type)
+	print("[WindowManager] Current modal stack size: ", _modal_stack.size())
+	if not _window_scenes.has(type):
+		print("[WindowManager] ERROR: Window type not found in _window_scenes!")
+		return null
+	print("[WindowManager] Calling _close_all_windows()")
 	_close_all_windows() # True modals are exclusive.
+	print("[WindowManager] After close, modal stack size: ", _modal_stack.size())
 
 	var window_instance = _window_scenes[type].instantiate()
 	_get_modal_layer().add_child(window_instance)
@@ -418,14 +424,14 @@ func _get_inventory_populate_context() -> Dictionary:
 		var run_state = GameManager.run_state
 		if is_instance_valid(run_state): inventory_data = run_state.get_run_inventory_containers()
 		title = "Run Inventory"
-	return { "inventory": inventory_data, "is_battle_context": is_battle, "title": title, "is_interactive": true }
+	return {"inventory": inventory_data, "is_battle_context": is_battle, "title": title, "is_interactive": true}
 
 func _get_discard_pile_populate_context() -> Dictionary:
 	var inventory_data: Array = []
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		if is_instance_valid(bm): inventory_data = bm.get_discard_pile_inventory()
-	return { "inventory": inventory_data, "is_battle_context": GameManager.is_in_battle, "title": "Discard Pile", "is_interactive": false }
+	return {"inventory": inventory_data, "is_battle_context": GameManager.is_in_battle, "title": "Discard Pile", "is_interactive": false}
 
 func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Dictionary:
 	var payload: Dictionary = {}
@@ -454,7 +460,7 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 					context["target_parent_window_id"] = unit_parent.get_instance_id()
 				payload["positioning_hint"] = "use_parent_window"
 		elif def.category == &"TRINKET":
-			window_type = &"ItemInspection"  # Reuse ItemInspection for trinkets
+			window_type = &"ItemInspection" # Reuse ItemInspection for trinkets
 			context = {"source_view": source_view, "instance": instance, "location": loc}
 		else: return {}
 	elif source_view.has_meta("effect_definition"):
@@ -482,7 +488,7 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_id, anchor.get_instance_id(), loc, geom_callable)
 	if not anchor.is_connected("tree_exited", freed_callable):
 		anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
-	_tracked_windows[window_id] = { "anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable }
+	_tracked_windows[window_id] = {"anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable}
 
 func stop_tracking_window(window_id: int) -> void:
 	if not _tracked_windows.has(window_id): return
@@ -532,7 +538,9 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 func _close_top_modal() -> void:
 	if not _modal_stack.is_empty():
 		var window = _modal_stack.pop_back()
+		print("[WindowManager] _close_top_modal: window valid? ", is_instance_valid(window))
 		if is_instance_valid(window):
+			print("[WindowManager] queue_free on window: ", window.name)
 			window.queue_free()
 		return
 
@@ -543,9 +551,12 @@ func close_top_contextual_window() -> void:
 			top_window.queue_free()
 
 func _close_all_windows() -> void:
+	print("[WindowManager] _close_all_windows called. Modal stack size: ", _modal_stack.size())
 	close_all_inspection_windows()
 	while not _modal_stack.is_empty():
+		print("[WindowManager] Closing modal from stack. Remaining: ", _modal_stack.size())
 		_close_top_modal()
+	print("[WindowManager] _close_all_windows finished. Stack size: ", _modal_stack.size())
 
 func _calculate_window_position(source_view: Control, new_window: Control) -> Vector2:
 	if not is_instance_valid(source_view): return Vector2.ZERO

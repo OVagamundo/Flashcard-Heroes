@@ -90,7 +90,7 @@ Section D: Combat Integration & Execution Flow
 This section defines the contract between the Ability System and the BattleManager.
 Action & Default Attack Rule: A unit's primary action is determined by its on_attack abilities. In _enqueue_attack_for, the BattleManager first calls the AbilityResolver to process any on_attack abilities. Then, it always manually enqueues a Default Basic Attack with priority = 0. This is an additive process, not a fallback, ensuring every unit performs at least a basic attack.
 Simulation & Animator Contract (Simulate Full Turn, Then Present):
-Simulation Phase: The BattleManager's _resolve_combat_phase function simulates the entire turn silently. All EffectRequests are processed in the priority reaction loop. Effect scripts must use silent data setters (e.g., set_current_hp_silent()) and must not emit any UI signals. However, they must still call gameplay triggers (e.g., battle_manager.trigger_on_hurt()) to allow for ability chaining during the simulation. The outcome of every action is collected into a single list of CombatEvent objects.
+Simulation Phase: The BattleManager's _resolve_combat_phase function simulates the entire turn silently. All EffectRequests are processed in the priority reaction loop. Effect scripts must use `BattleManager.apply_stat_delta()` to modify stats. This function updates the data model and returns the absolute value required for the `CombatEvent` visual payload. They must still call gameplay triggers (e.g., battle_manager.trigger_on_hurt()) to allow for ability chaining during the simulation. The outcome of every action is collected into a single list of CombatEvent objects.
 Presentation Phase: Once the simulation is complete, the BattleAnimator receives the list of events. Before playing, the animator uses a pre-turn health snapshot to reset the UI, allowing it to display damage and healing incrementally. It is solely responsible for replaying these events with animation-driven pacing, emitting all combat UI signals (battle_log_event, unit_stats_changed, etc.) as it processes each event in the list.
 Part 3 of 3: Trinket System Details
 Section E: Trinket Schema and Exclusivity
@@ -117,19 +117,22 @@ Stacks are managed via three methods:
 - clear_status_effect(effect_id): Removes all stacks of the effect.
 
 Application:
-Poison is applied via the Poison Vial trinket (trinket_poison_vial).
-When a team has the Poison Vial equipped, all damage dealt by that team applies 1 poison stack to the target.
-This is handled in BattleManager._resolve_single_effect_request:
-1. When creating a DAMAGE event, it checks if the source team has a Poison Vial via _has_team_trinket().
-2. If true, sets apply_poison: true flag on the CombatEvent.
-3. BattleAnimator applies the poison stack when animating damage via _apply_poison_stack().
+Poison is applied via two main paths:
+1.  **Trinket (Poison Vial):** Applied during DAMAGE events.
+    *   `BattleManager` checks `_has_team_trinket`.
+    *   Calls `apply_stat_delta(target, "poison_stacks", 1)`.
+    *   Event payload includes `"targets_new_poison"`.
+2.  **Abilities:** Applied via `EffectModifyStat` with `stat: "poison_stacks"`.
+    *   Calls `apply_stat_delta(target, "poison_stacks", amount)`.
+    *   Emits `BUFF` event with `stat: "poison_stacks"`.
 
 Processing & Decay:
 Poison is processed at the END of each turn in BattleManager._trigger_turn_end_abilities:
 1. For each poisoned unit, deal damage equal to poison_stacks.
 2. Create DAMAGE events (with skip_bump: true to avoid visual bump).
-3. After damage, reduce stacks by half (rounded down): new_stacks = floor(poison_stacks / 2).
-4. If new_stacks = 0, clear the status effect entirely.
+3. After damage, reduce stacks by half (rounded down) using `apply_stat_delta`.
+4. This generates a `BUFF` event with the new stack count (or 0) to update the UI.
+5. If new_stacks = 0, clear the status effect entirely.
 
 Lifecycle:
 Poison persists across turns until it decays to 0.
@@ -137,4 +140,5 @@ Status effects are cleared when a unit returns to the discard pile via reset_bat
 
 UI Display:
 GachaBallView displays poison stacks as a purple label overlaying the unit icon.
-Updated automatically via SignalBus.unit_stats_changed when stacks change.
+*   **During Combat:** `BattleAnimator` calls `_apply_poison_stack` -> `view.animate_poison_change()`.
+*   **State Sync:** `_update_item_slots()` is called within `_update_stats()` (even during combat locked phase) to ensure labels persist/update correctly.

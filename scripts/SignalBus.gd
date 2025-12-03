@@ -109,6 +109,13 @@ signal unit_death_fade(unit_uuid: String)
 ## @param unit_uuid: String - The UUID of the unit that finished fading
 signal unit_death_fade_finished(unit_uuid: String)
 
+## Request that a unit view plays its summon fade animation (visual only).
+signal unit_summon_fade(unit_uuid: String)
+
+## Emitted when a unit's summon fade animation completes
+## @param unit_uuid: String - The UUID of the unit that finished fading
+signal unit_summon_fade_finished(unit_uuid: String)
+
 ## Emitted when battle inventory changes (units/items added/removed)
 signal battle_inventory_changed
 

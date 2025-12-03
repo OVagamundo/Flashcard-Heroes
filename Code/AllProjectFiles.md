@@ -2906,8 +2906,8 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			if instance_uuid != ally_uuid:
 				continue
 		
-		# General Rule: Dead units cannot trigger abilities (except on_death)
-		if instance.current_hp <= 0 and trigger != &"on_death" and trigger != &"on_ally_death":
+		# General Rule: Dead units cannot trigger abilities (except on_death, on_ally_death, and on_hurt for counters)
+		if instance.current_hp <= 0 and trigger != &"on_death" and trigger != &"on_ally_death" and trigger != &"on_hurt":
 			continue
 				
 		for ability in definition.ability_definitions:
@@ -3032,6 +3032,7 @@ func _gui_input(event: InputEvent) -> void:
 
 ```gdscript
 # res://scripts/BasicAttackEffect.gd
+@tool
 extends EffectDefinition
 
 ## An effect that deals damage equal to the source's power to the first target.
@@ -3055,11 +3056,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
-	var old_hp = target_instance.current_hp
-	var new_hp = max(0, old_hp - damage)
-	if is_simulation and target_instance.has_method("set_current_hp_silent"):
-		target_instance.set_current_hp_silent(new_hp)
-	else:
+	
+	# CRITICAL: During simulation, DO NOT modify state here.
+	# BattleManager handles the application via apply_stat_delta().
+	# Modifying it here would cause double damage (once here, once in BattleManager).
+	if not is_simulation:
+		var new_hp = max(0, target_instance.current_hp - damage)
 		target_instance.set_current_hp(new_hp)
 
 	# Trigger on_hurt event for the target
@@ -3133,6 +3135,7 @@ signal turn_animation_finished
 var _hp_snapshot: Dictionary = {}
 var _current_animation_uuid: String = "" # Track which unit is currently animating
 var _dead_units: Dictionary = {} # Track units that have already animated death this turn
+var _visual_registry: Dictionary = {} # UUID -> GachaBallView (for puppet mode)
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -3151,7 +3154,65 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 		if data is Dictionary and data.has("hp"):
 			hp_only_snapshot[uuid] = data["hp"]
 	
-	set_hp_snapshot(hp_only_snapshot)
+	# PUPPET MODE: Build visual registry by scanning scene tree
+	_visual_registry.clear()
+	print("[BattleAnimator] Starting visual registry population")
+	print("[BattleAnimator] start_snapshot has ", start_snapshot.size(), " entries")
+	
+	var battle_view = get_tree().get_first_node_in_group("battle_view")
+	print("[BattleAnimator] battle_view valid: ", is_instance_valid(battle_view))
+	
+	if is_instance_valid(battle_view):
+		for uuid in start_snapshot:
+			var snapshot_data = start_snapshot[uuid]
+			print("[BattleAnimator] Processing UUID: ", uuid, " snapshot_data type: ", typeof(snapshot_data))
+			
+			if snapshot_data is Dictionary and snapshot_data.has("location"):
+				var location = snapshot_data.get("location")
+				print("[BattleAnimator]   location type: ", typeof(location), " is LocationIdentifier: ", location is LocationIdentifier if is_instance_valid(location) else "invalid")
+				
+				# location is a LocationIdentifier Object, not a Dictionary!
+				if is_instance_valid(location) and location is LocationIdentifier:
+					var container_tag = location.container
+					var index = location.index
+					print("[BattleAnimator]   container_tag: ", container_tag, " index: ", index)
+					
+					# Map container tag to battle view lineup nodes
+					var lineup_container: HBoxContainer = null
+					if container_tag == &"PlayerLineup":
+						lineup_container = battle_view.player_lineup
+					elif container_tag == &"EnemyLineup":
+						lineup_container = battle_view.enemy_lineup
+					elif container_tag == &"PlayerBench":
+						lineup_container = battle_view.player_bench
+					
+					print("[BattleAnimator]   lineup_container valid: ", is_instance_valid(lineup_container))
+					
+					if is_instance_valid(lineup_container) and index >= 0:
+						var children = lineup_container.get_children()
+						print("[BattleAnimator]   children count: ", children.size())
+						
+						if index < children.size():
+							var slot_view = children[index]
+							print("[BattleAnimator]   slot_view valid: ", is_instance_valid(slot_view), " child_count: ", slot_view.get_child_count() if is_instance_valid(slot_view) else 0)
+							
+							if is_instance_valid(slot_view) and slot_view.get_child_count() > 0:
+								# GachaBallView is first child of SlotView
+								var gacha_view = slot_view.get_child(0)
+								print("[BattleAnimator]   gacha_view valid: ", is_instance_valid(gacha_view), " is GachaBallView: ", gacha_view is GachaBallView if is_instance_valid(gacha_view) else false)
+								
+								if is_instance_valid(gacha_view) and gacha_view is GachaBallView:
+									# Register and sync visual state
+									_visual_registry[uuid] = gacha_view
+									gacha_view.set_visual_state(snapshot_data)
+									print("[BattleAnimator]   ✅ Registered ", uuid)
+	
+	print("[BattleAnimator] Visual registry populated with ", _visual_registry.size(), " entries:")
+	for uuid in _visual_registry:
+		print("  - ", uuid)
+	
+	# No longer need set_hp_snapshot as we're using puppet views
+	# set_hp_snapshot(hp_only_snapshot)  # DEPRECATED
 	await play_turn(turn_log)
 
 func play_turn(events: Array[CombatEvent]) -> void:
@@ -3195,18 +3256,23 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					var source_uuid_str := String(event.source_uuid)
 					var skip_bump = bool(payload.get("skip_bump", false))
 					var amount = int(payload.get("amount", 0))
+					# Extract absolute value from payload (Step 1 enhancement)
+					var targets_new_hp: Array = payload.get("targets_new_hp", [])
+					var new_hp = targets_new_hp[0] if targets_new_hp.size() > 0 else 0
 					var should_bump: bool = (not skip_bump) and (not source_uuid_str.is_empty())
 					if should_bump:
 						_emit_bump(event.source_uuid)
 						# Wait for half of the bump animation (0.5s)
 						await get_tree().create_timer(0.5).timeout
 					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
-					_apply_hp_delta(target_uuid, amount)
+					_apply_hp_delta(target_uuid, amount, new_hp)
 					
 					# Apply poison if flagged (syncs with damage visual)
 					var apply_poison = bool(payload.get("apply_poison", false))
 					if apply_poison:
-						_apply_poison_stack(target_uuid)
+						var targets_new_poison: Array = payload.get("targets_new_poison", [])
+						var new_poison = targets_new_poison[0] if targets_new_poison.size() > 0 else 0
+						_apply_poison_stack(target_uuid, new_poison)
 					
 					# Start damage flash while bump (if any) is finishing
 					if SignalBus.has_signal("unit_flash_effect"):
@@ -3224,23 +3290,38 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# HP-only: apply HP delta incrementally with green flash
 				var payload = event.visual_payload
 				var amount = int(payload.get("amount", 0))
-				for target_uuid2 in event.target_uuids:
+				# Extract absolute values from payload (Step 1 enhancement)
+				var targets_new_hp: Array = payload.get("targets_new_hp", [])
+				for i in range(event.target_uuids.size()):
+					var target_uuid2 = event.target_uuids[i]
+					var new_hp = targets_new_hp[i] if i < targets_new_hp.size() else 0
 					_current_animation_uuid = target_uuid2
-					_apply_hp_delta(target_uuid2, amount)
+					_apply_hp_delta(target_uuid2, amount, new_hp)
 					if SignalBus.has_signal("unit_flash_effect"):
 						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
 						await _wait_for_animation_completion("flash", target_uuid2)
 
 			CombatEvent.Type.BUFF:
-				# PWR buff: apply PWR delta with blue flash
 				var payload = event.visual_payload
 				var amount = int(payload.get("amount", 0))
-				for target_uuid3 in event.target_uuids:
-					_current_animation_uuid = target_uuid3
-					_apply_pwr_delta(target_uuid3, amount)
-					if SignalBus.has_signal("unit_flash_effect"):
-						SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(0.6, 0.8, 1.0))
-						await _wait_for_animation_completion("flash", target_uuid3)
+				var stat = String(payload.get("stat", "pwr")) # Default to pwr for legacy
+				
+				if stat == "pwr":
+					var new_pwr = int(payload.get("new_pwr", 0))
+					for target_uuid3 in event.target_uuids:
+						_current_animation_uuid = target_uuid3
+						_apply_pwr_delta(target_uuid3, amount, new_pwr)
+						if SignalBus.has_signal("unit_flash_effect"):
+							SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(1.0, 0.8, 0.4))
+							await _wait_for_animation_completion("flash", target_uuid3)
+				elif stat == "poison_stacks":
+					var new_val = int(payload.get("new_val", 0))
+					for target_uuid3 in event.target_uuids:
+						_current_animation_uuid = target_uuid3
+						_apply_poison_stack(target_uuid3, new_val)
+						if SignalBus.has_signal("unit_flash_effect"):
+							SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(0.6, 0.2, 0.8)) # Purple
+							await _wait_for_animation_completion("flash", target_uuid3)
 
 			CombatEvent.Type.DEATH:
 				# Play death fade on target
@@ -3265,52 +3346,59 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	_disconnect_animation_signals()
 	emit_signal("turn_animation_finished")
 
-func _apply_hp_delta(target_uuid: String, amount: int) -> void:
-	var bm := _get_battle_manager()
-	if not is_instance_valid(bm):
-		return
-	var inst: GachaBallInstance = bm.get_instance(target_uuid)
-	if not is_instance_valid(inst):
-		return
-	var def = inst.get_definition()
-	if not is_instance_valid(def) or def.category != &"UNIT":
-		return
-	var old_hp := inst.current_hp
-	var new_hp := old_hp + amount
-	# Do NOT clamp to 0 here. The simulation allows negative HP (overkill),
-	# so we must track it accurately to ensure subsequent heals/damage match the simulation.
-	# The UI view will handle clamping for display.
-	# print("DEBUG: _apply_hp_delta for ", target_uuid, " Amount: ", amount, " Old: ", old_hp, " New: ", new_hp)
-	inst.set_current_hp(new_hp)
-	SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "hp", new_hp)
+func _apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
+	# PUPPET MODE: Use visual registry to update view directly
+	var view = _visual_registry.get(target_uuid)
+	if is_instance_valid(view) and view is GachaBallView:
+		# Call puppet view's animate method with absolute value
+		view.animate_stat_change(new_hp, amount, "hp")
+	else:
+		# Fallback: Still update data layer for compatibility (shouldn't happen in combat)
+		var bm := _get_battle_manager()
+		if not is_instance_valid(bm):
+			return
+		var inst: GachaBallInstance = bm.get_instance(target_uuid)
+		if not is_instance_valid(inst):
+			return
+		var def = inst.get_definition()
+		if not is_instance_valid(def) or def.category != &"UNIT":
+			return
+		inst.set_current_hp(new_hp)
+		SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "hp", new_hp)
 
-func _apply_pwr_delta(target_uuid: String, amount: int) -> void:
-	var bm := _get_battle_manager()
-	if not is_instance_valid(bm):
-		return
-	var inst: GachaBallInstance = bm.get_instance(target_uuid)
-	if not is_instance_valid(inst):
-		return
-	var def = inst.get_definition()
-	if not is_instance_valid(def) or def.category != &"UNIT":
-		return
-	# Apply PWR delta and emit stats changed for UI
-	var new_pwr: int = max(0, inst.current_pwr + amount)
-	new_pwr = max(0, new_pwr)
-	inst.current_pwr = new_pwr
-	SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "pwr", new_pwr)
-	SignalBus.emit_signal("unit_stats_changed", target_uuid)
-
-func _apply_poison_stack(target_uuid: String) -> void:
-	# Apply 1 poison stack to target when damage is animated
-	var bm := _get_battle_manager()
-	if not is_instance_valid(bm):
-		return
-	var inst: GachaBallInstance = bm.get_instance(target_uuid)
-	if is_instance_valid(inst):
-		inst.add_status_effect(&"poison", 1)
-		# Emit signal so GachaBallView updates the poison label
+func _apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
+	# PUPPET MODE: Use visual registry to update view directly
+	var view = _visual_registry.get(target_uuid)
+	if is_instance_valid(view) and view is GachaBallView:
+		# Call puppet view's animate method with absolute value
+		view.animate_stat_change(new_pwr, amount, "pwr")
+	else:
+		# Fallback: Still update data layer for compatibility (shouldn't happen in combat)
+		var bm := _get_battle_manager()
+		if not is_instance_valid(bm):
+			return
+		var inst: GachaBallInstance = bm.get_instance(target_uuid)
+		if not is_instance_valid(inst):
+			return
+		var def = inst.get_definition()
+		if not is_instance_valid(def) or def.category != &"UNIT":
+			return
+		inst.current_pwr = new_pwr
+		SignalBus.emit_signal("unit_visual_stat_update", target_uuid, "pwr", new_pwr)
 		SignalBus.emit_signal("unit_stats_changed", target_uuid)
+
+func _apply_poison_stack(target_uuid: String, new_stacks: int) -> void:
+	print("[BattleAnimator] _apply_poison_stack called for ", target_uuid, " with new_stacks: ", new_stacks)
+	# Update visual poison stacks on puppet view
+	if _visual_registry.has(target_uuid):
+		var view = _visual_registry[target_uuid]
+		if is_instance_valid(view) and view is GachaBallView:
+			print("[BattleAnimator] Calling view.animate_poison_change")
+			view.animate_poison_change(new_stacks)
+		else:
+			print("[BattleAnimator] View is invalid or not GachaBallView")
+	else:
+		print("[BattleAnimator] target_uuid not in _visual_registry")
 
 func _emit_bump(attacker_uuid: String) -> void:
 	if attacker_uuid == null or String(attacker_uuid).is_empty():
@@ -4708,6 +4796,22 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 	var exec_targets: Array[String] = []
 	exec_targets.append_array(request.resolved_targets)
 	var is_basic_attack := (request.ability_id == &"basic_attack")
+	
+	# For ALL abilities (basic or triggered), validate targets are still alive
+	# Filter out dead targets to prevent ghost attacks
+	var valid_targets: Array[String] = []
+	for target_uuid in exec_targets:
+		var target_inst = get_instance_by_uuid(target_uuid)
+		if is_instance_valid(target_inst) and target_inst.current_hp > 0:
+			valid_targets.append(target_uuid)
+	
+	# If no valid targets remain, abort execution
+	if valid_targets.is_empty():
+		return
+	
+	exec_targets = valid_targets
+	
+	# For basic attacks only, apply retargeting to frontmost if needed
 	if is_basic_attack and exec_targets.size() > 0:
 		var first_target = get_instance_by_uuid(exec_targets[0])
 		if not is_instance_valid(first_target) or first_target.current_hp <= 0:
@@ -4757,6 +4861,16 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						heal_target_name = target_names[0]
 					if source_name != "" and heal_target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, heal_target_name, amount]}))
+				
+					# Apply HP delta via centralized function and capture NEW values
+					var targets_new_hp: Array[int] = []
+					for tgt_uuid in resolved_targets:
+						var tgt = get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt):
+							var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
+							targets_new_hp.append(new_hp)
+						else:
+							targets_new_hp.append(0)
 					
 					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": request.source_uuid,
@@ -4764,7 +4878,8 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						"visual_payload": {
 							"amount": amount,
 							"stat": "hp",
-							"skip_bump": skip_bump
+							"skip_bump": skip_bump,
+							"targets_new_hp": targets_new_hp
 						}
 					}))
 				else:
@@ -4785,6 +4900,25 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
 						should_apply_poison = _has_team_trinket(is_player_source, &"trinket_poison_vial")
 					
+					# Apply HP delta via centralized function and capture NEW values
+					var targets_new_hp: Array[int] = []
+					var targets_new_poison: Array[int] = []
+					
+					for tgt_uuid in resolved_targets:
+						var tgt = get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt):
+							var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
+							targets_new_hp.append(new_hp)
+							
+							# Apply poison if needed
+							var poison_val = 0
+							if should_apply_poison:
+								poison_val = apply_stat_delta(tgt, "poison_stacks", 1) # ✅ Unified status effect
+							targets_new_poison.append(poison_val)
+						else:
+							targets_new_hp.append(0)
+							targets_new_poison.append(0)
+					
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": request.source_uuid,
 						"target_uuids": resolved_targets,
@@ -4792,7 +4926,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							"amount": amount,
 							"stat": "hp",
 							"skip_bump": skip_bump,
-							"apply_poison": should_apply_poison
+							"apply_poison": should_apply_poison,
+							"targets_new_hp": targets_new_hp,
+							"targets_new_poison": targets_new_poison
 						}
 					}))
 			elif stat == "pwr" and amount > 0 and not resolved_targets.is_empty():
@@ -4804,12 +4940,37 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					if name_for_target != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s gains %d PWR" % [name_for_target, amount]}))
 					
+					# Apply PWR delta via centralized function and capture NEW value
+					var tgt = get_instance_by_uuid(single_target_uuid)
+					var target_new_pwr = 0
+					if is_instance_valid(tgt):
+						target_new_pwr = apply_stat_delta(tgt, "pwr", amount) # ✅ Apply THEN snapshot
+					
 					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
 						"source_uuid": request.source_uuid,
 						"target_uuids": [single_target_uuid],
 						"visual_payload": {
 							"amount": amount,
-							"stat": "pwr"
+							"stat": "pwr",
+							"new_pwr": target_new_pwr
+						}
+					}))
+			elif stat == "poison_stacks" and not resolved_targets.is_empty():
+				for i in range(resolved_targets.size()):
+					var single_target_uuid := resolved_targets[i]
+					# Apply poison delta via centralized function
+					var tgt = get_instance_by_uuid(single_target_uuid)
+					var new_stacks = 0
+					if is_instance_valid(tgt):
+						new_stacks = apply_stat_delta(tgt, "poison_stacks", amount)
+					
+					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": request.source_uuid,
+						"target_uuids": [single_target_uuid],
+						"visual_payload": {
+							"amount": amount,
+							"stat": "poison_stacks",
+							"new_val": new_stacks
 						}
 					}))
 			# Legacy: integer damage
@@ -4846,14 +5007,29 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					if should_apply_poison:
 						pass
 						# print("[POISON LEGACY] Setting apply_poison flag. Source is player: ", is_player_source, " Target: ", tgt_inst2.ball_uuid)
+					
+					# Apply HP delta via centralized function (LEGACY PATH)
+					var new_hp_legacy = apply_stat_delta(tgt_inst2, "hp", -damage) # ✅ Unified
+					var targets_new_hp_legacy: Array[int] = [new_hp_legacy]
+					
+					# Apply poison if needed (LEGACY PATH)
+					var targets_new_poison_legacy: Array[int] = []
+					if should_apply_poison:
+						var poison_val_legacy = apply_stat_delta(tgt_inst2, "poison_stacks", 1)
+						targets_new_poison_legacy.append(poison_val_legacy)
+					else:
+						targets_new_poison_legacy.append(0)
+					
 					# Legacy damage: encode as negative amount for consistency
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": request.source_uuid,
-						"target_uuids": [tgt_inst2.ball_uuid],
+						"target_uuids": [exec_targets[0]],
 						"visual_payload": {
 							"amount": - damage,
 							"stat": "hp",
-							"apply_poison": should_apply_poison
+							"apply_poison": should_apply_poison,
+							"targets_new_hp": targets_new_hp_legacy,
+							"targets_new_poison": targets_new_poison_legacy
 						}
 					}))
 					
@@ -5706,6 +5882,41 @@ func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBall
 ## @param target_uuid: String - The UUID of the unit that took damage
 ## @param damage_amount: int - The amount of damage taken
 ## @param attacker_uuid: String - The UUID of the unit that caused the damage
+## Apply a stat change to an instance and return the new value.
+## This is the SINGLE modification point for all stat changes (HP, PWR, status effects).
+## Ensures snapshots are always captured post-change for VCR pattern.
+## @param instance: GachaBallInstance to modify
+## @param stat_type: String - "hp", "pwr", "poison_stacks", etc.
+## @param delta: int - Amount to change (positive or negative)
+## @return int - New value after change
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int) -> int:
+	if not is_instance_valid(instance):
+		push_warning("apply_stat_delta called with invalid instance")
+		return 0
+	
+	match stat_type:
+		"hp":
+			var new_hp = instance.current_hp + delta
+			instance.set_current_hp(new_hp)
+			return new_hp
+		"pwr":
+			var new_pwr = instance.current_pwr + delta
+			instance.current_pwr = new_pwr
+			return new_pwr
+		"poison_stacks":
+			# Status effects use add_status_effect internally
+			instance.add_status_effect(&"poison", delta)
+			return instance.status_effects.get(&"poison", 0)
+		_:
+			# Generic status effect pattern: "effect_name_stacks"
+			if stat_type.ends_with("_stacks"):
+				var effect_name = stat_type.trim_suffix("_stacks")
+				instance.add_status_effect(StringName(effect_name), delta)
+				return instance.status_effects.get(StringName(effect_name), 0)
+			else:
+				push_error("Unknown stat type: %s" % stat_type)
+				return 0
+
 func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String) -> void:
 	var hurt_context: Dictionary = {
 		"source_uuid": target_uuid,
@@ -5795,7 +6006,8 @@ func _trigger_turn_end_abilities() -> void:
 		if poison_stacks > 0:
 			var damage = poison_stacks
 			print("[POISON END TURN] Applying %d damage to %s (HP: %d -> %d)" % [damage, unit.ball_uuid, unit.current_hp, unit.current_hp - damage])
-			unit.set_current_hp(unit.current_hp - damage)
+			# Apply HP delta via centralized function
+			apply_stat_delta(unit, "hp", -damage)
 			
 			var unit_name = _get_instance_display_name(unit)
 			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s takes %d poison dmg" % [unit_name, damage]}))
@@ -5806,13 +6018,16 @@ func _trigger_turn_end_abilities() -> void:
 					"amount": - damage,
 					"stat": "hp",
 					"skip_bump": true,
-					"is_poison_damage": true
+					"is_poison_damage": true,
+					"targets_new_hp": [unit.current_hp] # Add absolute value for puppet view
 				}
 			}))
 			
 			var new_stacks = floor(poison_stacks / 2.0)
 			if new_stacks > 0:
-				unit.add_status_effect(&"poison", new_stacks - poison_stacks)
+				# Apply poison decay via centralized function
+				var decay_delta = new_stacks - poison_stacks # Negative delta
+				apply_stat_delta(unit, "poison_stacks", decay_delta)
 			else:
 				unit.clear_status_effect(&"poison")
 				
@@ -7132,15 +7347,13 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	var new_hp: int = max(0, overflow_target.current_hp - overflow_damage)
 	var is_simulation: bool = bool(context.get("is_simulation", false))
-	if is_simulation and overflow_target.has_method("set_current_hp_silent"):
-		overflow_target.set_current_hp_silent(new_hp)
-	else:
+	if not is_simulation:
 		overflow_target.set_current_hp(new_hp)
 
 	battle_manager.trigger_on_hurt(overflow_target.ball_uuid, overflow_damage, String(context.get("source_uuid", "")))
 	return {
 		"stat": "hp",
-		"amount": -overflow_damage,
+		"amount": - overflow_damage,
 		"targets": [overflow_target.ball_uuid],
 		"skip_bump": true
 	}
@@ -8515,8 +8728,10 @@ var _entity_type: StringName = &"UNIT"
 var _window_group_id: int = 0
 
 # Visual State (Puppet Mode)
-var _visual_hp: int = -1
-var _visual_pwr: int = -1
+var _visual_hp: int = 0
+var _visual_pwr: int = 0
+var _visual_poison_stacks: int = 0
+var _bound_uuid: String = "" # UUID bound during populate()
 
 
 func _ready() -> void:
@@ -8567,6 +8782,7 @@ func _exit_tree() -> void:
 func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectable: bool = true, single_click_inspect: bool = false) -> void:
 	self._location = loc
 	self._instance_uuid = instance.ball_uuid
+	self._bound_uuid = instance.ball_uuid # Store UUID for puppet mode
 	self._is_inspectable = is_inspectable
 	self._single_click_inspect = single_click_inspect
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
@@ -8578,6 +8794,11 @@ func populate(loc: LocationIdentifier, instance: GachaBallInstance, is_inspectab
 	
 	# Set entity type based on definition category
 	_entity_type = StringName(definition.category) if definition.category is String else definition.category
+	
+	# Initialize visual state from instance (for puppet mode during combat)
+	_visual_hp = instance.current_hp
+	_visual_pwr = instance.current_pwr
+	_visual_poison_stacks = instance.get_status_effect_amount(&"poison")
 	
 	visible = true
 	icon_rect.texture = definition.icon
@@ -8638,7 +8859,23 @@ func _update_stats() -> void:
 	hp_label.visible = false
 	pwr_label.visible = false
 	
-	# Get the instance and validate
+	# Check if we're in combat (puppet mode)
+	var is_combat_locked = GlobalInteractionRouter.is_combat_locked()
+	
+	# If combat is locked, use only visual state (puppet mode)
+	if is_combat_locked:
+		# During combat, we are a puppet - use only visual state
+		if _visual_hp != -1 or _visual_pwr != -1:
+			# Only show if we have visual state initialized
+			hp_label.visible = true
+			pwr_label.visible = true
+			hp_label.text = "HP: %d" % max(0, _visual_hp)
+			pwr_label.text = "PWR: %d" % _visual_pwr
+		# Update status effect displays (poison, etc.) during combat
+		_update_item_slots()
+		return
+	
+	# Management phase - query Data Layer as before
 	var instance = GameManager.get_instance_by_uuid(_instance_uuid)
 	if not is_instance_valid(instance):
 		return
@@ -8669,6 +8906,9 @@ func _update_stats() -> void:
 	
 	hp_label.text = "HP: %d" % max(0, display_hp)
 	pwr_label.text = "PWR: %d" % display_pwr
+	
+	# Update status effect displays (poison, etc.)
+	_update_item_slots()
 
 # ------------------------------------------------------------------
 # Puppet API (Called by BattleAnimator)
@@ -8680,6 +8920,13 @@ func set_visual_state(snapshot: Dictionary) -> void:
 		_visual_hp = int(snapshot["hp"])
 	if snapshot.has("pwr"):
 		_visual_pwr = int(snapshot["pwr"])
+	if snapshot.has("poison_stacks"):
+		_visual_poison_stacks = int(snapshot["poison_stacks"])
+	_update_stats()
+
+func animate_poison_change(target_stacks: int) -> void:
+	print("[GachaBallView] animate_poison_change called for ", _instance_uuid, " with stacks: ", target_stacks)
+	_visual_poison_stacks = target_stacks
 	_update_stats()
 
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
@@ -8716,9 +8963,16 @@ func _update_item_slots() -> void:
 	
 	# Display status effects as large numbers
 	# Show poison stacks if present (as purple number)
-	var poison_stacks = instance.get_status_effect_amount(&"poison")
-	# print("[UI UPDATE] _update_item_slots for ", _instance_uuid, " Poison stacks: ", poison_stacks)
+	var poison_stacks = 0
+	if GlobalInteractionRouter.is_combat_locked():
+		poison_stacks = _visual_poison_stacks
+	else:
+		poison_stacks = instance.get_status_effect_amount(&"poison")
+	
+	print("[GachaBallView] _update_item_slots for ", _instance_uuid, " - combat_locked: ", GlobalInteractionRouter.is_combat_locked(), " poison_stacks: ", poison_stacks, " _visual_poison_stacks: ", _visual_poison_stacks)
+	
 	if poison_stacks > 0:
+		print("[GachaBallView] Creating poison label for ", _instance_uuid, " with ", poison_stacks, " stacks")
 		var poison_label = Label.new()
 		poison_label.text = str(poison_stacks)
 		poison_label.add_theme_font_size_override("font_size", 24)
@@ -8726,7 +8980,7 @@ func _update_item_slots() -> void:
 		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		poison_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		item_grid.add_child(poison_label)
-		# print("[UI UPDATE] Created poison label with ", poison_stacks, " stacks")
+		print("[GachaBallView] Poison label added to item_grid. item_grid children count: ", item_grid.get_child_count())
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -14206,11 +14460,14 @@ func _ready() -> void:
 	# Initialize the random number generator to ensure variety in UUIDs.
 	randomize()
 
-# Generates a UUID, e.g., "unit_t1_a_1677628800_1234"
+var _counter: int = 0
+
+# Generates a UUID, e.g., "unit_t1_a_1677628800_1_1234"
 func generate_uuid(prefix: StringName) -> String:
+	_counter += 1
 	var timestamp: int = int(Time.get_unix_time_from_system())
-	var random_suffix: int = randi() % 10000
-	return "%s_%d_%04d" % [prefix, timestamp, random_suffix]
+	var random_suffix: int = randi() % 100000
+	return "%s_%d_%d_%05d" % [prefix, timestamp, _counter, random_suffix]
 
 ```
 

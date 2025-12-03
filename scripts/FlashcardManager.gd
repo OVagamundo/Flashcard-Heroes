@@ -118,6 +118,7 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed"""
+	print("[FlashcardManager] _on_minigame_complete called. Correct: ", correct)
 	# Store results before cleanup
 	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
@@ -127,7 +128,9 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	_active_deck_ids.clear()
 	
 	# Emit signal after cleanup to prevent any callbacks from accessing freed objects
+	print("[FlashcardManager] Emitting minigame_finished signal with results: ", results)
 	emit_signal("minigame_finished", results)
+	print("[FlashcardManager] Signal emitted successfully")
 
 ## Get statistics about the current deck for debugging.
 ## @return Dictionary - Statistics about the deck

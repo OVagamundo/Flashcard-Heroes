@@ -62,11 +62,11 @@ func _on_panel_gui_input(event: InputEvent) -> void:
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.location = null  # No specific location for background
+		context.location = null # No specific location for background
 		context.entity_uuid = ""
 		context.entity_type = &"WINDOW_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 1  # Inspection windows group
+		context.window_group_id = 1 # Inspection windows group
 		
 		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
@@ -80,11 +80,11 @@ func _on_grid_gui_input(event: InputEvent) -> void:
 			var context = InteractionContext.new()
 			context.source_view_instance_id = get_instance_id()
 			context.event_type = &"SINGLE_CLICK"
-			context.location = null  # No specific location for grid background
+			context.location = null # No specific location for grid background
 			context.entity_uuid = ""
 			context.entity_type = &"WINDOW_BACKGROUND"
 			context.interaction_mode = &"FULLY_INTERACTIVE"
-			context.window_group_id = 1  # Inspection windows group
+			context.window_group_id = 1 # Inspection windows group
 			
 			SignalBus.emit_signal("interaction_context_received", context)
 			get_viewport().set_input_as_handled()
@@ -93,7 +93,7 @@ func _initialize_grids_if_needed() -> void:
 	if _grids_initialized:
 		return
 	
-	var grids: Dictionary = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
+	var grids: Dictionary = {1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid}
 	for tier in grids:
 		var grid_node = grids[tier]
 		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
@@ -138,7 +138,7 @@ func _populate_grids() -> void:
 							equipped_item_uuids[item_uuid] = true
 
 	# --- Step 2: Iterate through the persistent slots and update their content ---
-	var grids: Dictionary = { 1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid }
+	var grids: Dictionary = {1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid}
 	for tier in grids:
 		var grid_node = grids[tier]
 		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
@@ -168,8 +168,12 @@ func _populate_grids() -> void:
 
 			var instance = GameManager.get_instance_from_location(loc)
 			if is_instance_valid(instance):
-				var gacha_view = _GachaBallView.instantiate()
-				slot_view.add_child(gacha_view)
-				gacha_view.populate(loc, instance, true)
-				# Configure interaction context for run inventory (FULLY_INTERACTIVE)
-				gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
+				# Use adapter to create visual data
+				var visual_data = VisualDataAdapter.create_visual_data(instance)
+				slot_view.set_content(visual_data, true, false, false)
+				
+				# Configure interaction context
+				if slot_view.get_child_count() > 0:
+					var gacha_view = slot_view.get_child(0)
+					if gacha_view is GachaBallView:
+						gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)

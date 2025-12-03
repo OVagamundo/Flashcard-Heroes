@@ -1,4 +1,5 @@
 # res://scripts/BasicAttackEffect.gd
+@tool
 extends EffectDefinition
 
 ## An effect that deals damage equal to the source's power to the first target.
@@ -22,11 +23,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
-	var old_hp = target_instance.current_hp
-	var new_hp = max(0, old_hp - damage)
-	if is_simulation and target_instance.has_method("set_current_hp_silent"):
-		target_instance.set_current_hp_silent(new_hp)
-	else:
+	
+	# CRITICAL: During simulation, DO NOT modify state here.
+	# BattleManager handles the application via apply_stat_delta().
+	# Modifying it here would cause double damage (once here, once in BattleManager).
+	if not is_simulation:
+		var new_hp = max(0, target_instance.current_hp - damage)
 		target_instance.set_current_hp(new_hp)
 
 	# Trigger on_hurt event for the target

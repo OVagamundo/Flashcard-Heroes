@@ -15,8 +15,8 @@ var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _is_enemy_context: bool = false
-var _window_group_id: int = 1  # Inspection window group
-var _stable_anchor: Control = null  # Stable anchor for positioning
+var _window_group_id: int = 1 # Inspection window group
+var _stable_anchor: Control = null # Stable anchor for positioning
 
 func _ready() -> void:
 	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
@@ -170,10 +170,10 @@ func _calculate_position_relative_to_anchor() -> Vector2:
 func _rebuild_item_grid() -> void:
 	# This function now handles the complete lifecycle of the item grid UI.
 	# It ensures that slots are persistent and correctly represent the data model.
-	if not is_instance_valid(_instance): 
+	if not is_instance_valid(_instance):
 		return
 	var unit_definition = _instance.get_definition()
-	if not is_instance_valid(unit_definition): 
+	if not is_instance_valid(unit_definition):
 		return
 
 	# Clear existing content from slots, but don't delete the slots themselves.
@@ -197,7 +197,7 @@ func _rebuild_item_grid() -> void:
 		item_grid.columns = unit_definition.item_slot_count
 
 	var all_instances_db = _get_all_instances_db()
-	if all_instances_db.is_empty(): 
+	if all_instances_db.is_empty():
 		return
 
 	# Iterate through all defined slots and populate them.
@@ -219,19 +219,23 @@ func _rebuild_item_grid() -> void:
 
 		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
 			var item_instance = all_instances_db[item_uuid]
-			var gacha_view = _GachaBallView.instantiate()
-			slot_view.add_child(gacha_view)
 			
 			# Enhanced contextual behavior for player vs enemy units
 			var is_interactive = not _is_enemy_context
 			var single_click_inspect = _is_enemy_context
 			var interaction_mode = &"INSPECTION_ONLY" if _is_enemy_context else &"FULLY_INTERACTIVE"
 			
-			gacha_view.populate(loc, item_instance, true, single_click_inspect)
-			gacha_view.set_is_interactive(is_interactive)
-			gacha_view.set_interaction_context(interaction_mode, &"ITEM", _window_group_id)
-	
+			# Use adapter to create visual data
+			var visual_data = VisualDataAdapter.create_visual_data(item_instance)
+			slot_view.set_content(visual_data, true, single_click_inspect, false)
+			
+			if slot_view.get_child_count() > 0:
+				var gacha_view = slot_view.get_child(0)
+				if gacha_view is GachaBallView:
+					gacha_view.set_is_interactive(is_interactive)
+					gacha_view.set_interaction_context(interaction_mode, &"ITEM", _window_group_id)
 
+	
 func _update_description() -> void:
 	if not is_instance_valid(_instance):
 		return
@@ -288,7 +292,7 @@ func _on_unit_stats_changed(unit_uuid: String) -> void:
 			_update_description()
 
 func _on_inventory_changed() -> void:
-	if not is_instance_valid(self): 
+	if not is_instance_valid(self):
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
 	var all_instances: Dictionary = _get_all_instances_db()
@@ -303,7 +307,7 @@ func _on_inventory_changed() -> void:
 	_rebuild_item_grid()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
-	if not is_instance_valid(self): 
+	if not is_instance_valid(self):
 		return
 	
 	# Only update if the changed unit is the one we're inspecting

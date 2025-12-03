@@ -3,7 +3,6 @@ class_name GachaBallInstance
 extends Resource
 
 
-
 ## A unique, individual instance of a GachaBall. Its state is defined by its properties.
 
 # --- Core Properties ---
@@ -47,6 +46,7 @@ func initialize(definition: GachaBallDefinition) -> void:
 	self.equipped_on_uuid = ""
 	self.equipped_slot_index = -1
 	self.equipped_item_uuids.clear()
+	self.equipped_item_uuids.resize(definition.item_slot_count)
 	self.equipped_item_uuids.resize(definition.item_slot_count)
 	self.equipped_item_uuids.fill("")
 
@@ -92,9 +92,10 @@ func create_battle_copy() -> GachaBallInstance:
 
 	return copy
 
-	# --- Trinket Initialization ---
-	# Initialize this instance from a TrinketDefinition (no base stats, no item slots).
-	# Copies ability_definitions into abilities so AbilityResolver can process them.
+
+# --- Trinket Initialization ---
+# Initialize this instance from a TrinketDefinition (no base stats, no item slots).
+# Copies ability_definitions into abilities so AbilityResolver can process them.
 func initialize_from_trinket(trinket_def: Resource) -> void:
 	if not is_instance_valid(trinket_def):
 		return
@@ -143,8 +144,35 @@ func set_current_hp_silent(new_hp: int) -> void:
 	# Update HP without emitting UI signals. Used during simulation passes.
 	self.current_hp = new_hp
 
+func set_current_pwr_silent(new_pwr: int) -> void:
+	# Update PWR without emitting UI signals. Used during simulation passes.
+	self.current_pwr = new_pwr
+
 func reset_battle_stats() -> void:
 	# Restore HP and PWR to base values (without equipment bonuses)
+	var definition = get_definition()
+	if is_instance_valid(definition):
+		if definition is GachaBallDefinition:
+			current_hp = definition.base_hp
+			current_pwr = definition.base_pwr
+		elif "base_hp" in definition and "base_pwr" in definition:
+			# Non-unit definitions (items, trinkets) may have 0 HP/PWR
+			current_hp = definition.base_hp
+			current_pwr = definition.base_pwr
+		else:
+			current_hp = 0
+			current_pwr = 0
+	
+	# Clear all status effects (poison, etc.)
+	status_effects.clear()
+	
+	# Reset dynamic tags
+	dynamic_tags.clear()
+	
+	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
+func reset_battle_stats_silent() -> void:
+	# Restore HP and PWR to base values (without equipment bonuses) - SILENT VERSION
 	var definition = get_definition()
 	if is_instance_valid(definition):
 		if definition is GachaBallDefinition:
@@ -196,7 +224,7 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 					effective_max_pwr += item_def.bonus_pwr
 
 	# Preserve current HP/PWR - only clamp PWR to maximum, allow HP to exceed max due to healing
-	var new_hp = previous_hp  # Preserve current HP (can exceed max due to healing effects)
+	var new_hp = previous_hp # Preserve current HP (can exceed max due to healing effects)
 	var new_pwr = previous_pwr # Allow PWR to scale indefinitely (needed for merge logic)
 
 	self.current_hp = new_hp
@@ -234,6 +262,18 @@ func add_status_effect(effect_id: StringName, amount: int) -> void:
 		status_effects[effect_id] = new_amount
 		
 	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+
+func add_status_effect_silent(effect_id: StringName, amount: int) -> void:
+	# Update status effect without emitting UI signals. Used during simulation.
+	if amount == 0: return
+	
+	var current = status_effects.get(effect_id, 0)
+	var new_amount = current + amount
+	
+	if new_amount <= 0:
+		status_effects.erase(effect_id)
+	else:
+		status_effects[effect_id] = new_amount
 
 func get_status_effect_amount(effect_id: StringName) -> int:
 	return status_effects.get(effect_id, 0)

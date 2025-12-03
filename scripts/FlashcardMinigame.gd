@@ -216,6 +216,7 @@ func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 
 func _end_minigame() -> void:
 	"""End the mini-game when timer expires"""
+	print("[FlashcardMinigame] Timer expired! Ending minigame. Score: ", _correct_answers)
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,
 		"total_answers": _total_answers,
@@ -223,7 +224,9 @@ func _end_minigame() -> void:
 	}
 	
 	# Call FlashcardManager's completion method
+	print("[FlashcardMinigame] Calling FlashcardManager._on_minigame_complete")
 	FlashcardManager._on_minigame_complete(_correct_answers, _total_answers - _correct_answers)
+	print("[FlashcardMinigame] FlashcardManager call completed")
 	
 	# Emit our internal signal
 	minigame_complete.emit(results)

@@ -159,6 +159,7 @@ Temporary conditions applied to units during battle that have positive or negati
 - **Stacking:** Most effects stack intensity or duration.
 - **Decay:** Effects typically decay at the end of the turn.
 - **Visuals:** Each effect has a distinct icon and overlay color.
+> **Note:** Status effect visuals (stack counters, damage ticks) are completely decoupled from the logic. The UI updates strictly based on the event log generated during the end-of-turn simulation.
 
 **Effect Types (Planned & Implemented):**
 - **Poison (Implemented):** Deals damage equal to stacks at end of turn, then halves stacks.

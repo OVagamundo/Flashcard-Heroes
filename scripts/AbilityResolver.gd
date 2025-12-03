@@ -57,6 +57,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				var attacking_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != attacking_unit_uuid:
 					continue
+			elif trigger == &"on_death":
+				# Only process items equipped on the dying unit
+				var dying_unit_uuid = context.get("source_uuid", "")
+				if instance.equipped_on_uuid != dying_unit_uuid:
+					continue
 			
 			# Check if item has matching ability before adding
 			var has_matching = false
@@ -92,8 +97,8 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			if instance_uuid != ally_uuid:
 				continue
 		
-		# General Rule: Dead units cannot trigger abilities (except on_death)
-		if instance.current_hp <= 0 and trigger != &"on_death" and trigger != &"on_ally_death":
+		# General Rule: Dead units cannot trigger abilities (except on_death, on_ally_death, and on_hurt for counters)
+		if instance.current_hp <= 0 and trigger != &"on_death" and trigger != &"on_ally_death" and trigger != &"on_hurt":
 			continue
 				
 		for ability in definition.ability_definitions:
@@ -140,6 +145,10 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 							source_uuid_for_ability = enemy_units[0].ball_uuid
 				
 				_process_ability(ability, source_uuid_for_ability, battle_manager, context)
+
+	# Debug logging for on_death trigger
+	# if trigger == &"on_death":
+	# 	print("[AbilityResolver] Finished processing on_death. Context: ", context)
 
 
 ## Process a single ability and create EffectRequests for its effects.
