@@ -3,6 +3,9 @@ extends Node
 
 signal turn_animation_finished
 
+const ANIM_TIMEOUT_DURATION = 1.1
+const BUMP_DURATION = 0.5
+
 var _hp_snapshot: Dictionary = {}
 var _current_animation_uuid: String = "" # Track which unit is currently animating
 var _dead_units: Dictionary = {} # Track units that have already animated death this turn
@@ -125,7 +128,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							# Fallback to old method for legacy DAMAGE events without bump_direction
 							_emit_bump(event.source_uuid)
 						# Wait for half of the bump animation (0.5s)
-						await get_tree().create_timer(0.5).timeout
+						await get_tree().create_timer(BUMP_DURATION).timeout
 					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
 					_apply_hp_delta(target_uuid, amount, new_hp)
 					
@@ -219,8 +222,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# PRESENTATION ONLY: Visual swap of views
 				# Container mutations were already done during simulation
 				# BattleAnimator should ONLY update the visual layer
-				var bm = _get_battle_manager()
-				if is_instance_valid(bm) and is_instance_valid(old_location):
+				# BattleAnimator should ONLY update the visual layer
+				if is_instance_valid(old_location):
 					var container_tag = old_location.container
 					var index = old_location.index
 					
@@ -272,15 +275,11 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	emit_signal("turn_animation_finished")
 
 func _apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
-	print("[BattleAnimator] _apply_hp_delta called: target_uuid=", target_uuid, " amount=", amount, " new_hp=", new_hp)
-	
 	# PUPPET MODE: Use visual registry to update view directly
 	var view = _visual_registry.get(target_uuid)
-	print("[BattleAnimator]   Registry lookup: view_found=", is_instance_valid(view), " is_GachaBallView=", view is GachaBallView if is_instance_valid(view) else false)
 	
 	if is_instance_valid(view) and view is GachaBallView:
 		# Call puppet view's animate method with absolute value
-		print("[BattleAnimator]   Calling animate_stat_change on registered view")
 		view.animate_stat_change(new_hp, amount, "hp")
 	else:
 		# DECOUPLED: No fallback - if view not in registry, it's a bug in snapshot processing
@@ -297,17 +296,11 @@ func _apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 		push_error("[BattleAnimator] PWR delta target not in visual registry: " + target_uuid)
 
 func _apply_poison_stack(target_uuid: String, new_stacks: int) -> void:
-	print("[BattleAnimator] _apply_poison_stack called for ", target_uuid, " with new_stacks: ", new_stacks)
 	# Update visual poison stacks on puppet view
 	if _visual_registry.has(target_uuid):
 		var view = _visual_registry[target_uuid]
 		if is_instance_valid(view) and view is GachaBallView:
-			print("[BattleAnimator] Calling view.animate_poison_change")
 			view.animate_poison_change(new_stacks)
-		else:
-			print("[BattleAnimator] View is invalid or not GachaBallView")
-	else:
-		print("[BattleAnimator] target_uuid not in _visual_registry")
 
 func _emit_bump(_attacker_uuid: String) -> void:
 	# LEGACY FALLBACK: This is no longer called since all DAMAGE events
@@ -316,9 +309,6 @@ func _emit_bump(_attacker_uuid: String) -> void:
 	# TRUE DECOUPLING: No instance queries needed!
 	pass
 
-func _get_battle_manager() -> Node:
-	var node = get_tree().get_first_node_in_group("battle_manager")
-	return node
 
 func _connect_animation_signals() -> void:
 	# Connect to animation completion signals with filtering
@@ -368,15 +358,15 @@ func _wait_for_animation_completion(animation_type: String, expected_uuid: Strin
 	var timeout_duration: float
 	match animation_type:
 		"bump":
-			timeout_duration = 1.1 # Bump is 1.0s
+			timeout_duration = ANIM_TIMEOUT_DURATION # Bump is 1.0s
 		"flash":
-			timeout_duration = 1.1 # Flash is 1.0s
+			timeout_duration = ANIM_TIMEOUT_DURATION # Flash is 1.0s
 		"death_fade":
-			timeout_duration = 1.1 # Death fade is 1.0s
+			timeout_duration = ANIM_TIMEOUT_DURATION # Death fade is 1.0s
 		"summon_fade":
-			timeout_duration = 1.1 # Summon fade is 1.0s
+			timeout_duration = ANIM_TIMEOUT_DURATION # Summon fade is 1.0s
 		_:
-			timeout_duration = 1.1 # Default fallback
+			timeout_duration = ANIM_TIMEOUT_DURATION # Default fallback
 	
 	# Create timeout timer
 	var timeout_timer = get_tree().create_timer(timeout_duration)
@@ -391,28 +381,3 @@ func _wait_for_animation_completion(animation_type: String, expected_uuid: Strin
 	
 	# Ensure UUID is cleared
 	_current_animation_uuid = ""
-
-func _find_view_for_uuid(uuid: String) -> Node:
-	# Scan battle view to find GachaBallView with matching _instance_uuid
-	var battle_view = get_tree().get_first_node_in_group("battle_view")
-	if not is_instance_valid(battle_view):
-		return null
-	
-	# Check all lineup containers using exposed properties
-	var lineups = [
-		battle_view.player_lineup,
-		battle_view.enemy_lineup,
-		battle_view.player_bench
-	]
-	
-	for lineup in lineups:
-		if not is_instance_valid(lineup):
-			continue
-		for slot_view in lineup.get_children():
-			if not is_instance_valid(slot_view):
-				continue
-			for child in slot_view.get_children():
-				if child is GachaBallView and child._instance_uuid == uuid:
-					return child
-	
-	return null

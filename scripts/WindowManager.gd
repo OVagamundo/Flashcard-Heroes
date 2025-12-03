@@ -49,14 +49,10 @@ func _ready() -> void:
 
 # This function is ONLY for true "Hermetic Modals" that halt game flow.
 func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
-	print("[WindowManager] open_modal_window called for type: ", type)
-	print("[WindowManager] Current modal stack size: ", _modal_stack.size())
 	if not _window_scenes.has(type):
-		print("[WindowManager] ERROR: Window type not found in _window_scenes!")
+		push_error("[WindowManager] ERROR: Window type not found in _window_scenes: " + str(type))
 		return null
-	print("[WindowManager] Calling _close_all_windows()")
 	_close_all_windows() # True modals are exclusive.
-	print("[WindowManager] After close, modal stack size: ", _modal_stack.size())
 
 	var window_instance = _window_scenes[type].instantiate()
 	_get_modal_layer().add_child(window_instance)
@@ -538,9 +534,7 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 func _close_top_modal() -> void:
 	if not _modal_stack.is_empty():
 		var window = _modal_stack.pop_back()
-		print("[WindowManager] _close_top_modal: window valid? ", is_instance_valid(window))
 		if is_instance_valid(window):
-			print("[WindowManager] queue_free on window: ", window.name)
 			window.queue_free()
 		return
 
@@ -551,12 +545,9 @@ func close_top_contextual_window() -> void:
 			top_window.queue_free()
 
 func _close_all_windows() -> void:
-	print("[WindowManager] _close_all_windows called. Modal stack size: ", _modal_stack.size())
 	close_all_inspection_windows()
 	while not _modal_stack.is_empty():
-		print("[WindowManager] Closing modal from stack. Remaining: ", _modal_stack.size())
 		_close_top_modal()
-	print("[WindowManager] _close_all_windows finished. Stack size: ", _modal_stack.size())
 
 func _calculate_window_position(source_view: Control, new_window: Control) -> Vector2:
 	if not is_instance_valid(source_view): return Vector2.ZERO

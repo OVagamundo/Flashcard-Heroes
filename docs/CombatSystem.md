@@ -41,14 +41,20 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 
 The system uses a **Priority-Based Reaction System** to resolve complex interactions. Reactions are not instantaneous; they are collected, sorted by priority, and filtered by validity (e.g., lethality checks) before execution.
 
-**1. The Priority Hierarchy**
+**1. The Priority Hierarchy (Execution Order)**
 Every effect and reaction has a priority value. Higher priority resolves first.
 *   **Tier 1 (Highest):** State-Based Effects (e.g., "Mark of Death" detonation).
 *   **Tier 2:** Counter-Attacks (Vengeful/Interrupting).
 *   **Tier 3:** Defensive Reactions (Heals, Shields).
 *   **Tier 4 (Lowest):** Standard cleanup/buffs.
 
-**2. The Resolution Flow (Step-by-Step)**
+**2. The Discovery Order (Tie-Breaker)**
+When multiple abilities trigger at the same time (and have the same priority), `AbilityResolver` discovers them in a deterministic order:
+1.  **Units**: The unit itself (e.g., `on_hurt` source).
+2.  **Equipped Items**: Sorted by slot index (0 to N).
+3.  **Trinkets**: Player trinkets then Enemy trinkets.
+
+**3. The Resolution Flow (Step-by-Step)**
 When an action (like an Attack) occurs, the system follows this strict sequence:
 
 1.  **Base Action:** The action executes fully.
@@ -58,9 +64,7 @@ When an action (like an Attack) occurs, the system follows this strict sequence:
 3.  **Trigger Collection:** All applicable triggers (`on_hurt`, `on_death`) are collected into a pending list.
 4.  **Validity Filtering:**
     *   **Dead Units:** Triggers from dead units are **discarded** unless the ability has the `execute_on_death` flag (e.g., Vengeful Counter).
-    *   *Example:* Unit A's "On Hurt: Self Heal" is discarded because A is dead.
-    *   *Example:* Unit A's "On Death: Heal Ally" is kept.
-5.  **Priority Sorting:** The remaining valid triggers are sorted by their Priority Tier.
+5.  **Priority Sorting:** The pending list is sorted by Priority (Descending). Ties are broken by the discovery order (FIFO).
 6.  **Execution:** The sorted triggers are executed one by one.
 
 **Scenario: The AOE Chain (Corrected)**
@@ -192,14 +196,20 @@ The `BattleAnimator` is a dumb playback engine. It does not know rules; it only 
     *   **Mutations:** Resolves visual nodes via the Registry to perform container swaps (Summons/Deaths).
 5.  **Blocking:** Waits for animations (e.g., projectile travel, death fade) to complete before processing the next event.
 
-### Visual Queueing
-The Animator maintains a **Visual Queue** of actions.
+### Visual Queueing (Presentation Priority)
+The Animator maintains a **Visual Queue** of actions. Unlike the simulation, this queue is strictly **FIFO** based on the `TurnLog`.
 *   **Event:** `DAMAGE (Target: A, Amount: 10)`
 *   **Visual Action:**
     1.  Play "Hurt" animation on View A.
     2.  Spawn "Floating Text -10".
     3.  Tween HP Bar from Current -> Current - 10.
     4.  Wait for Tween.
+
+**Visual Priority vs. Event Priority:**
+*   **Event Priority** (Simulation) determines *what* happens and *in what order* logically (e.g., Heals happen before Damage if priority is higher).
+*   **Visual Priority** (Presentation) is purely about **Z-Index** and **Screen Space**.
+    *   Floating Text > Unit Sprites > Background.
+    *   The `BattleAnimator` does **not** reorder events. It plays the VCR tape exactly as recorded.
 
 ---
 

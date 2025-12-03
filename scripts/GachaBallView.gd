@@ -210,10 +210,8 @@ func set_visual_state(snapshot: Dictionary) -> void:
 	_update_stats()
 
 func animate_poison_change(target_stacks: int) -> void:
-	print("[GachaBallView] animate_poison_change called for ", _instance_uuid, " with stacks: ", target_stacks, " _visual_hp=", _visual_hp)
 	_visual_poison_stacks = target_stacks
 	_update_stats()
-	print("[GachaBallView] after _update_stats, _visual_hp=", _visual_hp)
 
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	# type: "hp" or "pwr"
@@ -242,10 +240,7 @@ func _update_item_slots() -> void:
 	# Show poison stacks if present (as purple number)
 	var poison_stacks = _visual_poison_stacks
 	
-	print("[GachaBallView] _update_item_slots for ", _instance_uuid, " - poison_stacks: ", poison_stacks)
-	
 	if poison_stacks > 0:
-		print("[GachaBallView] Creating poison label for ", _instance_uuid, " with ", poison_stacks, " stacks")
 		var poison_label = Label.new()
 		poison_label.text = str(poison_stacks)
 		poison_label.add_theme_font_size_override("font_size", 24)
@@ -253,7 +248,6 @@ func _update_item_slots() -> void:
 		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		poison_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		item_grid.add_child(poison_label)
-		print("[GachaBallView] Poison label added to item_grid. item_grid children count: ", item_grid.get_child_count())
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)

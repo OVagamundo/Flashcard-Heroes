@@ -41,3 +41,4 @@ ability.unit_tier3d_resilient_aura.name,"Resilient Aura"
 ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies."
 item_t2_c02.name,Summoning Scroll
 item_t2_c02.desc,Summons a random Tier 1 unit upon death.
+ability.item_t2_c_summon.name,Summon

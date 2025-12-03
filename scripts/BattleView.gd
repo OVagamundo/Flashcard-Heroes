@@ -2,7 +2,7 @@
 class_name BattleView
 extends Control
 
-const SlotView = preload("res://scenes/SlotView.tscn")
+const SlotViewScene = preload("res://scenes/SlotView.tscn")
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 
 # --- UI Node References ---
@@ -21,7 +21,6 @@ var battle_manager: BattleManager
 # --- Helper to convert placeholder PanelContainers into SlotView prefabs once ---
 func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) -> void:
 	var slots: Array = ui_container.get_children()
-	var SlotViewScene := preload("res://scenes/SlotView.tscn")
 	for i in range(slots.size()):
 		var child = slots[i]
 		if child is PanelContainer and child.get_script() != preload("res://scripts/SlotView.gd"):
@@ -72,7 +71,6 @@ func _ready() -> void:
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
 
 func _redraw_board() -> void:
-	print("[BattleView] _redraw_board called! Current phase: ", battle_manager.get_current_phase() if is_instance_valid(battle_manager) else "NO BM")
 	if not is_instance_valid(battle_manager):
 		return
 	
@@ -83,7 +81,6 @@ func _redraw_board() -> void:
 	if current_phase == BattleManager.Phases.COMBAT or \
 	   current_phase == BattleManager.Phases.START_OF_TURN or \
 	   current_phase == BattleManager.Phases.END_OF_TURN:
-		print("[BattleView] BLOCKED _redraw_board - currently in animation phase: ", current_phase)
 		return
 	
 	_update_gacha_token_label(battle_manager.get_gacha_tokens())
@@ -173,12 +170,11 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				continue
 
 			# Otherwise replace placeholder PanelContainer with a proper SlotView prefab.
-			var SlotViewScene := preload("res://scenes/SlotView.tscn")
 			var parent := slot.get_parent()
 			var idx: int = slot.get_index()
 			# Remove placeholder; queue_free so Godot cleans up after this frame.
 			slot.queue_free()
-			var slot_view: PanelContainer = SlotViewScene.instantiate()
+			var slot_view: PanelContainer = preload("res://scenes/SlotView.tscn").instantiate()
 			parent.add_child(slot_view)
 			parent.move_child(slot_view, idx)
 			# Populate location data so it can handle clicks/drops.

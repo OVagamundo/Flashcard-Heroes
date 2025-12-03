@@ -465,8 +465,7 @@ func get_all_instances() -> Dictionary:
 # ------------------------------------------------------------------
 
 func bm_add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
-	if not is_instance_valid(instance):
-		return false
+	assert(is_instance_valid(instance), "bm_add_instance: instance is null")
 	var container = get_container(container_name)
 	if not is_instance_valid(container):
 		return false
@@ -512,11 +511,9 @@ func _reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	return true
 
 func bm_remove_instance(uuid: String) -> bool:
-	if uuid.is_empty():
-		return false
+	assert(not uuid.is_empty(), "bm_remove_instance: uuid is empty")
 	var instance := get_instance(uuid)
-	if not is_instance_valid(instance):
-		return false
+	assert(is_instance_valid(instance), "bm_remove_instance: instance not found for uuid " + uuid)
 	var loc := instance.get_location()
 	if not is_instance_valid(loc):
 		return false
@@ -585,8 +582,8 @@ func bm_remove_instance(uuid: String) -> bool:
 
 
 func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
-	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
-		return false
+	assert(is_instance_valid(source_loc), "bm_move_instance: source_loc is null")
+	assert(is_instance_valid(target_loc), "bm_move_instance: target_loc is null")
 	# Target is equipping onto a unit
 	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var unit := get_instance(target_loc.unit_uuid)
@@ -675,8 +672,8 @@ func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdenti
 	return true
 
 func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
-	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
-		return false
+	assert(is_instance_valid(source_loc), "bm_swap_instances: source_loc is null")
+	assert(is_instance_valid(target_loc), "bm_swap_instances: target_loc is null")
 	# Handle swaps where target is an equipped slot
 	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var unit := get_instance(target_loc.unit_uuid)
@@ -788,12 +785,12 @@ func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdent
 	return true
 
 func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
-	if item_uuid.is_empty() or unit_uuid.is_empty():
-		return false
+	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
+	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
 	var item := get_instance(item_uuid)
 	var unit := get_instance(unit_uuid)
-	if not is_instance_valid(item) or not is_instance_valid(unit):
-		return false
+	assert(is_instance_valid(item), "bm_equip_item: item instance not found")
+	assert(is_instance_valid(unit), "bm_equip_item: unit instance not found")
 	# Determine slot
 	var target_slot := slot_index
 	if target_slot < 0:
@@ -859,17 +856,13 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -
 # ------------------------------------------------------------------
 
 func bm_move_instance_to_discard(uuid: String) -> bool:
-	if uuid.is_empty():
-		return false
+	assert(not uuid.is_empty(), "bm_move_instance_to_discard: uuid is empty")
 	var instance := get_instance(uuid)
-	if not is_instance_valid(instance):
-		return false
+	assert(is_instance_valid(instance), "bm_move_instance_to_discard: instance not found")
 	var loc := instance.get_location()
-	if not is_instance_valid(loc):
-		return false
+	assert(is_instance_valid(loc), "bm_move_instance_to_discard: instance has no location")
 	# Ownership gate: only player-owned instances can enter the player's discard pile
-	if not _is_player_owned(instance):
-		return false
+	assert(_is_player_owned(instance), "bm_move_instance_to_discard: instance is not player owned")
 	# If equipped, clear equip mapping; otherwise remove from its container
 	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var parent := get_instance(loc.unit_uuid)
@@ -1068,7 +1061,6 @@ func get_discard_pile_inventory() -> Array[GachaBallInstance]:
 	return result
 
 func _change_phase(new_phase: Phases) -> void:
-	print("[BattleManager] _change_phase: ", get_current_phase_name(), " -> ", Phases.keys()[new_phase])
 	_current_battle_phase = new_phase
 	SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
 	match _current_battle_phase:
@@ -1677,20 +1669,6 @@ func _resolve_combat_phase() -> void:
 	
 	# 2. Send Log to Animator (The VCR Playback)
 	if not turn_log.is_empty():
-		print("\n=== BATTLE EVENT QUEUE ===")
-		for i in range(turn_log.size()):
-			var evt = turn_log[i]
-			var target_info = []
-			for uuid in evt.target_uuids:
-				var loc = get_location_for_uuid(uuid)
-				var loc_str = "Unknown"
-				if loc:
-					loc_str = "%s[%d]" % [loc.container, loc.index]
-				target_info.append("%s@%s" % [uuid, loc_str])
-			
-			print("[%d] %s | Targets: %s | Payload: %s" % [i, CombatEvent.Type.keys()[evt.type], target_info, evt.visual_payload])
-		print("==========================\n")
-		
 		_animator.play_turn_sequence(start_snapshot, turn_log)
 	else:
 		_on_turn_animation_finished()
@@ -1698,7 +1676,6 @@ func _resolve_combat_phase() -> void:
 func _on_turn_animation_finished() -> void:
 	# This signal is the single source of truth for when animations are complete.
 	# It is safe to proceed to the next phase.
-	print("[BattleManager] _on_turn_animation_finished called! Current phase: ", get_current_phase_name())
 	_is_processing_effect = false
 	
 	# Finalize any remaining deaths (removes zombies)
@@ -1721,9 +1698,9 @@ func _on_turn_animation_finished() -> void:
 		_change_phase(Phases.END_OF_TURN)
 
 func _move_instance_to_discard(instance: GachaBallInstance) -> void:
-	if not is_instance_valid(instance): return
+	assert(is_instance_valid(instance), "_move_instance_to_discard: instance is null")
 	# Ownership gate: only player-owned instances can enter the player's discard pile
-	if not _is_player_owned(instance): return
+	assert(_is_player_owned(instance), "_move_instance_to_discard: instance is not player owned")
 	# Atomically remove from current location (equipped or container) and place into discard
 	var loc := get_location_for_uuid(instance.ball_uuid)
 	if is_instance_valid(loc):
@@ -1754,9 +1731,9 @@ func _move_instance_to_discard(instance: GachaBallInstance) -> void:
 	_update_instance_location(instance.ball_uuid, BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, index)
 
 func _remove_instance_from_container(instance: GachaBallInstance) -> void:
-	if not is_instance_valid(instance): return
+	assert(is_instance_valid(instance), "_remove_instance_from_container: instance is null")
 	var loc = get_location_for_uuid(instance.ball_uuid)
-	if not is_instance_valid(loc): return
+	assert(is_instance_valid(loc), "_remove_instance_from_container: instance has no location")
 	var container = get_container(loc.container)
 	if is_instance_valid(container):
 		var uuids = container.get_all_uuids()
@@ -1772,7 +1749,6 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
 	for unit in player_units:
 		if unit.current_hp <= 0:
-			print("[DEATH CHECK] Unit died: %s (HP: %d). Phase: %s. Simulation: %s" % [unit.ball_uuid, unit.current_hp, get_current_phase_name(), is_simulation])
 			something_changed = true
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
@@ -1829,7 +1805,7 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 ## Centralized logic for cleaning up a dead unit.
 ## Moves player units to discard, removes enemy units entirely.
 func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
-	if not is_instance_valid(unit): return
+	assert(is_instance_valid(unit), "_perform_unit_death_cleanup: unit is null")
 	
 	if _is_player_owned(unit):
 		# Player unit: move equipped items to discard then move unit to discard
@@ -1862,8 +1838,7 @@ func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 
 ## Check if a unit has counter-attack abilities that could trigger on lethal damage
 func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
-	if not is_instance_valid(unit):
-		return false
+	assert(is_instance_valid(unit), "_has_lethal_counter_abilities: unit is null")
 	
 	var definition = unit.get_definition()
 	if not is_instance_valid(definition):
@@ -2411,9 +2386,7 @@ func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBall
 ## @param delta: int - Amount to change (positive or negative)
 ## @return int - New value after change
 func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int) -> int:
-	if not is_instance_valid(instance):
-		push_warning("apply_stat_delta called with invalid instance")
-		return 0
+	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
 	# CRITICAL: Use SILENT methods during simulation to prevent UI coupling
 	# The BattleAnimator handles all visual updates during COMBAT phase
@@ -2528,7 +2501,6 @@ func _trigger_turn_end_abilities() -> void:
 		if poison_stacks > 0:
 			var damage = poison_stacks
 			var old_hp = unit.current_hp # Capture BEFORE
-			print("[POISON END TURN] Applying %d damage to %s (HP: %d -> %d)" % [damage, unit.ball_uuid, unit.current_hp, unit.current_hp - damage])
 			# Apply HP delta via centralized function
 			var new_hp = apply_stat_delta(unit, "hp", -damage)
 			var max_hp = 0
@@ -2579,14 +2551,12 @@ func _trigger_turn_end_abilities() -> void:
 		all_events.append_array(reaction_events)
 	
 	# 4. Play animations or finish immediately
-	# print("DEBUG: Turn end has ", all_events.size(), " events to animate")
 	if not all_events.is_empty():
 		_is_processing_effect = true
 		_resolve_animator()
 		_animator.play_turn_sequence(start_snapshot, all_events)
 	else:
 		# No events to animate, proceed immediately
-		# print("DEBUG: No events, calling _on_turn_animation_finished directly")
 		_on_turn_animation_finished()
 
 
@@ -2683,17 +2653,13 @@ func _emit_stats_changed_for_equipped_units() -> void:
 				SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
 
 func _on_flashcard_completed(results: Dictionary) -> void:
-	print("[BattleManager] _on_flashcard_completed CALLED! Results: ", results)
-	print("[BattleManager] Current phase: ", _current_battle_phase)
 	# TDD Section 9.4: Battle Flow
 	# This handler is only for the battle context.
 	# BattleManager only exists during battle, so we don't need to check is_in_battle.
 	# Force close any lingering FlashcardMinigame window to prevent freeze.
 	# This acts as a failsafe if WindowManager.open_modal_window() fails to close it.
 	var minigame = get_tree().get_root().find_child("FlashcardMinigame", true, false)
-	print("[BattleManager] Found minigame: ", is_instance_valid(minigame))
 	if is_instance_valid(minigame):
-		print("[BattleManager] Force closing minigame")
 		minigame.queue_free()
 
 	_last_minigame_results = results
@@ -2702,11 +2668,9 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	var gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
 	
 	# Display ResultsPopup
-	print("[BattleManager] Opening ResultsPopup via WindowManager")
-	var popup = WindowManager.open_modal_window(&"ResultsPopup", {
+	WindowManager.open_modal_window(&"ResultsPopup", {
 		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % correct_answers, "Okay"]
 	})
-	print("[BattleManager] ResultsPopup returned: ", is_instance_valid(popup))
 
 func _on_results_acknowledged() -> void:
 	"""Called when player acknowledges the results popup"""

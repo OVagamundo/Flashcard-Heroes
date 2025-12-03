@@ -29,10 +29,7 @@ func _ready() -> void:
 	
 	# Get BattleManager from parent (sibling node)
 	battle_manager = get_parent().get_node("BattleManager")
-	if not is_instance_valid(battle_manager):
-		push_error("TestEnvironmentManager: Could not find BattleManager")
-		queue_free()
-		return
+	assert(is_instance_valid(battle_manager), "TestEnvironmentManager: Could not find BattleManager")
 		
 	# Wait for BattleManager to be ready
 	await get_tree().process_frame
@@ -76,7 +73,6 @@ func _build_ui() -> void:
 	vbox.add_child(label)
 
 
-	
 	var tab_container = TabContainer.new()
 	tab_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(tab_container)
@@ -136,7 +132,7 @@ func _build_ui() -> void:
 	toggle_hbox.add_child(toggle_label)
 	
 	var toggle = CheckButton.new()
-	toggle.toggled.connect(func(toggled): 
+	toggle.toggled.connect(func(toggled):
 		_spawn_target_is_enemy = toggled
 		toggle_label.text = "Target: Enemy" if toggled else "Target: Player"
 	)
@@ -223,16 +219,14 @@ func _on_spawn_item_pressed() -> void:
 
 func _on_spawn_trinket_pressed() -> void:
 	var selection = trinket_list.get_selected_items()
-	if selection.size() == 0: 
-		print("DEBUG: No trinket selected")
+	if selection.size() == 0:
 		return
 	
 	var index = selection[0]
 	var id = trinket_list.get_item_metadata(index)
 	var def = Database.get_definition(id)
 	
-	if not def: 
-		print("DEBUG: Trinket definition not found for id: ", id)
+	if not def:
 		return
 	
 	var instance = GachaBallInstance.new()
@@ -244,11 +238,8 @@ func _on_spawn_trinket_pressed() -> void:
 		if success:
 			# Also add to the enemy_trinkets array for legacy compatibility
 			battle_manager.enemy_trinkets.append(instance)
-			print("DEBUG: Successfully spawned enemy trinket at index: ", instance.location_slot_index)
 			# Emit signal to update UI
 			SignalBus.emit_signal("battle_inventory_changed")
-		else:
-			print("DEBUG: Failed to spawn enemy trinket. bm_add_instance returned false.")
 	else:
 		# Add to player trinkets in RunState (so Main UI updates)
 		if is_instance_valid(GameManager.run_state):
@@ -256,18 +247,11 @@ func _on_spawn_trinket_pressed() -> void:
 			var success = GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 			
 			if success:
-				print("DEBUG: Successfully spawned player trinket at index: ", instance.location_slot_index)
 				# Sync to BattleManager so it's visible in the UI during battle (Test Mode is a battle)
 				var battle_copy = instance.create_battle_copy()
 				if is_instance_valid(battle_copy):
 					# Use the same slot index as the RunState instance
 					battle_manager.bm_add_instance(battle_copy, BattleManager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, instance.location_slot_index)
-			else:
-				print("DEBUG: Failed to spawn player trinket. RunState.add_instance returned false.")
-
-
-
-
 
 
 func _on_unit_list_item_selected(index: int) -> void:
