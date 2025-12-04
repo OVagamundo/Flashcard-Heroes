@@ -18,6 +18,8 @@ func set_hp_snapshot(snapshot: Dictionary) -> void:
 
 func _ready() -> void:
 	add_to_group("battle_animator")
+	# Initialize animations
+	AnimationRegistry.load_standard_animations()
 
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
 	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
@@ -106,87 +108,29 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				pass # Log messages are instant, no animation to wait for
 
 			CombatEvent.Type.DAMAGE:
-				# Emit bump (unless flagged to skip), then flash animation
-				# Apply HP delta incrementally so each attack shows its own damage
-				var payload = event.visual_payload
-				if event.target_uuids.size() > 0:
-					var target_uuid := event.target_uuids[0]
-					var source_uuid_str := String(event.source_uuid)
-					var skip_bump = bool(payload.get("skip_bump", false))
-					var amount = int(payload.get("amount", 0))
-					# Extract absolute value from payload (Step 1 enhancement)
-					var targets_new_hp: Array = payload.get("targets_new_hp", [])
-					var new_hp = targets_new_hp[0] if targets_new_hp.size() > 0 else 0
-					var should_bump: bool = (not skip_bump) and (not source_uuid_str.is_empty())
-					
-					if should_bump:
-						# Use pre-computed direction from payload if available (new system)
-						var bump_dir: Vector2 = payload.get("bump_direction", Vector2.ZERO)
-						if bump_dir != Vector2.ZERO:
-							SignalBus.emit_signal("unit_bump_attack", event.source_uuid, bump_dir)
-						else:
-							# Fallback to old method for legacy DAMAGE events without bump_direction
-							_emit_bump(event.source_uuid)
-						# Wait for half of the bump animation (0.5s)
-						await get_tree().create_timer(BUMP_DURATION).timeout
-					# Apply HP delta NOW so UI updates incrementally (each attack shows its own damage)
-					_apply_hp_delta(target_uuid, amount, new_hp)
-					
-					# Apply poison if flagged (syncs with damage visual)
-					var apply_poison = bool(payload.get("apply_poison", false))
-					if apply_poison:
-						var targets_new_poison: Array = payload.get("targets_new_poison", [])
-						var new_poison = targets_new_poison[0] if targets_new_poison.size() > 0 else 0
-						_apply_poison_stack(target_uuid, new_poison)
-					
-					# Start damage flash while bump (if any) is finishing
-					if SignalBus.has_signal("unit_flash_effect"):
-						var flash_color = Color(1.0, 0.6, 0.6) # Default red
-						if bool(payload.get("is_poison_damage", false)):
-							flash_color = Color(0.6, 0.2, 0.8) # Purple for poison
-						SignalBus.emit_signal("unit_flash_effect", target_uuid, flash_color)
-					# Wait for any bump and then the flash to complete
-					if should_bump:
-						await _wait_for_animation_completion("bump", event.source_uuid)
-					_current_animation_uuid = target_uuid
-					await _wait_for_animation_completion("flash", target_uuid)
+				# Use the dedicated DamageAnimation class which handles bumps, projectiles, and flashes
+				var anim = AnimationRegistry.get_animation("damage")
+				if anim:
+					print("[BattleAnimator] Got damage animation: ", anim)
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Damage animation not found in registry!")
 
 			CombatEvent.Type.HEAL:
-				# HP-only: apply HP delta incrementally with green flash
-				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
-				# Extract absolute values from payload (Step 1 enhancement)
-				var targets_new_hp: Array = payload.get("targets_new_hp", [])
-				for i in range(event.target_uuids.size()):
-					var target_uuid2 = event.target_uuids[i]
-					var new_hp = targets_new_hp[i] if i < targets_new_hp.size() else 0
-					_current_animation_uuid = target_uuid2
-					_apply_hp_delta(target_uuid2, amount, new_hp)
-					if SignalBus.has_signal("unit_flash_effect"):
-						SignalBus.emit_signal("unit_flash_effect", target_uuid2, Color(0.6, 1.0, 0.6))
-						await _wait_for_animation_completion("flash", target_uuid2)
+				# Use the dedicated HealAnimation class which handles projectiles and flashes
+				var anim = AnimationRegistry.get_animation("heal")
+				if anim:
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Heal animation not found in registry!")
 
 			CombatEvent.Type.BUFF:
-				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
-				var stat = String(payload.get("stat", "pwr")) # Default to pwr for legacy
-				
-				if stat == "pwr":
-					var new_pwr = int(payload.get("new_pwr", 0))
-					for target_uuid3 in event.target_uuids:
-						_current_animation_uuid = target_uuid3
-						_apply_pwr_delta(target_uuid3, amount, new_pwr)
-						if SignalBus.has_signal("unit_flash_effect"):
-							SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(1.0, 0.8, 0.4))
-							await _wait_for_animation_completion("flash", target_uuid3)
-				elif stat == "poison_stacks":
-					var new_val = int(payload.get("new_val", 0))
-					for target_uuid3 in event.target_uuids:
-						_current_animation_uuid = target_uuid3
-						_apply_poison_stack(target_uuid3, new_val)
-						if SignalBus.has_signal("unit_flash_effect"):
-							SignalBus.emit_signal("unit_flash_effect", target_uuid3, Color(0.6, 0.2, 0.8)) # Purple
-							await _wait_for_animation_completion("flash", target_uuid3)
+				# Use the dedicated BuffAnimation class which handles projectiles and flashes
+				var anim = AnimationRegistry.get_animation("buff")
+				if anim:
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Buff animation not found in registry!")
 
 			CombatEvent.Type.DEATH:
 				# Play death fade on target
@@ -206,7 +150,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						print("[BattleAnimator] Emitting unit_death_fade signal for: ", dead_uuid)
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
 						print("[BattleAnimator] Waiting for death_fade animation completion...")
-						await _wait_for_animation_completion("death_fade", dead_uuid)
+						await wait_for_animation_completion("death_fade", dead_uuid)
 						print("[BattleAnimator] Death animation completed for: ", dead_uuid)
 					
 					# DON'T remove view here! Later events may target this dead unit.
@@ -263,7 +207,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									print("[BattleAnimator] Emitting unit_summon_fade signal for: ", new_unit_uuid)
 									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
 									print("[BattleAnimator] Waiting for summon_fade animation completion...")
-									await _wait_for_animation_completion("summon_fade", new_unit_uuid)
+									await wait_for_animation_completion("summon_fade", new_unit_uuid)
 									print("[BattleAnimator] Summon animation completed for: ", new_unit_uuid)
 
 		# Let the UI process the emitted signal this frame
@@ -274,18 +218,18 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	print("[BattleAnimator] Emitting turn_animation_finished!")
 	emit_signal("turn_animation_finished")
 
-func _apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
+func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
 	# PUPPET MODE: Use visual registry to update view directly
 	var view = _visual_registry.get(target_uuid)
 	
-	if is_instance_valid(view) and view is GachaBallView:
-		# Call puppet view's animate method with absolute value
-		view.animate_stat_change(new_hp, amount, "hp")
-	else:
+	if not is_instance_valid(view) or not (view is GachaBallView):
 		# DECOUPLED: No fallback - if view not in registry, it's a bug in snapshot processing
 		push_error("[BattleAnimator] HP delta target not in visual registry: " + target_uuid)
+		return
+		
+	view.animate_stat_change(new_hp, amount, "hp")
 
-func _apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
+func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 	# PUPPET MODE: Use visual registry to update view directly
 	var view = _visual_registry.get(target_uuid)
 	if is_instance_valid(view) and view is GachaBallView:
@@ -295,7 +239,7 @@ func _apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 		# DECOUPLED: No fallback - if view not in registry, it's a bug in snapshot processing
 		push_error("[BattleAnimator] PWR delta target not in visual registry: " + target_uuid)
 
-func _apply_poison_stack(target_uuid: String, new_stacks: int) -> void:
+func apply_poison_stack(target_uuid: String, new_stacks: int) -> void:
 	# Update visual poison stacks on puppet view
 	if _visual_registry.has(target_uuid):
 		var view = _visual_registry[target_uuid]
@@ -354,7 +298,7 @@ func _on_unit_summon_fade_finished(unit_uuid: String) -> void:
 		_current_animation_uuid = ""
 
 # Robust animation waiting with timeout fallback
-func _wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
+func wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
 	var timeout_duration: float
 	match animation_type:
 		"bump":

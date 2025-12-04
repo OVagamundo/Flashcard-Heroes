@@ -1195,6 +1195,17 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		sim_ctx["is_simulation"] = true
 		sim_ctx["ability_id"] = request.ability_id
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
+		
+		# IMPORTANT: Normalize legacy integer returns to dictionary format FIRST
+		# This must happen before the TYPE_DICTIONARY check so the normalized value gets processed
+		if typeof(res) == TYPE_INT:
+			var damage_amount = int(res)
+			res = {
+				"stat": "hp",
+				"amount": - damage_amount,
+				"targets": exec_targets
+			}
+		
 		# Preferred: structured stat change results
 		if typeof(res) == TYPE_DICTIONARY:
 			var effect_data: Dictionary = res
@@ -1251,6 +1262,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						"source_uuid": request.source_uuid,
 						"target_uuids": resolved_targets,
 						"visual_payload": {
+							"source_uuid": request.source_uuid,
 							"amount": amount,
 							"stat": "hp",
 							"skip_bump": skip_bump,
@@ -1324,6 +1336,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						"source_uuid": request.source_uuid,
 						"target_uuids": resolved_targets,
 						"visual_payload": {
+							"source_uuid": request.source_uuid,
 							"amount": amount,
 							"stat": "hp",
 							"skip_bump": skip_bump,
@@ -1333,7 +1346,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							"targets_new_hp": targets_new_hp,
 							"targets_max_hp": targets_max_hp,
 							"targets_old_poison": targets_old_poison,
-							"targets_new_poison": targets_new_poison
+							"targets_new_poison": targets_new_poison,
+							"projectile_data": {
+								"stat": "hp",
+								"amount": amount,
+								"color": "red"
+							}
 						}
 					}))
 			elif stat == "pwr" and amount > 0 and not resolved_targets.is_empty():
@@ -1357,6 +1375,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						"source_uuid": request.source_uuid,
 						"target_uuids": [single_target_uuid],
 						"visual_payload": {
+							"source_uuid": request.source_uuid,
 							"amount": amount,
 							"stat": "pwr",
 							"old_pwr": target_old_pwr,
@@ -1378,6 +1397,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						"source_uuid": request.source_uuid,
 						"target_uuids": [single_target_uuid],
 						"visual_payload": {
+							"source_uuid": request.source_uuid,
 							"amount": amount,
 							"stat": "poison_stacks",
 							"old_val": old_stacks,
@@ -1454,130 +1474,6 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								}
 							}
 						}))
-		# Legacy: integer damage
-		elif typeof(res) == TYPE_INT:
-			damage = int(res)
-			if exec_targets.size() > 0:
-				var src_inst2 = get_instance_by_uuid(request.source_uuid)
-				var tgt_inst2 = get_instance_by_uuid(exec_targets[0])
-				if is_instance_valid(src_inst2) and is_instance_valid(tgt_inst2):
-					var src_name2 = ""
-					var src_def2 = src_inst2.get_definition()
-					if is_instance_valid(src_def2):
-						if "display_name_key" in src_def2:
-							src_name2 = tr(src_def2.display_name_key)
-						elif "name" in src_def2:
-							src_name2 = tr(src_def2.name)
-						elif "id" in src_def2:
-							src_name2 = String(src_def2.id)
-					var tgt_name2 = ""
-					var tgt_def2 = tgt_inst2.get_definition()
-					if is_instance_valid(tgt_def2):
-						if "display_name_key" in tgt_def2:
-							tgt_name2 = tr(tgt_def2.display_name_key)
-						elif "name" in tgt_def2:
-							tgt_name2 = tr(tgt_def2.name)
-						elif "id" in tgt_def2:
-							tgt_name2 = String(tgt_def2.id)
-					
-					# Only log if damage > 0
-					# if damage > 0:
-					# 	print("[BattleManager] %s deals %d damage to %s" % [src_name2, damage, tgt_name2])
-					
-					# Capture old values BEFORE applying delta (LEGACY PATH)
-					var old_hp_legacy = tgt_inst2.current_hp
-					var old_poison_legacy = tgt_inst2.get_status_effect_amount(&"poison")
-					
-					# Apply HP delta via centralized function (LEGACY PATH)
-					var new_hp_legacy = apply_stat_delta(tgt_inst2, "hp", -damage) # Unified
-					
-					# Check if poison should be applied
-					var is_player_source = _is_player_unit(src_inst2)
-					var should_apply_poison = _has_team_trinket(is_player_source, &"trinket_poison_vial")
-					
-					# Get max HP from definition
-					var max_hp_legacy = 0
-					var tgt_def_legacy = tgt_inst2.get_definition()
-					if is_instance_valid(tgt_def_legacy):
-						max_hp_legacy = tgt_def_legacy.base_hp
-					
-					# Build arrays for payload
-					var targets_old_hp_legacy: Array[int] = [old_hp_legacy]
-					var targets_new_hp_legacy: Array[int] = [new_hp_legacy]
-					var targets_max_hp_legacy: Array[int] = [max_hp_legacy]
-					var targets_old_poison_legacy: Array[int] = []
-					var targets_new_poison_legacy: Array[int] = []
-					
-					# Apply poison if needed (LEGACY PATH)
-					if should_apply_poison:
-						targets_old_poison_legacy.append(old_poison_legacy)
-						var poison_val_legacy = apply_stat_delta(tgt_inst2, "poison_stacks", 1)
-						targets_new_poison_legacy.append(poison_val_legacy)
-					else:
-						targets_old_poison_legacy.append(0)
-						targets_new_poison_legacy.append(0)
-					
-					# Compute bump direction during simulation (while instance is valid)
-					var bump_dir_legacy := Vector2.ZERO
-					if is_instance_valid(src_inst2):
-						var src_tag_legacy: StringName = src_inst2.location_container_tag
-						if src_tag_legacy == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag_legacy == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-							bump_dir_legacy = Vector2(1, 0) # Player bumps right
-						elif src_tag_legacy == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag_legacy == BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
-							bump_dir_legacy = Vector2(-1, 0) # Enemy bumps left
-					
-					# Legacy damage: encode as negative amount for consistency
-					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": [exec_targets[0]],
-						"visual_payload": {
-							"amount": - damage,
-							"stat": "hp",
-							"bump_direction": bump_dir_legacy, # Pre-computed for presentation
-							"apply_poison": should_apply_poison,
-							"targets_old_hp": targets_old_hp_legacy,
-							"targets_new_hp": targets_new_hp_legacy,
-							"targets_max_hp": targets_max_hp_legacy,
-							"targets_old_poison": targets_old_poison_legacy,
-							"targets_new_poison": targets_new_poison_legacy
-						}
-					}))
-
-					# Check for death
-					if new_hp_legacy <= 0:
-						# DO NOT mark as tracked yet! Let _process_completed_counter_deaths handle it.
-						# death_tracking[tgt_inst2.ball_uuid] = true
-						# Check for on_kill triggers
-						var kill_context = {
-							"killer_uuid": request.source_uuid,
-							"victim_uuid": tgt_inst2.ball_uuid,
-							"damage": damage
-						}
-						AbilityResolver.process_trigger(&"on_kill", kill_context)
-						
-						# Check for on_ally_death triggers
-						var ally_death_context = {
-							"victim_uuid": tgt_inst2.ball_uuid,
-							"killer_uuid": request.source_uuid
-						}
-						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
-						
-						# Check for counter-attacks before cleaning up
-						if _has_lethal_counter_abilities(tgt_inst2):
-							# Defer cleanup and event generation to _check_for_deaths_with_counter_delay
-							pass
-						else:
-							# Immediate death processing
-							# 1. Trigger on_death
-							AbilityResolver.process_trigger(&"on_death", {"source_uuid": tgt_inst2.ball_uuid})
-							
-							# 2. DEFER cleanup - unit must stay in original container!
-							# Snapshot has this location, animator will look here
-							# _perform_unit_death_cleanup(tgt_inst2)
-					
-					# Note: DEATH events are deferred until after all reactive abilities are processed
-					# This ensures counter-attacks happen before death animations
-		# Apply deaths and enqueue inventory sync if needed
 		# Special handling: defer death events for units with counter-attacks to allow final strikes
 		_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 
