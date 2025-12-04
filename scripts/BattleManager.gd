@@ -322,7 +322,7 @@ func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
 		var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
 		var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 		
-		for i in range(min(enemy_unit_ids.size(), 6)):
+		for i in range(min(enemy_unit_ids.size(), 5)):
 			var unit_def = Database.get_definition(enemy_unit_ids[i])
 			if not is_instance_valid(unit_def): continue
 			
@@ -371,11 +371,11 @@ func get_container(container_name: StringName) -> DataContainer:
 
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
-			new_container = FixedArrayContainer.new(6)
+			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 			new_container = FixedArrayContainer.new(6)
 		BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-			new_container = FixedArrayContainer.new(12)
+			new_container = FixedArrayContainer.new(2)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
 			new_container = GrowableGridContainer.new(16)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:

@@ -1,4 +1,3 @@
-
 class_name RunState
 extends Resource
 
@@ -93,10 +92,10 @@ func get_container(container_name: StringName) -> DataContainer:
 	
 	# Handle standard containers with default sizes if they don't exist yet
 	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP or container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-		_containers[container_name] = FixedArrayContainer.new(6)
+		_containers[container_name] = FixedArrayContainer.new(5)
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-		_containers[container_name] = FixedArrayContainer.new(12)
+		_containers[container_name] = FixedArrayContainer.new(2)
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 		_containers[container_name] = FixedArrayContainer.new(5)

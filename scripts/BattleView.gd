@@ -34,6 +34,14 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 			parent.add_child(slot_view)
 			parent.move_child(slot_view, idx)
 			slot_view.populate(loc)
+			
+			# Apply battle-specific layout settings (responsive width, fixed height)
+			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			slot_view.custom_minimum_size = Vector2(0, 250)
+			
+			# Apply container-specific color scheme
+			if slot_view.has_method("set_slot_color"):
+				slot_view.set_slot_color(container_name)
 			# EnemyLineup must be inspection-only: configure SlotView accordingly
 			if container_name == &"EnemyLineup":
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
@@ -64,6 +72,7 @@ func _ready() -> void:
 	_initialize_slots(player_bench, &"PlayerBench")
 	_initialize_slots(item_inventory, &"ItemInventory")
 	_initialize_slots(enemy_lineup, &"EnemyLineup")
+	_initialize_slots(enemy_trinket_bar, &"EnemyTrinkets")
 
 	# The initial draw is now handled directly in _ready to avoid race conditions.
 	# Subsequent updates will be handled by the battle_inventory_changed signal.
@@ -180,6 +189,14 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			# Populate location data so it can handle clicks/drops.
 			slot_view.populate(loc)
 			slot_view.set_meta("location_identifier", loc)
+			
+			# Apply battle-specific layout settings (responsive width, fixed height)
+			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			slot_view.custom_minimum_size = Vector2(0, 250)
+			
+			# Apply container-specific color scheme
+			if slot_view.has_method("set_slot_color"):
+				slot_view.set_slot_color(container_name)
 			# EnemyLineup must be inspection-only: configure SlotView accordingly
 			if container_name == &"EnemyLineup":
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)

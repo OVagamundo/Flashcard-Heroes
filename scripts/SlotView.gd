@@ -18,6 +18,36 @@ func _ready() -> void:
 	# Connect to unit stats changed signal to update content
 	SignalBus.unit_stats_changed.connect(_on_unit_stats_changed)
 
+## Set custom color for this slot based on container type
+func set_slot_color(container_name: StringName) -> void:
+	var style = StyleBoxFlat.new()
+	
+	# Define color schemes for different container types
+	match container_name:
+		&"PlayerLineup":
+			style.set_bg_color(Color(0.15, 0.2, 0.3, 0.3))
+			style.set_border_width_all(2)
+			style.set_border_color(Color(0.3, 0.5, 0.8, 0.6))
+		&"PlayerBench":
+			style.set_bg_color(Color(0.15, 0.25, 0.15, 0.3))
+			style.set_border_width_all(2)
+			style.set_border_color(Color(0.3, 0.7, 0.3, 0.6))
+		&"ItemInventory":
+			style.set_bg_color(Color(0.25, 0.15, 0.25, 0.3))
+			style.set_border_width_all(2)
+			style.set_border_color(Color(0.7, 0.3, 0.7, 0.6))
+		&"EnemyLineup":
+			style.set_bg_color(Color(0.3, 0.15, 0.15, 0.3))
+			style.set_border_width_all(2)
+			style.set_border_color(Color(0.8, 0.3, 0.3, 0.6))
+		_:
+			# Default color scheme
+			style.set_bg_color(Color(0, 0, 0, 0.2))
+			style.set_border_width_all(1)
+			style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
+	
+	add_theme_stylebox_override("panel", style)
+
 func _exit_tree() -> void:
 	if SignalBus.unit_stats_changed.is_connected(_on_unit_stats_changed):
 		SignalBus.unit_stats_changed.disconnect(_on_unit_stats_changed)

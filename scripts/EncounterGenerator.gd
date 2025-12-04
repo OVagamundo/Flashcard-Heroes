@@ -11,7 +11,6 @@ const GachaBallDefinition = preload("res://scripts/GachaBallDefinition.gd")
 ## @param budget: int - The total budget to spend on units and items
 ## @return EncounterDefinition - A complete encounter definition with enemy placements
 func generate_encounter(budget: int) -> EncounterDefinition:
-
 	# Validate input
 	if budget <= 0:
 		return _create_fallback_encounter()
@@ -32,7 +31,6 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 			available_items.append(d)
 	
 
-	
 	available_units.sort_custom(func(a, b): return a.cost < b.cost)
 	available_items.sort_custom(func(a, b): return a.cost < b.cost)
 
@@ -47,7 +45,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 		
 		# Phase 2: Mandatory Unit Spend
 		var min_unit_spend = floor(budget / 2.0)
-		while spent_budget < min_unit_spend and purchased_units.size() < 6:
+		while spent_budget < min_unit_spend and purchased_units.size() < 5:
 			var affordable_units = available_units.filter(func(u): return u.cost <= (budget - spent_budget))
 			if affordable_units.is_empty(): break
 			var unit_to_add = affordable_units.pick_random()
@@ -60,7 +58,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 			var remaining_budget = budget - spent_budget
 			
 			# Check for affordable units
-			if purchased_units.size() < 6:
+			if purchased_units.size() < 5:
 				possible_purchases.append_array(available_units.filter(func(u): return u.cost <= remaining_budget))
 			
 			# Check for affordable items
@@ -83,7 +81,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 			var remaining = budget - spent_budget
 			# Try to find a cheap item or unit that fits exactly or close to it
 			var fillers = available_items.filter(func(i): return i.cost <= remaining)
-			if fillers.is_empty() and purchased_units.size() < 6:
+			if fillers.is_empty() and purchased_units.size() < 5:
 				fillers = available_units.filter(func(u): return u.cost <= remaining)
 			
 			if not fillers.is_empty():
@@ -116,7 +114,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 
 	
 	# Place units
-	var available_positions = [0, 1, 2, 3, 4, 5]
+	var available_positions = [0, 1, 2, 3, 4]
 	available_positions.shuffle()
 	for unit_def in best_build.units:
 		var pos = available_positions.pop_front()
@@ -125,7 +123,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 		
 	# Equip items randomly
 	for item_def in best_build.items:
-		var possible_parents = final_encounter.enemy_placements.filter(func(p): 
+		var possible_parents = final_encounter.enemy_placements.filter(func(p):
 			var unit_def = Database.get_definition(p.id)
 			return p.items.size() < unit_def.item_slot_count
 		)
@@ -210,4 +208,4 @@ func analyze_encounter(encounter: EncounterDefinition) -> Dictionary:
 					analysis.total_power += item_def.bonus_pwr
 					analysis.total_hp += item_def.bonus_hp
 	
-	return analysis 
+	return analysis

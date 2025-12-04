@@ -66,6 +66,11 @@ res://assets/fonts/static/NotoSansJP-Regular.ttf=""
 res://assets/fonts/static/NotoSansJP-SemiBold.ttf=""
 res://assets/fonts/static/NotoSansJP-Thin.ttf=""
 
+[gui]
+
+theme/custom="res://resources/GameTheme.tres"
+theme/default_font_size=32
+
 [internationalization]
 
 font_override/use_system_fonts=false

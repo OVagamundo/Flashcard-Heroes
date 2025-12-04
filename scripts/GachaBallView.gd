@@ -4,7 +4,6 @@ extends PanelContainer
 
 @onready var icon_rect: TextureRect = %Icon
 @onready var item_grid: GridContainer = %ItemGrid
-@onready var tier_label: Label = %TierLabel
 @onready var hp_label: Label = %HPLabel
 @onready var pwr_label: Label = %PWRLabel
 
@@ -101,19 +100,8 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_visual_pwr = visual_data.get("pwr", 0)
 	_visual_poison_stacks = visual_data.get("poison_stacks", 0)
 	
-	# Set visual elements
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
-	
-	if tier_label:
-		var tier = visual_data.get("tier", 0)
-		tier_label.text = "T%d" % tier
-		# Set tier color
-		match tier:
-			0: tier_label.modulate = Color.WHITE
-			1: tier_label.modulate = Color.GREEN
-			2: tier_label.modulate = Color.BLUE
-			3: tier_label.modulate = Color.ORANGE
 	
 	_update_stats()
 	visible = true
@@ -189,8 +177,8 @@ func _update_stats() -> void:
 	pwr_label.visible = true
 	
 	# Use visual state directly (never query instances)
-	hp_label.text = "HP: %d" % max(0, _visual_hp)
-	pwr_label.text = "PWR: %d" % _visual_pwr
+	hp_label.text = str(max(0, _visual_hp))
+	pwr_label.text = str(_visual_pwr)
 	
 	# Update status effect displays (poison, etc.)
 	_update_item_slots()
@@ -224,7 +212,7 @@ func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	
 	# Tween the number
 	var tween = create_tween()
-	tween.tween_method(func(val): label.text = "%s: %d" % [type.to_upper(), val], start_val, target_val, 0.5)
+	tween.tween_method(func(val): label.text = str(val), start_val, target_val, 0.5)
 
 func _update_item_slots() -> void:
 	# REDESIGNED: Now shows status effects instead of item icons
