@@ -134,8 +134,9 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
-				# For on_attack and on_kill, source is the unit that has the item equipped
-				var ability_source_uuid = instance.equipped_on_uuid if (trigger == &"on_attack" or trigger == &"on_kill") else instance_uuid
+				# For on_attack, on_kill, and on_hurt, source is the unit that has the item equipped
+				# This ensures the holder's stats are used for damage calculations
+				var ability_source_uuid = instance.equipped_on_uuid if (trigger == &"on_attack" or trigger == &"on_kill" or trigger == &"on_hurt") else instance_uuid
 				_process_ability(ability, ability_source_uuid, battle_manager, context)
 
 	# Phase 3: Process trinket abilities

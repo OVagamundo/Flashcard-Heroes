@@ -1172,11 +1172,11 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		if not is_instance_valid(source):
 			return
 		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
-		# Exceptions: allow lethal reactive abilities (e.g., counter-attacks, resilient aura) to run post-mortem
+		# Exceptions: allow lethal reactive abilities (e.g., counter-attacks, retaliation, resilient aura) to run post-mortem
 		var src_def = source.get_definition()
 		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
 			var ability_id_str := String(request.ability_id)
-			var allows_lethal_execution := ability_id_str.contains("counter") or ability_id_str == "unit_tier3d_resilient_aura"
+			var allows_lethal_execution := ability_id_str.contains("counter") or ability_id_str.contains("retaliate") or ability_id_str == "unit_tier3d_resilient_aura"
 			if not allows_lethal_execution:
 				return
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
@@ -1732,6 +1732,11 @@ func _on_turn_animation_finished() -> void:
 		# Turn start abilities finished animating, transition to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
 	elif _current_battle_phase == Phases.END_OF_TURN:
+		# Check if battle is over after poison/turn-end effects
+		if _battle_over_deferred or _is_battle_over():
+			_battle_over_deferred = false
+			_emit_battle_over()
+			return
 		# Poison/turn-end animations finished, now start the next turn
 		_change_phase(Phases.START_OF_TURN)
 	elif _current_battle_phase == Phases.COMBAT:
@@ -1897,12 +1902,33 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 			continue
 		if String(ability.id) == "unit_tier3d_resilient_aura":
 			return true
-		# Check if it's a counter-attack ability (uses ATTACKER target or has "counter" in ID)
+		# Check if it's a counter-attack ability (uses ATTACKER target or has "counter"/"retaliate" in ID)
 		for effect in ability.effects:
 			if is_instance_valid(effect) and effect.target_type == C.TARGET_ATTACKER:
 				return true
-		if ability.id.contains("counter"):
+		var ability_id_str := String(ability.id)
+		if ability_id_str.contains("counter") or ability_id_str.contains("retaliate"):
 			return true
+	
+	# Check equipped items for on_hurt abilities (retaliation, counter, etc.)
+	for item_uuid in unit.equipped_item_uuids:
+		if item_uuid.is_empty():
+			continue
+		var item_instance = get_instance_by_uuid(item_uuid)
+		if not is_instance_valid(item_instance):
+			continue
+		var item_def = item_instance.get_definition()
+		if not is_instance_valid(item_def):
+			continue
+		for ability in item_def.ability_definitions:
+			if not is_instance_valid(ability) or ability.trigger != &"on_hurt":
+				continue
+			var ability_id_str := String(ability.id)
+			if ability_id_str.contains("counter") or ability_id_str.contains("retaliate"):
+				return true
+			for effect in ability.effects:
+				if is_instance_valid(effect) and (effect.target_type == C.TARGET_ATTACKER or effect.target_type == C.TARGET_RANDOM_ENEMY):
+					return true
 	
 	return false
 

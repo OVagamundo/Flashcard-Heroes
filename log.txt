@@ -3,2086 +3,273 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 WARNING: res://scenes/FlashcardMinigame.tscn:5 - ext_resource, invalid UID: uid://bkrxvpmgv0ru4 - using text path instead: res://assets/fonts/static/NotoSansJP-Regular.ttf
    at: load (scene/resources/resource_format_text.cpp:447)
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954683_20_70697
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t3_d_1764958976_20_25926
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_c_1764958976_21_77451
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t1_a_1764958976_22_79246
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
 Warning: Instance has invalid stats, resetting from definition
-[SlotView] set_content called with visual_data: item_t1_b_1764954683_21_59572
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
+[SlotView] set_content called with visual_data: item_t1_b_1764958979_23_57585
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t3_d_1764958979_24_54169
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t1_b_1764958979_25_05778
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
 Warning: Instance has invalid stats, resetting from definition
-[SlotView] set_content called with visual_data: item_t3_d_1764954683_22_95885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954683_20_70697
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-Warning: Instance has invalid stats, resetting from definition
-[SlotView] set_content called with visual_data: item_t3_d_1764954683_22_95885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-Warning: Instance has invalid stats, resetting from definition
-[SlotView] set_content called with visual_data: item_t3_d_1764954688_23_55765
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954688_24_27361
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954688_25_17914
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_4_07843
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_5_48942
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_10_39244
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954683_21_59572
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_4_07843
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_5_48942
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954683_21_59572
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_4_07843
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_5_48942
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_4_07843
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_5_48942
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954681_4_07843
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_6_61470
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954681_7_59982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954705_28_05207
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
+[SlotView] set_content called with visual_data: item_t1_b_1764958979_23_57585
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t1_b_1764958979_25_05778
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958973_2_48201
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958973_3_75302
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon"]
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_35_68138
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_44_83443
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764954710_48_51208
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BM] _enqueue_attack_for:unit_t2_c_1764954710_33_04198-> target:unit_t3_d_1764954710_44_83443
-[BM] _enqueue_attack_for:hero_1764954710_29_19034-> target:unit_t3_d_1764954710_44_83443
-[BM] _enqueue_attack_for:unit_t2_c_1764954710_34_99933-> target:unit_t3_d_1764954710_44_83443
-[Bloodlust] Granting extra action to: unit_t2_c_1764954710_34_99933
-[BM] _enqueue_attack_for:unit_t2_c_1764954710_34_99933-> target:unit_t1_b_1764954710_48_51208
-[BM] _enqueue_attack_for:unit_t2_c_1764954710_45_50298-> target:unit_t2_c_1764954710_33_04198
-[BattleAnimator] Populating registry. Snapshot size: 6
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764954710_44_83443"] source: unit_t2_c_1764954710_33_04198
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764954710_44_83443"] source: hero_1764954710_29_19034
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764954710_44_83443"] source: unit_t2_c_1764954710_34_99933
-[BattleAnimator] Processing DEATH event for: unit_t3_d_1764954710_44_83443
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t3_d_1764954710_44_83443
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t3_d_1764954710_44_83443
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t1_b_1764954710_48_51208"] source: unit_t2_c_1764954710_34_99933
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764954710_34_99933"] source: unit_t1_b_1764954710_48_51208
-[BattleAnimator] Processing DEATH event for: unit_t1_b_1764954710_48_51208
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t1_b_1764954710_48_51208
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t1_b_1764954710_48_51208
-[BattleAnimator] Processing DEATH event for: unit_t2_c_1764954710_34_99933
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_c_1764954710_34_99933
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_c_1764954710_34_99933
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764954710_33_04198"] source: unit_t2_c_1764954710_45_50298
-[BattleAnimator] Processing DEATH event for: unit_t2_c_1764954710_33_04198
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_c_1764954710_33_04198
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_c_1764954710_33_04198
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[FlashcardManager] _on_minigame_complete called. Correct: 2
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleAnimator] Populating registry. Snapshot size: 2
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_36_02885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_36_02885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_36_02885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_36_02885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_45_50298
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954710_30_02017
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954710_31_84756
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_37_17462
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_38_52233
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954710_39_65545
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954710_40_80575
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BM] _enqueue_attack_for:unit_t2_a_1764954710_42_70554-> target:unit_t2_c_1764954710_45_50298
-[BM] _enqueue_attack_for:unit_t2_b_1764954710_43_21499-> target:unit_t2_c_1764954710_45_50298
-[BM] Processing cascade_damage from ability:unit_tier2b_shockwavesource:unit_t2_b_1764954710_43_21499
-[BM] _enqueue_attack_for:hero_1764954710_29_19034-> target:unit_t2_c_1764954710_45_50298
-[BM] _enqueue_attack_for:unit_t1_a_1764954994_53_71946-> target:unit_t2_a_1764954710_42_70554
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764954710_45_50298"] source: unit_t2_a_1764954710_42_70554
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764954710_45_50298"] source: unit_t2_b_1764954710_43_21499
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764954710_45_50298"] source: hero_1764954710_29_19034
-[BattleAnimator] Processing DEATH event for: unit_t2_c_1764954710_45_50298
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_c_1764954710_45_50298
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_c_1764954710_45_50298
-[BattleAnimator] Processing SUMMON event for: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Emitting unit_summon_fade signal for: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Waiting for summon_fade animation completion...
-[BattleAnimator] Summon animation completed for: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_a_1764954710_42_70554"] source: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t2_a_1764954710_42_70554"] source: 
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleAnimator] Populating registry. Snapshot size: 4
-[SlotView] set_content called with visual_data: item_t2_c_1764954710_36_02885
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954994_53_71946
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954994_53_71946
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954710_30_02017
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954710_31_84756
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_37_17462
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954710_38_52233
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954710_39_65545
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954710_40_80575
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954994_53_71946
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954994_53_71946
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954710_41_91668
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954994_53_71946
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764954710_29_19034
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954710_43_21499
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954710_42_70554
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_33_04198
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954710_34_99933
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954710_32_57870
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764954994_53_71946
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_49_99115
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_50_22288
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BM] _enqueue_attack_for:unit_t2_a_1764954710_42_70554-> target:unit_t1_a_1764954994_53_71946
-[Bloodlust] Granting extra action to: unit_t2_a_1764954710_42_70554
-[BattleAnimator] Populating registry. Snapshot size: 6
-[BattleAnimator] Got damage animation: <RefCounted#-9223371615729873855>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764954994_53_71946"] source: unit_t2_a_1764954710_42_70554
-[BattleAnimator] Processing DEATH event for: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t1_a_1764954994_53_71946
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954710_51_16983
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954710_52_28793
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764955029_54_91313
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764955029_55_38544
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955029_56_01284
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764955029_55_38544
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954705_28_05207
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764955029_55_38544
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764954681_11_55590
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954705_28_05207
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_b_1764955029_55_38544
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954705_28_05207
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954705_28_05207
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_8_08342
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764954681_9_59091
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_12_29397
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764954681_13_23611
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_14_17310
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764954681_15_16670
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764954697_26_14693
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764954701_27_05275
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764954705_28_05207
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955045_57_70519
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_16_34287
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764954681_17_29219
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_18_51655
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764954681_19_12187
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764954681_2_85135
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764954681_3_97267
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon"]
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
 [FlashcardManager] _on_minigame_complete called. Correct: 3
 [FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 [BattleAnimator] Populating registry. Snapshot size: 6
 [BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_72_67963
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_72_67963
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_72_67963
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_72_67963
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_72_67963
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_77_59639
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_b_1764955047_76_37532
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764955047_59_71549
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t1_a_1764955047_60_13090
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_63_48993
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_69_38128
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_65_26714
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_66_20897
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764955047_67_95673
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t3_d_1764955047_68_12982
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BM] _enqueue_attack_for:unit_t2_a_1764955047_70_21280-> target:unit_t2_a_1764955047_77_59639
-[BM] _enqueue_attack_for:unit_t2_b_1764955047_71_42727-> target:unit_t2_a_1764955047_77_59639
-[BM] Processing cascade_damage from ability:unit_tier2b_shockwavesource:unit_t2_b_1764955047_71_42727
-[BM] _enqueue_attack_for:unit_t2_c_1764955047_61_59102-> target:unit_t3_d_1764955047_73_94363
-[BM] _enqueue_attack_for:hero_1764955047_58_43531-> target:unit_t3_d_1764955047_73_94363
-[BM] _enqueue_attack_for:unit_t3_d_1764955047_73_94363-> target:unit_t2_a_1764955047_70_21280
-[BM] _enqueue_attack_for:unit_t1_a_1764955047_78_86574-> target:unit_t2_c_1764955047_61_59102
-[BM] _enqueue_attack_for:unit_t3_d_1764955047_80_67774-> target:unit_t2_c_1764955047_61_59102
-[BattleAnimator] Populating registry. Snapshot size: 9
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t2_a_1764955047_77_59639"] source: unit_t2_a_1764955047_70_21280
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t2_a_1764955047_77_59639"] source: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_b_1764955047_76_37532"] source: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_73_94363"] source: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Processing DEATH event for: unit_t2_a_1764955047_77_59639
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_a_1764955047_77_59639
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_a_1764955047_77_59639
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t2_b_1764955047_71_42727"] source: unit_t1_b_1764955047_76_37532
-[BattleAnimator] Processing DEATH event for: unit_t1_b_1764955047_76_37532
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t1_b_1764955047_76_37532
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t1_b_1764955047_76_37532
-[BattleAnimator] Processing DEATH event for: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_73_94363"] source: unit_t2_c_1764955047_61_59102
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_73_94363"] source: hero_1764955047_58_43531
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t2_a_1764955047_70_21280"] source: unit_t3_d_1764955047_73_94363
-[BattleAnimator] Processing DEATH event for: unit_t2_a_1764955047_70_21280
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_a_1764955047_70_21280
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_a_1764955047_70_21280
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764955047_61_59102"] source: unit_t1_a_1764955047_78_86574
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t2_c_1764955047_61_59102"] source: unit_t3_d_1764955047_80_67774
-[BattleAnimator] Processing DEATH event for: unit_t2_c_1764955047_61_59102
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_c_1764955047_61_59102
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t2_c_1764955047_61_59102
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_73_94363"] source: 
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_69_38128
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_69_38128
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_63_48993
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_64_27782
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_69_38128
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955047_63_48993
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_73_94363
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BM] _enqueue_attack_for:hero_1764955047_58_43531-> target:unit_t3_d_1764955047_73_94363
-[BM] _enqueue_attack_for:unit_t2_c_1764955047_62_14321-> target:unit_t3_d_1764955047_73_94363
-[Bloodlust] Granting extra action to: unit_t2_c_1764955047_62_14321
-[BM] _enqueue_attack_for:unit_t2_c_1764955047_62_14321-> target:unit_t1_a_1764955047_78_86574
-[BM] _enqueue_attack_for:unit_t1_a_1764955047_78_86574-> target:hero_1764955047_58_43531
-[BM] _enqueue_attack_for:unit_t3_d_1764955047_80_67774-> target:hero_1764955047_58_43531
-[BattleAnimator] Populating registry. Snapshot size: 5
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_73_94363"] source: hero_1764955047_58_43531
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_73_94363"] source: unit_t2_c_1764955047_62_14321
-[BattleAnimator] Processing DEATH event for: unit_t3_d_1764955047_73_94363
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t3_d_1764955047_73_94363
-[BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t3_d_1764955047_73_94363
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764955047_78_86574"] source: unit_t2_c_1764955047_62_14321
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["hero_1764955047_58_43531"] source: unit_t1_a_1764955047_78_86574
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["hero_1764955047_58_43531"] source: unit_t3_d_1764955047_80_67774
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["hero_1764955047_58_43531"] source: 
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764955047_78_86574"] source: 
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleAnimator] Populating registry. Snapshot size: 4
-[BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_b_1764955047_72_67963
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_62_14321
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_b_1764955047_71_42727
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: hero_1764955047_58_43531
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_a_1764955047_70_21280
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955047_61_59102
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t1_a_1764955047_78_86574
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955047_80_67774
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_81_51200
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_82_84640
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[BM] _enqueue_attack_for:unit_t2_a_1764955047_70_21280-> target:unit_t1_a_1764955047_78_86574
-[BM] _enqueue_attack_for:hero_1764955047_58_43531-> target:unit_t1_a_1764955047_78_86574
-[BM] _enqueue_attack_for:unit_t2_b_1764955047_71_42727-> target:unit_t1_a_1764955047_78_86574
-[BM] Processing cascade_damage from ability:unit_tier2b_shockwavesource:unit_t2_b_1764955047_71_42727
-[BM] _enqueue_attack_for:unit_t2_c_1764955047_62_14321-> target:unit_t1_a_1764955047_78_86574
-[Bloodlust] Granting extra action to: unit_t2_c_1764955047_62_14321
-[BM] _enqueue_attack_for:unit_t2_c_1764955047_62_14321-> target:unit_t3_d_1764955047_80_67774
-[Bloodlust] Granting extra action to: unit_t2_c_1764955047_62_14321
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t3_d_1764958989_43_14813
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t3_d_1764958989_43_14813
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: item_t3_d_1764958989_42_45690
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t3_d_1764958989_43_14813
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: item_t3_d_1764958989_42_45690
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: hero_1764958989_26_93271
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t3_d_1764958989_43_14813
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_45_76140
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_48_41020
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_a_1764958989_47_17194
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_44_70284
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: unit_t2_b_1764958989_46_87311
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_49_34418
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_50_11544
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[BM] _enqueue_attack_for:unit_t3_d_1764958989_43_14813-> target:unit_t2_b_1764958989_45_76140
+[BM] _enqueue_attack_for:hero_1764958989_26_93271-> target:unit_t2_a_1764958989_48_41020
+[BM] _enqueue_attack_for:unit_t2_a_1764958989_48_41020-> target:unit_t3_d_1764958989_43_14813
+[BM] _enqueue_attack_for:unit_t2_a_1764958989_47_17194-> target:unit_t3_d_1764958989_43_14813
+[BM] _enqueue_attack_for:unit_t2_b_1764958989_46_87311-> target:unit_t3_d_1764958989_43_14813
+[BM] Processing cascade_damage from ability:unit_tier2b_shockwavesource:unit_t2_b_1764958989_46_87311
 [BattleAnimator] Populating registry. Snapshot size: 7
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764955047_78_86574"] source: unit_t2_a_1764955047_70_21280
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764955047_78_86574"] source: hero_1764955047_58_43531
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764955047_78_86574"] source: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_80_67774"] source: unit_t2_b_1764955047_71_42727
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t1_a_1764955047_78_86574"] source: unit_t2_c_1764955047_62_14321
-[BattleAnimator] Processing DEATH event for: unit_t1_a_1764955047_78_86574
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t1_a_1764955047_78_86574
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_b_1764958989_45_76140"] source: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Processing DEATH event for: unit_t2_b_1764958989_45_76140
+[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_b_1764958989_45_76140
 [BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t1_a_1764955047_78_86574
-[BattleAnimator] Got damage animation: <RefCounted#-9223370746602976637>
-[DamageAnimation] Executing for targets: ["unit_t3_d_1764955047_80_67774"] source: unit_t2_c_1764955047_62_14321
-[BattleAnimator] Processing DEATH event for: unit_t3_d_1764955047_80_67774
-[BattleAnimator] Emitting unit_death_fade signal for: unit_t3_d_1764955047_80_67774
+[BattleAnimator] Death animation completed for: unit_t2_b_1764958989_45_76140
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_a_1764958989_48_41020"] source: hero_1764958989_26_93271
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t3_d_1764958989_43_14813"] source: unit_t2_a_1764958989_48_41020
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_a_1764958989_47_17194"] source: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t3_d_1764958989_43_14813"] source: unit_t2_a_1764958989_47_17194
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_b_1764958989_44_70284"] source: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Processing DEATH event for: unit_t2_b_1764958989_44_70284
+[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_b_1764958989_44_70284
 [BattleAnimator] Waiting for death_fade animation completion...
-[BattleAnimator] Death animation completed for: unit_t3_d_1764955047_80_67774
+[BattleAnimator] Death animation completed for: unit_t2_b_1764958989_44_70284
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t3_d_1764958989_43_14813"] source: unit_t2_b_1764958989_46_87311
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_b_1764958989_46_87311"] source: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Processing DEATH event for: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Emitting unit_death_fade signal for: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Waiting for death_fade animation completion...
+[BattleAnimator] Death animation completed for: unit_t3_d_1764958989_43_14813
+[BattleAnimator] Processing DEATH event for: unit_t2_b_1764958989_46_87311
+[BattleAnimator] Emitting unit_death_fade signal for: unit_t2_b_1764958989_46_87311
+[BattleAnimator] Waiting for death_fade animation completion...
+[BattleAnimator] Death animation completed for: unit_t2_b_1764958989_46_87311
 [BattleAnimator] Emitting turn_animation_finished!
-[SlotView] set_content called with visual_data: trinket_healing_amulet_1764955047_83_67211
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: trinket_poison_vial_1764955047_84_45106
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t2_c_1764955301_85_03023
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: item_t2_c_1764955301_86_63119
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
-[SlotView] set_content called with visual_data: unit_t3_d_1764955301_87_39335
-[SlotView] Loaded scene: <PackedScene#-9223372000146225794>
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[BattleAnimator] Populating registry. Snapshot size: 3
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_a_1764958989_48_41020"] source: 
+[BattleAnimator] Got damage animation: <RefCounted#-9223371779274176530>
+[DamageAnimation] Executing for targets: ["unit_t2_a_1764958989_47_17194"] source: 
+[BattleAnimator] Emitting turn_animation_finished!
+[SlotView] set_content called with visual_data: trinket_healing_amulet_1764958989_51_43401
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+[SlotView] set_content called with visual_data: trinket_poison_vial_1764958989_52_40352
+[SlotView] Loaded scene: <PackedScene#-9223372000163003011>
+WARNING: 1 RID of type "CanvasItem" was leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2677)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)

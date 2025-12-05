@@ -35,8 +35,8 @@ ability.item_tier1a_turn_start_heal.name,Restoration
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP."
 ability.unit_tier2c_ally_death_buff.name,Morale Boost
 ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."
-ability.item_tier3d_overflow.name,"Overflow"
-ability.item_tier3d_overflow.desc,"Excess damage from lethal attacks is dealt to the adjacent unit behind the target."
+ability.item_tier3d_retaliate.name,"Retaliation"
+ability.item_tier3d_retaliate.desc,"When hurt, deal half of the holder's PWR as damage to a random enemy."
 ability.unit_tier3d_resilient_aura.name,"Resilient Aura"
 ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies."
 item_t2_c02.name,Summoning Scroll
