@@ -18,9 +18,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Calculate damage (can be overridden by parameters for stat scaling)
 	var damage = _calculate_damage(source_instance)
 	
-	# Store original HP for kill detection
-	var original_hp = target_instance.current_hp
-	
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
 	
@@ -53,9 +50,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Trigger on_hurt event for the target
 	battle_manager.trigger_on_hurt(target_instance.ball_uuid, damage, source_instance.ball_uuid)
 	
-	# Check if the target was killed
-	if original_hp > 0 and target_instance.current_hp <= 0:
-		battle_manager.trigger_on_kill(source_instance.ball_uuid, target_instance.ball_uuid)
+	# NOTE: on_kill is NOT triggered here - BattleManager handles kill tracking
+	# at the per-actor level after all reactions complete. This ensures kills from
+	# all sources (shockwave, counter, double strike, etc.) are properly attributed.
 
 	# Inform UI and log systems (suppressed when simulating)
 	if not is_simulation:

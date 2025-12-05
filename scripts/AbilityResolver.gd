@@ -55,6 +55,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				var attacking_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != attacking_unit_uuid:
 					continue
+			elif trigger == &"on_kill":
+				# Only process items equipped on the killer unit
+				var killer_uuid = context.get("source_uuid", "")
+				if instance.equipped_on_uuid != killer_uuid:
+					continue
 			elif trigger == &"on_death":
 				# Only process items equipped on the dying unit
 				var dying_unit_uuid = context.get("source_uuid", "")
@@ -129,7 +134,8 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
-				var ability_source_uuid = instance.equipped_on_uuid if trigger == &"on_attack" else instance_uuid
+				# For on_attack and on_kill, source is the unit that has the item equipped
+				var ability_source_uuid = instance.equipped_on_uuid if (trigger == &"on_attack" or trigger == &"on_kill") else instance_uuid
 				_process_ability(ability, ability_source_uuid, battle_manager, context)
 
 	# Phase 3: Process trinket abilities

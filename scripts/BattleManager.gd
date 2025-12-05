@@ -1119,6 +1119,19 @@ func _populate_actor_queue() -> void:
 	# Add enemies in normal order (left-to-right execution)
 	_actor_queue.append_array(enemy_lineup)
 
+## Grant a unit an extra action by inserting them at the front of the actor queue.
+## Called by EffectGrantExtraAction when a unit equipped with Bloodlust Edge gets a kill.
+## @param unit_uuid: String - The UUID of the unit to grant an extra action
+func grant_extra_action(unit_uuid: String) -> void:
+	var unit := get_instance_by_uuid(unit_uuid)
+	if not is_instance_valid(unit):
+		return
+	# Only grant if unit is alive
+	if unit.current_hp <= 0:
+		return
+	# Insert at front of queue so they act next
+	_actor_queue.push_front(unit)
+
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var is_player = _is_player_unit(attacker)
@@ -1275,6 +1288,16 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						trigger_on_hurt(cascade_target_uuid, cascade_amount, request.source_uuid)
 				# Check for deaths after cascade
 				_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+				return
+
+			# Handle extra action effects (e.g., Bloodlust Edge on kill)
+			if effect_data.has("extra_action"):
+				var unit_uuid = String(effect_data.get("unit_uuid", ""))
+				var unit = get_instance_by_uuid(unit_uuid)
+				if is_instance_valid(unit):
+					var unit_name = _get_instance_display_name(unit)
+					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s triggers Bloodlust!" % unit_name}))
+				# grant_extra_action was already called in the effect, no further action needed
 				return
 
 			# Standard single-stat change processing
@@ -1605,6 +1628,16 @@ func _resolve_combat_phase() -> void:
 		
 		if current_actor.current_hp <= 0:
 			continue
+		
+		# Track which enemy units are alive BEFORE this actor's turn
+		var is_player_actor = _is_player_unit(current_actor)
+		var enemies_before_action: Dictionary = {}
+		var enemy_lineup = get_instances_in_container(
+			BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_actor else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		)
+		for enemy in enemy_lineup:
+			if enemy.current_hp > 0:
+				enemies_before_action[enemy.ball_uuid] = enemy.current_hp
 
 		_enqueue_attack_for(current_actor)
 		
@@ -1628,6 +1661,25 @@ func _resolve_combat_phase() -> void:
 			var deferred_death_events: Array[CombatEvent] = []
 			_process_completed_counter_deaths(deferred_death_events, death_tracking)
 			turn_log.append_array(deferred_death_events)
+		
+		# AFTER all reactions: Check which enemies died during this actor's turn
+		# and trigger on_kill for items equipped on the actor (like Bloodlust Edge)
+		var _kills_this_turn: int = 0
+		for enemy_uuid in enemies_before_action.keys():
+			var enemy = get_instance_by_uuid(enemy_uuid)
+			if is_instance_valid(enemy) and enemy.current_hp <= 0:
+				# This enemy was killed during this actor's turn
+				_kills_this_turn += 1
+				# Trigger on_kill for items equipped on the current actor
+				trigger_on_kill(current_actor.ball_uuid, enemy_uuid)
+		
+		# Process any on_kill reactions (like Bloodlust granting extra action)
+		while not _pending_reactions.is_empty():
+			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+			var kill_reaction = _pending_reactions.pop_front()
+			var kill_reaction_events: Array[CombatEvent] = []
+			_resolve_single_effect_request(kill_reaction, kill_reaction_events, death_tracking)
+			turn_log.append_array(kill_reaction_events)
 	
 		# Check battle-over AFTER all reactions for this actor are processed
 		# This allows summons and other reactive abilities to complete

@@ -51,3 +51,7 @@ ability.unit_tier2a_defensive_stance.name,Defensive Stance
 ability.unit_tier2a_defensive_stance.desc,"When targeted by an attack, heal 2 HP before taking damage."
 ability.unit_tier2b_shockwave.name,Shockwave
 ability.unit_tier2b_shockwave.desc,"Attack deals cascading damage: 100% to front, 50% to the unit behind, 25% to the one behind that."
+item_t2_b.name,Bloodlust Edge
+item_t2_b.desc,Grants an extra action on kill.
+ability.item_tier2b_bloodlust.name,Bloodlust
+ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately."
