@@ -55,3 +55,7 @@ item_t2_b.name,Bloodlust Edge
 item_t2_b.desc,Grants an extra action on kill.
 ability.item_tier2b_bloodlust.name,Bloodlust
 ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately."
+hero_timekeeper.name,Timekeeper
+hero_timekeeper.desc,A scholar who bends time with knowledge. Gains gold for each enemy slain.
+ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter
+ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectGainGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_GainGold_1"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = { "amount": 1 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_timekeeper_gold_on_kill"
+name_key = "ability.hero_timekeeper_gold_on_kill.name"
+description_key = "ability.hero_timekeeper_gold_on_kill.desc"
+trigger = &"on_kill"
+effects = Array[Resource]([SubResource("Effect_GainGold_1")])

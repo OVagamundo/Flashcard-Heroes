@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/hero.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroTimekeeper_GoldOnKill.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_timekeeper"
+display_name_key = "hero_timekeeper.name"
+description_key = "hero_timekeeper.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+item_slot_count = 5
+base_hp = 50
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

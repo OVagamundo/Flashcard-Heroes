@@ -2090,6 +2090,12 @@ func _is_battle_over() -> bool:
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	
+	# Check if any hero died - immediate defeat
+	for unit in player_lineup:
+		var def = unit.get_definition()
+		if is_instance_valid(def) and def.is_hero and unit.current_hp <= 0:
+			return true # Hero died = defeat
+	
 	# Check if any player units are alive
 	var player_has_alive = false
 	for unit in player_lineup:
@@ -2113,8 +2119,27 @@ func _emit_battle_over() -> void:
 	if not _battle_over_emitted:
 		_battle_over_emitted = true
 		SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
+		
+		# Determine victory/defeat - hero death = defeat even if other player units alive
+		var player_won := true
 		var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-		var player_won := not player_lineup.is_empty()
+		
+		# Check if any hero died - immediate defeat
+		for unit in player_lineup:
+			var def = unit.get_definition()
+			if is_instance_valid(def) and def.is_hero and unit.current_hp <= 0:
+				player_won = false
+				break
+		
+		# If no hero died, check if any player units are alive
+		if player_won:
+			var any_player_alive := false
+			for unit in player_lineup:
+				if unit.current_hp > 0:
+					any_player_alive = true
+					break
+			player_won = any_player_alive
+		
 		var results: Dictionary = {"victory": player_won}
 		SignalBus.emit_signal("battle_ended", results)
 		if player_won:

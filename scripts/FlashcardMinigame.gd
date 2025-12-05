@@ -182,6 +182,9 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	
 	if was_correct:
 		_correct_answers += 1
+		# Check if hero has timer bonus passive (Timekeeper)
+		if _has_hero_timer_bonus():
+			_session_timer += 0.5
 		# TDD: Correct answer flashes green
 		_flash_button_correct(selected_answer_id)
 	else:
@@ -193,6 +196,20 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	
 	# TDD: Next question appears instantly
 	_show_next_question()
+
+## Check if the current hero has the timer bonus passive ability
+func _has_hero_timer_bonus() -> bool:
+	if not is_instance_valid(GameManager.run_state):
+		return false
+	var hero = GameManager.run_state.hero_instance
+	if not is_instance_valid(hero):
+		return false
+	var def = hero.get_definition()
+	if not is_instance_valid(def):
+		return false
+	# Timekeeper hero has the timer bonus passive
+	return def.id == &"hero_timekeeper"
+
 
 func _flash_button_correct(correct_answer_id: StringName) -> void:
 	"""Flash the correct answer button green"""
