@@ -42,3 +42,12 @@ ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to a
 item_t2_c02.name,Summoning Scroll
 item_t2_c02.desc,Summons a random Tier 1 unit upon death.
 ability.item_t2_c_summon.name,Summon
+ability.item_t2_c_summon.desc,"When the holder dies, summon a random Tier 1 unit in their place."
+unit_t2_a.name,Guardian
+unit_t2_a.desc,A heavily armored tank that heals when attacked.
+unit_t2_b.name,Berserker
+unit_t2_b.desc,A powerful warrior whose attacks hit multiple enemies.
+ability.unit_tier2a_defensive_stance.name,Defensive Stance
+ability.unit_tier2a_defensive_stance.desc,"When targeted by an attack, heal 2 HP before taking damage."
+ability.unit_tier2b_shockwave.name,Shockwave
+ability.unit_tier2b_shockwave.desc,"Attack deals cascading damage: 100% to front, 50% to the unit behind, 25% to the one behind that."

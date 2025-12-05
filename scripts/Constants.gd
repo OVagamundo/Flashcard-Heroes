@@ -43,6 +43,7 @@ const GROUP_INSPECTION_ONLY = &"InspectionOnly"
 # --- Ability System Triggers ---
 const TRIGGER_ON_BATTLE_START = &"on_battle_start"
 const TRIGGER_ON_ATTACK = &"on_attack"
+const TRIGGER_ON_BEFORE_ATTACK = &"on_before_attack"
 const TRIGGER_ON_DEATH = &"on_death"
 const TRIGGER_ON_HURT = &"on_hurt"
 const TRIGGER_ON_KILL = &"on_kill"

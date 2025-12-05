@@ -24,6 +24,16 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
 	
+	# Trigger on_before_attack on the target (for defensive abilities like Defensive Stance)
+	# This fires for all attacks including counter-attacks
+	var before_attack_context: Dictionary = {
+		"source_uuid": target_instance.ball_uuid, # The target is the source of its own defensive ability
+		"attacker_uuid": source_instance.ball_uuid,
+		"target_initial_hp": target_instance.current_hp,
+		"is_simulation": is_simulation
+	}
+	AbilityResolver.process_trigger(&"on_before_attack", before_attack_context)
+	
 	# CRITICAL: During simulation, DO NOT modify state here.
 	# BattleManager handles the application via apply_stat_delta().
 	# Modifying it here would cause double damage (once here, once in BattleManager).

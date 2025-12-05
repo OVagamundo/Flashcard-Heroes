@@ -41,6 +41,7 @@ Trigger StringName	When Fired by BattleManager	Context Data Provided (Dictionary
 on_battle_start	Once for every unit/trinket at the very beginning of combat.	{}
 on_turn_start	At the beginning of each turn cycle, before the first unit acts.	{ "turn_number": int }
 on_attack	When a unit initiates its attack action.	{ "source_uuid": String, "target_uuid": String }
+on_before_attack	When a unit is about to be attacked, before damage is dealt.	{ "source_uuid": String (target unit), "attacker_uuid": String }
 on_hurt	When a unit takes any form of damage.	{ "source_uuid": String (damaged unit), "attacker_uuid": String, "damage_taken": int }
 on_kill	When a unit's action defeats another unit.	{ "source_uuid": String (killer), "victim_uuid": String }
 on_death	When a unit's HP is reduced to 0 or less.	{ "source_uuid": String (dying unit) }

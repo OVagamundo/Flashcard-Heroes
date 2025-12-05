@@ -123,10 +123,11 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 		
 	# Equip items randomly
 	for item_def in best_build.items:
-		var possible_parents = final_encounter.enemy_placements.filter(func(p):
+		var possible_parents: Array[Dictionary] = []
+		for p in final_encounter.enemy_placements:
 			var unit_def = Database.get_definition(p.id)
-			return p.items.size() < unit_def.item_slot_count
-		)
+			if p.items.size() < unit_def.item_slot_count:
+				possible_parents.append(p)
 		if possible_parents.is_empty(): break # No more slots
 		possible_parents.pick_random().items.append(item_def.id)
 	

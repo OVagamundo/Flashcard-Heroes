@@ -26,3 +26,6 @@ extends Resource
 ##    0: DEFAULT (All existing abilities)
 ## -100: FOLLOW_UP (e.g., Double Strike, multi-hit follow-ups)
 @export var priority: int = 0
+
+## If true, triggering this ability during 'on_attack' will prevent the default Basic Attack from being enqueued.
+@export var replaces_basic_attack: bool = false

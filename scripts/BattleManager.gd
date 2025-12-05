@@ -492,11 +492,12 @@ func _reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	var dest_container = get_container(dest_container_tag)
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container):
 		return false
-	var instances_to_move = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).filter(
-		func(inst):
-			var inst_def = inst.get_definition()
-			return (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst)
-	)
+	var all_discarded = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+	var instances_to_move: Array[GachaBallInstance] = []
+	for inst in all_discarded:
+		var inst_def = inst.get_definition()
+		if (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst):
+			instances_to_move.append(inst)
 	if instances_to_move.is_empty():
 		return false
 	for instance in instances_to_move:
@@ -1128,8 +1129,16 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 		"target_initial_hp": target.current_hp
 	}
 	
+	# Note: on_before_attack is now triggered in BasicAttackEffect.execute()
+	# so it fires for ALL attacks including counter-attacks
+	
 	# Trigger on_attack abilities (e.g., Double Strike)
+	print("[BM] _enqueue_attack_for:", attacker.ball_uuid, "-> target:", target.ball_uuid)
 	AbilityResolver.process_trigger(&"on_attack", context)
+	
+	# Check if an ability replaced the basic attack
+	if context.get("attack_replaced", false):
+		return
 	
 	# Always add basic attack
 	var basic_attack_def = Database.get_ability_definition(&"basic_attack")
@@ -1209,6 +1218,64 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		# Preferred: structured stat change results
 		if typeof(res) == TYPE_DICTIONARY:
 			var effect_data: Dictionary = res
+			
+			# Handle cascading damage (special case for AOE)
+			if effect_data.has("cascade_damage"):
+				print("[BM] Processing cascade_damage from ability:", request.ability_id, "source:", request.source_uuid)
+				var cascade_list = effect_data.get("cascade_damage", [])
+				for cascade_item in cascade_list:
+					var cascade_target_uuid = String(cascade_item.get("target", ""))
+					var cascade_amount = int(cascade_item.get("amount", 0))
+					var cascade_skip_bump = bool(cascade_item.get("skip_bump", false))
+					
+					# Inline damage processing for each cascade target
+					var cascade_tgt = get_instance_by_uuid(cascade_target_uuid)
+					if is_instance_valid(cascade_tgt):
+						var old_hp = cascade_tgt.current_hp
+						var new_hp = apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
+						var max_hp = 0
+						var tgt_def = cascade_tgt.get_definition()
+						if is_instance_valid(tgt_def):
+							max_hp = tgt_def.base_hp
+						
+						# Compute bump direction
+						var bump_dir := Vector2.ZERO
+						if is_instance_valid(source):
+							var src_tag: StringName = source.location_container_tag
+							if src_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+								bump_dir = Vector2(1, 0)
+							elif src_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+								bump_dir = Vector2(-1, 0)
+						
+						out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+							"source_uuid": request.source_uuid,
+							"target_uuids": [cascade_target_uuid],
+							"visual_payload": {
+								"source_uuid": request.source_uuid,
+								"amount": - cascade_amount,
+								"stat": "hp",
+								"skip_bump": cascade_skip_bump,
+								"bump_direction": bump_dir,
+								"apply_poison": false,
+								"targets_old_hp": [old_hp],
+								"targets_new_hp": [new_hp],
+								"targets_max_hp": [max_hp],
+								"targets_old_poison": [0],
+								"targets_new_poison": [0],
+								"projectile_data": {
+									"stat": "hp",
+									"amount": - cascade_amount,
+									"color": "red"
+								}
+							}
+						}))
+						# Trigger on_hurt for counter-attacks AFTER damage is applied
+						trigger_on_hurt(cascade_target_uuid, cascade_amount, request.source_uuid)
+				# Check for deaths after cascade
+				_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+				return
+
+			# Standard single-stat change processing
 			var stat: String = String(effect_data.get("stat", ""))
 			var amount: int = int(effect_data.get("amount", 0))
 			var targets: Array = effect_data.get("targets", [])
@@ -1229,7 +1296,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				source_name = _get_instance_display_name(src_inst)
 			if source_name == "":
 				source_name = String(request.ability_id)
-			
+		
 			if stat == "hp" and not resolved_targets.is_empty():
 				if amount >= 0:
 					var heal_target_name := ""
@@ -1474,8 +1541,8 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								}
 							}
 						}))
-		# Special handling: defer death events for units with counter-attacks to allow final strikes
-		_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+			# Special handling: defer death events for units with counter-attacks to allow final strikes
+			_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
@@ -2465,11 +2532,12 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
 	var dest_container_tag = "BattleInventoryT%d" % tier_to_reshuffle
 	var dest_container = get_container(dest_container_tag)
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container): return
-	var instances_to_move = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).filter(
-		func(inst):
-			var inst_def = inst.get_definition()
-			return (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst)
-	)
+	var all_discarded = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+	var instances_to_move: Array[GachaBallInstance] = []
+	for inst in all_discarded:
+		var inst_def = inst.get_definition()
+		if (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst):
+			instances_to_move.append(inst)
 	if instances_to_move.is_empty(): return
 	for instance in instances_to_move:
 		# Restore stats to base values before moving back to draw pool

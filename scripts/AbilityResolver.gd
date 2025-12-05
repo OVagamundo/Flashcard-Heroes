@@ -60,6 +60,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				var dying_unit_uuid = context.get("source_uuid", "")
 				if instance.equipped_on_uuid != dying_unit_uuid:
 					continue
+			elif trigger == &"on_before_attack":
+				# Only process items equipped on the unit being attacked
+				var target_unit_uuid = context.get("source_uuid", "")
+				if instance.equipped_on_uuid != target_unit_uuid:
+					continue
 			
 			# Check if item has matching ability before adding
 			var has_matching = false
@@ -83,10 +88,20 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		var definition = data.def
 		var instance = data.inst
 		
+		# For on_attack triggers, only process if this is the unit that is attacking
+		if trigger == &"on_attack":
+			var attacking_unit_uuid = context.get("source_uuid", "")
+			if instance_uuid != attacking_unit_uuid:
+				continue
 		# For on_hurt triggers, only process if this is the unit that took damage
-		if trigger == &"on_hurt":
+		elif trigger == &"on_hurt":
 			var damaged_unit_uuid = context.get("source_uuid", "")
 			if instance_uuid != damaged_unit_uuid:
+				continue
+		# For on_before_attack triggers, only process if this is the unit being attacked
+		elif trigger == &"on_before_attack":
+			var target_unit_uuid = context.get("source_uuid", "")
+			if instance_uuid != target_unit_uuid:
 				continue
 		# For on_ally_death, only process the specific ally this trigger was emitted for
 		elif trigger == &"on_ally_death":
@@ -100,6 +115,8 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
+				if ability.get("replaces_basic_attack") and trigger == &"on_attack":
+					context["attack_replaced"] = true
 				_process_ability(ability, instance_uuid, battle_manager, context)
 
 	# Phase 2: Process equipped item abilities (sorted by slot)
