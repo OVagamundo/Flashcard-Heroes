@@ -24,6 +24,10 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
 	
+	# Capture the pending reactions queue size BEFORE triggering on_before_attack
+	# This ensures we only process the NEW reactions added by on_before_attack, not unrelated ones
+	var reactions_before_trigger: int = battle_manager.get_pending_reactions_size()
+	
 	# Trigger on_before_attack on the target (for defensive abilities like Defensive Stance)
 	# This fires for all attacks including counter-attacks
 	var before_attack_context: Dictionary = {
@@ -33,6 +37,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"is_simulation": is_simulation
 	}
 	AbilityResolver.process_trigger(&"on_before_attack", before_attack_context)
+	
+	# CRITICAL: Drain ONLY the on_before_attack effects that were just added
+	# Pass the queue size from before triggering - only process reactions added after that point
+	if is_simulation:
+		battle_manager.drain_pending_reactions_inline(reactions_before_trigger)
 	
 	# CRITICAL: During simulation, DO NOT modify state here.
 	# BattleManager handles the application via apply_stat_delta().

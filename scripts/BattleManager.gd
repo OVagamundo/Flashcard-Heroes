@@ -7,6 +7,7 @@ var _current_battle_phase: Phases
 
 var _actor_queue: Array[GachaBallInstance] = [] # Dynamic list of units to act this turn
 var _pending_reactions: Array[EffectRequest] = [] # New priority-driven queue
+var _inline_events: Array[CombatEvent] = [] # Events from on_before_attack processing
 var _is_processing_effect: bool = false
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
@@ -137,6 +138,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	_containers.clear()
 	_actor_queue.clear()
 	_pending_reactions.clear()
+	_inline_events.clear()
 	_battle_over_emitted = false
 	_battle_over_deferred = false
 	_current_turn = 0 # Initialize turn counter
@@ -1541,8 +1543,10 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								}
 							}
 						}))
-			# Special handling: defer death events for units with counter-attacks to allow final strikes
-			_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+	# CRITICAL FIX: Death check MUST run unconditionally after any effect execution
+	# This was previously inside the TYPE_DICTIONARY block, causing deaths from the
+	# last attack of a turn to miss on_ally_death triggers when effect returned null
+	_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
@@ -1611,6 +1615,13 @@ func _resolve_combat_phase() -> void:
 			
 			var reaction_events: Array[CombatEvent] = []
 			_resolve_single_effect_request(current_reaction, reaction_events, death_tracking)
+			
+			# Collect inline events generated DURING effect execution (e.g., on_before_attack heals)
+			# These must appear BEFORE the damage events to maintain causal order:
+			# HEAL animation → HP label update → DAMAGE animation → HP label update
+			var inline_evts = collect_inline_events()
+			turn_log.append_array(inline_evts)
+			
 			turn_log.append_array(reaction_events)
 			
 			# Process deferred deaths
@@ -1624,6 +1635,27 @@ func _resolve_combat_phase() -> void:
 			_battle_over_deferred = true
 			_actor_queue.clear()
 			break
+
+	# CRITICAL: Final reaction drain - process ANY remaining reactions after all actors have acted
+	# This ensures reactive abilities (on_hurt, on_ally_death, item/trinket reactions) fully complete
+	# even if they were enqueued during the last actor's attack resolution
+	while not _pending_reactions.is_empty():
+		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+		var final_reaction = _pending_reactions.pop_front()
+		
+		var final_reaction_events: Array[CombatEvent] = []
+		_resolve_single_effect_request(final_reaction, final_reaction_events, death_tracking)
+		
+		# Collect inline events
+		var final_inline_evts = collect_inline_events()
+		turn_log.append_array(final_inline_evts)
+		
+		turn_log.append_array(final_reaction_events)
+		
+		# Process deferred deaths for final reactions
+		var final_death_events: Array[CombatEvent] = []
+		_process_completed_counter_deaths(final_death_events, death_tracking)
+		turn_log.append_array(final_death_events)
 
 	_is_processing_effect = false
 	# DO NOT unblock inventory updates here!
@@ -1826,6 +1858,11 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_events = null, death_tracking = null) -> void:
 	var something_changed = false
 	var deferred_deaths: Array[String] = [] # Units whose deaths should be deferred
+	
+	# SKIP death trigger processing if called from drain_pending_reactions_inline
+	# This prevents duplicate on_ally_death triggers for already-dead units
+	if death_tracking != null and death_tracking.get("__skip_death_triggers__", false):
+		return
 	
 	# Check player units
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
@@ -2195,6 +2232,47 @@ func enqueue_effect_request(request: EffectRequest) -> void:
 	## New priority-driven system: requests are added to _pending_reactions
 	## and sorted by priority before execution. Higher priority = executes first.
 	_pending_reactions.push_back(request)
+
+## Get the current size of the pending reactions queue.
+## Used by BasicAttackEffect to capture the queue state before triggering on_before_attack.
+func get_pending_reactions_size() -> int:
+	return _pending_reactions.size()
+
+## Drain pending reactions inline during effect execution.
+## Used by BasicAttackEffect to process on_before_attack defensive abilities
+## BEFORE damage is calculated. This ensures Defensive Stance HP boost happens first.
+## Events are stored in _inline_events for the outer loop to collect.
+## @param start_index: int - Only process reactions at index >= start_index (reactions added after this point)
+func drain_pending_reactions_inline(start_index: int) -> void:
+	# Only process reactions that were added AFTER start_index
+	# This prevents processing unrelated reactions (like on_ally_death) that were already queued
+	if start_index >= _pending_reactions.size():
+		return # No new reactions to process
+	
+	# Extract only the new reactions (from start_index to end)
+	var reactions_to_process: Array[EffectRequest] = []
+	for i in range(start_index, _pending_reactions.size()):
+		reactions_to_process.append(_pending_reactions[i])
+	
+	# Remove the processed reactions from the queue (keep earlier ones)
+	_pending_reactions.resize(start_index)
+	
+	# Sort by priority before processing
+	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	
+	for request in reactions_to_process:
+		# Capture events to _inline_events so they can be collected by the outer loop
+		# IMPORTANT: Pass a special death_tracking that disables death checking
+		# The outer loop will handle death checking properly - we're only processing pre-attack heals here
+		# which don't cause deaths, and any existing dead units were already processed
+		_resolve_single_effect_request(request, _inline_events, {"__skip_death_triggers__": true})
+
+## Collect any events generated during inline reaction processing (e.g., on_before_attack)
+## Called by the outer resolution loop to insert these before damage events.
+func collect_inline_events() -> Array[CombatEvent]:
+	var events = _inline_events.duplicate()
+	_inline_events.clear()
+	return events
 
 ## Get an instance by UUID.
 ## @param uuid: String - The UUID of the instance

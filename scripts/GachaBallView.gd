@@ -36,6 +36,11 @@ func _ready() -> void:
 	var stats_container = vbox.get_node("StatsContainer")
 	vbox.move_child(stats_container, 0)
 	
+	# IMPORTANT: Duplicate the shader material so each instance has its own
+	# Otherwise all GachaBallViews would share the same material and selection state
+	if icon_rect and icon_rect.material:
+		icon_rect.material = icon_rect.material.duplicate()
+	
 	var bus = get_node("/root/SignalBus")
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
@@ -313,7 +318,15 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var preview = TextureRect.new()
 	preview.texture = icon_rect.texture
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.custom_minimum_size = Vector2(64, 64)
+	# Make drag preview 20% larger than the actual icon
+	preview.custom_minimum_size = icon_rect.size * 1.2
+	
+	# Apply outline shader to drag preview
+	if icon_rect.material:
+		var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
+		drag_mat.set_shader_parameter("outline_enabled", true)
+		preview.material = drag_mat
+	
 	set_drag_preview(preview)
 
 	var placeholder = Control.new()
@@ -424,19 +437,19 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 
 func _apply_selection_feedback() -> void:
 	if not is_inside_tree(): return
-	var stylebox: StyleBoxFlat = get_theme_stylebox("panel").duplicate()
+	if not is_instance_valid(icon_rect): return
+	
+	# Use shader-based outline that follows sprite contour
+	var mat = icon_rect.material as ShaderMaterial
+	if mat:
+		mat.set_shader_parameter("outline_enabled", _is_selected)
+	
+	# Scale the icon slightly larger when selected for a "pop" effect
 	if _is_selected:
-		stylebox.border_color = Color.GOLD
-		stylebox.border_width_left = 3
-		stylebox.border_width_top = 3
-		stylebox.border_width_right = 3
-		stylebox.border_width_bottom = 3
+		icon_rect.scale = Vector2(1.1, 1.1)
+		icon_rect.pivot_offset = icon_rect.size / 2 # Scale from center
 	else:
-		stylebox.border_width_left = 0
-		stylebox.border_width_top = 0
-		stylebox.border_width_right = 0
-		stylebox.border_width_bottom = 0
-	add_theme_stylebox_override("panel", stylebox)
+		icon_rect.scale = Vector2(1.0, 1.0)
 
 func _notification(what: int) -> void:
 	# Fallback: if a drag ends without any drop target handling it, restore visuals

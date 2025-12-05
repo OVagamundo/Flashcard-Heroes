@@ -37,17 +37,32 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if not is_instance_valid(container):
 		return null
 	
-	# Step 1: Find the frontmost LIVING enemy (like basic attack does)
+	# Step 1: Find the frontmost LIVING enemy (respecting attack direction)
+	# Player attacks from left to right (finds index 0 first)
+	# Enemy attacks from right to left (finds highest index first)
 	var frontmost_slot: int = -1
 	var all_uuids = container.get_all_uuids()
-	for slot_index in range(all_uuids.size()):
-		var uuid = all_uuids[slot_index]
-		if uuid.is_empty():
-			continue
-		var unit = battle_manager.get_instance_by_uuid(uuid)
-		if is_instance_valid(unit) and unit.current_hp > 0:
-			frontmost_slot = slot_index
-			break
+	
+	if is_player_unit:
+		# Player attacks: frontmost is lowest index
+		for slot_index in range(all_uuids.size()):
+			var uuid = all_uuids[slot_index]
+			if uuid.is_empty():
+				continue
+			var unit = battle_manager.get_instance_by_uuid(uuid)
+			if is_instance_valid(unit) and unit.current_hp > 0:
+				frontmost_slot = slot_index
+				break
+	else:
+		# Enemy attacks: frontmost is HIGHEST index (closest to enemy on right)
+		for slot_index in range(all_uuids.size() - 1, -1, -1):
+			var uuid = all_uuids[slot_index]
+			if uuid.is_empty():
+				continue
+			var unit = battle_manager.get_instance_by_uuid(uuid)
+			if is_instance_valid(unit) and unit.current_hp > 0:
+				frontmost_slot = slot_index
+				break
 	
 	if frontmost_slot == -1:
 		return null # No living enemies
@@ -60,10 +75,15 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var current_damage = base_damage
 	var damage_index: int = 0 # For skip_bump logic
 	
+	# Cascade direction depends on who is attacking:
+	# - Player attacks: cascade from frontmost (index 0) toward back (higher indices) = +1
+	# - Enemy attacks: cascade from frontmost (highest index) toward back (lower indices) = -1
+	var cascade_direction: int = 1 if is_player_unit else -1
+	
 	for offset in range(cascade_depth + 1): # 0, 1, 2 = frontmost + 2 behind
-		var target_slot = frontmost_slot + offset
-		if target_slot >= all_uuids.size():
-			break # Beyond lineup size
+		var target_slot = frontmost_slot + (offset * cascade_direction)
+		if target_slot < 0 or target_slot >= all_uuids.size():
+			break # Beyond lineup bounds
 		
 		if current_damage < 1:
 			break

@@ -1,6 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://l5mhu3dnclc4"]
+[gd_scene load_steps=7 format=3 uid="uid://l5mhu3dnclc4"]
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
+[ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
+shader = ExtResource("2_outline")
+shader_parameter/outline_color = Color(1.0, 1.0, 1.0, 1.0)
+shader_parameter/outline_width = 3.0
+shader_parameter/outline_enabled = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5h8t7"]
 bg_color = Color(0.2, 0.2, 0.2, 0)
@@ -46,6 +53,7 @@ unique_name_in_owner = true
 texture_filter = 3
 layout_mode = 2
 size_flags_vertical = 3
+material = SubResource("ShaderMaterial_outline")
 
 [node name="StatsContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
