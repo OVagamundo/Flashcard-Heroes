@@ -1,0 +1,168 @@
+[gd_resource type="Theme" load_steps=29 format=3 uid="uid://bvuqtb8gv6two"]
+
+[ext_resource type="FontFile" uid="uid://cl64dwatceoc5" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_label"]
+[ext_resource type="FontFile" uid="uid://b8iq82nywy5p3" path="res://assets/fonts/pixel_operator/PixelOperator.ttf" id="4_body"]
+[ext_resource type="FontFile" uid="uid://xjhwakxngoa5" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="5_title"]
+[ext_resource type="Texture2D" uid="uid://cn40x5ag242rv" path="res://assets/ui/textures/button_v4_disabled.png" id="btn_disabled_tex"]
+[ext_resource type="Texture2D" uid="uid://ccdadi16aogge" path="res://assets/ui/textures/button_v4_hover.png" id="btn_hover_tex"]
+[ext_resource type="Texture2D" uid="uid://baumcsivo0bew" path="res://assets/ui/textures/button_v4_normal.png" id="btn_normal_tex"]
+[ext_resource type="Texture2D" uid="uid://b3x2sk6865psu" path="res://assets/ui/textures/button_v4_pressed.png" id="btn_pressed_tex"]
+[ext_resource type="Texture2D" uid="uid://bh5jlkubpsqrt" path="res://assets/ui/textures/checkbox_v4_unchecked.png" id="check_off_tex"]
+[ext_resource type="Texture2D" uid="uid://da6jeg1yp72fl" path="res://assets/ui/textures/checkbox_v4_checked.png" id="check_on_tex"]
+[ext_resource type="Texture2D" uid="uid://dmwrk80qf73wq" path="res://assets/ui/textures/input_v4.png" id="line_edit_tex"]
+[ext_resource type="Texture2D" uid="uid://xpq4o6fn4jam" path="res://assets/ui/textures/panel_v4.png" id="panel_tex"]
+[ext_resource type="Texture2D" uid="uid://dueu4bmmoudcj" path="res://assets/ui/textures/bar_v4_bg.png" id="prog_bg_tex"]
+[ext_resource type="Texture2D" uid="uid://by2hhfiay41td" path="res://assets/ui/textures/bar_v4_health.png" id="prog_fill_tex"]
+[ext_resource type="Texture2D" uid="uid://dccqrh6tra152" path="res://assets/ui/textures/slider_v4_grabber.png" id="slider_grabber_tex"]
+[ext_resource type="Texture2D" uid="uid://cnsi61b3wbhc4" path="res://assets/ui/textures/slider_v4_track.png" id="slider_track_tex"]
+[ext_resource type="Texture2D" uid="uid://kiyrs5qubu1m" path="res://assets/ui/textures/tab_v4_active.png" id="tab_active_tex"]
+[ext_resource type="Texture2D" uid="uid://b4n3snagpdia7" path="res://assets/ui/textures/tab_v4_inactive.png" id="tab_inactive_tex"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+texture = ExtResource("panel_tex")
+texture_margin_left = 6.0
+texture_margin_top = 6.0
+texture_margin_right = 6.0
+texture_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_disabled"]
+texture = ExtResource("btn_disabled_tex")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_hover"]
+texture = ExtResource("btn_hover_tex")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_normal"]
+texture = ExtResource("btn_normal_tex")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_pressed"]
+texture = ExtResource("btn_pressed_tex")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_slider_track"]
+texture = ExtResource("slider_track_tex")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_line_edit"]
+content_margin_left = 8.0
+texture = ExtResource("line_edit_tex")
+texture_margin_left = 6.0
+texture_margin_top = 6.0
+texture_margin_right = 6.0
+texture_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prog_bg"]
+texture = ExtResource("prog_bg_tex")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prog_fill"]
+texture = ExtResource("prog_fill_tex")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tab_active"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+texture = ExtResource("tab_active_tex")
+texture_margin_left = 6.0
+texture_margin_top = 6.0
+texture_margin_right = 6.0
+texture_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tab_inactive"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+texture = ExtResource("tab_inactive_tex")
+texture_margin_left = 6.0
+texture_margin_top = 6.0
+texture_margin_right = 6.0
+texture_margin_bottom = 2.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[resource]
+default_font = ExtResource("2_label")
+default_font_size = 18
+AcceptDialog/styles/panel = SubResource("StyleBoxTexture_panel")
+Button/colors/font_color = Color(0.15, 0.1, 0.08, 1)
+Button/colors/font_disabled_color = Color(0.5, 0.5, 0.5, 1)
+Button/colors/font_hover_color = Color(0.2, 0.12, 0.1, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 0)
+Button/colors/font_pressed_color = Color(0.15, 0.1, 0.08, 1)
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 18
+Button/fonts/font = ExtResource("2_label")
+Button/styles/disabled = SubResource("StyleBoxTexture_btn_disabled")
+Button/styles/focus = SubResource("StyleBoxTexture_btn_hover")
+Button/styles/hover = SubResource("StyleBoxTexture_btn_hover")
+Button/styles/normal = SubResource("StyleBoxTexture_btn_normal")
+Button/styles/pressed = SubResource("StyleBoxTexture_btn_pressed")
+CheckBox/icons/checked = ExtResource("check_on_tex")
+CheckBox/icons/unchecked = ExtResource("check_off_tex")
+HSlider/icons/grabber = ExtResource("slider_grabber_tex")
+HSlider/icons/grabber_highlight = ExtResource("slider_grabber_tex")
+HSlider/styles/grabber_area = SubResource("StyleBoxTexture_slider_track")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxTexture_slider_track")
+HSlider/styles/slider = SubResource("StyleBoxTexture_slider_track")
+HeaderLabel/base_type = &"Label"
+HeaderLabel/colors/font_color = Color(0.98, 0.96, 0.92, 1)
+HeaderLabel/colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+HeaderLabel/constants/outline_size = 4
+HeaderLabel/font_sizes/font_size = 32
+HeaderLabel/fonts/font = ExtResource("5_title")
+Label/colors/font_color = Color(0.98, 0.96, 0.92, 1)
+Label/colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+Label/constants/outline_size = 4
+Label/font_sizes/font_size = 18
+Label/fonts/font = ExtResource("2_label")
+LineEdit/colors/font_color = Color(0.98, 0.96, 0.92, 1)
+LineEdit/fonts/font = ExtResource("4_body")
+LineEdit/styles/focus = SubResource("StyleBoxTexture_line_edit")
+LineEdit/styles/normal = SubResource("StyleBoxTexture_line_edit")
+OptionButton/colors/font_color = Color(0.15, 0.17, 0.22, 1)
+OptionButton/colors/font_disabled_color = Color(0.5, 0.5, 0.5, 1)
+OptionButton/colors/font_focus_color = Color(0.15, 0.17, 0.22, 1)
+OptionButton/colors/font_hover_color = Color(0.2, 0.22, 0.27, 1)
+OptionButton/colors/font_pressed_color = Color(0.15, 0.17, 0.22, 1)
+OptionButton/styles/disabled = SubResource("StyleBoxTexture_btn_disabled")
+OptionButton/styles/focus = SubResource("StyleBoxTexture_btn_hover")
+OptionButton/styles/hover = SubResource("StyleBoxTexture_btn_hover")
+OptionButton/styles/normal = SubResource("StyleBoxTexture_btn_normal")
+OptionButton/styles/pressed = SubResource("StyleBoxTexture_btn_pressed")
+Panel/styles/panel = SubResource("StyleBoxTexture_panel")
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_panel")
+PopupMenu/colors/font_color = Color(0.15, 0.17, 0.22, 1)
+PopupMenu/colors/font_hover_color = Color(0.2, 0.22, 0.27, 1)
+PopupMenu/styles/panel = SubResource("StyleBoxTexture_panel")
+ProgressBar/styles/background = SubResource("StyleBoxTexture_prog_bg")
+ProgressBar/styles/fill = SubResource("StyleBoxTexture_prog_fill")
+RichTextLabel/colors/default_color = Color(0.1, 0.1, 0.1, 1)
+RichTextLabel/font_sizes/normal_font_size = 16
+RichTextLabel/fonts/normal_font = ExtResource("4_body")
+TabContainer/colors/font_selected_color = Color(0.98, 0.96, 0.92, 1)
+TabContainer/colors/font_unselected_color = Color(0.6, 0.58, 0.55, 1)
+TabContainer/styles/panel = SubResource("StyleBoxTexture_panel")
+TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_tab_active")
+TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_tab_inactive")
+Window/styles/embedded_border = SubResource("StyleBoxTexture_panel")

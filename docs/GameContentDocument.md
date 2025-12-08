@@ -26,10 +26,10 @@ Basic Attack (basic_attack):
 Description: "Deal (PWR) damage to the frontmost enemy."
 Effect: Deals damage equal to the unit's Power to the primary enemy target.
 Resilience (unit_tier1a_passive_heal):
-Description: "When hurt, Heal this unit by 1 HP."
+Description: "When hurt, Heal this unit by (PWR) HP."
 Trigger: on_hurt (when this unit takes damage).
 Condition: The damage taken is not lethal.
-Effect: Heals this unit for 1 HP.
+Effect: Heals this unit for HP equal to its current PWR.
 ID: unit_t1_b
 Name: Squire
 Description: A loyal squire.

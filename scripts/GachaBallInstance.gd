@@ -244,7 +244,7 @@ func remove_tag(tag: StringName) -> void:
 func has_tag(tag: StringName) -> bool:
 	# Check static tags on the definition first.
 	var def = get_definition()
-	if is_instance_valid(def) and def.tags.has(tag):
+	if is_instance_valid(def) and "tags" in def and def.tags.has(tag):
 		return true
 	# Then check dynamic tags on this instance.
 	return dynamic_tags.has(tag)

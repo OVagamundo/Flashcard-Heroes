@@ -101,7 +101,7 @@ GIR owns container→functional group mapping for high-level gating:
 - Non‑tiered item storage: `ItemInventory` → `InventoryGrid` (fix for click‑to‑click equip gating)
 - Equipped items: `equipped_item` → `EquippedGrid`
 - Selection‑only: `Rewards`, `Shop` → `SelectionOnly`
-- Inspection‑only: `EnemyLineup`, `DiscardPile` → `InspectionOnly`
+- Inspection‑only: `EnemyLineup`, `DiscardPile`, `PlayerTrinkets`, `EnemyTrinkets` → `InspectionOnly`
 
 This mapping is implemented in `GlobalInteractionRouter._get_container_functional_group()` and is the single source of truth project‑wide.
 4. The Definitive Rules of Selection & Deselection

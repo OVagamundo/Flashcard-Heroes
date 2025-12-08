@@ -264,19 +264,19 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 				_update_instance_location(trinket_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
 				enemy_trinkets.append(trinket_inst)
 
-		# [TESTING] Force add Poison Vial to Enemy
-		var poison_def = Database.get_definition(&"trinket_poison_vial")
-		if is_instance_valid(poison_def):
-			var poison_inst = GachaBallInstance.new()
-			poison_inst.initialize_from_trinket(poison_def)
-			_battle_instances[poison_inst.ball_uuid] = poison_inst
+		# [TESTING] Force add Burn Vial to Enemy
+		var burn_def = Database.get_definition(&"trinket_burn_vial")
+		if is_instance_valid(burn_def):
+			var burn_inst = GachaBallInstance.new()
+			burn_inst.initialize_from_trinket(burn_def)
+			_battle_instances[burn_inst.ball_uuid] = burn_inst
 			var et_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
 			if is_instance_valid(et_container):
 				var idx := et_container.find_first_empty_slot()
 				if idx != -1:
-					et_container.set_uuid(idx, poison_inst.ball_uuid)
-					_update_instance_location(poison_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
-					enemy_trinkets.append(poison_inst)
+					et_container.set_uuid(idx, burn_inst.ball_uuid)
+					_update_instance_location(burn_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
+					enemy_trinkets.append(burn_inst)
 
 	# Copy player trinkets from run state to battle instances
 	_setup_player_trinkets()
@@ -1098,7 +1098,7 @@ func _change_phase(new_phase: Phases) -> void:
 			# Fire on_turn_end for all units
 			# Note: _trigger_turn_end_abilities will start animations
 			# The phase transition to START_OF_TURN will happen in _on_turn_animation_finished
-			# when the poison animations complete
+			# when the burn animations complete
 			_trigger_turn_end_abilities()
 
 ## Populate the actor queue at the start of combat.
@@ -1238,6 +1238,14 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			if effect_data.has("cascade_damage"):
 				print("[BM] Processing cascade_damage from ability:", request.ability_id, "source:", request.source_uuid)
 				var cascade_list = effect_data.get("cascade_damage", [])
+				
+				# Check if burn should be applied (same logic as main damage)
+				var is_player_source = false
+				var should_apply_burn = false
+				if is_instance_valid(source):
+					is_player_source = _is_player_unit(source)
+					should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
+				
 				for cascade_item in cascade_list:
 					var cascade_target_uuid = String(cascade_item.get("target", ""))
 					var cascade_amount = int(cascade_item.get("amount", 0))
@@ -1247,11 +1255,17 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					var cascade_tgt = get_instance_by_uuid(cascade_target_uuid)
 					if is_instance_valid(cascade_tgt):
 						var old_hp = cascade_tgt.current_hp
+						var old_burn = cascade_tgt.get_status_effect_amount(&"burn")
 						var new_hp = apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
 						var max_hp = 0
 						var tgt_def = cascade_tgt.get_definition()
 						if is_instance_valid(tgt_def):
 							max_hp = tgt_def.base_hp
+						
+						# Apply burn if needed
+						var burn_val = old_burn
+						if should_apply_burn:
+							burn_val = apply_stat_delta(cascade_tgt, "burn_stacks", 1)
 						
 						# Compute bump direction
 						var bump_dir := Vector2.ZERO
@@ -1271,12 +1285,13 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								"stat": "hp",
 								"skip_bump": cascade_skip_bump,
 								"bump_direction": bump_dir,
-								"apply_poison": false,
+								"apply_burn": should_apply_burn,
 								"targets_old_hp": [old_hp],
 								"targets_new_hp": [new_hp],
 								"targets_max_hp": [max_hp],
-								"targets_old_poison": [0],
-								"targets_new_poison": [0],
+								"targets_old_burn": [old_burn],
+								"targets_new_burn": [burn_val],
+								"attack_type": "melee",
 								"projectile_data": {
 									"stat": "hp",
 									"amount": - cascade_amount,
@@ -1371,28 +1386,28 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					if source_name != "" and damage_target_name != "":
 						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, damage_target_name]}))
 					
-					# Check if poison should be applied
+					# Check if burn should be applied
 					var is_player_source = false
-					var should_apply_poison = false
+					var should_apply_burn = false
 					if is_instance_valid(source):
 						is_player_source = _is_player_unit(source)
-						should_apply_poison = _has_team_trinket(is_player_source, &"trinket_poison_vial")
+						should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
 					elif request.trigger_context.has("team"):
 						is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
-						should_apply_poison = _has_team_trinket(is_player_source, &"trinket_poison_vial")
+						should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
 					
 					# Apply HP delta via centralized function and capture OLD and NEW values
 					var targets_old_hp: Array[int] = []
 					var targets_new_hp: Array[int] = []
 					var targets_max_hp: Array[int] = []
-					var targets_old_poison: Array[int] = []
-					var targets_new_poison: Array[int] = []
+					var targets_old_burn: Array[int] = []
+					var targets_new_burn: Array[int] = []
 					
 					for tgt_uuid in resolved_targets:
 						var tgt = get_instance_by_uuid(tgt_uuid)
 						if is_instance_valid(tgt):
 							targets_old_hp.append(tgt.current_hp) # Capture BEFORE
-							targets_old_poison.append(tgt.get_status_effect_amount(&"poison")) # Capture BEFORE
+							targets_old_burn.append(tgt.get_status_effect_amount(&"burn")) # Capture BEFORE
 							var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
 							targets_new_hp.append(new_hp)
 							
@@ -1403,17 +1418,17 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							else:
 								targets_max_hp.append(0)
 							
-							# Apply poison if needed
-							var poison_val = 0
-							if should_apply_poison:
-								poison_val = apply_stat_delta(tgt, "poison_stacks", 1) # ✅ Unified status effect
-							targets_new_poison.append(poison_val)
+							# Apply burn if needed
+							var burn_val = 0
+							if should_apply_burn:
+								burn_val = apply_stat_delta(tgt, "burn_stacks", 1) # ✅ Unified status effect
+							targets_new_burn.append(burn_val)
 						else:
 							targets_old_hp.append(0)
 							targets_new_hp.append(0)
 							targets_max_hp.append(0)
-							targets_old_poison.append(0)
-							targets_new_poison.append(0)
+							targets_old_burn.append(0)
+							targets_new_burn.append(0)
 					
 						 # Compute bump direction during simulation (while instance is valid)
 					var bump_dir := Vector2.ZERO
@@ -1433,12 +1448,13 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							"stat": "hp",
 							"skip_bump": skip_bump,
 							"bump_direction": bump_dir, # Pre-computed for presentation
-							"apply_poison": should_apply_poison,
+							"apply_burn": should_apply_burn,
 							"targets_old_hp": targets_old_hp,
 							"targets_new_hp": targets_new_hp,
 							"targets_max_hp": targets_max_hp,
-							"targets_old_poison": targets_old_poison,
-							"targets_new_poison": targets_new_poison,
+							"targets_old_burn": targets_old_burn,
+							"targets_new_burn": targets_new_burn,
+							"attack_type": "melee",
 							"projectile_data": {
 								"stat": "hp",
 								"amount": amount,
@@ -1447,55 +1463,64 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						}
 					}))
 			elif stat == "pwr" and amount > 0 and not resolved_targets.is_empty():
+				var log_targets_str = ""
+				if not target_names.is_empty():
+					log_targets_str = ", ".join(target_names)
+				if log_targets_str != "":
+					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "Gains %d PWR: %s" % [amount, log_targets_str]}))
+				
+				var targets_old_pwr: Array[int] = []
+				var targets_new_pwr: Array[int] = []
+				
 				for i in range(resolved_targets.size()):
 					var single_target_uuid := resolved_targets[i]
-					var name_for_target := ""
-					if i < target_names.size():
-						name_for_target = target_names[i]
-					if name_for_target != "":
-						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s gains %d PWR" % [name_for_target, amount]}))
-					
-					# Apply PWR delta via centralized function and capture OLD and NEW value
 					var tgt = get_instance_by_uuid(single_target_uuid)
-					var target_old_pwr = 0
-					var target_new_pwr = 0
 					if is_instance_valid(tgt):
-						target_old_pwr = tgt.current_pwr # Capture BEFORE
-						target_new_pwr = apply_stat_delta(tgt, "pwr", amount) # ✅ Apply THEN snapshot
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+						targets_old_pwr.append(tgt.current_pwr)
+						var new_p = apply_stat_delta(tgt, "pwr", amount) # ✅ Apply THEN snapshot
+						targets_new_pwr.append(new_p)
+					else:
+						targets_old_pwr.append(0)
+						targets_new_pwr.append(0)
+				
+				out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": request.source_uuid,
+					"target_uuids": resolved_targets,
+					"visual_payload": {
 						"source_uuid": request.source_uuid,
-						"target_uuids": [single_target_uuid],
-						"visual_payload": {
-							"source_uuid": request.source_uuid,
-							"amount": amount,
-							"stat": "pwr",
-							"old_pwr": target_old_pwr,
-							"new_pwr": target_new_pwr
-						}
-					}))
-			elif stat == "poison_stacks" and not resolved_targets.is_empty():
+						"amount": amount,
+						"stat": "pwr",
+						"targets_old_pwr": targets_old_pwr,
+						"targets_new_pwr": targets_new_pwr
+					}
+				}))
+				
+			elif stat == "burn_stacks" and not resolved_targets.is_empty():
+				var targets_old_val: Array[int] = []
+				var targets_new_val: Array[int] = []
+				
 				for i in range(resolved_targets.size()):
 					var single_target_uuid := resolved_targets[i]
-					# Apply poison delta via centralized function and capture OLD and NEW
 					var tgt = get_instance_by_uuid(single_target_uuid)
-					var old_stacks = 0
-					var new_stacks = 0
 					if is_instance_valid(tgt):
-						old_stacks = tgt.get_status_effect_amount(&"poison") # Capture BEFORE
-						new_stacks = apply_stat_delta(tgt, "poison_stacks", amount)
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+						targets_old_val.append(tgt.get_status_effect_amount(&"burn"))
+						var new_v = apply_stat_delta(tgt, "burn_stacks", amount)
+						targets_new_val.append(new_v)
+					else:
+						targets_old_val.append(0)
+						targets_new_val.append(0)
+				
+				out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": request.source_uuid,
+					"target_uuids": resolved_targets,
+					"visual_payload": {
 						"source_uuid": request.source_uuid,
-						"target_uuids": [single_target_uuid],
-						"visual_payload": {
-							"source_uuid": request.source_uuid,
-							"amount": amount,
-							"stat": "poison_stacks",
-							"old_val": old_stacks,
-							"new_val": new_stacks
-						}
-					}))
+						"amount": amount,
+						"stat": "burn_stacks", # Use visual name
+						"targets_old_val": targets_old_val,
+						"targets_new_val": targets_new_val
+					}
+				}))
 			# Handle summon effects (e.g., item_t2_c02)
 			elif effect_data.has("summon_unit_id"):
 				var unit_id = effect_data.get("summon_unit_id")
@@ -1557,7 +1582,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 									"uuid": new_inst.ball_uuid,
 									"hp": new_inst.current_hp,
 									"pwr": new_inst.current_pwr,
-									"poison_stacks": new_inst.get_status_effect_amount(&"poison"),
+									"burn_stacks": new_inst.get_status_effect_amount(&"burn"),
 									"def_id": unit_def.id,
 									"icon": new_unit_icon,
 									"tier": new_unit_tier,
@@ -1595,7 +1620,7 @@ func get_board_snapshot() -> Dictionary:
 						# Core stats
 						"hp": inst.current_hp,
 						"pwr": inst.current_pwr,
-						"poison_stacks": inst.get_status_effect_amount(&"poison"),
+						"burn_stacks": inst.get_status_effect_amount(&"burn"),
 						# Definition data for view creation
 						"def_id": def.id if is_instance_valid(def) else "",
 						"icon": def.icon if (is_instance_valid(def) and "icon" in def) else null,
@@ -2526,7 +2551,7 @@ func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBall
 ## This is the SINGLE modification point for all stat changes (HP, PWR, status effects).
 ## Ensures snapshots are always captured post-change for VCR pattern.
 ## @param instance: GachaBallInstance to modify
-## @param stat_type: String - "hp", "pwr", "poison_stacks", etc.
+## @param stat_type: String - "hp", "pwr", "burn_stacks", etc.
 ## @param delta: int - Amount to change (positive or negative)
 ## @return int - New value after change
 func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int) -> int:
@@ -2543,10 +2568,10 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 			var new_pwr = instance.current_pwr + delta
 			instance.set_current_pwr_silent(new_pwr) # Silent during simulation
 			return new_pwr
-		"poison_stacks":
+		"burn_stacks":
 			# Status effects use add_status_effect_silent internally
-			instance.add_status_effect_silent(&"poison", delta) # Silent during simulation
-			return instance.status_effects.get(&"poison", 0)
+			instance.add_status_effect_silent(&"burn", delta) # Silent during simulation
+			return instance.status_effects.get(&"burn", 0)
 		_:
 			# Generic status effect pattern: "effect_name_stacks"
 			if stat_type.ends_with("_stacks"):
@@ -2636,14 +2661,14 @@ func _trigger_turn_end_abilities() -> void:
 	# Capture board snapshot for animation
 	var start_snapshot = get_board_snapshot()
 	
-	# 1. Process Status Effects (Poison)
+	# 1. Process Status Effects (Burn)
 	# We inline the logic here to combine events into a single animation sequence
 	# print("DEBUG: Processing status effects for ", all_units.size(), " units")
 	for unit in all_units:
 		if unit.current_hp <= 0: continue # Skip dead units
-		var poison_stacks = unit.get_status_effect_amount(&"poison")
-		if poison_stacks > 0:
-			var damage = poison_stacks
+		var burn_stacks = unit.get_status_effect_amount(&"burn")
+		if burn_stacks > 0:
+			var damage = burn_stacks
 			var old_hp = unit.current_hp # Capture BEFORE
 			# Apply HP delta via centralized function
 			var new_hp = apply_stat_delta(unit, "hp", -damage)
@@ -2653,7 +2678,7 @@ func _trigger_turn_end_abilities() -> void:
 				max_hp = unit_def.base_hp
 			
 			var unit_name = _get_instance_display_name(unit)
-			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s takes %d poison dmg" % [unit_name, damage]}))
+			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s takes %d burn dmg" % [unit_name, damage]}))
 			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
@@ -2661,20 +2686,33 @@ func _trigger_turn_end_abilities() -> void:
 					"amount": - damage,
 					"stat": "hp",
 					"skip_bump": true,
-					"is_poison_damage": true,
+					"is_burn_damage": true,
 					"targets_old_hp": [old_hp],
 					"targets_new_hp": [new_hp],
 					"targets_max_hp": [max_hp]
 				}
 			}))
 			
-			var new_stacks = floor(poison_stacks / 2.0)
+			var new_stacks = floor(burn_stacks / 2.0)
+			var old_stacks = burn_stacks
 			if new_stacks > 0:
-				# Apply poison decay via centralized function
-				var decay_delta = new_stacks - poison_stacks # Negative delta
-				apply_stat_delta(unit, "poison_stacks", decay_delta)
+				# Apply burn decay via centralized function
+				var decay_delta = new_stacks - burn_stacks # Negative delta
+				apply_stat_delta(unit, "burn_stacks", decay_delta)
 			else:
-				unit.clear_status_effect(&"poison")
+				unit.clear_status_effect(&"burn")
+				new_stacks = 0
+			
+			# Emit BUFF event for burn decay so animator updates the visual
+			all_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": "",
+				"target_uuids": [unit.ball_uuid],
+				"visual_payload": {
+					"amount": int(new_stacks) - int(old_stacks), # Negative = decay
+					"stat": "burn_stacks",
+					"new_val": int(new_stacks) # Key name matches BuffAnimation
+				}
+			}))
 				
 			if unit.current_hp <= 0:
 				_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)

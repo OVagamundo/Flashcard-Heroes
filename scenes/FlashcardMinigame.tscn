@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://dajq7v7k8jvhg"]
+[gd_scene load_steps=7 format=3 uid="uid://dajq7v7k8jvhg"]
 
 [ext_resource type="Script" path="res://scripts/FlashcardMinigame.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
-[ext_resource type="FontFile" uid="uid://bkrxvpmgv0ru4" path="res://assets/fonts/static/NotoSansJP-Regular.ttf" id="3_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/DotGothic16/DotGothic16-Regular.ttf" id="3_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="4_title_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="5_stat_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="6_label_font"]
 
 [node name="FlashcardMinigame" type="Control"]
 layout_mode = 3
@@ -45,6 +48,10 @@ theme_override_constants/separation = 30
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("4_title_font")
 theme_override_font_sizes/font_size = 48
 text = "Flashcard Training"
 horizontal_alignment = 1
@@ -52,6 +59,10 @@ horizontal_alignment = 1
 [node name="TimerLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("5_stat_font")
 theme_override_font_sizes/font_size = 36
 text = "3.0"
 horizontal_alignment = 1
@@ -59,7 +70,11 @@ horizontal_alignment = 1
 [node name="ScoreLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("6_label_font")
+theme_override_font_sizes/font_size = 20
 text = "Score: 0"
 horizontal_alignment = 1
 
@@ -67,6 +82,9 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("3_font")
 theme_override_font_sizes/font_size = 96
 text = "What is the question?"
@@ -92,8 +110,11 @@ theme_override_constants/separation = 30
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
 theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 48
 text = "New Card Introduction"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -102,14 +123,22 @@ autowrap_mode = 2
 [node name="IntroAnswerLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("6_label_font")
+theme_override_font_sizes/font_size = 20
 text = "Answer: [Answer]"
 horizontal_alignment = 1
 
 [node name="IntroExplanationLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("6_label_font")
+theme_override_font_sizes/font_size = 14
 text = "Explanation: [Explanation]"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -118,6 +147,9 @@ autowrap_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(200, 60)
-theme_override_font_sizes/font_size = 24
+custom_minimum_size = Vector2(250, 70)
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("6_label_font")
+theme_override_font_sizes/font_size = 20
 text = "Got It!"

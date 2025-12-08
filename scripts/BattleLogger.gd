@@ -119,8 +119,8 @@ func log_extra_action(unit_name: String, ability_name: String) -> void:
 	var message = "[color=gold]\"%s\"[/color] grants [b]%s[/b] an extra action!" % [ability_name, unit_name]
 	_add_entry("extra_action", message, "", 1, "extra_action")
 
-func log_poison_damage(target_name: String, damage: int, old_hp: int, new_hp: int, stacks: int) -> void:
-	var message = "[b]%s[/b] takes [color=purple]%d poison damage[/color] (%d stacks)" % [target_name, damage, stacks]
+func log_burn_damage(target_name: String, damage: int, old_hp: int, new_hp: int, stacks: int) -> void:
+	var message = "[b]%s[/b] takes [color=orange]%d burn damage[/color] (%d stacks)" % [target_name, damage, stacks]
 	var details = "(HP: %d→%d)" % [old_hp, new_hp]
 	_add_entry("damage", message, details, 0, "damage")
 

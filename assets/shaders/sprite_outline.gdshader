@@ -7,8 +7,14 @@ uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 1.0, 1.0); // White b
 uniform float outline_width : hint_range(0.0, 10.0) = 2.0;
 uniform bool outline_enabled = false;
 
+// Animation uniforms for flash and fade effects
+uniform float flash_intensity : hint_range(0.0, 1.0) = 0.0; // 0 = normal, 1 = full white flash
+uniform vec4 flash_color : source_color = vec4(1.0, 1.0, 1.0, 1.0); // Flash color (white by default)
+uniform float alpha_multiplier : hint_range(0.0, 1.0) = 1.0; // Alpha fade multiplier
+
 void fragment() {
     vec4 sprite_color = texture(TEXTURE, UV);
+    vec4 final_color;
     
     if (outline_enabled && outline_width > 0.0) {
         // Get the pixel size for sampling neighbors
@@ -30,16 +36,24 @@ void fragment() {
             
             // If any neighbor is opaque, draw outline
             if (max_alpha > 0.5) {
-                COLOR = outline_color;
+                final_color = outline_color;
             } else {
-                COLOR = sprite_color;
+                final_color = sprite_color;
             }
         } else {
             // Current pixel is opaque, keep original color
-            COLOR = sprite_color;
+            final_color = sprite_color;
         }
     } else {
         // Outline disabled, just show the sprite
-        COLOR = sprite_color;
+        final_color = sprite_color;
     }
+    
+    // Apply flash effect: lerp toward flash_color based on flash_intensity
+    final_color.rgb = mix(final_color.rgb, flash_color.rgb, flash_intensity);
+    
+    // Apply alpha multiplier for fade effects
+    final_color.a *= alpha_multiplier;
+    
+    COLOR = final_color;
 }

@@ -1,11 +1,11 @@
 # res://scripts/RestSite.gd
-extends VBoxContainer
+extends Control
 
 @onready var train_hp_button: Button = %TrainHPButton
 @onready var train_pwr_button: Button = %TrainPWRButton
 @onready var leave_button: Button = %LeaveButton
 
-enum TrainingType { NONE, HP, PWR }
+enum TrainingType {NONE, HP, PWR}
 var _current_training: TrainingType = TrainingType.NONE
 var _last_minigame_results: Dictionary = {}
 
@@ -41,7 +41,7 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	_last_minigame_results = results
 	
 	var correct_answers: int = results.get("correct_answers", 0)
-	var stat_gain = floori(correct_answers / 2.0)  # TDD: stat_gain = floor(results.correct_answers / 2.0)
+	var stat_gain = floori(correct_answers / 2.0) # TDD: stat_gain = floor(results.correct_answers / 2.0)
 
 	# Determine stat type for display
 	var stat_type = "HP" if _current_training == TrainingType.HP else "PWR"
@@ -56,7 +56,7 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 
 func _on_results_acknowledged() -> void:
 	"""Called when player acknowledges the training results"""
-	if _current_training == TrainingType.NONE: 
+	if _current_training == TrainingType.NONE:
 		return
 	
 	var correct_answers: int = _last_minigame_results.get("correct_answers", 0)

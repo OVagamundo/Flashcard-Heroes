@@ -348,7 +348,7 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 	var to_container: DataContainer = get_container(target_loc.container)
 	if not is_instance_valid(from_container) or not is_instance_valid(to_container):
 		return false
-	# Clear from source index (Index)
+	# Clear all status effects (burn, etc.)
 	if source_loc.container != C.CONTAINER_EQUIPPED_ITEM:
 		if from_container.get_uuid(source_loc.index) == instance.ball_uuid:
 			from_container.set_uuid(source_loc.index, "")
@@ -656,12 +656,12 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		trinket_inst.initialize_from_trinket(healing_amulet_def)
 		add_instance(trinket_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 	
-	# [TESTING] Add Poison Vial to starting loadout
-	var poison_def = Database.get_definition(&"trinket_poison_vial")
-	if is_instance_valid(poison_def):
-		var poison_inst := GachaBallInstance.new()
-		poison_inst.initialize_from_trinket(poison_def)
-		add_instance(poison_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+	# [TESTING] Add Burn Vial to starting loadout
+	var burn_def = Database.get_definition(&"trinket_burn_vial")
+	if is_instance_valid(burn_def):
+		var burn_inst := GachaBallInstance.new()
+		burn_inst.initialize_from_trinket(burn_def)
+		add_instance(burn_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 
 	# --- Add starter units/items to inventory ---
 	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the

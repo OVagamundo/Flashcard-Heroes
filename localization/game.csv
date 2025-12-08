@@ -28,7 +28,7 @@ ability.healing_amulet.desc,"At the start of the turn, Heals the frontmost ally 
 ability.item_tier2c_passive_heal.name,Regeneration
 ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP."
 ability.unit_tier1a_passive_heal.name,Resilience
-ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by 1 HP."
+ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by (PWR) HP."
 ability.unit_tier1b_counter_on_hurt.name,Retaliation
 ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker for damage equal to this unit's current PWR. Triggers on final time when the damage to this unit is lethal."
 ability.item_tier1a_turn_start_heal.name,Restoration
@@ -59,3 +59,7 @@ hero_timekeeper.name,Timekeeper
 hero_timekeeper.desc,A scholar who bends time with knowledge. Gains gold for each enemy slain.
 ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter
 ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.
+unit_t3_d.name,Sakura Spirit
+unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.
+item_t1_a.desc,Restores 5 HP.
+item_t1_b.desc,Increases PWR by 1.

@@ -1,11 +1,13 @@
-[gd_scene load_steps=6 format=3 uid="uid://c8qj2qj2qj2q"]
+[gd_scene load_steps=8 format=3 uid="uid://c8qj2qj2qj2q"]
 
 [ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 [ext_resource type="Script" path="res://scripts/BattleAnimator.gd" id="2_battle_animator_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
-
 [ext_resource type="Script" path="res://scripts/TestEnvironmentManager.gd" id="5_testenv"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="6_label_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="7_stat_font"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/spring_battle.png" id="8_bg"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -16,6 +18,18 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("3_battle_view_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")
@@ -258,20 +272,34 @@ alignment = 1
 
 [node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(200, 60)
 layout_mode = 2
 mouse_filter = 1
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("6_label_font")
+theme_override_font_sizes/font_size = 12
 text = "Discard Pile (0)"
 
 [node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(180, 60)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("6_label_font")
+theme_override_font_sizes/font_size = 14
 text = "End Turn"
 
 [node name="GachaTokenLabel" type="Label" parent="TeamAreas/EnemyArea/DiscardArea"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("7_stat_font")
+theme_override_font_sizes/font_size = 18
 text = "Tokens: 0"
 
 [node name="Control3" type="Control" parent="TeamAreas/EnemyArea"]

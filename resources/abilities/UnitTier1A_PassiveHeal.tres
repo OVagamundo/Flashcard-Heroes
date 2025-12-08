@@ -13,7 +13,7 @@ invert_result = false
 
 [sub_resource type="Resource" id="EffectModifyStat_PassiveHeal_1"]
 script = ExtResource("2_effect")
-parameters = { "stat": "hp", "base_value": 1 }
+parameters = { "stat": "hp", "use_source_pwr": true }
 target_type = &"HOLDER"
 
 [resource]

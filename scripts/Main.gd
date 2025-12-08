@@ -4,16 +4,22 @@ extends Control
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 
 @onready var content_area: SubViewportContainer = %ContentArea
-@onready var inspect_inventory_button: Button = %InspectInventoryButton
-@onready var draw_tier1_button: Button = %DrawTier1Button
-@onready var draw_tier2_button: Button = %DrawTier2Button
-@onready var draw_tier3_button: Button = %DrawTier3Button
 
-@onready var gold_label: Label = $VBoxContainer/TopArea/HBoxContainer/GoldLabel
-@onready var days_label: Label = $VBoxContainer/TopArea/HBoxContainer/DaysLabel
-@onready var tokens_label: Label = $VBoxContainer/TopArea/HBoxContainer/TokensLabel
+# Gacha machine containers
+@onready var gacha_machine_1: Control = %GachaMachine1
+@onready var gacha_machine_2: Control = %GachaMachine2
+@onready var gacha_machine_3: Control = %GachaMachine3
 
-@onready var player_trinket_bar: HBoxContainer = $VBoxContainer/TopArea/HBoxContainer/PlayerTrinketBar
+# Knob buttons for drawing
+@onready var knob_button_1: Button = %GachaMachine1.get_node("KnobButton")
+@onready var knob_button_2: Button = %GachaMachine2.get_node("KnobButton")
+@onready var knob_button_3: Button = %GachaMachine3.get_node("KnobButton")
+
+@onready var gold_label: Label = %GoldLabel
+@onready var days_label: Label = %DaysLabel
+@onready var tokens_label: Label = %TokensLabel
+
+@onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
@@ -26,10 +32,24 @@ var _current_content_node: Node = null
 
 func _ready() -> void:
 	GameManager.register_main_node(self) # Register self with GameManager
-	inspect_inventory_button.pressed.connect(_on_inspect_inventory_pressed)
-	draw_tier1_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier1_button, 1))
-	draw_tier2_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier2_button, 2))
-	draw_tier3_button.pressed.connect(func(): _on_draw_button_pressed(draw_tier3_button, 3))
+	
+	# Connect knob buttons to draw functionality
+	knob_button_1.pressed.connect(func(): _on_draw_button_pressed(knob_button_1, 1))
+	knob_button_2.pressed.connect(func(): _on_draw_button_pressed(knob_button_2, 2))
+	knob_button_3.pressed.connect(func(): _on_draw_button_pressed(knob_button_3, 3))
+	
+	# Connect hover animations for knob buttons
+	knob_button_1.mouse_entered.connect(func(): _on_knob_hover_enter(knob_button_1))
+	knob_button_1.mouse_exited.connect(func(): _on_knob_hover_exit(knob_button_1))
+	knob_button_2.mouse_entered.connect(func(): _on_knob_hover_enter(knob_button_2))
+	knob_button_2.mouse_exited.connect(func(): _on_knob_hover_exit(knob_button_2))
+	knob_button_3.mouse_entered.connect(func(): _on_knob_hover_enter(knob_button_3))
+	knob_button_3.mouse_exited.connect(func(): _on_knob_hover_exit(knob_button_3))
+	
+	# Connect machine containers to open inventory when clicked (outside knob button)
+	gacha_machine_1.gui_input.connect(func(event): _on_machine_gui_input(event))
+	gacha_machine_2.gui_input.connect(func(event): _on_machine_gui_input(event))
+	gacha_machine_3.gui_input.connect(func(event): _on_machine_gui_input(event))
 
 	
 	SignalBus.battle_start_requested.connect(_on_battle_start_requested)
@@ -78,6 +98,35 @@ func _on_content_area_gui_input(event: InputEvent) -> void:
 			# This was canceling drag before GIR processed battle board drop targets.
 			pass
 
+func _on_machine_gui_input(event: InputEvent) -> void:
+	# Handle clicks on machine image area (outside the knob button)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Check if any windows are open
+		if WindowManager.is_any_inspection_window_open():
+			# Close all open windows - this is the "click outside window" behavior
+			WindowManager.close_all_inspection_windows()
+			# Don't open inventory - the close action was the intent
+		else:
+			# No windows open - open inventory
+			SignalBus.emit_signal("inspect_inventory_requested")
+
+func _on_knob_hover_enter(button: Button) -> void:
+	if button.disabled:
+		return
+	# Grow the button slightly with a smooth animation
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	button.pivot_offset = button.size / 2
+	tween.tween_property(button, "scale", Vector2(1.08, 1.08), 0.15)
+
+func _on_knob_hover_exit(button: Button) -> void:
+	# Return to normal size
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.1)
+
 func _clear_content_area() -> void:
 	if is_instance_valid(_current_content_node):
 		_current_content_node.queue_free()
@@ -110,14 +159,8 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 	if instance.has_method("populate"):
 		instance.populate(context)
 
-func _on_inspect_inventory_pressed() -> void:
-	# This is a bit of a hack for now, but the WindowManager is
-	# responsible for figuring out which inventory to open based on game state.
-	SignalBus.emit_signal("inspect_inventory_requested")
-	inspect_inventory_button.release_focus()
 
-
-func _on_draw_button_pressed(button: Button, tier: int) -> void:
+func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
 	# Ensure UI focus doesn't interfere
@@ -137,9 +180,9 @@ func _on_draw_button_pressed(button: Button, tier: int) -> void:
 
 func _on_battle_inventory_changed() -> void:
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
-	draw_tier1_button.disabled = false
-	draw_tier2_button.disabled = false
-	draw_tier3_button.disabled = false
+	knob_button_1.disabled = false
+	knob_button_2.disabled = false
+	knob_button_3.disabled = false
 	
 	# Check for combat phase lock
 	var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -151,9 +194,11 @@ func _on_battle_inventory_changed() -> void:
 	_populate_player_trinkets()
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
-	draw_tier1_button.visible = is_in_battle
-	draw_tier2_button.visible = is_in_battle
-	draw_tier3_button.visible = is_in_battle
+	# The gacha machines are always visible in the permanent HUD.
+	# Only disable the knob buttons when not in battle (can't draw outside battle).
+	knob_button_1.disabled = not is_in_battle
+	knob_button_2.disabled = not is_in_battle
+	knob_button_3.disabled = not is_in_battle
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
@@ -162,11 +207,11 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 
 func _on_gold_changed(new_amount: int) -> void:
 	if is_instance_valid(gold_label):
-		gold_label.text = "Gold: %d" % new_amount
+		gold_label.text = "%d" % new_amount
 
 func _on_gacha_tokens_changed(new_amount: int) -> void:
 	if is_instance_valid(tokens_label):
-		tokens_label.text = "Tokens: %d" % new_amount
+		tokens_label.text = "%d" % new_amount
 	else:
 		pass
 

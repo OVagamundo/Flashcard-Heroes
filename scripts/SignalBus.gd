@@ -96,6 +96,23 @@ signal unit_bump_attack(unit_uuid: String, direction: Vector2)
 ## @param unit_uuid: String - The UUID of the unit that finished bumping
 signal unit_bump_finished(unit_uuid: String)
 
+## Emitted to request a melee lunge animation (unit sprite moves to target)
+## @param unit_uuid: String - The attacker unit UUID
+## @param target_position: Vector2 - The global position to lunge toward
+signal unit_melee_lunge(unit_uuid: String, target_position: Vector2)
+
+## Emitted when a unit's melee lunge animation completes (at target)
+## @param unit_uuid: String - The UUID of the unit that finished lunging
+signal unit_melee_lunge_finished(unit_uuid: String)
+
+## Emitted to request a fast return animation after melee lunge
+## @param unit_uuid: String - The unit UUID to return
+signal unit_melee_return(unit_uuid: String)
+
+## Emitted when a unit's melee return animation completes (back at origin)
+## @param unit_uuid: String - The UUID of the unit that finished returning
+signal unit_melee_return_finished(unit_uuid: String)
+
 ## Emitted by the animator after playing death fades so the BattleManager can
 ## actually remove dead units from containers/registry.
 ## @param dead_unit_uuids: Array[String] - UUIDs to remove
@@ -108,6 +125,10 @@ signal unit_death_fade(unit_uuid: String)
 ## Emitted when a unit's death fade animation completes
 ## @param unit_uuid: String - The UUID of the unit that finished fading
 signal unit_death_fade_finished(unit_uuid: String)
+
+## Request screen shake effect
+## @param intensity: float - Shake intensity from 0.0 to 1.0 (based on damage dealt)
+signal screen_shake_requested(intensity: float)
 
 ## Request that a unit view plays its summon fade animation (visual only).
 signal unit_summon_fade(unit_uuid: String)

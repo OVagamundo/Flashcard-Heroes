@@ -1,24 +1,13 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://get0edktak2b"]
 
-[ext_resource type="Script" path="res://scripts/ChoiceWindow.gd" id="1_stuvw"]
-
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abcde"]
-bg_color = Color(0.2, 0.2, 0.2, 1)
+[ext_resource type="Script" uid="uid://bvq7fjdylgfqr" path="res://scripts/ChoiceWindow.gd" id="1_stuvw"]
 
 [node name="ChoiceWindow" type="PanelContainer"]
 custom_minimum_size = Vector2(300, 150)
-layout_mode = 0
-anchors_preset = 0
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 0
-grow_vertical = 0
-script = ExtResource("1_stuvw")
+offset_right = 300.0
+offset_bottom = 150.0
 mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_abcde")
+script = ExtResource("1_stuvw")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -28,6 +17,7 @@ alignment = 1
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 12
 text = "Choose Action"
 horizontal_alignment = 1
 vertical_alignment = 1

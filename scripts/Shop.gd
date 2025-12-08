@@ -1,5 +1,5 @@
 # res://scripts/Shop.gd
-extends VBoxContainer
+extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 

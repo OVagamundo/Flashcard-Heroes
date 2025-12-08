@@ -1,0 +1,8 @@
+[gd_resource type="FontFile" format=3]
+
+[resource]
+fallbacks = []
+path = "res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"
+antialiasing = 0
+generate_mipmaps = false
+multichannel_signed_distance_field = false

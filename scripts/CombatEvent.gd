@@ -6,10 +6,12 @@ enum Type {
 	DAMAGE,
 	HEAL,
 	DEATH,
+	DAMAGE_BURN, # End of turn burn damage
 	SUMMON, # Payload must contain snapshot of new unit
 	BUFF, # Payload: { "stat": "pwr", "amount": 1, "is_debuff": false }
 	MOVE, # Payload: { "from_slot": 1, "to_slot": 2 }
 	PROJECTILE, # Visual only: { "source_uuid": str, "target_uuid": str, "vfx_id": str }
+	APPLY_BURN,
 	VFX_POPUP, # Visual only: { "target_uuid": str, "text": str, "color": Color }
 	LOG_MESSAGE # Legacy support for text logs
 }
@@ -30,7 +32,7 @@ var stat: String = ""
 var skip_bump: bool = false
 var source_name: String = ""
 var target_names: Array[String] = []
-var apply_poison: bool = false
+var apply_burn: bool = false
 
 func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.type = p_type
@@ -56,7 +58,7 @@ func _init(p_type: Type, p_context: Dictionary = {}) -> void:
 	self.stat = String(p_context.get("stat", ""))
 	self.skip_bump = bool(p_context.get("skip_bump", false))
 	self.source_name = String(p_context.get("source_name", ""))
-	self.apply_poison = bool(p_context.get("apply_poison", false))
+	self.apply_burn = bool(p_context.get("apply_burn", false))
 	
 	# Populate target names for legacy log
 	self.target_names = []

@@ -1,47 +1,94 @@
-[gd_scene load_steps=2 format=3 uid="uid://b8q7p6s5d4f3e"]
+[gd_scene load_steps=4 format=3 uid="uid://b8q7p6s5d4f3e"]
 
 [ext_resource type="Script" path="res://scripts/RestSite.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="2_title_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
 
-[node name="RestSite" type="VBoxContainer"]
+[node name="RestSite" type="Control"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
-alignment = 1
 script = ExtResource("1_script")
 
-[node name="TitleLabel" type="Label" parent="."]
+[node name="BackgroundPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_title_font")
 theme_override_font_sizes/font_size = 48
 text = "Rest Site"
 horizontal_alignment = 1
 
-[node name="DescriptionLabel" type="Label" parent="."]
+[node name="DescriptionLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("3_label_font")
+theme_override_font_sizes/font_size = 14
 text = "Choose an action to perform."
 horizontal_alignment = 1
 
-[node name="ActionButtons" type="HBoxContainer" parent="."]
+[node name="ActionButtons" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 50
 alignment = 1
 
-[node name="TrainHPButton" type="Button" parent="ActionButtons"]
+[node name="TrainHPButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 100)
+custom_minimum_size = Vector2(250, 120)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("3_label_font")
+theme_override_font_sizes/font_size = 18
 text = "Train HP"
 
-[node name="TrainPWRButton" type="Button" parent="ActionButtons"]
+[node name="TrainPWRButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 100)
+custom_minimum_size = Vector2(250, 120)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("3_label_font")
+theme_override_font_sizes/font_size = 18
 text = "Train PWR"
 
-[node name="LeaveButton" type="Button" parent="."]
+[node name="LeaveButton" type="Button" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Leave" 
+custom_minimum_size = Vector2(200, 60)
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("3_label_font")
+theme_override_font_sizes/font_size = 16
+text = "Leave"

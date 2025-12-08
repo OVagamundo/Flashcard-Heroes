@@ -1,7 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://l5mhu3dnclc4"]
+[gd_scene load_steps=8 format=3 uid="uid://l5mhu3dnclc4"]
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 [ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="3_stat_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
+[ext_resource type="Texture2D" path="res://assets/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
+[ext_resource type="Texture2D" path="res://assets/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("2_outline")
@@ -9,31 +13,19 @@ shader_parameter/outline_color = Color(1.0, 1.0, 1.0, 1.0)
 shader_parameter/outline_width = 3.0
 shader_parameter/outline_enabled = false
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5h8t7"]
-bg_color = Color(0.2, 0.2, 0.2, 0)
-border_color = Color(0.376471, 0.376471, 0.376471, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp_bg"]
-bg_color = Color(0.8, 0.1, 0.1, 0.85)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-content_margin_left = 6.0
-content_margin_top = 4.0
-content_margin_right = 6.0
-content_margin_bottom = 4.0
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pwr_bg"]
-bg_color = Color(0.15, 0.15, 0.15, 0.85)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-content_margin_left = 6.0
-content_margin_top = 4.0
-content_margin_right = 6.0
-content_margin_bottom = 4.0
+
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_burn_bg"]
+bg_color = Color(1.0, 0.3, 0.0, 0.9)
+
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_unit"]
 
 [node name="GachaBallView" type="PanelContainer"]
 layout_mode = 1
@@ -41,7 +33,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_5h8t7")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_unit")
 script = ExtResource("1_cm7jq")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -55,29 +47,85 @@ layout_mode = 2
 size_flags_vertical = 3
 material = SubResource("ShaderMaterial_outline")
 
-[node name="StatsContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-alignment = 1
+	[node name="StatsContainer" type="HBoxContainer" parent="VBoxContainer"]
+	layout_mode = 2
+	alignment = 1
 
-[node name="HPLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_hp_bg")
-text = "0"
+	[node name="HPContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(48, 48)
+	layout_mode = 2
+	texture = ExtResource("4_icon_heart")
+	expand_mode = 1
+	stretch_mode = 5
 
-[node name="PWRLabel" type="Label" parent="VBoxContainer/StatsContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_pwr_bg")
-text = "0"
+	[node name="HPLabel" type="Label" parent="VBoxContainer/StatsContainer/HPContainer"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 15
+	anchor_right = 1.0
+	anchor_bottom = 1.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(1, 1, 1, 1)
+	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+	theme_override_constants/outline_size = 4
+	theme_override_fonts/font = ExtResource("3_stat_font")
+	theme_override_font_sizes/font_size = 24
+	text = "0"
+	horizontal_alignment = 1
+	vertical_alignment = 1
+
+	[node name="PWRContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(48, 48)
+	layout_mode = 2
+	texture = ExtResource("5_icon_power")
+	expand_mode = 1
+	stretch_mode = 5
+
+	[node name="PWRLabel" type="Label" parent="VBoxContainer/StatsContainer/PWRContainer"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 15
+	anchor_right = 1.0
+	anchor_bottom = 1.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(1, 1, 1, 1)
+	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+	theme_override_constants/outline_size = 4
+	theme_override_fonts/font = ExtResource("3_stat_font")
+	theme_override_font_sizes/font_size = 24
+	text = "0"
+	horizontal_alignment = 1
+	vertical_alignment = 1
+
+	[node name="BurnContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
+	unique_name_in_owner = true
+	visible = false
+	custom_minimum_size = Vector2(48, 48)
+	layout_mode = 2
+	texture = ExtResource("6_icon_burn")
+	expand_mode = 1
+	stretch_mode = 5
+	
+	[node name="BurnLabel" type="Label" parent="VBoxContainer/StatsContainer/BurnContainer"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 15
+	anchor_right = 1.0
+	anchor_bottom = 1.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(1, 1, 1, 1)
+	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+	theme_override_constants/outline_size = 4
+	theme_override_fonts/font = ExtResource("3_stat_font")
+	theme_override_font_sizes/font_size = 24
+	text = "0"
+	horizontal_alignment = 1
+	vertical_alignment = 1
 
 [node name="ItemGrid" type="GridContainer" parent="VBoxContainer"]
 unique_name_in_owner = true

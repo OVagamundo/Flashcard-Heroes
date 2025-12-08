@@ -1,60 +1,109 @@
-[gd_scene load_steps=3 format=3 uid="uid://shop_scene_uid"]
+[gd_scene load_steps=5 format=3 uid="uid://shop_scene_uid"]
 
 [ext_resource type="Script" path="res://scripts/Shop.gd" id="1_shop_script"]
 [ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+[ext_resource type="FontFile" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="3_title_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="4_label_font"]
+[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/shop.png" id="5_bg"]
 
-[node name="Shop" type="VBoxContainer"]
+[node name="Shop" type="Control"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
-alignment = 1
 script = ExtResource("1_shop_script")
 
-[node name="TitleLabel" type="Label" parent="."]
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_title_font")
 theme_override_font_sizes/font_size = 48
 text = "Shop"
 horizontal_alignment = 1
 
-[node name="ShopSlotsContainer" type="HBoxContainer" parent="."]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="ShopSlot0" parent="ShopSlotsContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(120, 150)
-layout_mode = 2
-
-[node name="ShopSlot1" parent="ShopSlotsContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(120, 150)
-layout_mode = 2
-
-[node name="ShopSlot2" parent="ShopSlotsContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(120, 150)
-layout_mode = 2
-
-[node name="ActionButtonsContainer" type="HBoxContainer" parent="."]
+[node name="ShopSlotsContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="BuyButton" type="Button" parent="ActionButtonsContainer"]
+[node name="ShopSlot0" parent="CenterContainer/VBoxContainer/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(150, 180)
+layout_mode = 2
+
+[node name="ShopSlot1" parent="CenterContainer/VBoxContainer/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(150, 180)
+layout_mode = 2
+
+[node name="ShopSlot2" parent="CenterContainer/VBoxContainer/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(150, 180)
+layout_mode = 2
+
+[node name="ActionButtonsContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="BuyButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtonsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 70)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("4_label_font")
+theme_override_font_sizes/font_size = 18
 disabled = true
 text = "Buy"
 
-[node name="RerollButton" type="Button" parent="ActionButtonsContainer"]
+[node name="RerollButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtonsContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("4_label_font")
+theme_override_font_sizes/font_size = 16
 text = "Reroll (1 Gold)"
 
-[node name="LeaveButton" type="Button" parent="ActionButtonsContainer"]
+[node name="LeaveButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtonsContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
 layout_mode = 2
-text = "Back to the Path" 
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+theme_override_fonts/font = ExtResource("4_label_font")
+theme_override_font_sizes/font_size = 16
+text = "Back to the Path"

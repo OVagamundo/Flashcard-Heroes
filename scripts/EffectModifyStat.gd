@@ -2,18 +2,31 @@
 @tool
 extends EffectDefinition
 
-## A generic stat modification effect. For Healing Amulet we use { stat: "hp", base_value: 2 }.
-func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+## A generic stat modification effect. 
+## For Healing Amulet we use { stat: "hp", base_value: 2 }.
+## For PWR-based healing we use { stat: "hp", use_source_pwr: true }.
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	if targets.is_empty():
 		return null
 	if not parameters is Dictionary:
 		return null
 	var stat: String = String(parameters.get("stat", ""))
-	var base_value: int = int(parameters.get("base_value", 0))
 	if stat == "":
 		return null
+	
+	# Determine the value to modify by
+	var base_value: int = int(parameters.get("base_value", 0))
+	var use_source_pwr: bool = parameters.get("use_source_pwr", false)
+	
+	# If using source's PWR, get it from the holder/source
+	if use_source_pwr:
+		var source_instance: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
+		if is_instance_valid(source_instance):
+			base_value = source_instance.current_pwr
+	
 	if base_value == 0:
 		return null
+	
 	var is_simulation: bool = context.get("is_simulation", false)
 	# During simulation, validate targets and return structured data without mutating state
 	if is_simulation:

@@ -8,7 +8,6 @@ func _ready() -> void:
 # --- Main Action Handler ---
 
 func _on_try_inventory_action(source_loc, target_loc) -> void:
-	
 	# Early-case: Allow equipping items onto units even across functional groups
 	var early_source_instance = _get_instance_at_location(source_loc)
 	var early_target_instance = _get_instance_at_location(target_loc)
@@ -106,7 +105,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 	# Case 3: Possible Merge
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
-		var context: Dictionary = { "source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id }
+		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
 		WindowManager.open_choice_window(context)
 		GlobalInteractionRouter.end_drag(false)
 		return
@@ -182,7 +181,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
-	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): 
+	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
 		GlobalInteractionRouter.end_drag(false)
@@ -337,7 +336,7 @@ func _is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locat
 	# ------------------------------------------------------------------
 	# HERO RESTRICTION: Heroes may only reside in PlayerLineup.
 	var is_hero := String(def.id).to_lower() == "hero"
-	if not is_hero:
+	if not is_hero and "tags" in def:
 		for tag in def.tags:
 			if String(tag).to_lower() == "hero":
 				is_hero = true

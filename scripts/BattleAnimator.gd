@@ -70,6 +70,8 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 							if is_instance_valid(gacha_view) and gacha_view is GachaBallView:
 								# Register and initialize view from snapshot VALUES
 								_visual_registry[uuid] = gacha_view
+								# Inject uuid into snapshot so set_visual_state can update _instance_uuid
+								snapshot_data["uuid"] = uuid
 								gacha_view.set_visual_state(snapshot_data)
 								# print("[BattleAnimator] Registered ", uuid, " to view ", gacha_view)
 							else:
@@ -239,12 +241,12 @@ func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 		# DECOUPLED: No fallback - if view not in registry, it's a bug in snapshot processing
 		push_error("[BattleAnimator] PWR delta target not in visual registry: " + target_uuid)
 
-func apply_poison_stack(target_uuid: String, new_stacks: int) -> void:
-	# Update visual poison stacks on puppet view
-	if _visual_registry.has(target_uuid):
-		var view = _visual_registry[target_uuid]
-		if is_instance_valid(view) and view is GachaBallView:
-			view.animate_poison_change(new_stacks)
+func apply_burn_stack(uuid: String, new_stacks: int) -> void:
+	# Update visual burn stacks on puppet view
+	if _visual_registry.has(uuid):
+		var view = _visual_registry[uuid]
+		if view.has_method("animate_burn_change"):
+			view.animate_burn_change(new_stacks)
 
 func _emit_bump(_attacker_uuid: String) -> void:
 	# LEGACY FALLBACK: This is no longer called since all DAMAGE events
@@ -264,6 +266,10 @@ func _connect_animation_signals() -> void:
 		SignalBus.unit_death_fade_finished.connect(_on_unit_death_fade_finished)
 	if not SignalBus.unit_summon_fade_finished.is_connected(_on_unit_summon_fade_finished):
 		SignalBus.unit_summon_fade_finished.connect(_on_unit_summon_fade_finished)
+	if not SignalBus.unit_melee_lunge_finished.is_connected(_on_unit_melee_lunge_finished):
+		SignalBus.unit_melee_lunge_finished.connect(_on_unit_melee_lunge_finished)
+	if not SignalBus.unit_melee_return_finished.is_connected(_on_unit_melee_return_finished):
+		SignalBus.unit_melee_return_finished.connect(_on_unit_melee_return_finished)
 
 func _disconnect_animation_signals() -> void:
 	# Disconnect animation completion signals
@@ -275,6 +281,10 @@ func _disconnect_animation_signals() -> void:
 		SignalBus.unit_death_fade_finished.disconnect(_on_unit_death_fade_finished)
 	if SignalBus.unit_summon_fade_finished.is_connected(_on_unit_summon_fade_finished):
 		SignalBus.unit_summon_fade_finished.disconnect(_on_unit_summon_fade_finished)
+	if SignalBus.unit_melee_lunge_finished.is_connected(_on_unit_melee_lunge_finished):
+		SignalBus.unit_melee_lunge_finished.disconnect(_on_unit_melee_lunge_finished)
+	if SignalBus.unit_melee_return_finished.is_connected(_on_unit_melee_return_finished):
+		SignalBus.unit_melee_return_finished.disconnect(_on_unit_melee_return_finished)
 
 # Signal handlers that filter by current animation UUID
 func _on_unit_flash_finished(unit_uuid: String) -> void:
@@ -297,6 +307,16 @@ func _on_unit_summon_fade_finished(unit_uuid: String) -> void:
 	if unit_uuid == _current_animation_uuid:
 		_current_animation_uuid = ""
 
+func _on_unit_melee_lunge_finished(unit_uuid: String) -> void:
+	# Only respond if this is the unit we're currently waiting for
+	if unit_uuid == _current_animation_uuid:
+		_current_animation_uuid = ""
+
+func _on_unit_melee_return_finished(unit_uuid: String) -> void:
+	# Only respond if this is the unit we're currently waiting for
+	if unit_uuid == _current_animation_uuid:
+		_current_animation_uuid = ""
+
 # Robust animation waiting with timeout fallback
 func wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
 	var timeout_duration: float
@@ -309,6 +329,10 @@ func wait_for_animation_completion(animation_type: String, expected_uuid: String
 			timeout_duration = ANIM_TIMEOUT_DURATION # Death fade is 1.0s
 		"summon_fade":
 			timeout_duration = ANIM_TIMEOUT_DURATION # Summon fade is 1.0s
+		"melee_lunge":
+			timeout_duration = 1.5 # Melee lunge is ~1.0s (windup + lunge), add buffer
+		"melee_return":
+			timeout_duration = 0.4 # Melee return is ~0.2s, add buffer
 		_:
 			timeout_duration = ANIM_TIMEOUT_DURATION # Default fallback
 	

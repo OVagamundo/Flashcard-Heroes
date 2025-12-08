@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://b4c5d6e7f8hah"]
 
-[ext_resource type="Script" path="res://scripts/EndBattlePopup.gd" id="1_abcde"]
+[ext_resource type="Script" uid="uid://cvsdcnssy30hp" path="res://scripts/EndBattlePopup.gd" id="1_abcde"]
 [ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_fghij"]
 
 [node name="EndBattlePopup" type="Control"]
@@ -13,6 +13,8 @@ grow_vertical = 2
 script = ExtResource("1_abcde")
 
 [node name="BackgroundBlocker" parent="." instance=ExtResource("2_fghij")]
+layout_mode = 0
+anchors_preset = 0
 color = Color(0, 0, 0, 0.75)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
@@ -35,6 +37,7 @@ alignment = 1
 [node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"HeaderLabel"
 theme_override_font_sizes/font_size = 48
 text = "VICTORY"
 horizontal_alignment = 1

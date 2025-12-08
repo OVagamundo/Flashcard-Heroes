@@ -6,6 +6,6 @@ static func get_visual_state(instance: GachaBallInstance) -> Dictionary:
 	if is_instance_valid(instance):
 		state["hp"] = instance.current_hp
 		state["pwr"] = instance.current_pwr
-		state["poison_stacks"] = instance.get_status_effect_amount(&"poison")
+		state["burn_stacks"] = instance.get_status_effect_amount(&"burn")
 		state["def_id"] = instance.definition_id
 	return state

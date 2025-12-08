@@ -14,7 +14,7 @@ var _is_moving: bool = false
 
 func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
 	# Visual setup
-	label.text = "+%d" % value
+	label.text = "%d" % value
 	if stat == "hp":
 		label.add_theme_color_override("font_color", Color.RED)
 	elif stat == "pwr":

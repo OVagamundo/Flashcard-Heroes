@@ -38,7 +38,7 @@ static func create_visual_data(instance: GachaBallInstance) -> Dictionary:
 		# Stats
 		"hp": instance.current_hp,
 		"pwr": instance.current_pwr,
-		"poison_stacks": instance.get_status_effect_amount(&"poison"),
+		"burn_stacks": instance.get_status_effect_amount(&"burn"),
 		
 		# Metadata
 		"is_player_owned": true, # Default, might need adjustment if we have enemy specific logic

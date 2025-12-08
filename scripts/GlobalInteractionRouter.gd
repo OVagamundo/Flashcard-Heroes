@@ -77,7 +77,6 @@ func _exit_tree() -> void:
 
 ## Main entry point for processing interactions
 func _on_interaction_context_received(context: InteractionContext) -> void:
-
 	var command_queue: Array[Command] = []
 
 	# Full input lock during COMBAT: ignore all interaction contexts
@@ -449,7 +448,7 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 	
 	# Special case: Inventory tier changes should be handled as selection changes, not invalid actions
 	if _is_inventory_tier_change(selection, target):
-		return false  # This will trigger selection change instead of invalid action
+		return false # This will trigger selection change instead of invalid action
 	
 	return false
 
@@ -616,8 +615,8 @@ func _execute_request_action(command_context: Dictionary) -> void:
 				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
 				if src_view:
 					_activate_close_suppression_for_view(src_view)
-		SignalBus.emit_signal("try_inventory_action", 
-			source_context.location, 
+		SignalBus.emit_signal("try_inventory_action",
+			source_context.location,
 			target_context.location)
 
 ## Execute invalid action command
@@ -671,8 +670,8 @@ func get_context_group(container_name: StringName) -> StringName:
 
 ## Internal container functional group resolver
 func _get_container_functional_group(container_name: StringName) -> StringName:
-	# Battle board containers
-	if container_name in [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]:
+	# Battle board containers (player-side only; enemy containers are inspection-only)
+	if container_name in [&"PlayerLineup", &"PlayerBench"]:
 		return &"BattleBoard"
 
 	# Inventory containers (can interact with each other)
@@ -692,7 +691,7 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 		return &"EquippedGrid"
 
 	# Inspection-only containers (no actions allowed)
-	if container_name in [&"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets"]:
+	if container_name in [&"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets", &"EnemyLineup"]:
 		return &"InspectionOnly"
 
 

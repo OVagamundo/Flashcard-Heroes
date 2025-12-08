@@ -24,7 +24,9 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	var available_units: Array[GachaBallDefinition] = []
 	var available_items: Array[GachaBallDefinition] = []
 	for d in all_defs:
+		# Skip hero units - check both ID and is_hero property
 		if d.id == &"hero" or d.id == &"enemy_hero": continue
+		if d.is_hero: continue # Exclude any unit marked as hero (e.g., hero_timekeeper)
 		if d.category == &"UNIT":
 			available_units.append(d)
 		elif d.category == &"ITEM":

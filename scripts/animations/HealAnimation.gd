@@ -61,12 +61,29 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	var launch_pos = end_pos if is_self_cast else start_pos
 	
 	var projectile = StatProjectileScene.instantiate()
-	var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-	if is_instance_valid(battle_view):
-		battle_view.add_child(projectile)
-		projectile.setup(amount, stat, launch_pos, end_pos, is_self_cast)
+	# POOLING/LAYERING FIX: Use EffectsLayer so it renders above TopBar
+	var effects_layer = animator.get_tree().get_first_node_in_group("effects_layer")
+	if is_instance_valid(effects_layer):
+		# Calculate Viewport Offset (TopArea height)
+		var viewport_offset = Vector2.ZERO
+		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view):
+			var viewport = battle_view.get_viewport()
+			if viewport and viewport.get_parent() is Control:
+				viewport_offset = viewport.get_parent().global_position
+		
+		effects_layer.add_child(projectile)
+		projectile.setup(amount, "hp", launch_pos + viewport_offset, end_pos + viewport_offset, is_self_cast)
 		projectile.launch()
 		return projectile
 	else:
-		projectile.queue_free()
-		return null
+		# Fallback
+		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view):
+			battle_view.add_child(projectile)
+			projectile.setup(amount, "hp", launch_pos, end_pos, is_self_cast)
+			projectile.launch()
+			return projectile
+		else:
+			projectile.queue_free()
+			return null

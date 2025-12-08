@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://8equgvrut7ui"]
+
+[ext_resource type="Script" path="res://scripts/vfx/FloatingDamageNumber.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="2_font"]
+
+[node name="FloatingDamageNumber" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Label" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = -100.0
+offset_top = -50.0
+offset_right = 100.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(0.95, 0.1, 0.1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 16
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 72
+text = "99"
+horizontal_alignment = 1
+vertical_alignment = 1

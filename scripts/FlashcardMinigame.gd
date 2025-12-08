@@ -6,8 +6,8 @@ extends Control
 
 signal minigame_complete(results: Dictionary) # Internal signal for the window itself
 
-# Load the Japanese font directly from the TTF file
-const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Regular.ttf")
+# Load the pixel art Japanese font (DotGothic16) for consistency
+const JAPANESE_FONT = preload("res://assets/fonts/DotGothic16/DotGothic16-Regular.ttf")
 
 @onready var question_label: Label = %QuestionLabel
 @onready var choices_grid: GridContainer = %ChoicesGrid
@@ -169,9 +169,12 @@ func _show_next_question() -> void:
 		if not choice_data.is_empty():
 			var button = Button.new()
 			button.text = choice_data.get("answer", "Error")
-			button.custom_minimum_size = Vector2(250, 80)
+			button.custom_minimum_size = Vector2(280, 100)
 			button.add_theme_font_override("font", JAPANESE_FONT)
-			button.add_theme_font_size_override("font_size", 60)
+			button.add_theme_font_size_override("font_size", 48)
+			button.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+			button.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+			button.add_theme_constant_override("outline_size", 4)
 			button.pressed.connect(_on_choice_selected.bind(choice_id))
 			choices_grid.add_child(button)
 

@@ -41,7 +41,7 @@ The `EncounterGenerator` uses a "Constrained Random Build" algorithm with a robu
 
 3.  **Flexible Spending:**
     *   Iteratively buys random affordable units or items until the budget is nearly full.
-    *   Respects unit caps (max 6) and item slot limits.
+    *   Respects unit caps (max 5) and item slot limits.
     *   **Optimization:** The generator runs this process multiple times (up to 10 attempts) and selects the build that utilizes the most budget.
 
 4.  **Gap Filling (Robustness):**

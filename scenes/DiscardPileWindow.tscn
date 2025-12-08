@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://c28k46w6p3h0"]
+[gd_scene load_steps=2 format=3 uid="uid://c28k46w6p3h0"]
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
-
 
 [node name="DiscardPileWindow" type="Control"]
 layout_mode = 3
@@ -21,10 +20,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -200.0
-offset_right = 300.0
-offset_bottom = 200.0
+offset_left = -350.0
+offset_top = -250.0
+offset_right = 350.0
+offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
@@ -32,13 +31,16 @@ mouse_filter = 1
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 15
 
 [node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 28
 text = "Discard Pile"
 horizontal_alignment = 1
+
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
@@ -51,6 +53,6 @@ layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 5
-theme_override_constants/v_separation = 5
-columns = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 5
