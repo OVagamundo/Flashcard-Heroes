@@ -63,3 +63,15 @@ unit_t3_d.name,Sakura Spirit
 unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.
 item_t1_a.desc,Restores 5 HP.
 item_t1_b.desc,Increases PWR by 1.
+boss_1.name,The Awakened Guardian
+boss_1.desc,A powerful guardian awakening from ancient slumber.
+boss_2.name,The Shadow Warden
+boss_2.desc,Calls upon shadow creatures to fight alongside it.
+boss_3.name,The Storm Herald
+boss_3.desc,Commands the very elements to join its ranks.
+boss_4.name,The Ancient Titan
+boss_4.desc,An ancient being that summons warriors from ages past.
+boss_5.name,The Final Arbiter
+boss_5.desc,The ultimate challenge. Defeat it to complete your run.
+ability.boss_summon.name,Call Reinforcements
+ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots."

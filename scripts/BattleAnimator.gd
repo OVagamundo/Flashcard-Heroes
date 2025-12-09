@@ -198,7 +198,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							if not new_snapshot.is_empty():
 								var new_location = LocationIdentifier.new(container_tag, index)
 								new_view.populate(new_location, new_snapshot, false, false)
-								new_view.set_is_enemy(container_tag == &"EnemyLineup")
+								var def_id: StringName = new_snapshot.get("def_id", &"")
+								new_view.set_is_enemy(container_tag == &"EnemyLineup", def_id)
 								
 								_visual_registry[new_unit_uuid] = new_view
 								print("[BattleAnimator] Processing SUMMON event for: ", new_unit_uuid)

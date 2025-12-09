@@ -1591,6 +1591,67 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								}
 							}
 						}))
+			# Handle boss summon effects (array of units to summon)
+			elif effect_data.has("summon_units"):
+				var summon_list: Array = effect_data.get("summon_units", [])
+				var team: String = effect_data.get("team", "ENEMY")
+				var target_container_tag: StringName = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+				
+				for summon_data in summon_list:
+					var unit_id = summon_data.get("unit_id")
+					var unit_def = Database.get_definition(unit_id)
+					if not is_instance_valid(unit_def):
+						continue
+					
+					# Find empty slot in target lineup
+					var lineup_container = get_container(target_container_tag)
+					if not is_instance_valid(lineup_container):
+						break
+					
+					var empty_slot: int = lineup_container.find_first_empty_slot()
+					if empty_slot == -1 or empty_slot >= 5:
+						break # No more slots
+					
+					# Create and place unit
+					var new_unit = GachaBallInstance.new()
+					new_unit.initialize(unit_def)
+					new_unit.reset_battle_stats_silent()
+					
+					_battle_instances[new_unit.ball_uuid] = new_unit
+					lineup_container.set_uuid(empty_slot, new_unit.ball_uuid)
+					_update_instance_location(new_unit.ball_uuid, target_container_tag, empty_slot)
+					
+					# Create location for visual payload
+					var summon_loc = LocationIdentifier.new()
+					summon_loc.container = target_container_tag
+					summon_loc.index = empty_slot
+					
+					# Create SUMMON event for animation
+					var new_unit_icon = unit_def.icon if "icon" in unit_def else null
+					var new_unit_tier = unit_def.tier if "tier" in unit_def else 0
+					var new_unit_category = unit_def.category if "category" in unit_def else &"UNIT"
+					var new_unit_name_key = unit_def.display_name_key if "display_name_key" in unit_def else ""
+					
+					out_events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
+						"source_uuid": request.source_uuid,
+						"target_uuids": [new_unit.ball_uuid],
+						"visual_payload": {
+							"old_unit_uuid": "", # No old unit for boss summons
+							"new_unit_uuid": new_unit.ball_uuid,
+							"old_unit_location": summon_loc,
+							"new_unit_snapshot": {
+								"uuid": new_unit.ball_uuid,
+								"hp": new_unit.current_hp,
+								"pwr": new_unit.current_pwr,
+								"burn_stacks": new_unit.get_status_effect_amount(&"burn"),
+								"def_id": unit_def.id,
+								"icon": new_unit_icon,
+								"tier": new_unit_tier,
+								"category": new_unit_category,
+								"display_name_key": new_unit_name_key
+							}
+						}
+					}))
 	# CRITICAL FIX: Death check MUST run unconditionally after any effect execution
 	# This was previously inside the TYPE_DICTIONARY block, causing deaths from the
 	# last attack of a turn to miss on_ally_death triggers when effect returned null

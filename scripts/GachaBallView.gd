@@ -148,9 +148,11 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_update_stats()
 
-func set_is_enemy(is_enemy: bool) -> void:
+func set_is_enemy(is_enemy: bool, definition_id: StringName = &"") -> void:
 	if is_instance_valid(icon_rect):
-		icon_rect.flip_h = is_enemy
+		# Boss sprites are already facing the player direction, so don't flip them
+		var is_boss: bool = String(definition_id).begins_with("boss_")
+		icon_rect.flip_h = is_enemy and not is_boss
 
 func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive

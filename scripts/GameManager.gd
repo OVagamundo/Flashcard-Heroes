@@ -80,11 +80,33 @@ func _on_battle_ended(results: Dictionary) -> void:
 	is_in_battle = false
 	SignalBus.emit_signal("battle_state_changed", false)
 	var is_victory: bool = bool(results.get("victory", false))
+	
+	# Track boss defeat
+	if is_victory and run_state.current_boss_level > 0:
+		run_state.bosses_defeated += 1
+		
+		# Check for Boss 5 victory (run complete)
+		if run_state.current_boss_level == 5:
+			_show_run_complete_popup()
+			return
+		
+		# Reset boss level for next encounter
+		run_state.current_boss_level = 0
+	
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
 		SignalBus.emit_signal("battle_won_rewards_pending")
 	# 4) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
+
+func _show_run_complete_popup() -> void:
+	var context = {
+		"days": run_state.day,
+		"bosses_defeated": run_state.bosses_defeated,
+		"enemies_defeated": run_state.total_enemies_defeated,
+		"gold_earned": run_state.total_gold_earned
+	}
+	WindowManager.open_modal_window(&"RunCompletePopup", context)
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	pass
@@ -118,9 +140,8 @@ func _on_return_to_title() -> void:
 	_temporary_reward_container = null
 
 
-
 func _on_battle_victory_acknowledged() -> void:
-	if _is_processing_victory: 
+	if _is_processing_victory:
 		return # Debounce guard
 	_is_processing_victory = true
 	
@@ -271,11 +292,23 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
-			var budget = run_state.day * 5
-			if node_def.subtype == "ELITE":
-				budget = int(floor(budget * 1.5))
+			var encounter_def: EncounterDefinition
 			
-			var encounter_def = EncounterGenerator.generate_encounter(budget)
+			if node_def.subtype == "BOSS":
+				# Boss encounter - use boss level from difficulty
+				var boss_level: int = node_def.difficulty
+				var budget: int = run_state.day * 5
+				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, budget)
+				# Track current boss level for victory handling
+				run_state.current_boss_level = boss_level
+			else:
+				# Regular encounter
+				var budget = run_state.day * 5
+				if node_def.subtype == "ELITE":
+					budget = int(floor(budget * 1.5))
+				encounter_def = EncounterGenerator.generate_encounter(budget)
+				run_state.current_boss_level = 0
+			
 			# Use registered Main node
 			if is_instance_valid(_active_main_node):
 				_active_main_node._on_battle_start_requested(encounter_def)
@@ -292,7 +325,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 func _enter_shop() -> void:
 	_reroll_cost = 1
 	_generate_shop_stock()
-	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	var context: Dictionary = {"shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost}
 	# Use registered Main node
 	if is_instance_valid(_active_main_node):
 		_active_main_node._on_shop_scene_requested(context)
@@ -342,7 +375,7 @@ func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
 	SignalBus.emit_signal("selection_clear_requested")
 
 	# Avoid duplicate run_data_changed; atomic APIs already emitted above
-	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	var context: Dictionary = {"shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost}
 	SignalBus.emit_signal("shop_stock_refreshed", context)
 
 func _on_shop_reroll_requested() -> void:
@@ -352,5 +385,5 @@ func _on_shop_reroll_requested() -> void:
 	_generate_shop_stock()
 
 	# Avoid duplicate run_data_changed; spend_gold already emitted
-	var context: Dictionary = { "shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost }
+	var context: Dictionary = {"shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost}
 	SignalBus.emit_signal("shop_stock_refreshed", context)

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBossSummon.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossSummon_Budget10"]
+script = ExtResource("2_effect_script")
+parameters = { "budget": 10 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_2_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([SubResource("EffectBossSummon_Budget10")])

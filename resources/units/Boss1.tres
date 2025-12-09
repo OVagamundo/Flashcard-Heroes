@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/boss01.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_1"
+display_name_key = "boss_1.name"
+description_key = "boss_1.desc"
+icon = ExtResource("2_icon")
+tags = [&"BOSS"]
+is_hero = false
+tier = 3
+cost = 5
+category = &"UNIT"
+item_slot_count = 2
+base_hp = 10
+base_pwr = 10
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability")]

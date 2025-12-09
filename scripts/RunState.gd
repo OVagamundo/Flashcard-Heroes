@@ -7,6 +7,10 @@ const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
 
 @export var gold: int = 0
 @export var day: int = 1
+@export var current_boss_level: int = 0 # 0 = not in boss fight, 1-5 = current boss
+@export var bosses_defeated: int = 0
+@export var total_enemies_defeated: int = 0
+@export var total_gold_earned: int = 0
 @export var hero_instance: GachaBallInstance
 
 # Master registry of all permanent instances in this run.
@@ -602,6 +606,10 @@ func _validate_state_consistency() -> bool:
 func start_new_run() -> void:
 	gold = 5 # Set starting gold
 	day = 0
+	current_boss_level = 0
+	bosses_defeated = 0
+	total_enemies_defeated = 0
+	total_gold_earned = 0
 	run_instances.clear()
 	_containers.clear()
 	flashcard_progress.clear()

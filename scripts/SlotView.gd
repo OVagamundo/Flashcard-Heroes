@@ -92,7 +92,8 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	
 	# Populate the view with visual data
 	view.populate(_location, visual_data, is_inspectable, single_click_inspect)
-	view.set_is_enemy(is_enemy)
+	var def_id: StringName = visual_data.get("definition_id", &"")
+	view.set_is_enemy(is_enemy, def_id)
 	
 	# Configure interaction context based on data/context
 	if is_enemy:

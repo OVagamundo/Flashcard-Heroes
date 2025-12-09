@@ -6,6 +6,7 @@ const INSPECTION_WINDOW_MARGIN = 20.0
 var _window_scenes: Dictionary = {
 	# --- Hermetic Modals (Managed by _modal_stack, use open_modal_window) ---
 	&"EndBattlePopup": load("res://scenes/EndBattlePopup.tscn"),
+	&"RunCompletePopup": load("res://scenes/RunCompletePopup.tscn"),
 	&"FlashcardMinigame": load("res://scenes/FlashcardMinigame.tscn"),
 	&"ResultsPopup": load("res://scenes/ResultsPopup.tscn"),
 	
