@@ -79,6 +79,7 @@ Discovery & Deterministic Order: The AbilityResolver uses a single-pass O(N) opt
 on_hurt Filtering: For the on_hurt trigger, discovery is strictly filtered:
 Only the damaged unit (whose UUID matches the trigger context) may process its own on_hurt abilities.
 Only items equipped on that specific damaged unit may process their on_hurt abilities.
+**Processing Order:** All pending `on_hurt` reactions are drained BEFORE death triggers (`on_death`, `on_ally_death`) fire. This ensures abilities like resilient_aura generate their events while the dying unit is still "alive" in the event sequence.
 Lethal Counters: Abilities using the DAMAGE_WAS_RECEIVED condition can trigger even if the incoming damage was lethal. The BattleManager defers the DEATH event for that unit until after its reactive abilities (e.g., a counter-attack) have been fully simulated.
 Loop Prevention (Per-Attacker Limit): To prevent infinite counter-attacks, a unit may counter each distinct attacker at most once per turn. The BattleManager tracks this via has_counter_attacked() and mark_counter_attack().
 Trinket Rules:

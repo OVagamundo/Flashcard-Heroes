@@ -47,11 +47,22 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 The system uses a **Priority-Based Reaction System** to resolve complex interactions. Reactions are not instantaneous; they are collected, sorted by priority, and filtered by validity (e.g., lethality checks) before execution.
 
 **1. The Priority Hierarchy (Execution Order)**
-Every effect and reaction has a priority value. Higher priority resolves first.
-*   **Tier 1 (Highest):** State-Based Effects (e.g., "Mark of Death" detonation).
-*   **Tier 2:** Counter-Attacks (Vengeful/Interrupting).
-*   **Tier 3:** Defensive Reactions (Heals, Shields).
-*   **Tier 4 (Lowest):** Standard cleanup/buffs.
+Every effect and reaction has a priority value (defined in AbilityDefinition). Higher priority resolves first.
+
+| Priority | Tier | Description | Examples |
+|----------|------|-------------|----------|
+| 210 | **Trinket Summons** | Resurrection effects from trinkets (highest priority) | Soul Echo |
+| 200 | **Item Summons** | Summon effects from items (trigger after trinket summons) | Last Wish Summon (item T2C) |
+| 100+ | **Auras** | Defensive buffs that should apply before damage reactions | Resilient Aura (+1 HP/PWR to allies) |
+| 50 | **Counter-Attacks** | Retaliation damage against attackers | Item Tier 3D Retaliate |
+| 10 | **Modifiers** | Attack modifiers, shockwaves | Shockwave, Defensive Stance |
+| 0 | **Default** | Standard abilities with no special timing | Most abilities |
+| -50 | **Boss Summons** | End-of-turn enemy reinforcements | Boss summon waves |
+| -100 | **Extra Actions** | Grant extra turns (must resolve after all damage) | Bloodlust Edge |
+
+> [!IMPORTANT]
+> **Summon Priority Rule:** Trinket summons (priority 210) execute before item summons (priority 200), which both execute before counter-attacks (priority 50).
+> This ensures that Soul Echo resurrects the original unit type before item-based summons spawn a different unit.
 
 **2. The Discovery Order (Tie-Breaker)**
 When multiple abilities trigger at the same time (and have the same priority), `AbilityResolver` discovers them in a deterministic order:
@@ -172,23 +183,28 @@ func _redraw_board() -> void:
 ### Event Ordering and Deferred Deaths
 
 **Causality Rule**: Events must appear in causal order.
-- ✅ Correct: `DAMAGE → DEATH → SUMMON`
-- ❌ Wrong: `SUMMON → DEATH` (Violates causality)
+- ✅ Correct: `DAMAGE → on_hurt HEAL/BUFF → DEATH → on_death SUMMON`
+- ❌ Wrong: `DAMAGE → SUMMON → HEAL/BUFF → DEATH` (Violates causality)
 
 **Death Processing (Simulation-Internal):**
 When a unit reaches 0 HP, the simulation processes death in this order:
 
 1. Unit HP reaches 0
-2. `on_death` triggers fire (dying unit's item abilities)
-3. **DEATH event generated** (for TurnLog - correct visual ordering)
-4. `on_ally_death` triggers fire (allies' abilities like resurrection)
-5. Reactions processed (generate SUMMON events, etc.)
-6. Game state cleanup (unit removed from containers - deferred for reactions)
+2. **Pending `on_hurt` reactions drained** (ensures damage-triggered effects resolve first)
+3. `on_death` triggers fire (dying unit's item abilities)
+4. **DEATH event generated** (for TurnLog - correct visual ordering)
+5. `on_ally_death` triggers fire (allies' abilities like resurrection)
+6. Reactions processed (generate SUMMON events, etc.)
+7. Game state cleanup (unit removed from containers - deferred for reactions)
+
+> [!IMPORTANT]
+> **Causality Rule for Death Processing:**
+> Pending `on_hurt` reactions (e.g., resilient_aura buffs) MUST be drained BEFORE `on_death` triggers fire. This ensures the dying unit's reactive abilities generate their events while the unit is still "alive" in the event sequence. See `_check_for_deaths_with_counter_delay()` in BattleManager.gd.
 
 > [!IMPORTANT]
 > **Event Generation vs. Cleanup Separation:**
-> The DEATH event is generated immediately (step 3) to ensure correct TurnLog ordering.
-> Game state cleanup is deferred (step 6) so reactions can reference the dying unit.
+> The DEATH event is generated immediately (step 4) to ensure correct TurnLog ordering.
+> Game state cleanup is deferred (step 7) so reactions can reference the dying unit.
 > This separation is invisible to presentation - it only sees events in the correct order.
 
 ### Unified Death Registry (`_dead_this_turn`)
@@ -216,6 +232,43 @@ Without unified tracking, a unit could:
 - Not be cleaned up before END_OF_TURN
 - Die again from burn damage (DEATH event #2 - **duplicate!**)
 - Trigger `on_ally_death` twice → **excessive buff stacking**
+
+### Target Liveness Validation
+
+When resolving ability targets, the system validates that targets are still valid using **TWO checks**:
+
+1. **HP Check:** `target.current_hp > 0`
+2. **Location Check:** Target must be in an active battle container
+
+**Why Both Checks?**
+When a unit dies, `reset_battle_stats_silent()` restores their HP to full **before** moving them to discard. If only HP is checked, dead units could pass validation and receive "ghost attacks."
+
+**Valid Battle Containers:**
+- `PLAYER_LINEUP`, `ENEMY_LINEUP`
+- `PLAYER_BENCH`, `ENEMY_BENCH`
+
+**Invalid Containers (target rejected):**
+- `BATTLE_DISCARD_PILE`
+- `""` (removed/invalid)
+
+The validation occurs in:
+- `_resolve_single_effect_request()` at the target filtering stage
+- `resolve_target()` for context-based target resolution
+
+### Mid-Turn Summon Participation
+
+When a unit is summoned to an **empty slot** mid-turn, it may participate in combat during the turn it's summoned:
+
+**Queue Insertion Logic (`_insert_summoned_unit_into_queue`):**
+- Player units act right-to-left (slot 4→3→2→1→0)
+- Enemy units act left-to-right (slot 0→1→2→3→4)
+- Summoned unit is inserted at the correct queue position based on its slot
+- If the slot's "turn" has already passed (all higher-priority same-team slots acted), the unit is **not** added
+
+**Why This Matters:**
+- Soul Echo trinket resurrects units to empty slots on ally death
+- Without queue insertion, resurrected units would miss the current turn entirely
+- This mirrors the "on-death summon" behavior where a new unit replaces a dying unit in the queue
 
 ### Effect Data Flow (No Instance Queries)
 

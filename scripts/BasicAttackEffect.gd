@@ -16,7 +16,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return null
 
 	# Calculate damage (can be overridden by parameters for stat scaling)
-	var damage = _calculate_damage(source_instance)
+	var damage = _calculate_damage(source_instance, battle_manager)
 	
 	# Apply damage
 	var is_simulation: bool = _context.get("is_simulation", false)
@@ -63,10 +63,13 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return damage
 
 ## Calculate damage using stat-scaling parameters if provided
-func _calculate_damage(source_instance: GachaBallInstance) -> int:
+func _calculate_damage(source_instance: GachaBallInstance, battle_manager: Node) -> int:
+	# If source is an item/trinket, use the holder's PWR instead
+	var stat_provider = _get_stat_provider(source_instance, battle_manager)
+	
 	if not parameters.has("damage"):
 		# Default: use source's power
-		return source_instance.current_pwr
+		return stat_provider.current_pwr
 	
 	var damage_param = parameters["damage"]
 	
@@ -76,10 +79,25 @@ func _calculate_damage(source_instance: GachaBallInstance) -> int:
 	
 	# If it's a dictionary with stat-scaling, calculate it
 	if damage_param is Dictionary:
-		return _calculate_stat_scaled_value(damage_param, source_instance)
+		return _calculate_stat_scaled_value(damage_param, stat_provider)
 	
 	# Fallback to source's power
-	return source_instance.current_pwr
+	return stat_provider.current_pwr
+
+## Get the instance to use for stat calculations (holder for items/trinkets)
+func _get_stat_provider(source_instance: GachaBallInstance, battle_manager: Node) -> GachaBallInstance:
+	var source_def = source_instance.get_definition()
+	if not is_instance_valid(source_def):
+		return source_instance
+	
+	# If source is an item, use the holder's stats
+	if source_def.category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
+		var holder = battle_manager.get_instance_by_uuid(source_instance.equipped_on_uuid)
+		if is_instance_valid(holder):
+			return holder
+	
+	# For units and trinkets, use their own stats
+	return source_instance
 
 ## Calculate a stat-scaled value using the TDD V7.0 formula
 func _calculate_stat_scaled_value(param_dict: Dictionary, source_instance: GachaBallInstance) -> int:

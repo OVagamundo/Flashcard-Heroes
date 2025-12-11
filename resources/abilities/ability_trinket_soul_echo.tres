@@ -9,5 +9,5 @@ id = &"ability_trinket_soul_echo"
 name_key = "ability.soul_echo.name"
 description_key = "ability.soul_echo.desc"
 trigger = &"on_ally_death"
-priority = 40
+priority = 210
 effects = Array[Resource]([ExtResource("2_effect")])

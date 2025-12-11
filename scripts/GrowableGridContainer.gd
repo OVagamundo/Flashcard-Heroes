@@ -74,6 +74,13 @@ func get_all_non_empty_uuids() -> Array[String]:
 func get_all_uuids() -> Array[String]:
 	return _data.duplicate()
 
+## Returns the index of the specified UUID, or -1 if not found
+func get_index_of_uuid(uuid: String) -> int:
+	for i in range(_data.size()):
+		if _data[i] == uuid:
+			return i
+	return -1
+
 ## Expands the container by _growth_amount slots
 func _expand_container() -> void:
 	var old_size = _data.size()

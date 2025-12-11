@@ -20,11 +20,15 @@ extends Resource
 @export var description_key: String
 
 ## Execution priority. Higher numbers resolve first. Default 0 for all existing abilities.
-## Priority Tiers (Design Reference):
-##  100: REACTIVE_DEFENSIVE (e.g., Heal on hurt)
-##   50: REACTIVE_OFFENSIVE (e.g., Counter-attack)
-##    0: DEFAULT (All existing abilities)
-## -100: FOLLOW_UP (e.g., Double Strike, multi-hit follow-ups)
+## Priority Tiers (see CombatSystem.md for full reference):
+##  210: TRINKET_SUMMONS (Resurrection from trinkets, highest priority)
+##  200: ITEM_SUMMONS (Summons from items, after trinket summons)
+##  100: AURAS (Defensive buffs, e.g., Resilient Aura)
+##   50: COUNTER-ATTACKS (Retaliations against attackers)
+##   10: MODIFIERS (Attack modifiers, shockwaves)
+##    0: DEFAULT (Standard abilities)
+##  -50: BOSS_SUMMONS (End-of-turn reinforcements)
+## -100: EXTRA_ACTIONS (Grant extra turns after all damage)
 @export var priority: int = 0
 
 ## If true, triggering this ability during 'on_attack' will prevent the default Basic Attack from being enqueued.

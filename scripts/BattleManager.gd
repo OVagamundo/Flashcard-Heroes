@@ -1156,6 +1156,82 @@ func grant_extra_action(unit_uuid: String) -> void:
 	# Insert at front of queue so they act next
 	_actor_queue.push_front(unit)
 
+## Insert a newly summoned unit into the actor queue.
+## Mid-turn summons should always participate in combat if they're still alive when their turn comes.
+## Player units act right-to-left (high slot first), Enemy units act left-to-right (low slot first).
+## NOTE: Dead units may have cleared container tags, so we can't rely on _is_player_unit for them.
+func _insert_summoned_unit_into_queue(new_unit: GachaBallInstance) -> void:
+	assert(is_instance_valid(new_unit), "_insert_summoned_unit_into_queue: new_unit is null")
+	var is_player = _is_player_unit(new_unit)
+	var slot_idx = new_unit.location_slot_index
+	
+	# Find alive same-team units still in queue to determine insertion position
+	# We check HP > 0 because dead units have cleared container tags and won't be reliable
+	var found_alive_same_team := false
+	for i in range(_actor_queue.size()):
+		var queued_unit = _actor_queue[i]
+		# Skip dead units - their container tags are unreliable
+		if queued_unit.current_hp <= 0:
+			continue
+		if _is_player_unit(queued_unit) == is_player:
+			found_alive_same_team = true
+			# Same team - check if our slot should act before this one
+			if is_player:
+				# Players: higher slots act first (4,3,2,1,0)
+				if slot_idx > queued_unit.location_slot_index:
+					_actor_queue.insert(i, new_unit)
+					print("[DEBUG] Inserted summoned unit ", new_unit.ball_uuid, " before ", queued_unit.ball_uuid)
+					return
+			else:
+				# Enemies: lower slots act first (0,1,2,3,4)
+				if slot_idx < queued_unit.location_slot_index:
+					_actor_queue.insert(i, new_unit)
+					print("[DEBUG] Inserted summoned unit ", new_unit.ball_uuid, " before ", queued_unit.ball_uuid)
+					return
+	
+	# If we found alive same-team units but didn't insert, add at end of same-team section
+	if found_alive_same_team:
+		for i in range(_actor_queue.size()):
+			var queued_unit = _actor_queue[i]
+			if queued_unit.current_hp <= 0:
+				continue
+			if _is_player_unit(queued_unit) != is_player:
+				# Found where other team starts, insert before
+				_actor_queue.insert(i, new_unit)
+				print("[DEBUG] Inserted summoned unit ", new_unit.ball_uuid, " before other team at index ", i)
+				return
+		# All remaining alive units are same team, append at end
+		_actor_queue.append(new_unit)
+		print("[DEBUG] Appended summoned unit ", new_unit.ball_uuid, " after same-team units")
+		return
+	# No alive same-team units in queue - check if there are DEAD same-team units
+	# Dead units still in queue = their slot hasn't acted yet (died before their turn)
+	# No units at all = team has finished acting (all units popped from queue)
+	var found_dead_same_team := false
+	for queued_unit in _actor_queue:
+		# Dead units have cleared container tags, so check by team negation:
+		# If it's not a player unit AND we're looking for enemy team, it's same team
+		# Use HP check: dead units (HP <= 0) with uncertain team are assumed same-team
+		# if the queue context suggests it (e.g., only dead enemies remain after player kills them)
+		if queued_unit.current_hp <= 0:
+			# This dead unit is still in queue - its slot hasn't acted yet
+			# The summon should get a turn since the team hasn't finished
+			found_dead_same_team = true
+			break
+	
+	if found_dead_same_team:
+		# Team hasn't finished - dead units are still waiting for their turn
+		# Add summon to end of queue
+		_actor_queue.append(new_unit)
+		print("[DEBUG] Appended summon ", new_unit.ball_uuid, " (dead same-team units still in queue)")
+		return
+	
+	# No same-team units (alive OR dead) in queue - team has FINISHED acting
+	# This happens when a unit POPS, acts, dies from counter, and triggers summon
+	# The slot already had its turn, so the summon should NOT act this turn
+	print("[DEBUG] Not adding summon ", new_unit.ball_uuid, " - team has finished acting (slot already acted)")
+
+
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var is_player = _is_player_unit(attacker)
@@ -1208,13 +1284,21 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 	exec_targets.append_array(request.resolved_targets)
 	var is_basic_attack := (request.ability_id == &"basic_attack")
 	
-	# For ALL abilities (basic or triggered), validate targets are still alive
+	# For ALL abilities (basic or triggered), validate targets are still alive AND in battle
 	# Filter out dead targets to prevent ghost attacks
+	# NOTE: Must check location_container_tag because reset_battle_stats_silent() restores HP before discard
 	var valid_targets: Array[String] = []
 	for target_uuid in exec_targets:
 		var target_inst = get_instance_by_uuid(target_uuid)
 		if is_instance_valid(target_inst) and target_inst.current_hp > 0:
-			valid_targets.append(target_uuid)
+			# Also verify the target is still in an active battle container (not discard/removed)
+			var loc_tag: StringName = target_inst.location_container_tag
+			var is_in_battle: bool = (loc_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
+								 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
+								 loc_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
+								 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+			if is_in_battle:
+				valid_targets.append(target_uuid)
 	
 	# Allow targetless effects (e.g., summons) to proceed
 	# They will provide their own targets in the return data
@@ -1296,10 +1380,19 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						if should_apply_burn:
 							burn_val = apply_stat_delta(cascade_tgt, "burn_stacks", 1)
 						
-						# Compute bump direction
-						var bump_dir := Vector2.ZERO
+						# Compute animation source - if source is an item, use the holder for animation
+						var animation_source_uuid: String = request.source_uuid
 						if is_instance_valid(source):
-							var src_tag: StringName = source.location_container_tag
+							var source_def = source.get_definition()
+							if is_instance_valid(source_def) and source_def.category == &"ITEM":
+								if not source.equipped_on_uuid.is_empty():
+									animation_source_uuid = source.equipped_on_uuid
+						
+						# Compute bump direction using animation source
+						var bump_dir := Vector2.ZERO
+						var anim_source = get_instance_by_uuid(animation_source_uuid)
+						if is_instance_valid(anim_source):
+							var src_tag: StringName = anim_source.location_container_tag
 							if src_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 								bump_dir = Vector2(1, 0)
 							elif src_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
@@ -1309,7 +1402,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							"source_uuid": request.source_uuid,
 							"target_uuids": [cascade_target_uuid],
 							"visual_payload": {
-								"source_uuid": request.source_uuid,
+								"source_uuid": animation_source_uuid,
 								"amount": - cascade_amount,
 								"stat": "hp",
 								"skip_bump": cascade_skip_bump,
@@ -1330,6 +1423,10 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						}))
 						# Trigger on_hurt for counter-attacks AFTER damage is applied
 						trigger_on_hurt(cascade_target_uuid, cascade_amount, request.source_uuid)
+						# DETERMINISTIC ON_KILL: If cascade damage killed the target, trigger on_kill immediately
+						# This ensures Bloodlust and other on_kill effects trigger for shockwave kills
+						if cascade_tgt.current_hp <= 0:
+							trigger_on_kill(request.source_uuid, cascade_target_uuid)
 				# Check for deaths after cascade
 				_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 				return
@@ -1438,10 +1535,18 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					
 					for tgt_uuid in resolved_targets:
 						var tgt = get_instance_by_uuid(tgt_uuid)
-						# Skip already-dead targets to prevent ghost attacks
+						# Skip already-dead or removed targets to prevent ghost attacks
+						# Also check location_container_tag since reset_battle_stats_silent() restores HP before discard
 						if not is_instance_valid(tgt) or tgt.current_hp <= 0:
 							continue
-						damaged_uuids.append(tgt_uuid) # Only add to damaged list if alive
+						var loc_tag: StringName = tgt.location_container_tag
+						var is_in_battle: bool = (loc_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
+											 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
+											 loc_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
+											 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+						if not is_in_battle:
+							continue
+						damaged_uuids.append(tgt_uuid) # Only add to damaged list if alive and in battle
 						targets_old_hp.append(tgt.current_hp) # Capture BEFORE
 						targets_old_burn.append(tgt.get_status_effect_amount(&"burn")) # Capture BEFORE
 						var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
@@ -1464,10 +1569,20 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					if damaged_uuids.is_empty():
 						return
 					
-					# Compute bump direction during simulation (while instance is valid)
-					var bump_dir := Vector2.ZERO
+					# Compute animation source - if source is an item, use the holder for animation
+					var animation_source_uuid: String = request.source_uuid
 					if is_instance_valid(source):
-						var src_tag: StringName = source.location_container_tag
+						var source_def = source.get_definition()
+						if is_instance_valid(source_def) and source_def.category == &"ITEM":
+							# Items don't have visual representations - use the holder unit
+							if not source.equipped_on_uuid.is_empty():
+								animation_source_uuid = source.equipped_on_uuid
+					
+					# Compute bump direction using animation source (holder for items)
+					var bump_dir := Vector2.ZERO
+					var anim_source = get_instance_by_uuid(animation_source_uuid)
+					if is_instance_valid(anim_source):
+						var src_tag: StringName = anim_source.location_container_tag
 						if src_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 							bump_dir = Vector2(1, 0) # Player bumps right
 						elif src_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
@@ -1480,7 +1595,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						"trigger_type": request.trigger_context.get("trigger_type", ""),
 						"ability_holder_uuid": request.source_uuid,
 						"visual_payload": {
-							"source_uuid": request.source_uuid,
+							"source_uuid": animation_source_uuid,
 							"amount": amount,
 							"stat": "hp",
 							"skip_bump": skip_bump,
@@ -1689,6 +1804,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					_battle_instances[new_unit.ball_uuid] = new_unit
 					lineup_container.set_uuid(empty_slot, new_unit.ball_uuid)
 					_update_instance_location(new_unit.ball_uuid, target_container_tag, empty_slot)
+					
+					# Insert into actor queue so summoned unit can act this turn if its slot hasn't passed
+					_insert_summoned_unit_into_queue(new_unit)
 					
 					# Create location for visual payload
 					var summon_loc = LocationIdentifier.new()
@@ -2150,6 +2268,17 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 	if death_tracking != null and death_tracking.get("__skip_death_triggers__", false):
 		return
 	
+	# CAUSALITY FIX: Drain pending on_hurt reactions BEFORE processing on_death triggers
+	# This ensures the event order is: DAMAGE → on_hurt effects → DEATH → on_death effects
+	# Without this, on_death SUMMON events would be generated before on_hurt HEAL/BUFF events
+	if is_simulation and out_events != null and not _pending_reactions.is_empty():
+		# Process all pending reactions (on_hurt, counter-attacks, etc.) FIRST
+		drain_pending_reactions_inline(0)
+		# Append the generated events to out_events in the correct causal order
+		var inline_evts: Array[CombatEvent] = collect_inline_events()
+		for evt in inline_evts:
+			out_events.append(evt)
+	
 	# Check player units
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
 	for unit in player_units:
@@ -2529,16 +2658,22 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 			# For units, return self
 			return [source_uuid]
 		C.TARGET_ATTACK_TARGET:
-			# Return the target from the attack context
+			# Return the target from the attack context (if still alive)
 			var target_uuid: String = context.get("target_uuid", "")
 			if not target_uuid.is_empty():
-				return [target_uuid]
+				var target_instance = get_instance_by_uuid(target_uuid)
+				# Only target if still alive (prevents ghost attacks on dead units)
+				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
+					return [target_uuid]
 			return []
 		C.TARGET_TRIGGERING_ENTITY:
-			# Return the entity that triggered the event
+			# Return the entity that triggered the event (if still alive)
 			var triggering_uuid: String = context.get("triggering_uuid", "")
 			if not triggering_uuid.is_empty():
-				return [triggering_uuid]
+				var triggering_instance = get_instance_by_uuid(triggering_uuid)
+				# Only target if still alive
+				if is_instance_valid(triggering_instance) and triggering_instance.current_hp > 0:
+					return [triggering_uuid]
 			return []
 		C.TARGET_ATTACKER:
 			# Return the original attacker from the context (for counter-attacks)

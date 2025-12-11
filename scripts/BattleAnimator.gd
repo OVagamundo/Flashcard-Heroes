@@ -270,7 +270,7 @@ func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
 	var view = _visual_registry.get(target_uuid)
 	
 	if not is_instance_valid(view) or not (view is GachaBallView):
-		# DECOUPLED: No fallback - if view not in registry, it's a bug in snapshot processing
+		# DECOUPLED: No fallback - if view not in registry, simulation emitted an invalid event
 		push_error("[BattleAnimator] HP delta target not in visual registry: " + target_uuid)
 		return
 		
@@ -283,7 +283,7 @@ func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 		# Call puppet view's animate method with absolute value
 		view.animate_stat_change(new_pwr, amount, "pwr")
 	else:
-		# DECOUPLED: No fallback - if view not in registry, it's a bug in snapshot processing
+		# DECOUPLED: No fallback - if view not in registry, simulation emitted an invalid event
 		push_error("[BattleAnimator] PWR delta target not in visual registry: " + target_uuid)
 
 func apply_burn_stack(uuid: String, new_stacks: int) -> void:
