@@ -10,6 +10,7 @@ var _hp_snapshot: Dictionary = {}
 var _current_animation_uuid: String = "" # Track which unit is currently animating
 var _dead_units: Dictionary = {} # Track units that have already animated death this turn
 var _visual_registry: Dictionary = {} # UUID -> GachaBallView (for puppet mode)
+var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vector2} - captured at animation start
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -32,6 +33,7 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 	
 	# PUPPET MODE: Build visual registry by scanning scene tree
 	_visual_registry.clear()
+	_position_snapshot.clear() # DECOUPLING: Reset position snapshot each sequence
 	
 	var battle_view = get_tree().get_first_node_in_group("battle_view")
 	
@@ -70,6 +72,16 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 							if is_instance_valid(gacha_view) and gacha_view is GachaBallView:
 								# Register and initialize view from snapshot VALUES
 								_visual_registry[uuid] = gacha_view
+								
+								# DECOUPLING: Capture position NOW - animations will use this snapshot
+								# instead of querying views at animation time
+								var rect = gacha_view.get_global_rect()
+								_position_snapshot[uuid] = {
+									"position": rect.position,
+									"size": rect.size,
+									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+								}
+								
 								# Inject uuid into snapshot so set_visual_state can update _instance_uuid
 								snapshot_data["uuid"] = uuid
 								gacha_view.set_visual_state(snapshot_data)
@@ -102,8 +114,18 @@ func play_turn(events: Array[CombatEvent]) -> void:
 func _animate_events(events: Array[CombatEvent]) -> void:
 	# Connect to animation completion signals for this turn
 	_connect_animation_signals()
+	
+	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
+	print("[ANIM] ========== START ANIMATION SEQUENCE: %d events ==========" % events.size())
+	for evt in events:
+		evt.log_sim() # Log each event for cross-reference with simulation
 
+	var processed_count: int = 0
 	for event in events:
+		# Log each event as we process it
+		print("[ANIM] Processing Event#%d: %s" % [event.event_id, event.get_type_name()])
+		processed_count += 1
+		
 		SignalBus.log_animation_event.emit(event)
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
@@ -150,30 +172,33 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					
 					if SignalBus.has_signal("unit_death_fade"):
 						print("[BattleAnimator] Emitting unit_death_fade signal for: ", dead_uuid)
-						SignalBus.emit_signal("unit_death_fade", dead_uuid)
-						print("[BattleAnimator] Waiting for death_fade animation completion...")
-						await wait_for_animation_completion("death_fade", dead_uuid)
-						print("[BattleAnimator] Death animation completed for: ", dead_uuid)
+					SignalBus.emit_signal("unit_death_fade", dead_uuid)
+					print("[BattleAnimator] Waiting for death_fade animation completion...")
+					await wait_for_animation_completion("death_fade", dead_uuid)
+					print("[BattleAnimator] Death animation completed for: ", dead_uuid)
 					
-					# DON'T remove view here! Later events may target this dead unit.
-					# _redraw_board() will sync UI to data after all animations complete.
-					# The view stays in registry and scene tree for now.
-
+					# Remove the dead view from scene after animation completes
+					# With DEATH → SUMMON ordering, the slot will be empty when SUMMON runs
+					var dead_view = _visual_registry.get(dead_uuid)
+					if is_instance_valid(dead_view):
+						dead_view.queue_free()
+						_visual_registry.erase(dead_uuid)
+						# CRITICAL: Wait one frame for queue_free() to actually remove the node
+						# This ensures the slot is empty before any SUMMON event runs
+						await get_tree().process_frame
 			CombatEvent.Type.SUMMON:
 				var payload = event.visual_payload
-				var _old_unit_uuid = String(payload.get("old_unit_uuid", "")) # Not used anymore - DEATH handler cleans up
+				var _old_unit_uuid = String(payload.get("old_unit_uuid", "")) # For reference only
 				var new_unit_uuid = String(payload.get("new_unit_uuid", ""))
 				var old_location = payload.get("old_unit_location")
 				
-				# PRESENTATION ONLY: Visual swap of views
-				# Container mutations were already done during simulation
-				# BattleAnimator should ONLY update the visual layer
-				# BattleAnimator should ONLY update the visual layer
+				# PRESENTATION ONLY: Create new view in slot
+				# DEATH event already removed the old view (DEATH → SUMMON ordering)
+				# Animator just plays events in sequence blindly - no game state knowledge needed
 				if is_instance_valid(old_location):
 					var container_tag = old_location.container
 					var index = old_location.index
 					
-					# Visual swap: Remove old view, create new view
 					var battle_view = get_tree().get_first_node_in_group("battle_view")
 					if is_instance_valid(battle_view):
 						var lineup_container: HBoxContainer = null
@@ -185,11 +210,17 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
 							var slot_view = lineup_container.get_child(index)
 							
-							# DON'T clean up old view here - DEATH event will handle that!
-							# The old view will be removed by the DEATH handler after its fade animation
-							# This prevents premature destruction of stat labels and other child nodes
+							# SAFETY: Clear any existing views in slot before adding new one
+							# This handles cases where DEATH animation hasn't freed views yet
+							for existing_child in slot_view.get_children():
+								if existing_child is GachaBallView:
+									# Also remove from registry if present
+									var existing_uuid = existing_child.get_instance_uuid() if existing_child.has_method("get_instance_uuid") else ""
+									if not existing_uuid.is_empty() and _visual_registry.has(existing_uuid):
+										_visual_registry.erase(existing_uuid)
+									existing_child.queue_free()
 							
-							# Create new view
+							# Create new view (slot now guaranteed empty)
 							var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
 							slot_view.add_child(new_view)
 							
@@ -202,6 +233,15 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 								new_view.set_is_enemy(container_tag == &"EnemyLineup", def_id)
 								
 								_visual_registry[new_unit_uuid] = new_view
+								
+								# DECOUPLING: Register position for animations targeting summoned units
+								await get_tree().process_frame # Wait for layout to update
+								var rect = new_view.get_global_rect()
+								_position_snapshot[new_unit_uuid] = {
+									"position": rect.position,
+									"size": rect.size,
+									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+								}
 								print("[BattleAnimator] Processing SUMMON event for: ", new_unit_uuid)
 								
 								# Trigger summon animation
@@ -218,6 +258,10 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	
 	# Disconnect animation signals when done
 	_disconnect_animation_signals()
+	
+	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
+	print("[ANIM] ========== ANIMATION SEQUENCE COMPLETE: %d events processed ==========" % processed_count)
+	
 	print("[BattleAnimator] Emitting turn_animation_finished!")
 	emit_signal("turn_animation_finished")
 
@@ -256,7 +300,21 @@ func _emit_bump(_attacker_uuid: String) -> void:
 	# TRUE DECOUPLING: No instance queries needed!
 	pass
 
+## Get position data from snapshot - animations use this instead of querying views
+## Returns: Dictionary with "position", "size", "center" or empty dict if not found
+func get_snapshot_position(uuid: String) -> Dictionary:
+	return _position_snapshot.get(uuid, {})
 
+## Register a new position for dynamically created units (e.g., summoned units)
+func register_dynamic_position(uuid: String, view: GachaBallView) -> void:
+	if is_instance_valid(view):
+		var rect = view.get_global_rect()
+		_position_snapshot[uuid] = {
+			"position": rect.position,
+			"size": rect.size,
+			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+		}
+		_visual_registry[uuid] = view
 func _connect_animation_signals() -> void:
 	# Connect to animation completion signals with filtering
 	if not SignalBus.unit_flash_finished.is_connected(_on_unit_flash_finished):

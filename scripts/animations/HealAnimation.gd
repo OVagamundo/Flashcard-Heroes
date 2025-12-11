@@ -26,6 +26,11 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# 2. Apply Heal (Flash + Label Update)
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
+		
+		# Skip targets not in visual registry (may have died during animation)
+		if not animator._visual_registry.has(target_uuid):
+			continue
+		
 		var new_hp = targets_new_hp[i] if i < targets_new_hp.size() else 0
 		
 		animator.apply_hp_delta(target_uuid, amount, new_hp)
@@ -39,23 +44,18 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		await animator.wait_for_animation_completion("flash", target_uuid)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
-	var visual_registry = animator._visual_registry
-	if not visual_registry.has(target_uuid): return null
-	
-	var target_view = visual_registry[target_uuid]
-	if not is_instance_valid(target_view): return null
+	# DECOUPLING FIX: Use position snapshots instead of visual_registry
+	var tgt_snap = animator.get_snapshot_position(target_uuid)
+	if tgt_snap.is_empty(): return null
 	
 	var start_pos = Vector2.ZERO
 	var is_source_valid = false
-	if visual_registry.has(source_uuid):
-		var src_view = visual_registry[source_uuid]
-		if is_instance_valid(src_view):
-			var rect = src_view.get_global_rect()
-			start_pos = Vector2(rect.position.x + rect.size.x / 2, rect.position.y)
-			is_source_valid = true
-			
-	var target_rect = target_view.get_global_rect()
-	var end_pos = Vector2(target_rect.position.x + target_rect.size.x / 2, target_rect.position.y)
+	var src_snap = animator.get_snapshot_position(source_uuid)
+	if not src_snap.is_empty():
+		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
+		is_source_valid = true
+	
+	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
 	
 	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
 	var launch_pos = end_pos if is_self_cast else start_pos

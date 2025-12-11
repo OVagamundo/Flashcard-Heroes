@@ -6,6 +6,7 @@ Section A: Core Philosophy & Architecture
 The game's combat and passive effects are governed by a unified, data-driven, and event-driven architecture. This ensures all interactions are predictable, extensible, and managed through a deterministic flow.
 Data-Driven Design: The system's behavior is defined by data Resource files (.tres). Abilities, conditions, and effects are all resources, allowing content creation primarily through the Godot editor.
 Event-Driven Flow: The system is reactive. Abilities respond to discrete gameplay events (Triggers) broadcast by the BattleManager (e.g., on_hurt). Certain reactive abilities (e.g., counter-attacks) may trigger even when the damage received is lethal; death processing is selectively deferred until those abilities complete.
+**Unified Broadcast Pattern**: BattleManager emits **ONE** event per occurrence. AbilityResolver uses internal filter functions (`_should_unit_respond`, `_should_item_respond`, `_should_trinket_respond`) to determine which instances respond. This eliminates N-times looping and ensures consistent trigger handling.
 Priority-Driven Execution: The system uses a priority queue to manage ability resolution. Each AbilityDefinition has a priority value (higher numbers execute first). When an event triggers multiple abilities, the BattleManager repeatedly sorts the queue of pending EffectRequests and executes the highest-priority action. Ties are broken by discovery order (Unit -> Item -> Trinket), ensuring a deterministic and intentional order of operations.
 Stateless Logic: The AbilityResolver is a stateless service. It acts as a switchboard, receiving a trigger, querying the game state, and outputting EffectRequests. It retains no information between triggers.
 Decoupled Execution (Simulate Full Turn, Then Present): The system strictly separates state mutation from visual presentation. This is the Simulation & Animator Contract. The BattleManager first simulates the entire outcome of the combat turn silently, then passes a summary of these changes (a list of CombatEvent objects) to the BattleAnimator for paced, visual presentation.
@@ -40,12 +41,12 @@ This section defines the complete set of Triggers, Targets, Conditions, and Effe
 Trigger StringName	When Fired by BattleManager	Context Data Provided (Dictionary)
 on_battle_start	Once for every unit/trinket at the very beginning of combat.	{}
 on_turn_start	At the beginning of each turn cycle, before the first unit acts.	{ "turn_number": int }
-on_attack	When a unit initiates its attack action.	{ "source_uuid": String, "target_uuid": String }
-on_before_attack	When a unit is about to be attacked, before damage is dealt.	{ "source_uuid": String (target unit), "attacker_uuid": String }
-on_hurt	When a unit takes any form of damage.	{ "source_uuid": String (damaged unit), "attacker_uuid": String, "damage_taken": int }
-on_kill	When a unit's action defeats another unit.	{ "source_uuid": String (killer), "victim_uuid": String }
-on_death	When a unit's HP is reduced to 0 or less.	{ "source_uuid": String (dying unit) }
-on_ally_death	For all allies when an allied unit dies.	{ "fainting_ally_uuid": String, "fainting_ally_location": LocationIdentifier }
+on_attack	When a unit initiates its attack action.	{ "attacker_uuid": String, "target_uuid": String }
+on_before_attack	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String (target unit), "attacker_uuid": String }
+on_hurt	When a unit takes any form of damage.	{ "victim_uuid": String (damaged unit), "attacker_uuid": String, "damage_taken": int }
+on_kill	Immediately when damage causes target HP ≤ 0 (same pass as on_hurt).	{ "attacker_uuid": String (killer), "killed_uuid": String }
+on_death	When a unit's HP is reduced to 0 or less.	{ "dying_uuid": String, "dying_team": String, "dying_location": LocationIdentifier, "equipped_items": Array }
+on_ally_death	For all allies when an allied unit dies (broadcast once, AbilityResolver filters).	{ "fainting_ally_uuid": String, "fainting_ally_location": LocationIdentifier, "fainting_ally_team": String }
 on_turn_end	At the end of each turn cycle, after all units have acted.	{ "turn_number": int }
 Target StringName	Description
 Self/Source	
@@ -81,17 +82,18 @@ Only items equipped on that specific damaged unit may process their on_hurt abil
 Lethal Counters: Abilities using the DAMAGE_WAS_RECEIVED condition can trigger even if the incoming damage was lethal. The BattleManager defers the DEATH event for that unit until after its reactive abilities (e.g., a counter-attack) have been fully simulated.
 Loop Prevention (Per-Attacker Limit): To prevent infinite counter-attacks, a unit may counter each distinct attacker at most once per turn. The BattleManager tracks this via has_counter_attacked() and mark_counter_attack().
 Trinket Rules:
-Player Trinkets:
-Source: The player's Hero instance is always the source_uuid when processing a player's Trinket ability. This provides a stable positional reference for targeting.
-Targeting: All targeting types are valid.
-Enemy Trinkets:
-Source: The source_uuid is derived from the trigger's context (e.g., the damaged unit in an on_hurt event). For global triggers like on_turn_start, the source is empty.
-Targeting Constraint: Due to the lack of a consistent positional source, enemy Trinkets must not use relative targeting types (e.g., ALLY_BEHIND) unless the trigger guarantees a source.
+Source: The trinket's own GachaBallInstance UUID is always used as the source_uuid for all trinket abilities (both player and enemy). Unlike unit abilities, trinkets are team-level artifacts and do not require a "holder" unit. This simplifies the system and eliminates edge cases where a referenced unit might be dead.
+Targeting: All targeting types are valid. For effects that don't require positional targeting (e.g., resurrection, team-wide buffs), use target_type = "NONE" and retrieve targets from context or metadata.
 Section D: Combat Integration & Execution Flow
+## Purpose
+This document outlines the architecture for the Ability System in *Flashcard Heroes*. It details how abilities are defined, triggered, and resolved within the combat loop.
+
+> [!IMPORTANT]
+> For a step-by-step guide on implementing new abilities with strict architectural compliance, see [AbilityImplementationGuide.md](AbilityImplementationGuide.md).
 This section defines the contract between the Ability System and the BattleManager.
 Action & Default Attack Rule: A unit's primary action is determined by its on_attack abilities. In _enqueue_attack_for, the BattleManager first calls the AbilityResolver to process any on_attack abilities. Then, it always manually enqueues a Default Basic Attack with priority = 0. This is an additive process, not a fallback, ensuring every unit performs at least a basic attack.
 Simulation & Animator Contract (Simulate Full Turn, Then Present):
-Simulation Phase: The BattleManager's _resolve_combat_phase function simulates the entire turn silently. All EffectRequests are processed in the priority reaction loop. Effect scripts must use `BattleManager.apply_stat_delta()` to modify stats. This function updates the data model and returns the absolute value required for the `CombatEvent` visual payload. They must still call gameplay triggers (e.g., battle_manager.trigger_on_hurt()) to allow for ability chaining during the simulation. The outcome of every action is collected into a single list of CombatEvent objects.
+Simulation Phase: The BattleManager's _resolve_combat_phase function simulates the entire turn silently. All EffectRequests are processed in the priority reaction loop. Effect scripts must use `BattleManager.apply_stat_delta()` to modify stats. This function updates the data model and returns the absolute value required for the `CombatEvent` visual payload. **CRITICAL**: Gameplay triggers like `trigger_on_hurt` must be called by `BattleManager` **AFTER** `apply_stat_delta()` completes—not by effect scripts—so that condition checks (e.g., `DAMAGE_WAS_NON_LETHAL`) see the updated HP values. The outcome of every action is collected into a single list of CombatEvent objects.
 Presentation Phase: Once the simulation is complete, the BattleAnimator receives the list of events. Before playing, the animator uses a pre-turn health snapshot to reset the UI, allowing it to display damage and healing incrementally. It is solely responsible for replaying these events with animation-driven pacing, emitting all combat UI signals (battle_log_event, unit_stats_changed, etc.) as it processes each event in the list.
 Part 3 of 3: Trinket System Details
 Section E: Trinket Schema and Exclusivity

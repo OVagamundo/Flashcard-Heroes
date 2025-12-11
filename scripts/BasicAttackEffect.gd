@@ -47,8 +47,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var new_hp = max(0, target_instance.current_hp - damage)
 		target_instance.set_current_hp(new_hp)
 
-	# Trigger on_hurt event for the target
-	battle_manager.trigger_on_hurt(target_instance.ball_uuid, damage, source_instance.ball_uuid)
+	# NOTE: on_hurt is triggered by BattleManager AFTER apply_stat_delta, not here.
+	# This ensures condition checks like DAMAGE_WAS_NON_LETHAL see post-damage HP.
 	
 	# NOTE: on_kill is NOT triggered here - BattleManager handles kill tracking
 	# at the per-actor level after all reactions complete. This ensures kills from

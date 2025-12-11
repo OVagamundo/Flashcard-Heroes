@@ -17,30 +17,22 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# If source_uuid is missing from payload, check if it's in the event context (BattleAnimator might need to pass it)
 	# For now, we assume payload has it or we can't find source.
 	
-	var visual_registry = animator._visual_registry
-	
-	# Determine start position
+	# DECOUPLING FIX: Use position snapshots instead of visual_registry
+	# Determine start position from snapshot
 	var start_pos = Vector2.ZERO
 	var is_source_valid = false
-	
-	if visual_registry.has(source_uuid):
-		var src_view = visual_registry[source_uuid]
-		if is_instance_valid(src_view):
-			var rect = src_view.get_global_rect()
-			start_pos = Vector2(rect.position.x + rect.size.x / 2, rect.position.y)
-			is_source_valid = true
+	var src_snap = animator.get_snapshot_position(source_uuid)
+	if not src_snap.is_empty():
+		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
+		is_source_valid = true
 	
 	# Iterate through targets
 	for target_uuid in targets:
-		if not visual_registry.has(target_uuid):
+		var tgt_snap = animator.get_snapshot_position(target_uuid)
+		if tgt_snap.is_empty():
 			continue
 			
-		var target_view = visual_registry[target_uuid]
-		if not is_instance_valid(target_view):
-			continue
-			
-		var target_rect = target_view.get_global_rect()
-		var end_pos = Vector2(target_rect.position.x + target_rect.size.x / 2, target_rect.position.y)
+		var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
 		
 		# Handle self-cast or invalid source
 		var is_self_cast = false

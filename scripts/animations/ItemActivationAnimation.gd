@@ -11,16 +11,12 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
-	var visual_registry = animator._visual_registry
-	if not visual_registry.has(source_uuid):
+	# DECOUPLING FIX: Use position snapshot instead of visual_registry
+	var src_snap = animator.get_snapshot_position(source_uuid)
+	if src_snap.is_empty():
 		return
 		
-	var source_view = visual_registry[source_uuid]
-	if not is_instance_valid(source_view):
-		return
-		
-	var rect = source_view.get_global_rect()
-	var spawn_pos = Vector2(rect.position.x + rect.size.x / 2, rect.position.y)
+	var spawn_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
 	
 	var popup = ItemPopupScene.instantiate()
 	var battle_view = animator.get_tree().get_first_node_in_group("battle_view")

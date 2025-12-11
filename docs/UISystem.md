@@ -36,7 +36,7 @@ The UI System in Flashcard Heroes is built on a **Service-Based Architecture** d
 *Formerly `ReactiveUI.md`*
 
 ### Overview
-- **Simulate-Then-Present**: Combat is simulated instantly at the end of the turn. The result is a `TurnLog` of `CombatEvent`s.
+- **Simulate-Then-Present**: Combat is simulated instantly when the end turn button is pressed and combat starts. The result is a `TurnLog` of `CombatEvent`s.
 - **BattleAnimator**: Plays back the `TurnLog` sequentially.
 - **Puppet Views**: During combat playback, `GachaBallView` instances operate in **Puppet Mode**. They are strictly decoupled from simulation data and only react to the Animator's instructions or `VisualData` updates.
 - **Visual Registry**: The Animator maps UUIDs to Views using a `_visual_registry` populated at the start of the sequence.
@@ -89,6 +89,30 @@ The UI uses **phase-based blocking** to prevent interference with animations.
 ### Simulation Phase (The Black Box)
 - **No UI Signals**: The simulation phase (`BattleManager._resolve_combat_phase`) is strictly data-only. It **must not** emit UI signals or manipulate the SceneTree.
 - **Unified Stat Modification**: All stat changes use `BattleManager.apply_stat_delta()`. This updates the data model and returns the absolute values needed for the `CombatEvent` payload.
+
+### Strict Decoupling Principle
+
+> [!CAUTION]
+> **The Most Important Rule:**
+> Simulation and Presentation are completely independent systems connected ONLY by the TurnLog.
+> - Simulation: Mutates data, generates events, manages game state
+> - Presentation: Plays events in order, animates views, never queries game state
+
+**Simulation Rules:**
+- Effects receive ALL data via `context` parameter
+- Effects NEVER call `get_instance()` or query containers
+- Game state cleanup can be deferred for reaction mechanics
+- This is invisible to presentation
+
+**Presentation Rules:**
+- Animator plays events sequentially from TurnLog
+- Views are "puppets" - they only know what events tell them
+- NEVER query `BattleManager` or `GachaBallInstance` during playback
+
+> [!CAUTION]
+> **UUID Lookup Ban (Position Data):**
+> Animations must NEVER query `_visual_registry` to get view positions. All positional data must come from `animator.get_snapshot_position(uuid)`, which returns positions captured at animation sequence start. This ensures animations work correctly even when views are replaced (e.g., SUMMON replacing a dying unit's slot).
+- Event ordering in TurnLog is the ONLY truth
 
 ### Presentation Phase (The Playback)
 - **Driven by Events**: The Animator reads `CombatEvent` objects.

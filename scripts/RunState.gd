@@ -671,6 +671,13 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		burn_inst.initialize_from_trinket(burn_def)
 		add_instance(burn_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 
+	# [TESTING] Add Soul Echo to starting loadout
+	var soul_echo_def = Database.get_definition(&"trinket_soul_echo")
+	if is_instance_valid(soul_echo_def):
+		var soul_echo_inst := GachaBallInstance.new()
+		soul_echo_inst.initialize_from_trinket(soul_echo_def)
+		add_instance(soul_echo_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+
 	# --- Add starter units/items to inventory ---
 	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the
 	#  dedicated 'player_trinkets' container (not RunInventoryT*) and keep 'active_trinkets' in sync.

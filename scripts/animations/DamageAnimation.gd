@@ -24,8 +24,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	
 	print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
 	
-	# Get visual registry
-	var visual_registry = animator._visual_registry
+	# Get visual registry - ONLY used for view updates, NOT position lookups
+	# Position data comes from animator.get_snapshot_position() for decoupling
 	
 	# Determine main target (first target if not specified)
 	if main_target_uuid.is_empty() and not targets.is_empty():
@@ -35,41 +35,30 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# MELEE ATTACK ANIMATION
 	# ------------------------------------------------------------------
 	if attack_type == "melee" and not source_uuid.is_empty() and not skip_bump:
-		# Get target position for lunge - attacker stops just before touching target's front
+		# DECOUPLING FIX: Use position snapshots instead of querying views
 		var target_position = Vector2.ZERO
 		var is_attacking_right = true # Default: player attacks right
-		var src_width := 0.0 # Track attacker's width for offset
+		var src_width := 64.0 # Default width if not found
 		
-		# Determine attack direction and get attacker's size
-		if visual_registry.has(source_uuid):
-			var src_view = visual_registry[source_uuid]
-			if is_instance_valid(src_view):
-				var src_rect = src_view.get_global_rect()
-				src_width = src_rect.size.x
-				# If source is on the right side of screen, they attack left
-				if visual_registry.has(main_target_uuid):
-					var tgt_view = visual_registry[main_target_uuid]
-					if is_instance_valid(tgt_view):
-						var tgt_rect = tgt_view.get_global_rect()
-						is_attacking_right = src_rect.position.x < tgt_rect.position.x
+		# Get source position from snapshot (captured at animation start)
+		var src_snap = animator.get_snapshot_position(source_uuid)
+		var tgt_snap = animator.get_snapshot_position(main_target_uuid)
 		
-		if visual_registry.has(main_target_uuid):
-			var target_view = visual_registry[main_target_uuid]
-			if is_instance_valid(target_view):
-				var rect = target_view.get_global_rect()
-				# Position at front of target's head, offset by attacker's width so they don't overlap
-				# global_position is top-left corner, so we need to account for that
-				var head_y = rect.position.y # Top of sprite (head area)
-				var gap := -10.0 # Negative gap to overlap/touch target
-				
-				if is_attacking_right:
-					# Attacker coming from left: attacker's right edge should stop at target's left edge
-					# So attacker's top-left (global_position) = target's left edge - attacker's width - gap
-					target_position = Vector2(rect.position.x - src_width - gap, head_y)
-				else:
-					# Attacker coming from right: attacker's left edge should stop at target's right edge
-					# So attacker's top-left (global_position) = target's right edge + gap
-					target_position = Vector2(rect.position.x + rect.size.x + gap, head_y)
+		if not src_snap.is_empty() and not tgt_snap.is_empty():
+			src_width = src_snap.size.x
+			# Determine attack direction from snapshotted positions
+			is_attacking_right = src_snap.position.x < tgt_snap.position.x
+			
+			# Calculate target position from snapshot
+			var head_y = tgt_snap.position.y # Top of sprite (head area)
+			var gap := -10.0 # Negative gap to overlap/touch target
+			
+			if is_attacking_right:
+				# Attacker coming from left: stop at target's left edge
+				target_position = Vector2(tgt_snap.position.x - src_width - gap, head_y)
+			else:
+				# Attacker coming from right: stop at target's right edge
+				target_position = Vector2(tgt_snap.position.x + tgt_snap.size.x + gap, head_y)
 		
 		# 1. Melee Lunge - attacker jumps to target
 		if target_position != Vector2.ZERO:
@@ -161,14 +150,11 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		await animator.wait_for_animation_completion("flash", target_uuid)
 
 func _spawn_floating_damage(animator: Node, target_uuid: String, damage: int) -> void:
-	var visual_registry = animator._visual_registry
-	if not visual_registry.has(target_uuid): return
+	# DECOUPLING FIX: Use position snapshot instead of visual_registry
+	var tgt_snap = animator.get_snapshot_position(target_uuid)
+	if tgt_snap.is_empty(): return
 	
-	var target_view = visual_registry[target_uuid]
-	if not is_instance_valid(target_view): return
-	
-	var rect = target_view.get_global_rect()
-	var spawn_pos = Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y * 0.3)
+	var spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
 	
 	var damage_number = FloatingDamageNumberScene.instantiate()
 	# POOLING/LAYERING FIX: Use EffectsLayer so it renders above TopBar
@@ -196,24 +182,18 @@ func _spawn_floating_damage(animator: Node, target_uuid: String, damage: int) ->
 			damage_number.queue_free()
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
-	# Reusing the logic from ProjectileAnimation, but non-blocking
-	var visual_registry = animator._visual_registry
-	if not visual_registry.has(target_uuid): return
-	
-	var target_view = visual_registry[target_uuid]
-	if not is_instance_valid(target_view): return
+	# DECOUPLING FIX: Use position snapshots instead of visual_registry
+	var tgt_snap = animator.get_snapshot_position(target_uuid)
+	if tgt_snap.is_empty(): return
 	
 	var start_pos = Vector2.ZERO
 	var is_source_valid = false
-	if visual_registry.has(source_uuid):
-		var src_view = visual_registry[source_uuid]
-		if is_instance_valid(src_view):
-			var rect = src_view.get_global_rect()
-			start_pos = Vector2(rect.position.x + rect.size.x / 2, rect.position.y)
-			is_source_valid = true
-			
-	var target_rect = target_view.get_global_rect()
-	var end_pos = Vector2(target_rect.position.x + target_rect.size.x / 2, target_rect.position.y)
+	var src_snap = animator.get_snapshot_position(source_uuid)
+	if not src_snap.is_empty():
+		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
+		is_source_valid = true
+	
+	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
 	
 	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
 	var launch_pos = end_pos if is_self_cast else start_pos

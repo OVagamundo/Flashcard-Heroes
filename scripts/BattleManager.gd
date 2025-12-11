@@ -37,6 +37,14 @@ var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
 
+# Turn-scoped metadata for first-killed tracking and resurrection flags
+var _turn_metadata: Dictionary = {}
+
+# Turn-scoped death registry: {uuid: {team, died_in_phase, def_id}}
+# Cleared only at the start of each combat phase, persists across all phases within a turn
+# This is the SINGLE source of truth for "has this unit already died this turn"
+var _dead_this_turn: Dictionary = {}
+
 # -----------------------------------------------------------------------------
 # INITIALIZATION & SETUP
 # -----------------------------------------------------------------------------
@@ -277,6 +285,20 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 					et_container.set_uuid(idx, burn_inst.ball_uuid)
 					_update_instance_location(burn_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
 					enemy_trinkets.append(burn_inst)
+
+		# [TESTING] Force add Soul Echo to Enemy
+		var soul_echo_enemy_def = Database.get_definition(&"trinket_soul_echo")
+		if is_instance_valid(soul_echo_enemy_def):
+			var soul_echo_enemy_inst = GachaBallInstance.new()
+			soul_echo_enemy_inst.initialize_from_trinket(soul_echo_enemy_def)
+			_battle_instances[soul_echo_enemy_inst.ball_uuid] = soul_echo_enemy_inst
+			var et_container2 := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+			if is_instance_valid(et_container2):
+				var idx2 := et_container2.find_first_empty_slot()
+				if idx2 != -1:
+					et_container2.set_uuid(idx2, soul_echo_enemy_inst.ball_uuid)
+					_update_instance_location(soul_echo_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx2)
+					enemy_trinkets.append(soul_echo_enemy_inst)
 
 	# Copy player trinkets from run state to battle instances
 	_setup_player_trinkets()
@@ -1109,6 +1131,8 @@ func _change_phase(new_phase: Phases) -> void:
 ##   - Enemies go right-to-left (index 5→0) → add reversed
 func _populate_actor_queue() -> void:
 	_actor_queue.clear()
+	_turn_metadata.clear() # Reset turn-scoped tracking (first-killed, resurrection flags)
+	_dead_this_turn.clear() # Reset death registry for new turn
 	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	
@@ -1137,9 +1161,9 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var is_player = _is_player_unit(attacker)
 	var target = _get_frontmost_target(is_player)
 	if not is_instance_valid(target): return
-
+	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
 	var context: Dictionary = {
-		"source_uuid": attacker.ball_uuid,
+		"attacker_uuid": attacker.ball_uuid,
 		"target_uuid": target.ball_uuid,
 		"target_initial_hp": target.current_hp
 	}
@@ -1257,6 +1281,11 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						var old_hp = cascade_tgt.current_hp
 						var old_burn = cascade_tgt.get_status_effect_amount(&"burn")
 						var new_hp = apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
+						
+						# Skip if target was already dead (apply_stat_delta returns null)
+						if new_hp == null:
+							continue
+						
 						var max_hp = 0
 						var tgt_def = cascade_tgt.get_definition()
 						if is_instance_valid(tgt_def):
@@ -1368,6 +1397,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": request.source_uuid,
 						"target_uuids": resolved_targets,
+						"ability_id": request.ability_id,
+						"trigger_type": request.trigger_context.get("trigger_type", ""),
+						"ability_holder_uuid": request.source_uuid,
 						"visual_payload": {
 							"source_uuid": request.source_uuid,
 							"amount": amount,
@@ -1402,35 +1434,37 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					var targets_max_hp: Array[int] = []
 					var targets_old_burn: Array[int] = []
 					var targets_new_burn: Array[int] = []
+					var damaged_uuids: Array[String] = [] # Track which targets actually received damage
 					
 					for tgt_uuid in resolved_targets:
 						var tgt = get_instance_by_uuid(tgt_uuid)
-						if is_instance_valid(tgt):
-							targets_old_hp.append(tgt.current_hp) # Capture BEFORE
-							targets_old_burn.append(tgt.get_status_effect_amount(&"burn")) # Capture BEFORE
-							var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
-							targets_new_hp.append(new_hp)
-							
-							# Get max HP from definition
-							var tgt_def = tgt.get_definition()
-							if is_instance_valid(tgt_def):
-								targets_max_hp.append(tgt_def.base_hp)
-							else:
-								targets_max_hp.append(0)
-							
-							# Apply burn if needed
-							var burn_val = 0
-							if should_apply_burn:
-								burn_val = apply_stat_delta(tgt, "burn_stacks", 1) # ✅ Unified status effect
-							targets_new_burn.append(burn_val)
+						# Skip already-dead targets to prevent ghost attacks
+						if not is_instance_valid(tgt) or tgt.current_hp <= 0:
+							continue
+						damaged_uuids.append(tgt_uuid) # Only add to damaged list if alive
+						targets_old_hp.append(tgt.current_hp) # Capture BEFORE
+						targets_old_burn.append(tgt.get_status_effect_amount(&"burn")) # Capture BEFORE
+						var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
+						targets_new_hp.append(new_hp)
+						
+						# Get max HP from definition
+						var tgt_def = tgt.get_definition()
+						if is_instance_valid(tgt_def):
+							targets_max_hp.append(tgt_def.base_hp)
 						else:
-							targets_old_hp.append(0)
-							targets_new_hp.append(0)
 							targets_max_hp.append(0)
-							targets_old_burn.append(0)
-							targets_new_burn.append(0)
+						
+						# Apply burn if needed
+						var burn_val = 0
+						if should_apply_burn:
+							burn_val = apply_stat_delta(tgt, "burn_stacks", 1) # ✅ Unified status effect
+						targets_new_burn.append(burn_val)
 					
-						 # Compute bump direction during simulation (while instance is valid)
+					# Skip generating DAMAGE event if all targets were dead
+					if damaged_uuids.is_empty():
+						return
+					
+					# Compute bump direction during simulation (while instance is valid)
 					var bump_dir := Vector2.ZERO
 					if is_instance_valid(source):
 						var src_tag: StringName = source.location_container_tag
@@ -1441,7 +1475,10 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					
 					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": request.source_uuid,
-						"target_uuids": resolved_targets,
+						"target_uuids": damaged_uuids,
+						"ability_id": request.ability_id,
+						"trigger_type": request.trigger_context.get("trigger_type", ""),
+						"ability_holder_uuid": request.source_uuid,
 						"visual_payload": {
 							"source_uuid": request.source_uuid,
 							"amount": amount,
@@ -1462,6 +1499,15 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							}
 						}
 					}))
+					# CRITICAL: Trigger on_hurt AFTER apply_stat_delta so condition checks see post-damage HP
+					# This enables DAMAGE_WAS_NON_LETHAL to correctly detect lethal damage
+					for tgt_uuid in damaged_uuids:
+						trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+						# DETERMINISTIC ON_KILL: If this damage killed the target, trigger on_kill immediately
+						# This ensures kills are detected at the moment of state change, not by snapshot comparison
+						var tgt = get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt) and tgt.current_hp <= 0:
+							trigger_on_kill(request.source_uuid, tgt_uuid)
 			elif stat == "pwr" and amount > 0 and not resolved_targets.is_empty():
 				var log_targets_str = ""
 				if not target_names.is_empty():
@@ -1486,6 +1532,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": request.source_uuid,
 					"target_uuids": resolved_targets,
+					"ability_id": request.ability_id,
+					"trigger_type": request.trigger_context.get("trigger_type", ""),
+					"ability_holder_uuid": request.source_uuid,
 					"visual_payload": {
 						"source_uuid": request.source_uuid,
 						"amount": amount,
@@ -1513,10 +1562,13 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": request.source_uuid,
 					"target_uuids": resolved_targets,
+					"ability_id": request.ability_id,
+					"trigger_type": request.trigger_context.get("trigger_type", ""),
+					"ability_holder_uuid": request.source_uuid,
 					"visual_payload": {
 						"source_uuid": request.source_uuid,
 						"amount": amount,
-						"stat": "burn_stacks", # Use visual name
+						"stat": "burn_stacks",
 						"targets_old_val": targets_old_val,
 						"targets_new_val": targets_new_val
 					}
@@ -1527,9 +1579,13 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				var holder_uuid = effect_data.get("holder_uuid", "")
 				var holder_location = effect_data.get("holder_location")
 				
+				var is_resurrection = effect_data.get("is_resurrection", false)
+				
 				if unit_id and is_instance_valid(holder_location):
-					# Create new instance
+					# Create new instance - try units first, then general database
 					var unit_def = Database.units.get(unit_id)
+					if not is_instance_valid(unit_def):
+						unit_def = Database.get_definition(unit_id)
 					if is_instance_valid(unit_def):
 						var new_inst = GachaBallInstance.new()
 						new_inst.initialize(unit_def)
@@ -1539,10 +1595,20 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						# Add to battle model IMMEDIATELY so it can be targeted in this turn
 						_battle_instances[new_inst.ball_uuid] = new_inst
 						
-						# Handle Old Unit: Use unified cleanup logic
-						var holder_inst = get_instance(holder_uuid)
-						if is_instance_valid(holder_inst):
-							_perform_unit_death_cleanup(holder_inst)
+						# Handle Old Unit: Use unified cleanup logic (skip for resurrection)
+						if not is_resurrection:
+							var holder_inst = get_instance(holder_uuid)
+							if is_instance_valid(holder_inst):
+								_perform_unit_death_cleanup(holder_inst)
+						else:
+							# For resurrection: clear the slot of the dead unit (if still there)
+							var rez_container = get_container(holder_location.container)
+							if is_instance_valid(rez_container):
+								var old_uuid = rez_container.get_uuid(holder_location.index)
+								if not old_uuid.is_empty():
+									var old_inst = get_instance(old_uuid)
+									if is_instance_valid(old_inst) and old_inst.current_hp <= 0:
+										_perform_unit_death_cleanup(old_inst)
 						
 						# Set new unit's location
 						_update_instance_location(
@@ -1573,6 +1639,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						out_events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 							"source_uuid": request.source_uuid,
 							"target_uuids": [new_inst.ball_uuid],
+							"ability_id": request.ability_id,
+							"trigger_type": request.trigger_context.get("trigger_type", ""),
+							"ability_holder_uuid": request.source_uuid,
 							"visual_payload": {
 								"old_unit_uuid": holder_uuid,
 								"new_unit_uuid": new_inst.ball_uuid,
@@ -1635,6 +1704,9 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					out_events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 						"source_uuid": request.source_uuid,
 						"target_uuids": [new_unit.ball_uuid],
+						"ability_id": request.ability_id,
+						"trigger_type": request.trigger_context.get("trigger_type", ""),
+						"ability_holder_uuid": request.source_uuid,
 						"visual_payload": {
 							"old_unit_uuid": "", # No old unit for boss summons
 							"new_unit_uuid": new_unit.ball_uuid,
@@ -1714,16 +1786,6 @@ func _resolve_combat_phase() -> void:
 		
 		if current_actor.current_hp <= 0:
 			continue
-		
-		# Track which enemy units are alive BEFORE this actor's turn
-		var is_player_actor = _is_player_unit(current_actor)
-		var enemies_before_action: Dictionary = {}
-		var enemy_lineup = get_instances_in_container(
-			BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_actor else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-		)
-		for enemy in enemy_lineup:
-			if enemy.current_hp > 0:
-				enemies_before_action[enemy.ball_uuid] = enemy.current_hp
 
 		_enqueue_attack_for(current_actor)
 		
@@ -1748,16 +1810,8 @@ func _resolve_combat_phase() -> void:
 			_process_completed_counter_deaths(deferred_death_events, death_tracking)
 			turn_log.append_array(deferred_death_events)
 		
-		# AFTER all reactions: Check which enemies died during this actor's turn
-		# and trigger on_kill for items equipped on the actor (like Bloodlust Edge)
-		var _kills_this_turn: int = 0
-		for enemy_uuid in enemies_before_action.keys():
-			var enemy = get_instance_by_uuid(enemy_uuid)
-			if is_instance_valid(enemy) and enemy.current_hp <= 0:
-				# This enemy was killed during this actor's turn
-				_kills_this_turn += 1
-				# Trigger on_kill for items equipped on the current actor
-				trigger_on_kill(current_actor.ball_uuid, enemy_uuid)
+		# NOTE: on_kill triggers are now fired immediately in _resolve_single_effect_request
+		# when damage causes HP <= 0, so no snapshot comparison needed here
 		
 		# Process any on_kill reactions (like Bloodlust granting extra action)
 		while not _pending_reactions.is_empty():
@@ -1807,6 +1861,7 @@ func _resolve_combat_phase() -> void:
 		_on_turn_animation_finished()
 
 func _on_turn_animation_finished() -> void:
+	print("[DEBUG] _on_turn_animation_finished called. Phase: ", get_current_phase_name())
 	# This signal is the single source of truth for when animations are complete.
 	# It is safe to proceed to the next phase.
 	_is_processing_effect = false
@@ -1837,6 +1892,7 @@ func _on_turn_animation_finished() -> void:
 
 func _move_instance_to_discard(instance: GachaBallInstance) -> void:
 	assert(is_instance_valid(instance), "_move_instance_to_discard: instance is null")
+	print("[DEBUG] _move_instance_to_discard: ", instance.ball_uuid, " from container: ", instance.location_container_tag)
 	# Ownership gate: only player-owned instances can enter the player's discard pile
 	assert(_is_player_owned(instance), "_move_instance_to_discard: instance is not player owned")
 	# Atomically remove from current location (equipped or container) and place into discard
@@ -1887,6 +1943,9 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
 	for unit in player_units:
 		if unit.current_hp <= 0:
+			# Use unified death registry to prevent duplicate processing
+			if not _register_death(unit, &"COMBAT"):
+				continue # Already died earlier this turn
 			something_changed = true
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
@@ -1896,19 +1955,23 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 					"visual_payload": {}
 				}))
 			elif not is_simulation:
-				# Trigger on_death for the dying unit
-				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
+				# Trigger on_death for the dying unit (semantic key: dying_uuid)
+				var death_location = get_location_for_uuid(unit.ball_uuid)
+				var death_context: Dictionary = {
+					"dying_uuid": unit.ball_uuid,
+					"dying_team": "PLAYER",
+					"dying_location": death_location,
+					"equipped_items": _snapshot_equipped_items(unit)
+				}
 				AbilityResolver.process_trigger(&"on_death", death_context)
-				# Trigger on_ally_death ONLY for other player units (same team)
-				var player_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-				for ally in player_allies:
-					if ally.ball_uuid != unit.ball_uuid:
-						var ally_death_context: Dictionary = {
-							"source_uuid": ally.ball_uuid,
-							"fainting_ally_uuid": unit.ball_uuid,
-							"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
-						}
-						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+				
+				# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
+				var ally_death_context: Dictionary = {
+					"fainting_ally_uuid": unit.ball_uuid,
+					"fainting_ally_location": death_location,
+					"fainting_ally_team": "PLAYER"
+				}
+				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				
 				# DEFER cleanup - unit must stay in original container
 				# _perform_unit_death_cleanup(unit)
@@ -1916,6 +1979,9 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
+			# Use unified death registry to prevent duplicate processing
+			if not _register_death(unit, &"COMBAT"):
+				continue # Already died earlier this turn
 			something_changed = true
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
@@ -1925,25 +1991,81 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 					"visual_payload": {}
 				}))
 			elif not is_simulation:
-				# Trigger on_death for the dying unit
-				var death_context: Dictionary = {"source_uuid": unit.ball_uuid}
+				# Trigger on_death for the dying unit (semantic key: dying_uuid)
+				var death_location = get_location_for_uuid(unit.ball_uuid)
+				var death_context: Dictionary = {
+					"dying_uuid": unit.ball_uuid,
+					"dying_team": "ENEMY",
+					"dying_location": death_location,
+					"equipped_items": _snapshot_equipped_items(unit)
+				}
 				AbilityResolver.process_trigger(&"on_death", death_context)
-				# Trigger on_ally_death ONLY for other enemy units (same team)
-				var enemy_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-				for ally in enemy_allies:
-					if ally.ball_uuid != unit.ball_uuid:
-						var ally_death_context2: Dictionary = {
-							"source_uuid": ally.ball_uuid,
-							"fainting_ally_uuid": unit.ball_uuid,
-							"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
-						}
-						AbilityResolver.process_trigger(&"on_ally_death", ally_death_context2)
 				
-## Moves player units to discard, removes enemy units entirely.
+				# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
+				var ally_death_context: Dictionary = {
+					"fainting_ally_uuid": unit.ball_uuid,
+					"fainting_ally_location": death_location,
+					"fainting_ally_team": "ENEMY"
+				}
+				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+				
 ## Centralized logic for cleaning up a dead unit.
 ## Moves player units to discard, removes enemy units entirely.
+
+## Snapshot equipped items for context enrichment (effects should use context, not query instances)
+func _snapshot_equipped_items(unit: GachaBallInstance) -> Array[Dictionary]:
+	var items: Array[Dictionary] = []
+	for item_uuid in unit.equipped_item_uuids:
+		if not item_uuid.is_empty():
+			var item = get_instance(item_uuid)
+			if is_instance_valid(item):
+				var item_def = item.get_definition()
+				items.append({
+					"uuid": item.ball_uuid,
+					"def_id": item.definition_id,
+					"equipped_on_uuid": item.equipped_on_uuid,
+					"slot_index": item.equipped_slot_index,
+					"category": item_def.category if is_instance_valid(item_def) else &"ITEM"
+				})
+	return items
+
+# -----------------------------------------------------------------------------
+# UNIFIED DEATH TRACKING
+# -----------------------------------------------------------------------------
+# These functions provide the SINGLE source of truth for death tracking within a turn.
+# All code paths that detect deaths must use _register_death() to ensure:
+#   1. Each unit dies exactly ONCE per turn
+#   2. DEATH events are generated exactly ONCE per death
+#   3. Death triggers (on_death, on_ally_death) fire exactly ONCE per death
+
+## Register a unit as dead. Returns true if this is a NEW death, false if already registered.
+## This is the ONLY function that should mark a unit as dead. All death detection code paths
+## must call this before creating DEATH events or firing triggers.
+func _register_death(unit: GachaBallInstance, phase: StringName) -> bool:
+	assert(is_instance_valid(unit), "_register_death: unit is null")
+	
+	if _dead_this_turn.has(unit.ball_uuid):
+		return false # Already dead this turn - prevent duplicate processing
+	
+	var is_player = _is_player_unit(unit)
+	_dead_this_turn[unit.ball_uuid] = {
+		"team": "PLAYER" if is_player else "ENEMY",
+		"died_in_phase": phase,
+		"def_id": unit.definition_id
+	}
+	return true
+
+## Check if a unit has already died this turn. Use this to skip dead units in loops.
+func is_dead_this_turn(unit_uuid: String) -> bool:
+	return _dead_this_turn.has(unit_uuid)
+
+## Get death info for a unit (team, phase, def_id). Returns empty dict if not dead.
+func get_death_info(unit_uuid: String) -> Dictionary:
+	return _dead_this_turn.get(unit_uuid, {})
+
 func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 	assert(is_instance_valid(unit), "_perform_unit_death_cleanup: unit is null")
+	print("[DEBUG] _perform_unit_death_cleanup for: ", unit.ball_uuid, " HP: ", unit.current_hp, " container: ", unit.location_container_tag)
 	
 	if _is_player_owned(unit):
 		# Player unit: move equipped items to discard then move unit to discard
@@ -2036,23 +2158,63 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 			if is_simulation and out_events != null:
 				# Emit death-related triggers once during simulation so reactions can resolve
 				if death_tracking != null:
-					var sim_flag_key: String = "death_triggers_emitted_" + unit.ball_uuid
-					if not death_tracking.has(sim_flag_key):
-						# on_death for the dying unit
-						AbilityResolver.process_trigger(&"on_death", {"source_uuid": unit.ball_uuid})
-						# on_ally_death for same-team allies
-						var player_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-						for ally in player_allies:
-							if ally.ball_uuid != unit.ball_uuid:
-								var ally_ctx := {
-									"source_uuid": ally.ball_uuid,
-									"fainting_ally_uuid": unit.ball_uuid,
-									"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
-								}
-								AbilityResolver.process_trigger(&"on_ally_death", ally_ctx)
-						death_tracking[sim_flag_key] = true
+					# Use unified death registry to prevent cross-phase duplicate processing
+					if _register_death(unit, &"COMBAT"):
+						# Track first-killed for resurrection (before triggers fire)
+						var first_killed_key := "first_killed_player_unit"
+						if not _turn_metadata.has(first_killed_key):
+							var unit_def_fk = unit.get_definition()
+							if is_instance_valid(unit_def_fk) and not unit_def_fk.is_hero:
+								var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
+								if is_instance_valid(loc_snapshot):
+									_turn_metadata[first_killed_key] = {
+										"def_id": unit.definition_id,
+										"team": "PLAYER",
+										"location_snapshot": loc_snapshot
+									}
+						# on_death for the dying unit (semantic key: dying_uuid)
+						# Enrich context so effects use context data, not get_instance()
+						var death_location = get_location_for_uuid(unit.ball_uuid)
+						var death_ctx := {
+							"dying_uuid": unit.ball_uuid,
+							"dying_team": "PLAYER",
+							"dying_location": death_location,
+							"equipped_items": _snapshot_equipped_items(unit)
+						}
+						AbilityResolver.process_trigger(&"on_death", death_ctx)
+						
+						# Check if this unit has on_hurt reactions that should complete before death
+						# (counter-attacks, resilient aura buffs, etc.)
+						# If so, defer DEATH event AND on_ally_death until after reactions complete
+						if _has_lethal_counter_abilities(unit):
+							# DEATH event and on_ally_death will be generated by _process_completed_counter_deaths()
+							# after all counter-attacks and buffs have resolved
+							# Store the dying unit's info for deferred on_ally_death trigger
+							if not has_meta("deferred_ally_deaths_player"):
+								set_meta("deferred_ally_deaths_player", [])
+							var deferred_list: Array = get_meta("deferred_ally_deaths_player")
+							deferred_list.append({
+								"uuid": unit.ball_uuid,
+								"location": death_location,
+								"slot": unit.location_slot_index,
+								"def_id": unit.definition_id
+							})
+							set_meta("deferred_ally_deaths_player", deferred_list)
+						else:
+							# No on_hurt reactions - generate DEATH event immediately
+							# Use _create_death_event_if_needed to ensure consistent tracking
+							_create_death_event_if_needed(unit.ball_uuid, out_events, death_tracking)
+							
+							# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
+							var ally_death_ctx := {
+								"fainting_ally_uuid": unit.ball_uuid,
+								"fainting_ally_location": death_location,
+								"fainting_ally_team": "PLAYER"
+							}
+							AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 				
-				# ALWAYS defer death event to ensure causal ordering (Damage -> Reaction -> Death)
+				# Game state cleanup is deferred - unit stays in containers for reaction targeting
+				# But DEATH event may be immediate or deferred depending on on_hurt abilities
 				deferred_deaths.append(unit.ball_uuid)
 				
 				# Legacy immediate path removed to enforce ordering
@@ -2070,23 +2232,64 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 			if is_simulation and out_events != null:
 				# Emit death-related triggers once during simulation so reactions can resolve
 				if death_tracking != null:
-					var sim_flag_key2: String = "death_triggers_emitted_" + unit.ball_uuid
-					if not death_tracking.has(sim_flag_key2):
-						# on_death for the dying unit
-						AbilityResolver.process_trigger(&"on_death", {"source_uuid": unit.ball_uuid})
-						# on_ally_death for same-team allies (enemy side)
-						var enemy_allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-						for ally in enemy_allies:
-							if ally.ball_uuid != unit.ball_uuid:
-								var ally_ctx2 := {
-									"source_uuid": ally.ball_uuid,
-									"fainting_ally_uuid": unit.ball_uuid,
-									"fainting_ally_location": get_location_for_uuid(unit.ball_uuid)
-								}
-								AbilityResolver.process_trigger(&"on_ally_death", ally_ctx2)
-						death_tracking[sim_flag_key2] = true
+					# Use unified death registry to prevent cross-phase duplicate processing
+					if _register_death(unit, &"COMBAT"):
+						# Track first-killed for resurrection (before triggers fire)
+						var first_killed_key2 := "first_killed_enemy_unit"
+						if not _turn_metadata.has(first_killed_key2):
+							var unit_def_fk2 = unit.get_definition()
+							if is_instance_valid(unit_def_fk2) and not unit_def_fk2.is_hero:
+								var loc_snapshot2 = get_location_for_uuid(unit.ball_uuid)
+								if is_instance_valid(loc_snapshot2):
+									_turn_metadata[first_killed_key2] = {
+										"def_id": unit.definition_id,
+										"team": "ENEMY",
+										"location_snapshot": loc_snapshot2
+									}
+									print("[DEBUG BM] Stored first_killed_enemy_unit: def_id=%s" % unit.definition_id)
+						# on_death for the dying unit (semantic key: dying_uuid)
+						# Enrich context so effects use context data, not get_instance()
+						var death_location2 = get_location_for_uuid(unit.ball_uuid)
+						var death_ctx2 := {
+							"dying_uuid": unit.ball_uuid,
+							"dying_team": "ENEMY",
+							"dying_location": death_location2,
+							"equipped_items": _snapshot_equipped_items(unit)
+						}
+						AbilityResolver.process_trigger(&"on_death", death_ctx2)
+						
+						# Check if this unit has on_hurt reactions that should complete before death
+						# (counter-attacks, resilient aura buffs, etc.)
+						# If so, defer DEATH event AND on_ally_death until after reactions complete
+						if _has_lethal_counter_abilities(unit):
+							# DEATH event and on_ally_death will be generated by _process_completed_counter_deaths()
+							# after all counter-attacks and buffs have resolved
+							# Store the dying unit's info for deferred on_ally_death trigger
+							if not has_meta("deferred_ally_deaths_enemy"):
+								set_meta("deferred_ally_deaths_enemy", [])
+							var deferred_list2: Array = get_meta("deferred_ally_deaths_enemy")
+							deferred_list2.append({
+								"uuid": unit.ball_uuid,
+								"location": death_location2,
+								"slot": unit.location_slot_index,
+								"def_id": unit.definition_id
+							})
+							set_meta("deferred_ally_deaths_enemy", deferred_list2)
+						else:
+							# No on_hurt reactions - generate DEATH event immediately
+							# Use _create_death_event_if_needed to ensure consistent tracking
+							_create_death_event_if_needed(unit.ball_uuid, out_events, death_tracking)
+							
+							# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
+							var ally_death_ctx2 := {
+								"fainting_ally_uuid": unit.ball_uuid,
+								"fainting_ally_location": death_location2,
+								"fainting_ally_team": "ENEMY"
+							}
+							AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx2)
 				
-				# ALWAYS defer death event to ensure causal ordering
+				# Game state cleanup is deferred - unit stays in containers for reaction targeting
+				# But DEATH event may be immediate or deferred depending on on_hurt abilities
 				deferred_deaths.append(unit.ball_uuid)
 				
 				# Legacy immediate path removed to enforce ordering
@@ -2143,6 +2346,15 @@ func _process_completed_counter_deaths(out_events = null, death_tracking = null)
 		if not has_pending_counters:
 			if out_events != null and death_tracking != null:
 				_create_death_event_if_needed(uuid, out_events, death_tracking)
+			
+			# Process deferred on_ally_death triggers for this unit
+			# These were stored when the death was detected but counter-attacks were pending
+			_process_deferred_ally_death(uuid, "PLAYER")
+			_process_deferred_ally_death(uuid, "ENEMY")
+			
+			# CRITICAL FIX: Actually clean up the unit from the game state
+			# Without this, units stay in lineup with HP<=0 and die again on next turn
+			_perform_unit_death_cleanup(unit)
 		else:
 			# Still has pending counter-attacks, keep deferred
 			remaining_deferred.append(uuid)
@@ -2152,6 +2364,37 @@ func _process_completed_counter_deaths(out_events = null, death_tracking = null)
 		remove_meta("deferred_deaths")
 	else:
 		set_meta("deferred_deaths", remaining_deferred)
+
+## Helper function to process deferred on_ally_death triggers after counter-attacks resolve
+func _process_deferred_ally_death(dying_uuid: String, team: String) -> void:
+	var meta_key = "deferred_ally_deaths_player" if team == "PLAYER" else "deferred_ally_deaths_enemy"
+	if not has_meta(meta_key):
+		return
+	
+	var deferred_list: Array = get_meta(meta_key)
+	var remaining_list: Array = []
+	
+	for entry in deferred_list:
+		if entry.uuid != dying_uuid:
+			remaining_list.append(entry)
+			continue
+		
+		# This dying unit's on_ally_death triggers can now fire
+		var death_location = entry.location
+		
+		# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
+		var ally_death_ctx := {
+			"fainting_ally_uuid": dying_uuid,
+			"fainting_ally_location": death_location,
+			"fainting_ally_team": team
+		}
+		AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
+	
+	# Update the deferred list
+	if remaining_list.is_empty():
+		remove_meta(meta_key)
+	else:
+		set_meta(meta_key, remaining_list)
 
 func _on_apply_deaths_requested(dead_unit_uuids: Array) -> void:
 	if dead_unit_uuids == null:
@@ -2614,9 +2857,15 @@ func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBall
 ## @param instance: GachaBallInstance to modify
 ## @param stat_type: String - "hp", "pwr", "burn_stacks", etc.
 ## @param delta: int - Amount to change (positive or negative)
-## @return int - New value after change
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int) -> int:
+## @return Variant - New value after change, or null if operation was skipped (e.g., damage to dead unit)
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int) -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
+	
+	# CRITICAL: Reject damage to already-dead units
+	# This is the "Validate Before Apply" pattern - ensures ghost attacks are impossible
+	# Heals and buffs still apply normally (they won't resurrect without explicit resurrection logic)
+	if stat_type == "hp" and delta < 0 and instance.current_hp <= 0:
+		return null # Signal to caller: operation skipped - target already dead
 	
 	# CRITICAL: Use SILENT methods during simulation to prevent UI coupling
 	# The BattleAnimator handles all visual updates during COMBAT phase
@@ -2644,8 +2893,9 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				return 0
 
 func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String) -> void:
+	# Semantic context keys: victim_uuid = the damaged unit
 	var hurt_context: Dictionary = {
-		"source_uuid": target_uuid,
+		"victim_uuid": target_uuid,
 		"damage_taken": damage_amount,
 		"attacker_uuid": attacker_uuid
 	}
@@ -2655,8 +2905,9 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 ## @param killer_uuid: String - The UUID of the unit that got the kill
 ## @param killed_uuid: String - The UUID of the unit that was killed
 func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
+	# Semantic context keys: attacker_uuid = the killer
 	var kill_context: Dictionary = {
-		"source_uuid": killer_uuid,
+		"attacker_uuid": killer_uuid,
 		"killed_uuid": killed_uuid
 	}
 	AbilityResolver.process_trigger(&"on_kill", kill_context)
@@ -2776,7 +3027,52 @@ func _trigger_turn_end_abilities() -> void:
 			}))
 				
 			if unit.current_hp <= 0:
+				# Use unified death registry to prevent duplicate processing
+				if not _register_death(unit, &"END_OF_TURN"):
+					continue # Already died earlier this turn (e.g., in COMBAT phase)
+				
 				_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)
+				
+				# Track first-killed for resurrection (must happen before on_death triggers)
+				var is_player_unit = _is_player_unit(unit)
+				var first_killed_key := "first_killed_player_unit" if is_player_unit else "first_killed_enemy_unit"
+				if not _turn_metadata.has(first_killed_key):
+					var unit_def_fk = unit.get_definition()
+					if is_instance_valid(unit_def_fk) and not unit_def_fk.is_hero:
+						var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
+						if is_instance_valid(loc_snapshot):
+							_turn_metadata[first_killed_key] = {
+								"def_id": unit.definition_id,
+								"team": "PLAYER" if is_player_unit else "ENEMY",
+								"location_snapshot": loc_snapshot
+							}
+				
+				# Trigger on_death for the dying unit (semantic key: dying_uuid)
+				var death_location = get_location_for_uuid(unit.ball_uuid)
+				var death_team = "PLAYER" if is_player_unit else "ENEMY"
+				var death_context = {
+					"dying_uuid": unit.ball_uuid,
+					"dying_team": death_team,
+					"dying_location": death_location,
+					"equipped_items": _snapshot_equipped_items(unit)
+				}
+				AbilityResolver.process_trigger(&"on_death", death_context)
+				
+				# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
+				var ally_death_context := {
+					"fainting_ally_uuid": unit.ball_uuid,
+					"fainting_ally_location": death_location,
+					"fainting_ally_team": death_team
+				}
+				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
+				
+				# Process any reactions generated by on_death (like Soul Echo summons)
+				while not _pending_reactions.is_empty():
+					_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+					var death_reaction = _pending_reactions.pop_front()
+					var death_reaction_events: Array[CombatEvent] = []
+					_resolve_single_effect_request(death_reaction, death_reaction_events, death_tracking)
+					all_events.append_array(death_reaction_events)
 
 	# 2. Process on_turn_end triggers
 	# print("DEBUG: Processing on_turn_end triggers")
@@ -2968,11 +3264,14 @@ func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 func _finalize_deaths() -> void:
 	# Removes units with <= 0 HP from containers and discard, WITHOUT triggering abilities.
 	# This is called after VCR playback to synchronize logical state with visual state.
+	print("[DEBUG] _finalize_deaths called. Current phase: ", get_current_phase_name())
 	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	print("[DEBUG] Found ", all_units.size(), " units in lineups")
 	var something_changed = false
 	
 	for unit in all_units:
-		if unit.current_hp <= 0:
+		print("[DEBUG] Checking unit ", unit.ball_uuid, " HP: ", unit.current_hp, " already_dead: ", is_dead_this_turn(unit.ball_uuid))
+		if unit.current_hp <= 0 and is_dead_this_turn(unit.ball_uuid):
 			something_changed = true
 			# Use unified cleanup logic which handles:
 			# 1. Item cleanup (move to discard or destroy)

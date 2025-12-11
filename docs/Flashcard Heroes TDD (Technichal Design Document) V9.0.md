@@ -80,8 +80,9 @@ The game logic is modularized into distinct systems and managers, each with a cl
         - Views populate from snapshot values, never query live instances during COMBAT
         - Prevents presentation from seeing "future" state after simulation mutates data
     -   **Phase-Based UI Blocking:** During animation phases (COMBAT, START_OF_TURN, END_OF_TURN), UI updates are blocked to prevent destroying the Animator's visual registry.
-    -   **Event Causality:** Events must appear in causal order (DAMAGE → DEATH → SUMMON).
-    -   **Deferred Deaths:** DEATH events generate after all reactions (counter-attacks, summons) complete.
+-   **Event Causality:** Events must appear in causal order (DAMAGE → DEATH → SUMMON).
+    -   **Death Event Ordering:** DEATH events generate BEFORE on_ally_death triggers, ensuring correct TurnLog order. Game state cleanup is deferred internally for reaction mechanics.
+    -   **Effect Decoupling:** Effects receive ALL data via `context` parameter. Effects NEVER call `get_instance()` or query containers. This is the most critical architectural rule.
     -   **Unified Stat Modification:** All stat changes (HP, PWR, Status) use `apply_stat_delta()` for consistency and correct snapshotting.
     -   **Visual Registry:** The Animator scans the scene tree at the start of a turn to map UUIDs to `GachaBallView` nodes, storing them in a `_visual_registry`.
     -   **Puppet Views:** During playback, Views operate in "Puppet Mode," strictly decoupled from live data. They are populated via `VisualDataAdapter` and updated strictly via `CombatEvent` payloads.

@@ -71,9 +71,9 @@ func log_turn_start(turn_number: int) -> void:
 func log_turn_end(turn_number: int) -> void:
 	_add_entry("turn", "─── End of Turn %d ───" % turn_number, "", 0, "turn")
 
-func log_attack(attacker_name: String, target_name: String, damage: int, old_hp: int, new_hp: int, ability_name: String = "") -> void:
-	var ability_str = " (%s)" % ability_name if ability_name != "" else ""
-	var message = "[b]%s[/b] attacks [b]%s[/b]%s for [color=red]%d damage[/color]" % [attacker_name, target_name, ability_str, damage]
+func log_attack(attacker_name: String, target_name: String, damage: int, old_hp: int, new_hp: int, ability_id: String = "", trigger_type: String = "") -> void:
+	var context_str = _format_ability_context(ability_id, trigger_type)
+	var message = "[b]%s[/b] attacks [b]%s[/b] for [color=red]%d damage[/color]%s" % [attacker_name, target_name, damage, context_str]
 	var details = "(HP: %d→%d)" % [old_hp, new_hp]
 	_add_entry("attack", message, details, 0, "attack")
 
@@ -87,15 +87,17 @@ func log_cascade_damage(_source_name: String, target_name: String, damage: int, 
 	var details = "(HP: %d→%d)" % [old_hp, new_hp]
 	_add_entry("damage", message, details, 1, "damage")
 
-func log_heal(source_name: String, target_name: String, amount: int, old_hp: int, new_hp: int) -> void:
-	var message = "[b]%s[/b] heals [b]%s[/b] for [color=green]%d HP[/color]" % [source_name, target_name, amount]
+func log_heal(source_name: String, target_name: String, amount: int, old_hp: int, new_hp: int, ability_id: String = "", trigger_type: String = "") -> void:
+	var context_str = _format_ability_context(ability_id, trigger_type)
+	var message = "[b]%s[/b] heals [b]%s[/b] for [color=green]%d HP[/color]%s" % [source_name, target_name, amount, context_str]
 	var details = "(HP: %d→%d)" % [old_hp, new_hp]
 	_add_entry("heal", message, details, 0, "heal")
 
-func log_buff(source_name: String, target_name: String, stat: String, amount: int, is_debuff: bool = false) -> void:
+func log_buff(source_name: String, target_name: String, stat: String, amount: int, is_debuff: bool = false, ability_id: String = "", trigger_type: String = "") -> void:
 	var sign_str = "-" if is_debuff else "+"
 	var color = "red" if is_debuff else "cyan"
-	var message = "[b]%s[/b] grants [b]%s[/b] [color=%s]%s%d %s[/color]" % [source_name, target_name, color, sign_str, abs(amount), stat.to_upper()]
+	var context_str = _format_ability_context(ability_id, trigger_type)
+	var message = "[b]%s[/b] grants [b]%s[/b] [color=%s]%s%d %s[/color]%s" % [source_name, target_name, color, sign_str, abs(amount), stat.to_upper(), context_str]
 	_add_entry("buff", message, "", 0, "buff")
 
 func log_ability_trigger(source_name: String, ability_name: String, trigger_reason: String = "") -> void:
@@ -148,7 +150,7 @@ func _on_animation_event(event: CombatEvent) -> void:
 			var damage = abs(int(payload.get("amount", 0)))
 			if damage == 0:
 				damage = abs(old_hp - new_hp)
-			log_attack(source_name, primary_target, damage, old_hp, new_hp)
+			log_attack(source_name, primary_target, damage, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
 		
 		CombatEvent.Type.HEAL:
 			var payload = event.visual_payload
@@ -160,14 +162,14 @@ func _on_animation_event(event: CombatEvent) -> void:
 			var amount = int(payload.get("amount", 0))
 			if amount == 0:
 				amount = abs(new_hp - old_hp)
-			log_heal(source_name, primary_target, amount, old_hp, new_hp)
+			log_heal(source_name, primary_target, amount, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
 		
 		CombatEvent.Type.BUFF:
 			var payload = event.visual_payload
 			var stat = String(payload.get("stat", "stat"))
 			var amount = int(payload.get("amount", event.amount))
 			var is_debuff = amount < 0
-			log_buff(source_name, primary_target, stat, abs(amount), is_debuff)
+			log_buff(source_name, primary_target, stat, abs(amount), is_debuff, String(event.ability_id), String(event.trigger_type))
 		
 		CombatEvent.Type.DEATH:
 			log_death(primary_target)
@@ -214,6 +216,26 @@ func _get_target_names(event: CombatEvent) -> Array[String]:
 # ========================================
 # INTERNAL HELPERS
 # ========================================
+
+func _format_ability_context(ability_id: String, trigger_type: String) -> String:
+	# Format ability_id and trigger_type into a human-readable context string
+	if ability_id.is_empty() and trigger_type.is_empty():
+		return ""
+	
+	var parts: Array[String] = []
+	if not ability_id.is_empty():
+		# Shorten common ability IDs for readability
+		var short_id = ability_id
+		if short_id.begins_with("unit_") or short_id.begins_with("item_") or short_id.begins_with("trinket_"):
+			# Keep as-is for now, can add shortening later
+			pass
+		parts.append(short_id)
+	if not trigger_type.is_empty():
+		parts.append(String(trigger_type))
+	
+	if parts.is_empty():
+		return ""
+	return " [color=gray](%s)[/color]" % ", ".join(parts)
 
 func _add_entry(type: String, message: String, details: String, indent_level: int, color_key: String) -> void:
 	_event_index += 1

@@ -12,6 +12,8 @@ The system is divided into two distinct, non-overlapping phases:
 > [!IMPORTANT]
 > **The Golden Rule of Decoupling:**
 > During the Presentation Phase, the UI must **NEVER** query the live `GachaBallInstance` or `BattleManager` for current state (e.g., `unit.current_hp`). The live data is already at the "End of Turn" state. The UI must *only* use the data provided in the `CombatEvent` to update itself.
+>
+> **See [AbilityImplementationGuide.md](AbilityImplementationGuide.md) for strict implementation rules.**
 
 ---
 
@@ -37,6 +39,9 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 *   **Correct:** `ATTACK_START` -> `DAMAGE` -> `DEATH` -> `SUMMON` -> `BUFF`
 *   **Incorrect:** `DEATH` -> `BUFF` -> `SUMMON` (Violates causality; the buff source might be the summoned unit)
 
+> [!IMPORTANT]
+> **Fidelity Rule:** Every `CombatEvent` in the TurnLog **MUST** be processed by `BattleAnimator`. The animator may not skip, filter, or drop events. Each event has a unique `event_id` for verification. Look for `[SIM]` and `[ANIM]` prefixes in logs to trace simulation-presentation fidelity.
+
 ### Handling Complex Logic (Priority-Based Reaction Resolution)
 
 The system uses a **Priority-Based Reaction System** to resolve complex interactions. Reactions are not instantaneous; they are collected, sorted by priority, and filtered by validity (e.g., lethality checks) before execution.
@@ -61,7 +66,12 @@ When an action (like an Attack) occurs, the system follows this strict sequence:
     *   *Example:* AOE Attack deals 10 damage to Unit A and Unit B.
 2.  **Lethality Check:** The system checks for deaths *immediately* after the action.
     *   *Example:* Unit A (0 HP) -> Dead. Unit B (0 HP) -> Dead.
-3.  **Trigger Collection:** All applicable triggers (`on_hurt`, `on_death`) are collected into a pending list.
+3.  **Trigger Collection:** All applicable triggers (`on_hurt`, `on_kill`, `on_death`) are collected into a pending list.
+    *  > [!IMPORTANT]
+       > **Trigger Timing Rule:** Both `on_hurt` and `on_kill` are fired **AFTER** `apply_stat_delta()` modifies HP. This ensures:
+       > - Condition checks (e.g., `DAMAGE_WAS_NON_LETHAL`) see post-damage HP values
+       > - `on_kill` is triggered immediately when damage causes HP ≤ 0, not by snapshot comparison
+       > - Kills of summoned units (created mid-turn) are handled correctly
 4.  **Validity Filtering:**
     *   **Dead Units:** Triggers from dead units are **discarded** unless the ability has the `execute_on_death` flag (e.g., Vengeful Counter).
 5.  **Priority Sorting:** The pending list is sorted by Priority (Descending). Ties are broken by the discovery order (FIFO).
@@ -163,16 +173,78 @@ func _redraw_board() -> void:
 
 **Causality Rule**: Events must appear in causal order.
 - ✅ Correct: `DAMAGE → DEATH → SUMMON`
-- ❌ Wrong: `DEATH → SUMMON → DAMAGE`
+- ❌ Wrong: `SUMMON → DEATH` (Violates causality)
 
-**Deferred Death Mechanic**:
-When a unit reaches 0 HP, its `DEATH` event is **not** generated immediately. Instead:
+**Death Processing (Simulation-Internal):**
+When a unit reaches 0 HP, the simulation processes death in this order:
+
 1. Unit HP reaches 0
-2. `on_death` triggers fire (e.g., summon item)
-3. All triggered reactions are processed
-4. **Then** the `DEATH` event is generated
+2. `on_death` triggers fire (dying unit's item abilities)
+3. **DEATH event generated** (for TurnLog - correct visual ordering)
+4. `on_ally_death` triggers fire (allies' abilities like resurrection)
+5. Reactions processed (generate SUMMON events, etc.)
+6. Game state cleanup (unit removed from containers - deferred for reactions)
 
-This ensures reactions (counter-attacks, summons) complete before the death animation plays.
+> [!IMPORTANT]
+> **Event Generation vs. Cleanup Separation:**
+> The DEATH event is generated immediately (step 3) to ensure correct TurnLog ordering.
+> Game state cleanup is deferred (step 6) so reactions can reference the dying unit.
+> This separation is invisible to presentation - it only sees events in the correct order.
+
+### Unified Death Registry (`_dead_this_turn`)
+
+The system uses a **turn-scoped death registry** to prevent duplicate death processing across phases:
+
+```gdscript
+var _dead_this_turn: Dictionary = {}  # {uuid: {team, died_in_phase, def_id}}
+```
+
+**Key Functions:**
+- `_register_death(unit, phase)` → Returns `true` if new death, `false` if already dead
+- `is_dead_this_turn(uuid)` → Check if unit has died this turn
+- `get_death_info(uuid)` → Get death metadata (team, phase, def_id)
+
+**Lifecycle:**
+1. Registry is **cleared** at the start of each combat turn (`_populate_actor_queue`)
+2. All death detection paths call `_register_death()` before creating DEATH events
+3. `_finalize_deaths()` only cleans up units that are registered dead
+4. Registry persists across phases (COMBAT → END_OF_TURN → START_OF_TURN)
+
+**Why This Matters:**
+Without unified tracking, a unit could:
+- Die from damage in COMBAT phase (DEATH event #1)
+- Not be cleaned up before END_OF_TURN
+- Die again from burn damage (DEATH event #2 - **duplicate!**)
+- Trigger `on_ally_death` twice → **excessive buff stacking**
+
+### Effect Data Flow (No Instance Queries)
+
+Effects receive ALL data via the `context` parameter:
+
+```gdscript
+# Context for on_death trigger
+{
+    "source_uuid": "unit_abc",
+    "source_location": <LocationIdentifier>,  # Snapshot at trigger time
+    "source_def_id": &"unit_t1_a",
+    "equipped_items": [{ /* snapshot */ }]
+}
+
+# Context for on_ally_death trigger
+{
+    "source_uuid": "ally_xyz",             # The living ally
+    "fainting_ally_uuid": "unit_abc",      # The dying unit
+    "fainting_ally_location": <LocationIdentifier>,
+    "fainting_ally_slot": 2,
+    "fainting_ally_team": "PLAYER"
+}
+```
+
+> [!CAUTION]
+> **Zero-Instance-Query Rule:**
+> Effects must NEVER call `get_instance()`, `get_location_for_uuid()`, or `get_instances_in_container()`.
+> All needed data must come from `context` or `parameters`.
+> This ensures effects work correctly regardless of cleanup timing.
 
 ---
 
