@@ -91,3 +91,7 @@ unit_t3_a.name,Shadow Striker
 unit_t3_a.desc,A master of precise strikes who targets the enemy in the opposite position.
 ability.unit_tier3a_mirror_strike.name,Mirror Strike
 ability.unit_tier3a_mirror_strike.desc,"Attacks the enemy in the opposite slot. If empty, attacks the backmost enemy."
+unit_t3_b.name,Guardian Sentinel
+unit_t3_b.desc,A stalwart protector who leaps to defend allies from fatal blows.
+ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice
+ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal damage, intercepts and takes the damage instead."

@@ -28,8 +28,19 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Position data comes from animator.get_snapshot_position() for decoupling
 	
 	# Determine main target (first target if not specified)
-	if main_target_uuid.is_empty() and not targets.is_empty():
-		main_target_uuid = targets[0]
+	# GUARDIAN SENTINEL FIX: When Guardian intercepts, use original target position for melee lunge
+	# This way the attacker still lunges to where the original target was, and Guardian leaps there
+	var original_target_uuids = payload.get("original_target_uuids", [])
+	var original_target_uuid = payload.get("original_target_uuid", "") # Single target (cascade damage)
+	
+	if main_target_uuid.is_empty():
+		# Priority: original_target_uuids > original_target_uuid > targets[0]
+		if not original_target_uuids.is_empty():
+			main_target_uuid = String(original_target_uuids[0])
+		elif not original_target_uuid.is_empty():
+			main_target_uuid = String(original_target_uuid)
+		elif not targets.is_empty():
+			main_target_uuid = targets[0]
 	
 	# ------------------------------------------------------------------
 	# MELEE ATTACK ANIMATION

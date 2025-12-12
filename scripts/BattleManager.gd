@@ -1354,9 +1354,34 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					var cascade_amount = int(cascade_item.get("amount", 0))
 					var cascade_skip_bump = bool(cascade_item.get("skip_bump", false))
 					
+					# Store original target for animation (in case Guardian redirects)
+					var original_target_uuid = cascade_target_uuid
+					
 					# Inline damage processing for each cascade target
 					var cascade_tgt = get_instance_by_uuid(cascade_target_uuid)
 					if is_instance_valid(cascade_tgt):
+						# GUARDIAN SENTINEL INTERCEPT CHECK (same as main damage path)
+						var would_be_lethal = cascade_tgt.current_hp - cascade_amount <= 0
+						var tgt_is_player_unit = _is_player_unit(cascade_tgt)
+						var is_ally_damage = (tgt_is_player_unit != is_player_source)
+						
+						if would_be_lethal and is_ally_damage:
+							var guardian = _find_guardian_on_team(tgt_is_player_unit, cascade_target_uuid)
+							if is_instance_valid(guardian):
+								# Create intercept event for leap animation
+								out_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+									"source_uuid": guardian.ball_uuid,
+									"target_uuids": [cascade_target_uuid],
+									"visual_payload": {
+										"guardian_uuid": guardian.ball_uuid,
+										"original_target_uuid": cascade_target_uuid,
+										"damage": cascade_amount
+									}
+								}))
+								# Redirect the damage target to Guardian
+								cascade_target_uuid = guardian.ball_uuid
+								cascade_tgt = guardian
+						
 						var old_hp = cascade_tgt.current_hp
 						var old_burn = cascade_tgt.get_status_effect_amount(&"burn")
 						var new_hp = apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
@@ -1409,6 +1434,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								"targets_old_burn": [old_burn],
 								"targets_new_burn": [burn_val],
 								"attack_type": "melee",
+								"original_target_uuid": original_target_uuid, # For animation targeting when Guardian intercepts
 								"projectile_data": {
 									"stat": "hp",
 									"amount": - cascade_amount,
@@ -1552,6 +1578,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					var targets_old_burn: Array[int] = []
 					var targets_new_burn: Array[int] = []
 					var damaged_uuids: Array[String] = [] # Track which targets actually received damage
+					var original_target_uuids: Array[String] = [] # Track original targets for animation when Guardian intercepts
 					
 					for tgt_uuid in resolved_targets:
 						var tgt = get_instance_by_uuid(tgt_uuid)
@@ -1566,7 +1593,34 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 											 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
 						if not is_in_battle:
 							continue
-						damaged_uuids.append(tgt_uuid) # Only add to damaged list if alive and in battle
+					
+						# GUARDIAN SENTINEL INTERCEPT CHECK
+						# If this damage would be lethal to an ally, redirect to Guardian Sentinel
+						var original_tgt_uuid = tgt_uuid # Save BEFORE potential redirect
+						var actual_damage = abs(amount)
+						var would_be_lethal = tgt.current_hp - actual_damage <= 0
+						var tgt_is_player_unit = _is_player_unit(tgt)
+						var is_ally_damage = (tgt_is_player_unit != is_player_source) # Enemy attacking player or vice versa
+						
+						if would_be_lethal and is_ally_damage:
+							var guardian = _find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
+							if is_instance_valid(guardian):
+								# Create intercept event for leap animation
+								out_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+									"source_uuid": guardian.ball_uuid,
+									"target_uuids": [tgt_uuid],
+									"visual_payload": {
+										"guardian_uuid": guardian.ball_uuid,
+										"original_target_uuid": tgt_uuid,
+										"damage": actual_damage
+									}
+								}))
+								# Redirect the damage target to Guardian
+								tgt_uuid = guardian.ball_uuid
+								tgt = guardian
+						
+						damaged_uuids.append(tgt_uuid) # Track actual damage target (may be Guardian)
+						original_target_uuids.append(original_tgt_uuid) # Track original for animation
 						targets_old_hp.append(tgt.current_hp) # Capture BEFORE
 						targets_old_burn.append(tgt.get_status_effect_amount(&"burn")) # Capture BEFORE
 						var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
@@ -1627,6 +1681,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 							"targets_old_burn": targets_old_burn,
 							"targets_new_burn": targets_new_burn,
 							"attack_type": "melee",
+							"original_target_uuids": original_target_uuids, # For animation targeting when Guardian intercepts
 							"projectile_data": {
 								"stat": "hp",
 								"amount": amount,
@@ -3450,6 +3505,39 @@ func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 		if trinket.definition_id == trinket_id:
 			return true
 	return false
+
+## Find a Guardian Sentinel unit on the specified team that can intercept lethal damage.
+## Returns the Guardian with highest HP, or null if none available.
+## Guardian Sacrifice ability: intercepts lethal damage to allies.
+func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> GachaBallInstance:
+	var lineup_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+	var units = get_instances_in_container(lineup_tag)
+	
+	var best_guardian: GachaBallInstance = null
+	for unit in units:
+		# Skip the unit that would receive the original damage
+		if unit.ball_uuid == exclude_uuid:
+			continue
+		# Skip dead units
+		if unit.current_hp <= 0:
+			continue
+		
+		# Check if unit has Guardian Sacrifice ability
+		var def = unit.get_definition()
+		if not is_instance_valid(def):
+			continue
+		
+		var has_guardian_ability := false
+		for ability in def.ability_definitions:
+			if ability.id == &"unit_tier3b_guardian_sacrifice":
+				has_guardian_ability = true
+				break
+		
+		if has_guardian_ability:
+			if best_guardian == null or unit.current_hp > best_guardian.current_hp:
+				best_guardian = unit
+	
+	return best_guardian
 
 func _finalize_deaths() -> void:
 	# Removes units with <= 0 HP from containers and discard, WITHOUT triggering abilities.

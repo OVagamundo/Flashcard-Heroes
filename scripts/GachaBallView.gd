@@ -809,3 +809,67 @@ func _on_melee_return_tween_finished() -> void:
 	# Restore original z_index
 	z_index = _original_z_index
 	SignalBus.emit_signal("unit_melee_return_finished", _instance_uuid)
+
+# ------------------------------------------------------------------
+# Guardian Sentinel Leap Animation (Intercepts lethal damage to ally)
+# ------------------------------------------------------------------
+
+const GUARDIAN_LEAP_DURATION := 0.25 # Quick leap to ally's position
+const GUARDIAN_RETURN_DURATION := 0.35 # Slightly slower return
+const GUARDIAN_ARC_HEIGHT := 60.0 # Arc height for the leap
+
+var _guardian_original_position: Vector2 = Vector2.ZERO
+
+## Animate leaping to a target position (ally's slot)
+## Called by BattleAnimator when GUARDIAN_INTERCEPT event fires
+func animate_leap_to(target_center: Vector2) -> void:
+	# Store original position for return
+	_guardian_original_position = global_position
+	
+	# Raise z_index to appear above other units
+	_original_z_index = z_index
+	z_index = 100
+	
+	# Calculate target position (center the view on target)
+	var target_pos = Vector2(
+		target_center.x - size.x / 2,
+		target_center.y - size.y / 2
+	)
+	
+	# Arc control point
+	var mid_x = (_guardian_original_position.x + target_pos.x) / 2.0
+	var mid_y = min(_guardian_original_position.y, target_pos.y) - GUARDIAN_ARC_HEIGHT
+	
+	var tween = create_tween()
+	
+	# Arc motion using bezier curve
+	tween.tween_method(
+		func(t: float):
+			var p0 = _guardian_original_position
+			var p1 = Vector2(mid_x, mid_y)
+			var p2 = target_pos
+			
+			# B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+			var one_minus_t = 1.0 - t
+			global_position = (one_minus_t * one_minus_t * p0) + (2.0 * one_minus_t * t * p1) + (t * t * p2),
+		0.0,
+		1.0,
+		GUARDIAN_LEAP_DURATION
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	await tween.finished
+
+## Animate returning to original position after taking damage
+## Should be called after damage animation completes
+func animate_leap_return() -> void:
+	if _guardian_original_position == Vector2.ZERO:
+		return # No stored position, skip
+	
+	var tween = create_tween()
+	tween.tween_property(self, "global_position", _guardian_original_position, GUARDIAN_RETURN_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	
+	await tween.finished
+	
+	# Restore z_index
+	z_index = _original_z_index
+	_guardian_original_position = Vector2.ZERO

@@ -11,6 +11,7 @@ var _current_animation_uuid: String = "" # Track which unit is currently animati
 var _dead_units: Dictionary = {} # Track units that have already animated death this turn
 var _visual_registry: Dictionary = {} # UUID -> GachaBallView (for puppet mode)
 var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vector2} - captured at animation start
+var _pending_guardian_return: String = "" # UUID of Guardian needing to return after damage
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -139,6 +140,14 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Damage animation not found in registry!")
+				
+				# After damage, check if Guardian needs to return to original position
+				if not _pending_guardian_return.is_empty():
+					var guardian_view = _visual_registry.get(_pending_guardian_return)
+					if is_instance_valid(guardian_view) and guardian_view.has_method("animate_leap_return"):
+						print("[BattleAnimator] Guardian returning to original position")
+						await guardian_view.animate_leap_return()
+					_pending_guardian_return = ""
 
 			CombatEvent.Type.HEAL:
 				# Use the dedicated HealAnimation class which handles projectiles and flashes
@@ -269,6 +278,33 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					
 					# Update HP label to 1 after animation completes
 					apply_hp_delta(saved_uuid, heal_amount, 1)
+
+			CombatEvent.Type.GUARDIAN_INTERCEPT:
+				# Guardian Sentinel: leaps to ally's position to intercept lethal damage
+				var payload = event.visual_payload
+				var guardian_uuid: String = String(payload.get("guardian_uuid", ""))
+				var original_target_uuid: String = String(payload.get("original_target_uuid", ""))
+				
+				print("[BattleAnimator] Processing GUARDIAN_INTERCEPT: guardian=%s original=%s" % [guardian_uuid.substr(0, 20), original_target_uuid.substr(0, 20)])
+				
+				var guardian_view = _visual_registry.get(guardian_uuid)
+				var target_pos = get_snapshot_position(original_target_uuid)
+				
+				if is_instance_valid(guardian_view) and not target_pos.is_empty():
+					# Leap to target's position
+					_current_animation_uuid = guardian_uuid
+					if guardian_view.has_method("animate_leap_to"):
+						await guardian_view.animate_leap_to(target_pos.center)
+					else:
+						# Fallback: instant move
+						guardian_view.global_position = Vector2(
+							target_pos.center.x - guardian_view.size.x / 2,
+							target_pos.center.y - guardian_view.size.y / 2
+						)
+					
+					# Mark guardian for return after damage animation completes
+					_pending_guardian_return = guardian_uuid
+					print("[BattleAnimator] Guardian leaped to position, damage event follows")
 
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
