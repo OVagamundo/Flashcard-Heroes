@@ -75,3 +75,15 @@ boss_5.name,The Final Arbiter
 boss_5.desc,The ultimate challenge. Defeat it to complete your run.
 ability.boss_summon.name,Call Reinforcements
 ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots."
+trinket.soul_echo.name,Soul Echo
+trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.
+ability.soul_echo.name,Soul Echo
+ability.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit that died this turn."
+trinket.vengeance.name,Vengeance Charm
+trinket.vengeance.desc,Channel the fury of fallen allies.
+ability.vengeance.name,Vengeance
+ability.vengeance.desc,"When an ally dies, grant +1 PWR to a random ally."
+trinket.aegis.name,Aegis Charm
+trinket.aegis.desc,A protective charm that shields allies from fatal blows.
+ability.aegis.name,Last Stand
+ability.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead."

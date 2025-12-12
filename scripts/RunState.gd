@@ -678,6 +678,21 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		soul_echo_inst.initialize_from_trinket(soul_echo_def)
 		add_instance(soul_echo_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 
+	# [TESTING] Add Vengeance Charm to starting loadout
+	var vengeance_def = Database.get_definition(&"trinket_vengeance")
+	if is_instance_valid(vengeance_def):
+		var vengeance_inst := GachaBallInstance.new()
+		vengeance_inst.initialize_from_trinket(vengeance_def)
+		add_instance(vengeance_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+
+	# [TESTING] Add Aegis Charm to starting loadout
+	var aegis_def = Database.get_definition(&"trinket_aegis")
+	if is_instance_valid(aegis_def):
+		var aegis_inst := GachaBallInstance.new()
+		aegis_inst.initialize_from_trinket(aegis_def)
+		add_instance(aegis_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+
+
 	# --- Add starter units/items to inventory ---
 	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the
 	#  dedicated 'player_trinkets' container (not RunInventoryT*) and keep 'active_trinkets' in sync.

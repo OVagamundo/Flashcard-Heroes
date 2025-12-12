@@ -29,6 +29,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# This fires for all attacks including counter-attacks
 	var before_attack_context: Dictionary = {
 		"source_uuid": target_instance.ball_uuid, # The target is the source of its own defensive ability
+		"defender_uuid": target_instance.ball_uuid, # CRITICAL: Used by AbilityResolver to filter responding units
 		"attacker_uuid": source_instance.ball_uuid,
 		"target_initial_hp": target_instance.current_hp,
 		"is_simulation": is_simulation

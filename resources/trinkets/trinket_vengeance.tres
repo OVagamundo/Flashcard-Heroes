@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/sprites/trinkets/Trinket2A.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="4_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_Vengeance_1"]
+script = ExtResource("4_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"RANDOM_ALLY"
+
+
+[sub_resource type="Resource" id="Ability_Vengeance_1"]
+script = ExtResource("3_ability")
+id = &"ability_trinket_vengeance"
+trigger = &"on_ally_death"
+description_key = "ability.vengeance.desc"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyStat_Vengeance_1")])
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_vengeance"
+name_key = "trinket.vengeance.name"
+description_key = "trinket.vengeance.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([SubResource("Ability_Vengeance_1")])

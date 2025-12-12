@@ -67,6 +67,8 @@ func _ready() -> void:
 			bus.connect("unit_melee_lunge", _on_unit_melee_lunge)
 		if bus.has_signal("unit_melee_return"):
 			bus.connect("unit_melee_return", _on_unit_melee_return)
+		if bus.has_signal("unit_lethal_save"):
+			bus.connect("unit_lethal_save", _on_unit_lethal_save)
 
 func _exit_tree() -> void:
 	# Proactively disconnect signals and end any active drag to prevent leaks
@@ -88,6 +90,8 @@ func _exit_tree() -> void:
 			bus.disconnect("unit_melee_lunge", _on_unit_melee_lunge)
 		if bus.has_signal("unit_melee_return") and bus.is_connected("unit_melee_return", _on_unit_melee_return):
 			bus.disconnect("unit_melee_return", _on_unit_melee_return)
+		if bus.has_signal("unit_lethal_save") and bus.is_connected("unit_lethal_save", _on_unit_lethal_save):
+			bus.disconnect("unit_lethal_save", _on_unit_lethal_save)
 
 	# If this view is being freed during a drag, centrally end the drag and visuals
 	if GlobalInteractionRouter.is_drag_active():
@@ -541,9 +545,15 @@ func _flash_unit_color(flash_color: Color) -> void:
 		_flash_tween.tween_property(self, "position", original_position, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	_flash_tween.set_parallel(true)
+	
+	# Detect gold color for Aegis Charm (R high, G medium-high ~0.84, B low)
+	# Gold colors get longer flash duration for visibility
+	var is_gold_flash := flash_color.r > 0.9 and flash_color.g > 0.7 and flash_color.g < 0.95 and flash_color.b < 0.2
+	var flash_fade_duration := 0.8 if is_gold_flash else 0.25
+	
 	# Fade flash_intensity back to 0 (no flash)
-	_flash_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, 0.25)
-	_flash_tween.tween_property(self, "modulate", original_parent_modulate, 0.25)
+	_flash_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, flash_fade_duration)
+	_flash_tween.tween_property(self, "modulate", original_parent_modulate, flash_fade_duration)
 	
 	_flash_tween.set_parallel(false)
 	_flash_tween.finished.connect(_on_flash_tween_finished)
@@ -673,6 +683,50 @@ func _on_death_fade_tween_finished() -> void:
 
 func _on_summon_fade_tween_finished() -> void:
 	SignalBus.emit_signal("unit_summon_fade_finished", _instance_uuid)
+
+func _on_unit_lethal_save(unit_uuid: String) -> void:
+	# Only respond if this view represents the saved unit
+	if _instance_uuid != unit_uuid:
+		return
+	
+	# Dramatic animation: float up like dying, turn golden, then land back down
+	var original_position: Vector2 = position
+	var levitate_height := 30.0
+	var levitate_target := Vector2(original_position.x, original_position.y - levitate_height)
+	
+	var mat = icon_rect.material as ShaderMaterial if is_instance_valid(icon_rect) else null
+	var gold_color := Color(1.0, 0.84, 0.0) # Aegis gold
+	
+	# Kill any existing flash tween
+	if _flash_tween and _flash_tween.is_valid():
+		_flash_tween.kill()
+	
+	var save_tween = create_tween()
+	
+	# Phase 1: Float up while turning golden (0.5s)
+	save_tween.set_parallel(true)
+	save_tween.tween_property(self, "position", levitate_target, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if mat:
+		mat.set_shader_parameter("flash_color", gold_color)
+		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 0.0, 1.0, 0.5)
+	save_tween.tween_property(self, "modulate", Color(1.5, 1.26, 0.0, 1.0), 0.5) # Golden glow on parent
+	
+	# Hold at peak for a moment (0.3s)
+	save_tween.set_parallel(false)
+	save_tween.tween_interval(0.3)
+	
+	# Phase 2: Land back down while returning to normal (0.6s)
+	save_tween.set_parallel(true)
+	save_tween.tween_property(self, "position", original_position, 0.6).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	if mat:
+		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, 0.6)
+	save_tween.tween_property(self, "modulate", Color.WHITE, 0.6)
+	
+	save_tween.set_parallel(false)
+	save_tween.finished.connect(_on_lethal_save_tween_finished)
+
+func _on_lethal_save_tween_finished() -> void:
+	SignalBus.emit_signal("unit_lethal_save_finished", _instance_uuid)
 
 # ------------------------------------------------------------------
 # Melee Lunge Animation (Attacker jumps to target)

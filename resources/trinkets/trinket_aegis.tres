@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/sprites/trinkets/Trinket4A.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectPreventLethal.gd" id="4_effect"]
+
+[sub_resource type="Resource" id="Effect_Aegis_1"]
+script = ExtResource("4_effect")
+parameters = {}
+target_type = &"NONE"
+
+[sub_resource type="Resource" id="Ability_Aegis_1"]
+script = ExtResource("3_ability")
+id = &"ability_trinket_aegis"
+trigger = &"on_hurt"
+description_key = "ability.aegis.desc"
+priority = 250
+effects = Array[Resource]([SubResource("Effect_Aegis_1")])
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_aegis"
+name_key = "trinket.aegis.name"
+description_key = "trinket.aegis.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([SubResource("Ability_Aegis_1")])

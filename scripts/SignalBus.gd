@@ -132,10 +132,17 @@ signal screen_shake_requested(intensity: float)
 
 ## Request that a unit view plays its summon fade animation (visual only).
 signal unit_summon_fade(unit_uuid: String)
-
-## Emitted when a unit's summon fade animation completes
 ## @param unit_uuid: String - The UUID of the unit that finished fading
 signal unit_summon_fade_finished(unit_uuid: String)
+
+## Request that a unit view plays its lethal save animation (Aegis Charm)
+## Unit floats up like dying while turning gold, then lands back down to normal
+## @param unit_uuid: String - The UUID of the unit that was saved
+signal unit_lethal_save(unit_uuid: String)
+
+## Emitted when a unit's lethal save animation completes
+## @param unit_uuid: String - The UUID of the unit that finished the save animation
+signal unit_lethal_save_finished(unit_uuid: String)
 
 ## Emitted when battle inventory changes (units/items added/removed)
 signal battle_inventory_changed

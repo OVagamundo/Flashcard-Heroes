@@ -300,11 +300,41 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 					_update_instance_location(soul_echo_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx2)
 					enemy_trinkets.append(soul_echo_enemy_inst)
 
+		# [TESTING] Force add Vengeance Charm to Enemy
+		var vengeance_enemy_def = Database.get_definition(&"trinket_vengeance")
+		if is_instance_valid(vengeance_enemy_def):
+			var vengeance_enemy_inst = GachaBallInstance.new()
+			vengeance_enemy_inst.initialize_from_trinket(vengeance_enemy_def)
+			_battle_instances[vengeance_enemy_inst.ball_uuid] = vengeance_enemy_inst
+			var et_container3 := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+			if is_instance_valid(et_container3):
+				var idx3 := et_container3.find_first_empty_slot()
+				if idx3 != -1:
+					et_container3.set_uuid(idx3, vengeance_enemy_inst.ball_uuid)
+					_update_instance_location(vengeance_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx3)
+					enemy_trinkets.append(vengeance_enemy_inst)
+
+		# [TESTING] Force add Aegis Charm to Enemy
+		var aegis_enemy_def = Database.get_definition(&"trinket_aegis")
+		if is_instance_valid(aegis_enemy_def):
+			var aegis_enemy_inst = GachaBallInstance.new()
+			aegis_enemy_inst.initialize_from_trinket(aegis_enemy_def)
+			_battle_instances[aegis_enemy_inst.ball_uuid] = aegis_enemy_inst
+			var et_container4 := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+			if is_instance_valid(et_container4):
+				var idx4 := et_container4.find_first_empty_slot()
+				if idx4 != -1:
+					et_container4.set_uuid(idx4, aegis_enemy_inst.ball_uuid)
+					_update_instance_location(aegis_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx4)
+					enemy_trinkets.append(aegis_enemy_inst)
+
+
 	# Copy player trinkets from run state to battle instances
 	_setup_player_trinkets()
 	
 	# Trigger on_battle_start for all units
 	_trigger_battle_start_abilities()
+
 
 func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
 	# In Test Mode, start with empty enemy board
@@ -1328,6 +1358,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		sim_ctx["ability_id"] = request.ability_id
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
 		
+		# CRITICAL: Collect on_before_attack inline events IMMEDIATELY after effect execution
+		# These events (like Defensive Stance heal) must appear BEFORE any damage events
+		# to maintain correct causal order: HEAL → DAMAGE (not DAMAGE → HEAL)
+		var before_attack_inline_evts = collect_inline_events()
+		out_events.append_array(before_attack_inline_evts)
+		
 		# IMPORTANT: Normalize legacy integer returns to dictionary format FIRST
 		# This must happen before the TYPE_DICTIONARY check so the normalized value gets processed
 		if typeof(res) == TYPE_INT:
@@ -1423,6 +1459,13 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 						}))
 						# Trigger on_hurt for counter-attacks AFTER damage is applied
 						trigger_on_hurt(cascade_target_uuid, cascade_amount, request.source_uuid)
+						
+						# Drain on_hurt reactions (Aegis Charm, etc.) and collect their events
+						# This allows Aegis to save a unit while shockwave continues to other targets
+						drain_pending_reactions_inline(0)
+						var cascade_hurt_inline_evts = collect_inline_events()
+						out_events.append_array(cascade_hurt_inline_evts)
+						
 						# DETERMINISTIC ON_KILL: If cascade damage killed the target, trigger on_kill immediately
 						# This ensures Bloodlust and other on_kill effects trigger for shockwave kills
 						if cascade_tgt.current_hp <= 0:
@@ -1464,6 +1507,24 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				source_name = String(request.ability_id)
 		
 			if stat == "hp" and not resolved_targets.is_empty():
+				# Special case: Aegis Charm prevented lethal damage
+				# Emit LETHAL_SAVE event for dramatic visual, then apply heal normally
+				if effect_data.get("prevented_lethal", false):
+					for tgt_uuid in resolved_targets:
+						out_events.append(CombatEvent.new(CombatEvent.Type.LETHAL_SAVE, {
+							"source_uuid": request.source_uuid,
+							"target_uuids": [tgt_uuid],
+							"ability_id": request.ability_id,
+							"visual_payload": {
+								"saved_uuid": tgt_uuid,
+								"heal_amount": amount
+							}
+						}))
+						var tgt = get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt):
+							apply_stat_delta(tgt, "hp", amount)
+					return # Don't process as normal heal
+				
 				if amount >= 0:
 					var heal_target_name := ""
 					if not target_names.is_empty():
@@ -1618,8 +1679,22 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					# This enables DAMAGE_WAS_NON_LETHAL to correctly detect lethal damage
 					for tgt_uuid in damaged_uuids:
 						trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
-						# DETERMINISTIC ON_KILL: If this damage killed the target, trigger on_kill immediately
-						# This ensures kills are detected at the moment of state change, not by snapshot comparison
+					
+					# AEGIS FIX: Drain on_hurt effects BEFORE death check
+					# This allows effects like Aegis Charm (prevent lethal damage) to heal units
+					# to 1 HP before death is detected
+					drain_pending_reactions_inline(0)
+					
+					# CRITICAL: Collect inline events (like LETHAL_SAVE) immediately and append
+					# to out_events so they stay with the DAMAGE event they're reacting to.
+					# Without this, inline events would be collected in the main combat loop
+					# and inserted before subsequent attack events, breaking causal order.
+					var hurt_inline_evts = collect_inline_events()
+					out_events.append_array(hurt_inline_evts)
+					
+					# DETERMINISTIC ON_KILL: If this damage killed the target, trigger on_kill immediately
+					# This ensures kills are detected at the moment of state change, not by snapshot comparison
+					for tgt_uuid in damaged_uuids:
 						var tgt = get_instance_by_uuid(tgt_uuid)
 						if is_instance_valid(tgt) and tgt.current_hp <= 0:
 							trigger_on_kill(request.source_uuid, tgt_uuid)
@@ -3028,11 +3103,24 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				return 0
 
 func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String) -> void:
+	# Get target instance data for context (effects should not query instances directly)
+	var target_instance = get_instance_by_uuid(target_uuid)
+	var victim_team := ""
+	var victim_current_hp := 0
+	if is_instance_valid(target_instance):
+		victim_current_hp = target_instance.current_hp
+		if target_instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
+			victim_team = "PLAYER"
+		elif target_instance.location_container_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+			victim_team = "ENEMY"
+	
 	# Semantic context keys: victim_uuid = the damaged unit
 	var hurt_context: Dictionary = {
 		"victim_uuid": target_uuid,
 		"damage_taken": damage_amount,
-		"attacker_uuid": attacker_uuid
+		"attacker_uuid": attacker_uuid,
+		"victim_team": victim_team,
+		"victim_current_hp": victim_current_hp
 	}
 	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
 

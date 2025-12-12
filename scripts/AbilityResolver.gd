@@ -228,13 +228,18 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if not _should_trinket_respond(trigger, instance, context, battle_manager):
 			continue
 		
+		# Add trinket's team to context for effects that need it
+		var trinket_team = _get_instance_team(instance, battle_manager)
+		var trinket_context = context.duplicate()
+		trinket_context["team"] = trinket_team
+		
 		for ability in definition.ability_definitions:
 			print("[DEBUG AbilityResolver] Trinket '%s' checking ability trigger: %s vs %s" % [definition.name_key, ability.trigger, trigger])
 			if ability.trigger == trigger:
 				print("[DEBUG AbilityResolver] Trinket '%s' matched ability trigger %s, processing..." % [definition.name_key, trigger])
 				# Trinkets are team-based, not unit-based. The trinket itself is the source.
 				# This avoids dead-unit edge cases and is semantically correct.
-				_process_ability(ability, instance_uuid, battle_manager, context)
+				_process_ability(ability, instance_uuid, battle_manager, trinket_context)
 
 
 ## Process a single ability and create EffectRequests for its effects.

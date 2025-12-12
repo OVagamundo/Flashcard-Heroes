@@ -68,9 +68,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return null # No living enemies
 	
 	# Step 2: Calculate damage for frontmost slot + cascade_depth slots behind
-	# NOTE: We do NOT trigger on_before_attack or on_hurt here.
-	# BattleManager handles triggering on_hurt after applying damage from cascade_damage.
-	# on_before_attack was already triggered when _enqueue_attack_for was called.
+	# on_before_attack is triggered for each target in the loop below.
+	# on_hurt is triggered by BattleManager after applying damage from cascade_damage.
 	var damage_data: Array = []
 	var current_damage = base_damage
 	var damage_index: int = 0 # For skip_bump logic
@@ -101,6 +100,21 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			continue
 		
 		var damage_amount = int(current_damage)
+		
+		# Trigger on_before_attack for this target (defensive abilities like Defensive Stance)
+		var is_simulation: bool = _context.get("is_simulation", false)
+		var before_attack_context: Dictionary = {
+			"source_uuid": target.ball_uuid,
+			"defender_uuid": target.ball_uuid,
+			"attacker_uuid": source_uuid,
+			"target_initial_hp": target.current_hp,
+			"is_simulation": is_simulation
+		}
+		AbilityResolver.process_trigger(&"on_before_attack", before_attack_context)
+		
+		# Drain the on_before_attack reactions immediately (like BasicAttackEffect does)
+		if is_simulation:
+			battle_manager.drain_pending_reactions_inline(0)
 		
 		# Add to damage data - BattleManager will handle applying damage and triggering on_hurt
 		damage_data.append({

@@ -13,7 +13,8 @@ enum Type {
 	PROJECTILE, # Visual only: { "source_uuid": str, "target_uuid": str, "vfx_id": str }
 	APPLY_BURN,
 	VFX_POPUP, # Visual only: { "target_uuid": str, "text": str, "color": Color }
-	LOG_MESSAGE # Legacy support for text logs
+	LOG_MESSAGE, # Legacy support for text logs
+	LETHAL_SAVE # Aegis Charm: unit saved from lethal damage, floats up gold then lands
 }
 
 var type: Type

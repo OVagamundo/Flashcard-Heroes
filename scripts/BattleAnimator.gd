@@ -251,7 +251,24 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
 									print("[BattleAnimator] Waiting for summon_fade animation completion...")
 									await wait_for_animation_completion("summon_fade", new_unit_uuid)
-									print("[BattleAnimator] Summon animation completed for: ", new_unit_uuid)
+								print("[BattleAnimator] Summon animation completed for: ", new_unit_uuid)
+
+			CombatEvent.Type.LETHAL_SAVE:
+				# Aegis Charm: unit floats up golden then lands back
+				if event.target_uuids.size() > 0:
+					var saved_uuid := event.target_uuids[0]
+					var payload = event.visual_payload
+					var heal_amount: int = int(payload.get("heal_amount", 1))
+					print("[BattleAnimator] Processing LETHAL_SAVE event for: ", saved_uuid, " heal:", heal_amount)
+					_current_animation_uuid = saved_uuid
+					
+					if SignalBus.has_signal("unit_lethal_save"):
+						SignalBus.emit_signal("unit_lethal_save", saved_uuid)
+						await wait_for_animation_completion("lethal_save", saved_uuid)
+						print("[BattleAnimator] Lethal save animation completed for: ", saved_uuid)
+					
+					# Update HP label to 1 after animation completes
+					apply_hp_delta(saved_uuid, heal_amount, 1)
 
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
@@ -329,6 +346,8 @@ func _connect_animation_signals() -> void:
 		SignalBus.unit_melee_lunge_finished.connect(_on_unit_melee_lunge_finished)
 	if not SignalBus.unit_melee_return_finished.is_connected(_on_unit_melee_return_finished):
 		SignalBus.unit_melee_return_finished.connect(_on_unit_melee_return_finished)
+	if not SignalBus.unit_lethal_save_finished.is_connected(_on_unit_lethal_save_finished):
+		SignalBus.unit_lethal_save_finished.connect(_on_unit_lethal_save_finished)
 
 func _disconnect_animation_signals() -> void:
 	# Disconnect animation completion signals
@@ -344,6 +363,8 @@ func _disconnect_animation_signals() -> void:
 		SignalBus.unit_melee_lunge_finished.disconnect(_on_unit_melee_lunge_finished)
 	if SignalBus.unit_melee_return_finished.is_connected(_on_unit_melee_return_finished):
 		SignalBus.unit_melee_return_finished.disconnect(_on_unit_melee_return_finished)
+	if SignalBus.unit_lethal_save_finished.is_connected(_on_unit_lethal_save_finished):
+		SignalBus.unit_lethal_save_finished.disconnect(_on_unit_lethal_save_finished)
 
 # Signal handlers that filter by current animation UUID
 func _on_unit_flash_finished(unit_uuid: String) -> void:
@@ -376,6 +397,11 @@ func _on_unit_melee_return_finished(unit_uuid: String) -> void:
 	if unit_uuid == _current_animation_uuid:
 		_current_animation_uuid = ""
 
+func _on_unit_lethal_save_finished(unit_uuid: String) -> void:
+	# Only respond if this is the unit we're currently waiting for
+	if unit_uuid == _current_animation_uuid:
+		_current_animation_uuid = ""
+
 # Robust animation waiting with timeout fallback
 func wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
 	var timeout_duration: float
@@ -392,6 +418,8 @@ func wait_for_animation_completion(animation_type: String, expected_uuid: String
 			timeout_duration = 1.5 # Melee lunge is ~1.0s (windup + lunge), add buffer
 		"melee_return":
 			timeout_duration = 0.4 # Melee return is ~0.2s, add buffer
+		"lethal_save":
+			timeout_duration = 2.0 # Lethal save is ~1.4s, add buffer
 		_:
 			timeout_duration = ANIM_TIMEOUT_DURATION # Default fallback
 	

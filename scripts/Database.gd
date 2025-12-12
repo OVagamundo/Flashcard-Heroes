@@ -35,7 +35,6 @@ func _ready() -> void:
 # -----------------------------
 
 
-
 # Returns an AbilityDefinition by id, or null.
 func get_ability_definition(id: StringName) -> AbilityDefinition:
 	var def: AbilityDefinition = abilities.get(id)
@@ -65,6 +64,7 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 				pass
 		file_name = dir.get_next()
 
+
 ## Loads the translation CSV file and adds it to the TranslationServer
 func _load_translations() -> void:
 	# Create a new Translation resource
@@ -92,7 +92,6 @@ func _load_translations() -> void:
 	# Add the translation to the server
 	TranslationServer.add_translation(translation)
 	TranslationServer.set_locale("en")
-
 
 
 ## A central helper to find any definition by its ID (Unit, Item, Trinket).
