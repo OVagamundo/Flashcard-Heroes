@@ -89,13 +89,17 @@ func _on_battle_ended(results: Dictionary) -> void:
 		if run_state.current_boss_level == 5:
 			_show_run_complete_popup()
 			return
-		
-		# Reset boss level for next encounter
-		run_state.current_boss_level = 0
+		# Note: current_boss_level is reset AFTER reward generation
+		# so _on_battle_won_rewards_pending can detect boss victory
 	
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
 		SignalBus.emit_signal("battle_won_rewards_pending")
+	
+	# Reset boss level AFTER reward generation so trinkets are offered
+	if run_state.current_boss_level > 0:
+		run_state.current_boss_level = 0
+	
 	# 4) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
@@ -112,24 +116,42 @@ func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	pass
 
 func _on_battle_won_rewards_pending() -> void:
+	# Detect if this was a boss victory
+	var is_boss_victory = run_state.current_boss_level > 0
+	print("[DEBUG] _on_battle_won_rewards_pending: current_boss_level=%d, is_boss_victory=%s" % [run_state.current_boss_level, is_boss_victory])
+	
 	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
-	var reward_pool = load("res://resources/reward_pool.tres")
-	if not is_instance_valid(reward_pool):
-		return
-
-	var all_defs = reward_pool.definitions.duplicate()
-	all_defs.shuffle()
-	
-	for i in range(3):
-		var inst = GachaBallInstance.new()
-		inst.initialize(all_defs[i])
-		inst.location_container_tag = &"Rewards"
-		inst.location_slot_index = i
-		_temporary_reward_master_dict[inst.ball_uuid] = inst
-		_temporary_reward_container.set_uuid(i, inst.ball_uuid)
+	if is_boss_victory:
+		# Boss rewards: 3 random trinkets
+		print("[DEBUG] Generating TRINKET rewards for boss victory")
+		var all_trinkets = Database.trinkets.values().duplicate()
+		print("[DEBUG] Available trinkets: %d" % all_trinkets.size())
+		all_trinkets.shuffle()
+		for i in range(min(3, all_trinkets.size())):
+			var inst = GachaBallInstance.new()
+			inst.initialize_from_trinket(all_trinkets[i])
+			print("[DEBUG] Created trinket reward: %s" % all_trinkets[i].id)
+			inst.location_container_tag = &"Rewards"
+			inst.location_slot_index = i
+			_temporary_reward_master_dict[inst.ball_uuid] = inst
+			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
+	else:
+		# Regular rewards: gacha balls from reward pool
+		var reward_pool = load("res://resources/reward_pool.tres")
+		if not is_instance_valid(reward_pool):
+			return
+		var all_defs = reward_pool.definitions.duplicate()
+		all_defs.shuffle()
+		for i in range(3):
+			var inst = GachaBallInstance.new()
+			inst.initialize(all_defs[i])
+			inst.location_container_tag = &"Rewards"
+			inst.location_slot_index = i
+			_temporary_reward_master_dict[inst.ball_uuid] = inst
+			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 
 
 func _on_return_to_title() -> void:
@@ -147,17 +169,22 @@ func _on_battle_victory_acknowledged() -> void:
 	
 	# Day should only increment when path choice scene loads, not here
 	
-	# Rewards are already generated. We just need to calculate the gold.
-	var sum_tiers = 0
-	for inst in _temporary_reward_master_dict.values():
-		var def = inst.get_definition()
-		if is_instance_valid(def):
-			# Some definitions (e.g., TrinketDefinition) may not have 'tier'.
-			var add_tier: int = 0
-			if def is GachaBallDefinition:
-				add_tier = int(def.tier)
-			sum_tiers += add_tier
-	_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
+	# Calculate gold reward based on reward type
+	if run_state.current_boss_level > 0:
+		# Boss rewards: fixed 10 gold alternative
+		_temporary_gold_reward = 10
+	else:
+		# Regular rewards: calculate from tier
+		var sum_tiers = 0
+		for inst in _temporary_reward_master_dict.values():
+			var def = inst.get_definition()
+			if is_instance_valid(def):
+				# Some definitions (e.g., TrinketDefinition) may not have 'tier'.
+				var add_tier: int = 0
+				if def is GachaBallDefinition:
+					add_tier = int(def.tier)
+				sum_tiers += add_tier
+		_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
 
 	# Signal the UI to display the pre-generated rewards.
 	var context: Dictionary = get_pending_rewards()

@@ -657,46 +657,10 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	if GameManager.is_test_mode:
 		return
 
-	# Add starter trinket (Healing Amulet)
-	var healing_amulet_def = Database.get_definition(&"trinket_healing_amulet")
-	if is_instance_valid(healing_amulet_def):
-		var trinket_inst := GachaBallInstance.new()
-		trinket_inst.initialize_from_trinket(healing_amulet_def)
-		add_instance(trinket_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-	
-	# [TESTING] Add Burn Vial to starting loadout
-	var burn_def = Database.get_definition(&"trinket_burn_vial")
-	if is_instance_valid(burn_def):
-		var burn_inst := GachaBallInstance.new()
-		burn_inst.initialize_from_trinket(burn_def)
-		add_instance(burn_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-
-	# [TESTING] Add Soul Echo to starting loadout
-	var soul_echo_def = Database.get_definition(&"trinket_soul_echo")
-	if is_instance_valid(soul_echo_def):
-		var soul_echo_inst := GachaBallInstance.new()
-		soul_echo_inst.initialize_from_trinket(soul_echo_def)
-		add_instance(soul_echo_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-
-	# [TESTING] Add Vengeance Charm to starting loadout
-	var vengeance_def = Database.get_definition(&"trinket_vengeance")
-	if is_instance_valid(vengeance_def):
-		var vengeance_inst := GachaBallInstance.new()
-		vengeance_inst.initialize_from_trinket(vengeance_def)
-		add_instance(vengeance_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-
-	# [TESTING] Add Aegis Charm to starting loadout
-	var aegis_def = Database.get_definition(&"trinket_aegis")
-	if is_instance_valid(aegis_def):
-		var aegis_inst := GachaBallInstance.new()
-		aegis_inst.initialize_from_trinket(aegis_def)
-		add_instance(aegis_inst, RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-
+	# NOTE: Player trinkets are now obtained exclusively through boss victories.
+	# No starter trinkets are given - the player earns them by progressing.
 
 	# --- Add starter units/items to inventory ---
-	# TODO [Trinkets]: If starters include any TRINKET-category definitions, route them via the
-	#  dedicated 'player_trinkets' container (not RunInventoryT*) and keep 'active_trinkets' in sync.
-	#  Do not enforce exclusivity here; player-only trinkets are valid for starters on the player side.
 	var starters: Array[StringName] = [
 		&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
 		&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",

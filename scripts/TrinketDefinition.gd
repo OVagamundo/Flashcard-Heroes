@@ -10,3 +10,4 @@ extends Resource
 @export var category: StringName = &"TRINKET"
 @export var is_player_exclusive: bool = false
 @export var ability_definitions: Array[AbilityDefinition]
+@export var cost: int = 10 # Budget cost for encounter generation

@@ -40,4 +40,7 @@ class_name EncounterDefinition extends Resource
 @export var victory_rewards: Array[RewardDefinition]
 
 ## Possible additional rewards
-@export var possible_rewards: Array[RewardDefinition] 
+@export var possible_rewards: Array[RewardDefinition]
+
+## Enemy trinket IDs for this encounter
+@export var enemy_trinket_ids: Array[StringName] = []

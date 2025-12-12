@@ -159,6 +159,9 @@ Priority: -10.
 Effect: If the attack is lethal, any overkill damage is dealt to an adjacent enemy.
 Trinkets
 Trinkets provide team-wide abilities and are not equipped on individual units.
+Budget Cost: All trinkets have a default cost of 10 gold for encounter generation purposes.
+Player Acquisition: Trinkets are obtained by defeating bosses.
+
 Healing Amulet
 ID: trinket_healing_amulet
 Name: Healing Amulet

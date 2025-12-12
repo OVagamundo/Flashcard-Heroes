@@ -249,86 +249,12 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
 	# Trinkets: enemy population and exclusivity
-	# TODO: When populating enemy_trinkets for this battle, enforce exclusivity by excluding any
-	#  definition with is_player_exclusive == true or legacy aliases: PLAYER_ONLY, PLAYER_TRINKET_ONLY,
-	#  PLAYER_EXCLUSIVE_TRINKET. Apply this filtering at build time so AbilityResolver never sees
-	#  ineligible enemy trinkets.
+	# Enemy trinkets now come from the EncounterDefinition, populated by the EncounterGenerator
 	_setup_enemy_lineup(encounter_def)
-
-	# [TESTING] Force add Poison Vial to Enemy - SKIP IN TEST MODE (User wants empty start)
-	if not is_test_mode:
-		# Create a test enemy trinket (Healing Amulet) as per implementation doc Phase 2
-		var trinket_def = Database.get_definition(&"trinket_healing_amulet")
-		if is_instance_valid(trinket_def):
-			var trinket_inst = GachaBallInstance.new()
-			trinket_inst.initialize_from_trinket(trinket_def)
-			_battle_instances[trinket_inst.ball_uuid] = trinket_inst
-			var et_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-			if is_instance_valid(et_container):
-				var idx := et_container.find_first_empty_slot()
-				if idx == -1:
-					idx = 0
-				et_container.set_uuid(idx, trinket_inst.ball_uuid)
-				_update_instance_location(trinket_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
-				enemy_trinkets.append(trinket_inst)
-
-		# [TESTING] Force add Burn Vial to Enemy
-		var burn_def = Database.get_definition(&"trinket_burn_vial")
-		if is_instance_valid(burn_def):
-			var burn_inst = GachaBallInstance.new()
-			burn_inst.initialize_from_trinket(burn_def)
-			_battle_instances[burn_inst.ball_uuid] = burn_inst
-			var et_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-			if is_instance_valid(et_container):
-				var idx := et_container.find_first_empty_slot()
-				if idx != -1:
-					et_container.set_uuid(idx, burn_inst.ball_uuid)
-					_update_instance_location(burn_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx)
-					enemy_trinkets.append(burn_inst)
-
-		# [TESTING] Force add Soul Echo to Enemy
-		var soul_echo_enemy_def = Database.get_definition(&"trinket_soul_echo")
-		if is_instance_valid(soul_echo_enemy_def):
-			var soul_echo_enemy_inst = GachaBallInstance.new()
-			soul_echo_enemy_inst.initialize_from_trinket(soul_echo_enemy_def)
-			_battle_instances[soul_echo_enemy_inst.ball_uuid] = soul_echo_enemy_inst
-			var et_container2 := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-			if is_instance_valid(et_container2):
-				var idx2 := et_container2.find_first_empty_slot()
-				if idx2 != -1:
-					et_container2.set_uuid(idx2, soul_echo_enemy_inst.ball_uuid)
-					_update_instance_location(soul_echo_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx2)
-					enemy_trinkets.append(soul_echo_enemy_inst)
-
-		# [TESTING] Force add Vengeance Charm to Enemy
-		var vengeance_enemy_def = Database.get_definition(&"trinket_vengeance")
-		if is_instance_valid(vengeance_enemy_def):
-			var vengeance_enemy_inst = GachaBallInstance.new()
-			vengeance_enemy_inst.initialize_from_trinket(vengeance_enemy_def)
-			_battle_instances[vengeance_enemy_inst.ball_uuid] = vengeance_enemy_inst
-			var et_container3 := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-			if is_instance_valid(et_container3):
-				var idx3 := et_container3.find_first_empty_slot()
-				if idx3 != -1:
-					et_container3.set_uuid(idx3, vengeance_enemy_inst.ball_uuid)
-					_update_instance_location(vengeance_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx3)
-					enemy_trinkets.append(vengeance_enemy_inst)
-
-		# [TESTING] Force add Aegis Charm to Enemy
-		var aegis_enemy_def = Database.get_definition(&"trinket_aegis")
-		if is_instance_valid(aegis_enemy_def):
-			var aegis_enemy_inst = GachaBallInstance.new()
-			aegis_enemy_inst.initialize_from_trinket(aegis_enemy_def)
-			_battle_instances[aegis_enemy_inst.ball_uuid] = aegis_enemy_inst
-			var et_container4 := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-			if is_instance_valid(et_container4):
-				var idx4 := et_container4.find_first_empty_slot()
-				if idx4 != -1:
-					et_container4.set_uuid(idx4, aegis_enemy_inst.ball_uuid)
-					_update_instance_location(aegis_enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, idx4)
-					enemy_trinkets.append(aegis_enemy_inst)
-
-
+	
+	# Setup enemy trinkets from encounter definition
+	if not is_test_mode and is_instance_valid(encounter_def):
+		_setup_enemy_trinkets_from_encounter(encounter_def)
 	# Copy player trinkets from run state to battle instances
 	_setup_player_trinkets()
 	
@@ -341,10 +267,6 @@ func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
 	if is_test_mode:
 		return
 
-	# TODO [Trinkets]: Populate enemy_trinkets here (5 slots, inspection-only). When building the
-	#  list, filter out any definitions that are player-exclusive: either is_player_exclusive == true
-	#  on the definition or legacy tag aliases in def.tags: PLAYER_ONLY, PLAYER_TRINKET_ONLY,
-	#  PLAYER_EXCLUSIVE_TRINKET. In debug, optionally auto-fill with eligible trinkets if empty.
 	if encounter_def:
 		# Use the provided encounter definition
 		var lineup_container: DataContainer = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
@@ -416,6 +338,37 @@ func _setup_player_trinkets() -> void:
 				battle_trinkets_container.set_uuid(slot_index, battle_trinket.ball_uuid)
 				_update_instance_location(battle_trinket.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, slot_index)
 				slot_index += 1
+
+## Setup enemy trinkets from the encounter definition
+func _setup_enemy_trinkets_from_encounter(encounter_def: EncounterDefinition) -> void:
+	if not is_instance_valid(encounter_def):
+		return
+	
+	var et_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+	if not is_instance_valid(et_container):
+		return
+	
+	var slot_index = 0
+	for trinket_id in encounter_def.enemy_trinket_ids:
+		var trinket_def = Database.get_definition(trinket_id)
+		if not is_instance_valid(trinket_def):
+			continue
+		
+		# Skip player-exclusive trinkets
+		if trinket_def.is_player_exclusive:
+			continue
+		
+		# Create instance for the enemy trinket
+		var trinket_inst = GachaBallInstance.new()
+		trinket_inst.initialize_from_trinket(trinket_def)
+		_battle_instances[trinket_inst.ball_uuid] = trinket_inst
+		
+		# Place in enemy trinkets container
+		if slot_index < 5: # Max 5 enemy trinkets
+			et_container.set_uuid(slot_index, trinket_inst.ball_uuid)
+			_update_instance_location(trinket_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, slot_index)
+			enemy_trinkets.append(trinket_inst)
+			slot_index += 1
 
 func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
@@ -958,17 +911,23 @@ func bm_reshuffle_discard_pile(tier_to_reshuffle: int) -> bool:
 	return true
 
 func bm_draw_gacha_instance(tier: int) -> bool:
+	print("[DEBUG] bm_draw_gacha_instance called for tier %d" % tier)
 	var cost := tier
 	if _gacha_tokens < cost:
+		print("[DEBUG] Not enough tokens: have %d, need %d" % [_gacha_tokens, cost])
 		return false
 	var container_tag: StringName = "BattleInventoryT%d" % tier
 	var tier_pool := get_instances_in_container(container_tag)
+	print("[DEBUG] Tier pool for %s has %d instances" % [container_tag, tier_pool.size()])
 	# If pool is empty, silently reshuffle that tier from discard (single emission at end)
 	if tier_pool.is_empty():
+		print("[DEBUG] Pool empty, attempting reshuffle from discard")
 		if not _reshuffle_tier_from_discard(tier):
+			print("[DEBUG] Reshuffle failed")
 			return false
 		tier_pool = get_instances_in_container(container_tag)
 		if tier_pool.is_empty():
+			print("[DEBUG] Pool still empty after reshuffle")
 			return false
 	# Spend tokens and announce
 	_gacha_tokens -= cost
@@ -3157,6 +3116,9 @@ func _trigger_turn_start_abilities() -> void:
 	# Don't populate actor queue - we're just processing turn start abilities
 	if not _pending_reactions.is_empty():
 		_resolve_pending_reactions_only()
+	else:
+		# No turn start abilities to process - transition to MANAGEMENT directly
+		_on_turn_animation_finished()
 
 
 ## Process pending reactions without populating the actor queue
@@ -3384,9 +3346,11 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 		unit_instance.recalculate_stats(_battle_instances)
 
 func _on_draw_gacha_requested(tier: int) -> void:
+	print("[DEBUG] _on_draw_gacha_requested called for tier %d, current phase: %s" % [tier, _current_battle_phase])
 	# Delegate to atomic composite; preserves legacy signal order
 	# Ignore draw intents during COMBAT to enforce strict input blocking.
 	if _current_battle_phase != Phases.MANAGEMENT:
+		print("[DEBUG] Not in MANAGEMENT phase, ignoring draw request")
 		return
 	bm_draw_gacha_instance(tier)
 
@@ -3416,6 +3380,7 @@ func _emit_stats_changed_for_equipped_units() -> void:
 				SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
 
 func _on_flashcard_completed(results: Dictionary) -> void:
+	print("[DEBUG] _on_flashcard_completed called with results: ", results)
 	# TDD Section 9.4: Battle Flow
 	# This handler is only for the battle context.
 	# BattleManager only exists during battle, so we don't need to check is_in_battle.
@@ -3430,12 +3395,14 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	var correct_answers: int = results.get("correct_answers", 0)
 	var gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
 	
+	print("[DEBUG] Opening ResultsPopup modal")
 	# Display ResultsPopup
 	WindowManager.open_modal_window(&"ResultsPopup", {
 		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % correct_answers, "Okay"]
 	})
 
 func _on_results_acknowledged() -> void:
+	print("[DEBUG] _on_results_acknowledged called. Current phase: ", get_current_phase_name())
 	"""Called when player acknowledges the results popup"""
 	
 	var correct_answers: int = _last_minigame_results.get("correct_answers", 0)

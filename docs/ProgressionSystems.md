@@ -21,6 +21,24 @@ More numerous or higher-tier units.
 Increased base stats (if defined on higher-tier units).
 More or better-equipped items.
 (Potentially) Powerful enemy leaders with team-wide passive abilities.
+(Potentially) Enemy trinkets providing team-wide passive effects.
+
+## Boss Rewards
+
+After defeating a boss, the reward system differs from regular battles:
+
+### Trinket Rewards
+- Upon boss victory, the player is offered **3 random trinkets** instead of regular gacha balls.
+- The player must choose **one trinket** to add to their trinket inventory for the rest of the run.
+- Trinkets provide powerful team-wide passive abilities.
+
+### Gold Alternative
+- Instead of choosing a trinket, the player may opt for **10 gold**.
+- This is higher than the typical gold reward due to the value of trinkets.
+
+### Trinket Acquisition
+Trinkets are exclusively obtained from boss victories. They cannot be purchased in shops or found as regular battle rewards.
+
 3. Meta-Progression: Achievements & The Codex
 Meta-progression provides long-term goals that persist between runs. This system is centered around completing in-game Achievements.
 Achievements

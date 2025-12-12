@@ -17,12 +17,14 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	
 	# --- Phase 1: Setup & Data Pooling ---
 	# 1. Get all non-hero GachaBallDefinitions from the Database singleton.
-	# 2. Separate them into two pools: `available_units` and `available_items`.
-	#    Sort both pools by cost in ascending order to help the algorithm.
+	# 2. Separate them into pools: units, items, and trinkets.
+	# 3. Sort pools by cost in ascending order to help the algorithm.
 	var all_defs = Database.units.values() + Database.items.values()
 
 	var available_units: Array[GachaBallDefinition] = []
 	var available_items: Array[GachaBallDefinition] = []
+	var available_trinkets: Array = [] # TrinketDefinition array
+	
 	for d in all_defs:
 		# Skip hero units - check both ID and is_hero property
 		if d.id == &"hero" or d.id == &"enemy_hero": continue
@@ -34,20 +36,31 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 		elif d.category == &"ITEM":
 			available_items.append(d)
 	
+	# Add non-player-exclusive trinkets to the pool
+	for trinket in Database.trinkets.values():
+		if not trinket.is_player_exclusive:
+			available_trinkets.append(trinket)
 
 	available_units.sort_custom(func(a, b): return a.cost < b.cost)
 	available_items.sort_custom(func(a, b): return a.cost < b.cost)
+	# Safeguard: some trinkets may not have cost property if resources weren't re-saved
+	available_trinkets.sort_custom(func(a, b):
+		var cost_a = a.cost if "cost" in a else 10
+		var cost_b = b.cost if "cost" in b else 10
+		return cost_a < cost_b
+	)
 
-	# --- Phase 2 & 3: Optimized Build Loop ---
-	# This combines the mandatory spend and flexible spend into a single, robust process.
-	var best_build: Dictionary = {"units": [], "items": [], "spent": 0}
+	# --- Phase 2 & 3: Optimized Build Loop with Weighted Selection ---
+	# Priority weights: Units (3) > Items (2) > Trinkets (1)
+	var best_build: Dictionary = {"units": [], "items": [], "trinkets": [], "spent": 0}
 	
 	for _i in range(10): # Max 10 attempts to find a perfect build
 		var purchased_units: Array[GachaBallDefinition] = []
 		var purchased_items: Array[GachaBallDefinition] = []
+		var purchased_trinkets: Array = [] # TrinketDefinition array
 		var spent_budget = 0
 		
-		# Phase 2: Mandatory Unit Spend
+		# Phase 2: Mandatory Unit Spend (at least 50% on units)
 		var min_unit_spend = floor(budget / 2.0)
 		while spent_budget < min_unit_spend and purchased_units.size() < 5:
 			var affordable_units = available_units.filter(func(u): return u.cost <= (budget - spent_budget))
@@ -56,29 +69,58 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 			purchased_units.append(unit_to_add)
 			spent_budget += unit_to_add.cost
 		
-		# Phase 3: Flexible Spending
+		# Phase 3: Flexible Spending with Weighted Selection
 		while spent_budget < budget:
-			var possible_purchases: Array[GachaBallDefinition] = []
 			var remaining_budget = budget - spent_budget
 			
-			# Check for affordable units
-			if purchased_units.size() < 5:
-				possible_purchases.append_array(available_units.filter(func(u): return u.cost <= remaining_budget))
+			# Build weighted purchase lists
+			var weighted_purchases: Array = [] # Array of {def, weight, type}
 			
-			# Check for affordable items
+			# Check for affordable units (weight 3)
+			if purchased_units.size() < 5:
+				for u in available_units:
+					if u.cost <= remaining_budget:
+						weighted_purchases.append({"def": u, "weight": 3, "type": "unit"})
+			
+			# Check for affordable items (weight 2)
 			var total_item_slots = 0
 			for u in purchased_units: total_item_slots += u.item_slot_count
 			if purchased_items.size() < total_item_slots:
-				possible_purchases.append_array(available_items.filter(func(i): return i.cost <= remaining_budget))
-
-			if possible_purchases.is_empty(): break # Stuck, can't buy anything else
+				for item in available_items:
+					if item.cost <= remaining_budget:
+						weighted_purchases.append({"def": item, "weight": 2, "type": "item"})
 			
-			var purchase = possible_purchases.pick_random()
-			if purchase.category == &"UNIT":
-				purchased_units.append(purchase)
-			else:
-				purchased_items.append(purchase)
-			spent_budget += purchase.cost
+			# Check for affordable trinkets (weight 1, max 1 trinket per encounter)
+			if purchased_trinkets.size() < 1:
+				for trinket in available_trinkets:
+					var trinket_cost = trinket.cost if "cost" in trinket else 10
+					if trinket_cost <= remaining_budget:
+						weighted_purchases.append({"def": trinket, "weight": 1, "type": "trinket"})
+
+			if weighted_purchases.is_empty(): break # Stuck, can't buy anything else
+			
+			# Weighted random selection
+			var total_weight = 0
+			for p in weighted_purchases: total_weight += p.weight
+			var roll = randi() % total_weight
+			var cumulative = 0
+			var selected = weighted_purchases[0]
+			for p in weighted_purchases:
+				cumulative += p.weight
+				if roll < cumulative:
+					selected = p
+					break
+			
+			# Add the selected purchase
+			if selected.type == "unit":
+				purchased_units.append(selected.def)
+			elif selected.type == "item":
+				purchased_items.append(selected.def)
+			else: # trinket
+				purchased_trinkets.append(selected.def)
+			# Safeguard: trinkets might not have cost property
+			var def_cost = selected.def.cost if "cost" in selected.def else 10
+			spent_budget += def_cost
 
 		# Optimization: Explicitly try to fill small gaps in the budget
 		if spent_budget < budget:
@@ -103,7 +145,7 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 
 		# Store this result if it's better than the last one
 		if spent_budget > best_build.spent:
-			best_build = {"units": purchased_units, "items": purchased_items, "spent": spent_budget}
+			best_build = {"units": purchased_units, "items": purchased_items, "trinkets": purchased_trinkets, "spent": spent_budget}
 
 
 		# If we found a perfect build, exit early
@@ -134,6 +176,10 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 				possible_parents.append(p)
 		if possible_parents.is_empty(): break # No more slots
 		possible_parents.pick_random().items.append(item_def.id)
+	
+	# Assign trinkets to the encounter
+	for trinket_def in best_build.trinkets:
+		final_encounter.enemy_trinket_ids.append(trinket_def.id)
 	
 	# Validate the final encounter
 	if not _validate_encounter(final_encounter):
@@ -244,6 +290,9 @@ func generate_boss_encounter(boss_level: int, total_budget: int) -> EncounterDef
 	if support_encounter != null:
 		for placement in support_encounter.enemy_placements:
 			final_encounter.enemy_placements.append(placement)
+		# Also copy any trinkets from support encounter
+		for trinket_id in support_encounter.enemy_trinket_ids:
+			final_encounter.enemy_trinket_ids.append(trinket_id)
 	
 	# Place boss at position 4 (back of lineup)
 	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
@@ -263,10 +312,11 @@ func _generate_support_units(budget: int, max_units: int) -> EncounterDefinition
 	if budget <= 0:
 		return null
 	
-	# Get available units (exclude heroes and bosses)
+	# Get available units, items, and trinkets (exclude heroes and bosses)
 	var all_defs = Database.units.values() + Database.items.values()
 	var available_units: Array[GachaBallDefinition] = []
 	var available_items: Array[GachaBallDefinition] = []
+	var available_trinkets: Array = [] # TrinketDefinition array
 	
 	for d in all_defs:
 		if d.id == &"hero" or d.id == &"enemy_hero": continue
@@ -277,41 +327,83 @@ func _generate_support_units(budget: int, max_units: int) -> EncounterDefinition
 		elif d.category == &"ITEM":
 			available_items.append(d)
 	
+	# Add non-player-exclusive trinkets to the pool
+	for trinket in Database.trinkets.values():
+		if not trinket.is_player_exclusive:
+			available_trinkets.append(trinket)
+	
 	available_units.sort_custom(func(a, b): return a.cost < b.cost)
 	available_items.sort_custom(func(a, b): return a.cost < b.cost)
+	# Safeguard: some trinkets may not have cost property if resources weren't re-saved
+	available_trinkets.sort_custom(func(a, b):
+		var cost_a = a.cost if "cost" in a else 10
+		var cost_b = b.cost if "cost" in b else 10
+		return cost_a < cost_b
+	)
 	
-	# Build support team
-	var best_build: Dictionary = {"units": [], "items": [], "spent": 0}
+	# Build support team with weighted selection
+	var best_build: Dictionary = {"units": [], "items": [], "trinkets": [], "spent": 0}
 	
 	for _i in range(10):
 		var purchased_units: Array[GachaBallDefinition] = []
 		var purchased_items: Array[GachaBallDefinition] = []
+		var purchased_trinkets: Array = []
 		var spent_budget = 0
 		
-		# Spend budget on units and items
+		# Spend budget on units, items, and trinkets using weighted selection
 		while spent_budget < budget and purchased_units.size() < max_units:
-			var possible_purchases: Array[GachaBallDefinition] = []
 			var remaining = budget - spent_budget
 			
-			if purchased_units.size() < max_units:
-				possible_purchases.append_array(available_units.filter(func(u): return u.cost <= remaining))
+			# Build weighted purchase lists
+			var weighted_purchases: Array = []
 			
+			# Units (weight 3)
+			if purchased_units.size() < max_units:
+				for u in available_units:
+					if u.cost <= remaining:
+						weighted_purchases.append({"def": u, "weight": 3, "type": "unit"})
+			
+			# Items (weight 2)
 			var total_slots = 0
 			for u in purchased_units: total_slots += u.item_slot_count
 			if purchased_items.size() < total_slots:
-				possible_purchases.append_array(available_items.filter(func(i): return i.cost <= remaining))
+				for item in available_items:
+					if item.cost <= remaining:
+						weighted_purchases.append({"def": item, "weight": 2, "type": "item"})
 			
-			if possible_purchases.is_empty(): break
+			# Trinkets (weight 1, max 1 per encounter)
+			if purchased_trinkets.size() < 1:
+				for trinket in available_trinkets:
+					var trinket_cost = trinket.cost if "cost" in trinket else 10
+					if trinket_cost <= remaining:
+						weighted_purchases.append({"def": trinket, "weight": 1, "type": "trinket"})
 			
-			var purchase = possible_purchases.pick_random()
-			if purchase.category == &"UNIT":
-				purchased_units.append(purchase)
+			if weighted_purchases.is_empty(): break
+			
+			# Weighted random selection
+			var total_weight = 0
+			for p in weighted_purchases: total_weight += p.weight
+			var roll = randi() % total_weight
+			var cumulative = 0
+			var selected = weighted_purchases[0]
+			for p in weighted_purchases:
+				cumulative += p.weight
+				if roll < cumulative:
+					selected = p
+					break
+			
+			if selected.type == "unit":
+				purchased_units.append(selected.def)
+			elif selected.type == "item":
+				purchased_items.append(selected.def)
 			else:
-				purchased_items.append(purchase)
-			spent_budget += purchase.cost
+				purchased_trinkets.append(selected.def)
+			# Safeguard: trinkets might not have cost property
+			var def_cost2 = selected.def.cost if "cost" in selected.def else 10
+			spent_budget += def_cost2
 		
 		if spent_budget > best_build.spent:
-			best_build = {"units": purchased_units, "items": purchased_items, "spent": spent_budget}
+			best_build = {"units": purchased_units, "items": purchased_items, "trinkets": purchased_trinkets, "spent": spent_budget}
 		
 		if spent_budget == budget:
 			break
@@ -338,6 +430,10 @@ func _generate_support_units(budget: int, max_units: int) -> EncounterDefinition
 				possible_parents.append(p)
 		if possible_parents.is_empty(): break
 		possible_parents.pick_random().items.append(item_def.id)
+	
+	# Assign trinkets
+	for trinket_def in best_build.trinkets:
+		encounter.enemy_trinket_ids.append(trinket_def.id)
 	
 	return encounter
 
