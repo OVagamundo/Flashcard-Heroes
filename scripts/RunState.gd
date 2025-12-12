@@ -661,12 +661,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	# No starter trinkets are given - the player earns them by progressing.
 
 	# --- Add starter units/items to inventory ---
-	var starters: Array[StringName] = [
-		&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
-		&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
-		&"unit_t2_c", &"unit_t2_c", &"item_t2_c", &"item_t2_c",
-		&"unit_t3_d", &"unit_t3_d", &"item_t3_d", &"item_t3_d"
-	]
+	var starters: Array[StringName] = _get_starters_for_hero(hero_def_id)
 
 	for id in starters:
 		var def: GachaBallDefinition = Database.get_definition(id)
@@ -684,3 +679,25 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 			container_name = &"RunInventoryT%d" % tier_val
 		# Use atomic add to register and place instance
 		add_instance(inst, container_name, -1)
+
+func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
+	match hero_id:
+		&"hero_timekeeper":
+			# 2 of ALL units and items across all tiers
+			return [
+				# Tier 1
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
+				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
+				# Tier 2
+				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c",
+				&"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c", &"item_t2_c02", &"item_t2_c02",
+				# Tier 3
+				&"unit_t3_a", &"unit_t3_a", &"unit_t3_d", &"unit_t3_d",
+				&"item_t3_d", &"item_t3_d"
+			]
+		_:
+			# Default: minimal starter loadout for other heroes
+			return [
+				&"unit_t1_a", &"unit_t1_b",
+				&"item_t1_a", &"item_t1_b"
+			]

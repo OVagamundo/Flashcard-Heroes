@@ -20,7 +20,7 @@ This section documents the EncounterDefinition addition needed for enemy trinket
 ### Battle Setup Integration
 
 - During battle setup, `BattleManager._setup_enemy_trinkets_from_encounter(enc)` reads `enc.enemy_trinket_ids` and builds the in-battle enemy trinket list.
-- No generator-side auto-injection: enemy trinkets come strictly from the `EncounterDefinition` data.
+- The `EncounterGenerator` now populates `enemy_trinket_ids` using the weighted budget system (see V9.3 algorithm below).
 
 ### Testing Notes
 
