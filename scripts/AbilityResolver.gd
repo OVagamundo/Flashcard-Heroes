@@ -207,6 +207,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 					context["attack_replaced"] = true
 				_process_ability(ability, instance_uuid, battle_manager, context)
 
+
 	# Phase 2: Process equipped item abilities (sorted by slot for deterministic order)
 	equipped_item_instances.sort_custom(func(a, b): return a.slot_index < b.slot_index)
 	

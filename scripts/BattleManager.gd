@@ -1261,13 +1261,21 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		if not is_instance_valid(source):
 			return
 		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
-		# Exceptions: allow lethal reactive abilities (e.g., counter-attacks, retaliation, resilient aura) to run post-mortem
+		# Exceptions:
+		# 1. Reactive abilities (counter-attacks, retaliation) allowed post-mortem
+		# 2. on_death abilities - the dying unit IS expected to be dead when these execute
 		var src_def = source.get_definition()
 		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
+			# Allow if this is the dying unit's own on_death trigger
+			var dying_uuid: String = request.trigger_context.get("dying_uuid", "")
+			var is_own_death_trigger: bool = (dying_uuid == request.source_uuid)
+			# Allow reactive abilities that need to complete after lethal damage
 			var ability_id_str := String(request.ability_id)
-			var allows_lethal_execution := ability_id_str.contains("counter") or ability_id_str.contains("retaliate") or ability_id_str == "unit_tier3d_resilient_aura"
-			if not allows_lethal_execution:
+			var is_reactive_ability: bool = ability_id_str.contains("counter") or ability_id_str.contains("retaliate") or ability_id_str == "unit_tier3d_resilient_aura"
+			
+			if not is_own_death_trigger and not is_reactive_ability:
 				return
+
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
 	var exec_targets: Array[String] = []
 	exec_targets.append_array(request.resolved_targets)

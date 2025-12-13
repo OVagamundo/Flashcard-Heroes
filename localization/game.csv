@@ -95,3 +95,7 @@ unit_t3_b.name,Guardian Sentinel
 unit_t3_b.desc,A stalwart protector who leaps to defend allies from fatal blows.
 ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice
 ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal damage, intercepts and takes the damage instead."
+unit_t3_c.name,Soul Caller
+unit_t3_c.desc,A mystical unit that summons powerful allies upon its demise.
+ability.unit_tier3c_soul_summon.name,Soul Summon
+ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit in an empty slot."
