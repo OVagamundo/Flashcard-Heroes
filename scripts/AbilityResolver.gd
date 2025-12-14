@@ -201,8 +201,15 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if not _should_unit_respond(trigger, instance_uuid, instance, context, battle_manager):
 			continue
 
+		# Debug: Log when unit abilities are being processed for on_death
+		if trigger == &"on_death":
+			var unit_name = tr(definition.display_name_key) if "display_name_key" in definition else String(definition.id)
+			print("[DEBUG AbilityResolver] Unit '%s' (uuid=%s) responding to on_death, dying_uuid=%s" % [unit_name, instance_uuid, context.get("dying_uuid", "")])
+
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
+				if trigger == &"on_death":
+					print("[DEBUG AbilityResolver] Unit ability '%s' matched on_death trigger" % ability.id)
 				if ability.get("replaces_basic_attack") and trigger == &"on_attack":
 					context["attack_replaced"] = true
 				_process_ability(ability, instance_uuid, battle_manager, context)
@@ -275,6 +282,8 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			effect_context,
 			ability.priority # Pass priority from ability definition
 		)
+		
+		print("[DEBUG AbilityResolver] Created EffectRequest: ability=%s, source=%s, effect_script=%s" % [ability.id, source_uuid, effect.get_script().resource_path if effect.get_script() else "no_script"])
 		
 		# Enqueue the request
 		battle_manager.enqueue_effect_request(effect_request)

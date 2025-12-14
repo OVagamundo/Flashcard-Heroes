@@ -137,6 +137,13 @@ func _build_ui() -> void:
 		toggle_label.text = "Target: Enemy" if toggled else "Target: Player"
 	)
 	toggle_hbox.add_child(toggle)
+	
+	# Add Battle Start trigger button
+	var battle_start_btn = Button.new()
+	battle_start_btn.text = "Trigger Battle Start"
+	battle_start_btn.pressed.connect(_on_trigger_battle_start_pressed)
+	vbox.add_child(battle_start_btn)
+	vbox.move_child(battle_start_btn, 2) # Place after toggle
 
 func _setup_debug_ui() -> void:
 	# Populate lists
@@ -183,23 +190,12 @@ func _on_spawn_unit_pressed() -> void:
 	
 	var index = selection[0]
 	var id = unit_list.get_item_metadata(index)
-	var def = Database.get_definition(id)
-	if not def: return
 	
-	var instance = GachaBallInstance.new()
-	instance.initialize(def)
-	
-	if _spawn_target_is_enemy:
-		# Add to enemy lineup (find first empty slot)
-		# Note: This uses BattleManager directly, so it only affects the current battle
-		battle_manager.bm_add_instance(instance, BattleManager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	else:
-		# Add to player lineup/bench
-		# Try lineup first, then bench
-		if not battle_manager.bm_add_instance(instance, BattleManager.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP):
-			battle_manager.bm_add_instance(instance, BattleManager.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-	
-	SignalBus.emit_signal("battle_inventory_changed")
+	# Use BattleManager's test mode helper for proper initialization parity
+	var instance = battle_manager.register_test_unit(id, _spawn_target_is_enemy)
+	if is_instance_valid(instance):
+		SignalBus.emit_signal("battle_inventory_changed")
+		SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
 
 func _on_spawn_item_pressed() -> void:
 	var selection = item_list.get_selected_items()
@@ -207,15 +203,16 @@ func _on_spawn_item_pressed() -> void:
 	
 	var index = selection[0]
 	var id = item_list.get_item_metadata(index)
+	
+	# Spawn items to inventory for BOTH player and enemy targets
+	# User can then manually equip them onto any unit (player or enemy)
 	var def = Database.get_definition(id)
 	if not def: return
-	
 	var instance = GachaBallInstance.new()
 	instance.initialize(def)
-	
-	# Always spawn items to player inventory regardless of target
-	# User can then drag them onto enemy units if needed
 	battle_manager.bm_add_instance(instance, BattleManager.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+	SignalBus.emit_signal("battle_inventory_changed")
+	print("[TestMode] Spawned item: %s to inventory" % id)
 
 func _on_spawn_trinket_pressed() -> void:
 	var selection = trinket_list.get_selected_items()
@@ -224,34 +221,11 @@ func _on_spawn_trinket_pressed() -> void:
 	
 	var index = selection[0]
 	var id = trinket_list.get_item_metadata(index)
-	var def = Database.get_definition(id)
 	
-	if not def:
-		return
-	
-	var instance = GachaBallInstance.new()
-	instance.initialize_from_trinket(def)
-	
-	if _spawn_target_is_enemy:
-		# Add to enemy trinkets using bm_add_instance so it's properly registered
-		var success = battle_manager.bm_add_instance(instance, BattleManager.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-		if success:
-			# Also add to the enemy_trinkets array for legacy compatibility
-			battle_manager.enemy_trinkets.append(instance)
-			# Emit signal to update UI
-			SignalBus.emit_signal("battle_inventory_changed")
-	else:
-		# Add to player trinkets in RunState (so Main UI updates)
-		if is_instance_valid(GameManager.run_state):
-			# add_instance handles finding slot, setting UUID, and emitting signals
-			var success = GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-			
-			if success:
-				# Sync to BattleManager so it's visible in the UI during battle (Test Mode is a battle)
-				var battle_copy = instance.create_battle_copy()
-				if is_instance_valid(battle_copy):
-					# Use the same slot index as the RunState instance
-					battle_manager.bm_add_instance(battle_copy, BattleManager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, instance.location_slot_index)
+	# Use BattleManager's test mode helper for proper initialization parity
+	var instance = battle_manager.register_test_trinket(id, _spawn_target_is_enemy)
+	if is_instance_valid(instance):
+		SignalBus.emit_signal("battle_inventory_changed")
 
 
 func _on_unit_list_item_selected(index: int) -> void:
@@ -276,3 +250,8 @@ func _on_debug_panel_gui_input(event: InputEvent) -> void:
 				_is_dragging_panel = false
 	elif event is InputEventMouseMotion and _is_dragging_panel:
 		debug_panel.global_position = debug_panel.get_global_mouse_position() - _drag_offset
+
+func _on_trigger_battle_start_pressed() -> void:
+	# Trigger on_battle_start abilities for all units on the board
+	# This ensures perfect parity with real battle initialization
+	battle_manager.trigger_test_battle_start()

@@ -4,6 +4,22 @@ extends EffectDefinition
 ## Summon a random T1 unit when the holder dies
 ## Uses context data instead of querying instances (Effect Decoupling Rule)
 
+## Find empty slot searching from back to front based on team
+## Player team: back is index 4, front is index 0 (search 4→0)
+## Enemy team: back is index 0, front is index 4 (search 0→4)
+func _find_empty_slot_back_to_front(container: DataContainer, is_enemy_team: bool) -> int:
+	if is_enemy_team:
+		# Enemy back-to-front: 0→4
+		for i in range(5):
+			if container.get_uuid(i).is_empty():
+				return i
+	else:
+		# Player back-to-front: 4→0
+		for i in range(4, -1, -1):
+			if container.get_uuid(i).is_empty():
+				return i
+	return -1
+
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Dictionary:
 	# The source is an item triggering on_death
 	# Context contains data about the dying unit (the holder)
@@ -34,8 +50,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if is_instance_valid(container):
 		var slot_uuid = container.get_uuid(holder_location.index)
 		if not slot_uuid.is_empty() and slot_uuid != holder_uuid:
-			# Slot is occupied by another unit - find an empty slot
-			var empty_slot = container.find_first_empty_slot()
+			# Slot is occupied by another unit - find an empty slot using back-to-front search
+			# Player team: back is index 4, front is index 0 (search 4→0)
+			# Enemy team: back is index 0, front is index 4 (search 0→4)
+			var is_enemy_team = holder_location.container == battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var empty_slot = _find_empty_slot_back_to_front(container, is_enemy_team)
+			print("[DEBUG EffectSummonOnDeath] Slot %d occupied, found alternative: %d (is_enemy=%s)" % [holder_location.index, empty_slot, is_enemy_team])
 			if empty_slot == -1:
 				# No lineup slots available - send to discard pile instead
 				var discard_container = battle_manager.get_container(battle_manager.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)

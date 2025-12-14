@@ -263,10 +263,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 
 
 func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
-	# In Test Mode, start with empty enemy board
-	if is_test_mode:
-		return
-
+	# NOTE: Test mode now uses this function via register_test_unit() for proper initialization parity
 	if encounter_def:
 		# Use the provided encounter definition
 		var lineup_container: DataContainer = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
@@ -1254,11 +1251,13 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 		enqueue_effect_request(basic_attack_request)
 
 func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary = {}) -> void:
+	print("[DEBUG BM] _resolve_single_effect_request: ability=%s, source=%s" % [request.ability_id, request.source_uuid])
 	# Validate source is still alive (allow empty source UUID for trinket effects)
 	var source = null
 	if not request.source_uuid.is_empty():
 		source = get_instance_by_uuid(request.source_uuid)
 		if not is_instance_valid(source):
+			print("[DEBUG BM] EXIT: source instance is invalid for uuid=%s" % request.source_uuid)
 			return
 		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
 		# Exceptions:
@@ -1273,7 +1272,10 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			var ability_id_str := String(request.ability_id)
 			var is_reactive_ability: bool = ability_id_str.contains("counter") or ability_id_str.contains("retaliate") or ability_id_str == "unit_tier3d_resilient_aura"
 			
+			print("[DEBUG BM] Dead source check: dying_uuid=%s, is_own_death=%s, is_reactive=%s" % [dying_uuid, is_own_death_trigger, is_reactive_ability])
+			
 			if not is_own_death_trigger and not is_reactive_ability:
+				print("[DEBUG BM] EXIT: Dead unit's effect blocked (not own on_death, not reactive)")
 				return
 
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
@@ -2064,6 +2066,9 @@ func _resolve_combat_phase() -> void:
 		_process_completed_counter_deaths(final_death_events, death_tracking)
 		turn_log.append_array(final_death_events)
 
+	# Clean up deferred enemy instances AFTER all reactions have resolved
+	_flush_deferred_enemy_erasures()
+
 	_is_processing_effect = false
 	# DO NOT unblock inventory updates here!
 	# Keep them blocked until animations finish to prevent _redraw_board() from destroying views
@@ -2282,6 +2287,10 @@ func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 	assert(is_instance_valid(unit), "_perform_unit_death_cleanup: unit is null")
 	print("[DEBUG] _perform_unit_death_cleanup for: ", unit.ball_uuid, " HP: ", unit.current_hp, " container: ", unit.location_container_tag)
 	
+	# Guard against duplicate cleanup calls - if container is already empty, unit was already cleaned up
+	if unit.location_container_tag == &"" or unit.location_container_tag == &"DiscardPile":
+		return
+	
 	if _is_player_owned(unit):
 		# Player unit: move equipped items to discard then move unit to discard
 		for item_uuid in unit.equipped_item_uuids:
@@ -2296,7 +2305,10 @@ func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 		
 		_move_instance_to_discard(unit)
 	else:
-		# Enemy unit: clear equipped linkage and erase items, then remove unit
+		# Enemy unit: clear equipped linkage and erase items, then remove unit from container
+		# CRITICAL: Do NOT erase from _battle_instances yet! The unit's on_death reactions
+		# need to resolve first. Premature erasure causes get_instance_by_uuid() to return null
+		# and the effect execution to be skipped. We track these for later cleanup.
 		for item_uuid in unit.equipped_item_uuids:
 			if not item_uuid.is_empty():
 				var item_instance := get_instance(item_uuid)
@@ -2304,12 +2316,20 @@ func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 					item_instance.equipped_on_uuid = ""
 					item_instance.equipped_slot_index = -1
 					_update_instance_location(item_instance.ball_uuid, &"", -1)
-					if _battle_instances.has(item_instance.ball_uuid):
-						_battle_instances.erase(item_instance.ball_uuid)
+					# Defer item erasure too - items have on_death abilities!
+					if not has_meta("_deferred_enemy_erasures"):
+						set_meta("_deferred_enemy_erasures", [])
+					var erasure_list: Array = get_meta("_deferred_enemy_erasures")
+					erasure_list.append(item_instance.ball_uuid)
+					set_meta("_deferred_enemy_erasures", erasure_list)
 		unit.equipped_item_uuids.fill("")
 		_remove_instance_from_container(unit)
-		if _battle_instances.has(unit.ball_uuid):
-			_battle_instances.erase(unit.ball_uuid)
+		# Defer unit erasure until after all reactions have resolved
+		if not has_meta("_deferred_enemy_erasures"):
+			set_meta("_deferred_enemy_erasures", [])
+		var erasure_list2: Array = get_meta("_deferred_enemy_erasures")
+		erasure_list2.append(unit.ball_uuid)
+		set_meta("_deferred_enemy_erasures", erasure_list2)
 
 ## Check if a unit has counter-attack abilities that could trigger on lethal damage
 func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
@@ -3205,11 +3225,26 @@ func _resolve_pending_reactions_only() -> void:
 		_resolve_single_effect_request(request, reaction_events, death_tracking)
 		all_events_for_animator.append_array(reaction_events)
 	
+	# Clean up deferred enemy instances AFTER all reactions have resolved
+	_flush_deferred_enemy_erasures()
+	
 	_is_processing_effect = false
 	if not all_events_for_animator.is_empty():
 		_animator.play_turn_sequence(start_snapshot, all_events_for_animator)
 	else:
 		_on_turn_animation_finished()
+
+## Flush deferred enemy instance erasures. Called after all reactions have resolved.
+## This ensures enemy units and items are still available in _battle_instances while
+## their on_death abilities are being processed.
+func _flush_deferred_enemy_erasures() -> void:
+	if not has_meta("_deferred_enemy_erasures"):
+		return
+	var erasure_list: Array = get_meta("_deferred_enemy_erasures")
+	for uuid in erasure_list:
+		if _battle_instances.has(uuid):
+			_battle_instances.erase(uuid)
+	remove_meta("_deferred_enemy_erasures")
 
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
@@ -3567,3 +3602,173 @@ func _finalize_deaths() -> void:
 	
 	if something_changed:
 		_emit_battle_inventory_changed()
+
+# =============================================================================
+# TEST MODE HELPERS
+# These functions ensure test mode uses the same initialization paths as real battles.
+# =============================================================================
+
+## Register a unit for test mode using the same logic as _setup_enemy_lineup().
+## Guarantees 100% parity with real battle initialization.
+## @param unit_def_id: StringName - The ID of the unit definition
+## @param is_enemy: bool - True for enemy team, false for player team
+## @param position: int - Slot position (0-4), or -1 for auto-placement
+## @return GachaBallInstance - The created instance, or null on failure
+func register_test_unit(unit_def_id: StringName, is_enemy: bool, position: int = -1) -> GachaBallInstance:
+	var unit_def = Database.get_definition(unit_def_id)
+	if not is_instance_valid(unit_def):
+		push_warning("[TestMode] Unit definition not found: %s" % unit_def_id)
+		return null
+	
+	var container_tag = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_enemy else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+	var lineup_container: DataContainer = get_container(container_tag)
+	
+	# Find position if not specified
+	var slot := position
+	if slot < 0:
+		slot = lineup_container.find_first_empty_slot()
+		if slot == -1:
+			push_warning("[TestMode] No empty slots in lineup")
+			return null
+	
+	# Create instance EXACTLY like _setup_enemy_lineup does
+	var unit_inst = GachaBallInstance.new()
+	unit_inst.initialize(unit_def)
+	_battle_instances[unit_inst.ball_uuid] = unit_inst
+	
+	# Place in container EXACTLY like _setup_enemy_lineup does
+	lineup_container.set_uuid(slot, unit_inst.ball_uuid)
+	_update_instance_location(unit_inst.ball_uuid, container_tag, slot)
+	
+	print("[TestMode] Registered unit: %s at %s slot %d" % [unit_def_id, container_tag, slot])
+	return unit_inst
+
+## Equip an item on a unit using the same logic as real battles.
+## Uses _perform_equip() to guarantee parity.
+## @param item_def_id: StringName - The ID of the item definition
+## @param unit_uuid: String - UUID of the unit to equip on
+## @return GachaBallInstance - The created item instance, or null on failure
+func register_test_item_on_unit(item_def_id: StringName, unit_uuid: String) -> GachaBallInstance:
+	var item_def = Database.get_definition(item_def_id)
+	if not is_instance_valid(item_def):
+		push_warning("[TestMode] Item definition not found: %s" % item_def_id)
+		return null
+	
+	var unit = get_instance(unit_uuid)
+	if not is_instance_valid(unit):
+		push_warning("[TestMode] Unit not found: %s" % unit_uuid)
+		return null
+	
+	# Check for empty equipment slot
+	if not unit.equipped_item_uuids.has(""):
+		push_warning("[TestMode] Unit %s has no empty equipment slots" % unit_uuid)
+		return null
+	
+	# Create and equip item EXACTLY like _setup_enemy_lineup does
+	var item_inst = GachaBallInstance.new()
+	item_inst.initialize(item_def)
+	_battle_instances[item_inst.ball_uuid] = item_inst
+	
+	# Use existing _perform_equip for proper stat application
+	_perform_equip(item_inst, unit)
+	
+	print("[TestMode] Equipped item: %s on unit: %s" % [item_def_id, unit_uuid])
+	return item_inst
+
+## Register a trinket for test mode using the same logic as _setup_enemy_trinkets_from_encounter().
+## @param trinket_def_id: StringName - The ID of the trinket definition
+## @param is_enemy: bool - True for enemy team, false for player team
+## @return GachaBallInstance - The created instance, or null on failure
+func register_test_trinket(trinket_def_id: StringName, is_enemy: bool) -> GachaBallInstance:
+	var trinket_def = Database.get_definition(trinket_def_id)
+	if not is_instance_valid(trinket_def):
+		push_warning("[TestMode] Trinket definition not found: %s" % trinket_def_id)
+		return null
+	
+	var container_tag = BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS if is_enemy else BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS
+	var trinket_container: DataContainer = get_container(container_tag)
+	
+	# Find empty slot
+	var slot := trinket_container.find_first_empty_slot()
+	if slot == -1:
+		push_warning("[TestMode] No empty trinket slots for team: %s" % ("enemy" if is_enemy else "player"))
+		return null
+	
+	# Create instance EXACTLY like _setup_enemy_trinkets_from_encounter does
+	var trinket_inst = GachaBallInstance.new()
+	trinket_inst.initialize_from_trinket(trinket_def)
+	_battle_instances[trinket_inst.ball_uuid] = trinket_inst
+	
+	# Place in container
+	trinket_container.set_uuid(slot, trinket_inst.ball_uuid)
+	_update_instance_location(trinket_inst.ball_uuid, container_tag, slot)
+	
+	# For enemy trinkets, also add to legacy array
+	if is_enemy:
+		enemy_trinkets.append(trinket_inst)
+	
+	print("[TestMode] Registered trinket: %s for %s at slot %d" % [trinket_def_id, "enemy" if is_enemy else "player", slot])
+	return trinket_inst
+
+## Trigger on_battle_start abilities for all units currently on the board.
+## Call this after setting up your test entities.
+func trigger_test_battle_start() -> void:
+	print("[TestMode] Triggering on_battle_start for all units...")
+	_trigger_battle_start_abilities()
+	call_deferred("_emit_stats_changed_for_equipped_units")
+	_emit_battle_inventory_changed()
+	print("[TestMode] Battle start trigger complete")
+
+## Clear all entities for a specific team. Used to reset before re-applying test setup.
+## @param is_enemy: bool - True to clear enemy team, false to clear player team
+func clear_test_team(is_enemy: bool) -> void:
+	if is_enemy:
+		# Clear enemy lineup
+		var enemy_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+		for i in range(5):
+			var uuid = enemy_container.get_uuid(i)
+			if not uuid.is_empty():
+				var inst = get_instance(uuid)
+				if is_instance_valid(inst):
+					# Remove equipped items from registry
+					for item_uuid in inst.equipped_item_uuids:
+						if not item_uuid.is_empty():
+							_battle_instances.erase(item_uuid)
+					_battle_instances.erase(uuid)
+				enemy_container.set_uuid(i, "")
+		
+		# Clear enemy trinkets
+		enemy_trinkets.clear()
+		var trinket_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+		for i in range(5):
+			var uuid = trinket_container.get_uuid(i)
+			if not uuid.is_empty():
+				_battle_instances.erase(uuid)
+				trinket_container.set_uuid(i, "")
+		
+		print("[TestMode] Cleared enemy team")
+	else:
+		# Clear player lineup (excluding hero at position 0)
+		var player_container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+		for i in range(1, 5): # Skip hero at position 0
+			var uuid = player_container.get_uuid(i)
+			if not uuid.is_empty():
+				var inst = get_instance(uuid)
+				if is_instance_valid(inst):
+					for item_uuid in inst.equipped_item_uuids:
+						if not item_uuid.is_empty():
+							_battle_instances.erase(item_uuid)
+					_battle_instances.erase(uuid)
+				player_container.set_uuid(i, "")
+		
+		# Clear player trinkets
+		var trinket_container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
+		for i in range(5):
+			var uuid = trinket_container.get_uuid(i)
+			if not uuid.is_empty():
+				_battle_instances.erase(uuid)
+				trinket_container.set_uuid(i, "")
+		
+		print("[TestMode] Cleared player team (kept hero)")
+	
+	_emit_battle_inventory_changed()
