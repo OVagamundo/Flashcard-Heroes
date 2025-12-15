@@ -98,6 +98,11 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 		&"on_turn_start", &"on_turn_end", &"on_battle_start":
 			# All equipped items on living holders respond
 			return true
+		
+		&"on_damage_dealt":
+			# Only items equipped on the attacker respond (for lifesteal effects)
+			var attacker_uuid = context.get("attacker_uuid", "")
+			return holder_uuid == attacker_uuid
 	
 	return true
 

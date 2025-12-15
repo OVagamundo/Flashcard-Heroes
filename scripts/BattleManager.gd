@@ -381,14 +381,14 @@ func get_container(container_name: StringName) -> DataContainer:
 		BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
 			new_container = FixedArrayContainer.new(2)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
-			new_container = GrowableGridContainer.new(16)
+			new_container = GrowableGridContainer.new(24)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
 			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
 			new_container = FixedArrayContainer.new(5)
 		_: # Default case for BattleInventoryT*
 			if container_name.begins_with("BattleInventoryT"):
-				new_container = GrowableGridContainer.new(16)
+				new_container = GrowableGridContainer.new(24)
 			else:
 				# Failsafe for unknown container types
 				new_container = FixedArrayContainer.new(1)
@@ -3071,6 +3071,12 @@ func drain_pending_reactions_inline(start_index: int) -> void:
 		# The outer loop will handle death checking properly - we're only processing pre-attack heals here
 		# which don't cause deaths, and any existing dead units were already processed
 		_resolve_single_effect_request(request, _inline_events, {"__skip_death_triggers__": true})
+		
+		# RECURSIVE PROCESSING: If this effect triggered new reactions (e.g., retaliation damage
+		# triggering on_damage_dealt for lifesteal), process them immediately so heals appear
+		# right after the damage that caused them, not batched at the end
+		if not _pending_reactions.is_empty():
+			drain_pending_reactions_inline(0)
 
 ## Collect any events generated during inline reaction processing (e.g., on_before_attack)
 ## Called by the outer resolution loop to insert these before damage events.
@@ -3286,6 +3292,27 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		"victim_current_hp": victim_current_hp
 	}
 	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
+	
+	# Trigger on_damage_dealt for the attacker (for lifesteal effects)
+	# This fires AFTER damage is applied, enabling correct animation order
+	if not attacker_uuid.is_empty():
+		# Resolve the actual attacking UNIT - if attacker is an item, get the holder
+		var actual_attacker_uuid := attacker_uuid
+		var attacker_instance = get_instance_by_uuid(attacker_uuid)
+		if is_instance_valid(attacker_instance):
+			var attacker_def = attacker_instance.get_definition()
+			if is_instance_valid(attacker_def) and attacker_def.category == &"ITEM":
+				# Attacker is an item - use the holder's UUID instead
+				if not attacker_instance.equipped_on_uuid.is_empty():
+					actual_attacker_uuid = attacker_instance.equipped_on_uuid
+		
+		var damage_dealt_context: Dictionary = {
+			"attacker_uuid": actual_attacker_uuid,
+			"victim_uuid": target_uuid,
+			"damage_dealt": damage_amount,
+			"victim_new_hp": victim_current_hp
+		}
+		AbilityResolver.process_trigger(&"on_damage_dealt", damage_dealt_context)
 
 ## Trigger on_kill event for a unit that killed another unit.
 ## @param killer_uuid: String - The UUID of the unit that got the kill

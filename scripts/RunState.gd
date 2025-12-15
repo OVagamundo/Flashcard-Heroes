@@ -648,7 +648,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
 		var container_name: StringName = &"RunInventoryT%d" % t
-		_containers[container_name] = GrowableGridContainer.new(16)
+		_containers[container_name] = GrowableGridContainer.new(24)
 
 	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(5)
@@ -693,7 +693,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c", &"item_t2_c02", &"item_t2_c02",
 			# Tier 3
 				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c", &"unit_t3_d", &"unit_t3_d",
-				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_d", &"item_t3_d"
+				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c", &"item_t3_d", &"item_t3_d"
 			]
 		_:
 			# Default: minimal starter loadout for other heroes

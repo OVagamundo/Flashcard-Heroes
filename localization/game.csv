@@ -107,3 +107,7 @@ item_t3_b.name,Power Amulet
 item_t3_b.desc,When attacking the holder empowers allies with strength.
 ability.item_t3b_on_attack_buff.name,Battle Cry
 ability.item_t3b_on_attack_buff.desc,"When the holder attacks, grant +2 PWR to two random allies."
+item_t3_c.name,Lifesteal Ring
+item_t3_c.desc,Drains life from enemies with each attack.
+ability.item_t3c_on_attack_lifesteal.name,Vampiric Strike
+ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP)."

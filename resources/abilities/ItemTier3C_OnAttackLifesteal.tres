@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectLifesteal.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectLifesteal_1"]
+script = ExtResource("2_effect")
+parameters = { "percentage": 0.2, "min_heal": 1 }
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier3c_on_attack_lifesteal"
+name_key = "ability.item_t3c_on_attack_lifesteal.name"
+description_key = "ability.item_t3c_on_attack_lifesteal.desc"
+trigger = &"on_damage_dealt"
+priority = 0
+effects = Array[Resource]([SubResource("EffectLifesteal_1")])
