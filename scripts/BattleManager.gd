@@ -1325,6 +1325,8 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		var sim_ctx = request.trigger_context.duplicate(true)
 		sim_ctx["is_simulation"] = true
 		sim_ctx["ability_id"] = request.ability_id
+		var effect_script_path = request.effect_definition.get_script().resource_path if request.effect_definition.get_script() else "no_script"
+		print("[DEBUG BM] About to execute effect - ability: %s, effect_script: %s, effect_class: %s" % [request.ability_id, effect_script_path, request.effect_definition.get_class()])
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
 		
 		# CRITICAL: Collect on_before_attack inline events IMMEDIATELY after effect execution
@@ -1939,6 +1941,124 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								"category": new_unit_category,
 								"display_name_key": new_unit_name_key
 							}
+						}
+					}))
+			# Handle multi_heal effects (e.g., Heart Stone - two random allies healed independently)
+			elif effect_data.has("multi_heal") and effect_data.get("multi_heal", false):
+				var heals: Array = effect_data.get("heals", [])
+				var animation_source_uuid: String = effect_data.get("animation_source_uuid", request.source_uuid)
+				var heal_stat: String = effect_data.get("stat", "hp")
+				
+				for heal_data in heals:
+					var target_uuid: String = String(heal_data.get("target", ""))
+					var heal_amount: int = int(heal_data.get("amount", 0))
+					
+					if target_uuid.is_empty() or heal_amount <= 0:
+						continue
+					
+					var tgt = get_instance_by_uuid(target_uuid)
+					if not is_instance_valid(tgt):
+						continue
+					
+					# Capture old HP
+					var old_hp: int = tgt.current_hp
+					var max_hp: int = 0
+					var tgt_def = tgt.get_definition()
+					if is_instance_valid(tgt_def):
+						max_hp = tgt_def.base_hp
+					
+					# Apply heal
+					var new_hp = apply_stat_delta(tgt, "hp", heal_amount)
+					
+					# Get target name for log
+					var target_name: String = ""
+					if is_instance_valid(tgt_def) and tgt_def.display_name_key:
+						target_name = tr(tgt_def.display_name_key)
+					
+					# Get source name for log
+					var anim_source = get_instance_by_uuid(animation_source_uuid)
+					var heal_source_name: String = ""
+					if is_instance_valid(anim_source):
+						var anim_def = anim_source.get_definition()
+						if is_instance_valid(anim_def) and anim_def.display_name_key:
+							heal_source_name = tr(anim_def.display_name_key)
+					
+					if heal_source_name != "" and target_name != "":
+						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [heal_source_name, target_name, heal_amount]}))
+					
+					# Create HEAL event with animation source as the item holder
+					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
+						"source_uuid": request.source_uuid,
+						"target_uuids": [target_uuid],
+						"ability_id": request.ability_id,
+						"trigger_type": request.trigger_context.get("trigger_type", ""),
+						"ability_holder_uuid": animation_source_uuid,
+						"visual_payload": {
+							"source_uuid": animation_source_uuid, # Use item holder for projectile source
+							"amount": heal_amount,
+							"stat": heal_stat,
+							"skip_bump": false,
+							"targets_old_hp": [old_hp],
+							"targets_new_hp": [new_hp],
+							"targets_max_hp": [max_hp]
+						}
+					}))
+			# Handle multi_buff effects (e.g., Power Amulet - two random allies buffed independently)
+			elif effect_data.has("multi_buff") and effect_data.get("multi_buff", false):
+				var buffs: Array = effect_data.get("buffs", [])
+				var animation_source_uuid: String = effect_data.get("animation_source_uuid", request.source_uuid)
+				var buff_stat: String = effect_data.get("stat", "pwr")
+				
+				for buff_data in buffs:
+					var target_uuid: String = String(buff_data.get("target", ""))
+					var buff_amount: int = int(buff_data.get("amount", 0))
+					
+					if target_uuid.is_empty() or buff_amount <= 0:
+						continue
+					
+					var tgt = get_instance_by_uuid(target_uuid)
+					if not is_instance_valid(tgt):
+						continue
+					
+					# Capture old value based on stat type
+					var old_val: int = tgt.current_pwr if buff_stat == "pwr" else tgt.current_hp
+					
+					# Apply buff
+					var new_val = apply_stat_delta(tgt, buff_stat, buff_amount)
+					
+					# Get target name for log
+					var target_name: String = ""
+					var tgt_def = tgt.get_definition()
+					if is_instance_valid(tgt_def) and tgt_def.display_name_key:
+						target_name = tr(tgt_def.display_name_key)
+					
+					# Get source name for log
+					var anim_source = get_instance_by_uuid(animation_source_uuid)
+					var buff_source_name: String = ""
+					if is_instance_valid(anim_source):
+						var anim_def = anim_source.get_definition()
+						if is_instance_valid(anim_def) and anim_def.display_name_key:
+							buff_source_name = tr(anim_def.display_name_key)
+					
+					var stat_name: String = "PWR" if buff_stat == "pwr" else "HP"
+					if buff_source_name != "" and target_name != "":
+						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s grants %s +%d %s" % [buff_source_name, target_name, buff_amount, stat_name]}))
+					
+					# Create BUFF event with animation source as the item holder
+					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": request.source_uuid,
+						"target_uuids": [target_uuid],
+						"ability_id": request.ability_id,
+						"trigger_type": request.trigger_context.get("trigger_type", ""),
+						"ability_holder_uuid": animation_source_uuid,
+						"visual_payload": {
+							"source_uuid": animation_source_uuid, # Use item holder for projectile source
+							"amount": buff_amount,
+							"stat": buff_stat,
+							"targets_old_pwr": [old_val] if buff_stat == "pwr" else [],
+							"targets_new_pwr": [new_val] if buff_stat == "pwr" else [],
+							"targets_old_val": [] if buff_stat == "pwr" else [old_val],
+							"targets_new_val": [] if buff_stat == "pwr" else [new_val]
 						}
 					}))
 	# CRITICAL FIX: Death check MUST run unconditionally after any effect execution
@@ -2896,8 +3016,9 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 					result = target_instance.current_hp > source_instance.current_hp
 		C.COND_DAMAGE_WAS_NON_LETHAL:
 			# Check if the unit that took damage is still alive (HP > 0)
+			# For on_hurt triggers, context uses "victim_uuid" for the damaged unit
 			# For equipped items, we need to check the damaged unit from context, not the item itself
-			var damaged_unit_uuid = context.get("source_uuid", "")
+			var damaged_unit_uuid = context.get("victim_uuid", context.get("source_uuid", ""))
 			var damaged_unit = get_instance_by_uuid(damaged_unit_uuid) if not damaged_unit_uuid.is_empty() else source_instance
 			result = damaged_unit.current_hp > 0 if is_instance_valid(damaged_unit) else false
 		C.COND_DAMAGE_WAS_RECEIVED:

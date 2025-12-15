@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
 [ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
@@ -16,11 +16,16 @@ script = ExtResource("2_effect")
 parameters = { "stat": "hp", "base_value": 1 }
 target_type = &"HOLDER"
 
+[sub_resource type="Resource" id="EffectModifyStat_PassivePwr_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"HOLDER"
+
 [resource]
 script = ExtResource("1_ability")
 id = &"item_tier2c_passive_heal"
 name_key = "ability.item_tier2c_passive_heal.name"
 trigger = &"on_hurt"
 condition = SubResource("ConditionDefinition_NonLethal_1")
-effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1")])
+effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1"), SubResource("EffectModifyStat_PassivePwr_1")])
 description_key = "ability.item_tier2c_passive_heal.desc"

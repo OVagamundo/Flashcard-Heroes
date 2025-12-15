@@ -26,7 +26,7 @@ trinket.healing_amulet.name,Healing Amulet
 trinket.healing_amulet.desc,A simple but reliable enchanted charm.
 ability.healing_amulet.desc,"At the start of the turn, Heals the frontmost ally unit by 2 HP."
 ability.item_tier2c_passive_heal.name,Regeneration
-ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP."
+ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP and gain 1 PWR."
 ability.unit_tier1a_passive_heal.name,Resilience
 ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by (PWR) HP."
 ability.unit_tier1b_counter_on_hurt.name,Retaliation
@@ -99,3 +99,11 @@ unit_t3_c.name,Soul Caller
 unit_t3_c.desc,A mystical unit that summons powerful allies upon its demise.
 ability.unit_tier3c_soul_summon.name,Soul Summon
 ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit in an empty slot."
+item_t3_a.name,Heart Stone
+item_t3_a.desc,When hurt the holder spreads healing energy to allies.
+ability.item_t3a_on_hurt_heal.name,Vital Link
+ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt, heal two random allies for 2 HP each."
+item_t3_b.name,Power Amulet
+item_t3_b.desc,When attacking the holder empowers allies with strength.
+ability.item_t3b_on_attack_buff.name,Battle Cry
+ability.item_t3b_on_attack_buff.desc,"When the holder attacks, grant +2 PWR to two random allies."
