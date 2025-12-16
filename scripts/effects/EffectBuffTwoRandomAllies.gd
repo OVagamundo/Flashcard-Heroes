@@ -7,7 +7,7 @@ extends EffectDefinition
 ## The animation source is the item holder (equipped_on_uuid), not the item itself.
 ## Used by Power Amulet (T3 Item B) on_attack trigger.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Get the buff amount and stat from parameters
@@ -15,16 +15,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var num_buffs: int = int(parameters.get("buff_count", 2))
 	var buff_stat: String = parameters.get("stat", "pwr")
 	
-	# Get the source item instance
-	var source_item = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source_item):
-		return null
-	
-	# Get the item holder (the unit wearing the item)
-	var holder_uuid: String = source_item.equipped_on_uuid
+	# Zero-Instance-Query Compliant: Get holder UUID from context
+	# For items, BattleManager pre-populates source_holder_uuid
+	var holder_uuid: String = context.get("source_holder_uuid", "")
 	if holder_uuid.is_empty():
+		push_warning("[EffectBuffTwoRandomAllies] source_holder_uuid missing from context")
 		return null
 	
+	# We still need holder instance for team detection
 	var holder = battle_manager.get_instance_by_uuid(holder_uuid)
 	if not is_instance_valid(holder):
 		return null

@@ -4,9 +4,34 @@
 [ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="2_condition"]
 [ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="3_effect"]
 
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="4_context_cond"]
+[ext_resource type="Script" path="res://scripts/conditions/CompositeCondition.gd" id="5_composite_cond"]
+
+[sub_resource type="Resource" id="ContextCond_TurnOnly"]
+script = ExtResource("4_context_cond")
+id = &"context_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = {
+"allowed_causes": Array[StringName]([&"CAUSE_TURN"])
+}
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
 [sub_resource type="Resource" id="Condition_TargetHPGreaterThanSelf_1"]
 script = ExtResource("2_condition")
+id = &"hp_check"
 condition_type = &"TARGET_HP_GREATER_THAN_SELF_HP"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="Composite_TurnAndHP"]
+script = ExtResource("5_composite_cond")
+id = &"composite_extra_attack"
+condition_type = &"COMPOSITE"
+parameters = {}
+invert_result = false
+conditions = Array[Resource]([SubResource("ContextCond_TurnOnly"), SubResource("Condition_TargetHPGreaterThanSelf_1")])
+operator = 0
 
 [sub_resource type="Resource" id="Effect_BasicAttackAgain_1"]
 script = ExtResource("3_effect")
@@ -19,5 +44,5 @@ name_key = "ability.item_tier1b_extra_attack.name"
 description_key = "ability.item_tier1b_extra_attack.desc"
 trigger = &"on_attack"
 priority = -100
-condition = SubResource("Condition_TargetHPGreaterThanSelf_1")
+condition = SubResource("Composite_TurnAndHP")
 effects = Array[Resource]([SubResource("Effect_BasicAttackAgain_1")])

@@ -70,6 +70,20 @@ const COND_SLOT_AHEAD_IS_EMPTY = &"SLOT_AHEAD_IS_EMPTY"
 const COND_TARGET_HP_GREATER_THAN_SELF_HP = &"TARGET_HP_GREATER_THAN_SELF_HP"
 const COND_DAMAGE_WAS_NON_LETHAL = &"DAMAGE_WAS_NON_LETHAL"
 const COND_DAMAGE_WAS_RECEIVED = &"DAMAGE_WAS_RECEIVED"
+const COND_IS_TURN_INITIATED_ATTACK = &"IS_TURN_INITIATED_ATTACK"
+const COND_COMPOSITE = &"COMPOSITE"
+const COND_TRIGGER_CAUSE_MATCH = &"TRIGGER_CAUSE_MATCH"
+
+# --- Trigger Context Causes ---
+# Who/What initiated the event chain?
+const CAUSE_TURN = &"CAUSE_TURN" # The game loop (e.g. Turn Start attack)
+const CAUSE_ABILITY = &"CAUSE_ABILITY" # An ability effect (e.g. Extra Attack, Retaliation)
+const CAUSE_ATTACK = &"CAUSE_ATTACK" # Direct result of an attack (e.g. Combat Damage)
+const CAUSE_STATUS_EFFECT = &"CAUSE_STATUS" # Passive effect (e.g. Poison damage)
+const CAUSE_COST = &"CAUSE_COST" # Self-inflicted cost (e.g. Sacrifice HP)
+const CAUSE_GAME_OVER = &"CAUSE_GAME_OVER" # Cleanup phase
+const CAUSE_SETUP = &"CAUSE_SETUP" # Battle initialization
+const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
 
 # --- Window Types (for WindowManager) ---
 const WINDOW_INVENTORY = &"Inventory"

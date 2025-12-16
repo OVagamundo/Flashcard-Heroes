@@ -41,13 +41,13 @@ This section defines the complete set of Triggers, Targets, Conditions, and Effe
 Trigger StringName	When Fired by BattleManager	Context Data Provided (Dictionary)
 on_battle_start	Once for every unit/trinket at the very beginning of combat.	{}
 on_turn_start	At the beginning of each turn cycle, before the first unit acts.	{ "turn_number": int }
-on_attack	When a unit initiates its attack action.	{ "attacker_uuid": String, "target_uuid": String }
-on_before_attack	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String (target unit), "attacker_uuid": String }
-on_hurt	When a unit takes any form of damage.	{ "victim_uuid": String (damaged unit), "attacker_uuid": String, "damage_taken": int }
-on_kill	Immediately when damage causes target HP ≤ 0 (same pass as on_hurt).	{ "attacker_uuid": String (killer), "killed_uuid": String }
-on_death	When a unit's HP is reduced to 0 or less.	{ "dying_uuid": String, "dying_team": String, "dying_location": LocationIdentifier, "equipped_items": Array }
-on_ally_death	For all allies when an allied unit dies (broadcast once, AbilityResolver filters).	{ "fainting_ally_uuid": String, "fainting_ally_location": LocationIdentifier, "fainting_ally_team": String }
-on_turn_end	At the end of each turn cycle, after all units have acted.	{ "turn_number": int }
+on_attack	When a unit initiates its attack action.	{ "attacker_uuid": String, "target_uuid": String, "trigger_cause": StringName, "cause_id": String }
+on_before_attack	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String, "attacker_uuid": String, "trigger_cause": StringName }
+on_hurt	When a unit takes any form of damage.	{ "victim_uuid": String, "attacker_uuid": String, "damage_taken": int, "trigger_cause": StringName }
+on_kill	Immediately when damage causes target HP ≤ 0.	{ "attacker_uuid": String, "killed_uuid": String, "trigger_cause": StringName }
+on_death	When a unit's HP is reduced to 0 or less.	{ "dying_uuid": String, "dying_team": String, "dying_location": Loc, "equipped_items": Array }
+on_ally_death	For all allies when an allied unit dies.	{ "fainting_ally_uuid": String, "fainting_ally_team": String, "fainting_ally_location": Loc }
+on_turn_end	At the end of each turn cycle.	{ "turn_number": int }
 Target StringName	Description
 Self/Source	
 SELF	The source of the ability (the unit that was hurt, the unit whose turn it is, etc.).

@@ -21,3 +21,5 @@ description_key = "ability.unit_tier3d_resilient_aura.desc"
 trigger = &"on_hurt"
 priority = 100
 effects = Array[Resource]([SubResource("EffectModifyStat_BuffHP_1"), SubResource("EffectModifyStat_BuffPWR_1")])
+execute_on_lethal = true
+

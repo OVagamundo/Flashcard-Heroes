@@ -36,16 +36,27 @@ This document serves as the definitive guide for implementing new abilities, ite
 The `BattleManager` processes reactions using a priority queue.
 **Higher Priority = Executed First.**
 
-| Priority | Tier | Description | Examples |
-|----------|------|-------------|----------|
-| 210 | **Trinket Summons** | Resurrection effects from trinkets | Soul Echo |
-| 200 | **Item Summons** | Summon effects from items | Last Wish (item T2C) |
-| 100+ | **Auras** | Defensive buffs before damage reactions | Resilient Aura |
-| 50 | **Counter-Attacks** | Retaliation damage | Item T3D Retaliate |
-| 10 | **Modifiers** | Attack modifiers | Shockwave, Defensive Stance |
-| 0 | **Default** | Standard abilities | Most abilities |
-| -50 | **Boss Summons** | End-of-turn reinforcements | Boss summon waves |
-| -100 | **Extra Actions** | Grant extra turns | Bloodlust Edge |
+> [!IMPORTANT]
+> **Single Source of Truth:** All priority constants are defined in [`scripts/AbilityPriorities.gd`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/AbilityPriorities.gd).
+> Use these constants in code. For `.tres` files, use the numeric value with a comment referencing the constant name.
+
+| Priority | Constant | Description | Examples |
+|----------|----------|-------------|----------|
+| 300 | `GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 210 | `TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
+| 205 | `UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 200 | `ITEM_SUMMON` | Item on-death summon | Last Wish |
+| 100 | `RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura, Heart Stone |
+| 50 | `COUNTER_ATTACK` | Retaliation damage | Retaliate, Counter on Hurt |
+| 10 | `DEFENSIVE_STANCE` | Attack modifiers | Shockwave, Mirror Strike |
+| 0 | `STANDARD` | Default abilities | Most abilities |
+| -50 | `BOSS_SUMMON` | End-of-turn spawns | Boss reinforcements |
+| -100 | `EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
+
+### Usage in `.tres` Files
+```tres
+priority = 50  # AbilityPriorities.COUNTER_ATTACK
+```
 
 ### Importance
 If multiple valid triggers occur (e.g., Unit A dies, triggering both `Soul Echo` and `Vengeance Buff`), the order matters.
@@ -53,6 +64,7 @@ If multiple valid triggers occur (e.g., Unit A dies, triggering both `Soul Echo`
 - If a summon item (Priority 200) tries to summon into that slot afterwards, it gracefully finds an alternative slot.
 
 **Rule:** Always define `priority` in your `AbilityDefinition` (`.tres`) if order creates dependencies.
+
 
 ---
 
@@ -83,7 +95,7 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 
 | Attack Type | Triggers `on_before_attack`? | Implementation |
 |-------------|------------------------------|----------------|
-| Basic Attack | ✅ Yes | `BasicAttackEffect.gd` line 37 |
+| Basic Attack | ✅ Yes | `BasicAttackEffect.gd` line 57 |
 | Retaliation | ✅ Yes | Uses `BasicAttackEffect` |
 | Counter Attack | ✅ Yes | Uses `BasicAttackEffect` |
 | Shockwave (Cascade) | ✅ Yes | `EffectCascadeAOE.gd` for each target |
@@ -91,6 +103,76 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 
 > [!IMPORTANT]
 > **Defensive abilities like Defensive Stance** (which heal on `on_before_attack`) will activate against ANY attack type, including shockwave cascade damage.
+
+### Attack Types and Offensive Triggers
+
+**All attack types trigger `on_attack`:**
+
+| Attack Type | Triggers `on_attack`? | Implementation |
+|-------------|----------------------|----------------|
+| Basic Attack | ✅ Yes | `_enqueue_attack_for` then `BasicAttackEffect.gd` (skips duplicate) |
+| Retaliation | ✅ Yes | `BasicAttackEffect.gd` line 38-46 |
+| Counter Attack | ✅ Yes | `BasicAttackEffect.gd` line 38-46 |
+| Shockwave (Cascade) | ❌ No | Uses `EffectCascadeAOE.gd` (AOE, not single attack) |
+| Bloodlust Extra | ✅ Yes | Goes through `_enqueue_attack_for` |
+| Double Strike | ✅ Yes | Triggers via `on_attack` ability chain |
+
+### Attack Types and Offensive Triggers
+
+**All attack types trigger `on_attack`:**
+
+| Attack Type | Triggers `on_attack`? | Implementation |
+|-------------|----------------------|----------------|
+| Basic Attack | ✅ Yes | `_enqueue_attack_for` then `BasicAttackEffect.gd` (skips duplicate) |
+| Retaliation | ✅ Yes | `BasicAttackEffect.gd` line 38-46 |
+| Counter Attack | ✅ Yes | `BasicAttackEffect.gd` line 38-46 |
+| Shockwave (Cascade) | ❌ No | Uses `EffectCascadeAOE.gd` (AOE, not single attack) |
+## The Trigger Context Standard (Universal Safety)
+
+To prevent infinite recursion (Ability A triggers Ability B triggers Ability A) and ensure logical causality (e.g., Poison shouldn't trigger Retaliation), the system uses a **Cause Propagation** model.
+
+### 1. The `trigger_cause` Context
+Every event context contains a `trigger_cause` identifying the *Source* of the event:
+*   `CAUSE_TURN`: Initiated by the game system (e.g., specific unit's turn start).
+*   `CAUSE_ABILITY`: Initiated by an Item, Ability, or Trinket (e.g., Double Strike).
+*   `CAUSE_ATTACK`: Initiated by damage from an attack.
+*   `CAUSE_STATUS`: Initiated by a status effect (Poison, Burn).
+*   `CAUSE_COST`: Initiated by a self-imposed cost (Sacrifice).
+
+### 2. Using Conditions to Filter Causes
+When creating abilities that react to triggers, you **MUST** consider the cause.
+
+#### Example: "Extra Attack" (Recursion Prevention)
+**Goal**: Triggers when the unit attacks normally, but NOT when it attacks via this ability itself.
+**Pattern**:
+1.  Trigger: `on_attack`
+2.  Condition: **ContextCauseCondition**
+    *   `allowed_causes`: `[CAUSE_TURN]`
+
+#### Example: "Retaliation" (Logic Safety)
+**Goal**: Triggers when damaged by an enemy attack, but NOT when damaged by Poison or Burn.
+**Pattern**:
+1.  Trigger: `on_hurt`
+2.  Condition: **ContextCauseCondition**
+    *   `allowed_causes`: `[CAUSE_ATTACK]`
+
+#### Example: "Power Amulet" (Universal Buff)
+**Goal**: Buff allies on ANY attack (Normal, Retaliation, or Extra).
+**Pattern**:
+1.  Trigger: `on_attack`
+2.  Condition: None (or just standard conditions).
+    *   *Result*: Triggers for `CAUSE_TURN` and `CAUSE_ABILITY`.
+
+### Best Practices
+*   **Default to Specificity**: If an ability creates a new event of the same type (Attack -> Attack), you MUST restrict the input cause to prevent loops.
+*   **Use Composite Conditions**: Combine `ContextCauseCondition` with game logic (HP checks, RNG) using `CompositeCondition`. |
+| Bloodlust Extra | ✅ Yes | Goes through `_enqueue_attack_for` |
+| Double Strike | ✅ Yes | Triggers via `on_attack` ability chain |
+
+> [!IMPORTANT]
+>
+> **Composite Conditions** are available to combine existing checks with this safety guard.
+
 
 ### Critical Context Keys
 
@@ -257,13 +339,16 @@ The system uses a **turn-scoped death registry** (`_dead_this_turn`):
 > Multiple code paths detect deaths; without the registry check, you'll create duplicate DEATH events.
 
 ### B. Deferred Death & Counter-Attacks
-When a unit takes lethal damage but has a pending Counter-Attack:
+When a unit takes lethal damage but has an ability with `execute_on_lethal = true`:
 1. **Lethal Damage Detected.**
 2. `_register_death()` marks unit as dead in the turn registry.
-3. `on_death` triggers **IMMEDIATELY** (e.g., Summon Item).
-4. The unit is **marked for death** but **remains in the container** (Status: Fighting Ghost).
-5. Counter-Attack executes.
-6. Unit is finally removed by `_finalize_deaths()`.
+3. `on_hurt` abilities with `execute_on_lethal = true` execute (e.g., Counter-Attack, Retaliation).
+4. `on_death` triggers fire (e.g., Summon Item).
+5. The DEATH event is generated.
+6. Unit is removed by `_finalize_deaths()`.
+
+> [!IMPORTANT]
+> Abilities with `execute_on_lethal = false` (default) are **discarded** if the source is dead.
 
 ### C. Board Space
 Summon abilities gracefully handle full boards:
@@ -519,3 +604,39 @@ When adding `Unit_New`:
 6. [ ] **Test:**
     - New ability works as expected
     - ALL existing abilities still work
+
+---
+
+## 13. The `execute_on_lethal` Flag
+
+### Purpose
+Controls whether an ability can execute after the source unit has taken lethal damage.
+
+### Usage
+```gdscript
+@export var execute_on_lethal: bool = false  # Default: ability discarded if source HP <= 0
+```
+
+| Value | Behavior |
+|-------|----------|
+| `false` (default) | Ability is discarded if source HP ≤ 0 |
+| `true` | Ability executes even if source HP ≤ 0 |
+
+### When to Use
+| Ability Type | Setting | Reason |
+|--------------|---------|--------|
+| Counter-Attacks | `true` | Unit retaliates before dying |
+| Resilient Aura | `true` | Buff allies even when taking fatal damage |
+| Regular Buffs | `false` | No reason to buff if dying |
+| Self-Heals | `false` | Can't heal yourself out of death |
+
+### Example in `.tres` File
+```tres
+[resource]
+script = preload("res://scripts/AbilityDefinition.gd")
+id = &"item_t3d_retaliate_random"
+trigger = &"on_hurt"
+priority = 50
+effects = Array[Resource]([SubResource("BasicAttackEffect_Retaliate_1")])
+execute_on_lethal = true  # ← Allows execution after lethal damage
+```

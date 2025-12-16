@@ -377,7 +377,7 @@ func get_container(container_name: StringName) -> DataContainer:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-			new_container = FixedArrayContainer.new(6)
+			new_container = FixedArrayContainer.new(3)
 		BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
 			new_container = FixedArrayContainer.new(2)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
@@ -936,10 +936,10 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	match drawn_instance.get_definition().category:
 		&"UNIT":
 			target_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-			target_container_capacity = 3
+			target_container_capacity = 3 # PLAYER_BENCH has 3 slots
 		&"ITEM":
 			target_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
-			target_container_capacity = 3
+			target_container_capacity = 2 # PLAYER_ITEM_INVENTORY has 2 slots
 		_:
 			# Unknown categories: remove from pool and discard
 			_remove_instance_from_container(drawn_instance)
@@ -955,27 +955,47 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 			# Keep InventoryWindow grids in sync on this early-return path
 			SignalBus.emit_signal("inventory_ui_refresh_requested")
 			return true
-	# Remove from the draw pool first (so we can check if it became empty)
-	_remove_instance_from_container(drawn_instance)
-	# If the tier pool is now empty after removal, silently reshuffle
-	if get_instances_in_container(container_tag).is_empty():
-		_reshuffle_tier_from_discard(tier)
-	# Place into target container if space, else discard
+	# ATOMIC MOVE: Determine destination first, then update location and containers together
+	# Save source location for later cleanup
+	var source_loc = get_location_for_uuid(drawn_instance.ball_uuid)
+	var source_container_tag = source_loc.container if is_instance_valid(source_loc) else &""
+	var source_slot = source_loc.index if is_instance_valid(source_loc) else -1
+	
+	# Determine the destination before modifying any state
+	var dest_container_tag: StringName
+	var dest_slot: int
+	
 	var target_container := get_container(target_container_tag)
 	var empty_slot := target_container.find_first_empty_slot()
 	if empty_slot != -1 and empty_slot < target_container_capacity:
-		target_container.set_uuid(empty_slot, drawn_instance.ball_uuid)
-		_update_instance_location(drawn_instance.ball_uuid, target_container_tag, empty_slot)
+		dest_container_tag = target_container_tag
+		dest_slot = empty_slot
 	else:
-		var discard2 := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-		var di := discard2.find_first_empty_slot()
+		# Overflow to discard pile
+		var discard := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+		var di := discard.find_first_empty_slot()
 		if di == -1:
-			di = discard2.get_all_uuids().size()
-		discard2.set_uuid(di, drawn_instance.ball_uuid)
-		_update_instance_location(drawn_instance.ball_uuid, BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, di)
+			di = discard.get_all_uuids().size()
+		dest_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+		dest_slot = di
+	
+	# ATOMIC UPDATE: Update location first (truth), then update containers (indexes)
+	_update_instance_location(drawn_instance.ball_uuid, dest_container_tag, dest_slot)
+	
+	# Clear source container slot
+	if not source_container_tag.is_empty() and source_slot >= 0:
+		var source_container = get_container(source_container_tag)
+		if is_instance_valid(source_container):
+			source_container.set_uuid(source_slot, "")
+	
+	# Set destination container slot
+	var dest_container = get_container(dest_container_tag)
+	dest_container.set_uuid(dest_slot, drawn_instance.ball_uuid)
+	
+	# Check if we need to reshuffle (pool became empty after this draw)
+	if get_instances_in_container(container_tag).is_empty():
+		_reshuffle_tier_from_discard(tier)
 	# Validate and emit once
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
 	if OS.is_debug_build():
 		_bm_validate_state_consistency()
 	_emit_battle_inventory_changed()
@@ -1030,6 +1050,11 @@ func _bm_validate_state_consistency() -> bool:
 				push_error("Equipped item %s mapping mismatch on %s at slot %d" % [u, parent.ball_uuid, loc.index])
 				return false
 		else:
+			# Instances MUST always have a valid container - empty container indicates
+			# a Golden Rule violation (instance left in intermediate "unplaced" state)
+			if loc.container == &"" or loc.container.is_empty():
+				push_error("Golden Rule violation: instance %s has empty container (left in unplaced state)" % u)
+				return false
 			var c2 := get_container(loc.container)
 			if not is_instance_valid(c2):
 				push_error("Missing battle container %s for %s" % [String(loc.container), u])
@@ -1224,22 +1249,27 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var target = _get_frontmost_target(is_player)
 	if not is_instance_valid(target): return
 	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
+	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
+	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
 	var context: Dictionary = {
 		"attacker_uuid": attacker.ball_uuid,
 		"target_uuid": target.ball_uuid,
-		"target_initial_hp": target.current_hp
+		"target_initial_hp": target.current_hp,
+		"trigger_cause": C.CAUSE_TURN,
+		"cause_id": C.CAUSE_TURN # Redundant but explicit for cause_id field
 	}
 	
-	# Note: on_before_attack is now triggered in BasicAttackEffect.execute()
-	# so it fires for ALL attacks including counter-attacks
-	
-	# Trigger on_attack abilities (e.g., Double Strike)
+	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
 	print("[BM] _enqueue_attack_for:", attacker.ball_uuid, "-> target:", target.ball_uuid)
+	# Generic trigger (Power Amulet & Extra Attack both listen to this now, filtered by condition)
 	AbilityResolver.process_trigger(&"on_attack", context)
 	
 	# Check if an ability replaced the basic attack
 	if context.get("attack_replaced", false):
 		return
+	
+	# Mark that on_attack was already triggered - BasicAttackEffect should not re-trigger it
+	context["on_attack_already_triggered"] = true
 	
 	# Always add basic attack
 	var basic_attack_def = Database.get_ability_definition(&"basic_attack")
@@ -1249,6 +1279,7 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 			[target.ball_uuid], context, 0 # Priority 0 for basic attack
 		)
 		enqueue_effect_request(basic_attack_request)
+
 
 func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary = {}) -> void:
 	print("[DEBUG BM] _resolve_single_effect_request: ability=%s, source=%s" % [request.ability_id, request.source_uuid])
@@ -1325,6 +1356,29 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		var sim_ctx = request.trigger_context.duplicate(true)
 		sim_ctx["is_simulation"] = true
 		sim_ctx["ability_id"] = request.ability_id
+		
+		# Zero-Instance-Query Compliance: Pre-populate source data
+		# This allows effects to use context data instead of querying instances
+		# Data is snapshotted at the EXACT moment before execute(), reflecting current simulation state
+		if is_instance_valid(source):
+			var source_def = source.get_definition()
+			var stat_provider = source # Default: use source's own stats
+			
+			if is_instance_valid(source_def):
+				sim_ctx["source_category"] = source_def.category
+				
+				# For items, use the HOLDER's stats (not the item's stats which are 0)
+				# Also include holder UUID so effects can identify the attacker
+				if source_def.category == &"ITEM" and not source.equipped_on_uuid.is_empty():
+					sim_ctx["source_holder_uuid"] = source.equipped_on_uuid
+					var holder = get_instance_by_uuid(source.equipped_on_uuid)
+					if is_instance_valid(holder):
+						stat_provider = holder
+			
+			# Snapshot stats from the appropriate provider (source for units, holder for items)
+			sim_ctx["source_pwr"] = stat_provider.current_pwr
+			sim_ctx["source_hp"] = stat_provider.current_hp
+		
 		var effect_script_path = request.effect_definition.get_script().resource_path if request.effect_definition.get_script() else "no_script"
 		print("[DEBUG BM] About to execute effect - ability: %s, effect_script: %s, effect_class: %s" % [request.ability_id, effect_script_path, request.effect_definition.get_class()])
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
@@ -2451,7 +2505,8 @@ func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 		erasure_list2.append(unit.ball_uuid)
 		set_meta("_deferred_enemy_erasures", erasure_list2)
 
-## Check if a unit has counter-attack abilities that could trigger on lethal damage
+## Check if a unit has any abilities that can execute after receiving lethal damage.
+## This is determined by the `execute_on_lethal` flag on AbilityDefinition.
 func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 	assert(is_instance_valid(unit), "_has_lethal_counter_abilities: unit is null")
 	
@@ -2459,21 +2514,15 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 	if not is_instance_valid(definition):
 		return false
 	
-	# Check unit's own abilities for counter-attacks
+	# Check unit's own abilities for execute_on_lethal flag
 	for ability in definition.ability_definitions:
-		if not is_instance_valid(ability) or ability.trigger != &"on_hurt":
+		if not is_instance_valid(ability):
 			continue
-		if String(ability.id) == "unit_tier3d_resilient_aura":
-			return true
-		# Check if it's a counter-attack ability (uses ATTACKER target or has "counter"/"retaliate" in ID)
-		for effect in ability.effects:
-			if is_instance_valid(effect) and effect.target_type == C.TARGET_ATTACKER:
-				return true
-		var ability_id_str := String(ability.id)
-		if ability_id_str.contains("counter") or ability_id_str.contains("retaliate"):
+		# Only check on_hurt abilities (damage reactions)
+		if ability.trigger == &"on_hurt" and ability.execute_on_lethal:
 			return true
 	
-	# Check equipped items for on_hurt abilities (retaliation, counter, etc.)
+	# Check equipped items for on_hurt abilities with execute_on_lethal
 	for item_uuid in unit.equipped_item_uuids:
 		if item_uuid.is_empty():
 			continue
@@ -2484,14 +2533,10 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 		if not is_instance_valid(item_def):
 			continue
 		for ability in item_def.ability_definitions:
-			if not is_instance_valid(ability) or ability.trigger != &"on_hurt":
+			if not is_instance_valid(ability):
 				continue
-			var ability_id_str := String(ability.id)
-			if ability_id_str.contains("counter") or ability_id_str.contains("retaliate"):
+			if ability.trigger == &"on_hurt" and ability.execute_on_lethal:
 				return true
-			for effect in ability.effects:
-				if is_instance_valid(effect) and (effect.target_type == C.TARGET_ATTACKER or effect.target_type == C.TARGET_RANDOM_ENEMY):
-					return true
 	
 	return false
 
@@ -2505,16 +2550,19 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 	if death_tracking != null and death_tracking.get("__skip_death_triggers__", false):
 		return
 	
-	# CAUSALITY FIX: Drain pending on_hurt reactions BEFORE processing on_death triggers
-	# This ensures the event order is: DAMAGE → on_hurt effects → DEATH → on_death effects
-	# Without this, on_death SUMMON events would be generated before on_hurt HEAL/BUFF events
+	# CAUSALITY FIX: Drain ONLY execute_on_lethal reactions BEFORE processing death
+	# This ensures the event order is: DAMAGE → execute_on_lethal counter → DEATH → cascade reactions
+	# 
+	# DEATH PRIORITY: After lethal reactions complete, death is processed BEFORE cascading
+	# reactions (like on_hurt heals/buffs from the counter-attack hitting another unit)
 	if is_simulation and out_events != null and not _pending_reactions.is_empty():
-		# Process all pending reactions (on_hurt, counter-attacks, etc.) FIRST
-		drain_pending_reactions_inline(0)
-		# Append the generated events to out_events in the correct causal order
-		var inline_evts: Array[CombatEvent] = collect_inline_events()
-		for evt in inline_evts:
+		# Process ONLY lethal reactions (no recursive cascade)
+		drain_lethal_reactions_only(0)
+		# Append the lethal reaction events (counter-attack damage)
+		var lethal_evts: Array[CombatEvent] = collect_inline_events()
+		for evt in lethal_evts:
 			out_events.append(evt)
+
 	
 	# Check player units
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
@@ -2670,8 +2718,18 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 		existing_deferred.append_array(deferred_deaths)
 		set_meta("deferred_deaths", existing_deferred)
 	
+	# DEATH PRIORITY: Now drain any remaining cascading reactions from lethal abilities
+	# These are reactions like on_hurt heals/buffs from counter-attacks hitting other units
+	# They were left in _pending_reactions by drain_lethal_reactions_only()
+	if is_simulation and out_events != null and not _pending_reactions.is_empty():
+		drain_pending_reactions_inline(0)
+		var cascade_evts: Array[CombatEvent] = collect_inline_events()
+		for evt in cascade_evts:
+			out_events.append(evt)
+	
 	if something_changed and not is_simulation:
 		_emit_battle_inventory_changed()
+
 
 ## Helper function to create DEATH events only once per unit
 func _create_death_event_if_needed(unit_uuid: String, out_events: Array, death_tracking: Dictionary) -> void:
@@ -3025,6 +3083,29 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 			# Always true when processing on_hurt triggers - damage was received regardless of lethal outcome
 			# This enables counter-attacks to trigger even when the damage is lethal
 			result = true
+		C.COND_IS_TURN_INITIATED_ATTACK:
+			# True only for attacks initiated via _enqueue_attack_for (unit's turn)
+			# Reactive attacks (counter/retaliate) will not have this flag or it will be false
+			result = context.get("is_turn_initiated", false)
+		C.COND_COMPOSITE:
+			# Recursive check: All sub-conditions must be true
+			result = true
+			if "conditions" in condition_def:
+				for sub_condition in condition_def.conditions:
+					if not check_condition(sub_condition, source_uuid, context):
+						result = false
+						break
+		C.COND_TRIGGER_CAUSE_MATCH:
+			# Universal Trigger Context Check
+			var trigger_cause = context.get("trigger_cause", "")
+			var allowed_causes = condition_def.parameters.get("allowed_causes", [])
+			
+			# If no specific allowed causes are defined, assume it matches everything (or nothing? safety suggests nothing vs restrictive)
+			# But logically, if you add this condition, you WANT to restrict it.
+			if allowed_causes.is_empty():
+				result = true
+			else:
+				result = trigger_cause in allowed_causes
 		_:
 			result = false
 	
@@ -3084,6 +3165,40 @@ func collect_inline_events() -> Array[CombatEvent]:
 	var events = _inline_events.duplicate()
 	_inline_events.clear()
 	return events
+
+## Drain ONLY execute_on_lethal reactions WITHOUT recursive cascade processing.
+## This ensures death is processed BEFORE cascading reactions from the lethal ability.
+## 
+## Event ordering after this fix:
+## 1. Lethal damage dealt → unit HP <= 0
+## 2. execute_on_lethal ability (counter-attack) triggers → DAMAGE event
+## 3. DEATH event is created (by caller after this returns)
+## 4. Remaining cascading reactions (on_hurt from counter) process later
+##
+## @param start_index: int - Only process reactions at index >= start_index
+func drain_lethal_reactions_only(start_index: int) -> void:
+	if start_index >= _pending_reactions.size():
+		return # No reactions to process
+	
+	# Extract reactions from start_index to end
+	var reactions_to_process: Array[EffectRequest] = []
+	for i in range(start_index, _pending_reactions.size()):
+		reactions_to_process.append(_pending_reactions[i])
+	
+	# Clear the processed range
+	_pending_reactions.resize(start_index)
+	
+	# Sort by priority
+	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	
+	# Process ONLY these reactions - do NOT recursively drain new ones
+	# Any new reactions (cascading from these) will remain in _pending_reactions
+	# and be processed AFTER death by the caller
+	for request in reactions_to_process:
+		_resolve_single_effect_request(request, _inline_events, {"__skip_death_triggers__": true})
+		# NOTE: We intentionally do NOT call drain_pending_reactions_inline(0) here
+		# This leaves cascading reactions in the queue for post-death processing
+
 
 ## Get an instance by UUID.
 ## @param uuid: String - The UUID of the instance
@@ -3289,7 +3404,8 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		"damage_taken": damage_amount,
 		"attacker_uuid": attacker_uuid,
 		"victim_team": victim_team,
-		"victim_current_hp": victim_current_hp
+		"victim_current_hp": victim_current_hp,
+		"trigger_cause": C.CAUSE_ATTACK # Damage from attack allows retaliation-type abilities
 	}
 	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
 	

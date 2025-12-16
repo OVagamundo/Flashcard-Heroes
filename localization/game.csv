@@ -9,12 +9,12 @@ unit_t1_b.name,Squire
 unit_t1_b.desc,A loyal squire.
 unit_t2_c.name,Knight
 unit_t2_c.desc,A valiant knight.
-item_t1_a.name,Small HP Potion
-item_t1_a.desc,Placeholder
-item_t1_b.name,Small PWR Potion
-item_t1_b.desc,Placeholder
-item_t2_c.name,Large HP Potion
-item_t2_c.desc,Restores a large amount of HP and PWR.
+item_t1_a.name,Koi's Blessing
+item_t1_a.desc,A gentle remedy infused with the spirit of koi.
+item_t1_b.name,Tiger's Spirit
+item_t1_b.desc,A fierce elixir that awakens inner strength.
+item_t2_c.name,Phoenix Elixir
+item_t2_c.desc,A restorative brew that renews body and spirit.
 ability.basic_attack.name,Basic Attack
 ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy. 
 ability.item_tier1b_extra_attack.name,Extra Attack

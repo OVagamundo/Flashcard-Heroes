@@ -20,16 +20,24 @@ extends Resource
 @export var description_key: String
 
 ## Execution priority. Higher numbers resolve first. Default 0 for all existing abilities.
-## Priority Tiers (see CombatSystem.md for full reference):
-##  210: TRINKET_SUMMONS (Resurrection from trinkets, highest priority)
-##  200: ITEM_SUMMONS (Summons from items, after trinket summons)
-##  100: AURAS (Defensive buffs, e.g., Resilient Aura)
-##   50: COUNTER-ATTACKS (Retaliations against attackers)
-##   10: MODIFIERS (Attack modifiers, shockwaves)
-##    0: DEFAULT (Standard abilities)
-##  -50: BOSS_SUMMONS (End-of-turn reinforcements)
-## -100: EXTRA_ACTIONS (Grant extra turns after all damage)
+## See scripts/AbilityPriorities.gd for named constants and full reference.
+##
+## Quick Reference (from AbilityPriorities.gd):
+##  300: GUARDIAN_INTERCEPT (Damage interception)
+##  210: TRINKET_SUMMON (Soul Echo resurrection)
+##  100: RESILIENT_AURA (On-hurt buffs/heals)
+##   50: COUNTER_ATTACK (Retaliation)
+##   10: MODIFIERS (Defensive Stance, Shockwave)
+##    0: STANDARD (Default for new abilities)
+##  -50: BOSS_SUMMON (End-of-turn spawns)
+## -100: EXTRA_ACTION (Grant extra turn)
 @export var priority: int = 0
+
 
 ## If true, triggering this ability during 'on_attack' will prevent the default Basic Attack from being enqueued.
 @export var replaces_basic_attack: bool = false
+
+## If true, this ability can still execute even if the source unit has taken lethal damage.
+## Use for: Counter-attacks, Retaliation, Resilient Aura, etc.
+## Default: false (ability is discarded if source is dead)
+@export var execute_on_lethal: bool = false

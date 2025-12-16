@@ -259,6 +259,20 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 ## @param source_uuid: String - The UUID of the source instance
 ## @param battle_manager: Node - The current battle manager
 func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary) -> void:
+	# Check if source is dead and ability doesn't allow lethal execution
+	# ONLY for UNITS - items and trinkets don't have HP
+	if not source_uuid.is_empty():
+		var source = battle_manager.get_instance_by_uuid(source_uuid)
+		if is_instance_valid(source):
+			var source_def = source.get_definition()
+			# Only check HP for UNIT category - items/trinkets don't have meaningful HP
+			if is_instance_valid(source_def) and source_def.category == &"UNIT":
+				if source.current_hp <= 0:
+					# Source unit is dead - only allow if execute_on_lethal is true
+					if not ability.execute_on_lethal:
+						print("[DEBUG AbilityResolver] Skipping ability '%s' - source unit is dead and execute_on_lethal=false" % ability.id)
+						return
+	
 	# Check condition if present
 	if is_instance_valid(ability.condition):
 		var condition_result = battle_manager.check_condition(ability.condition, source_uuid, context)

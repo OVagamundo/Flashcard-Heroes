@@ -8,6 +8,8 @@ extends EffectDefinition
 ##   - damage: { pwr_multiplier: 1.0, base_value: 0 } for stat scaling (optional)
 
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> Variant:
+	# Note: We still need source instance for team detection and slot position
+	# This is about game state (position/team), not stats
 	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_instance):
 		return null
@@ -91,8 +93,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if target_instance == null:
 		return null # No valid targets
 	
-	# Calculate damage
-	var damage = _calculate_damage(source_instance)
+	# Zero-Instance-Query Compliant: Use context data for damage calculation
+	var damage = _calculate_damage_from_context(_context)
 	
 	# Trigger on_before_attack for the target (defensive abilities like Defensive Stance)
 	var is_simulation: bool = _context.get("is_simulation", false)
@@ -132,10 +134,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	}
 
 
-## Calculate damage using stat-scaling parameters
-func _calculate_damage(source_instance: GachaBallInstance) -> int:
+## Calculate damage using context data (Zero-Instance-Query Compliant)
+func _calculate_damage_from_context(context: Dictionary) -> int:
+	var source_pwr: int = context.get("source_pwr", 0)
+	
+	if source_pwr == 0:
+		push_warning("[EffectMirrorSlotAttack] source_pwr missing from context, damage will be 0")
+	
 	if not parameters.has("damage"):
-		return source_instance.current_pwr
+		return source_pwr
 	
 	var damage_param = parameters["damage"]
 	
@@ -145,7 +152,7 @@ func _calculate_damage(source_instance: GachaBallInstance) -> int:
 	if damage_param is Dictionary:
 		var base_value: int = damage_param.get("base_value", 0)
 		var pwr_multiplier: float = damage_param.get("pwr_multiplier", 0.0)
-		var final_value = base_value + (source_instance.current_pwr * pwr_multiplier)
+		var final_value = base_value + (source_pwr * pwr_multiplier)
 		return floor(final_value)
 	
-	return source_instance.current_pwr
+	return source_pwr

@@ -17,15 +17,19 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if targets.is_empty():
 		return null
 
-	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source_instance):
-		return null
-
-	var base_damage = _calculate_damage(source_instance)
+	# Zero-Instance-Query Compliant: Use context data for source stats
+	var base_damage = _calculate_damage_from_context(_context)
 	var falloff: float = parameters.get("cascade_falloff", 0.5)
 	var cascade_depth: int = parameters.get("cascade_depth", 2) # 2 slots behind frontmost
 	
 	# Get enemy lineup container
+	# Note: We still need to query source instance for team detection (is_player_unit)
+	# This is acceptable since it's about team membership, not stats
+	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(source_instance):
+		push_warning("[EffectCascadeAOE] source instance not found for team detection")
+		return null
+	
 	var is_player_unit = battle_manager._is_player_unit(source_instance)
 	var container_tag: StringName
 	if is_player_unit:
@@ -141,10 +145,15 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	}
 
 
-## Calculate base damage using stat-scaling parameters
-func _calculate_damage(source_instance: GachaBallInstance) -> int:
+## Calculate base damage using context data (Zero-Instance-Query Compliant)
+func _calculate_damage_from_context(context: Dictionary) -> int:
+	var source_pwr: int = context.get("source_pwr", 0)
+	
+	if source_pwr == 0:
+		push_warning("[EffectCascadeAOE] source_pwr missing from context, damage will be 0")
+	
 	if not parameters.has("damage"):
-		return source_instance.current_pwr
+		return source_pwr
 	
 	var damage_param = parameters["damage"]
 	
@@ -154,7 +163,7 @@ func _calculate_damage(source_instance: GachaBallInstance) -> int:
 	if damage_param is Dictionary:
 		var base_value: int = damage_param.get("base_value", 0)
 		var pwr_multiplier: float = damage_param.get("pwr_multiplier", 0.0)
-		var final_value = base_value + (source_instance.current_pwr * pwr_multiplier)
+		var final_value = base_value + (source_pwr * pwr_multiplier)
 		return floor(final_value)
 	
-	return source_instance.current_pwr
+	return source_pwr

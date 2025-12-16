@@ -10,32 +10,32 @@ extends EffectDefinition
 ##   percentage: float - Percentage of damage to heal (default 0.2 = 20%)
 ##   min_heal: int - Minimum heal amount (default 1)
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Get parameters
 	var percentage: float = float(parameters.get("percentage", 0.2))
 	var min_heal: int = int(parameters.get("min_heal", 1))
 	
-	# Get the source item instance
-	var source_item = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source_item):
-		return null
-	
-	# Get the item holder (the unit wearing the item)
-	var holder_uuid: String = source_item.equipped_on_uuid
+	# Zero-Instance-Query Compliant: Get holder UUID from context
+	# For items, BattleManager pre-populates source_holder_uuid
+	var holder_uuid: String = context.get("source_holder_uuid", "")
 	if holder_uuid.is_empty():
+		push_warning("[EffectLifesteal] source_holder_uuid missing from context")
 		return null
 	
+	# We still need to query holder to check if they're alive and apply healing
 	var holder = battle_manager.get_instance_by_uuid(holder_uuid)
 	if not is_instance_valid(holder) or holder.current_hp <= 0:
 		return null
 	
-	# Get actual damage dealt from context (if available from on_damage_dealt trigger)
-	# Falls back to holder's PWR for legacy compatibility
+	# Zero-Instance-Query Compliant: Get PWR from context
+	# For items, BattleManager pre-populates source_pwr with the holder's PWR
 	var damage_dealt: int = context.get("damage_dealt", 0)
 	if damage_dealt <= 0:
-		damage_dealt = holder.current_pwr
+		damage_dealt = context.get("source_pwr", 0)
+		if damage_dealt == 0:
+			push_warning("[EffectLifesteal] source_pwr missing from context, heal will use min_heal")
 	var heal_amount: int = max(min_heal, int(floor(damage_dealt * percentage)))
 	
 	if is_simulation:

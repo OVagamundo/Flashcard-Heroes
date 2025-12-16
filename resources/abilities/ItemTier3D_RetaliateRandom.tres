@@ -4,12 +4,34 @@
 [ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
 [ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
 
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="4_context_cond"]
+[ext_resource type="Script" path="res://scripts/conditions/CompositeCondition.gd" id="5_composite_cond"]
+
+[sub_resource type="Resource" id="ContextCond_AttackOnly"]
+script = ExtResource("4_context_cond")
+id = &"context_cause_attack"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = {
+"allowed_causes": Array[StringName]([&"CAUSE_ATTACK"])
+}
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
+invert_result = false
+
 [sub_resource type="Resource" id="ConditionDefinition_DamageReceived_1"]
 script = ExtResource("3_condition")
 id = &"cond_damage_was_received"
 condition_type = &"DAMAGE_WAS_RECEIVED"
 parameters = {}
 invert_result = false
+
+[sub_resource type="Resource" id="Composite_AttackDamage"]
+script = ExtResource("5_composite_cond")
+id = &"composite_retaliate"
+condition_type = &"COMPOSITE"
+parameters = {}
+invert_result = false
+conditions = Array[Resource]([SubResource("ContextCond_AttackOnly"), SubResource("ConditionDefinition_DamageReceived_1")])
+operator = 0
 
 [sub_resource type="Resource" id="BasicAttackEffect_Retaliate_1"]
 script = ExtResource("2_effect")
@@ -22,6 +44,8 @@ id = &"item_tier3d_retaliate_random"
 name_key = "ability.item_tier3d_retaliate.name"
 description_key = "ability.item_tier3d_retaliate.desc"
 trigger = &"on_hurt"
-condition = SubResource("ConditionDefinition_DamageReceived_1")
+condition = SubResource("Composite_AttackDamage")
 priority = 50
 effects = Array[Resource]([SubResource("BasicAttackEffect_Retaliate_1")])
+execute_on_lethal = true
+

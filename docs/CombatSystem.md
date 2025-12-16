@@ -49,16 +49,22 @@ The system uses a **Priority-Based Reaction System** to resolve complex interact
 **1. The Priority Hierarchy (Execution Order)**
 Every effect and reaction has a priority value (defined in AbilityDefinition). Higher priority resolves first.
 
-| Priority | Tier | Description | Examples |
-|----------|------|-------------|----------|
-| 210 | **Trinket Summons** | Resurrection effects from trinkets (highest priority) | Soul Echo |
-| 200 | **Item Summons** | Summon effects from items (trigger after trinket summons) | Last Wish Summon (item T2C) |
-| 100+ | **Auras** | Defensive buffs that should apply before damage reactions | Resilient Aura (+1 HP/PWR to allies) |
-| 50 | **Counter-Attacks** | Retaliation damage against attackers | Item Tier 3D Retaliate |
-| 10 | **Modifiers** | Attack modifiers, shockwaves | Shockwave, Defensive Stance |
-| 0 | **Default** | Standard abilities with no special timing | Most abilities |
-| -50 | **Boss Summons** | End-of-turn enemy reinforcements | Boss summon waves |
-| -100 | **Extra Actions** | Grant extra turns (must resolve after all damage) | Bloodlust Edge |
+> [!IMPORTANT]
+> **Single Source of Truth:** All priority constants are defined in `scripts/AbilityPriorities.gd`.
+
+| Priority | Constant | Description | Examples |
+|----------|----------|-------------|----------|
+| 300 | `GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 210 | `TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
+| 205 | `UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 200 | `ITEM_SUMMON` | Item on-death summon | Last Wish |
+| 100 | `RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura |
+| 50 | `COUNTER_ATTACK` | Retaliation damage | Retaliate |
+| 10 | `DEFENSIVE_STANCE` | Attack modifiers | Shockwave |
+| 0 | `STANDARD` | Default abilities | Most abilities |
+| -50 | `BOSS_SUMMON` | End-of-turn spawns | Boss waves |
+| -100 | `EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
+
 
 > [!IMPORTANT]
 > **Summon Priority Rule:** Trinket summons (priority 210) execute before item summons (priority 200), which both execute before counter-attacks (priority 50).
@@ -84,7 +90,7 @@ When an action (like an Attack) occurs, the system follows this strict sequence:
        > - `on_kill` is triggered immediately when damage causes HP ≤ 0, not by snapshot comparison
        > - Kills of summoned units (created mid-turn) are handled correctly
 4.  **Validity Filtering:**
-    *   **Dead Units:** Triggers from dead units are **discarded** unless the ability has the `execute_on_death` flag (e.g., Vengeful Counter).
+    *   **Dead Units:** Triggers from dead units are **discarded** unless the ability has `execute_on_lethal = true` (e.g., Vengeful Counter, Retaliation).
 5.  **Priority Sorting:** The pending list is sorted by Priority (Descending). Ties are broken by the discovery order (FIFO).
 6.  **Execution:** The sorted triggers are executed one by one.
 
