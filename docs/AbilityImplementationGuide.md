@@ -82,7 +82,7 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | Trigger | Available Context Keys |
 | :--- | :--- |
 | `on_attack` | `attacker_uuid`, `target_uuid`, `target_initial_hp`, `is_simulation` |
-| `on_before_attack` | `source_uuid`, `defender_uuid`, `attacker_uuid`, `target_initial_hp`, `is_simulation` |
+| `on_before_damage` | `source_uuid`, `defender_uuid`, `attacker_uuid`, `target_initial_hp`, `is_simulation` |
 | `on_hurt` | `victim_uuid`, `attacker_uuid`, `damage_taken`, `victim_team`, `victim_current_hp`, `is_simulation` |
 | `on_kill` | `attacker_uuid`, `killed_uuid`, `is_simulation` |
 | `on_death` | `dying_uuid`, `dying_team`, `dying_location`, `equipped_items` |
@@ -91,9 +91,9 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 
 ### Attack Types and Defensive Triggers
 
-**All attack types trigger `on_before_attack`:**
+**All attack types trigger `on_before_damage`:**
 
-| Attack Type | Triggers `on_before_attack`? | Implementation |
+| Attack Type | Triggers `on_before_damage`? | Implementation |
 |-------------|------------------------------|----------------|
 | Basic Attack | ✅ Yes | `BasicAttackEffect.gd` line 57 |
 | Retaliation | ✅ Yes | Uses `BasicAttackEffect` |
@@ -102,7 +102,7 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | Bloodlust Extra | ✅ Yes | Goes through `_enqueue_attack_for` → `BasicAttackEffect` |
 
 > [!IMPORTANT]
-> **Defensive abilities like Defensive Stance** (which heal on `on_before_attack`) will activate against ANY attack type, including shockwave cascade damage.
+> **Defensive abilities like Defensive Stance** (which heal on `on_before_damage`) will activate against ANY attack type, including shockwave cascade damage.
 
 ### Attack Types and Offensive Triggers
 
@@ -117,26 +117,18 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | Bloodlust Extra | ✅ Yes | Goes through `_enqueue_attack_for` |
 | Double Strike | ✅ Yes | Triggers via `on_attack` ability chain |
 
-### Attack Types and Offensive Triggers
+---
 
-**All attack types trigger `on_attack`:**
-
-| Attack Type | Triggers `on_attack`? | Implementation |
-|-------------|----------------------|----------------|
-| Basic Attack | ✅ Yes | `_enqueue_attack_for` then `BasicAttackEffect.gd` (skips duplicate) |
-| Retaliation | ✅ Yes | `BasicAttackEffect.gd` line 38-46 |
-| Counter Attack | ✅ Yes | `BasicAttackEffect.gd` line 38-46 |
-| Shockwave (Cascade) | ❌ No | Uses `EffectCascadeAOE.gd` (AOE, not single attack) |
 ## The Trigger Context Standard (Universal Safety)
 
-To prevent infinite recursion (Ability A triggers Ability B triggers Ability A) and ensure logical causality (e.g., Poison shouldn't trigger Retaliation), the system uses a **Cause Propagation** model.
+To prevent infinite recursion (Ability A triggers Ability B triggers Ability A) and ensure logical causality (e.g., Burn shouldn't trigger Retaliation), the system uses a **Cause Propagation** model.
 
 ### 1. The `trigger_cause` Context
 Every event context contains a `trigger_cause` identifying the *Source* of the event:
 *   `CAUSE_TURN`: Initiated by the game system (e.g., specific unit's turn start).
 *   `CAUSE_ABILITY`: Initiated by an Item, Ability, or Trinket (e.g., Double Strike).
 *   `CAUSE_ATTACK`: Initiated by damage from an attack.
-*   `CAUSE_STATUS`: Initiated by a status effect (Poison, Burn).
+*   `CAUSE_STATUS`: Initiated by a status effect (Burn).
 *   `CAUSE_COST`: Initiated by a self-imposed cost (Sacrifice).
 
 ### 2. Using Conditions to Filter Causes
@@ -150,7 +142,7 @@ When creating abilities that react to triggers, you **MUST** consider the cause.
     *   `allowed_causes`: `[CAUSE_TURN]`
 
 #### Example: "Retaliation" (Logic Safety)
-**Goal**: Triggers when damaged by an enemy attack, but NOT when damaged by Poison or Burn.
+**Goal**: Triggers when damaged by an enemy attack, but NOT when damaged by Burn.
 **Pattern**:
 1.  Trigger: `on_hurt`
 2.  Condition: **ContextCauseCondition**
@@ -165,13 +157,12 @@ When creating abilities that react to triggers, you **MUST** consider the cause.
 
 ### Best Practices
 *   **Default to Specificity**: If an ability creates a new event of the same type (Attack -> Attack), you MUST restrict the input cause to prevent loops.
-*   **Use Composite Conditions**: Combine `ContextCauseCondition` with game logic (HP checks, RNG) using `CompositeCondition`. |
-| Bloodlust Extra | ✅ Yes | Goes through `_enqueue_attack_for` |
-| Double Strike | ✅ Yes | Triggers via `on_attack` ability chain |
+*   **Use Composite Conditions**: Combine `ContextCauseCondition` with game logic (HP checks, RNG) using `CompositeCondition`.
 
 > [!IMPORTANT]
 >
 > **Composite Conditions** are available to combine existing checks with this safety guard.
+
 
 
 ### Critical Context Keys
@@ -237,38 +228,66 @@ func execute(...) -> Dictionary:
 
 Events must be ordered by cause and effect. A cause must *always* precede its effect in the TurnLog.
 
-### Correct Event Order
+### Trigger Execution Order (Per Damage Event)
+
+When a unit deals damage, triggers fire in this exact sequence:
+
 ```
-ATTACK_START → DAMAGE → on_hurt reactions → DEATH → on_death reactions → SUMMON → BUFF
+on_attack → on_before_damage → DAMAGE applied → on_damage_dealt → on_hurt → on_kill → on_death → on_ally_death
 ```
+
+| Order | Trigger | Purpose | Example |
+|-------|---------|---------|---------|
+| 1 | `on_attack` | Pre-attack effects | Power Amulet buffs allies |
+| 2 | `on_before_damage` | Defensive reactions | Defensive Stance heals self |
+| 3 | DAMAGE | Damage applied to target | HP reduced |
+| 4 | `on_damage_dealt` | Attacker reactions | **Lifesteal heals attacker** |
+| 5 | `on_hurt` | Victim reactions | Counter-attacks, retaliations |
+| 6 | `on_kill` | Kill credit | Bloodlust grants extra action |
+| 7 | `on_death` | Self death effects | Soul Caller summons |
+| 8 | `on_ally_death` | Ally reactions | Knight buffs, Vengeance |
+
+> [!IMPORTANT]
+> **Lifesteal Timing**: `on_damage_dealt` fires BEFORE `on_hurt`. This ensures lifesteal heals appear immediately after damage, before any counter-attack chains execute. This is critical for correct visual presentation.
 
 ### Key Ordering Rules
 
-1. **on_hurt before on_death**: All pending `on_hurt` reactions (counter-attacks, buffs) are drained BEFORE `on_death` triggers fire
-2. **DEATH event before on_death effects**: The DEATH event is created BEFORE on_death ability effects execute (for correct visual ordering)
-3. **on_death before on_ally_death**: Items trigger before allies react
-4. **on_before_attack collected immediately**: Events from `on_before_attack` (like Defensive Stance heal) are collected and added BEFORE damage events
+1. **on_damage_dealt before on_hurt**: Lifesteal heals appear before counter-attack chains
+2. **on_hurt before on_death**: All pending `on_hurt` reactions are drained BEFORE `on_death` triggers fire
+3. **DEATH event before on_death effects**: The DEATH event is created BEFORE on_death ability effects execute
+4. **on_death before on_ally_death**: Items trigger before allies react
+5. **on_before_damage collected immediately**: Events from `on_before_damage` are collected and added BEFORE damage events
+6. **Bench units included in on_ally_death**: Units on the bench also receive `on_ally_death` triggers
 
 > [!IMPORTANT]
 > **Why This Matters**
-> If `on_death` SUMMON events appear before `on_hurt` BUFF events in the TurnLog, animations will play out of order - the summoned unit appears before the buff animation on allies completes.
+> If `on_death` SUMMON events appear before `on_hurt` BUFF events in the TurnLog, animations will play out of order.
 
-### Shockwave (Cascade AOE) Processing Rules
+### Shockwave (Cascade AOE) Two-Phase Pattern
+
+Shockwave uses a **two-phase** processing pattern for clear visual presentation:
+
+**Phase 1: All Damage (Wave Effect)**
+```
+Target 1: on_before_damage → DAMAGE
+Target 2: on_before_damage → DAMAGE
+Target 3: on_before_damage → DAMAGE
+```
+
+**Phase 2: All Reactions (Per Target)**
+```
+Target 1: on_damage_dealt → on_hurt → on_kill/on_death
+Target 2: on_damage_dealt → on_hurt → on_kill/on_death
+Target 3: on_damage_dealt → on_hurt → on_kill/on_death
+```
 
 **Processing Order:**
-- Shockwave processes targets **front-to-back** (from attacker's perspective)
 - Player shockwave: lowest slot index (0) → highest slot index
 - Enemy shockwave: highest slot index → lowest slot index (0)
 
-**Event Sequence per Target:**
-1. `on_before_attack` triggered (defensive abilities like Defensive Stance)
-2. DAMAGE event created
-3. `on_hurt` triggered (Aegis Charm, counter-attacks)
-4. If HP <= 0 after Aegis processing: `on_kill` triggered
-5. Continue to next cascade target (shockwave never stops early)
-
 > [!NOTE]
-> **Aegis Charm Interaction:** If Aegis saves a unit from shockwave, the LETHAL_SAVE event is emitted and the unit survives with 1 HP. The shockwave continues to deal damage to remaining targets normally.
+> **Aegis Charm Interaction:** If Aegis saves a unit from shockwave, the LETHAL_SAVE event is emitted and the unit survives with 1 HP. The shockwave continues to process remaining targets normally.
+
 
 ### LETHAL_SAVE Event (Aegis Charm)
 

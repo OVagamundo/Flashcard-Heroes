@@ -73,10 +73,8 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	if visual_data.is_empty():
 		return
 	
-	print("[SlotView] set_content called with visual_data: ", visual_data.get("uuid", "NO_UUID"))
 	
 	var gacha_ball_view_scene = load("res://scenes/GachaBallView.tscn")
-	print("[SlotView] Loaded scene: ", gacha_ball_view_scene)
 	
 	if not is_instance_valid(gacha_ball_view_scene):
 		push_error("[SlotView] GachaBallViewScene failed to load!")

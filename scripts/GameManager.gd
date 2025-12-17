@@ -118,7 +118,6 @@ func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 func _on_battle_won_rewards_pending() -> void:
 	# Detect if this was a boss victory
 	var is_boss_victory = run_state.current_boss_level > 0
-	print("[DEBUG] _on_battle_won_rewards_pending: current_boss_level=%d, is_boss_victory=%s" % [run_state.current_boss_level, is_boss_victory])
 	
 	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
@@ -126,14 +125,11 @@ func _on_battle_won_rewards_pending() -> void:
 	
 	if is_boss_victory:
 		# Boss rewards: 3 random trinkets
-		print("[DEBUG] Generating TRINKET rewards for boss victory")
 		var all_trinkets = Database.trinkets.values().duplicate()
-		print("[DEBUG] Available trinkets: %d" % all_trinkets.size())
 		all_trinkets.shuffle()
 		for i in range(min(3, all_trinkets.size())):
 			var inst = GachaBallInstance.new()
 			inst.initialize_from_trinket(all_trinkets[i])
-			print("[DEBUG] Created trinket reward: %s" % all_trinkets[i].id)
 			inst.location_container_tag = &"Rewards"
 			inst.location_slot_index = i
 			_temporary_reward_master_dict[inst.ball_uuid] = inst

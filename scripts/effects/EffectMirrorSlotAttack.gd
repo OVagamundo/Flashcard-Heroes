@@ -93,14 +93,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if target_instance == null:
 		return null # No valid targets
 	
-	# Zero-Instance-Query Compliant: Use context data for damage calculation
-	var damage = _calculate_damage_from_context(_context)
+	# Zero-Instance-Query Compliant: Use centralized stat calculator
+	var damage = StatScaling.calculate(parameters.get("damage"), _context, "EffectMirrorSlotAttack")
 	
-	# Trigger on_before_attack for the target (defensive abilities like Defensive Stance)
+	# Trigger on_before_damage for the target (defensive abilities like Defensive Stance)
 	var is_simulation: bool = _context.get("is_simulation", false)
 	
-	# Capture the pending reactions queue size BEFORE triggering on_before_attack
-	# This ensures we only process the NEW reactions added by on_before_attack, not unrelated ones
+	# Capture the pending reactions queue size BEFORE triggering on_before_damage
+	# This ensures we only process the NEW reactions added by on_before_damage, not unrelated ones
 	var reactions_before_trigger: int = battle_manager.get_pending_reactions_size()
 	
 	var before_attack_context: Dictionary = {
@@ -110,9 +110,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"target_initial_hp": target_instance.current_hp,
 		"is_simulation": is_simulation
 	}
-	AbilityResolver.process_trigger(&"on_before_attack", before_attack_context)
+	AbilityResolver.process_trigger(&"on_before_damage", before_attack_context)
 	
-	# Drain ONLY the on_before_attack effects that were just added
+	# Drain ONLY the on_before_damage effects that were just added
 	# Pass the queue size from before triggering - only process reactions added after that point
 	if is_simulation:
 		battle_manager.drain_pending_reactions_inline(reactions_before_trigger)
@@ -132,27 +132,3 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"amount": - damage,
 		"targets": [target_instance.ball_uuid]
 	}
-
-
-## Calculate damage using context data (Zero-Instance-Query Compliant)
-func _calculate_damage_from_context(context: Dictionary) -> int:
-	var source_pwr: int = context.get("source_pwr", 0)
-	
-	if source_pwr == 0:
-		push_warning("[EffectMirrorSlotAttack] source_pwr missing from context, damage will be 0")
-	
-	if not parameters.has("damage"):
-		return source_pwr
-	
-	var damage_param = parameters["damage"]
-	
-	if damage_param is int:
-		return damage_param
-	
-	if damage_param is Dictionary:
-		var base_value: int = damage_param.get("base_value", 0)
-		var pwr_multiplier: float = damage_param.get("pwr_multiplier", 0.0)
-		var final_value = base_value + (source_pwr * pwr_multiplier)
-		return floor(final_value)
-	
-	return source_pwr

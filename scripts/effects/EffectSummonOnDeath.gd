@@ -55,7 +55,6 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			# Enemy team: back is index 0, front is index 4 (search 0→4)
 			var is_enemy_team = holder_location.container == battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var empty_slot = _find_empty_slot_back_to_front(container, is_enemy_team)
-			print("[DEBUG EffectSummonOnDeath] Slot %d occupied, found alternative: %d (is_enemy=%s)" % [holder_location.index, empty_slot, is_enemy_team])
 			if empty_slot == -1:
 				# No lineup slots available - send to discard pile instead
 				var discard_container = battle_manager.get_container(battle_manager.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)

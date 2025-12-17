@@ -46,19 +46,19 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			return unit_team == fainting_team and unit_uuid != fainting_uuid and unit.current_hp > 0
 		
 		&"on_hurt":
-			# Only the victim responds
+			# Only the unit that received damage responds
 			return unit_uuid == context.get("victim_uuid", "")
 		
 		&"on_death":
 			# Only the dying unit responds
 			return unit_uuid == context.get("dying_uuid", "")
 		
-		&"on_attack", &"on_kill":
+		&"on_attack", &"on_kill", &"on_damage_dealt":
 			# Only the attacker responds
 			return unit_uuid == context.get("attacker_uuid", "")
 		
-		&"on_before_attack":
-			# Only the unit being attacked responds
+		&"on_before_damage":
+			# Only the unit about to receive attack damage responds
 			return unit_uuid == context.get("defender_uuid", "")
 		
 		&"on_turn_start", &"on_turn_end", &"on_battle_start":
@@ -84,10 +84,10 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 		&"on_death":
 			return holder_uuid == context.get("dying_uuid", "")
 		
-		&"on_attack", &"on_kill":
+		&"on_attack", &"on_kill", &"on_damage_dealt":
 			return holder_uuid == context.get("attacker_uuid", "")
 		
-		&"on_before_attack":
+		&"on_before_damage":
 			return holder_uuid == context.get("defender_uuid", "")
 		
 		&"on_ally_death":
@@ -122,9 +122,7 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 		&"on_ally_death":
 			# Trinkets only respond to deaths on their own team
 			var fainting_team = context.get("fainting_ally_team", "")
-			var should_respond = trinket_team == fainting_team
-			print("[DEBUG AbilityResolver] Trinket '%s' (container=%s, team=%s) on_ally_death filter: fainting_team=%s, should_respond=%s" % [trinket_name, trinket.location_container_tag, trinket_team, fainting_team, should_respond])
-			return should_respond
+			return trinket_team == fainting_team
 		
 		&"on_turn_start", &"on_turn_end", &"on_battle_start":
 			# All trinkets respond
@@ -206,15 +204,8 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if not _should_unit_respond(trigger, instance_uuid, instance, context, battle_manager):
 			continue
 
-		# Debug: Log when unit abilities are being processed for on_death
-		if trigger == &"on_death":
-			var unit_name = tr(definition.display_name_key) if "display_name_key" in definition else String(definition.id)
-			print("[DEBUG AbilityResolver] Unit '%s' (uuid=%s) responding to on_death, dying_uuid=%s" % [unit_name, instance_uuid, context.get("dying_uuid", "")])
-
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
-				if trigger == &"on_death":
-					print("[DEBUG AbilityResolver] Unit ability '%s' matched on_death trigger" % ability.id)
 				if ability.get("replaces_basic_attack") and trigger == &"on_attack":
 					context["attack_replaced"] = true
 				_process_ability(ability, instance_uuid, battle_manager, context)
@@ -247,9 +238,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		trinket_context["team"] = trinket_team
 		
 		for ability in definition.ability_definitions:
-			print("[DEBUG AbilityResolver] Trinket '%s' checking ability trigger: %s vs %s" % [definition.name_key, ability.trigger, trigger])
 			if ability.trigger == trigger:
-				print("[DEBUG AbilityResolver] Trinket '%s' matched ability trigger %s, processing..." % [definition.name_key, trigger])
 				# Trinkets are team-based, not unit-based. The trinket itself is the source.
 				# This avoids dead-unit edge cases and is semantically correct.
 				_process_ability(ability, instance_uuid, battle_manager, trinket_context)
@@ -270,7 +259,6 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 				if source.current_hp <= 0:
 					# Source unit is dead - only allow if execute_on_lethal is true
 					if not ability.execute_on_lethal:
-						print("[DEBUG AbilityResolver] Skipping ability '%s' - source unit is dead and execute_on_lethal=false" % ability.id)
 						return
 	
 	# Check condition if present
@@ -301,8 +289,6 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			effect_context,
 			ability.priority # Pass priority from ability definition
 		)
-		
-		print("[DEBUG AbilityResolver] Created EffectRequest: ability=%s, source=%s, effect_script=%s" % [ability.id, source_uuid, effect.get_script().resource_path if effect.get_script() else "no_script"])
 		
 		# Enqueue the request
 		battle_manager.enqueue_effect_request(effect_request)

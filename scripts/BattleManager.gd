@@ -908,23 +908,17 @@ func bm_reshuffle_discard_pile(tier_to_reshuffle: int) -> bool:
 	return true
 
 func bm_draw_gacha_instance(tier: int) -> bool:
-	print("[DEBUG] bm_draw_gacha_instance called for tier %d" % tier)
 	var cost := tier
 	if _gacha_tokens < cost:
-		print("[DEBUG] Not enough tokens: have %d, need %d" % [_gacha_tokens, cost])
 		return false
 	var container_tag: StringName = "BattleInventoryT%d" % tier
 	var tier_pool := get_instances_in_container(container_tag)
-	print("[DEBUG] Tier pool for %s has %d instances" % [container_tag, tier_pool.size()])
 	# If pool is empty, silently reshuffle that tier from discard (single emission at end)
 	if tier_pool.is_empty():
-		print("[DEBUG] Pool empty, attempting reshuffle from discard")
 		if not _reshuffle_tier_from_discard(tier):
-			print("[DEBUG] Reshuffle failed")
 			return false
 		tier_pool = get_instances_in_container(container_tag)
 		if tier_pool.is_empty():
-			print("[DEBUG] Pool still empty after reshuffle")
 			return false
 	# Spend tokens and announce
 	_gacha_tokens -= cost
@@ -1191,13 +1185,11 @@ func _insert_summoned_unit_into_queue(new_unit: GachaBallInstance) -> void:
 				# Players: higher slots act first (4,3,2,1,0)
 				if slot_idx > queued_unit.location_slot_index:
 					_actor_queue.insert(i, new_unit)
-					print("[DEBUG] Inserted summoned unit ", new_unit.ball_uuid, " before ", queued_unit.ball_uuid)
 					return
 			else:
 				# Enemies: lower slots act first (0,1,2,3,4)
 				if slot_idx < queued_unit.location_slot_index:
 					_actor_queue.insert(i, new_unit)
-					print("[DEBUG] Inserted summoned unit ", new_unit.ball_uuid, " before ", queued_unit.ball_uuid)
 					return
 	
 	# If we found alive same-team units but didn't insert, add at end of same-team section
@@ -1209,11 +1201,9 @@ func _insert_summoned_unit_into_queue(new_unit: GachaBallInstance) -> void:
 			if _is_player_unit(queued_unit) != is_player:
 				# Found where other team starts, insert before
 				_actor_queue.insert(i, new_unit)
-				print("[DEBUG] Inserted summoned unit ", new_unit.ball_uuid, " before other team at index ", i)
 				return
 		# All remaining alive units are same team, append at end
 		_actor_queue.append(new_unit)
-		print("[DEBUG] Appended summoned unit ", new_unit.ball_uuid, " after same-team units")
 		return
 	# No alive same-team units in queue - check if there are DEAD same-team units
 	# Dead units still in queue = their slot hasn't acted yet (died before their turn)
@@ -1234,13 +1224,11 @@ func _insert_summoned_unit_into_queue(new_unit: GachaBallInstance) -> void:
 		# Team hasn't finished - dead units are still waiting for their turn
 		# Add summon to end of queue
 		_actor_queue.append(new_unit)
-		print("[DEBUG] Appended summon ", new_unit.ball_uuid, " (dead same-team units still in queue)")
 		return
 	
 	# No same-team units (alive OR dead) in queue - team has FINISHED acting
 	# This happens when a unit POPS, acts, dies from counter, and triggers summon
 	# The slot already had its turn, so the summon should NOT act this turn
-	print("[DEBUG] Not adding summon ", new_unit.ball_uuid, " - team has finished acting (slot already acted)")
 
 
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
@@ -1282,13 +1270,11 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 
 
 func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary = {}) -> void:
-	print("[DEBUG BM] _resolve_single_effect_request: ability=%s, source=%s" % [request.ability_id, request.source_uuid])
 	# Validate source is still alive (allow empty source UUID for trinket effects)
 	var source = null
 	if not request.source_uuid.is_empty():
 		source = get_instance_by_uuid(request.source_uuid)
 		if not is_instance_valid(source):
-			print("[DEBUG BM] EXIT: source instance is invalid for uuid=%s" % request.source_uuid)
 			return
 		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
 		# Exceptions:
@@ -1303,10 +1289,8 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			var ability_id_str := String(request.ability_id)
 			var is_reactive_ability: bool = ability_id_str.contains("counter") or ability_id_str.contains("retaliate") or ability_id_str == "unit_tier3d_resilient_aura"
 			
-			print("[DEBUG BM] Dead source check: dying_uuid=%s, is_own_death=%s, is_reactive=%s" % [dying_uuid, is_own_death_trigger, is_reactive_ability])
 			
 			if not is_own_death_trigger and not is_reactive_ability:
-				print("[DEBUG BM] EXIT: Dead unit's effect blocked (not own on_death, not reactive)")
 				return
 
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
@@ -1380,7 +1364,6 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			sim_ctx["source_hp"] = stat_provider.current_hp
 		
 		var effect_script_path = request.effect_definition.get_script().resource_path if request.effect_definition.get_script() else "no_script"
-		print("[DEBUG BM] About to execute effect - ability: %s, effect_script: %s, effect_class: %s" % [request.ability_id, effect_script_path, request.effect_definition.get_class()])
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, self, sim_ctx)
 		
 		# CRITICAL: Collect on_before_attack inline events IMMEDIATELY after effect execution
@@ -1403,7 +1386,10 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		if typeof(res) == TYPE_DICTIONARY:
 			var effect_data: Dictionary = res
 			
-			# Handle cascading damage (special case for AOE)
+				# Handle cascading damage (special case for AOE shockwave)
+			# TWO-PHASE PROCESSING for visual "wave" effect:
+			# Phase 1: Apply all damage + DAMAGE events in sequence
+			# Phase 2: Process all reactions (counter-attacks, on_kill) one target at a time
 			if effect_data.has("cascade_damage"):
 				print("[BM] Processing cascade_damage from ability:", request.ability_id, "source:", request.source_uuid)
 				var cascade_list = effect_data.get("cascade_damage", [])
@@ -1415,6 +1401,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					is_player_source = _is_player_unit(source)
 					should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
 				
+				# Track data for Phase 2 (reactions after all damage)
+				var hit_targets: Array[Dictionary] = []
+				
+				# ═══════════════════════════════════════════════════════════════════
+				# PHASE 1: Apply all damage in sequence (creates "wave" visual effect)
+				# ═══════════════════════════════════════════════════════════════════
 				for cascade_item in cascade_list:
 					var cascade_target_uuid = String(cascade_item.get("target", ""))
 					var cascade_amount = int(cascade_item.get("amount", 0))
@@ -1508,19 +1500,34 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 								}
 							}
 						}))
-						# Trigger on_hurt for counter-attacks AFTER damage is applied
-						trigger_on_hurt(cascade_target_uuid, cascade_amount, request.source_uuid)
 						
-						# Drain on_hurt reactions (Aegis Charm, etc.) and collect their events
-						# This allows Aegis to save a unit while shockwave continues to other targets
-						drain_pending_reactions_inline(0)
-						var cascade_hurt_inline_evts = collect_inline_events()
-						out_events.append_array(cascade_hurt_inline_evts)
-						
-						# DETERMINISTIC ON_KILL: If cascade damage killed the target, trigger on_kill immediately
-						# This ensures Bloodlust and other on_kill effects trigger for shockwave kills
-						if cascade_tgt.current_hp <= 0:
-							trigger_on_kill(request.source_uuid, cascade_target_uuid)
+						# Track for Phase 2 reactions
+						hit_targets.append({
+							"uuid": cascade_target_uuid,
+							"amount": cascade_amount,
+							"was_killed": cascade_tgt.current_hp <= 0
+						})
+				
+				# ═══════════════════════════════════════════════════════════════════
+				# PHASE 2: Process reactions one target at a time (after all damage shown)
+				# ═══════════════════════════════════════════════════════════════════
+				for hit_data in hit_targets:
+					var target_uuid: String = hit_data.uuid
+					var damage_amount: int = hit_data.amount
+					var was_killed: bool = hit_data.was_killed
+					
+					# Trigger on_hurt for counter-attacks
+					trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					
+					# Drain on_hurt reactions (Aegis Charm, counter-attacks, etc.) for THIS target
+					drain_pending_reactions_inline(0)
+					var cascade_hurt_inline_evts = collect_inline_events()
+					out_events.append_array(cascade_hurt_inline_evts)
+					
+					# DETERMINISTIC ON_KILL: If cascade damage killed the target, trigger on_kill
+					if was_killed:
+						trigger_on_kill(request.source_uuid, target_uuid)
+				
 				# Check for deaths after cascade
 				_check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 				return
@@ -2255,7 +2262,6 @@ func _resolve_combat_phase() -> void:
 		_on_turn_animation_finished()
 
 func _on_turn_animation_finished() -> void:
-	print("[DEBUG] _on_turn_animation_finished called. Phase: ", get_current_phase_name())
 	# This signal is the single source of truth for when animations are complete.
 	# It is safe to proceed to the next phase.
 	_is_processing_effect = false
@@ -2286,7 +2292,6 @@ func _on_turn_animation_finished() -> void:
 
 func _move_instance_to_discard(instance: GachaBallInstance) -> void:
 	assert(is_instance_valid(instance), "_move_instance_to_discard: instance is null")
-	print("[DEBUG] _move_instance_to_discard: ", instance.ball_uuid, " from container: ", instance.location_container_tag)
 	# Ownership gate: only player-owned instances can enter the player's discard pile
 	assert(_is_player_owned(instance), "_move_instance_to_discard: instance is not player owned")
 	# Atomically remove from current location (equipped or container) and place into discard
@@ -2459,7 +2464,6 @@ func get_death_info(unit_uuid: String) -> Dictionary:
 
 func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 	assert(is_instance_valid(unit), "_perform_unit_death_cleanup: unit is null")
-	print("[DEBUG] _perform_unit_death_cleanup for: ", unit.ball_uuid, " HP: ", unit.current_hp, " container: ", unit.location_container_tag)
 	
 	# Guard against duplicate cleanup calls - if container is already empty, unit was already cleaned up
 	if unit.location_container_tag == &"" or unit.location_container_tag == &"DiscardPile":
@@ -2564,8 +2568,9 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 			out_events.append(evt)
 
 	
-	# Check player units
+	# Check player units (LINEUP and BENCH - summoned units can be on bench and die there)
 	var player_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
+	player_units.append_array(get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH).duplicate())
 	for unit in player_units:
 		if unit.current_hp <= 0:
 			something_changed = true
@@ -2636,8 +2641,9 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 				# Triggers already handled during simulation; perform cleanup only.
 				_perform_unit_death_cleanup(unit)
 	
-	# Check enemy units (same logic)
+	# Check enemy units (same logic - LINEUP and BENCH)
 	var enemy_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
+	enemy_units.append_array(get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_BENCH).duplicate())
 	for unit in enemy_units:
 		if unit.current_hp <= 0:
 			var _unit_def2 = unit.get_definition()
@@ -2660,7 +2666,6 @@ func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_event
 										"team": "ENEMY",
 										"location_snapshot": loc_snapshot2
 									}
-									print("[DEBUG BM] Stored first_killed_enemy_unit: def_id=%s" % unit.definition_id)
 						# on_death for the dying unit (semantic key: dying_uuid)
 						# Enrich context so effects use context data, not get_instance()
 						var death_location2 = get_location_for_uuid(unit.ball_uuid)
@@ -3386,7 +3391,7 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				push_error("Unknown stat type: %s" % stat_type)
 				return 0
 
-func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String) -> void:
+func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK) -> void:
 	# Get target instance data for context (effects should not query instances directly)
 	var target_instance = get_instance_by_uuid(target_uuid)
 	var victim_team := ""
@@ -3398,19 +3403,13 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		elif target_instance.location_container_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			victim_team = "ENEMY"
 	
-	# Semantic context keys: victim_uuid = the damaged unit
-	var hurt_context: Dictionary = {
-		"victim_uuid": target_uuid,
-		"damage_taken": damage_amount,
-		"attacker_uuid": attacker_uuid,
-		"victim_team": victim_team,
-		"victim_current_hp": victim_current_hp,
-		"trigger_cause": C.CAUSE_ATTACK # Damage from attack allows retaliation-type abilities
-	}
-	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
+	# ═══════════════════════════════════════════════════════════════════════════
+	# LIFESTEAL TIMING FIX: Process on_damage_dealt BEFORE on_hurt
+	# This ensures lifesteal heals appear immediately after the damage that caused
+	# them, before any retaliation chains (on_hurt → counter-attack → on_hurt...)
+	# ═══════════════════════════════════════════════════════════════════════════
 	
-	# Trigger on_damage_dealt for the attacker (for lifesteal effects)
-	# This fires AFTER damage is applied, enabling correct animation order
+	# Trigger on_damage_dealt for the attacker (for lifesteal effects) FIRST
 	if not attacker_uuid.is_empty():
 		# Resolve the actual attacking UNIT - if attacker is an item, get the holder
 		var actual_attacker_uuid := attacker_uuid
@@ -3429,6 +3428,19 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 			"victim_new_hp": victim_current_hp
 		}
 		AbilityResolver.process_trigger(&"on_damage_dealt", damage_dealt_context)
+	
+	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
+	# Semantic context keys: victim_uuid = the damaged unit
+	var hurt_context: Dictionary = {
+		"victim_uuid": target_uuid,
+		"damage_taken": damage_amount,
+		"attacker_uuid": attacker_uuid,
+		"victim_team": victim_team,
+		"victim_current_hp": victim_current_hp,
+		"trigger_cause": cause # Now configurable - allows filtering by damage source
+	}
+	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
+
 
 ## Trigger on_kill event for a unit that killed another unit.
 ## @param killer_uuid: String - The UUID of the unit that got the kill
@@ -3708,11 +3720,9 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 		unit_instance.recalculate_stats(_battle_instances)
 
 func _on_draw_gacha_requested(tier: int) -> void:
-	print("[DEBUG] _on_draw_gacha_requested called for tier %d, current phase: %s" % [tier, _current_battle_phase])
 	# Delegate to atomic composite; preserves legacy signal order
 	# Ignore draw intents during COMBAT to enforce strict input blocking.
 	if _current_battle_phase != Phases.MANAGEMENT:
-		print("[DEBUG] Not in MANAGEMENT phase, ignoring draw request")
 		return
 	bm_draw_gacha_instance(tier)
 
@@ -3742,7 +3752,6 @@ func _emit_stats_changed_for_equipped_units() -> void:
 				SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
 
 func _on_flashcard_completed(results: Dictionary) -> void:
-	print("[DEBUG] _on_flashcard_completed called with results: ", results)
 	# TDD Section 9.4: Battle Flow
 	# This handler is only for the battle context.
 	# BattleManager only exists during battle, so we don't need to check is_in_battle.
@@ -3757,14 +3766,12 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	var correct_answers: int = results.get("correct_answers", 0)
 	var gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
 	
-	print("[DEBUG] Opening ResultsPopup modal")
 	# Display ResultsPopup
 	WindowManager.open_modal_window(&"ResultsPopup", {
 		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % correct_answers, "Okay"]
 	})
 
 func _on_results_acknowledged() -> void:
-	print("[DEBUG] _on_results_acknowledged called. Current phase: ", get_current_phase_name())
 	"""Called when player acknowledges the results popup"""
 	
 	var correct_answers: int = _last_minigame_results.get("correct_answers", 0)
@@ -3849,13 +3856,10 @@ func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> Gacha
 func _finalize_deaths() -> void:
 	# Removes units with <= 0 HP from containers and discard, WITHOUT triggering abilities.
 	# This is called after VCR playback to synchronize logical state with visual state.
-	print("[DEBUG] _finalize_deaths called. Current phase: ", get_current_phase_name())
 	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	print("[DEBUG] Found ", all_units.size(), " units in lineups")
 	var something_changed = false
 	
 	for unit in all_units:
-		print("[DEBUG] Checking unit ", unit.ball_uuid, " HP: ", unit.current_hp, " already_dead: ", is_dead_this_turn(unit.ball_uuid))
 		if unit.current_hp <= 0 and is_dead_this_turn(unit.ball_uuid):
 			something_changed = true
 			# Use unified cleanup logic which handles:

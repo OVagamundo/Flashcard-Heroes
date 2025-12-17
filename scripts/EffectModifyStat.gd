@@ -14,18 +14,10 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	if stat == "":
 		return null
 	
-	# Determine the value to modify by
-	var base_value: int = int(parameters.get("base_value", 0))
-	var use_source_pwr: bool = parameters.get("use_source_pwr", false)
-	
-	# If using source's PWR, get it from pre-snapshotted context data
-	# Zero-Instance-Query Compliant: BattleManager populates source_pwr before execute()
-	if use_source_pwr:
-		base_value = context.get("source_pwr", 0)
-		if base_value == 0:
-			push_warning("[EffectModifyStat] source_pwr missing from context for use_source_pwr=true")
-	
-	if base_value == 0:
+	# Use centralized stat-scaling utility
+	# Supports: base_value, pwr_multiplier, hp_multiplier, use_source_pwr
+	var amount: int = StatScaling.calculate(parameters, context, "EffectModifyStat")
+	if amount == 0:
 		return null
 	
 	var is_simulation: bool = context.get("is_simulation", false)
@@ -41,7 +33,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			return null
 		return {
 			"stat": stat,
-			"amount": base_value,
+			"amount": amount,
 			"targets": valid_targets
 		}
 	# Non-simulation: apply stat changes immediately
@@ -52,12 +44,12 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				continue
 			match stat:
 				"hp":
-					var new_hp = max(0, inst.current_hp + base_value)
+					var new_hp = max(0, inst.current_hp + amount)
 					inst.set_current_hp(new_hp)
 				"pwr":
-					inst.current_pwr = max(0, inst.current_pwr + base_value)
+					inst.current_pwr = max(0, inst.current_pwr + amount)
 					SignalBus.emit_signal("unit_stats_changed", inst.ball_uuid)
 				_:
 					pass
 	# Non-simulation return (legacy compatibility)
-	return base_value
+	return amount

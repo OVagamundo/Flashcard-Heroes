@@ -11,3 +11,5 @@ description_key = "ability.unit_tier3c_soul_summon.desc"
 trigger = &"on_death"
 priority = 205
 effects = Array[Resource]([ExtResource("2_effect")])
+execute_on_lethal = true
+

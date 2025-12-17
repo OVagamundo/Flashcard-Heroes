@@ -17,8 +17,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if targets.is_empty():
 		return null
 
-	# Zero-Instance-Query Compliant: Use context data for source stats
-	var base_damage = _calculate_damage_from_context(_context)
+	# Zero-Instance-Query Compliant: Use centralized stat calculator
+	var base_damage = StatScaling.calculate(parameters.get("damage"), _context, "EffectCascadeAOE")
 	var falloff: float = parameters.get("cascade_falloff", 0.5)
 	var cascade_depth: int = parameters.get("cascade_depth", 2) # 2 slots behind frontmost
 	
@@ -72,7 +72,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return null # No living enemies
 	
 	# Step 2: Calculate damage for frontmost slot + cascade_depth slots behind
-	# on_before_attack is triggered for each target in the loop below.
+	# on_before_damage is triggered for each target in the loop below.
 	# on_hurt is triggered by BattleManager after applying damage from cascade_damage.
 	var damage_data: Array = []
 	var current_damage = base_damage
@@ -105,7 +105,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		
 		var damage_amount = int(current_damage)
 		
-		# Trigger on_before_attack for this target (defensive abilities like Defensive Stance)
+		# Trigger on_before_damage for this target (defensive abilities like Defensive Stance)
 		var is_simulation: bool = _context.get("is_simulation", false)
 		var before_attack_context: Dictionary = {
 			"source_uuid": target.ball_uuid,
@@ -114,9 +114,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			"target_initial_hp": target.current_hp,
 			"is_simulation": is_simulation
 		}
-		AbilityResolver.process_trigger(&"on_before_attack", before_attack_context)
+		AbilityResolver.process_trigger(&"on_before_damage", before_attack_context)
 		
-		# Drain the on_before_attack reactions immediately (like BasicAttackEffect does)
+		# Drain the on_before_damage reactions immediately (like BasicAttackEffect does)
 		if is_simulation:
 			battle_manager.drain_pending_reactions_inline(0)
 		
@@ -143,27 +143,3 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"cascade_damage": damage_data,
 		"targets": target_uuids
 	}
-
-
-## Calculate base damage using context data (Zero-Instance-Query Compliant)
-func _calculate_damage_from_context(context: Dictionary) -> int:
-	var source_pwr: int = context.get("source_pwr", 0)
-	
-	if source_pwr == 0:
-		push_warning("[EffectCascadeAOE] source_pwr missing from context, damage will be 0")
-	
-	if not parameters.has("damage"):
-		return source_pwr
-	
-	var damage_param = parameters["damage"]
-	
-	if damage_param is int:
-		return damage_param
-	
-	if damage_param is Dictionary:
-		var base_value: int = damage_param.get("base_value", 0)
-		var pwr_multiplier: float = damage_param.get("pwr_multiplier", 0.0)
-		var final_value = base_value + (source_pwr * pwr_multiplier)
-		return floor(final_value)
-	
-	return source_pwr

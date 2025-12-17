@@ -42,7 +42,7 @@ Trigger StringName	When Fired by BattleManager	Context Data Provided (Dictionary
 on_battle_start	Once for every unit/trinket at the very beginning of combat.	{}
 on_turn_start	At the beginning of each turn cycle, before the first unit acts.	{ "turn_number": int }
 on_attack	When a unit initiates its attack action.	{ "attacker_uuid": String, "target_uuid": String, "trigger_cause": StringName, "cause_id": String }
-on_before_attack	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String, "attacker_uuid": String, "trigger_cause": StringName }
+on_before_damage	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String, "attacker_uuid": String, "trigger_cause": StringName }
 on_hurt	When a unit takes any form of damage.	{ "victim_uuid": String, "attacker_uuid": String, "damage_taken": int, "trigger_cause": StringName }
 on_kill	Immediately when damage causes target HP ≤ 0.	{ "attacker_uuid": String, "killed_uuid": String, "trigger_cause": StringName }
 on_death	When a unit's HP is reduced to 0 or less.	{ "dying_uuid": String, "dying_team": String, "dying_location": Loc, "equipped_items": Array }
@@ -121,28 +121,28 @@ Stacks are managed via three methods:
 - clear_status_effect(effect_id): Removes all stacks of the effect.
 
 Application:
-Poison is applied via two main paths:
-1.  **Trinket (Poison Vial):** Applied during DAMAGE events.
+Burn is applied via two main paths:
+1.  **Trinket (Burn Vial):** Applied during DAMAGE events.
     *   `BattleManager` checks `_has_team_trinket`.
-    *   Calls `apply_stat_delta(target, "poison_stacks", 1)`.
-    *   Event payload includes `"targets_new_poison"`.
-2.  **Abilities:** Applied via `EffectModifyStat` with `stat: "poison_stacks"`.
-    *   Calls `apply_stat_delta(target, "poison_stacks", amount)`.
-    *   Emits `BUFF` event with `stat: "poison_stacks"`.
+    *   Calls `apply_stat_delta(target, "burn_stacks", 1)`.
+    *   Event payload includes `"targets_new_burn"`.
+2.  **Abilities:** Applied via `EffectModifyStat` with `stat: "burn_stacks"`.
+    *   Calls `apply_stat_delta(target, "burn_stacks", amount)`.
+    *   Emits `BUFF` event with `stat: "burn_stacks"`.
 
 Processing & Decay:
-Poison is processed at the END of each turn in BattleManager._trigger_turn_end_abilities:
-1. For each poisoned unit, deal damage equal to poison_stacks.
+Burn is processed at the END of each turn in BattleManager._trigger_turn_end_abilities:
+1. For each burned unit, deal damage equal to burn_stacks.
 2. Create DAMAGE events (with skip_bump: true to avoid visual bump).
 3. After damage, reduce stacks by half (rounded down) using `apply_stat_delta`.
 4. This generates a `BUFF` event with the new stack count (or 0) to update the UI.
 5. If new_stacks = 0, clear the status effect entirely.
 
 Lifecycle:
-Poison persists across turns until it decays to 0.
+Burn persists across turns until it decays to 0.
 Status effects are cleared when a unit returns to the discard pile via reset_battle_stats().
 
 UI Display:
-GachaBallView displays poison stacks as a purple label overlaying the unit icon.
-*   **During Combat:** `BattleAnimator` calls `_apply_poison_stack` -> `view.animate_poison_change()`.
+GachaBallView displays burn stacks as a purple label overlaying the unit icon.
+*   **During Combat:** `BattleAnimator` calls `_apply_burn_stack` -> `view.animate_burn_change()`.
 *   **State Sync:** `_update_item_slots()` is called within `_update_stats()` (even during combat locked phase) to ensure labels persist/update correctly.

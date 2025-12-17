@@ -194,8 +194,6 @@ func modify_unit_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0)
 		return false
 	
 	# Debug log before changes
-	print("modify_unit_stats - Before - UUID: %s, HP: %d, PWR: %d" % [unit_uuid, inst.current_hp, inst.current_pwr])
-	print("  Applying changes - HP: %+d, PWR: %+d" % [hp_delta, pwr_delta])
 	
 	if hp_delta != 0:
 		inst.current_hp += hp_delta
@@ -203,12 +201,10 @@ func modify_unit_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0)
 		inst.current_pwr += pwr_delta
 	
 	# Debug log after changes
-	print("modify_unit_stats - After  - UUID: %s, HP: %d, PWR: %d" % [unit_uuid, inst.current_hp, inst.current_pwr])
 	
 	if OS.is_debug_build():
 		_validate_state_consistency()
 	
-	print("Emitting signals for stat change")
 	SignalBus.emit_signal("unit_stats_changed", unit_uuid)
 	SignalBus.emit_signal("run_data_changed")
 	return true
@@ -228,11 +224,6 @@ func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int
 		push_error("modify_unit_base_stats: No definition found for unit UUID: %s" % unit_uuid)
 		return false
 
-	# Debug log before changes
-	print("modify_unit_base_stats - Before - UUID: %s, Base HP: %d, Base PWR: %d, Current HP: %d, Current PWR: %d" % [
-		unit_uuid, unit_def.base_hp, unit_def.base_pwr, inst.current_hp, inst.current_pwr])
-	print("  Applying base stat changes - HP: %+d, PWR: %+d" % [hp_delta, pwr_delta])
-
 	# Modify base stats in the definition (these persist across the entire run)
 	if hp_delta != 0:
 		unit_def.base_hp += hp_delta
@@ -246,17 +237,13 @@ func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int
 	inst.current_hp = new_hp
 	inst.current_pwr = new_pwr
 
-	# Debug log after changes
-	print("modify_unit_base_stats - After  - UUID: %s, Base HP: %d, Base PWR: %d, Current HP: %d, Current PWR: %d" % [
-		unit_uuid, unit_def.base_hp, unit_def.base_pwr, inst.current_hp, inst.current_pwr])
-
 	if OS.is_debug_build():
 		_validate_state_consistency()
 
-	print("Emitting signals for permanent stat change")
 	SignalBus.emit_signal("unit_stats_changed", unit_uuid)
 	SignalBus.emit_signal("run_data_changed")
 	return true
+
 func remove_instance(uuid: String) -> bool:
 	# Removes an instance from its current location and registry.
 	if uuid.is_empty():

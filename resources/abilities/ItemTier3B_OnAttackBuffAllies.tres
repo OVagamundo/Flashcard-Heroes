@@ -16,3 +16,4 @@ description_key = "ability.item_t3b_on_attack_buff.desc"
 trigger = &"on_attack"
 priority = 100
 effects = Array[Resource]([SubResource("EffectBuffTwoRandomAllies_1")])
+

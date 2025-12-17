@@ -42,7 +42,6 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 		# CRITICAL FIX: Filter out equipped items from snapshot
 		# Equipped items don't have views in lineups - they're displayed on their holder units
 		# Including them in iteration can cause unpredictable behavior due to dictionary iteration order
-		print("[BattleAnimator] Populating registry. Snapshot size: ", start_snapshot.size())
 		for uuid in start_snapshot:
 			var snapshot_data = start_snapshot[uuid]
 			
@@ -86,11 +85,10 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 								# Inject uuid into snapshot so set_visual_state can update _instance_uuid
 								snapshot_data["uuid"] = uuid
 								gacha_view.set_visual_state(snapshot_data)
-								# print("[BattleAnimator] Registered ", uuid, " to view ", gacha_view)
 							else:
-								print("[BattleAnimator] Failed to register ", uuid, ": Child is not GachaBallView")
+								push_warning("[BattleAnimator] Failed to register %s: Child is not GachaBallView" % uuid)
 						else:
-							print("[BattleAnimator] Failed to register ", uuid, ": Slot ", index, " in ", container_tag, " is empty or invalid")
+							push_warning("[BattleAnimator] Failed to register %s: Slot %d in %s is empty" % [uuid, index, container_tag])
 					else:
 						print("[BattleAnimator] Failed to register ", uuid, ": Index ", index, " out of bounds for ", container_tag)
 				else:
@@ -123,8 +121,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 	var processed_count: int = 0
 	for event in events:
-		# Log each event as we process it
-		print("[ANIM] Processing Event#%d: %s" % [event.event_id, event.get_type_name()])
 		processed_count += 1
 		
 		SignalBus.log_animation_event.emit(event)
@@ -136,7 +132,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# Use the dedicated DamageAnimation class which handles bumps, projectiles, and flashes
 				var anim = AnimationRegistry.get_animation("damage")
 				if anim:
-					print("[BattleAnimator] Got damage animation: ", anim)
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Damage animation not found in registry!")
@@ -145,7 +140,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				if not _pending_guardian_return.is_empty():
 					var guardian_view = _visual_registry.get(_pending_guardian_return)
 					if is_instance_valid(guardian_view) and guardian_view.has_method("animate_leap_return"):
-						print("[BattleAnimator] Guardian returning to original position")
 						await guardian_view.animate_leap_return()
 					_pending_guardian_return = ""
 
@@ -169,22 +163,17 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# Play death fade on target
 				if event.target_uuids.size() > 0:
 					var dead_uuid := event.target_uuids[0]
-					print("[BattleAnimator] Processing DEATH event for: ", dead_uuid)
 					
 					# Prevent duplicate death animations for the same unit in this sequence
 					if _dead_units.has(dead_uuid):
-						print("[BattleAnimator] Skipping duplicate DEATH for: ", dead_uuid)
 						continue
 						
 					_dead_units[dead_uuid] = true
 					_current_animation_uuid = dead_uuid
 					
 					if SignalBus.has_signal("unit_death_fade"):
-						print("[BattleAnimator] Emitting unit_death_fade signal for: ", dead_uuid)
-					SignalBus.emit_signal("unit_death_fade", dead_uuid)
-					print("[BattleAnimator] Waiting for death_fade animation completion...")
+						SignalBus.emit_signal("unit_death_fade", dead_uuid)
 					await wait_for_animation_completion("death_fade", dead_uuid)
-					print("[BattleAnimator] Death animation completed for: ", dead_uuid)
 					
 					# Remove the dead view from scene after animation completes
 					# With DEATH → SUMMON ordering, the slot will be empty when SUMMON runs
@@ -251,16 +240,12 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									"size": rect.size,
 									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
 								}
-								print("[BattleAnimator] Processing SUMMON event for: ", new_unit_uuid)
 								
 								# Trigger summon animation
 								_current_animation_uuid = new_unit_uuid
 								if SignalBus.has_signal("unit_summon_fade"):
-									print("[BattleAnimator] Emitting unit_summon_fade signal for: ", new_unit_uuid)
 									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
-									print("[BattleAnimator] Waiting for summon_fade animation completion...")
 									await wait_for_animation_completion("summon_fade", new_unit_uuid)
-								print("[BattleAnimator] Summon animation completed for: ", new_unit_uuid)
 
 			CombatEvent.Type.LETHAL_SAVE:
 				# Aegis Charm: unit floats up golden then lands back
@@ -268,13 +253,11 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					var saved_uuid := event.target_uuids[0]
 					var payload = event.visual_payload
 					var heal_amount: int = int(payload.get("heal_amount", 1))
-					print("[BattleAnimator] Processing LETHAL_SAVE event for: ", saved_uuid, " heal:", heal_amount)
 					_current_animation_uuid = saved_uuid
 					
 					if SignalBus.has_signal("unit_lethal_save"):
 						SignalBus.emit_signal("unit_lethal_save", saved_uuid)
 						await wait_for_animation_completion("lethal_save", saved_uuid)
-						print("[BattleAnimator] Lethal save animation completed for: ", saved_uuid)
 					
 					# Update HP label to 1 after animation completes
 					apply_hp_delta(saved_uuid, heal_amount, 1)

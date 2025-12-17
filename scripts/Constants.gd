@@ -40,15 +40,25 @@ const GROUP_EQUIPPED_GRID = &"EquippedGrid"
 const GROUP_SELECTION_ONLY = &"SelectionOnly"
 const GROUP_INSPECTION_ONLY = &"InspectionOnly"
 
-# --- Ability System Triggers ---
-const TRIGGER_ON_BATTLE_START = &"on_battle_start"
-const TRIGGER_ON_ATTACK = &"on_attack"
-const TRIGGER_ON_BEFORE_ATTACK = &"on_before_attack"
-const TRIGGER_ON_DEATH = &"on_death"
-const TRIGGER_ON_HURT = &"on_hurt"
-const TRIGGER_ON_KILL = &"on_kill"
-const TRIGGER_ON_ALLY_DEATH = &"on_ally_death"
-const TRIGGER_ON_TURN_END = &"on_turn_end"
+# --- Ability System Triggers (Unified) ---
+# Attack-related triggers
+const TRIGGER_ON_ATTACK = &"on_attack" # Unit performs any attack (use conditions to filter CAUSE)
+const TRIGGER_ON_BEFORE_DAMAGE = &"on_before_damage" # Before receiving attack damage (Defensive Stance)
+const TRIGGER_ON_HURT = &"on_hurt" # After receiving attack damage
+const TRIGGER_ON_DAMAGE_DEALT = &"on_damage_dealt" # After dealing attack damage (Lifesteal)
+
+# Death-related triggers
+const TRIGGER_ON_DEATH = &"on_death" # This unit dies
+const TRIGGER_ON_ALLY_DEATH = &"on_ally_death" # A teammate dies
+const TRIGGER_ON_KILL = &"on_kill" # This unit kills an enemy
+
+# Turn-related triggers
+const TRIGGER_ON_TURN_START = &"on_turn_start" # Turn begins
+const TRIGGER_ON_TURN_END = &"on_turn_end" # Turn ends
+const TRIGGER_ON_BATTLE_START = &"on_battle_start" # Battle begins
+
+# Special triggers
+const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled passive (Guardian)
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"

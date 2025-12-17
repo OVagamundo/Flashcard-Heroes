@@ -7,13 +7,11 @@ extends EffectDefinition
 ## Uses context data instead of querying instances (Effect Decoupling Rule)
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Dictionary:
-	print("[DEBUG ResurrectEffect] execute called - fainting_ally_team=%s" % context.get("fainting_ally_team", "MISSING"))
 	
 	# 1. Determine team from context - the fainting ally's team is our team
 	# (Soul Echo triggers on_ally_death when a teammate dies)
 	var fainting_ally_team: String = context.get("fainting_ally_team", "")
 	if fainting_ally_team.is_empty():
-		print("[DEBUG ResurrectEffect] EXIT: fainting_ally_team is empty")
 		return {}
 	
 	var is_player_team := (fainting_ally_team == "PLAYER")
@@ -21,15 +19,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# 2. Check if resurrection already happened this turn
 	var resurrection_flag_key := "resurrection_done_player" if is_player_team else "resurrection_done_enemy"
 	if battle_manager._turn_metadata.get(resurrection_flag_key, false):
-		print("[DEBUG ResurrectEffect] EXIT: resurrection already done for %s" % fainting_ally_team)
 		return {} # Already resurrected this turn
 
 	# 3. Get first-killed unit metadata
 	var first_killed_key := "first_killed_player_unit" if is_player_team else "first_killed_enemy_unit"
 	var first_killed_data: Dictionary = battle_manager._turn_metadata.get(first_killed_key, {})
-	print("[DEBUG ResurrectEffect] Checking %s: %s" % [first_killed_key, first_killed_data])
 	if first_killed_data.is_empty():
-		print("[DEBUG ResurrectEffect] EXIT: no first_killed_data for key %s" % first_killed_key)
 		return {} # No unit died yet
 
 	# 4. Get the definition of the unit to resurrect
