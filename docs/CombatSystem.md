@@ -21,6 +21,37 @@ The system is divided into two distinct, non-overlapping phases:
 
 The `BattleManager` acts as the authoritative simulation engine. It operates on the **Logical Model** (the `GachaBallInstance` data and `DataContainer` structures).
 
+### Architecture Overview
+
+The BattleManager delegates to specialized helper classes:
+
+```mermaid
+graph TD
+    BM[BattleManager<br/>2324 lines<br/>Orchestrator]
+    
+    CS[CombatSimulator<br/>278 lines]
+    EH[EffectHandlers<br/>925 lines]
+    IO[InventoryOperations<br/>465 lines]
+    BS[BattleState<br/>423 lines]
+    
+    BM --> |Combat Loop|CS
+    BM --> |Effects|EH
+    BM --> |Items/Draws|IO
+    BM --> |State/Containers|BS
+```
+
+| Helper File | Responsibility |
+|-------------|----------------|
+| CombatSimulator | Combat loop, actor queue, reaction processing |
+| EffectHandlers | Damage, heal, buff, summon event creation |
+| InventoryOperations | Move, swap, equip, gacha draw |
+| BattleState | Instance storage, container management |
+| DeathProcessor | Death cleanup logic |
+| TurnAbilities | Turn start/end triggers |
+| TargetResolver | Target resolution |
+| BattleHelpers | Utility functions |
+| BattleSetup | Battle initialization |
+
 ### Responsibilities
 1.  **Snapshotting:** Captures the state of the board *before* any logic runs. This snapshot is sent to the Animator to reset the UI before playback.
 2.  **Execution:** Runs the turn logic (Attacks, Abilities, Deaths, Summons) instantly.
@@ -258,14 +289,14 @@ When a unit dies, `reset_battle_stats_silent()` restores their HP to full **befo
 - `""` (removed/invalid)
 
 The validation occurs in:
-- `_resolve_single_effect_request()` at the target filtering stage
-- `resolve_target()` for context-based target resolution
+- `BattleManager._resolve_single_effect_request()` at the target filtering stage
+- `TargetResolver.resolve_target()` for context-based target resolution
 
 ### Mid-Turn Summon Participation
 
 When a unit is summoned to an **empty slot** mid-turn, it may participate in combat during the turn it's summoned:
 
-**Queue Insertion Logic (`_insert_summoned_unit_into_queue`):**
+### Queue Insertion Logic (`CombatSimulator.insert_summoned_unit`):
 - Player units act right-to-left (slot 4→3→2→1→0)
 - Enemy units act left-to-right (slot 0→1→2→3→4)
 - Summoned unit is inserted at the correct queue position based on its slot
@@ -304,6 +335,32 @@ Effects receive ALL data via the `context` parameter:
 > Effects must NEVER call `get_instance()`, `get_location_for_uuid()`, or `get_instances_in_container()`.
 > All needed data must come from `context` or `parameters`.
 > This ensures effects work correctly regardless of cleanup timing.
+
+### Armor Damage Mitigation
+
+Armor is a **status effect** that absorbs incoming damage before HP is affected.
+
+**Simulation Logic (`EffectHandlers.handle_damage_effect`):**
+1. Incoming damage is calculated
+2. Armor stacks are checked via `get_status_effect_amount(&"armor")`
+3. Armor absorbs damage: `armor_consumed = min(armor_stacks, damage)`
+4. Remaining damage goes to HP: `hp_damage = damage - armor_consumed`
+5. Armor data is embedded in the DAMAGE event's `visual_payload`:
+   - `targets_old_armor`: Armor before attack
+   - `targets_new_armor`: Armor after absorption
+   - `armor_consumed`: Amount of armor used
+
+**Visual Presentation (`DamageAnimation._apply_damage_effects`):**
+1. **Armor popup FIRST** (grey, 0.5s before HP popup)
+   - Grey floating number shows armor consumed
+   - Armor label counts down via `apply_armor_delta()`
+2. **HP popup SECOND** (red)
+   - Red floating number shows HP damage
+   - HP label counts down via `apply_hp_delta()`
+3. If armor reaches 0, the armor icon fades out
+
+> [!IMPORTANT]
+> Armor and HP effects are part of a **single DAMAGE event**. Armor data is embedded in the payload, not split into separate events. This ensures correct visual timing (armor → HP).
 
 ---
 

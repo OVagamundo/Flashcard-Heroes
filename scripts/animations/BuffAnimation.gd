@@ -8,6 +8,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var amount = int(payload.get("amount", 0))
 	var stat = String(payload.get("stat", "pwr"))
 	
+	print("[BuffAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
+	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
@@ -62,6 +64,34 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			animator.apply_burn_stack(target_uuid, new_val)
 			if SignalBus.has_signal("unit_flash_effect"):
 				SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.4, 0.0)) # Orange
+		
+		elif stat == "armor_stacks":
+			# Dedicated armor handler - same pattern as burn
+			var new_val = 0
+			if not burn_values.is_empty() and i < burn_values.size():
+				new_val = int(burn_values[i])
+			else:
+				new_val = int(payload.get("new_val", 0)) # Fallback
+				
+			animator.apply_armor_stack(target_uuid, new_val)
+			if SignalBus.has_signal("unit_flash_effect"):
+				SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(0.7, 0.7, 0.8)) # Silver/grey for armor
+		
+		elif stat.ends_with("_stacks"):
+			# Generic status effect handling (armor_stacks, etc.)
+			var status_id = stat.trim_suffix("_stacks")
+			var new_val = 0
+			if not burn_values.is_empty() and i < burn_values.size():
+				new_val = int(burn_values[i])
+			else:
+				new_val = int(payload.get("new_val", 0)) # Fallback
+			
+			print("[BuffAnimation] Applying status '%s' new_val=%d to %s" % [status_id, new_val, target_uuid])
+			animator.apply_status_stack(target_uuid, StringName(status_id), new_val)
+			if SignalBus.has_signal("unit_flash_effect"):
+				# Use grey flash for armor, default for others
+				var flash_color = Color(0.7, 0.7, 0.7) if status_id == "armor" else Color(0.8, 0.8, 0.8)
+				SignalBus.emit_signal("unit_flash_effect", target_uuid, flash_color)
 
 	# Wait for animation completion (just wait for the last one, as they run in parallel)
 	if final_target_uuid != "":

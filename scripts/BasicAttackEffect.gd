@@ -98,7 +98,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Inform UI and log systems (suppressed when simulating)
 	if not is_simulation:
 		SignalBus.battle_inventory_changed.emit()
-		# Emit unit_stats_changed so UI updates HP in real time
-		SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
+		# NOTE: set_current_hp() already emits granular unit_stat_changed signal, no need for additional emission
 
 	return damage

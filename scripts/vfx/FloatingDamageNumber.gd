@@ -15,16 +15,23 @@ const SCALE_NORMAL := Vector2(1.0, 1.0)
 
 var _start_position: Vector2
 
-func setup(damage: int, spawn_position: Vector2) -> void:
+func setup(damage: int, spawn_position: Vector2, color: Color = Color(1.0, 0.3, 0.3)) -> void:
 	position = spawn_position
 	_start_position = spawn_position
 	
 	# Set the damage text - no sign, just the number
 	label.text = str(damage)
 	
+	# Override font color directly (scene has red default, modulate would multiply)
+	label.add_theme_color_override("font_color", color)
+	
 	# Start invisible for the impact scale-up
 	scale = Vector2(0.5, 0.5)
 	modulate.a = 1.0
+
+## Helper for armor damage popups (grey color)
+func setup_armor(damage: int, spawn_position: Vector2) -> void:
+	setup(damage, spawn_position, Color(0.55, 0.55, 0.55)) # Darker grey for armor
 
 func play() -> void:
 	# Impact animation: scale up quickly

@@ -195,7 +195,9 @@ func _on_spawn_unit_pressed() -> void:
 	var instance = battle_manager.register_test_unit(id, _spawn_target_is_enemy)
 	if is_instance_valid(instance):
 		SignalBus.emit_signal("battle_inventory_changed")
-		SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
+		# Emit granular signals for HP and PWR
+		SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"hp", 0, instance.current_hp)
+		SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"pwr", 0, instance.current_pwr)
 
 func _on_spawn_item_pressed() -> void:
 	var selection = item_list.get_selected_items()

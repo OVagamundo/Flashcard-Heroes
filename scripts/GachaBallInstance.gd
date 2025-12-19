@@ -122,23 +122,34 @@ func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
+	var old_hp = self.current_hp
+	var old_pwr = self.current_pwr
 	self.current_hp += item_def.bonus_hp
 	self.current_pwr += item_def.bonus_pwr
-	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	if item_def.bonus_hp != 0:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, self.current_hp)
+	if item_def.bonus_pwr != 0:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, self.current_pwr)
 
 func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
+	var old_hp = self.current_hp
+	var old_pwr = self.current_pwr
 	self.current_hp -= item_def.bonus_hp
 	self.current_pwr -= item_def.bonus_pwr
-	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	if item_def.bonus_hp != 0:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, self.current_hp)
+	if item_def.bonus_pwr != 0:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, self.current_pwr)
 
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
-	if self.current_hp != new_hp:
+	var old_hp = self.current_hp
+	if old_hp != new_hp:
 		self.current_hp = new_hp
-		SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, new_hp)
 
 func set_current_hp_silent(new_hp: int) -> void:
 	# Update HP without emitting UI signals. Used during simulation passes.
@@ -149,6 +160,10 @@ func set_current_pwr_silent(new_pwr: int) -> void:
 	self.current_pwr = new_pwr
 
 func reset_battle_stats() -> void:
+	# Store old values for granular signal
+	var old_hp = current_hp
+	var old_pwr = current_pwr
+	
 	# Restore HP and PWR to base values (without equipment bonuses)
 	var definition = get_definition()
 	if is_instance_valid(definition):
@@ -169,7 +184,11 @@ func reset_battle_stats() -> void:
 	# Reset dynamic tags
 	dynamic_tags.clear()
 	
-	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	# Emit granular signals for each stat that changed
+	if old_hp != current_hp:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, current_hp)
+	if old_pwr != current_pwr:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
 
 func reset_battle_stats_silent() -> void:
 	# Restore HP and PWR to base values (without equipment bonuses) - SILENT VERSION
@@ -230,7 +249,11 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 	self.current_hp = new_hp
 	self.current_pwr = new_pwr
 
-	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	# Emit granular signals
+	if previous_hp != current_hp:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", previous_hp, current_hp)
+	if previous_pwr != current_pwr:
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", previous_pwr, current_pwr)
 
 # --- Tag Helpers ---
 func add_tag(tag: StringName) -> void:
@@ -258,10 +281,13 @@ func add_status_effect(effect_id: StringName, amount: int) -> void:
 	
 	if new_amount <= 0:
 		status_effects.erase(effect_id)
+		new_amount = 0
 	else:
 		status_effects[effect_id] = new_amount
 		
-	SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+	# Emit granular signal with stat name like "armor_stacks", "burn_stacks"
+	var stat_name = StringName(String(effect_id) + "_stacks")
+	SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, stat_name, current, new_amount)
 
 func add_status_effect_silent(effect_id: StringName, amount: int) -> void:
 	# Update status effect without emitting UI signals. Used during simulation.
@@ -279,9 +305,12 @@ func get_status_effect_amount(effect_id: StringName) -> int:
 	return status_effects.get(effect_id, 0)
 
 func clear_status_effect(effect_id: StringName) -> void:
-	if status_effects.has(effect_id):
+	var current = status_effects.get(effect_id, 0)
+	if current > 0:
 		status_effects.erase(effect_id)
-		SignalBus.emit_signal("unit_stats_changed", self.ball_uuid)
+		# Emit granular signal with stat name like "armor_stacks", "burn_stacks"
+		var stat_name = StringName(String(effect_id) + "_stacks")
+		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, stat_name, current, 0)
 
 # --- Location Helpers ---
 # Assembles the definitive location of this instance based on its state.

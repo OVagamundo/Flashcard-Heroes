@@ -195,6 +195,8 @@ func modify_unit_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0)
 	
 	# Debug log before changes
 	
+	var old_hp = inst.current_hp
+	var old_pwr = inst.current_pwr
 	if hp_delta != 0:
 		inst.current_hp += hp_delta
 	if pwr_delta != 0:
@@ -205,7 +207,11 @@ func modify_unit_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0)
 	if OS.is_debug_build():
 		_validate_state_consistency()
 	
-	SignalBus.emit_signal("unit_stats_changed", unit_uuid)
+	# Emit granular signals for each stat that changed
+	if hp_delta != 0:
+		SignalBus.emit_signal("unit_stat_changed", unit_uuid, &"hp", old_hp, inst.current_hp)
+	if pwr_delta != 0:
+		SignalBus.emit_signal("unit_stat_changed", unit_uuid, &"pwr", old_pwr, inst.current_pwr)
 	SignalBus.emit_signal("run_data_changed")
 	return true
 func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0) -> bool:
@@ -224,6 +230,10 @@ func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int
 		push_error("modify_unit_base_stats: No definition found for unit UUID: %s" % unit_uuid)
 		return false
 
+	# Store old values for granular signals
+	var old_hp = inst.current_hp
+	var old_pwr = inst.current_pwr
+
 	# Modify base stats in the definition (these persist across the entire run)
 	if hp_delta != 0:
 		unit_def.base_hp += hp_delta
@@ -240,7 +250,11 @@ func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int
 	if OS.is_debug_build():
 		_validate_state_consistency()
 
-	SignalBus.emit_signal("unit_stats_changed", unit_uuid)
+	# Emit granular signals for each stat that changed
+	if old_hp != inst.current_hp:
+		SignalBus.emit_signal("unit_stat_changed", unit_uuid, &"hp", old_hp, inst.current_hp)
+	if old_pwr != inst.current_pwr:
+		SignalBus.emit_signal("unit_stat_changed", unit_uuid, &"pwr", old_pwr, inst.current_pwr)
 	SignalBus.emit_signal("run_data_changed")
 	return true
 
@@ -266,8 +280,7 @@ func remove_instance(uuid: String) -> bool:
 		parent_unit.equipped_item_uuids[loc.index] = ""
 		instance.equipped_on_uuid = ""
 		instance.equipped_slot_index = -1
-		# Notify that the parent unit's inventory changed so stats/UI can refresh
-		SignalBus.emit_signal("unit_stats_changed", parent_unit.ball_uuid)
+		# NOTE: unequip_item_bonus() already emits granular unit_stat_changed signals
 	else:
 		# If removing a UNIT, first unequip and rehome all equipped items atomically
 		var def := instance.get_definition()
@@ -487,9 +500,9 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 		if is_instance_valid(prev_parent):
 			if item.equipped_slot_index >= 0 and item.equipped_slot_index < prev_parent.equipped_item_uuids.size():
 				prev_parent.equipped_item_uuids[item.equipped_slot_index] = ""
-			# Remove previous bonus (even if same unit; will re-apply after placing)
-			prev_parent.unequip_item_bonus(item)
-			SignalBus.emit_signal("unit_stats_changed", prev_parent.ball_uuid)
+				# Remove previous bonus (even if same unit; will re-apply after placing)
+				prev_parent.unequip_item_bonus(item)
+				# NOTE: unequip_item_bonus() already emits granular unit_stat_changed signals
 	# If item currently in a container, remove it from index
 	var item_loc := item.get_location()
 	if is_instance_valid(item_loc) and item_loc.container != C.CONTAINER_EQUIPPED_ITEM:
@@ -518,10 +531,9 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	# Apply item bonuses
+	# Apply item bonuses (equip_item_bonus emits granular unit_stat_changed)
 	unit.equip_item_bonus(item)
-	# Emit ordering: unit_stats_changed first
-	SignalBus.emit_signal("unit_stats_changed", unit.ball_uuid)
+	# NOTE: equip_item_bonus() already emits granular unit_stat_changed signals
 	SignalBus.emit_signal("run_data_changed")
 	SignalBus.emit_signal("inventory_ui_refresh_requested")
 	if OS.is_debug_build():

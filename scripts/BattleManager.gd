@@ -2,13 +2,29 @@ class_name BattleManager
 extends Node
 
 const RS = preload("res://scripts/RunState.gd")
+const BattleStateClass = preload("res://scripts/battle/BattleState.gd")
+const CombatSimulatorClass = preload("res://scripts/battle/CombatSimulator.gd")
 enum Phases {START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER}
 var _current_battle_phase: Phases
 
-var _actor_queue: Array[GachaBallInstance] = [] # Dynamic list of units to act this turn
-var _pending_reactions: Array[EffectRequest] = [] # New priority-driven queue
-var _inline_events: Array[CombatEvent] = [] # Events from on_before_attack processing
-var _is_processing_effect: bool = false
+# Internal delegates - encapsulate battle data and combat simulation
+var _state = BattleStateClass.new()
+var _combat = CombatSimulatorClass.new()
+
+# Combat variables - forward to _combat for backwards compatibility
+var _actor_queue: Array[GachaBallInstance]:
+	get: return _combat._actor_queue
+	set(value): _combat._actor_queue = value
+var _pending_reactions: Array[EffectRequest]:
+	get: return _combat._pending_reactions
+	set(value): _combat._pending_reactions = value
+var _inline_events: Array[CombatEvent]:
+	get: return _combat._inline_events
+	set(value): _combat._inline_events = value
+var _is_processing_effect: bool:
+	get: return _combat._is_processing_effect
+	set(value): _combat._is_processing_effect = value
+
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
 var is_test_mode: bool = false
@@ -25,25 +41,30 @@ const BATTLE_CONTAINER_TAGS = {
 	PLAYER_TRINKETS = &"PlayerTrinkets",
 }
 
-var _battle_instances: Dictionary = {}
-var _containers: Dictionary = {}
-var enemy_trinkets: Array[GachaBallInstance] = []
+# Legacy accessors - forward to _state for backwards compatibility
+var _battle_instances: Dictionary:
+	get: return _state._battle_instances
+	set(value): _state._battle_instances = value
+var _containers: Dictionary:
+	get: return _state._containers
+	set(value): _state._containers = value
+var enemy_trinkets: Array[GachaBallInstance]:
+	get: return _state.enemy_trinkets
+	set(value): _state.enemy_trinkets = value
+var _turn_metadata: Dictionary:
+	get: return _state._turn_metadata
+	set(value): _state._turn_metadata = value
+# Note: _dead_this_turn access is via DeathProcessor.is_dead_this_turn()
+var _gacha_tokens: int:
+	get: return _state._gacha_tokens
+	set(value): _state._gacha_tokens = value
 
 const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
 const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
-var _gacha_tokens: int = 0
 var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
-
-# Turn-scoped metadata for first-killed tracking and resurrection flags
-var _turn_metadata: Dictionary = {}
-
-# Turn-scoped death registry: {uuid: {team, died_in_phase, def_id}}
-# Cleared only at the start of each combat phase, persists across all phases within a turn
-# This is the SINGLE source of truth for "has this unit already died this turn"
-var _dead_this_turn: Dictionary = {}
 
 # -----------------------------------------------------------------------------
 # INITIALIZATION & SETUP
@@ -129,7 +150,7 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	_emit_battle_inventory_changed()
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
-	# Emit unit_stats_changed for all units that have equipped items after UI is populated
+	# Emit unit_stat_changed for all units that have equipped items after UI is populated
 	call_deferred("_emit_stats_changed_for_equipped_units")
 	
 	# Start the first turn with the mini-game
@@ -138,293 +159,40 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 		call_deferred("_change_phase", Phases.START_OF_TURN)
 
 func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
-	# IMPORTANT: When setting up a battle, we create fresh copies of all units from the run state.
-	# These battle copies should start with their base stats (from their definition) and then have
-	# equipment bonuses applied. Any stat changes from previous battles should be discarded.
-	# This ensures battles always start from a clean, deterministic state.
-	_battle_instances.clear()
-	_containers.clear()
-	_actor_queue.clear()
-	_pending_reactions.clear()
-	_inline_events.clear()
+	# Clear all state
+	_state.clear()
+	_combat.clear()
 	_battle_over_emitted = false
 	_battle_over_deferred = false
-	_current_turn = 0 # Initialize turn counter
-	_gacha_tokens = 0
-	enemy_trinkets.clear()
+	_current_turn = 0
 	
-	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
-	var permanent_to_battle_uuid_map: Dictionary = {}
-
-	# First pass: Create all battle copies and map their new UUIDs
-	var hero_instance: GachaBallInstance = null
-	for perm_inst in run_state_instances:
-		var def = perm_inst.get_definition()
-		var is_hero = String(def.id).to_lower() == "hero" or ((def is GachaBallDefinition) and def.tags and def.tags.has("hero"))
-		if is_hero:
-			hero_instance = perm_inst
-			# Create a battle copy for the hero to prevent stat changes from persisting
-			var hero_battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
-			if is_instance_valid(hero_battle_copy):
-				_battle_instances[hero_battle_copy.ball_uuid] = hero_battle_copy
-				permanent_to_battle_uuid_map[perm_inst.ball_uuid] = hero_battle_copy.ball_uuid
-			continue
-		
-		# Skip trinkets - they don't need battle copies and don't have base stats
-		if def.category == &"TRINKET":
-			continue
-			
-		var battle_copy: GachaBallInstance = perm_inst.create_battle_copy()
-		if not is_instance_valid(battle_copy): continue
-		_battle_instances[battle_copy.ball_uuid] = battle_copy
-		permanent_to_battle_uuid_map[perm_inst.ball_uuid] = battle_copy.ball_uuid
-
-	# Second pass: Remap equipped item UUIDs on all battle copies (skip hero)
-	for battle_uuid in _battle_instances:
-		var battle_inst = _battle_instances[battle_uuid]
-		if battle_inst.get_definition().category != &"UNIT": continue
-		var original_equipped_uuids = battle_inst.equipped_item_uuids.duplicate()
-		battle_inst.equipped_item_uuids.clear()
-		battle_inst.equipped_item_uuids.resize(original_equipped_uuids.size())
-		battle_inst.equipped_item_uuids.fill("")
-		for i in range(original_equipped_uuids.size()):
-			var permanent_item_uuid = original_equipped_uuids[i]
-			if not permanent_item_uuid.is_empty() and permanent_to_battle_uuid_map.has(permanent_item_uuid):
-				var battle_item_uuid: String = permanent_to_battle_uuid_map[permanent_item_uuid]
-				battle_inst.equipped_item_uuids[i] = battle_item_uuid
-				var item_instance: GachaBallInstance = _battle_instances.get(battle_item_uuid)
-				if is_instance_valid(item_instance):
-					item_instance.equipped_on_uuid = battle_inst.ball_uuid
-					item_instance.equipped_slot_index = i
-
-	# Third pass: Place all instances in their correct, stable locations.
-	for perm_inst in run_state_instances:
-		var def = perm_inst.get_definition()
-		var is_hero = String(def.id).to_lower() == "hero" or ((def is GachaBallDefinition) and def.tags and def.tags.has("hero"))
-		var perm_loc = GameManager.run_state.get_location_for_uuid(perm_inst.ball_uuid)
-		if not is_instance_valid(perm_loc): continue
-		if is_hero:
-			# Place the hero's battle copy in PlayerLineup at position 0
-			var hero_battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
-			if hero_battle_uuid:
-				var container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-				container.set_uuid(0, hero_battle_uuid)
-				_update_instance_location(hero_battle_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
-			continue
-		
-		# Skip trinkets - they don't have battle copies
-		if def.category == &"TRINKET":
-			continue
-			
-		var battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid)
-		if not battle_uuid: continue
-		var battle_copy = _battle_instances[battle_uuid]
-		# An item's location is determined by what it's equipped to. Skip direct placement.
-		if not battle_copy.equipped_on_uuid.is_empty():
-			continue
-		var target_container_name: StringName
-		if perm_loc.container.begins_with("RunInventoryT"):
-			var perm_def = perm_inst.get_definition()
-			if perm_def is GachaBallDefinition:
-				var tier = perm_def.tier
-				target_container_name = &"BattleInventoryT%d" % tier
-			else:
-				# Skip non-GachaBallDefinition items (e.g., trinkets)
-				continue
-		else:
-			match perm_loc.container:
-				RS.RUN_CONTAINER_TAGS.PLAYER_LINEUP:
-					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-				RS.RUN_CONTAINER_TAGS.PLAYER_BENCH:
-					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-				RS.RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
-				_:
-					# If it's not a recognized container, skip this instance
-					continue
-
-		var container: DataContainer = get_container(target_container_name)
-		var index = perm_loc.index
-		container.set_uuid(index, battle_copy.ball_uuid)
-		_update_instance_location(battle_copy.ball_uuid, target_container_name, index)
-
-	# Trinkets: enemy population and exclusivity
-	# Enemy trinkets now come from the EncounterDefinition, populated by the EncounterGenerator
-	_setup_enemy_lineup(encounter_def)
+	# Create battle copies from run state using BattleSetup
+	var permanent_to_battle_uuid_map := BattleSetup.create_battle_copies_from_run_state(_state)
 	
-	# Setup enemy trinkets from encounter definition
+	# Place instances in containers
+	BattleSetup.place_instances_from_run_state(_state, permanent_to_battle_uuid_map)
+	
+	# Setup board using BattleSetup
+	BattleSetup.setup_enemy_lineup(_state, encounter_def)
+	
 	if not is_test_mode and is_instance_valid(encounter_def):
-		_setup_enemy_trinkets_from_encounter(encounter_def)
-	# Copy player trinkets from run state to battle instances
-	_setup_player_trinkets()
+		BattleSetup.setup_enemy_trinkets(_state, encounter_def)
+	
+	# Copy player trinkets
+	BattleSetup.setup_player_trinkets(_state)
 	
 	# Trigger on_battle_start for all units
 	_trigger_battle_start_abilities()
 
 
-func _setup_enemy_lineup(encounter_def: EncounterDefinition = null) -> void:
-	# NOTE: Test mode now uses this function via register_test_unit() for proper initialization parity
-	if encounter_def:
-		# Use the provided encounter definition
-		var lineup_container: DataContainer = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-		
-		for placement in encounter_def.enemy_placements:
-			var unit_def = Database.get_definition(placement.id)
-			if not is_instance_valid(unit_def): continue
-			
-			var enemy_inst = GachaBallInstance.new()
-			enemy_inst.initialize(unit_def)
-			_battle_instances[enemy_inst.ball_uuid] = enemy_inst
-			
-			# Equip items
-			for item_id in placement.get("items", []):
-				var item_def = Database.get_definition(item_id)
-				if not is_instance_valid(item_def): continue
-				
-				var item_inst = GachaBallInstance.new()
-				item_inst.initialize(item_def)
-				_battle_instances[item_inst.ball_uuid] = item_inst
-				
-				_perform_equip(item_inst, enemy_inst)
-			
-			lineup_container.set_uuid(placement.position, enemy_inst.ball_uuid)
-			_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, placement.position)
-			# Note: unit_stats_changed will be emitted after UI is populated
-	else:
-		# Fallback to hardcoded enemy lineup
-		var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
-		var lineup_container = get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-		
-		for i in range(min(enemy_unit_ids.size(), 5)):
-			var unit_def = Database.get_definition(enemy_unit_ids[i])
-			if not is_instance_valid(unit_def): continue
-			
-			var enemy_inst = GachaBallInstance.new()
-			enemy_inst.initialize(unit_def)
-			_battle_instances[enemy_inst.ball_uuid] = enemy_inst
-			
-			lineup_container.set_uuid(i, enemy_inst.ball_uuid)
-			_update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
-
-## Copy player trinkets from run state to battle instances
-func _setup_player_trinkets() -> void:
-	if not is_instance_valid(GameManager.run_state):
-		return
-	
-	var player_trinkets_container = GameManager.run_state.get_container(RS.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-	if not is_instance_valid(player_trinkets_container):
-		return
-	
-	var battle_trinkets_container = get_container(BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
-	var slot_index = 0
-	
-	for trinket_uuid in player_trinkets_container.get_all_non_empty_uuids():
-		var perm_trinket = GameManager.get_instance_by_uuid(trinket_uuid)
-		if not is_instance_valid(perm_trinket):
-			continue
-		
-		# Create battle copy of the trinket
-		var battle_trinket = GachaBallInstance.new()
-		var trinket_def = perm_trinket.get_definition()
-		if is_instance_valid(trinket_def):
-			battle_trinket.initialize_from_trinket(trinket_def)
-			_battle_instances[battle_trinket.ball_uuid] = battle_trinket
-			
-			# Place in battle trinkets container
-			if slot_index < 5: # Player trinkets container has 5 slots
-				battle_trinkets_container.set_uuid(slot_index, battle_trinket.ball_uuid)
-				_update_instance_location(battle_trinket.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, slot_index)
-				slot_index += 1
-
-## Setup enemy trinkets from the encounter definition
-func _setup_enemy_trinkets_from_encounter(encounter_def: EncounterDefinition) -> void:
-	if not is_instance_valid(encounter_def):
-		return
-	
-	var et_container := get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-	if not is_instance_valid(et_container):
-		return
-	
-	var slot_index = 0
-	for trinket_id in encounter_def.enemy_trinket_ids:
-		var trinket_def = Database.get_definition(trinket_id)
-		if not is_instance_valid(trinket_def):
-			continue
-		
-		# Skip player-exclusive trinkets
-		if trinket_def.is_player_exclusive:
-			continue
-		
-		# Create instance for the enemy trinket
-		var trinket_inst = GachaBallInstance.new()
-		trinket_inst.initialize_from_trinket(trinket_def)
-		_battle_instances[trinket_inst.ball_uuid] = trinket_inst
-		
-		# Place in enemy trinkets container
-		if slot_index < 5: # Max 5 enemy trinkets
-			et_container.set_uuid(slot_index, trinket_inst.ball_uuid)
-			_update_instance_location(trinket_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, slot_index)
-			enemy_trinkets.append(trinket_inst)
-			slot_index += 1
-
 func get_container(container_name: StringName) -> DataContainer:
-	if _containers.has(container_name):
-		return _containers[container_name]
-
-	var new_container: DataContainer
-
-	match container_name:
-		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
-			new_container = FixedArrayContainer.new(5)
-		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-			new_container = FixedArrayContainer.new(3)
-		BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-			new_container = FixedArrayContainer.new(2)
-		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
-			new_container = GrowableGridContainer.new(24)
-		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
-			new_container = FixedArrayContainer.new(5)
-		BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
-			new_container = FixedArrayContainer.new(5)
-		_: # Default case for BattleInventoryT*
-			if container_name.begins_with("BattleInventoryT"):
-				new_container = GrowableGridContainer.new(24)
-			else:
-				# Failsafe for unknown container types
-				new_container = FixedArrayContainer.new(1)
-
-	_containers[container_name] = new_container
-	return new_container
+	return _state.get_container(container_name)
 
 func get_instances_in_container(container_tag: StringName) -> Array[GachaBallInstance]:
-	var result: Array[GachaBallInstance] = []
-	var container = get_container(container_tag)
-	if not is_instance_valid(container): return result
-	var uuids = container.get_all_non_empty_uuids()
-	for uuid in uuids:
-		var instance = get_instance(uuid)
-		if is_instance_valid(instance): result.append(instance)
-	
-	# Sort by location index using the _instance_locations dictionary
-	result.sort_custom(func(a, b):
-		var loc_a = get_location_for_uuid(a.ball_uuid)
-		var loc_b = get_location_for_uuid(b.ball_uuid)
-		if not loc_a or not loc_b: return false
-		return loc_a.index < loc_b.index
-	)
-	return result
+	return _state.get_instances_in_container(container_tag)
 
 func get_inventory_tier_instances(tier: int) -> Array[GachaBallInstance]:
-	var instances: Array[GachaBallInstance] = []
-	var container_name = &"BattleInventoryT%d" % tier
-	var container = get_container(container_name)
-	if is_instance_valid(container):
-		var uuids = container.get_all_non_empty_uuids()
-		for uuid in uuids:
-			var instance = get_instance(uuid)
-			if is_instance_valid(instance):
-				instances.append(instance)
-	return instances
+	return _state.get_inventory_tier_instances(tier)
 
 func get_instance(uuid: String) -> GachaBallInstance:
 	return _battle_instances.get(uuid)
@@ -469,392 +237,87 @@ func get_all_instances() -> Dictionary:
 # ------------------------------------------------------------------
 
 func bm_add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
-	assert(is_instance_valid(instance), "bm_add_instance: instance is null")
-	var container = get_container(container_name)
-	if not is_instance_valid(container):
-		return false
-	var slot := index
-	if slot < 0:
-		slot = container.find_first_empty_slot()
-		if slot == -1:
-			return false
-	# Index
-	container.set_uuid(slot, instance.ball_uuid)
-	# Truth and registry
-	_battle_instances[instance.ball_uuid] = instance
-	_update_instance_location(instance.ball_uuid, container_name, slot)
-	# Validate and emit
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-	_emit_battle_inventory_changed()
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
-	return true
+	var result := _state.bm_add_instance(instance, container_name, index)
+	if result:
+		if OS.is_debug_build():
+			_state.validate_state_consistency()
+		_emit_battle_inventory_changed()
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
+	return result
 
 func _reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
-	var source_container = get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-	var dest_container_tag = "BattleInventoryT%d" % tier_to_reshuffle
-	var dest_container = get_container(dest_container_tag)
-	if not is_instance_valid(source_container) or not is_instance_valid(dest_container):
-		return false
-	var all_discarded = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-	var instances_to_move: Array[GachaBallInstance] = []
-	for inst in all_discarded:
-		var inst_def = inst.get_definition()
-		if (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst):
-			instances_to_move.append(inst)
-	if instances_to_move.is_empty():
-		return false
-	for instance in instances_to_move:
-		# Restore stats to base values before moving back to draw pool
-		instance.reset_battle_stats()
-		_remove_instance_from_container(instance)
-		var new_index = dest_container.find_first_empty_slot()
-		if new_index == -1:
-			new_index = dest_container.get_all_uuids().size()
-		dest_container.set_uuid(new_index, instance.ball_uuid)
-		_update_instance_location(instance.ball_uuid, dest_container_tag, new_index)
-	return true
+	return _state.reshuffle_tier_from_discard(tier_to_reshuffle)
 
 func bm_remove_instance(uuid: String) -> bool:
-	assert(not uuid.is_empty(), "bm_remove_instance: uuid is empty")
-	var instance := get_instance(uuid)
-	assert(is_instance_valid(instance), "bm_remove_instance: instance not found for uuid " + uuid)
-	var loc := instance.get_location()
-	if not is_instance_valid(loc):
-		return false
-	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var parent := get_instance(loc.unit_uuid)
-		if not is_instance_valid(parent):
-			return false
-		if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
-			return false
-		# Remove bonuses from the parent before clearing the mapping
-		parent.unequip_item_bonus(instance)
-		parent.equipped_item_uuids[loc.index] = ""
-		instance.equipped_on_uuid = ""
-		instance.equipped_slot_index = -1
-		# Clear the item's location since equipped slots are logical, not physical
-		_update_instance_location(instance.ball_uuid, &"", -1)
-		# Notify that the parent unit's inventory changed so it can recalc stats/UI
-		SignalBus.emit_signal("unit_inventory_changed", parent.ball_uuid)
-	else:
-		# If this is a player unit with equipped items, unequip and move them into PLAYER_ITEM_INVENTORY
-		if instance.equipped_item_uuids.size() > 0 and _is_player_unit(instance):
-			var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
-			for i in range(instance.equipped_item_uuids.size()):
-				var it_uuid := instance.equipped_item_uuids[i]
-				if it_uuid.is_empty():
-					continue
-				var it := get_instance(it_uuid)
-				if not is_instance_valid(it):
-					continue
-				# Clear mapping on both sides
-				instance.equipped_item_uuids[i] = ""
-				it.equipped_on_uuid = ""
-				it.equipped_slot_index = -1
-				# Rehome into item inventory to maintain validity during composite ops
-				if is_instance_valid(inv):
-					var empty := inv.find_first_empty_slot()
-					if empty != -1:
-						inv.set_uuid(empty, it.ball_uuid)
-						_update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
-					else:
-						return false
-		# Extra hardening (player only): clear any stray items that believe they are equipped on this unit
-		if _is_player_unit(instance):
-			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
-			for k in _battle_instances.keys():
-				var maybe_item: GachaBallInstance = _battle_instances[k]
-				if not is_instance_valid(maybe_item):
-					continue
-				if maybe_item.equipped_on_uuid == instance.ball_uuid:
-					maybe_item.equipped_on_uuid = ""
-					maybe_item.equipped_slot_index = -1
-					if is_instance_valid(inv2):
-						var empty2 := inv2.find_first_empty_slot()
-						if empty2 != -1:
-							inv2.set_uuid(empty2, maybe_item.ball_uuid)
-							_update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty2)
-						else:
-							return false
-		_remove_instance_from_container(instance)
-	_battle_instances.erase(uuid)
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-	_emit_battle_inventory_changed()
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
-	return true
+	var result := _state.bm_remove_instance(uuid)
+	if result.success:
+		if not result.unit_changed_uuid.is_empty():
+			SignalBus.emit_signal("unit_inventory_changed", result.unit_changed_uuid)
+		if OS.is_debug_build():
+			_state.validate_state_consistency()
+		_emit_battle_inventory_changed()
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
+	return result.success
 
 
 func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
 	assert(is_instance_valid(source_loc), "bm_move_instance: source_loc is null")
 	assert(is_instance_valid(target_loc), "bm_move_instance: target_loc is null")
-	# Target is equipping onto a unit
-	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var unit := get_instance(target_loc.unit_uuid)
-		if not is_instance_valid(unit):
-			return false
-		# Resolve source item whether from container or equipped slot
-		var item_uuid := ""
-		if source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-			var src_unit := get_instance(source_loc.unit_uuid)
-			if not is_instance_valid(src_unit): return false
-			if source_loc.index < 0 or source_loc.index >= src_unit.equipped_item_uuids.size(): return false
-			item_uuid = src_unit.equipped_item_uuids[source_loc.index]
-			# If moving between equipped slots, first unequip from the source unit to avoid ghost copies
-			if not item_uuid.is_empty():
-				var item := get_instance(item_uuid)
-				if is_instance_valid(item):
-					src_unit.unequip_item_bonus(item)
-					src_unit.equipped_item_uuids[source_loc.index] = ""
-					item.equipped_on_uuid = ""
-					item.equipped_slot_index = -1
-					_update_instance_location(item.ball_uuid, &"", -1)
-					SignalBus.emit_signal("unit_inventory_changed", src_unit.ball_uuid)
-		else:
-			var inst_from_container := get_instance_by_location(source_loc)
-			if not is_instance_valid(inst_from_container): return false
-			item_uuid = inst_from_container.ball_uuid
-			# Precise source removal by index to avoid ghost copies, then blank location before equip
-			var src_container := get_container(source_loc.container)
-			if not is_instance_valid(src_container): return false
-			if src_container.get_uuid(source_loc.index) != item_uuid: return false
-			src_container.set_uuid(source_loc.index, "")
-			_update_instance_location(item_uuid, &"", -1)
-		return bm_equip_item(item_uuid, unit.ball_uuid, target_loc.index)
-	# Source is an equipped slot moving to a container
-	if source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var src_unit := get_instance(source_loc.unit_uuid)
-		if not is_instance_valid(src_unit):
-			return false
-		if source_loc.index < 0 or source_loc.index >= src_unit.equipped_item_uuids.size():
-			return false
-		var a_uuid := src_unit.equipped_item_uuids[source_loc.index]
-		if a_uuid.is_empty():
-			return false
-		var a := get_instance(a_uuid)
-		if not is_instance_valid(a):
-			return false
-		# Remove bonuses from the unit as we unequip
-		src_unit.unequip_item_bonus(a)
-		# Clear mapping on both sides, as equipped slots are logical, not physical
-		src_unit.equipped_item_uuids[source_loc.index] = ""
-		a.equipped_on_uuid = ""
-		a.equipped_slot_index = -1
-		# Place into target container slot
-		var to_container := get_container(target_loc.container)
-		if not is_instance_valid(to_container):
-			return false
-		to_container.set_uuid(target_loc.index, a.ball_uuid)
-		_update_instance_location(a.ball_uuid, target_loc.container, target_loc.index)
-		# Notify unit inventory changed after unequip
-		SignalBus.emit_signal("unit_inventory_changed", src_unit.ball_uuid)
+	
+	var result := InventoryOperations.move_instance(_state, source_loc, target_loc)
+	
+	# Handle needs_equip delegation
+	if result.needs_equip:
+		# Emit unit changes from the pre-equip phase
+		for uuid in result.changed_unit_uuids:
+			SignalBus.emit_signal("unit_inventory_changed", uuid)
+		# Delegate to bm_equip_item which handles its own signals
+		return bm_equip_item(result.equip_item_uuid, result.equip_unit_uuid, result.equip_slot_index)
+	
+	if result.success:
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
-		_emit_battle_inventory_changed()
-		SignalBus.emit_signal("inventory_ui_refresh_requested")
-		return true
-	# Default move
-	var instance := get_instance_by_location(source_loc)
-	if not is_instance_valid(instance):
-		return false
-	# Clear the exact source slot to avoid UUID-scan mismatches
-	var from_container := get_container(source_loc.container)
-	if not is_instance_valid(from_container):
-		return false
-	if from_container.get_uuid(source_loc.index) != instance.ball_uuid:
-		return false
-	from_container.set_uuid(source_loc.index, "")
-	var to_container := get_container(target_loc.container)
-	if not is_instance_valid(to_container):
-		return false
-	to_container.set_uuid(target_loc.index, instance.ball_uuid)
-	_update_instance_location(instance.ball_uuid, target_loc.container, target_loc.index)
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-	_emit_battle_inventory_changed()
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
-	return true
+		for uuid in result.changed_unit_uuids:
+			SignalBus.emit_signal("unit_inventory_changed", uuid)
+		if result.inventory_changed:
+			_emit_battle_inventory_changed()
+			SignalBus.emit_signal("inventory_ui_refresh_requested")
+	
+	return result.success
 
 func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
 	assert(is_instance_valid(source_loc), "bm_swap_instances: source_loc is null")
 	assert(is_instance_valid(target_loc), "bm_swap_instances: target_loc is null")
-	# Handle swaps where target is an equipped slot
-	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var unit := get_instance(target_loc.unit_uuid)
-		if not is_instance_valid(unit):
-			return false
-		# Resolve A from source (container or equipped)
-		var a_uuid := ""
-		var a: GachaBallInstance = null
-		if source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-			var src_unit := get_instance(source_loc.unit_uuid)
-			if not is_instance_valid(src_unit): return false
-			if source_loc.index < 0 or source_loc.index >= src_unit.equipped_item_uuids.size(): return false
-			a_uuid = src_unit.equipped_item_uuids[source_loc.index]
-			a = get_instance(a_uuid)
-			# Remove bonuses from the old unit before clearing mapping
-			if is_instance_valid(a):
-				src_unit.unequip_item_bonus(a)
-			# Clear mapping for A leaving its equipped slot
-			src_unit.equipped_item_uuids[source_loc.index] = ""
-			if is_instance_valid(a):
-				a.equipped_on_uuid = ""
-				a.equipped_slot_index = -1
-				_update_instance_location(a.ball_uuid, &"", -1)
-		else:
-			a = get_instance_by_location(source_loc)
-			if not is_instance_valid(a): return false
-			_remove_instance_from_container(a)
-		# Resolve existing item B in target equipped slot
-		if target_loc.index < 0 or target_loc.index >= unit.equipped_item_uuids.size():
-			return false
-		var b_uuid := unit.equipped_item_uuids[target_loc.index]
-		var b: GachaBallInstance = null
-		if not b_uuid.is_empty():
-			b = get_instance(b_uuid)
-		# If B exists, move it into source origin
-		if is_instance_valid(b):
-			# Clear target mapping first
-			unit.unequip_item_bonus(b)
-			unit.equipped_item_uuids[target_loc.index] = ""
-			b.equipped_on_uuid = ""
-			b.equipped_slot_index = -1
-			if source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-				var src_unit2 := get_instance(source_loc.unit_uuid)
-				if not is_instance_valid(src_unit2): return false
-				src_unit2.equipped_item_uuids[source_loc.index] = b.ball_uuid
-				b.equipped_on_uuid = src_unit2.ball_uuid
-				b.equipped_slot_index = source_loc.index
-				b.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
-				b.location_slot_index = source_loc.index
-				# Apply bonuses on the new unit slot
-				src_unit2.equip_item_bonus(b)
-				# Notify UI for the source unit receiving B
-				SignalBus.emit_signal("unit_inventory_changed", src_unit2.ball_uuid)
-			else:
-				var src_container := get_container(source_loc.container)
-				if not is_instance_valid(src_container): return false
-				src_container.set_uuid(source_loc.index, b.ball_uuid)
-				_update_instance_location(b.ball_uuid, source_loc.container, source_loc.index)
-		# Equip A into target slot
-		unit.equipped_item_uuids[target_loc.index] = a.ball_uuid
-		a.equipped_on_uuid = unit.ball_uuid
-		a.equipped_slot_index = target_loc.index
-		a.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
-		a.location_slot_index = target_loc.index
-		# Apply item bonuses like bm_equip_item does
-		unit.equip_item_bonus(a)
-		# If source was an equipped slot and target had no B, notify that source unit changed
-		if source_loc.container == C.CONTAINER_EQUIPPED_ITEM and not is_instance_valid(b):
-			var src_unit3 := get_instance(source_loc.unit_uuid)
-			if is_instance_valid(src_unit3):
-				SignalBus.emit_signal("unit_inventory_changed", src_unit3.ball_uuid)
+	
+	var result := InventoryOperations.swap_instances(_state, source_loc, target_loc)
+	
+	if result.success:
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
-		SignalBus.emit_signal("unit_inventory_changed", unit.ball_uuid)
-		_emit_battle_inventory_changed()
-		SignalBus.emit_signal("inventory_ui_refresh_requested")
-		return true
-	# General swap across containers
-	var a := get_instance_by_location(source_loc)
-	var a_container := get_container(source_loc.container)
-	var b_container := get_container(target_loc.container)
-	if not is_instance_valid(a) or not is_instance_valid(a_container) or not is_instance_valid(b_container):
-		return false
-	var b := get_instance_by_location(target_loc)
-	if not is_instance_valid(b):
-		# Degrade to move if target is empty — clear by exact source index
-		if a_container.get_uuid(source_loc.index) != a.ball_uuid:
-			return false
-		a_container.set_uuid(source_loc.index, "")
-		b_container.set_uuid(target_loc.index, a.ball_uuid)
-		_update_instance_location(a.ball_uuid, target_loc.container, target_loc.index)
-		if OS.is_debug_build():
-			_bm_validate_state_consistency()
-		_emit_battle_inventory_changed()
-		SignalBus.emit_signal("inventory_ui_refresh_requested")
-		return true
-	# True swap across real containers
-	if a_container.get_uuid(source_loc.index) != a.ball_uuid:
-		return false
-	var b_uuid2 := b.ball_uuid
-	b_container.set_uuid(target_loc.index, a.ball_uuid)
-	a_container.set_uuid(source_loc.index, b_uuid2)
-	_update_instance_location(a.ball_uuid, target_loc.container, target_loc.index)
-	_update_instance_location(b.ball_uuid, source_loc.container, source_loc.index)
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-	_emit_battle_inventory_changed()
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
-	return true
+		for uuid in result.changed_unit_uuids:
+			SignalBus.emit_signal("unit_inventory_changed", uuid)
+		if result.inventory_changed:
+			_emit_battle_inventory_changed()
+			SignalBus.emit_signal("inventory_ui_refresh_requested")
+	
+	return result.success
 
 func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
 	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
 	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
-	var item := get_instance(item_uuid)
-	var unit := get_instance(unit_uuid)
-	assert(is_instance_valid(item), "bm_equip_item: item instance not found")
-	assert(is_instance_valid(unit), "bm_equip_item: unit instance not found")
-	# Determine slot
-	var target_slot := slot_index
-	if target_slot < 0:
-		target_slot = unit.equipped_item_uuids.find("")
-		if target_slot == -1:
-			return false
-	if target_slot >= unit.equipped_item_uuids.size():
-		return false
-	# If item is in a physical container, remove it.
-	# If it is currently equipped (logical array), clear the previous mapping by index and remove bonuses.
-	var item_loc := item.get_location()
-	if is_instance_valid(item_loc) and item_loc.container != C.CONTAINER_EQUIPPED_ITEM:
-		_remove_instance_from_container(item)
-	else:
-		if not item.equipped_on_uuid.is_empty():
-			var prev_unit := get_instance(item.equipped_on_uuid)
-			if is_instance_valid(prev_unit):
-				var prev_idx := item.equipped_slot_index
-				if prev_idx >= 0 and prev_idx < prev_unit.equipped_item_uuids.size():
-					# Remove bonuses from the previous unit and clear mapping exactly at the old index
-					prev_unit.unequip_item_bonus(item)
-					if prev_unit.equipped_item_uuids[prev_idx] == item.ball_uuid:
-						prev_unit.equipped_item_uuids[prev_idx] = ""
-				SignalBus.emit_signal("unit_inventory_changed", prev_unit.ball_uuid)
-			# Clear the item's equipped linkage while in transition
-			item.equipped_on_uuid = ""
-			item.equipped_slot_index = -1
-		# Blank the location during transition to avoid stale lookups
-		_update_instance_location(item.ball_uuid, &"", -1)
-	# If slot occupied, move existing to player item inventory
-	var existing_uuid := unit.equipped_item_uuids[target_slot]
-	if not existing_uuid.is_empty():
-		var existing := get_instance(existing_uuid)
-		if is_instance_valid(existing):
-			existing.equipped_on_uuid = ""
-			existing.equipped_slot_index = -1
-			var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
-			if is_instance_valid(inv):
-				var empty := inv.find_first_empty_slot()
-				if empty != -1:
-					inv.set_uuid(empty, existing.ball_uuid)
-					_update_instance_location(existing.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
-				else:
-					return false
-	unit.equipped_item_uuids[target_slot] = item.ball_uuid
-	item.equipped_on_uuid = unit.ball_uuid
-	item.equipped_slot_index = target_slot
-	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
-	item.location_slot_index = target_slot
-	# Apply item bonuses
-	unit.equip_item_bonus(item)
-	# Validate before notifying observers to avoid transient inconsistent states
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-	# Emit ordering
-	SignalBus.emit_signal("unit_inventory_changed", unit.ball_uuid)
-	_emit_battle_inventory_changed()
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
-	return true
+	
+	var result := InventoryOperations.equip_item(_state, item_uuid, unit_uuid, slot_index)
+	
+	if result.success:
+		if OS.is_debug_build():
+			_bm_validate_state_consistency()
+		for uuid in result.changed_unit_uuids:
+			SignalBus.emit_signal("unit_inventory_changed", uuid)
+		if result.inventory_changed:
+			_emit_battle_inventory_changed()
+			SignalBus.emit_signal("inventory_ui_refresh_requested")
+	
+	return result.success
 
 # ------------------------------------------------------------------
 # Composite atomic mutation API (Battle)
@@ -911,90 +374,35 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	var cost := tier
 	if _gacha_tokens < cost:
 		return false
+	
 	var container_tag: StringName = "BattleInventoryT%d" % tier
 	var tier_pool := get_instances_in_container(container_tag)
-	# If pool is empty, silently reshuffle that tier from discard (single emission at end)
+	
+	# If pool is empty, try reshuffling first
 	if tier_pool.is_empty():
 		if not _reshuffle_tier_from_discard(tier):
 			return false
-		tier_pool = get_instances_in_container(container_tag)
-		if tier_pool.is_empty():
-			return false
-	# Spend tokens and announce
+	
+	# Attempt to draw
+	var draw_result := InventoryOperations.draw_from_tier(_state, tier, 3, 2)
+	
+	if not draw_result.success:
+		return false
+	
+	# Spend tokens
 	_gacha_tokens -= cost
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
-	# Draw one
-	var drawn_instance: GachaBallInstance = tier_pool.pick_random()
-	var target_container_tag: StringName
-	var target_container_capacity := 0
-	match drawn_instance.get_definition().category:
-		&"UNIT":
-			target_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-			target_container_capacity = 3 # PLAYER_BENCH has 3 slots
-		&"ITEM":
-			target_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
-			target_container_capacity = 2 # PLAYER_ITEM_INVENTORY has 2 slots
-		_:
-			# Unknown categories: remove from pool and discard
-			_remove_instance_from_container(drawn_instance)
-			var discard := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-			var d_idx := discard.find_first_empty_slot()
-			if d_idx == -1:
-				d_idx = discard.get_all_uuids().size()
-			discard.set_uuid(d_idx, drawn_instance.ball_uuid)
-			_update_instance_location(drawn_instance.ball_uuid, BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, d_idx)
-			if OS.is_debug_build():
-				_bm_validate_state_consistency()
-			_emit_battle_inventory_changed()
-			# Keep InventoryWindow grids in sync on this early-return path
-			SignalBus.emit_signal("inventory_ui_refresh_requested")
-			return true
-	# ATOMIC MOVE: Determine destination first, then update location and containers together
-	# Save source location for later cleanup
-	var source_loc = get_location_for_uuid(drawn_instance.ball_uuid)
-	var source_container_tag = source_loc.container if is_instance_valid(source_loc) else &""
-	var source_slot = source_loc.index if is_instance_valid(source_loc) else -1
 	
-	# Determine the destination before modifying any state
-	var dest_container_tag: StringName
-	var dest_slot: int
-	
-	var target_container := get_container(target_container_tag)
-	var empty_slot := target_container.find_first_empty_slot()
-	if empty_slot != -1 and empty_slot < target_container_capacity:
-		dest_container_tag = target_container_tag
-		dest_slot = empty_slot
-	else:
-		# Overflow to discard pile
-		var discard := get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-		var di := discard.find_first_empty_slot()
-		if di == -1:
-			di = discard.get_all_uuids().size()
-		dest_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-		dest_slot = di
-	
-	# ATOMIC UPDATE: Update location first (truth), then update containers (indexes)
-	_update_instance_location(drawn_instance.ball_uuid, dest_container_tag, dest_slot)
-	
-	# Clear source container slot
-	if not source_container_tag.is_empty() and source_slot >= 0:
-		var source_container = get_container(source_container_tag)
-		if is_instance_valid(source_container):
-			source_container.set_uuid(source_slot, "")
-	
-	# Set destination container slot
-	var dest_container = get_container(dest_container_tag)
-	dest_container.set_uuid(dest_slot, drawn_instance.ball_uuid)
-	
-	# Check if we need to reshuffle (pool became empty after this draw)
-	if get_instances_in_container(container_tag).is_empty():
-		_reshuffle_tier_from_discard(tier)
-	# Validate and emit once
+	# Validate and emit
 	if OS.is_debug_build():
 		_bm_validate_state_consistency()
 	_emit_battle_inventory_changed()
-	# Ensure InventoryWindow (battle context) updates tier grids post-draw/reshuffle
 	SignalBus.emit_signal("inventory_ui_refresh_requested")
+	
+	# If pool emptied, trigger reshuffle for next draw
+	if draw_result.pool_emptied:
+		_reshuffle_tier_from_discard(tier)
+	
 	return true
 
 # ------------------------------------------------------------------
@@ -1002,66 +410,7 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 # ------------------------------------------------------------------
 
 func _bm_validate_state_consistency() -> bool:
-	# Pass 1: scan containers, detect duplicates and equipped-item leaks; do not mutate state
-	var occurrences: Dictionary = {}
-	for cname in _containers.keys():
-		var c: DataContainer = _containers[cname]
-		if not is_instance_valid(c):
-			continue
-		var uuids := c.get_all_uuids()
-		for i in range(uuids.size()):
-			var u := uuids[i]
-			if u.is_empty():
-				continue
-			if occurrences.has(u):
-				push_error("Duplicate UUID %s also present at %s:%d" % [u, String(cname), i])
-				return false
-			occurrences[u] = [ {"container": cname, "index": i}]
-			var inst: GachaBallInstance = _battle_instances.get(u)
-			if not is_instance_valid(inst):
-				push_error("Container references missing battle instance %s" % u)
-				return false
-			if inst.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
-				push_error("Equipped item %s appears in a battle container slot at %s:%d" % [u, String(cname), i])
-				return false
-	# Pass 2: verify each instance's declared location matches container truth; do not mutate state
-	for u in _battle_instances.keys():
-		var inst: GachaBallInstance = _battle_instances[u]
-		if not is_instance_valid(inst):
-			continue
-		var loc := inst.get_location()
-		if not is_instance_valid(loc):
-			continue
-		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
-			var parent: GachaBallInstance = _battle_instances.get(loc.unit_uuid)
-			if not is_instance_valid(parent):
-				push_error("Equipped item %s has missing parent %s" % [u, loc.unit_uuid])
-				return false
-			if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
-				push_error("Equipped item %s has invalid equipped index %d on %s" % [u, loc.index, parent.ball_uuid])
-				return false
-			if parent.equipped_item_uuids[loc.index] != u:
-				push_error("Equipped item %s mapping mismatch on %s at slot %d" % [u, parent.ball_uuid, loc.index])
-				return false
-		else:
-			# Instances MUST always have a valid container - empty container indicates
-			# a Golden Rule violation (instance left in intermediate "unplaced" state)
-			if loc.container == &"" or loc.container.is_empty():
-				push_error("Golden Rule violation: instance %s has empty container (left in unplaced state)" % u)
-				return false
-			var c2 := get_container(loc.container)
-			if not is_instance_valid(c2):
-				push_error("Missing battle container %s for %s" % [String(loc.container), u])
-				return false
-			var all2 := c2.get_all_uuids()
-			if loc.index < 0 or loc.index >= all2.size():
-				push_error("Location index out of bounds for %s: %s:%d (capacity=%d)" % [u, String(loc.container), loc.index, all2.size()])
-				return false
-			var actual = c2.get_uuid(loc.index)
-			if actual != u:
-				push_error("Location/content mismatch for %s: loc %s:%d has %s" % [u, String(loc.container), loc.index, actual])
-				return false
-	return true
+	return _state.validate_state_consistency()
 
 func get_gacha_tokens() -> int:
 	return _gacha_tokens
@@ -1135,109 +484,69 @@ func _change_phase(new_phase: Phases) -> void:
 ##   - Players go left-to-right (index 0→5) → add in order
 ##   - Enemies go right-to-left (index 5→0) → add reversed
 func _populate_actor_queue() -> void:
-	_actor_queue.clear()
-	_turn_metadata.clear() # Reset turn-scoped tracking (first-killed, resurrection flags)
-	_dead_this_turn.clear() # Reset death registry for new turn
-	var player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	var enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	
-	# With FIFO (pop_front), first in = first out
-	# Add players in reverse order (right-to-left execution)
-	player_lineup.reverse()
-	_actor_queue.append_array(player_lineup)
-	# Add enemies in normal order (left-to-right execution)
-	_actor_queue.append_array(enemy_lineup)
+	_combat.populate_actor_queue(_state)
 
 ## Grant a unit an extra action by inserting them at the front of the actor queue.
 ## Called by EffectGrantExtraAction when a unit equipped with Bloodlust Edge gets a kill.
 ## @param unit_uuid: String - The UUID of the unit to grant an extra action
 func grant_extra_action(unit_uuid: String) -> void:
 	var unit := get_instance_by_uuid(unit_uuid)
-	if not is_instance_valid(unit):
-		return
-	# Only grant if unit is alive
-	if unit.current_hp <= 0:
-		return
-	# Insert at front of queue so they act next
-	_actor_queue.push_front(unit)
+	_combat.grant_extra_action_to(unit)
 
 ## Insert a newly summoned unit into the actor queue.
 ## Mid-turn summons should always participate in combat if they're still alive when their turn comes.
-## Player units act right-to-left (high slot first), Enemy units act left-to-right (low slot first).
-## NOTE: Dead units may have cleared container tags, so we can't rely on _is_player_unit for them.
 func _insert_summoned_unit_into_queue(new_unit: GachaBallInstance) -> void:
-	assert(is_instance_valid(new_unit), "_insert_summoned_unit_into_queue: new_unit is null")
-	var is_player = _is_player_unit(new_unit)
-	var slot_idx = new_unit.location_slot_index
-	
-	# Find alive same-team units still in queue to determine insertion position
-	# We check HP > 0 because dead units have cleared container tags and won't be reliable
-	var found_alive_same_team := false
-	for i in range(_actor_queue.size()):
-		var queued_unit = _actor_queue[i]
-		# Skip dead units - their container tags are unreliable
-		if queued_unit.current_hp <= 0:
-			continue
-		if _is_player_unit(queued_unit) == is_player:
-			found_alive_same_team = true
-			# Same team - check if our slot should act before this one
-			if is_player:
-				# Players: higher slots act first (4,3,2,1,0)
-				if slot_idx > queued_unit.location_slot_index:
-					_actor_queue.insert(i, new_unit)
-					return
-			else:
-				# Enemies: lower slots act first (0,1,2,3,4)
-				if slot_idx < queued_unit.location_slot_index:
-					_actor_queue.insert(i, new_unit)
-					return
-	
-	# If we found alive same-team units but didn't insert, add at end of same-team section
-	if found_alive_same_team:
-		for i in range(_actor_queue.size()):
-			var queued_unit = _actor_queue[i]
-			if queued_unit.current_hp <= 0:
-				continue
-			if _is_player_unit(queued_unit) != is_player:
-				# Found where other team starts, insert before
-				_actor_queue.insert(i, new_unit)
-				return
-		# All remaining alive units are same team, append at end
-		_actor_queue.append(new_unit)
-		return
-	# No alive same-team units in queue - check if there are DEAD same-team units
-	# Dead units still in queue = their slot hasn't acted yet (died before their turn)
-	# No units at all = team has finished acting (all units popped from queue)
-	var found_dead_same_team := false
-	for queued_unit in _actor_queue:
-		# Dead units have cleared container tags, so check by team negation:
-		# If it's not a player unit AND we're looking for enemy team, it's same team
-		# Use HP check: dead units (HP <= 0) with uncertain team are assumed same-team
-		# if the queue context suggests it (e.g., only dead enemies remain after player kills them)
-		if queued_unit.current_hp <= 0:
-			# This dead unit is still in queue - its slot hasn't acted yet
-			# The summon should get a turn since the team hasn't finished
-			found_dead_same_team = true
-			break
-	
-	if found_dead_same_team:
-		# Team hasn't finished - dead units are still waiting for their turn
-		# Add summon to end of queue
-		_actor_queue.append(new_unit)
-		return
-	
-	# No same-team units (alive OR dead) in queue - team has FINISHED acting
-	# This happens when a unit POPS, acts, dies from counter, and triggers summon
-	# The slot already had its turn, so the summon should NOT act this turn
+	var is_player := _is_player_unit(new_unit)
+	_combat.insert_summoned_unit(new_unit, is_player, _is_player_unit)
 
+## Apply results from EffectHandlers summon handlers
+## Registers new instances, updates containers, handles queue and cleanup
+func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
+	# 1. Cleanup old units first
+	for uuid in result.cleanup_uuids:
+		var old_inst = get_instance(uuid)
+		if is_instance_valid(old_inst):
+			_perform_unit_death_cleanup(old_inst)
+	
+	# 2. Register new instances
+	for new_inst in result.new_instances:
+		_battle_instances[new_inst.ball_uuid] = new_inst
+	
+	# 3. Update containers and locations
+	for update in result.container_updates:
+		var container_tag: StringName = update.container_tag
+		var slot: int = update.slot
+		var uuid: String = update.uuid
+		
+		# Update physical container
+		var container = get_container(container_tag)
+		if is_instance_valid(container):
+			container.set_uuid(slot, uuid)
+		
+		# Update instance location
+		_update_instance_location(uuid, container_tag, slot)
+		
+		# Insert into queue if flagged (boss summons)
+		if update.get("insert_into_queue", false):
+			var inst = get_instance_by_uuid(uuid)
+			if is_instance_valid(inst):
+				_insert_summoned_unit_into_queue(inst)
+	
+	# 4. Handle queue replacements (single unit summons replace holder in queue)
+	for update in result.queue_updates:
+		var old_uuid: String = update.old_uuid
+		var new_inst: GachaBallInstance = update.new_instance
+		
+		for i in range(_actor_queue.size()):
+			if _actor_queue[i].ball_uuid == old_uuid:
+				_actor_queue[i] = new_inst
+				break
 
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var is_player = _is_player_unit(attacker)
 	var target = _get_frontmost_target(is_player)
 	if not is_instance_valid(target): return
-	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
-	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
 	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
 	var context: Dictionary = {
 		"attacker_uuid": attacker.ball_uuid,
@@ -1285,10 +594,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 			# Allow if this is the dying unit's own on_death trigger
 			var dying_uuid: String = request.trigger_context.get("dying_uuid", "")
 			var is_own_death_trigger: bool = (dying_uuid == request.source_uuid)
-			# Allow reactive abilities that need to complete after lethal damage
-			var ability_id_str := String(request.ability_id)
-			var is_reactive_ability: bool = ability_id_str.contains("counter") or ability_id_str.contains("retaliate") or ability_id_str == "unit_tier3d_resilient_aura"
 			
+			# Check if ability has execute_on_lethal flag via AbilitiesRegistry or source instance
+			var is_reactive_ability: bool = false
+			var ability_def = _get_ability_definition(request.ability_id, source)
+			if is_instance_valid(ability_def) and ability_def.execute_on_lethal:
+				is_reactive_ability = true
 			
 			if not is_own_death_trigger and not is_reactive_ability:
 				return
@@ -1394,124 +705,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 				print("[BM] Processing cascade_damage from ability:", request.ability_id, "source:", request.source_uuid)
 				var cascade_list = effect_data.get("cascade_damage", [])
 				
-				# Check if burn should be applied (same logic as main damage)
-				var is_player_source = false
-				var should_apply_burn = false
-				if is_instance_valid(source):
-					is_player_source = _is_player_unit(source)
-					should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
+				# Phase 1: Apply all damage via EffectHandlers
+				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_list, source, self)
+				out_events.append_array(cascade_result.events)
 				
-				# Track data for Phase 2 (reactions after all damage)
-				var hit_targets: Array[Dictionary] = []
-				
-				# ═══════════════════════════════════════════════════════════════════
-				# PHASE 1: Apply all damage in sequence (creates "wave" visual effect)
-				# ═══════════════════════════════════════════════════════════════════
-				for cascade_item in cascade_list:
-					var cascade_target_uuid = String(cascade_item.get("target", ""))
-					var cascade_amount = int(cascade_item.get("amount", 0))
-					var cascade_skip_bump = bool(cascade_item.get("skip_bump", false))
-					
-					# Store original target for animation (in case Guardian redirects)
-					var original_target_uuid = cascade_target_uuid
-					
-					# Inline damage processing for each cascade target
-					var cascade_tgt = get_instance_by_uuid(cascade_target_uuid)
-					if is_instance_valid(cascade_tgt):
-						# GUARDIAN SENTINEL INTERCEPT CHECK (same as main damage path)
-						var would_be_lethal = cascade_tgt.current_hp - cascade_amount <= 0
-						var tgt_is_player_unit = _is_player_unit(cascade_tgt)
-						var is_ally_damage = (tgt_is_player_unit != is_player_source)
-						
-						if would_be_lethal and is_ally_damage:
-							var guardian = _find_guardian_on_team(tgt_is_player_unit, cascade_target_uuid)
-							if is_instance_valid(guardian):
-								# Create intercept event for leap animation
-								out_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
-									"source_uuid": guardian.ball_uuid,
-									"target_uuids": [cascade_target_uuid],
-									"visual_payload": {
-										"guardian_uuid": guardian.ball_uuid,
-										"original_target_uuid": cascade_target_uuid,
-										"damage": cascade_amount
-									}
-								}))
-								# Redirect the damage target to Guardian
-								cascade_target_uuid = guardian.ball_uuid
-								cascade_tgt = guardian
-						
-						var old_hp = cascade_tgt.current_hp
-						var old_burn = cascade_tgt.get_status_effect_amount(&"burn")
-						var new_hp = apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
-						
-						# Skip if target was already dead (apply_stat_delta returns null)
-						if new_hp == null:
-							continue
-						
-						var max_hp = 0
-						var tgt_def = cascade_tgt.get_definition()
-						if is_instance_valid(tgt_def):
-							max_hp = tgt_def.base_hp
-						
-						# Apply burn if needed
-						var burn_val = old_burn
-						if should_apply_burn:
-							burn_val = apply_stat_delta(cascade_tgt, "burn_stacks", 1)
-						
-						# Compute animation source - if source is an item, use the holder for animation
-						var animation_source_uuid: String = request.source_uuid
-						if is_instance_valid(source):
-							var source_def = source.get_definition()
-							if is_instance_valid(source_def) and source_def.category == &"ITEM":
-								if not source.equipped_on_uuid.is_empty():
-									animation_source_uuid = source.equipped_on_uuid
-						
-						# Compute bump direction using animation source
-						var bump_dir := Vector2.ZERO
-						var anim_source = get_instance_by_uuid(animation_source_uuid)
-						if is_instance_valid(anim_source):
-							var src_tag: StringName = anim_source.location_container_tag
-							if src_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-								bump_dir = Vector2(1, 0)
-							elif src_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
-								bump_dir = Vector2(-1, 0)
-						
-						out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-							"source_uuid": request.source_uuid,
-							"target_uuids": [cascade_target_uuid],
-							"visual_payload": {
-								"source_uuid": animation_source_uuid,
-								"amount": - cascade_amount,
-								"stat": "hp",
-								"skip_bump": cascade_skip_bump,
-								"bump_direction": bump_dir,
-								"apply_burn": should_apply_burn,
-								"targets_old_hp": [old_hp],
-								"targets_new_hp": [new_hp],
-								"targets_max_hp": [max_hp],
-								"targets_old_burn": [old_burn],
-								"targets_new_burn": [burn_val],
-								"attack_type": "melee",
-								"original_target_uuid": original_target_uuid, # For animation targeting when Guardian intercepts
-								"projectile_data": {
-									"stat": "hp",
-									"amount": - cascade_amount,
-									"color": "red"
-								}
-							}
-						}))
-						
-						# Track for Phase 2 reactions
-						hit_targets.append({
-							"uuid": cascade_target_uuid,
-							"amount": cascade_amount,
-							"was_killed": cascade_tgt.current_hp <= 0
-						})
-				
-				# ═══════════════════════════════════════════════════════════════════
-				# PHASE 2: Process reactions one target at a time (after all damage shown)
-				# ═══════════════════════════════════════════════════════════════════
-				for hit_data in hit_targets:
+				# Phase 2: Process reactions one target at a time (after all damage shown)
+				for hit_data in cascade_result.hit_targets:
 					var target_uuid: String = hit_data.uuid
 					var damage_amount: int = hit_data.amount
 					var was_killed: bool = hit_data.was_killed
@@ -1519,12 +718,12 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					# Trigger on_hurt for counter-attacks
 					trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
 					
-					# Drain on_hurt reactions (Aegis Charm, counter-attacks, etc.) for THIS target
+					# Drain on_hurt reactions for THIS target
 					drain_pending_reactions_inline(0)
 					var cascade_hurt_inline_evts = collect_inline_events()
 					out_events.append_array(cascade_hurt_inline_evts)
 					
-					# DETERMINISTIC ON_KILL: If cascade damage killed the target, trigger on_kill
+					# Trigger on_kill if killed
 					if was_killed:
 						trigger_on_kill(request.source_uuid, target_uuid)
 				
@@ -1584,544 +783,53 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 					return # Don't process as normal heal
 				
 				if amount >= 0:
-					var heal_target_name := ""
-					if not target_names.is_empty():
-						heal_target_name = target_names[0]
-					if source_name != "" and heal_target_name != "":
-						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, heal_target_name, amount]}))
-				
-					# Apply HP delta via centralized function and capture OLD and NEW values
-					var targets_old_hp: Array[int] = []
-					var targets_new_hp: Array[int] = []
-					var targets_max_hp: Array[int] = []
-					for tgt_uuid in resolved_targets:
-						var tgt = get_instance_by_uuid(tgt_uuid)
-						if is_instance_valid(tgt):
-							targets_old_hp.append(tgt.current_hp) # Capture BEFORE
-							var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
-							targets_new_hp.append(new_hp)
-							var tgt_def = tgt.get_definition()
-							if is_instance_valid(tgt_def):
-								targets_max_hp.append(tgt_def.base_hp)
-							else:
-								targets_max_hp.append(0)
-						else:
-							targets_old_hp.append(0)
-							targets_new_hp.append(0)
-							targets_max_hp.append(0)
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": resolved_targets,
-						"ability_id": request.ability_id,
-						"trigger_type": request.trigger_context.get("trigger_type", ""),
-						"ability_holder_uuid": request.source_uuid,
-						"visual_payload": {
-							"source_uuid": request.source_uuid,
-							"amount": amount,
-							"stat": "hp",
-							"skip_bump": skip_bump,
-							"targets_old_hp": targets_old_hp,
-							"targets_new_hp": targets_new_hp,
-							"targets_max_hp": targets_max_hp
-						}
-					}))
+					out_events.append_array(EffectHandlers.handle_heal_effect(request, resolved_targets, source_name, target_names, amount, skip_bump, self))
 				else:
-					var dealt: int = abs(amount)
-					var damage_target_name := ""
-					if not target_names.is_empty():
-						damage_target_name = target_names[0]
-					if source_name != "" and damage_target_name != "":
-						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, damage_target_name]}))
+					var damage_result := EffectHandlers.handle_damage_effect(request, resolved_targets, source, source_name, target_names, amount, skip_bump, self)
+					out_events.append_array(damage_result.events)
 					
-					# Check if burn should be applied
-					var is_player_source = false
-					var should_apply_burn = false
-					if is_instance_valid(source):
-						is_player_source = _is_player_unit(source)
-						should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
-					elif request.trigger_context.has("team"):
-						is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
-						should_apply_burn = _has_team_trinket(is_player_source, &"trinket_burn_vial")
-					
-					# Apply HP delta via centralized function and capture OLD and NEW values
-					var targets_old_hp: Array[int] = []
-					var targets_new_hp: Array[int] = []
-					var targets_max_hp: Array[int] = []
-					var targets_old_burn: Array[int] = []
-					var targets_new_burn: Array[int] = []
-					var damaged_uuids: Array[String] = [] # Track which targets actually received damage
-					var original_target_uuids: Array[String] = [] # Track original targets for animation when Guardian intercepts
-					
-					for tgt_uuid in resolved_targets:
-						var tgt = get_instance_by_uuid(tgt_uuid)
-						# Skip already-dead or removed targets to prevent ghost attacks
-						# Also check location_container_tag since reset_battle_stats_silent() restores HP before discard
-						if not is_instance_valid(tgt) or tgt.current_hp <= 0:
-							continue
-						var loc_tag: StringName = tgt.location_container_tag
-						var is_in_battle: bool = (loc_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
-											 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
-											 loc_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
-											 loc_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
-						if not is_in_battle:
-							continue
-					
-						# GUARDIAN SENTINEL INTERCEPT CHECK
-						# If this damage would be lethal to an ally, redirect to Guardian Sentinel
-						var original_tgt_uuid = tgt_uuid # Save BEFORE potential redirect
-						var actual_damage = abs(amount)
-						var would_be_lethal = tgt.current_hp - actual_damage <= 0
-						var tgt_is_player_unit = _is_player_unit(tgt)
-						var is_ally_damage = (tgt_is_player_unit != is_player_source) # Enemy attacking player or vice versa
-						
-						if would_be_lethal and is_ally_damage:
-							var guardian = _find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
-							if is_instance_valid(guardian):
-								# Create intercept event for leap animation
-								out_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
-									"source_uuid": guardian.ball_uuid,
-									"target_uuids": [tgt_uuid],
-									"visual_payload": {
-										"guardian_uuid": guardian.ball_uuid,
-										"original_target_uuid": tgt_uuid,
-										"damage": actual_damage
-									}
-								}))
-								# Redirect the damage target to Guardian
-								tgt_uuid = guardian.ball_uuid
-								tgt = guardian
-						
-						damaged_uuids.append(tgt_uuid) # Track actual damage target (may be Guardian)
-						original_target_uuids.append(original_tgt_uuid) # Track original for animation
-						targets_old_hp.append(tgt.current_hp) # Capture BEFORE
-						targets_old_burn.append(tgt.get_status_effect_amount(&"burn")) # Capture BEFORE
-						var new_hp = apply_stat_delta(tgt, "hp", amount) # ✅ Unified stat modification
-						targets_new_hp.append(new_hp)
-						
-						# Get max HP from definition
-						var tgt_def = tgt.get_definition()
-						if is_instance_valid(tgt_def):
-							targets_max_hp.append(tgt_def.base_hp)
-						else:
-							targets_max_hp.append(0)
-						
-						# Apply burn if needed
-						var burn_val = 0
-						if should_apply_burn:
-							burn_val = apply_stat_delta(tgt, "burn_stacks", 1) # ✅ Unified status effect
-						targets_new_burn.append(burn_val)
-					
-					# Skip generating DAMAGE event if all targets were dead
-					if damaged_uuids.is_empty():
+					if damage_result.should_return:
 						return
 					
-					# Compute animation source - if source is an item, use the holder for animation
-					var animation_source_uuid: String = request.source_uuid
-					if is_instance_valid(source):
-						var source_def = source.get_definition()
-						if is_instance_valid(source_def) and source_def.category == &"ITEM":
-							# Items don't have visual representations - use the holder unit
-							if not source.equipped_on_uuid.is_empty():
-								animation_source_uuid = source.equipped_on_uuid
-					
-					# Compute bump direction using animation source (holder for items)
-					var bump_dir := Vector2.ZERO
-					var anim_source = get_instance_by_uuid(animation_source_uuid)
-					if is_instance_valid(anim_source):
-						var src_tag: StringName = anim_source.location_container_tag
-						if src_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-							bump_dir = Vector2(1, 0) # Player bumps right
-						elif src_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
-							bump_dir = Vector2(-1, 0) # Enemy bumps left
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": damaged_uuids,
-						"ability_id": request.ability_id,
-						"trigger_type": request.trigger_context.get("trigger_type", ""),
-						"ability_holder_uuid": request.source_uuid,
-						"visual_payload": {
-							"source_uuid": animation_source_uuid,
-							"amount": amount,
-							"stat": "hp",
-							"skip_bump": skip_bump,
-							"bump_direction": bump_dir, # Pre-computed for presentation
-							"apply_burn": should_apply_burn,
-							"targets_old_hp": targets_old_hp,
-							"targets_new_hp": targets_new_hp,
-							"targets_max_hp": targets_max_hp,
-							"targets_old_burn": targets_old_burn,
-							"targets_new_burn": targets_new_burn,
-							"attack_type": "melee",
-							"original_target_uuids": original_target_uuids, # For animation targeting when Guardian intercepts
-							"projectile_data": {
-								"stat": "hp",
-								"amount": amount,
-								"color": "red"
-							}
-						}
-					}))
 					# CRITICAL: Trigger on_hurt AFTER apply_stat_delta so condition checks see post-damage HP
-					# This enables DAMAGE_WAS_NON_LETHAL to correctly detect lethal damage
-					for tgt_uuid in damaged_uuids:
+					for tgt_uuid in damage_result.damaged_uuids:
 						trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
 					
 					# AEGIS FIX: Drain on_hurt effects BEFORE death check
-					# This allows effects like Aegis Charm (prevent lethal damage) to heal units
-					# to 1 HP before death is detected
 					drain_pending_reactions_inline(0)
 					
-					# CRITICAL: Collect inline events (like LETHAL_SAVE) immediately and append
-					# to out_events so they stay with the DAMAGE event they're reacting to.
-					# Without this, inline events would be collected in the main combat loop
-					# and inserted before subsequent attack events, breaking causal order.
+					# CRITICAL: Collect inline events (like LETHAL_SAVE) immediately
 					var hurt_inline_evts = collect_inline_events()
 					out_events.append_array(hurt_inline_evts)
 					
 					# DETERMINISTIC ON_KILL: If this damage killed the target, trigger on_kill immediately
-					# This ensures kills are detected at the moment of state change, not by snapshot comparison
-					for tgt_uuid in damaged_uuids:
+					for tgt_uuid in damage_result.damaged_uuids:
 						var tgt = get_instance_by_uuid(tgt_uuid)
 						if is_instance_valid(tgt) and tgt.current_hp <= 0:
 							trigger_on_kill(request.source_uuid, tgt_uuid)
 			elif stat == "pwr" and amount > 0 and not resolved_targets.is_empty():
-				var log_targets_str = ""
-				if not target_names.is_empty():
-					log_targets_str = ", ".join(target_names)
-				if log_targets_str != "":
-					out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "Gains %d PWR: %s" % [amount, log_targets_str]}))
-				
-				var targets_old_pwr: Array[int] = []
-				var targets_new_pwr: Array[int] = []
-				
-				for i in range(resolved_targets.size()):
-					var single_target_uuid := resolved_targets[i]
-					var tgt = get_instance_by_uuid(single_target_uuid)
-					if is_instance_valid(tgt):
-						targets_old_pwr.append(tgt.current_pwr)
-						var new_p = apply_stat_delta(tgt, "pwr", amount) # ✅ Apply THEN snapshot
-						targets_new_pwr.append(new_p)
-					else:
-						targets_old_pwr.append(0)
-						targets_new_pwr.append(0)
-				
-				out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": request.source_uuid,
-					"target_uuids": resolved_targets,
-					"ability_id": request.ability_id,
-					"trigger_type": request.trigger_context.get("trigger_type", ""),
-					"ability_holder_uuid": request.source_uuid,
-					"visual_payload": {
-						"source_uuid": request.source_uuid,
-						"amount": amount,
-						"stat": "pwr",
-						"targets_old_pwr": targets_old_pwr,
-						"targets_new_pwr": targets_new_pwr
-					}
-				}))
+				out_events.append_array(EffectHandlers.handle_pwr_buff(request, resolved_targets, target_names, amount, self))
 				
 			elif stat == "burn_stacks" and not resolved_targets.is_empty():
-				var targets_old_val: Array[int] = []
-				var targets_new_val: Array[int] = []
-				
-				for i in range(resolved_targets.size()):
-					var single_target_uuid := resolved_targets[i]
-					var tgt = get_instance_by_uuid(single_target_uuid)
-					if is_instance_valid(tgt):
-						targets_old_val.append(tgt.get_status_effect_amount(&"burn"))
-						var new_v = apply_stat_delta(tgt, "burn_stacks", amount)
-						targets_new_val.append(new_v)
-					else:
-						targets_old_val.append(0)
-						targets_new_val.append(0)
-				
-				out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": request.source_uuid,
-					"target_uuids": resolved_targets,
-					"ability_id": request.ability_id,
-					"trigger_type": request.trigger_context.get("trigger_type", ""),
-					"ability_holder_uuid": request.source_uuid,
-					"visual_payload": {
-						"source_uuid": request.source_uuid,
-						"amount": amount,
-						"stat": "burn_stacks",
-						"targets_old_val": targets_old_val,
-						"targets_new_val": targets_new_val
-					}
-				}))
+				out_events.append(EffectHandlers.handle_burn_stacks(request, resolved_targets, amount, self))
+			elif stat == "armor_stacks" and not resolved_targets.is_empty():
+				out_events.append(handle_armor_stacks(request, resolved_targets, amount))
 			# Handle summon effects (e.g., item_t2_c02)
 			elif effect_data.has("summon_unit_id"):
-				var unit_id = effect_data.get("summon_unit_id")
-				var holder_uuid = effect_data.get("holder_uuid", "")
-				var holder_location = effect_data.get("holder_location")
-				
-				var is_resurrection = effect_data.get("is_resurrection", false)
-				
-				if unit_id and is_instance_valid(holder_location):
-					# Create new instance - try units first, then general database
-					var unit_def = Database.units.get(unit_id)
-					if not is_instance_valid(unit_def):
-						unit_def = Database.get_definition(unit_id)
-					if is_instance_valid(unit_def):
-						var new_inst = GachaBallInstance.new()
-						new_inst.initialize(unit_def)
-						# Ensure fresh state (clears any default/shared status effects)
-						new_inst.reset_battle_stats_silent() # Silent during simulation
-						
-						# Add to battle model IMMEDIATELY so it can be targeted in this turn
-						_battle_instances[new_inst.ball_uuid] = new_inst
-						
-						# Handle Old Unit: Use unified cleanup logic (skip for resurrection)
-						if not is_resurrection:
-							var holder_inst = get_instance(holder_uuid)
-							if is_instance_valid(holder_inst):
-								_perform_unit_death_cleanup(holder_inst)
-						else:
-							# For resurrection: clear the slot of the dead unit (if still there)
-							var rez_container = get_container(holder_location.container)
-							if is_instance_valid(rez_container):
-								var old_uuid = rez_container.get_uuid(holder_location.index)
-								if not old_uuid.is_empty():
-									var old_inst = get_instance(old_uuid)
-									if is_instance_valid(old_inst) and old_inst.current_hp <= 0:
-										_perform_unit_death_cleanup(old_inst)
-						
-						# Set new unit's location
-						_update_instance_location(
-							new_inst.ball_uuid,
-							holder_location.container,
-							holder_location.index
-						)
-						
-						# Update the physical container so targeting logic can find the new unit
-						# This is safe because FixedArrayContainer.set_uuid does NOT emit signals
-						var container = get_container(holder_location.container)
-						if is_instance_valid(container):
-							container.set_uuid(holder_location.index, new_inst.ball_uuid)
-						
-						# Update Actor Queue: If the holder was waiting to act, replace them with the new unit
-						for i in range(_actor_queue.size()):
-							if _actor_queue[i].ball_uuid == holder_uuid:
-								_actor_queue[i] = new_inst
-								break
-						
-						# Create SUMMON event (presentation layer only)
-						# Include complete snapshot of new unit so presenter can create view without queries
-						var new_unit_icon = unit_def.icon if "icon" in unit_def else null
-						var new_unit_tier = unit_def.tier if "tier" in unit_def else 0
-						var new_unit_category = unit_def.category if "category" in unit_def else &"UNIT"
-						var new_unit_name_key = unit_def.display_name_key if "display_name_key" in unit_def else ""
-						
-						out_events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
-							"source_uuid": request.source_uuid,
-							"target_uuids": [new_inst.ball_uuid],
-							"ability_id": request.ability_id,
-							"trigger_type": request.trigger_context.get("trigger_type", ""),
-							"ability_holder_uuid": request.source_uuid,
-							"visual_payload": {
-								"old_unit_uuid": holder_uuid,
-								"new_unit_uuid": new_inst.ball_uuid,
-								"old_unit_location": holder_location,
-								# Complete new unit snapshot for view creation
-								"new_unit_snapshot": {
-									"uuid": new_inst.ball_uuid,
-									"hp": new_inst.current_hp,
-									"pwr": new_inst.current_pwr,
-									"burn_stacks": new_inst.get_status_effect_amount(&"burn"),
-									"def_id": unit_def.id,
-									"icon": new_unit_icon,
-									"tier": new_unit_tier,
-									"category": new_unit_category,
-									"display_name_key": new_unit_name_key
-								}
-							}
-						}))
+				var summon_result := EffectHandlers.handle_summon_unit(request, effect_data, self)
+				_apply_summon_result(summon_result)
+				out_events.append_array(summon_result.events)
 			# Handle boss summon effects (array of units to summon)
 			elif effect_data.has("summon_units"):
-				var summon_list: Array = effect_data.get("summon_units", [])
-				var team: String = effect_data.get("team", "ENEMY")
-				var target_container_tag: StringName = BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-				
-				for summon_data in summon_list:
-					var unit_id = summon_data.get("unit_id")
-					var unit_def = Database.get_definition(unit_id)
-					if not is_instance_valid(unit_def):
-						continue
-					
-					# Find empty slot in target lineup
-					var lineup_container = get_container(target_container_tag)
-					if not is_instance_valid(lineup_container):
-						break
-					
-					var empty_slot: int = lineup_container.find_first_empty_slot()
-					if empty_slot == -1 or empty_slot >= 5:
-						break # No more slots
-					
-					# Create and place unit
-					var new_unit = GachaBallInstance.new()
-					new_unit.initialize(unit_def)
-					new_unit.reset_battle_stats_silent()
-					
-					_battle_instances[new_unit.ball_uuid] = new_unit
-					lineup_container.set_uuid(empty_slot, new_unit.ball_uuid)
-					_update_instance_location(new_unit.ball_uuid, target_container_tag, empty_slot)
-					
-					# Insert into actor queue so summoned unit can act this turn if its slot hasn't passed
-					_insert_summoned_unit_into_queue(new_unit)
-					
-					# Create location for visual payload
-					var summon_loc = LocationIdentifier.new()
-					summon_loc.container = target_container_tag
-					summon_loc.index = empty_slot
-					
-					# Create SUMMON event for animation
-					var new_unit_icon = unit_def.icon if "icon" in unit_def else null
-					var new_unit_tier = unit_def.tier if "tier" in unit_def else 0
-					var new_unit_category = unit_def.category if "category" in unit_def else &"UNIT"
-					var new_unit_name_key = unit_def.display_name_key if "display_name_key" in unit_def else ""
-					
-					out_events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": [new_unit.ball_uuid],
-						"ability_id": request.ability_id,
-						"trigger_type": request.trigger_context.get("trigger_type", ""),
-						"ability_holder_uuid": request.source_uuid,
-						"visual_payload": {
-							"old_unit_uuid": "", # No old unit for boss summons
-							"new_unit_uuid": new_unit.ball_uuid,
-							"old_unit_location": summon_loc,
-							"new_unit_snapshot": {
-								"uuid": new_unit.ball_uuid,
-								"hp": new_unit.current_hp,
-								"pwr": new_unit.current_pwr,
-								"burn_stacks": new_unit.get_status_effect_amount(&"burn"),
-								"def_id": unit_def.id,
-								"icon": new_unit_icon,
-								"tier": new_unit_tier,
-								"category": new_unit_category,
-								"display_name_key": new_unit_name_key
-							}
-						}
-					}))
+				var summon_result := EffectHandlers.handle_summon_units(request, effect_data, self)
+				_apply_summon_result(summon_result)
+				out_events.append_array(summon_result.events)
 			# Handle multi_heal effects (e.g., Heart Stone - two random allies healed independently)
 			elif effect_data.has("multi_heal") and effect_data.get("multi_heal", false):
-				var heals: Array = effect_data.get("heals", [])
-				var animation_source_uuid: String = effect_data.get("animation_source_uuid", request.source_uuid)
-				var heal_stat: String = effect_data.get("stat", "hp")
-				
-				for heal_data in heals:
-					var target_uuid: String = String(heal_data.get("target", ""))
-					var heal_amount: int = int(heal_data.get("amount", 0))
-					
-					if target_uuid.is_empty() or heal_amount <= 0:
-						continue
-					
-					var tgt = get_instance_by_uuid(target_uuid)
-					if not is_instance_valid(tgt):
-						continue
-					
-					# Capture old HP
-					var old_hp: int = tgt.current_hp
-					var max_hp: int = 0
-					var tgt_def = tgt.get_definition()
-					if is_instance_valid(tgt_def):
-						max_hp = tgt_def.base_hp
-					
-					# Apply heal
-					var new_hp = apply_stat_delta(tgt, "hp", heal_amount)
-					
-					# Get target name for log
-					var target_name: String = ""
-					if is_instance_valid(tgt_def) and tgt_def.display_name_key:
-						target_name = tr(tgt_def.display_name_key)
-					
-					# Get source name for log
-					var anim_source = get_instance_by_uuid(animation_source_uuid)
-					var heal_source_name: String = ""
-					if is_instance_valid(anim_source):
-						var anim_def = anim_source.get_definition()
-						if is_instance_valid(anim_def) and anim_def.display_name_key:
-							heal_source_name = tr(anim_def.display_name_key)
-					
-					if heal_source_name != "" and target_name != "":
-						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [heal_source_name, target_name, heal_amount]}))
-					
-					# Create HEAL event with animation source as the item holder
-					out_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": [target_uuid],
-						"ability_id": request.ability_id,
-						"trigger_type": request.trigger_context.get("trigger_type", ""),
-						"ability_holder_uuid": animation_source_uuid,
-						"visual_payload": {
-							"source_uuid": animation_source_uuid, # Use item holder for projectile source
-							"amount": heal_amount,
-							"stat": heal_stat,
-							"skip_bump": false,
-							"targets_old_hp": [old_hp],
-							"targets_new_hp": [new_hp],
-							"targets_max_hp": [max_hp]
-						}
-					}))
+				out_events.append_array(EffectHandlers.handle_multi_heal(request, effect_data, self))
 			# Handle multi_buff effects (e.g., Power Amulet - two random allies buffed independently)
 			elif effect_data.has("multi_buff") and effect_data.get("multi_buff", false):
-				var buffs: Array = effect_data.get("buffs", [])
-				var animation_source_uuid: String = effect_data.get("animation_source_uuid", request.source_uuid)
-				var buff_stat: String = effect_data.get("stat", "pwr")
-				
-				for buff_data in buffs:
-					var target_uuid: String = String(buff_data.get("target", ""))
-					var buff_amount: int = int(buff_data.get("amount", 0))
-					
-					if target_uuid.is_empty() or buff_amount <= 0:
-						continue
-					
-					var tgt = get_instance_by_uuid(target_uuid)
-					if not is_instance_valid(tgt):
-						continue
-					
-					# Capture old value based on stat type
-					var old_val: int = tgt.current_pwr if buff_stat == "pwr" else tgt.current_hp
-					
-					# Apply buff
-					var new_val = apply_stat_delta(tgt, buff_stat, buff_amount)
-					
-					# Get target name for log
-					var target_name: String = ""
-					var tgt_def = tgt.get_definition()
-					if is_instance_valid(tgt_def) and tgt_def.display_name_key:
-						target_name = tr(tgt_def.display_name_key)
-					
-					# Get source name for log
-					var anim_source = get_instance_by_uuid(animation_source_uuid)
-					var buff_source_name: String = ""
-					if is_instance_valid(anim_source):
-						var anim_def = anim_source.get_definition()
-						if is_instance_valid(anim_def) and anim_def.display_name_key:
-							buff_source_name = tr(anim_def.display_name_key)
-					
-					var stat_name: String = "PWR" if buff_stat == "pwr" else "HP"
-					if buff_source_name != "" and target_name != "":
-						out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s grants %s +%d %s" % [buff_source_name, target_name, buff_amount, stat_name]}))
-					
-					# Create BUFF event with animation source as the item holder
-					out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": request.source_uuid,
-						"target_uuids": [target_uuid],
-						"ability_id": request.ability_id,
-						"trigger_type": request.trigger_context.get("trigger_type", ""),
-						"ability_holder_uuid": animation_source_uuid,
-						"visual_payload": {
-							"source_uuid": animation_source_uuid, # Use item holder for projectile source
-							"amount": buff_amount,
-							"stat": buff_stat,
-							"targets_old_pwr": [old_val] if buff_stat == "pwr" else [],
-							"targets_new_pwr": [new_val] if buff_stat == "pwr" else [],
-							"targets_old_val": [] if buff_stat == "pwr" else [old_val],
-							"targets_new_val": [] if buff_stat == "pwr" else [new_val]
-						}
-					}))
+				out_events.append_array(EffectHandlers.handle_multi_buff(request, effect_data, self))
 	# CRITICAL FIX: Death check MUST run unconditionally after any effect execution
 	# This was previously inside the TYPE_DICTIONARY block, causing deaths from the
 	# last attack of a turn to miss on_ally_death triggers when effect returned null
@@ -2130,39 +838,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
 func get_board_snapshot() -> Dictionary:
-	var snapshot: Dictionary = {}
-	for uuid in _battle_instances:
-		var inst = _battle_instances[uuid]
-		if is_instance_valid(inst):
-			var location = inst.get_location()
-			# CRITICAL FIX: Only include instances that have visual representations
-			# Equipped items, inventory items, and trinkets don't have their own views
-			# Including them causes unpredictable iteration order during registry population
-			if is_instance_valid(location) and location is LocationIdentifier:
-				var container = location.container
-				# Only include units in lineups and bench - these have GachaBallView instances
-				if container == &"PlayerLineup" or container == &"EnemyLineup" or container == &"PlayerBench":
-					# Get definition for visual data
-					var def = inst.get_definition()
-					
-					# TRUE DECOUPLING: Store VALUES not references
-					# Presentation will never query BattleManager or GameManager
-					snapshot[uuid] = {
-						# Core stats
-						"hp": inst.current_hp,
-						"pwr": inst.current_pwr,
-						"burn_stacks": inst.get_status_effect_amount(&"burn"),
-						# Definition data for view creation
-						"def_id": def.id if is_instance_valid(def) else "",
-						"icon": def.icon if (is_instance_valid(def) and "icon" in def) else null,
-						"tier": def.tier if (is_instance_valid(def) and "tier" in def) else 0,
-						"category": def.category if (is_instance_valid(def) and "category" in def) else &"UNIT",
-						"display_name_key": def.display_name_key if (is_instance_valid(def) and "display_name_key" in def) else "",
-						# Location as VALUES not reference - no coupling!
-						"container_tag": container, # StringName value
-						"slot_index": location.index # int value
-					}
-	return snapshot
+	return BattleHelpers.get_combat_board_snapshot(_battle_instances)
 
 func _resolve_combat_phase() -> void:
 	if _is_processing_effect: return
@@ -2171,91 +847,17 @@ func _resolve_combat_phase() -> void:
 	
 	# 1. Capture State BEFORE Simulation
 	var start_snapshot = get_board_snapshot()
-	var turn_log: Array[CombatEvent] = []
 	var death_tracking: Dictionary = {}
 	
-	var _actor_index = 0
-	while not _actor_queue.is_empty():
-		var current_actor: GachaBallInstance = _actor_queue.pop_front()
-		_actor_index += 1
-		
-		if not is_instance_valid(current_actor):
-			continue
-		
-		if current_actor.current_hp <= 0:
-			continue
-
-		_enqueue_attack_for(current_actor)
-		
-		# Reaction loop - process ALL reactions before checking battle-over
-		while not _pending_reactions.is_empty():
-			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-			var current_reaction = _pending_reactions.pop_front()
-			
-			var reaction_events: Array[CombatEvent] = []
-			_resolve_single_effect_request(current_reaction, reaction_events, death_tracking)
-			
-			# Collect inline events generated DURING effect execution (e.g., on_before_attack heals)
-			# These must appear BEFORE the damage events to maintain causal order:
-			# HEAL animation → HP label update → DAMAGE animation → HP label update
-			var inline_evts = collect_inline_events()
-			turn_log.append_array(inline_evts)
-			
-			turn_log.append_array(reaction_events)
-			
-			# Process deferred deaths
-			var deferred_death_events: Array[CombatEvent] = []
-			_process_completed_counter_deaths(deferred_death_events, death_tracking)
-			turn_log.append_array(deferred_death_events)
-		
-		# NOTE: on_kill triggers are now fired immediately in _resolve_single_effect_request
-		# when damage causes HP <= 0, so no snapshot comparison needed here
-		
-		# Process any on_kill reactions (like Bloodlust granting extra action)
-		while not _pending_reactions.is_empty():
-			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-			var kill_reaction = _pending_reactions.pop_front()
-			var kill_reaction_events: Array[CombatEvent] = []
-			_resolve_single_effect_request(kill_reaction, kill_reaction_events, death_tracking)
-			turn_log.append_array(kill_reaction_events)
+	# 2. Execute combat turn via CombatSimulator
+	var turn_log: Array[CombatEvent] = _combat.execute_combat_turn(self, death_tracking)
 	
-		# Check battle-over AFTER all reactions for this actor are processed
-		# This allows summons and other reactive abilities to complete
-		if _is_battle_over():
-			_battle_over_deferred = true
-			_actor_queue.clear()
-			break
-
-	# CRITICAL: Final reaction drain - process ANY remaining reactions after all actors have acted
-	# This ensures reactive abilities (on_hurt, on_ally_death, item/trinket reactions) fully complete
-	# even if they were enqueued during the last actor's attack resolution
-	while not _pending_reactions.is_empty():
-		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-		var final_reaction = _pending_reactions.pop_front()
-		
-		var final_reaction_events: Array[CombatEvent] = []
-		_resolve_single_effect_request(final_reaction, final_reaction_events, death_tracking)
-		
-		# Collect inline events
-		var final_inline_evts = collect_inline_events()
-		turn_log.append_array(final_inline_evts)
-		
-		turn_log.append_array(final_reaction_events)
-		
-		# Process deferred deaths for final reactions
-		var final_death_events: Array[CombatEvent] = []
-		_process_completed_counter_deaths(final_death_events, death_tracking)
-		turn_log.append_array(final_death_events)
-
-	# Clean up deferred enemy instances AFTER all reactions have resolved
+	# 3. Clean up deferred enemy instances AFTER all reactions have resolved
 	_flush_deferred_enemy_erasures()
-
-	_is_processing_effect = false
-	# DO NOT unblock inventory updates here!
-	# Keep them blocked until animations finish to prevent _redraw_board() from destroying views
-	# _block_inventory_updates will be set to false in _on_turn_animation_finished()
 	
-	# 2. Send Log to Animator (The VCR Playback)
+	_is_processing_effect = false
+	
+	# 4. Send Log to Animator (The VCR Playback)
 	if not turn_log.is_empty():
 		_animator.play_turn_sequence(start_snapshot, turn_log)
 	else:
@@ -2408,6 +1010,9 @@ func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 				}
 				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				
+				# DEFER cleanup - unit must stay in original container
+				# _perform_unit_death_cleanup(unit)
+		
 ## Centralized logic for cleaning up a dead unit.
 ## Moves player units to discard, removes enemy units entirely.
 
@@ -2441,108 +1046,31 @@ func _snapshot_equipped_items(unit: GachaBallInstance) -> Array[Dictionary]:
 ## This is the ONLY function that should mark a unit as dead. All death detection code paths
 ## must call this before creating DEATH events or firing triggers.
 func _register_death(unit: GachaBallInstance, phase: StringName) -> bool:
-	assert(is_instance_valid(unit), "_register_death: unit is null")
-	
-	if _dead_this_turn.has(unit.ball_uuid):
-		return false # Already dead this turn - prevent duplicate processing
-	
-	var is_player = _is_player_unit(unit)
-	_dead_this_turn[unit.ball_uuid] = {
-		"team": "PLAYER" if is_player else "ENEMY",
-		"died_in_phase": phase,
-		"def_id": unit.definition_id
-	}
-	return true
+	return DeathProcessor.register_death(_state, unit, phase)
 
-## Check if a unit has already died this turn. Use this to skip dead units in loops.
 func is_dead_this_turn(unit_uuid: String) -> bool:
-	return _dead_this_turn.has(unit_uuid)
+	return DeathProcessor.is_dead_this_turn(_state, unit_uuid)
 
-## Get death info for a unit (team, phase, def_id). Returns empty dict if not dead.
 func get_death_info(unit_uuid: String) -> Dictionary:
-	return _dead_this_turn.get(unit_uuid, {})
+	return DeathProcessor.get_death_info(_state, unit_uuid)
 
 func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
-	assert(is_instance_valid(unit), "_perform_unit_death_cleanup: unit is null")
+	# Get or create deferred erasures array (stored on BattleManager for meta access)
+	if not has_meta("_deferred_enemy_erasures"):
+		set_meta("_deferred_enemy_erasures", [])
+	var deferred_erasures: Array = get_meta("_deferred_enemy_erasures")
 	
-	# Guard against duplicate cleanup calls - if container is already empty, unit was already cleaned up
-	if unit.location_container_tag == &"" or unit.location_container_tag == &"DiscardPile":
-		return
+	# Delegate to DeathProcessor
+	DeathProcessor.perform_unit_death_cleanup(_state, unit, deferred_erasures)
 	
-	if _is_player_owned(unit):
-		# Player unit: move equipped items to discard then move unit to discard
-		for item_uuid in unit.equipped_item_uuids:
-			if not item_uuid.is_empty():
-				var item_instance := get_instance(item_uuid)
-				if is_instance_valid(item_instance):
-					_move_instance_to_discard(item_instance)
-		unit.equipped_item_uuids.fill("")
-		
-		# Reset unit state (clear damage, status effects) before moving to discard
-		unit.reset_battle_stats_silent() # Silent during simulation
-		
-		_move_instance_to_discard(unit)
-	else:
-		# Enemy unit: clear equipped linkage and erase items, then remove unit from container
-		# CRITICAL: Do NOT erase from _battle_instances yet! The unit's on_death reactions
-		# need to resolve first. Premature erasure causes get_instance_by_uuid() to return null
-		# and the effect execution to be skipped. We track these for later cleanup.
-		for item_uuid in unit.equipped_item_uuids:
-			if not item_uuid.is_empty():
-				var item_instance := get_instance(item_uuid)
-				if is_instance_valid(item_instance):
-					item_instance.equipped_on_uuid = ""
-					item_instance.equipped_slot_index = -1
-					_update_instance_location(item_instance.ball_uuid, &"", -1)
-					# Defer item erasure too - items have on_death abilities!
-					if not has_meta("_deferred_enemy_erasures"):
-						set_meta("_deferred_enemy_erasures", [])
-					var erasure_list: Array = get_meta("_deferred_enemy_erasures")
-					erasure_list.append(item_instance.ball_uuid)
-					set_meta("_deferred_enemy_erasures", erasure_list)
-		unit.equipped_item_uuids.fill("")
-		_remove_instance_from_container(unit)
-		# Defer unit erasure until after all reactions have resolved
-		if not has_meta("_deferred_enemy_erasures"):
-			set_meta("_deferred_enemy_erasures", [])
-		var erasure_list2: Array = get_meta("_deferred_enemy_erasures")
-		erasure_list2.append(unit.ball_uuid)
-		set_meta("_deferred_enemy_erasures", erasure_list2)
+	# Store back (array is shared reference but explicit for clarity)
+	set_meta("_deferred_enemy_erasures", deferred_erasures)
 
 ## Check if a unit has any abilities that can execute after receiving lethal damage.
 ## This is determined by the `execute_on_lethal` flag on AbilityDefinition.
 func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
-	assert(is_instance_valid(unit), "_has_lethal_counter_abilities: unit is null")
-	
-	var definition = unit.get_definition()
-	if not is_instance_valid(definition):
-		return false
-	
-	# Check unit's own abilities for execute_on_lethal flag
-	for ability in definition.ability_definitions:
-		if not is_instance_valid(ability):
-			continue
-		# Only check on_hurt abilities (damage reactions)
-		if ability.trigger == &"on_hurt" and ability.execute_on_lethal:
-			return true
-	
-	# Check equipped items for on_hurt abilities with execute_on_lethal
-	for item_uuid in unit.equipped_item_uuids:
-		if item_uuid.is_empty():
-			continue
-		var item_instance = get_instance_by_uuid(item_uuid)
-		if not is_instance_valid(item_instance):
-			continue
-		var item_def = item_instance.get_definition()
-		if not is_instance_valid(item_def):
-			continue
-		for ability in item_def.ability_definitions:
-			if not is_instance_valid(ability):
-				continue
-			if ability.trigger == &"on_hurt" and ability.execute_on_lethal:
-				return true
-	
-	return false
+	return DeathProcessor.has_lethal_counter_abilities(unit, _battle_instances)
+
 
 ## Enhanced death checking that defers death events for units with counter-attacks
 func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_events = null, death_tracking = null) -> void:
@@ -2836,8 +1364,10 @@ func _on_apply_deaths_requested(dead_unit_uuids: Array) -> void:
 		var def = unit.get_definition()
 		if is_instance_valid(def) and def.category == &"UNIT":
 			_perform_unit_death_cleanup(unit)
-	# After removals, refresh UI
-	_emit_battle_inventory_changed()
+	# NOTE: Do NOT emit battle_inventory_changed here!
+	# BattleAnimator handles visual cleanup (queue_free) during death animation.
+	# Emitting this signal mid-animation would cause BattleView to redraw
+	# from the current Model state, spoiling future damage/heal values.
 	# If battle is now over, defer victory to end of animations
 	var _player_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	var _enemy_lineup = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
@@ -2929,124 +1459,7 @@ func _on_battle_victory() -> void:
 ## @return Array[String] - Array of target UUIDs
 
 func resolve_target(source_uuid: String, target_type: StringName, context: Dictionary) -> Array[String]:
-	var source_instance = get_instance_by_uuid(source_uuid)
-	var is_player_team := false
-	if context.has("team"):
-		is_player_team = (String(context.get("team")) == "PLAYER")
-	elif is_instance_valid(source_instance):
-		var src_def = source_instance.get_definition()
-		if is_instance_valid(src_def):
-			if src_def.category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
-				var holder = get_instance_by_uuid(source_instance.equipped_on_uuid)
-				if is_instance_valid(holder):
-					is_player_team = _is_player_unit(holder)
-			elif src_def.category == &"TRINKET":
-				# Determine team from container tag
-				is_player_team = (source_instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
-			else:
-				is_player_team = _is_player_unit(source_instance)
-	else:
-		return []
-
-	match target_type:
-		C.TARGET_SELF:
-			return [source_uuid]
-		C.TARGET_HOLDER:
-			# For items, return the unit they're equipped to
-			if source_instance.get_definition().category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
-				return [source_instance.equipped_on_uuid]
-			# For units, return self
-			return [source_uuid]
-		C.TARGET_ATTACK_TARGET:
-			# Return the target from the attack context (if still alive)
-			var target_uuid: String = context.get("target_uuid", "")
-			if not target_uuid.is_empty():
-				var target_instance = get_instance_by_uuid(target_uuid)
-				# Only target if still alive (prevents ghost attacks on dead units)
-				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
-					return [target_uuid]
-			return []
-		C.TARGET_TRIGGERING_ENTITY:
-			# Return the entity that triggered the event (if still alive)
-			var triggering_uuid: String = context.get("triggering_uuid", "")
-			if not triggering_uuid.is_empty():
-				var triggering_instance = get_instance_by_uuid(triggering_uuid)
-				# Only target if still alive
-				if is_instance_valid(triggering_instance) and triggering_instance.current_hp > 0:
-					return [triggering_uuid]
-			return []
-		C.TARGET_ATTACKER:
-			# Return the original attacker from the context (for counter-attacks)
-			# This enables reactive abilities to target the unit that dealt damage
-			var attacker_uuid: String = context.get("attacker_uuid", "")
-			if not attacker_uuid.is_empty():
-				var attacker_instance = get_instance_by_uuid(attacker_uuid)
-				# Only target the attacker if they are still alive (prevents infinite loops with dead units)
-				if is_instance_valid(attacker_instance) and attacker_instance.current_hp > 0:
-					return [attacker_uuid]
-			return []
-		C.TARGET_FRONTMOST_ENEMY:
-			var target = _get_frontmost_target(is_player_team)
-			if is_instance_valid(target):
-				return [target.ball_uuid]
-			return []
-		# Support frontmost ally for trinket effects
-		&"FRONTMOST_ALLY":
-			# Per docs: Player frontmost = rightmost (highest index). Enemy frontmost = leftmost (lowest index).
-			var ally_lineup_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-			var living_allies = get_instances_in_container(ally_lineup_tag).filter(func(unit): return unit.current_hp > 0)
-			# print("DEBUG: Resolving FRONTMOST_ALLY. Source: ", source_uuid, " Is Player: ", is_player_team, " Allies: ", living_allies.size())
-			if living_allies.is_empty():
-				return []
-			var best_unit: GachaBallInstance = living_allies[0]
-			var best_index: int = get_location_for_uuid(best_unit.ball_uuid).index
-			for u in living_allies:
-				var idx: int = get_location_for_uuid(u.ball_uuid).index
-				if is_player_team:
-					# Pick highest index
-					if idx > best_index:
-						best_unit = u
-						best_index = idx
-				else:
-					# Pick lowest index
-					if idx < best_index:
-						best_unit = u
-						best_index = idx
-			return [best_unit.ball_uuid]
-		C.TARGET_RANDOM_ENEMY:
-			var enemies = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u): return u.current_hp > 0)
-			if not enemies.is_empty():
-				var random_enemy = enemies[randi() % enemies.size()]
-				return [random_enemy.ball_uuid]
-			return []
-		C.TARGET_RANDOM_ALLY:
-			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
-			if not allies.is_empty():
-				var random_ally = allies[randi() % allies.size()]
-				return [random_ally.ball_uuid]
-			return []
-		C.TARGET_ALLY_BEHIND:
-			var ally_behind = _get_ally_behind(source_instance)
-			if is_instance_valid(ally_behind):
-				return [ally_behind.ball_uuid]
-			return []
-		C.TARGET_ALLY_SLOT_AHEAD:
-			# Return empty array for summoning slots (not implemented yet)
-			return []
-		C.TARGET_ADJACENT_ALLIES:
-			var adjacent = _get_adjacent_allies(source_instance)
-			var uuids: Array[String] = []
-			for ally in adjacent:
-				uuids.append(ally.ball_uuid)
-			return uuids
-		C.TARGET_ALL_ALLIES:
-			var allies = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
-			var uuids: Array[String] = []
-			for ally in allies:
-				uuids.append(ally.ball_uuid)
-			return uuids
-		_:
-			return []
+	return TargetResolver.resolve_target(source_uuid, target_type, context, self)
 
 ## Check if a condition is met for an ability.
 ## @param condition_def: ConditionDefinition - The condition to check
@@ -3054,68 +1467,8 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 ## @param context: Dictionary - The context of the event
 ## @return bool - True if condition is met
 func check_condition(condition_def: ConditionDefinition, source_uuid: String, context: Dictionary) -> bool:
-	if not is_instance_valid(condition_def):
-		return true # No condition means always true
-	
-	var source_instance = get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source_instance):
-		return false
-	
-	var result = false
-	match condition_def.condition_type:
-		C.COND_TEAM_SIZE_LESS_THAN_ENEMY:
-			var is_source_player = _is_player_unit(source_instance)
-			var ally_count = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).size()
-			var enemy_count = get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_source_player else BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).size()
-			result = ally_count < enemy_count
-		C.COND_SLOT_AHEAD_IS_EMPTY:
-			var slot_ahead = _get_slot_ahead(source_instance)
-			result = slot_ahead == null
-		C.COND_TARGET_HP_GREATER_THAN_SELF_HP:
-			var target_uuid: String = context.get("target_uuid", "")
-			if not target_uuid.is_empty():
-				var target_instance = get_instance_by_uuid(target_uuid)
-				if is_instance_valid(target_instance):
-					result = target_instance.current_hp > source_instance.current_hp
-		C.COND_DAMAGE_WAS_NON_LETHAL:
-			# Check if the unit that took damage is still alive (HP > 0)
-			# For on_hurt triggers, context uses "victim_uuid" for the damaged unit
-			# For equipped items, we need to check the damaged unit from context, not the item itself
-			var damaged_unit_uuid = context.get("victim_uuid", context.get("source_uuid", ""))
-			var damaged_unit = get_instance_by_uuid(damaged_unit_uuid) if not damaged_unit_uuid.is_empty() else source_instance
-			result = damaged_unit.current_hp > 0 if is_instance_valid(damaged_unit) else false
-		C.COND_DAMAGE_WAS_RECEIVED:
-			# Always true when processing on_hurt triggers - damage was received regardless of lethal outcome
-			# This enables counter-attacks to trigger even when the damage is lethal
-			result = true
-		C.COND_IS_TURN_INITIATED_ATTACK:
-			# True only for attacks initiated via _enqueue_attack_for (unit's turn)
-			# Reactive attacks (counter/retaliate) will not have this flag or it will be false
-			result = context.get("is_turn_initiated", false)
-		C.COND_COMPOSITE:
-			# Recursive check: All sub-conditions must be true
-			result = true
-			if "conditions" in condition_def:
-				for sub_condition in condition_def.conditions:
-					if not check_condition(sub_condition, source_uuid, context):
-						result = false
-						break
-		C.COND_TRIGGER_CAUSE_MATCH:
-			# Universal Trigger Context Check
-			var trigger_cause = context.get("trigger_cause", "")
-			var allowed_causes = condition_def.parameters.get("allowed_causes", [])
-			
-			# If no specific allowed causes are defined, assume it matches everything (or nothing? safety suggests nothing vs restrictive)
-			# But logically, if you add this condition, you WANT to restrict it.
-			if allowed_causes.is_empty():
-				result = true
-			else:
-				result = trigger_cause in allowed_causes
-		_:
-			result = false
-	
-	# Apply inversion if specified
-	return !result if condition_def.invert_result else result
+	return TargetResolver.check_condition(condition_def, source_uuid, context, self)
+
 
 ## Enqueue an effect request for processing.
 ## @param effect_request: EffectRequest - The effect request to enqueue
@@ -3145,7 +1498,7 @@ func drain_pending_reactions_inline(start_index: int) -> void:
 	for i in range(start_index, _pending_reactions.size()):
 		reactions_to_process.append(_pending_reactions[i])
 	
-	# Remove the processed reactions from the queue (keep earlier ones)
+	# Remove them from the main queue to process them locally
 	_pending_reactions.resize(start_index)
 	
 	# Sort by priority before processing
@@ -3230,121 +1583,63 @@ func get_hero_uuid() -> String:
 ## @param instance: GachaBallInstance - The instance to check
 ## @return bool - True if the unit is on the player's side
 func _is_player_unit(instance: GachaBallInstance) -> bool:
-	return instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or instance.location_container_tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+	return _state.is_player_unit(instance)
 
 func _is_in_player_container_tag(tag: StringName) -> bool:
-	if tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
-		return true
-	if tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-		return true
-	if tag == BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-		return true
-	if tag == BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
-		return true
-	var tag_str := String(tag)
-	return tag_str.begins_with("BattleInventoryT")
+	return _state.is_in_player_container_tag(tag)
 
 func _is_player_owned(instance: GachaBallInstance) -> bool:
-	if not is_instance_valid(instance):
-		return false
-	var def = instance.get_definition()
-	if not is_instance_valid(def):
-		return false
-	match def.category:
-		&"UNIT":
-			return _is_in_player_container_tag(instance.location_container_tag)
-		&"ITEM":
-			if not instance.equipped_on_uuid.is_empty():
-				var holder := get_instance(instance.equipped_on_uuid)
-				if is_instance_valid(holder):
-					return _is_player_unit(holder)
-				return false
-			return _is_in_player_container_tag(instance.location_container_tag)
-		_:
-			return false
+	return _state.is_player_owned(instance)
 
 ## Get the ally unit behind the source unit.
 ## @param source_instance: GachaBallInstance - The source unit
 ## @return GachaBallInstance - The ally behind, or null if none
 func _get_definition_display_name(definition: Resource) -> String:
-	if not is_instance_valid(definition):
-		return ""
-	if "display_name_key" in definition:
-		return tr(definition.display_name_key)
-	if "name_key" in definition:
-		return tr(definition.name_key)
-	if "name" in definition:
-		return tr(definition.name)
-	if "id" in definition:
-		return String(definition.id)
-	return ""
+	return BattleHelpers.get_definition_display_name(definition)
 
 func _get_instance_display_name(inst: GachaBallInstance) -> String:
-	if not is_instance_valid(inst):
-		return ""
-	var definition = inst.get_definition()
-	return _get_definition_display_name(definition)
+	return BattleHelpers.get_instance_display_name(inst)
 
 func _get_ally_behind(source_instance: GachaBallInstance) -> GachaBallInstance:
-	if not is_instance_valid(source_instance):
-		return null
-	var container_name = source_instance.location_container_tag
-	var container = get_container(container_name)
-	if not is_instance_valid(container):
-		return null
-	
-	var source_index = container.get_index_of_uuid(source_instance.ball_uuid)
-	if source_index == -1:
-		return null
-	
-	var behind_index = source_index - 1
-	if behind_index >= 0:
-		var behind_uuid = container.get_uuid(behind_index)
-		if not behind_uuid.is_empty():
-			var inst = get_instance_by_uuid(behind_uuid)
-			if is_instance_valid(inst) and inst.current_hp > 0:
-				return inst
-	
-	return null
+	return BattleHelpers.get_ally_behind(_state, source_instance)
 
 ## Get the slot ahead of the source unit.
 ## @param source_instance: GachaBallInstance - The source unit
 ## @return GachaBallInstance - The unit ahead, or null if empty
 func _get_slot_ahead(source_instance: GachaBallInstance) -> GachaBallInstance:
-	var container_name = source_instance.location_container_tag
-	var container = get_container(container_name)
-	if not is_instance_valid(container):
-		return null
-	
-	var source_index = container.get_index_of_uuid(source_instance.ball_uuid)
-	if source_index == -1:
-		return null
-	
-	var ahead_index = source_index + 1
-	if ahead_index < container.get_all_uuids().size():
-		var ahead_uuid = container.get_uuid(ahead_index)
-		if not ahead_uuid.is_empty():
-			var inst = get_instance_by_uuid(ahead_uuid)
-			if is_instance_valid(inst) and inst.current_hp > 0:
-				return inst
-	
-	return null
+	return BattleHelpers.get_slot_ahead(_state, source_instance)
 
 ## Get adjacent allies (front and back).
 ## @param source_instance: GachaBallInstance - The source unit
 ## @return Array[GachaBallInstance] - Array of adjacent allies
 func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBallInstance]:
-	var adjacent: Array[GachaBallInstance] = []
+	return BattleHelpers.get_adjacent_allies(_state, source_instance)
+
+## Look up an ability definition by ID from a source unit or its equipped items.
+## @param ability_id: StringName - The ability ID to look up
+## @param source: GachaBallInstance - The unit to search (and its equipped items)
+## @return AbilityDefinition if found, null otherwise
+func _get_ability_definition(ability_id: StringName, source: GachaBallInstance) -> AbilityDefinition:
+	if not is_instance_valid(source):
+		return null
 	
-	var ally_behind = _get_ally_behind(source_instance)
-	if is_instance_valid(ally_behind):
-		adjacent.append(ally_behind)
+	# Check unit's own abilities
+	for ability in source.abilities:
+		if ability.id == ability_id:
+			return ability
 	
-	var ally_ahead = _get_slot_ahead(source_instance)
-	if is_instance_valid(ally_ahead):
-		adjacent.append(ally_ahead)
+	# Check equipped items' abilities
+	for item_uuid in source.equipped_item_uuids:
+		if item_uuid.is_empty():
+			continue
+		var item_inst = get_instance_by_uuid(item_uuid)
+		if not is_instance_valid(item_inst):
+			continue
+		for ability in item_inst.abilities:
+			if ability.id == ability_id:
+				return ability
 	
-	return adjacent
+	return null
 
 ## Trigger on_hurt event for a unit that took damage.
 ## @param target_uuid: String - The UUID of the unit that took damage
@@ -3403,13 +1698,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		elif target_instance.location_container_tag == BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			victim_team = "ENEMY"
 	
-	# ═══════════════════════════════════════════════════════════════════════════
 	# LIFESTEAL TIMING FIX: Process on_damage_dealt BEFORE on_hurt
-	# This ensures lifesteal heals appear immediately after the damage that caused
-	# them, before any retaliation chains (on_hurt → counter-attack → on_hurt...)
-	# ═══════════════════════════════════════════════════════════════════════════
-	
-	# Trigger on_damage_dealt for the attacker (for lifesteal effects) FIRST
 	if not attacker_uuid.is_empty():
 		# Resolve the actual attacking UNIT - if attacker is an item, get the holder
 		var actual_attacker_uuid := attacker_uuid
@@ -3417,48 +1706,24 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		if is_instance_valid(attacker_instance):
 			var attacker_def = attacker_instance.get_definition()
 			if is_instance_valid(attacker_def) and attacker_def.category == &"ITEM":
-				# Attacker is an item - use the holder's UUID instead
 				if not attacker_instance.equipped_on_uuid.is_empty():
 					actual_attacker_uuid = attacker_instance.equipped_on_uuid
 		
-		var damage_dealt_context: Dictionary = {
-			"attacker_uuid": actual_attacker_uuid,
-			"victim_uuid": target_uuid,
-			"damage_dealt": damage_amount,
-			"victim_new_hp": victim_current_hp
-		}
-		AbilityResolver.process_trigger(&"on_damage_dealt", damage_dealt_context)
+		TurnAbilities.trigger_on_damage_dealt(actual_attacker_uuid, target_uuid, damage_amount, victim_current_hp)
 	
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
-	# Semantic context keys: victim_uuid = the damaged unit
-	var hurt_context: Dictionary = {
-		"victim_uuid": target_uuid,
-		"damage_taken": damage_amount,
-		"attacker_uuid": attacker_uuid,
-		"victim_team": victim_team,
-		"victim_current_hp": victim_current_hp,
-		"trigger_cause": cause # Now configurable - allows filtering by damage source
-	}
-	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
+	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause)
 
 
 ## Trigger on_kill event for a unit that killed another unit.
 ## @param killer_uuid: String - The UUID of the unit that got the kill
 ## @param killed_uuid: String - The UUID of the unit that was killed
 func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
-	# Semantic context keys: attacker_uuid = the killer
-	var kill_context: Dictionary = {
-		"attacker_uuid": killer_uuid,
-		"killed_uuid": killed_uuid
-	}
-	AbilityResolver.process_trigger(&"on_kill", kill_context)
+	TurnAbilities.trigger_on_kill(killer_uuid, killed_uuid)
 
 ## Trigger on_battle_start abilities for all units.
 func _trigger_battle_start_abilities() -> void:
-	var all_units = get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	for unit in all_units:
-		var battle_start_context: Dictionary = {"source_uuid": unit.ball_uuid}
-		AbilityResolver.process_trigger(&"on_battle_start", battle_start_context)
+	TurnAbilities.trigger_battle_start_abilities(_state)
 
 ## Trigger on_turn_start abilities for all units and trinkets.
 func _trigger_turn_start_abilities() -> void:
@@ -3532,106 +1797,10 @@ func _trigger_turn_end_abilities() -> void:
 	# Capture board snapshot for animation
 	var start_snapshot = get_board_snapshot()
 	
-	# 1. Process Status Effects (Burn)
-	# We inline the logic here to combine events into a single animation sequence
-	# print("DEBUG: Processing status effects for ", all_units.size(), " units")
-	for unit in all_units:
-		if unit.current_hp <= 0: continue # Skip dead units
-		var burn_stacks = unit.get_status_effect_amount(&"burn")
-		if burn_stacks > 0:
-			var damage = burn_stacks
-			var old_hp = unit.current_hp # Capture BEFORE
-			# Apply HP delta via centralized function
-			var new_hp = apply_stat_delta(unit, "hp", -damage)
-			var max_hp = 0
-			var unit_def = unit.get_definition()
-			if is_instance_valid(unit_def):
-				max_hp = unit_def.base_hp
-			
-			var unit_name = _get_instance_display_name(unit)
-			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s takes %d burn dmg" % [unit_name, damage]}))
-			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-				"source_uuid": "",
-				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": - damage,
-					"stat": "hp",
-					"skip_bump": true,
-					"is_burn_damage": true,
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
-			}))
-			
-			var new_stacks = floor(burn_stacks / 2.0)
-			var old_stacks = burn_stacks
-			if new_stacks > 0:
-				# Apply burn decay via centralized function
-				var decay_delta = new_stacks - burn_stacks # Negative delta
-				apply_stat_delta(unit, "burn_stacks", decay_delta)
-			else:
-				unit.clear_status_effect(&"burn")
-				new_stacks = 0
-			
-			# Emit BUFF event for burn decay so animator updates the visual
-			all_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": "",
-				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": int(new_stacks) - int(old_stacks), # Negative = decay
-					"stat": "burn_stacks",
-					"new_val": int(new_stacks) # Key name matches BuffAnimation
-				}
-			}))
-				
-			if unit.current_hp <= 0:
-				# Use unified death registry to prevent duplicate processing
-				if not _register_death(unit, &"END_OF_TURN"):
-					continue # Already died earlier this turn (e.g., in COMBAT phase)
-				
-				_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)
-				
-				# Track first-killed for resurrection (must happen before on_death triggers)
-				var is_player_unit = _is_player_unit(unit)
-				var first_killed_key := "first_killed_player_unit" if is_player_unit else "first_killed_enemy_unit"
-				if not _turn_metadata.has(first_killed_key):
-					var unit_def_fk = unit.get_definition()
-					if is_instance_valid(unit_def_fk) and not unit_def_fk.is_hero:
-						var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
-						if is_instance_valid(loc_snapshot):
-							_turn_metadata[first_killed_key] = {
-								"def_id": unit.definition_id,
-								"team": "PLAYER" if is_player_unit else "ENEMY",
-								"location_snapshot": loc_snapshot
-							}
-				
-				# Trigger on_death for the dying unit (semantic key: dying_uuid)
-				var death_location = get_location_for_uuid(unit.ball_uuid)
-				var death_team = "PLAYER" if is_player_unit else "ENEMY"
-				var death_context = {
-					"dying_uuid": unit.ball_uuid,
-					"dying_team": death_team,
-					"dying_location": death_location,
-					"equipped_items": _snapshot_equipped_items(unit)
-				}
-				AbilityResolver.process_trigger(&"on_death", death_context)
-				
-				# UNIFIED BROADCAST: Single call, AbilityResolver self-filters
-				var ally_death_context := {
-					"fainting_ally_uuid": unit.ball_uuid,
-					"fainting_ally_location": death_location,
-					"fainting_ally_team": death_team
-				}
-				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
-				
-				# Process any reactions generated by on_death (like Soul Echo summons)
-				while not _pending_reactions.is_empty():
-					_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-					var death_reaction = _pending_reactions.pop_front()
-					var death_reaction_events: Array[CombatEvent] = []
-					_resolve_single_effect_request(death_reaction, death_reaction_events, death_tracking)
-					all_events.append_array(death_reaction_events)
+	# 1. Process Status Effects via StatusEffectRegistry
+	# Generic loop replaces hardcoded burn logic
+	for status_def in StatusEffectRegistry.get_turn_effects("END_OF_TURN"):
+		_process_status_turn_effect(status_def, all_units, all_events, death_tracking)
 
 	# 2. Process on_turn_end triggers
 	# print("DEBUG: Processing on_turn_end triggers")
@@ -3662,27 +1831,181 @@ func _trigger_turn_end_abilities() -> void:
 func _process_turn_end_status_effects() -> void:
 	pass
 
-func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
-	var source_container = get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-	var dest_container_tag = "BattleInventoryT%d" % tier_to_reshuffle
-	var dest_container = get_container(dest_container_tag)
-	if not is_instance_valid(source_container) or not is_instance_valid(dest_container): return
-	var all_discarded = get_instances_in_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-	var instances_to_move: Array[GachaBallInstance] = []
-	for inst in all_discarded:
-		var inst_def = inst.get_definition()
-		if (inst_def is GachaBallDefinition) and inst_def.tier == tier_to_reshuffle and _is_player_owned(inst):
-			instances_to_move.append(inst)
-	if instances_to_move.is_empty(): return
-	for instance in instances_to_move:
-		# Restore stats to base values before moving back to draw pool
-		instance.reset_battle_stats()
+## Generic status effect turn processor. Handles any status effect at turn start/end.
+## @param status_def: StatusEffectDefinition resource from registry
+## @param all_units: Array of units to process
+## @param all_events: Array to append CombatEvents to
+## @param death_tracking: Dictionary for death deduplication
+func _process_status_turn_effect(status_def: Resource, all_units: Array, all_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
+	for unit in all_units:
+		if unit.current_hp <= 0:
+			continue
 		
-		_remove_instance_from_container(instance)
-		var new_index = dest_container.find_first_empty_slot()
-		if new_index == -1: new_index = dest_container.get_all_uuids().size()
-		dest_container.set_uuid(new_index, instance.ball_uuid)
-		_update_instance_location(instance.ball_uuid, dest_container_tag, new_index)
+		var stacks: int = unit.get_status_effect_amount(status_def.id)
+		if stacks <= 0:
+			continue
+		
+		var unit_name: String = _get_instance_display_name(unit)
+		var status_name: String = tr(status_def.display_name_key) if not status_def.display_name_key.is_empty() else String(status_def.id)
+		
+		# Apply turn effect (DAMAGE or HEAL)
+		if status_def.turn_effect == "DAMAGE":
+			var damage: int = int(stacks * status_def.turn_effect_multiplier)
+			var old_hp: int = unit.current_hp
+			var new_hp = apply_stat_delta(unit, "hp", -damage)
+			var max_hp: int = 0
+			var unit_def = unit.get_definition()
+			if is_instance_valid(unit_def):
+				max_hp = unit_def.base_hp
+			
+			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"text": "%s takes %d %s dmg" % [unit_name, damage, status_name]
+			}))
+			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+				"source_uuid": "",
+				"target_uuids": [unit.ball_uuid],
+				"visual_payload": {
+					"amount": - damage,
+					"stat": "hp",
+					"skip_bump": true,
+					"is_status_damage": true,
+					"status_color": status_def.color,
+					"targets_old_hp": [old_hp],
+					"targets_new_hp": [new_hp],
+					"targets_max_hp": [max_hp]
+				}
+			}))
+		elif status_def.turn_effect == "HEAL":
+			var heal: int = int(stacks * status_def.turn_effect_multiplier)
+			var old_hp: int = unit.current_hp
+			var new_hp = apply_stat_delta(unit, "hp", heal)
+			var max_hp: int = 0
+			var unit_def = unit.get_definition()
+			if is_instance_valid(unit_def):
+				max_hp = unit_def.base_hp
+			
+			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"text": "%s heals %d from %s" % [unit_name, heal, status_name]
+			}))
+			all_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
+				"source_uuid": "",
+				"target_uuids": [unit.ball_uuid],
+				"visual_payload": {
+					"amount": heal,
+					"stat": "hp",
+					"targets_old_hp": [old_hp],
+					"targets_new_hp": [new_hp],
+					"targets_max_hp": [max_hp]
+				}
+			}))
+		
+		# Apply decay
+		var old_stacks: int = stacks
+		var new_stacks: int = stacks
+		match status_def.decay_mode:
+			"HALVE":
+				new_stacks = int(floor(stacks / 2.0))
+			"DECREMENT":
+				new_stacks = stacks - status_def.decay_amount
+			"CLEAR":
+				new_stacks = 0
+		
+		if new_stacks != old_stacks:
+			if new_stacks <= 0:
+				unit.clear_status_effect(status_def.id)
+				new_stacks = 0
+			else:
+				var decay_delta: int = new_stacks - old_stacks
+				apply_stat_delta(unit, String(status_def.id) + "_stacks", decay_delta)
+			
+			# Emit BUFF event for status decay so animator updates the visual
+			all_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": "",
+				"target_uuids": [unit.ball_uuid],
+				"visual_payload": {
+					"amount": new_stacks - old_stacks,
+					"stat": String(status_def.id) + "_stacks",
+					"new_val": new_stacks,
+					"status_color": status_def.color
+				}
+			}))
+		
+		# Handle death from status damage
+		if unit.current_hp <= 0:
+			if not _register_death(unit, &"END_OF_TURN"):
+				continue
+			
+			_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)
+			
+			var is_player: bool = _is_player_unit(unit)
+			var first_killed_key := "first_killed_player_unit" if is_player else "first_killed_enemy_unit"
+			if not _turn_metadata.has(first_killed_key):
+				var unit_def_fk = unit.get_definition()
+				if is_instance_valid(unit_def_fk) and not unit_def_fk.is_hero:
+					var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
+					if is_instance_valid(loc_snapshot):
+						_turn_metadata[first_killed_key] = {
+							"def_id": unit.definition_id,
+							"team": "PLAYER" if is_player else "ENEMY",
+							"location_snapshot": loc_snapshot
+						}
+			
+			var death_location = get_location_for_uuid(unit.ball_uuid)
+			var death_team: String = "PLAYER" if is_player else "ENEMY"
+			AbilityResolver.process_trigger(&"on_death", {
+				"dying_uuid": unit.ball_uuid,
+				"dying_team": death_team,
+				"dying_location": death_location,
+				"equipped_items": _snapshot_equipped_items(unit)
+			})
+			AbilityResolver.process_trigger(&"on_ally_death", {
+				"fainting_ally_uuid": unit.ball_uuid,
+				"fainting_ally_location": death_location,
+				"fainting_ally_team": death_team
+			})
+			
+			while not _pending_reactions.is_empty():
+				_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+				var death_reaction = _pending_reactions.pop_front()
+				var death_reaction_events: Array[CombatEvent] = []
+				_resolve_single_effect_request(death_reaction, death_reaction_events, death_tracking)
+				all_events.append_array(death_reaction_events)
+
+func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
+	# Delegate to BattleState's authoritative reshuffle logic
+	_state.reshuffle_tier_from_discard(tier_to_reshuffle)
+
+
+## Handle armor_stacks stat changes for trinket abilities
+## Applies armor stacks to targets and returns a BUFF event for visual feedback
+func handle_armor_stacks(request: EffectRequest, resolved_targets: Array[String], amount: int) -> CombatEvent:
+	var targets_old_val: Array[int] = []
+	var targets_new_val: Array[int] = []
+	
+	for target_uuid in resolved_targets:
+		var tgt: GachaBallInstance = get_instance_by_uuid(target_uuid)
+		if is_instance_valid(tgt):
+			targets_old_val.append(tgt.get_status_effect_amount(&"armor"))
+			var new_v = apply_stat_delta(tgt, "armor_stacks", amount)
+			targets_new_val.append(new_v)
+		else:
+			targets_old_val.append(0)
+			targets_new_val.append(0)
+	
+	return CombatEvent.new(CombatEvent.Type.BUFF, {
+		"source_uuid": request.source_uuid,
+		"target_uuids": resolved_targets,
+		"ability_id": request.ability_id,
+		"trigger_type": request.trigger_context.get("trigger_type", ""),
+		"ability_holder_uuid": request.source_uuid,
+		"visual_payload": {
+			"source_uuid": request.source_uuid,
+			"amount": amount,
+			"stat": "armor_stacks",
+			"targets_old_val": targets_old_val,
+			"targets_new_val": targets_new_val
+		}
+	})
 
 
 func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
@@ -3710,7 +2033,7 @@ func _on_end_turn_requested() -> void:
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	# CRITICAL: Do not recalculate stats during COMBAT phase
-	# This would emit unit_stats_changed which triggers SlotView updates, destroying registered views
+	# This would emit unit_stat_changed which triggers SlotView updates, destroying registered views
 	if _current_battle_phase == Phases.COMBAT:
 		return
 	
@@ -3739,17 +2062,19 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 
 
 func _emit_stats_changed_for_equipped_units() -> void:
-	# Emit unit_stats_changed for all units that have equipped items
+	# Emit granular unit_stat_changed signals for all units that have equipped items
 	for instance in _battle_instances.values():
 		if is_instance_valid(instance) and instance.get_definition().category == &"UNIT":
 			var has_equipped_items = false
-			var equipped_count = 0
 			for item_uuid in instance.equipped_item_uuids:
 				if not item_uuid.is_empty():
 					has_equipped_items = true
-					equipped_count += 1
+					break
 			if has_equipped_items:
-				SignalBus.emit_signal("unit_stats_changed", instance.ball_uuid)
+				# Emit both HP and PWR as "changed" with current values (after equipment bonuses applied)
+				# Using 0 for old_value since this is initialization
+				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"hp", 0, instance.current_hp)
+				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"pwr", 0, instance.current_pwr)
 
 func _on_flashcard_completed(results: Dictionary) -> void:
 	# TDD Section 9.4: Battle Flow
@@ -3820,38 +2145,11 @@ func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 			return true
 	return false
 
-## Find a Guardian Sentinel unit on the specified team that can intercept lethal damage.
-## Returns the Guardian with highest HP, or null if none available.
-## Guardian Sacrifice ability: intercepts lethal damage to allies.
+## Find a unit with the intercept_lethal tag on the specified team.
+## Returns the unit with highest HP, or null if none available.
+## This enables any unit with the tag to protect allies, not just Guardian Sentinel.
 func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> GachaBallInstance:
-	var lineup_tag = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-	var units = get_instances_in_container(lineup_tag)
-	
-	var best_guardian: GachaBallInstance = null
-	for unit in units:
-		# Skip the unit that would receive the original damage
-		if unit.ball_uuid == exclude_uuid:
-			continue
-		# Skip dead units
-		if unit.current_hp <= 0:
-			continue
-		
-		# Check if unit has Guardian Sacrifice ability
-		var def = unit.get_definition()
-		if not is_instance_valid(def):
-			continue
-		
-		var has_guardian_ability := false
-		for ability in def.ability_definitions:
-			if ability.id == &"unit_tier3b_guardian_sacrifice":
-				has_guardian_ability = true
-				break
-		
-		if has_guardian_ability:
-			if best_guardian == null or unit.current_hp > best_guardian.current_hp:
-				best_guardian = unit
-	
-	return best_guardian
+	return BattleHelpers.find_interceptor_on_team(_state, is_player_team, exclude_uuid)
 
 func _finalize_deaths() -> void:
 	# Removes units with <= 0 HP from containers and discard, WITHOUT triggering abilities.

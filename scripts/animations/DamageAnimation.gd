@@ -126,6 +126,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dictionary, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
 	var targets_new_hp = payload.get("targets_new_hp", [])
 	var targets_new_burn = payload.get("targets_new_burn", [])
+	var armor_consumed_list = payload.get("armor_consumed", [])
+	var targets_new_armor = payload.get("targets_new_armor", [])
 	
 	# Trigger screen shake based on total damage dealt
 	# Intensity scales from 0.0 to 1.0, where 5+ damage = max shake
@@ -136,12 +138,25 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
 		var new_hp = targets_new_hp[i] if i < targets_new_hp.size() else 0
+		var armor_consumed = armor_consumed_list[i] if i < armor_consumed_list.size() else 0
+		var new_armor = targets_new_armor[i] if i < targets_new_armor.size() else 0
 		
-		# Spawn floating damage number at target
-		_spawn_floating_damage(animator, target_uuid, abs(amount))
+		# ARMOR EFFECTS FIRST (before HP)
+		if armor_consumed > 0:
+			# Spawn grey floating damage number for armor
+			_spawn_floating_armor_damage(animator, target_uuid, armor_consumed)
+			# Animate armor label countdown
+			animator.apply_armor_delta(target_uuid, armor_consumed, new_armor)
+			# Longer pause between armor and HP updates for player to register
+			await animator.get_tree().create_timer(0.5).timeout
 		
-		# Update Label (Puppet Mode)
-		animator.apply_hp_delta(target_uuid, amount, new_hp)
+		# HP EFFECTS SECOND
+		var hp_damage = abs(amount) - armor_consumed
+		if hp_damage > 0:
+			# Spawn floating damage number at target (red)
+			_spawn_floating_damage(animator, target_uuid, hp_damage)
+			# Update HP Label (Puppet Mode)
+			animator.apply_hp_delta(target_uuid, -hp_damage, new_hp)
 		
 		# Apply Burn if needed
 		if apply_burn:
@@ -188,6 +203,35 @@ func _spawn_floating_damage(animator: Node, target_uuid: String, damage: int) ->
 		if is_instance_valid(battle_view):
 			battle_view.add_child(damage_number)
 			damage_number.setup(damage, spawn_pos)
+			damage_number.play()
+		else:
+			damage_number.queue_free()
+
+func _spawn_floating_armor_damage(animator: Node, target_uuid: String, damage: int) -> void:
+	# Spawn grey floating damage number for armor consumption
+	var tgt_snap = animator.get_snapshot_position(target_uuid)
+	if tgt_snap.is_empty(): return
+	
+	var spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
+	
+	var damage_number = FloatingDamageNumberScene.instantiate()
+	var effects_layer = animator.get_tree().get_first_node_in_group("effects_layer")
+	if is_instance_valid(effects_layer):
+		var viewport_offset = Vector2.ZERO
+		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view):
+			var viewport = battle_view.get_viewport()
+			if viewport and viewport.get_parent() is Control:
+				viewport_offset = viewport.get_parent().global_position
+				
+		effects_layer.add_child(damage_number)
+		damage_number.setup_armor(damage, spawn_pos + viewport_offset) # Grey color
+		damage_number.play()
+	else:
+		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view):
+			battle_view.add_child(damage_number)
+			damage_number.setup_armor(damage, spawn_pos) # Grey color
 			damage_number.play()
 		else:
 			damage_number.queue_free()

@@ -71,8 +71,7 @@ func _on_results_acknowledged() -> void:
 		elif _current_training == TrainingType.PWR:
 			GameManager.run_state.modify_unit_base_stats(hero_uuid, 0, stat_gain)
 		
-		# Force immediate update of the UI
-		SignalBus.emit_signal("unit_stats_changed", hero_uuid)
+		# NOTE: modify_unit_base_stats() already emits granular unit_stat_changed signals
 		# Small delay to ensure UI updates before cleaning up
 		await get_tree().process_frame
 

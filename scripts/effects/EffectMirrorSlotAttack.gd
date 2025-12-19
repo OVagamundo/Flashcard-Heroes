@@ -122,7 +122,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		var new_hp = max(0, target_instance.current_hp - damage)
 		target_instance.set_current_hp(new_hp)
 		SignalBus.battle_inventory_changed.emit()
-		SignalBus.unit_stats_changed.emit(target_instance.ball_uuid)
+		# NOTE: set_current_hp() already emits granular unit_stat_changed signal
 	
 	# CRITICAL: Return dictionary with explicit "targets" array
 	# If we return just an int, BattleManager uses the original resolved targets

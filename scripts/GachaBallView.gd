@@ -10,6 +10,8 @@ extends PanelContainer
 @onready var hp_label: Label = %HPLabel
 @onready var pwr_label: Label = %PWRLabel
 @onready var burn_label: Label = %BurnLabel # Renamed from PoisonLabel
+@onready var armor_container: Control = %ArmorContainer
+@onready var armor_label: Label = %ArmorLabel
 
 var _location: LocationIdentifier
 var _instance_uuid: String
@@ -30,7 +32,10 @@ var _window_group_id: int = 0
 # Visual State (Puppet Mode)
 var _visual_hp: int = 0
 var _visual_pwr: int = 0
-var _visual_burn_stacks: int = 0 # Renamed from _visual_poison_stacks
+var _visual_burn_stacks: int = 0 # Legacy - kept for backward compat
+var _visual_armor_stacks: int = 0 # Armor stacks - same pattern as burn
+var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
+var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
 var _bound_uuid: String = "" # UUID bound during populate()
 var _melee_origin_position: Vector2 = Vector2.ZERO # Stored for return animation
 var _flash_tween: Tween = null # Store active flash tween to prevent conflict
@@ -122,6 +127,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_visual_hp = visual_data.get("hp", 0)
 	_visual_pwr = visual_data.get("pwr", 0)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
+	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
@@ -150,6 +156,7 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_hp = visual_data.get("hp", 0)
 	_visual_pwr = visual_data.get("pwr", 0)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
+	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_update_stats()
 
 func set_is_enemy(is_enemy: bool, definition_id: StringName = &"") -> void:
@@ -184,6 +191,7 @@ func _update_stats(animate: bool = false, visual_data: Dictionary = {}) -> void:
 	hp_container.visible = false
 	pwr_container.visible = false
 	burn_container.visible = false # Renamed from poison_container
+	armor_container.visible = false # Added for armor
 	
 	# Only show stats for UNITs (not items or trinkets)
 	if _entity_type != &"UNIT":
@@ -201,6 +209,7 @@ func _update_stats(animate: bool = false, visual_data: Dictionary = {}) -> void:
 	var old_hp = _visual_hp
 	var old_pwr = _visual_pwr
 	var old_burn = _visual_burn_stacks # Added for burn animation logic
+	var old_armor = _visual_armor_stacks # Added for armor animation logic
 	
 	if animate and not visual_data.is_empty():
 		_animate_number(hp_label, old_hp, visual_data.hp)
@@ -213,6 +222,13 @@ func _update_stats(animate: bool = false, visual_data: Dictionary = {}) -> void:
 			# Even if stacks didn't change (e.g. refresh), pulse if active
 			if is_instance_valid(burn_container) and burn_container.visible:
 				_flash_label(burn_label)
+		
+		# Armor animation (stacks) - same pattern as burn
+		if visual_data.has("armor_stacks") and visual_data.armor_stacks != old_armor:
+			animate_armor_change(visual_data.armor_stacks)
+		elif visual_data.has("armor_stacks") and visual_data.armor_stacks > 0:
+			if is_instance_valid(armor_container) and armor_container.visible:
+				_flash_label(armor_label)
 	else:
 		hp_label.text = str(max(0, _visual_hp))
 		pwr_label.text = str(_visual_pwr)
@@ -223,12 +239,21 @@ func _update_stats(animate: bool = false, visual_data: Dictionary = {}) -> void:
 			burn_label.text = str(_visual_burn_stacks)
 		else:
 			burn_container.visible = false
+		
+		# Update armor label (show only when stacks > 0) - same pattern as burn
+		if _visual_armor_stacks > 0:
+			armor_container.visible = true
+			armor_label.text = str(_visual_armor_stacks)
+		else:
+			armor_container.visible = false
 	
 	# Update internal visual state if visual_data was provided for animation
 	if not visual_data.is_empty():
 		_visual_hp = visual_data.hp
 		_visual_pwr = visual_data.pwr
 		_visual_burn_stacks = visual_data.burn_stacks
+		if visual_data.has("armor_stacks"):
+			_visual_armor_stacks = visual_data.armor_stacks
 
 func _animate_number(label: Label, start_val: int, end_val: int) -> void:
 	if start_val == end_val:
@@ -259,6 +284,20 @@ func set_visual_state(snapshot: Dictionary) -> void:
 		_visual_pwr = int(snapshot["pwr"])
 	if snapshot.has("burn_stacks"): # Renamed from poison_stacks
 		_visual_burn_stacks = int(snapshot["burn_stacks"]) # Renamed from poison_stacks
+	if snapshot.has("armor_stacks"): # Added for armor - same pattern as burn
+		_visual_armor_stacks = int(snapshot["armor_stacks"])
+	
+	# Restore generic status effects (armor, etc.)
+	if snapshot.has("status_effects"):
+		var effects: Dictionary = snapshot["status_effects"]
+		for status_id in effects:
+			# Skip burn and armor - handled by dedicated systems
+			if status_id == &"burn" or status_id == &"armor":
+				continue
+			_visual_status_effects[status_id] = int(effects[status_id])
+			print("[GachaBallView] set_visual_state restored %s=%d for %s" % [status_id, effects[status_id], _instance_uuid])
+		_update_dynamic_status_icons()
+	
 	_update_stats()
 
 func animate_burn_change(target_stacks: int) -> void: # Renamed from animate_poison_change
@@ -285,6 +324,133 @@ func animate_burn_change(target_stacks: int) -> void: # Renamed from animate_poi
 		var tween = create_tween()
 		tween.tween_property(burn_container, "scale", Vector2.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 		tween.tween_callback(func(): burn_container.visible = false)
+
+## Animate armor change - same pattern as burn
+func animate_armor_change(target_stacks: int) -> void:
+	var old_stacks = _visual_armor_stacks
+	_visual_armor_stacks = target_stacks
+	
+	if target_stacks > 0:
+		armor_container.visible = true
+		# Update number
+		armor_label.text = str(target_stacks)
+		
+		if old_stacks == 0:
+			# Pop in - need animation
+			armor_container.scale = Vector2.ZERO
+			var tween = create_tween()
+			tween.tween_property(armor_container, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		
+		# Flash label
+		if is_instance_valid(armor_container) and armor_container.visible:
+			_flash_label(armor_label)
+			
+	else:
+		# Fade out - need animation
+		var tween = create_tween()
+		tween.tween_property(armor_container, "scale", Vector2.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_callback(func(): armor_container.visible = false)
+
+## Animate armor stat change with countdown (for damage visualization)
+## Similar to animate_stat_change but for armor - counts down from current to new value
+func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
+	var start_val = _visual_armor_stacks
+	_visual_armor_stacks = target_stacks
+	
+	if target_stacks > 0:
+		armor_container.visible = true
+		# Flash the label
+		_flash_label(armor_label)
+		# Tween the number countdown
+		var tween = create_tween()
+		tween.tween_method(func(val): armor_label.text = str(val), start_val, target_stacks, 0.3)
+	elif start_val > 0:
+		# Armor depleted: count down to 0, then fade out
+		armor_container.visible = true
+		_flash_label(armor_label)
+		var tween = create_tween()
+		# Count down to 0
+		tween.tween_method(func(val): armor_label.text = str(maxi(0, val)), start_val, 0, 0.3)
+		# Then fade out
+		tween.tween_property(armor_container, "scale", Vector2.ZERO, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_callback(func(): armor_container.visible = false)
+
+## Update dynamic status icons for any status effect tracked in _visual_status_effects.
+## Creates icons on-the-fly using StatusEffectRegistry if they don't exist.
+func _update_dynamic_status_icons() -> void:
+	# Get the stats container to add icons to
+	var stats_container = get_node_or_null("VBoxContainer/StatsContainer")
+	if not is_instance_valid(stats_container):
+		return
+	
+	# Update or create icons for each status effect
+	for status_id in _visual_status_effects:
+		var stacks: int = _visual_status_effects[status_id]
+		
+		# Skip burn and armor - handled by dedicated systems
+		if status_id == &"burn" or status_id == &"armor":
+			continue
+		
+		if stacks > 0:
+			# Create icon if doesn't exist
+			if not _status_icon_nodes.has(status_id):
+				_create_status_icon(status_id, stats_container)
+			
+			# Update label and ensure visible
+			var icon_node = _status_icon_nodes.get(status_id)
+			if is_instance_valid(icon_node):
+				icon_node.visible = true
+				var label = icon_node.get_node_or_null("Label")
+				if is_instance_valid(label):
+					label.text = str(stacks)
+		else:
+			# Hide icon (don't destroy - prevents flickering from async queue_free)
+			if _status_icon_nodes.has(status_id):
+				var icon_node = _status_icon_nodes[status_id]
+				if is_instance_valid(icon_node):
+					icon_node.visible = false
+
+## Create a dynamic status icon for a status effect
+func _create_status_icon(status_id: StringName, parent: Node) -> void:
+	# Get definition from registry
+	var status_def = StatusEffectRegistry.get_definition(status_id)
+	if not is_instance_valid(status_def):
+		return
+	
+	# Create TextureRect for icon
+	var icon_rect = TextureRect.new()
+	icon_rect.custom_minimum_size = Vector2(48, 48)
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.texture = status_def.icon
+	icon_rect.scale = Vector2.ZERO # Start scaled down for animation
+	
+	# Create label for stack count
+	var label = Label.new()
+	label.name = "Label"
+	label.layout_mode = 1
+	label.anchors_preset = Control.PRESET_FULL_RECT
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", Color.WHITE)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_font_size_override("font_size", 24)
+	
+	icon_rect.add_child(label)
+	parent.add_child(icon_rect)
+	
+	# Store reference
+	_status_icon_nodes[status_id] = icon_rect
+	
+	# Animate in
+	var tween = create_tween()
+	tween.tween_property(icon_rect, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+## Animate a status effect change (for non-burn effects)
+func animate_status_change(status_id: StringName, new_stacks: int) -> void:
+	_visual_status_effects[status_id] = new_stacks
+	_update_dynamic_status_icons()
 
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	# type: "hp" or "pwr"
@@ -352,12 +518,36 @@ func _find_slot_anchor() -> Control:
 	# If all else fails, return self as Control (this should never happen in normal operation)
 	return self
 
-func _on_unit_stats_changed(unit_uuid: String) -> void:
-	if _instance_uuid == unit_uuid:
-		var instance = GameManager.get_instance_by_uuid(unit_uuid)
-		if is_instance_valid(instance):
-			_update_stats()
-			_update_item_slots() # Update poison display when status effects change
+## Granular stat change handler - updates only the specific stat that changed
+## This is the clean pattern: HP changes only update HP, armor changes only update armor
+func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value: int, new_value: int) -> void:
+	if _instance_uuid != unit_uuid:
+		return
+	
+	# Update ONLY the specific stat that changed
+	match stat_name:
+		&"hp":
+			_visual_hp = new_value
+			if is_instance_valid(hp_label):
+				hp_label.text = str(max(0, new_value))
+			if is_instance_valid(hp_container):
+				hp_container.visible = true
+		&"pwr":
+			_visual_pwr = new_value
+			if is_instance_valid(pwr_label):
+				pwr_label.text = str(new_value)
+			if is_instance_valid(pwr_container):
+				pwr_container.visible = true
+		&"burn_stacks":
+			animate_burn_change(new_value)
+		&"armor_stacks":
+			animate_armor_change(new_value)
+		_:
+			# Handle other generic status effects
+			if String(stat_name).ends_with("_stacks"):
+				var status_id = StringName(String(stat_name).trim_suffix("_stacks"))
+				_visual_status_effects[status_id] = new_value
+				_update_dynamic_status_icons()
 
 func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location): return

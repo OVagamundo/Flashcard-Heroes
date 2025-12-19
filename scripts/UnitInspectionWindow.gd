@@ -22,7 +22,7 @@ func _ready() -> void:
 	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 	SignalBus.run_data_changed.connect(_on_inventory_changed)
-	SignalBus.unit_stats_changed.connect(_on_unit_stats_changed)
+	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
@@ -50,8 +50,8 @@ func _exit_tree() -> void:
 		SignalBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
 	if SignalBus.is_connected("run_data_changed", _on_inventory_changed):
 		SignalBus.run_data_changed.disconnect(_on_inventory_changed)
-	if SignalBus.is_connected("unit_stats_changed", _on_unit_stats_changed):
-		SignalBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
+	if SignalBus.is_connected("unit_stat_changed", _on_unit_stat_changed):
+		SignalBus.unit_stat_changed.disconnect(_on_unit_stat_changed)
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
@@ -282,7 +282,8 @@ func _update_description() -> void:
 	description_label.text = full_text
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
-func _on_unit_stats_changed(unit_uuid: String) -> void:
+## Granular stat change handler - updates description when any stat changes
+func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
 	if unit_uuid == _inspected_unit_uuid:
 		# Update the instance reference and refresh the description
 		var all_instances: Dictionary = _get_all_instances_db()

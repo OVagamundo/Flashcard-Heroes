@@ -126,14 +126,14 @@ The simulation→presentation bridge. Created by BattleManager after effect exec
 │  └────────┬─────────────────────────────────────────────────────────┘       │
 │           ▼                                                                 │
 │  ┌──────────────────────────────────────────────────────────────────┐       │
-│  │ 11. QUEUE DRAIN (BattleManager - various locations)             │       │
+│  │ 11. QUEUE DRAIN (CombatSimulator.execute_combat_turn)            │       │
 │  │     _pending_reactions.sort_custom(by priority, descending)     │       │
-│  │     For each request: _resolve_single_effect_request(request)   │       │
+│  │     For each request: battle_manager._resolve_single_effect_request()│  │
 │  └────────┬─────────────────────────────────────────────────────────┘       │
 │           ▼                                                                 │
 │  ┌──────────────────────────────────────────────────────────────────┐       │
 │  │ 12. DEAD SOURCE CHECK (BattleManager._resolve_single_effect_request)│   │
-│  │     Line ~1284: IF source is UNIT with HP ≤ 0:                  │       │
+│  │     IF source is UNIT with HP ≤ 0:                              │       │
 │  │       ALLOW if dying_uuid == source_uuid (own death trigger)    │       │
 │  │       ALLOW if ability_id contains "counter" or "retaliate"     │       │
 │  │       OTHERWISE: return (block execution)                        │       │
@@ -142,13 +142,12 @@ The simulation→presentation bridge. Created by BattleManager after effect exec
 │  ┌──────────────────────────────────────────────────────────────────┐       │
 │  │ 13. TARGET VALIDATION (BattleManager._resolve_single_effect_request)│   │
 │  │     Filter out dead targets (HP ≤ 0) and targets not in battle  │       │
-│  │     Line ~1320: If expected targets but all invalid → return    │       │
+│  │     If expected targets but all invalid → return                │       │
 │  │     EXCEPTION: Targetless effects (summons) proceed with []     │       │
 │  └────────┬─────────────────────────────────────────────────────────┘       │
 │           ▼                                                                 │
 │  ┌──────────────────────────────────────────────────────────────────┐       │
 │  │ 14. EFFECT EXECUTION (BattleManager._resolve_single_effect_request)│    │
-│  │     Line ~1372:                                                  │       │
 │  │     res = request.effect_definition.execute(source_uuid,        │       │
 │  │           exec_targets, battle_manager, sim_ctx)                │       │
 │  └────────┬─────────────────────────────────────────────────────────┘       │
@@ -249,7 +248,7 @@ if source.current_hp <= 0:
 ```
 
 ### Step 12 - Dead Source Check in BattleManager
-**File:** `BattleManager.gd:1284-1299`
+**File:** `BattleManager.gd` in `_resolve_single_effect_request()`
 **Symptom:** EffectRequest silently dropped
 **Debug:** Verify `trigger_context.dying_uuid == request.source_uuid`
 ```gdscript
@@ -261,7 +260,7 @@ if src_def.category == &"UNIT" and source.current_hp <= 0:
 ```
 
 ### Step 13 - Target Validation
-**File:** `BattleManager.gd:1320-1321`
+**File:** `BattleManager.gd` in `_resolve_single_effect_request()`
 **Symptom:** Effect has targets but all are dead
 **Debug:** Check `resolved_targets` vs current HP of targets
 ```gdscript
@@ -270,7 +269,7 @@ if valid_targets.is_empty() and not exec_targets.is_empty():
 ```
 
 ### Step 14 - Invalid Effect Definition
-**File:** `BattleManager.gd:1344`
+**File:** `BattleManager.gd` in `_resolve_single_effect_request()`
 **Symptom:** execute() never called
 **Debug:** Check `is_instance_valid(request.effect_definition)`
 
@@ -315,11 +314,10 @@ The `_pending_reactions` queue is drained at these locations:
 
 | Location | When | Notes |
 |----------|------|-------|
-| ~Line 2167 | After attack damage in simulation | Main combat reactions |
-| ~Line 2703 | After `_check_for_deaths_with_counter_delay` | Death-triggered effects |
-| ~Line 3128 | `drain_pending_reactions_inline` | Inline during effect execution |
-| ~Line 3596 | `_trigger_turn_end_abilities` | End-of-turn deaths |
-| ~Line 3612 | After `on_turn_end` trigger | Turn-end reactions |
+| `CombatSimulator.execute_combat_turn()` | Main combat loop | Actor/reaction processing |
+| `BattleManager._check_for_deaths_with_counter_delay` | Death processing | Death-triggered effects |
+| `BattleManager.drain_pending_reactions_inline` | Inline during effect | For on_hurt chains |
+| `BattleManager._trigger_turn_end_abilities` | End-of-turn | Burn damage deaths |
 
 ---
 
@@ -346,3 +344,5 @@ When an ability doesn't work:
 5. **Check Event Creation**
    - Verify effect return value routes to correct handler in `_resolve_single_effect_request`
    - Check `out_events` array after execution
+
+6. **Check for Side-Channel Leaks**: Ensure no code (including `BattleManager` callbacks) emits global redraw signals like `battle_inventory_changed` during combat. Redrawing mid-animation forces the UI to the "future" model state, causing desyncs.

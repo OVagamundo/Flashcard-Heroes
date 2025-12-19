@@ -15,8 +15,8 @@ func _ready() -> void:
 	style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
 	add_theme_stylebox_override("panel", style)
 	
-	# Connect to unit stats changed signal to update content
-	SignalBus.unit_stats_changed.connect(_on_unit_stats_changed)
+	# Connect to granular stat change signal for targeted updates
+	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
 
 ## Set custom color for this slot based on container type
 func set_slot_color(container_name: StringName) -> void:
@@ -49,8 +49,8 @@ func set_slot_color(container_name: StringName) -> void:
 	add_theme_stylebox_override("panel", style)
 
 func _exit_tree() -> void:
-	if SignalBus.unit_stats_changed.is_connected(_on_unit_stats_changed):
-		SignalBus.unit_stats_changed.disconnect(_on_unit_stats_changed)
+	if SignalBus.unit_stat_changed.is_connected(_on_unit_stat_changed):
+		SignalBus.unit_stat_changed.disconnect(_on_unit_stat_changed)
 
 	# If a drag is active while this slot is being freed, end it to prevent leaks
 	if GlobalInteractionRouter.is_drag_active():
@@ -101,29 +101,15 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	view.set_meta("location_identifier", _location)
 
 
-func _on_unit_stats_changed(unit_uuid: String) -> void:
-	# CRITICAL: Do not update views during COMBAT phase
-	# BattleAnimator owns all views during this phase (Puppet Mode)
-	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			# Check if BattleManager has get_current_phase method
-			if bm.has_method("get_current_phase"):
-				var phase = bm.get_current_phase()
-				# During COMBAT, animator controls views - ignore signal
-				if phase == 2: # Phases.COMBAT == 2
-					return
-	
-	# Normal update logic (MANAGEMENT phase only)
+## Granular stat change handler - updates only the specific stat that changed
+func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, old_value: int, new_value: int) -> void:
 	# Check if we have a child view that matches this UUID
 	if get_child_count() > 0:
 		var view = get_child(0)
 		if view is GachaBallView and view.get_instance_uuid() == unit_uuid:
-			# Fetch fresh data and update
-			var instance = GameManager.get_instance_by_uuid(unit_uuid)
-			if is_instance_valid(instance):
-				var data = VisualDataAdapter.create_visual_data(instance)
-				view.update_visuals(data)
+			# Delegate to view's granular handler
+			if view.has_method("_on_unit_stat_changed"):
+				view._on_unit_stat_changed(unit_uuid, stat_name, old_value, new_value)
 
 
 ## Configure the interaction context for this slot

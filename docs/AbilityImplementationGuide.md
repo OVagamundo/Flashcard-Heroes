@@ -12,7 +12,7 @@ This document serves as the definitive guide for implementing new abilities, ite
 
 > [!CAUTION]
 > **RULE #1: DON'T BREAK WHAT WORKS**
-> - Never modify `BattleManager.gd` or `AbilityResolver.gd` when adding new abilities
+> - Never modify `BattleManager.gd`, `AbilityResolver.gd`, or helper files (`CombatSimulator.gd`, `EffectHandlers.gd`, etc.) when adding new abilities
 > - Never add new context flags (`_skip_trinkets`, `_trinkets_only`, etc.) to core systems
 > - If you think you need to modify core systems, you are solving the wrong problem
 > - Test ALL existing abilities after ANY change
@@ -221,6 +221,7 @@ func execute(...) -> Dictionary:
 | Call `trigger_on_hurt()` or `trigger_on_kill()` | BattleManager owns trigger flow |
 | Query `get_instance()` for live data | Use context keys or parameters |
 | Emit signals during simulation | Only emit in non-simulation mode |
+| Emit global redraw signals mid-turn | Silence all side-channels during combat |
 
 ---
 

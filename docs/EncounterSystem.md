@@ -19,8 +19,10 @@ This section documents the EncounterDefinition addition needed for enemy trinket
 
 ### Battle Setup Integration
 
-- During battle setup, `BattleManager._setup_enemy_trinkets_from_encounter(enc)` reads `enc.enemy_trinket_ids` and builds the in-battle enemy trinket list.
-- The `EncounterGenerator` now populates `enemy_trinket_ids` using the weighted budget system (see V9.3 algorithm below).
+- During battle setup, `BattleSetup.setup_enemy_trinkets(state, encounter_def)` is the authoritative method for creating enemy trinkets.
+- For enemy lineup, `BattleSetup.setup_enemy_lineup(state, encounter_def)` handles unit and equipment initialization, including test-mode fallbacks.
+- `BattleManager` delegates to these helpers during its `_setup_battle` sequence.
+- The `EncounterGenerator` populates `enemy_trinket_ids` using the weighted budget system (see V9.3 algorithm below).
 
 ### Testing Notes
 

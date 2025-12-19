@@ -71,7 +71,16 @@ signal battle_start_requested(encounter_def: EncounterDefinition)
 ## @param results: Dictionary - Battle results (winner, rewards, etc.)
 signal battle_ended(results: Dictionary)
 
-## Emitted when a unit's stats change (HP, PWR, etc.)
+## Emitted when a specific stat on a unit changes (HP, PWR, armor_stacks, burn_stacks, etc.)
+## Granular signal that specifies WHICH stat changed - handlers update only that stat
+## @param unit_uuid: String - The UUID of the unit whose stat changed
+## @param stat_name: StringName - The name of the stat (&"hp", &"pwr", &"armor_stacks", &"burn_stacks")
+## @param old_value: int - The previous value
+## @param new_value: int - The new value
+signal unit_stat_changed(unit_uuid: String, stat_name: StringName, old_value: int, new_value: int)
+
+## [DEPRECATED] Use unit_stat_changed instead for granular updates
+## Emitted when a unit's stats change (HP, PWR, etc.) - triggers full refresh
 ## @param unit_uuid: String - The UUID of the unit whose stats changed
 signal unit_stats_changed(unit_uuid: String)
 

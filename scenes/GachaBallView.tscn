@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://l5mhu3dnclc4"]
+[gd_scene load_steps=9 format=3 uid="uid://l5mhu3dnclc4"]
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 [ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
+[ext_resource type="Texture2D" path="res://assets/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("2_outline")
@@ -111,6 +112,32 @@ material = SubResource("ShaderMaterial_outline")
 	stretch_mode = 5
 	
 	[node name="BurnLabel" type="Label" parent="VBoxContainer/StatsContainer/BurnContainer"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 15
+	anchor_right = 1.0
+	anchor_bottom = 1.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(1, 1, 1, 1)
+	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+	theme_override_constants/outline_size = 4
+	theme_override_fonts/font = ExtResource("3_stat_font")
+	theme_override_font_sizes/font_size = 24
+	text = "0"
+	horizontal_alignment = 1
+	vertical_alignment = 1
+
+	[node name="ArmorContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
+	unique_name_in_owner = true
+	visible = false
+	custom_minimum_size = Vector2(48, 48)
+	layout_mode = 2
+	texture = ExtResource("7_icon_armor")
+	expand_mode = 1
+	stretch_mode = 5
+	
+	[node name="ArmorLabel" type="Label" parent="VBoxContainer/StatsContainer/ArmorContainer"]
 	unique_name_in_owner = true
 	layout_mode = 1
 	anchors_preset = 15

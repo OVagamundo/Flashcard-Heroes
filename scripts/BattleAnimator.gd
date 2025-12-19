@@ -329,6 +329,30 @@ func apply_burn_stack(uuid: String, new_stacks: int) -> void:
 		if view.has_method("animate_burn_change"):
 			view.animate_burn_change(new_stacks)
 
+func apply_armor_stack(uuid: String, new_stacks: int) -> void:
+	# Update visual armor stacks on puppet view - same pattern as burn
+	if _visual_registry.has(uuid):
+		var view = _visual_registry[uuid]
+		if view.has_method("animate_armor_change"):
+			view.animate_armor_change(new_stacks)
+
+func apply_armor_delta(target_uuid: String, armor_consumed: int, new_armor: int) -> void:
+	# Animate armor countdown (counts down from old to new value)
+	var view = _visual_registry.get(target_uuid)
+	if is_instance_valid(view) and view is GachaBallView:
+		if view.has_method("animate_armor_stat_change"):
+			view.animate_armor_stat_change(new_armor, armor_consumed)
+		else:
+			# Fallback to simple update
+			view.animate_armor_change(new_armor)
+
+func apply_status_stack(uuid: String, status_id: StringName, new_stacks: int) -> void:
+	# Update visual status effect stacks on puppet view (for generic status effects like armor)
+	if _visual_registry.has(uuid):
+		var view = _visual_registry[uuid]
+		if view.has_method("animate_status_change"):
+			view.animate_status_change(status_id, new_stacks)
+
 func _emit_bump(_attacker_uuid: String) -> void:
 	# LEGACY FALLBACK: This is no longer called since all DAMAGE events
 	# now have bump_direction precomputed in their payload (handled at line 121-123).

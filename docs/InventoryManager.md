@@ -11,6 +11,9 @@ Command-Driven: Its primary entry point for player-initiated actions is the `try
 Signal Contract (from GIR): `SignalBus.try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier)` — GIR extracts `.location` from its stored `source_context` and the current `target_context` (see `GlobalInteractionRouter._execute_request_action`).
 The Golden Rule of State Synchronization: All state change instructions sent to data owners must be atomic. This means any operation that moves an instance must update both the DataContainer (the index) and the GachaBallInstance's properties (the truth) in a single, indivisible operation.
 
+> [!NOTE]
+> **In-Battle Inventory Logic:** During combat, `InventoryOperations.gd` provides the core implementation for gacha draws, moves, swaps, and equips. `BattleManager` delegates to these static methods.
+
 ## v2.4 Addendum: ChoiceWindow-Driven Swap/Merge and Close Suppression
 
 This addendum documents the finalized flow for ambiguous actions (Swap/Merge) prompted via `ChoiceWindow` and the suppression required to prevent premature closing of inspection windows during these actions.
@@ -157,6 +160,10 @@ End of Battle Cleanup
 Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.
 State Preservation: The original RunState and its RunInventory remain completely untouched and unmodified by the events of the battle. This ensures a clean state for the next encounter.
 4. Implementation & Refactoring Notes
+
+> [!TIP]
+> **Status: COMPLETED** - The refactoring items below have been implemented. They are preserved for historical context.
+
 This section details the specific, actionable changes required to refactor the current codebase to align with this V2.0 document and the new Global Interaction Router (GIR) architecture. The goal is to make the code more efficient, clear, and robust while preserving the correct, validated game behavior.
 Refactoring Item 1: Centralize Context Logic in the GIR
 Objective: To establish the GlobalInteractionRouter as the single source of truth for determining the "functional context group" of any given container.

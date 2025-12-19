@@ -50,6 +50,16 @@ Ensure all variables and function returns have explicit type hints to leverage G
 Replace hardcoded values with named constants.
 - **`BattleAnimator.gd`**: Animation durations (1.1s, 0.5s) are hardcoded in `_wait_for_animation_completion` and `_animate_events`. These should be constants (e.g., `ANIM_DURATION_BUMP`, `ANIM_TIMEOUT_BUFFER`).
 
-## 5. Legacy Code
-- **`BattleLog`**: Successfully removed.
-- **`SignalBus.gd`**: `battle_log_event` successfully removed.
+## 5. Completed Refactorings (2025-12-18)
+
+### 5.1 SRP Helper Extraction
+- **Status: COMPLETED**
+- `BattleManager` (formerly 4068 lines) has been refactored to ~2200 lines by extracting logic into 9 specialized helper files.
+- All board setup logic (lineup, trinkets, items) moved to `BattleSetup.gd`.
+- All mutation/data management moved to `BattleState.gd`.
+- All effect execution logic moved to `EffectHandlers.gd`.
+- Combat loop and reaction processing moved to `CombatSimulator.gd`.
+
+### 5.2 Legacy Signal Removal
+- **Status: COMPLETED**
+- `BattleLog` and related signals successfully removed.

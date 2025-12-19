@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/trinkets/Trinket6A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_armor_aura.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_armor_aura"
+name_key = "Armor Aura"
+description_key = "At turn start, all allies gain 3 Armor. Armor absorbs damage before HP and clears at turn end."
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

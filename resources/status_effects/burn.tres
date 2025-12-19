@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="StatusEffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"burn"
+display_name_key = "STATUS_BURN"
+color = Color(1, 0.3, 0, 1)
+turn_phase = "END_OF_TURN"
+turn_effect = "DAMAGE"
+turn_effect_multiplier = 1.0
+decay_mode = "HALVE"
+decay_amount = 1

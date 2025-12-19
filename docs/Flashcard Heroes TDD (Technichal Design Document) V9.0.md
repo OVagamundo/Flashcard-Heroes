@@ -71,11 +71,23 @@ The game logic is modularized into distinct systems and managers, each with a cl
 
 ### 3.1 Core Systems
 
--   **GachaBall System:** Manages the definitions and instances of all collectible units and items.
-    -   (See `docs/GachaBallSystem.md`)
+-   **GachaBall System:** Manages the definitions and instances of collectible units and items (GachaBallDefinition/GachaBallInstance).
+    -   (See `docs/Flashcard Heroes GDD.md`)
 -   **Combat System:** Orchestrates the turn-based, auto-battler combat phases and logic.
     -   (See `docs/CombatSystem.md`)
     -   **Architecture:** Uses a **Strict State-Event Decoupling** model ("Simulate First, Present Later").
+    -   **SRP Helper Files:** The `BattleManager` (2324 lines) delegates to specialized helpers:
+        | Helper | Responsibility |
+        |--------|----------------|
+        | `CombatSimulator` | Combat loop, actor queue, reaction processing |
+        | `EffectHandlers` | Damage, heal, buff, summon event creation |
+        | `InventoryOperations` | Move, swap, equip, gacha draw |
+        | `BattleState` | Instance storage, container management |
+        | `BattleSetup` | Battle initialization from RunState/Encounter |
+        | `DeathProcessor` | Death cleanup logic |
+        | `TurnAbilities` | Turn start/end triggers |
+        | `TargetResolver` | Target resolution |
+        | `BattleHelpers` | Utility functions |
     -   **Snapshot Architecture:** Before simulation, captures a value-based snapshot (no object references) of the entire board state.
         - Views populate from snapshot values, never query live instances during COMBAT
         - Prevents presentation from seeing "future" state after simulation mutates data
@@ -132,15 +144,16 @@ All user gestures and inputs are processed through a unified, decoupled system.
 ### 5.1 Battle Setup Flow
 
 1.  `BattleManager` receives an `EncounterDefinition`.
-2.  It creates `battle_copy()` instances from `run_state.run_instances` for all player GachaBalls. The Hero instance is used directly.
-3.  It creates new instances for all enemies and their items as defined in the encounter.
-4.  It places all instances into the correct `DataContainer` indices.
+2.  It delegates to `BattleSetup.create_battle_copies_from_run_state()` to create battle copies of all player instances.
+3.  It calls `BattleSetup.place_instances_from_run_state()` to position instances in containers.
+4.  It calls `BattleSetup.setup_player_trinkets()` and internal methods for enemy setup.
+5.  All instances are placed into the correct `DataContainer` indices.
 
 ### 5.2 Gacha Draw Flow (In-Battle)
 
-1.  A draw is requested for a specific tier.
-2.  A random GachaBall is drawn from the corresponding `BattleInventoryT<n>` pool.
-3.  If a pool becomes empty, it is immediately reshuffled with all matching GachaBalls from the `DiscardPile`. Reshuffled instances have their HP/PWR reset to base values.
+1.  A draw is requested for a specific tier via `bm_draw_gacha_instance(tier)`.
+2.  `InventoryOperations.draw_from_tier()` handles the core draw logic.
+3.  If a pool becomes empty, `BattleState.reshuffle_tier_from_discard()` moves matching GachaBalls from `DiscardPile` back into the pool (stats reset to base).
 4.  The drawn instance's location is updated to the player's bench or item inventory.
 
 ### 5.3 Merge Flow
