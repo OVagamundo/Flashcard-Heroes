@@ -27,6 +27,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainPanel" type="Panel" parent="CenterContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(1000, 700)
 layout_mode = 2
 

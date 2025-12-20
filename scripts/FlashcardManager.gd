@@ -7,6 +7,11 @@ extends Node
 
 signal minigame_finished(results: Dictionary)
 
+## SRS Algorithm weights
+const SRS_MASTERY_WEIGHT_POWER: float = 2.0
+const SRS_RECENCY_WEIGHT: float = 1.0
+const SRS_RANDOM_FACTOR: float = 0.1
+
 var _run_state_ref: RunState = null
 var _active_deck_ids: Array[StringName] = []
 var _last_shown_card_id: StringName = &""
@@ -33,10 +38,11 @@ func _select_card_via_srs() -> StringName:
 			continue
 		var progress: FlashcardProgress = _run_state_ref.flashcard_progress[card_id]
 		
-		# TDD Section 9.3: weight = pow(6 - mastery_level, 2) + (current_day - last_review_day)
-		var mastery_component = pow(6 - progress.mastery_level, 2)
-		var time_component = _run_state_ref.day - progress.last_review_day
-		var weight = float(mastery_component + time_component)
+		# TDD Section 9.3: Priority 1 = mastery (lower = higher weight), Priority 2 = recency, Tie-breaker = random
+		var mastery_component: float = pow(6 - progress.mastery_level, SRS_MASTERY_WEIGHT_POWER)
+		var time_component: float = float(_run_state_ref.day - progress.last_review_day) * SRS_RECENCY_WEIGHT
+		var random_component: float = randf() * SRS_RANDOM_FACTOR
+		var weight: float = mastery_component + time_component + random_component
 		
 		weighted_candidates.append({"id": card_id, "weight": weight})
 		total_weight += weight

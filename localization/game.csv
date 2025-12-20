@@ -111,3 +111,5 @@ item_t3_c.name,Lifesteal Ring
 item_t3_c.desc,Drains life from enemies with each attack.
 ability.item_t3c_on_attack_lifesteal.name,Vampiric Strike
 ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP)."
+item_t3_d.name,Vengeful Thorn
+item_t3_d.desc,A thorny charm that strikes back at those who harm its bearer.

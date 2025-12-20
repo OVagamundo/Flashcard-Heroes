@@ -635,6 +635,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	for card_id in deck_card_ids:
 		if not flashcard_progress.has(card_id):
 			var progress = FlashcardProgress.new()
+			progress.mastery_level = FlashcardProgress.MASTERY_MIN # Start at level 1 (Very Hard)
 			flashcard_progress[card_id] = progress
 	
 	# Populate the initial active deck with the first 10 cards
@@ -693,6 +694,19 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 			# Tier 3
 				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c", &"unit_t3_d", &"unit_t3_d",
 				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c", &"item_t3_d", &"item_t3_d"
+			]
+		&"hero":
+			# Generic hero: 2 copies of selected units/items per tier
+			return [
+				# Tier 1: 2 copies each
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
+				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
+				# Tier 2: 2x Knight + 2x Phoenix Elixir
+				&"unit_t2_c", &"unit_t2_c",
+				&"item_t2_c", &"item_t2_c",
+				# Tier 3: 2x Sakura Spirit + 2x Vengeful Thorn
+				&"unit_t3_d", &"unit_t3_d",
+				&"item_t3_d", &"item_t3_d"
 			]
 		_:
 			# Default: minimal starter loadout for other heroes
