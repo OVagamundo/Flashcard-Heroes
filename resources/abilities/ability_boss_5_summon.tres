@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
-[ext_resource type="Script" path="res://scripts/effects/EffectBossSummon.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="2_effect_script"]
 
 [sub_resource type="Resource" id="EffectBossSummon_Budget25"]
 script = ExtResource("2_effect_script")

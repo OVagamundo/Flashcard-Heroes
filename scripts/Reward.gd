@@ -2,6 +2,7 @@ extends VBoxContainer
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 
+@onready var title_label: Label = $TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
 @onready var confirm_button: Button = %ConfirmSelectionButton
 @onready var gold_button: Button = %TakeGoldButton
@@ -19,6 +20,16 @@ func _ready() -> void:
 	
 	# Add global input handling for closing inspection windows
 	gui_input.connect(_on_gui_input)
+	
+	# Connect to locale changes
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
+
+func _update_localized_text() -> void:
+	title_label.text = tr("ui.choose_reward")
+	confirm_button.text = tr("ui.confirm_selection")
+	back_to_path_button.text = tr("ui.back_to_path")
+	# Gold button text is set in populate() with the amount
 
 # This is a public function called by Main.gd at the correct time.
 func populate(context: Dictionary) -> void:
@@ -33,7 +44,7 @@ func populate(context: Dictionary) -> void:
 		if is_instance_valid(inst):
 			_reward_uuids.append(inst.ball_uuid)
 	
-	gold_button.text = "+%d Gold" % _gold_amount
+	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
 
 	var slot_nodes = choices_container.get_children()
 

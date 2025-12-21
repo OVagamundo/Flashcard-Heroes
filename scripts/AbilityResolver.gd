@@ -4,6 +4,8 @@ extends Node
 ## A stateless service that acts as the central coordinator for the ability system.
 ## Its primary responsibility is to translate game events into EffectRequests.
 
+const C = preload("res://scripts/Constants.gd")
+
 # =============================================================================
 # UNIFIED FILTER SYSTEM
 # These helpers centralize trigger-based filtering. BattleManager broadcasts
@@ -17,13 +19,13 @@ extends Node
 func _get_instance_team(instance: GachaBallInstance, battle_manager: Node) -> String:
 	assert(is_instance_valid(instance), "AbilityResolver: instance must be valid")
 	var container = instance.location_container_tag
-	if container == battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
+	if container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
 		return "PLAYER"
-	elif container == battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 		return "ENEMY"
-	elif container == battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
+	elif container == C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
 		return "PLAYER"
-	elif container == battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
+	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
 		return "ENEMY"
 	return ""
 

@@ -1,115 +1,185 @@
-keys,en
-hero.name,Hero
-hero.desc,The player's champion.
-enemy_hero.name,Enemy Hero
-enemy_hero.desc,The enemy's champion.
-unit_t1_a.name,Apprentice
-unit_t1_a.desc,A novice unit.
-unit_t1_b.name,Squire
-unit_t1_b.desc,A loyal squire.
-unit_t2_c.name,Knight
-unit_t2_c.desc,A valiant knight.
-item_t1_a.name,Koi's Blessing
-item_t1_a.desc,A gentle remedy infused with the spirit of koi.
-item_t1_b.name,Tiger's Spirit
-item_t1_b.desc,A fierce elixir that awakens inner strength.
-item_t2_c.name,Phoenix Elixir
-item_t2_c.desc,A restorative brew that renews body and spirit.
-ability.basic_attack.name,Basic Attack
-ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy. 
-ability.item_tier1b_extra_attack.name,Extra Attack
-ability.item_tier1b_extra_attack.desc,"When attacking, if target has more HP than holder then perform an extra attack."
-item.effect.hp,Add (HP) HP to the unit.
-item.effect.pwr,Add (PWR) PWR to the unit.
-item.effect.both,Add (HP) HP and (PWR) PWR to the unit.
-trinket.healing_amulet.name,Healing Amulet
-trinket.healing_amulet.desc,A simple but reliable enchanted charm.
-ability.healing_amulet.desc,"At the start of the turn, Heals the frontmost ally unit by 2 HP."
-ability.item_tier2c_passive_heal.name,Regeneration
-ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP and gain 1 PWR."
-ability.unit_tier1a_passive_heal.name,Resilience
-ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by (PWR) HP."
-ability.unit_tier1b_counter_on_hurt.name,Retaliation
-ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker for damage equal to this unit's current PWR. Triggers on final time when the damage to this unit is lethal."
-ability.item_tier1a_turn_start_heal.name,Restoration
-ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP."
-ability.unit_tier2c_ally_death_buff.name,Morale Boost
-ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR."
-ability.item_tier3d_retaliate.name,"Retaliation"
-ability.item_tier3d_retaliate.desc,"When hurt, deal half of the holder's PWR as damage to a random enemy."
-ability.unit_tier3d_resilient_aura.name,"Resilient Aura"
-ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies."
-item_t2_c02.name,Summoning Scroll
-item_t2_c02.desc,Summons a random Tier 1 unit upon death.
-ability.item_t2_c_summon.name,Summon
-ability.item_t2_c_summon.desc,"When the holder dies, summon a random Tier 1 unit in their place."
-unit_t2_a.name,Guardian
-unit_t2_a.desc,A heavily armored tank that heals when attacked.
-unit_t2_b.name,Berserker
-unit_t2_b.desc,A powerful warrior whose attacks hit multiple enemies.
-ability.unit_tier2a_defensive_stance.name,Defensive Stance
-ability.unit_tier2a_defensive_stance.desc,"When targeted by an attack, heal 2 HP before taking damage."
-ability.unit_tier2b_shockwave.name,Shockwave
-ability.unit_tier2b_shockwave.desc,"Attack deals cascading damage: 100% to front, 50% to the unit behind, 25% to the one behind that."
-item_t2_b.name,Bloodlust Edge
-item_t2_b.desc,Grants an extra action on kill.
-ability.item_tier2b_bloodlust.name,Bloodlust
-ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately."
-hero_timekeeper.name,Timekeeper
-hero_timekeeper.desc,A scholar who bends time with knowledge. Gains gold for each enemy slain.
-ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter
-ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.
-unit_t3_d.name,Sakura Spirit
-unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.
-item_t1_a.desc,Restores 5 HP.
-item_t1_b.desc,Increases PWR by 1.
-boss_1.name,The Awakened Guardian
-boss_1.desc,A powerful guardian awakening from ancient slumber.
-boss_2.name,The Shadow Warden
-boss_2.desc,Calls upon shadow creatures to fight alongside it.
-boss_3.name,The Storm Herald
-boss_3.desc,Commands the very elements to join its ranks.
-boss_4.name,The Ancient Titan
-boss_4.desc,An ancient being that summons warriors from ages past.
-boss_5.name,The Final Arbiter
-boss_5.desc,The ultimate challenge. Defeat it to complete your run.
-ability.boss_summon.name,Call Reinforcements
-ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots."
-trinket.soul_echo.name,Soul Echo
-trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.
-ability.soul_echo.name,Soul Echo
-ability.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit that died this turn."
-trinket.vengeance.name,Vengeance Charm
-trinket.vengeance.desc,Channel the fury of fallen allies.
-ability.vengeance.name,Vengeance
-ability.vengeance.desc,"When an ally dies, grant +1 PWR to a random ally."
-trinket.aegis.name,Aegis Charm
-trinket.aegis.desc,A protective charm that shields allies from fatal blows.
-ability.aegis.name,Last Stand
-ability.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead."
-unit_t3_a.name,Shadow Striker
-unit_t3_a.desc,A master of precise strikes who targets the enemy in the opposite position.
-ability.unit_tier3a_mirror_strike.name,Mirror Strike
-ability.unit_tier3a_mirror_strike.desc,"Attacks the enemy in the opposite slot. If empty, attacks the backmost enemy."
-unit_t3_b.name,Guardian Sentinel
-unit_t3_b.desc,A stalwart protector who leaps to defend allies from fatal blows.
-ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice
-ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal damage, intercepts and takes the damage instead."
-unit_t3_c.name,Soul Caller
-unit_t3_c.desc,A mystical unit that summons powerful allies upon its demise.
-ability.unit_tier3c_soul_summon.name,Soul Summon
-ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit in an empty slot."
-item_t3_a.name,Heart Stone
-item_t3_a.desc,When hurt the holder spreads healing energy to allies.
-ability.item_t3a_on_hurt_heal.name,Vital Link
-ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt, heal two random allies for 2 HP each."
-item_t3_b.name,Power Amulet
-item_t3_b.desc,When attacking the holder empowers allies with strength.
-ability.item_t3b_on_attack_buff.name,Battle Cry
-ability.item_t3b_on_attack_buff.desc,"When the holder attacks, grant +2 PWR to two random allies."
-item_t3_c.name,Lifesteal Ring
-item_t3_c.desc,Drains life from enemies with each attack.
-ability.item_t3c_on_attack_lifesteal.name,Vampiric Strike
-ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP)."
-item_t3_d.name,Vengeful Thorn
-item_t3_d.desc,A thorny charm that strikes back at those who harm its bearer.
+keys,en,pt_BR
+hero.name,Hero,Herói
+hero.desc,The player's champion.,O campeão do jogador.
+enemy_hero.name,Enemy Hero,Herói Inimigo
+enemy_hero.desc,The enemy's champion.,O campeão do inimigo.
+unit_t1_a.name,Apprentice,Aprendiz
+unit_t1_a.desc,A novice unit.,Uma unidade novata.
+unit_t1_b.name,Squire,Escudeiro
+unit_t1_b.desc,A loyal squire.,Um escudeiro leal.
+unit_t2_c.name,Knight,Cavaleiro
+unit_t2_c.desc,A valiant knight.,Um cavaleiro valente.
+item_t1_a.name,Koi's Blessing,Bênção da Carpa
+item_t1_a.desc,A gentle remedy infused with the spirit of koi.,Um remédio suave infundido com o espírito da carpa.
+item_t1_b.name,Tiger's Spirit,Espírito do Tigre
+item_t1_b.desc,A fierce elixir that awakens inner strength.,Um elixir feroz que desperta a força interior.
+item_t2_c.name,Phoenix Elixir,Elixir da Fênix
+item_t2_c.desc,A restorative brew that renews body and spirit.,Uma poção restauradora que renova corpo e espírito.
+ability.basic_attack.name,Basic Attack,Ataque Básico
+ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.,Causa (PWR) de dano ao inimigo da frente.
+ability.item_tier1b_extra_attack.name,Extra Attack,Ataque Extra
+ability.item_tier1b_extra_attack.desc,"When attacking, if target has more HP than holder then perform an extra attack.","Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
+item.effect.hp,Add (HP) HP to the unit.,Adiciona (HP) HP à unidade.
+item.effect.pwr,Add (PWR) PWR to the unit.,Adiciona (PWR) PWR à unidade.
+item.effect.both,Add (HP) HP and (PWR) PWR to the unit.,Adiciona (HP) HP e (PWR) PWR à unidade.
+trinket.healing_amulet.name,Healing Amulet,Amuleto de Cura
+trinket.healing_amulet.desc,A simple but reliable enchanted charm.,Um amuleto encantado simples mas confiável.
+ability.healing_amulet.desc,"At the start of the turn, Heals the frontmost ally unit by 2 HP.","No início do turno, cura a unidade aliada da frente em 2 HP."
+ability.item_tier2c_passive_heal.name,Regeneration,Regeneração
+ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido, cura esta unidade em 1 HP e ganha 1 PWR."
+ability.unit_tier1a_passive_heal.name,Resilience,Resiliência
+ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by (PWR) HP.","Ao ser ferido, cura esta unidade em (PWR) HP."
+ability.unit_tier1b_counter_on_hurt.name,Retaliation,Retaliação
+ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker for damage equal to this unit's current PWR. Triggers on final time when the damage to this unit is lethal.","Ao ser ferido, contra-ataca o atacante causando dano igual ao PWR atual desta unidade. Dispara uma última vez quando o dano é letal."
+ability.item_tier1a_turn_start_heal.name,Restoration,Restauração
+ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No início do turno, cura o portador em 2 HP."
+ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
+ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
+ability.item_tier3d_retaliate.name,Retaliation,Retaliação
+ability.item_tier3d_retaliate.desc,"When hurt, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido, causa metade do PWR do portador como dano a um inimigo aleatório."
+ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
+ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies.","Ao ser ferido, concede +1 HP e +1 PWR aos aliados adjacentes."
+item_t2_c02.name,Summoning Scroll,Pergaminho de Invocação
+item_t2_c02.desc,Summons a random Tier 1 unit upon death.,Invoca uma unidade Nível 1 aleatória ao morrer.
+ability.item_t2_c_summon.name,Summon,Invocação
+ability.item_t2_c_summon.desc,"When the holder dies, summon a random Tier 1 unit in their place.","Quando o portador morre, invoca uma unidade Nível 1 aleatória no lugar."
+unit_t2_a.name,Guardian,Guardião
+unit_t2_a.desc,A heavily armored tank that heals when attacked.,Um tanque pesadamente blindado que se cura ao ser atacado.
+unit_t2_b.name,Berserker,Berserker
+unit_t2_b.desc,A powerful warrior whose attacks hit multiple enemies.,Um guerreiro poderoso cujos ataques atingem múltiplos inimigos.
+ability.unit_tier2a_defensive_stance.name,Defensive Stance,Postura Defensiva
+ability.unit_tier2a_defensive_stance.desc,"When targeted by an attack, heal 2 HP before taking damage.","Ao ser alvo de um ataque, cura 2 HP antes de receber dano."
+ability.unit_tier2b_shockwave.name,Shockwave,Onda de Choque
+ability.unit_tier2b_shockwave.desc,"Attack deals cascading damage: 100% to front, 50% to the unit behind, 25% to the one behind that.","O ataque causa dano em cascata: 100% à frente, 50% à unidade atrás, 25% à próxima."
+item_t2_b.name,Bloodlust Edge,Lâmina Sanguinária
+item_t2_b.desc,Grants an extra action on kill.,Concede uma ação extra ao matar.
+ability.item_tier2b_bloodlust.name,Bloodlust,Sede de Sangue
+ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately.","Quando o portador derrota um inimigo, ele age novamente imediatamente."
+hero_timekeeper.name,Timekeeper,Guardião do Tempo
+hero_timekeeper.desc,A scholar who bends time with knowledge. Gains gold for each enemy slain.,Um estudioso que dobra o tempo com conhecimento. Ganha ouro por cada inimigo morto.
+ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter,Caçador de Recompensas
+ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.,Ganha 1 ouro quando este herói mata um inimigo.
+unit_t3_d.name,Sakura Spirit,Espírito Sakura
+unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.,Um espírito poderoso guardando as cerejeiras.
+item_t1_a.desc,Restores 5 HP.,Restaura 5 HP.
+item_t1_b.desc,Increases PWR by 1.,Aumenta PWR em 1.
+boss_1.name,The Awakened Guardian,O Guardião Desperto
+boss_1.desc,A powerful guardian awakening from ancient slumber.,Um guardião poderoso despertando de um sono ancestral.
+boss_2.name,The Shadow Warden,O Guardião das Sombras
+boss_2.desc,Calls upon shadow creatures to fight alongside it.,Convoca criaturas das sombras para lutar ao seu lado.
+boss_3.name,The Storm Herald,O Arauto da Tempestade
+boss_3.desc,Commands the very elements to join its ranks.,Comanda os próprios elementos para suas fileiras.
+boss_4.name,The Ancient Titan,O Titã Ancestral
+boss_4.desc,An ancient being that summons warriors from ages past.,Um ser ancestral que invoca guerreiros de eras passadas.
+boss_5.name,The Final Arbiter,O Árbitro Final
+boss_5.desc,The ultimate challenge. Defeat it to complete your run.,O desafio final. Derrote-o para completar sua jogatina.
+ability.boss_summon.name,Call Reinforcements,Chamar Reforços
+ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots.","No final do turno, invoca unidades para preencher espaços vazios."
+trinket.soul_echo.name,Soul Echo,Eco da Alma
+trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.,Uma gema mística que ecoa as almas dos caídos.
+ability.soul_echo.name,Soul Echo,Eco da Alma
+ability.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit that died this turn.","Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
+trinket.vengeance.name,Vengeance Charm,Amuleto de Vingança
+trinket.vengeance.desc,Channel the fury of fallen allies.,Canaliza a fúria dos aliados caídos.
+ability.vengeance.name,Vengeance,Vingança
+ability.vengeance.desc,"When an ally dies, grant +1 PWR to a random ally.","Quando um aliado morre, concede +1 PWR a um aliado aleatório."
+trinket.aegis.name,Aegis Charm,Amuleto Égide
+trinket.aegis.desc,A protective charm that shields allies from fatal blows.,Um amuleto protetor que escuda aliados de golpes fatais.
+ability.aegis.name,Last Stand,Último Suspiro
+ability.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead.","Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
+unit_t3_a.name,Shadow Striker,Atacante das Sombras
+unit_t3_a.desc,A master of precise strikes who targets the enemy in the opposite position.,Um mestre em ataques precisos que mira o inimigo na posição oposta.
+ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
+ability.unit_tier3a_mirror_strike.desc,"Attacks the enemy in the opposite slot. If empty, attacks the backmost enemy.","Ataca o inimigo na posição oposta. Se vazio, ataca o inimigo do fundo."
+unit_t3_b.name,Guardian Sentinel,Sentinela Guardião
+unit_t3_b.desc,A stalwart protector who leaps to defend allies from fatal blows.,Um protetor inabalável que salta para defender aliados de golpes fatais.
+ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,Sacrifício do Guardião
+ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal damage, intercepts and takes the damage instead.","Quando um aliado receberia dano letal, intercepta e recebe o dano no lugar."
+unit_t3_c.name,Soul Caller,Invocador de Almas
+unit_t3_c.desc,A mystical unit that summons powerful allies upon its demise.,Uma unidade mística que invoca aliados poderosos ao morrer.
+ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
+ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit in an empty slot.","Quando esta unidade morre, invoca uma unidade Nível 2 aleatória em um espaço vazio."
+item_t3_a.name,Heart Stone,Pedra do Coração
+item_t3_a.desc,When hurt the holder spreads healing energy to allies.,Quando ferido o portador espalha energia curativa aos aliados.
+ability.item_t3a_on_hurt_heal.name,Vital Link,Vínculo Vital
+ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt, heal two random allies for 2 HP each.","Quando o portador é ferido, cura dois aliados aleatórios em 2 HP cada."
+item_t3_b.name,Power Amulet,Amuleto de Poder
+item_t3_b.desc,When attacking the holder empowers allies with strength.,Ao atacar o portador fortalece aliados com poder.
+ability.item_t3b_on_attack_buff.name,Battle Cry,Grito de Guerra
+ability.item_t3b_on_attack_buff.desc,"When the holder attacks, grant +2 PWR to two random allies.","Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
+item_t3_c.name,Lifesteal Ring,Anel de Roubo de Vida
+item_t3_c.desc,Drains life from enemies with each attack.,Drena vida dos inimigos a cada ataque.
+ability.item_t3c_on_attack_lifesteal.name,Vampiric Strike,Golpe Vampírico
+ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP).","Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
+item_t3_d.name,Vengeful Thorn,Espinho Vingativo
+item_t3_d.desc,A thorny charm that strikes back at those who harm its bearer.,Um amuleto espinhoso que revida aqueles que ferem seu portador.
+ui.title,FLASHCARD HEROES,FLASHCARD HEROES
+ui.start_run,Start Run,Iniciar Jogatina
+ui.options,Options,Opções
+ui.choose_hero,Choose Hero,Escolher Herói
+ui.choose_deck,Choose Deck,Escolher Deck
+ui.test_mode,Test Mode,Modo Teste
+ui.victory,VICTORY,VITÓRIA
+ui.defeat,DEFEAT,DERROTA
+ui.continue,Continue,Continuar
+ui.return_to_path,Return to Path,Voltar ao Caminho
+ui.shop,Shop,Loja
+ui.buy,Buy,Comprar
+ui.reroll,Reroll (1 Gold),Rerolar (1 Ouro)
+ui.back_to_path,Back to the Path,Voltar ao Caminho
+ui.end_turn,End Turn,Finalizar Turno
+ui.discard_pile,Discard Pile,Pilha de Descarte
+ui.tokens,Tokens,Fichas
+ui.inventory,Inventory,Inventário
+ui.tier,Tier,Nível
+ui.rest_site,Rest Site,Local de Descanso
+ui.train_hp,Train HP,Treinar HP
+ui.train_pwr,Train PWR,Treinar PWR
+ui.leave,Leave,Sair
+ui.choose_reward,Choose Your Reward,Escolha Sua Recompensa
+ui.confirm_selection,Confirm Selection,Confirmar Seleção
+ui.take_gold,Take Gold Instead,Pegar Ouro
+ui.run_complete,RUN COMPLETE!,JOGATINA COMPLETA!
+ui.congratulations,Congratulations!,Parabéns!
+ui.return_to_title,Return to Title,Voltar ao Início
+ui.battle_log,Battle Log,Registro de Batalha
+ui.hide,Hide,Esconder
+ui.clear,Clear,Limpar
+ui.language,Language,Idioma
+ui.english,English,Inglês
+ui.portuguese,Portuguese,Português
+ui.equipped_items,Equipped Items:,Itens Equipados:
+ui.results,Results,Resultados
+ui.confirm,Confirm,Confirmar
+ui.got_it,Got it!,Entendi!
+ui.choose_action,Choose an action to perform.,Escolha uma ação para realizar.
+ui.training_complete,Training Complete!,Treinamento Completo!
+ui.no_gains,No gains this time.,Nenhum ganho desta vez.
+ui.hero_gained,Your Hero gained +%d %s.,Seu Herói ganhou +%d %s.
+ui.buy_gold,Buy (%d Gold),Comprar (%d Ouro)
+ui.reroll_gold,Reroll (%d Gold),Rerolar (%d Ouro)
+ui.gold_price,%d Gold,%d Ouro
+ui.tier_1,Tier 1,Nível 1
+ui.tier_2,Tier 2,Nível 2
+ui.tier_3,Tier 3,Nível 3
+ui.show,Show,Mostrar
+ui.run_complete_message,You have defeated all 5 bosses and completed your run!,Você derrotou todos os 5 chefes e completou sua jogatina!
+ui.final_statistics,Final Statistics,Estatísticas Finais
+ui.days_survived,Days Survived,Dias Sobrevividos
+ui.bosses_defeated,Bosses Defeated,Chefes Derrotados
+ui.gold_earned,Gold Earned,Ouro Ganho
+ui.take_gold_amount,+%d Gold,+%d Ouro
+ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
+ui.tokens_count,Tokens: %d,Fichas: %d
+ui.day,Day %d,Dia %d
+ui.boss,Boss %d,Chefe %d
+ui.battle_node,Battle,Batalha
+ui.shop_node,Shop,Loja
+ui.rest_node,Rest Site,Local de Descanso
+ui.effects,Effects,Efeitos
+ui.no_effects,This unit has no special effects.,Esta unidade não possui efeitos especiais.
+ui.no_effect_details,No details available for this effect.,Nenhum detalhe disponível para este efeito.
+ui.score,Score: %d,Pontuação: %d
+ui.answer,Answer: %s,Resposta: %s
+ui.explanation,Explanation: %s,Explicação: %s
+ui.no_explanation,No explanation available,Nenhuma explicação disponível

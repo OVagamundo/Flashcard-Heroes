@@ -32,6 +32,7 @@ EncounterGenerator="*res://scripts/EncounterGenerator.gd"
 FlashcardManager="*res://scripts/FlashcardManager.gd"
 BattleLogger="*res://scripts/BattleLogger.gd"
 StatusEffectRegistry="*res://scripts/StatusEffectRegistry.gd"
+VFXFactory="*res://scripts/vfx/VFXFactory.gd"
 
 [debug]
 
@@ -79,7 +80,7 @@ font_override/use_system_fonts=false
 
 [locale]
 
-locale_filter=PackedStringArray("en", "ja")
+locale_filter=PackedStringArray("en", "pt_BR")
 translation_remaps=PackedStringArray("res://localization/game.csv")
 
 [rendering]

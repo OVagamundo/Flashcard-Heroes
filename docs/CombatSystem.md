@@ -13,7 +13,7 @@ The system is divided into two distinct, non-overlapping phases:
 > **The Golden Rule of Decoupling:**
 > During the Presentation Phase, the UI must **NEVER** query the live `GachaBallInstance` or `BattleManager` for current state (e.g., `unit.current_hp`). The live data is already at the "End of Turn" state. The UI must *only* use the data provided in the `CombatEvent` to update itself.
 >
-> **See [AbilityImplementationGuide.md](AbilityImplementationGuide.md) for strict implementation rules.**
+> **See [AbilityImplementationGuide.md](AbilityImplementationGuide.md) and [AnimationImplementationGuide.md](AnimationImplementationGuide.md) for strict implementation rules.**
 
 ---
 
@@ -27,10 +27,10 @@ The BattleManager delegates to specialized helper classes:
 
 ```mermaid
 graph TD
-    BM[BattleManager<br/>2324 lines<br/>Orchestrator]
+    BM[BattleManager<br/>~1570 lines<br/>Orchestrator]
     
-    CS[CombatSimulator<br/>278 lines]
-    EH[EffectHandlers<br/>925 lines]
+    CS[CombatSimulator<br/>~600 lines]
+    EH[EffectHandlers<br/>~720 lines]
     IO[InventoryOperations<br/>465 lines]
     BS[BattleState<br/>423 lines]
     
@@ -42,15 +42,18 @@ graph TD
 
 | Helper File | Responsibility |
 |-------------|----------------|
-| CombatSimulator | Combat loop, actor queue, reaction processing |
-| EffectHandlers | Damage, heal, buff, summon event creation |
-| InventoryOperations | Move, swap, equip, gacha draw |
+| Constants | Centralized tags, prioritization constants, and enumerations |
+| CombatSimulator | Combat loop, actor queue, reaction processing, EffectResult handling (damage, summons, cascade) |
+| EffectHandlers | Damage application, burn processing, summon creation, cascade damage handling |
+| InventoryOperations | **Exclusive** handler for ALL inventory mutations (move, swap, equip, remove, discard) |
 | BattleState | Instance storage, container management |
-| DeathProcessor | Death cleanup logic |
+| DeathProcessor | Death cleanup logic (delegates inventory moves to InventoryOperations) |
 | TurnAbilities | Turn start/end triggers |
 | TargetResolver | Target resolution |
 | BattleHelpers | Utility functions |
 | BattleSetup | Battle initialization |
+| EffectResult | Unified return type for all effects. Contains fields for damage (`damage_request`), summons (`summon_request`, `summon_units_request`), cascade AOE (`cascade_request`), and direct events |
+| TestModeHelpers | Test mode unit/item/trinket registration |
 
 ### Responsibilities
 1.  **Snapshotting:** Captures the state of the board *before* any logic runs. This snapshot is sent to the Animator to reset the UI before playback.
@@ -67,7 +70,7 @@ The output of the simulation is a linear queue of `CombatEvent` objects. This qu
 **Causality Principle:**
 Events must be ordered by cause and effect. A cause must *always* precede its effect in the queue.
 
-*   **Correct:** `ATTACK_START` -> `DAMAGE` -> `DEATH` -> `SUMMON` -> `BUFF`
+*   **Correct:** `DAMAGE` -> `DEATH` -> `SUMMON` -> `BUFF`
 *   **Incorrect:** `DEATH` -> `BUFF` -> `SUMMON` (Violates causality; the buff source might be the summoned unit)
 
 > [!IMPORTANT]
@@ -81,20 +84,20 @@ The system uses a **Priority-Based Reaction System** to resolve complex interact
 Every effect and reaction has a priority value (defined in AbilityDefinition). Higher priority resolves first.
 
 > [!IMPORTANT]
-> **Single Source of Truth:** All priority constants are defined in `scripts/AbilityPriorities.gd`.
+> **Single Source of Truth:** All priority constants are defined in `scripts/Constants.gd` (and `AbilityPriorities.gd` is deprecated/removed).
 
 | Priority | Constant | Description | Examples |
 |----------|----------|-------------|----------|
-| 300 | `GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
-| 210 | `TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
-| 205 | `UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
-| 200 | `ITEM_SUMMON` | Item on-death summon | Last Wish |
-| 100 | `RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura |
-| 50 | `COUNTER_ATTACK` | Retaliation damage | Retaliate |
-| 10 | `DEFENSIVE_STANCE` | Attack modifiers | Shockwave |
-| 0 | `STANDARD` | Default abilities | Most abilities |
-| -50 | `BOSS_SUMMON` | End-of-turn spawns | Boss waves |
-| -100 | `EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
+| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 210 | `PRIORITY_TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
+| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
+| 100 | `PRIORITY_RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura |
+| 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate |
+| 10 | `PRIORITY_DEFENSIVE_STANCE` | Attack modifiers | Shockwave |
+| 0 | `PRIORITY_STANDARD` | Default abilities | Most abilities |
+| -50 | `PRIORITY_BOSS_SUMMON` | End-of-turn spawns | Boss waves |
+| -100 | `PRIORITY_EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
 
 
 > [!IMPORTANT]

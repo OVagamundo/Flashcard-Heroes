@@ -30,7 +30,8 @@ func _setup_boss_node(boss_level: int) -> void:
 	var node_def = PathNodeDefinition.new()
 	node_def.node_type = "BATTLE"
 	node_def.subtype = "BOSS"
-	node_def.display_name_key = "Boss %d" % boss_level
+	node_def.display_name_key = "ui.boss"
+	node_def.boss_level = boss_level
 	node_def.difficulty = boss_level
 	
 	var node_view = NodeViewScene.instantiate()
@@ -49,11 +50,11 @@ func _setup_normal_nodes() -> void:
 
 		match node_def.node_type:
 			"BATTLE":
-				node_def.display_name_key = "Battle Node"
+				node_def.display_name_key = "ui.battle_node"
 			"SHOP":
-				node_def.display_name_key = "Shop Node"
+				node_def.display_name_key = "ui.shop_node"
 			"REST":
-				node_def.display_name_key = "Rest Site"
+				node_def.display_name_key = "ui.rest_node"
 
 		var node_view = NodeViewScene.instantiate()
 		node_view.populate(node_def)

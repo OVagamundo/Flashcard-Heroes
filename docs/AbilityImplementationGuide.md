@@ -37,25 +37,25 @@ The `BattleManager` processes reactions using a priority queue.
 **Higher Priority = Executed First.**
 
 > [!IMPORTANT]
-> **Single Source of Truth:** All priority constants are defined in [`scripts/AbilityPriorities.gd`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/AbilityPriorities.gd).
+> **Single Source of Truth:** All priority constants are defined in [`scripts/Constants.gd`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Constants.gd).
 > Use these constants in code. For `.tres` files, use the numeric value with a comment referencing the constant name.
 
 | Priority | Constant | Description | Examples |
 |----------|----------|-------------|----------|
-| 300 | `GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
-| 210 | `TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
-| 205 | `UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
-| 200 | `ITEM_SUMMON` | Item on-death summon | Last Wish |
-| 100 | `RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura, Heart Stone |
-| 50 | `COUNTER_ATTACK` | Retaliation damage | Retaliate, Counter on Hurt |
-| 10 | `DEFENSIVE_STANCE` | Attack modifiers | Shockwave, Mirror Strike |
-| 0 | `STANDARD` | Default abilities | Most abilities |
-| -50 | `BOSS_SUMMON` | End-of-turn spawns | Boss reinforcements |
-| -100 | `EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
+| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 210 | `PRIORITY_TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
+| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
+| 100 | `PRIORITY_RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura, Heart Stone |
+| 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate, Counter on Hurt |
+| 10 | `PRIORITY_DEFENSIVE_STANCE` | Attack modifiers | Shockwave, Mirror Strike |
+| 0 | `PRIORITY_STANDARD` | Default abilities | Most abilities |
+| -50 | `PRIORITY_BOSS_SUMMON` | End-of-turn spawns | Boss reinforcements |
+| -100 | `PRIORITY_EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
 
 ### Usage in `.tres` Files
 ```tres
-priority = 50  # AbilityPriorities.COUNTER_ATTACK
+priority = 50  # Constants.PRIORITY_COUNTER_ATTACK
 ```
 
 ### Importance
@@ -74,8 +74,17 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 
 > [!IMPORTANT]
 > **ZERO-INSTANCE-QUERY RULE**
-> Effects must NEVER call `get_instance()`, `get_location_for_uuid()`, or query BattleManager.
+> Effects must NEVER call `get_instance()` or query BattleManager state directly.
 > All needed data must come from `context` or `parameters`.
+>
+> **Tag Usage:**
+> If you need to check container tags, use the centralized constants:
+> ```gdscript
+> const C = preload("res://scripts/Constants.gd")
+> ...
+> if tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP: ...
+> ```
+> **NEVER** use `BattleManager.BATTLE_CONTAINER_TAGS` (deprecated).
 
 ### Trigger Context Keys
 
@@ -191,26 +200,35 @@ This is handled automatically in `AbilityResolver` - **do not duplicate this log
 
 ## 3. The Effect Execution Contract
 
-Effects implement the `execute()` method with two modes:
+Effects implement the `execute()` method and return `EffectResult`:
 
 ### Simulation Mode (`is_simulation = true`)
-- **MUST NOT** mutate game state (no `inst.current_hp = X`)
-- **MUST** return a Dictionary with structured data for `CombatEvent` creation
-- BattleManager will apply the changes based on your returned data
+- **MUST NOT** mutate game state directly (no `inst.current_hp = X`)
+- **Return type:** `EffectResult` with appropriate fields populated
 
+**EffectResult Pattern:**
 ```gdscript
-# ✅ CORRECT: Return data for BattleManager to apply
-func execute(...) -> Dictionary:
-    if is_simulation:
-        return {
-            "stat": "pwr",
-            "amount": 1,
-            "targets": resolved_targets
-        }
+func execute(...) -> EffectResult:
+    var result := EffectResult.new()
+    
+    # For heals/buffs - add events directly:
+    result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {...}))
+    result.state_applied = true
+    
+    # For damage - use damage_request (CombatSimulator handles):
+    result.damage_request = {"stat": "hp", "amount": -10, "targets": valid_targets}
+    
+    # For summons - use summon_request:
+    result.summon_request = {"summon_unit_id": unit_id, "holder_uuid": uuid, "holder_location": loc}
+    
+    # For cascade AOE - use cascade_request:
+    result.cascade_request = damage_data_array
+    
+    return result
 ```
 
 ### Execution Mode (`is_simulation = false`)
-- Mutate state directly (legacy compatibility)
+- Mutate state directly
 - Return the numeric amount applied
 
 ### Critical Rules
@@ -220,6 +238,7 @@ func execute(...) -> Dictionary:
 | Call `BattleManager.apply_stat_delta()` from effect | Return data, let BattleManager apply |
 | Call `trigger_on_hurt()` or `trigger_on_kill()` | BattleManager owns trigger flow |
 | Query `get_instance()` for live data | Use context keys or parameters |
+| Mutate inventory directly (move/remove) | Return summon data or use `InventoryOperations` (in Execution phase only) |
 | Emit signals during simulation | Only emit in non-simulation mode |
 | Emit global redraw signals mid-turn | Silence all side-channels during combat |
 
@@ -410,7 +429,7 @@ Before writing ANY code for a new trinket:
 | `resources/trinkets/trinket_[name].tres` | Trinket definition | `trinket_soul_echo.tres` |
 | `resources/abilities/ability_trinket_[name].tres` | Ability definition | Similar ability |
 | `resources/effects/effect_[name].tres` | Effect (only if new behavior) | Existing effect |
-| `scripts/effects/Effect[Name].gd` | Effect script (only if needed) | `EffectModifyStat.gd` |
+| `scripts/Effect[Name].gd` | Effect script (only if needed) | `EffectModifyStat.gd` |
 
 ### 7.3 Trinket Source UUID Rules
 
@@ -457,16 +476,35 @@ var source = battle_manager.get_instance(source_uuid)  # source_uuid is empty!
 
 Before creating a new effect script, check if these existing ones handle your case:
 
-| Effect Script | Use Case | Key Parameters |
-|---------------|----------|----------------|
-| `EffectModifyStat.gd` | HP/PWR/Status changes | `stat`, `base_value` |
+> [!IMPORTANT]
+> **All effects return `EffectResult`** with appropriate fields populated. The `EffectResult` class provides a unified interface for all effect outcomes.
 
-| `BasicAttackEffect.gd` | Damage with targeting | `damage`, `target_type` |
-| `EffectSummonOnDeath.gd` | Spawn random T1 unit when holder dies | (none) |
-| `EffectResurrectFirstKilledUnit.gd` | Soul Echo resurrection | (none) |
-| `EffectBossSummon.gd` | Boss wave reinforcements | `summon_list` |
+### EffectResult Fields
+| Field | Type | Purpose |
+|-------|------|---------|
+| `events` | Array[CombatEvent] | Direct events (HEAL, BUFF, LOG_MESSAGE) |
+| `damage_request` | Dictionary | Damage data for CombatSimulator to process |
+| `summon_request` | Dictionary | Single summon data (unit_id, location) |
+| `summon_units_request` | Array | Multiple summons (boss waves) |
+| `cascade_request` | Array | AOE cascade damage data |
 
-**Example: Adding a "Grant +2 HP on ally death" trinket**
+### Effect Scripts Reference
+| Effect Script | Use Case | EffectResult Field |
+|---------------|----------|-------------------|
+| `EffectModifyStat.gd` | HP+/PWR+ changes | `events` (HEAL/BUFF) or `damage_request` |
+| `EffectLifesteal.gd` | Heal on damage dealt | `damage_request` + heal events |
+| `EffectHealTwoRandomAllies.gd` | Multi-target heals | `events` (HEAL) |
+| `EffectBuffTwoRandomAllies.gd` | Multi-target buffs | `events` (BUFF) |
+| `EffectPreventLethal.gd` | Aegis Charm save | `events` (LETHAL_SAVE) |
+| `EffectGrantExtraAction.gd` | Extra turn grants | `events` (LOG_MESSAGE) |
+| `EffectGainGold.gd` | Gold rewards | `events` (LOG_MESSAGE) |
+| `EffectCascadeAOE.gd` | AOE shockwave | `cascade_request` |
+| `EffectSummonOnDeath.gd` | Spawn random T1 unit | `summon_request` |
+| `EffectSummonT2OnDeath.gd` | Spawn random T2 unit | `summon_request` |
+| `EffectResurrectFirstKilledUnit.gd` | Soul Echo resurrection | `summon_request` |
+| `EffectBossSummon.gd` | Boss wave reinforcements | `summon_units_request` |
+
+**Example: Adding a \"Grant +2 HP on ally death\" trinket**
 ```tres
 # DON'T create a new effect script!
 # USE EffectModifyStat.gd with parameters:

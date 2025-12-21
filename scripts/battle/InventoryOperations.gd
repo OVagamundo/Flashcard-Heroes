@@ -7,13 +7,6 @@ extends RefCounted
 
 const C = preload("res://scripts/Constants.gd")
 
-const BATTLE_CONTAINER_TAGS = {
-	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
-	PLAYER_ITEM_INVENTORY = &"ItemInventory",
-	BATTLE_DISCARD_PILE = &"DiscardPile",
-}
-
 # ============================================================================
 # RESULT CLASS
 # ============================================================================
@@ -85,14 +78,14 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 	var target_capacity: int
 	match def.category:
 		&"UNIT":
-			target_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
 			target_capacity = player_bench_capacity
 		&"ITEM":
-			target_container_tag = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
+			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
 			target_capacity = item_inv_capacity
 		_:
 			# Unknown category - discard
-			target_container_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+			target_container_tag = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
 			target_capacity = 999 # Discard has no practical limit
 			result.went_to_discard = true
 	
@@ -107,13 +100,13 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 		result.dest_slot = empty_slot
 	else:
 		# Overflow to discard
-		var discard := state.get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+		var discard := state.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 		if not is_instance_valid(discard):
 			return result
 		var di := discard.find_first_empty_slot()
 		if di == -1:
 			di = discard.get_all_uuids().size()
-		result.dest_container = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+		result.dest_container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
 		result.dest_slot = di
 		result.went_to_discard = true
 	
@@ -188,12 +181,12 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 		if is_instance_valid(existing):
 			existing.equipped_on_uuid = ""
 			existing.equipped_slot_index = -1
-			var inv := state.get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+			var inv := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
 			if is_instance_valid(inv):
 				var empty := inv.find_first_empty_slot()
 				if empty != -1:
 					inv.set_uuid(empty, existing.ball_uuid)
-					state.update_instance_location(existing.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
+					state.update_instance_location(existing.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
 				else:
 					return result
 	
@@ -461,5 +454,85 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 	state.update_instance_location(a.ball_uuid, target_loc.container, target_loc.index)
 	state.update_instance_location(b.ball_uuid, source_loc.container, source_loc.index)
 	
+	result.set_success()
+	return result
+
+# ============================================================================
+# REMOVE INSTANCE
+# ============================================================================
+
+## Remove instance from its container (for enemy units or cleanup).
+## Returns OperationResult.
+static func remove_instance_from_container(state: BattleState, instance: GachaBallInstance) -> OperationResult:
+	var result := OperationResult.new()
+	assert(is_instance_valid(instance), "remove_instance_from_container: instance is null")
+	
+	var loc := instance.get_location()
+	if not is_instance_valid(loc):
+		return result
+	
+	var container := state.get_container(loc.container)
+	if is_instance_valid(container):
+		var uuids := container.get_all_uuids()
+		var idx := uuids.find(instance.ball_uuid)
+		if idx != -1:
+			container.set_uuid(idx, "")
+			state.update_instance_location(instance.ball_uuid, &"", -1)
+			
+			result.add_unit_change(instance.ball_uuid)
+			result.set_success()
+		else:
+			push_error("Remove failed: %s not found in stated container %s" % [instance.ball_uuid, String(loc.container)])
+	
+	return result
+
+# ============================================================================
+# MOVE TO DISCARD
+# ============================================================================
+
+## Move an instance to the discard pile. Handles equipped items and containers.
+## Returns OperationResult.
+static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance) -> OperationResult:
+	var result := OperationResult.new()
+	assert(is_instance_valid(instance), "move_instance_to_discard: instance is null")
+	
+	var loc := instance.get_location()
+	if is_instance_valid(loc):
+		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+			var parent := state.get_instance(loc.unit_uuid)
+			if is_instance_valid(parent):
+				if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
+					# Clear the parent's slot mapping if it points to this instance
+					if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:
+						parent.equipped_item_uuids[loc.index] = ""
+						result.add_unit_change(parent.ball_uuid)
+			# Clear equipped linkage on the item itself
+			instance.equipped_on_uuid = ""
+			instance.equipped_slot_index = -1
+		else:
+			var src := state.get_container(loc.container)
+			if is_instance_valid(src):
+				var uuids := src.get_all_uuids()
+				var si := uuids.find(instance.ball_uuid)
+				if si != -1:
+					src.set_uuid(si, "")
+	
+	# Place into discard
+	var discard_container := state.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+	if not is_instance_valid(discard_container):
+		push_error("Discard pile container not found")
+		return result
+		
+	var index := discard_container.find_first_empty_slot()
+	if index == -1:
+		# If somehow full (unlikely), try to append if possible or just log error
+		# Based on logic elsewhere, discard has high capacity. If full, we fail.
+		push_error("Discard pile full; cannot move %s" % instance.ball_uuid)
+		return result
+	
+	discard_container.set_uuid(index, instance.ball_uuid)
+	state.update_instance_location(instance.ball_uuid, C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, index)
+	
+	result.add_unit_change(instance.ball_uuid)
 	result.set_success()
 	return result

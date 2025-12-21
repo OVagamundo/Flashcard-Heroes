@@ -1,7 +1,8 @@
 @tool
 extends EffectDefinition
+const C = preload("res://scripts/Constants.gd")
 
-## Summon a random T2 unit when the holder dies
+## Summon a random T1 unit when the holder dies
 ## Uses context data instead of querying instances (Effect Decoupling Rule)
 
 ## Find empty slot searching from back to front based on team
@@ -20,24 +21,31 @@ func _find_empty_slot_back_to_front(container: DataContainer, is_enemy_team: boo
 				return i
 	return -1
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Dictionary:
-	# The source is a unit triggering on_death
-	# Context contains data about the dying unit
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+	# The source is an item triggering on_death
+	# Context contains data about the dying unit (the holder)
 	# Semantic keys: dying_uuid, dying_location
 	# 1. Get holder location from context (this is where we summon)
 	var holder_location = context.get("dying_location")
 	if not is_instance_valid(holder_location):
-		return {}
+		return EffectResult.empty()
 	
 	# Get holder info from context (using new semantic key)
 	var holder_uuid = context.get("dying_uuid", "")
 	
-	# Validate this is the correct source (the dying unit must have this ability)
-	if source_uuid != holder_uuid:
-		return {}
+	# 2. Find this item in the equipped_items snapshot to validate it's the right item
+	var equipped_items: Array = context.get("equipped_items", [])
+	var item_found := false
+	for item_data in equipped_items:
+		if item_data.get("uuid") == source_uuid:
+			item_found = true
+			break
 	
-
-	# 2. Check if the slot is already occupied by a resurrection
+	# If this item wasn't equipped on the dying unit, something is wrong
+	if not item_found:
+		return EffectResult.empty()
+	
+	# 3. Check if the slot is already occupied by a resurrection
 	# If another effect (like Soul Echo) already claimed this slot, find an alternative
 	var container = battle_manager.get_container(holder_location.container)
 	if is_instance_valid(container):
@@ -46,22 +54,22 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			# Slot is occupied by another unit - find an empty slot using back-to-front search
 			# Player team: back is index 4, front is index 0 (search 4→0)
 			# Enemy team: back is index 0, front is index 4 (search 0→4)
-			var is_enemy_team = holder_location.container == battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var is_enemy_team = holder_location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var empty_slot = _find_empty_slot_back_to_front(container, is_enemy_team)
 			if empty_slot == -1:
 				# No lineup slots available - send to discard pile instead
-				var discard_container = battle_manager.get_container(battle_manager.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+				var discard_container = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 				if is_instance_valid(discard_container):
 					var discard_slot = discard_container.find_first_empty_slot()
 					if discard_slot != -1:
 						var discard_location = LocationIdentifier.new()
-						discard_location.container = battle_manager.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+						discard_location.container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
 						discard_location.index = discard_slot
 						holder_location = discard_location
 					else:
-						return {} # Discard pile is also full, cancel summon
+						return EffectResult.empty() # Discard pile is also full, cancel summon
 				else:
-					return {} # No discard container, cancel summon
+					return EffectResult.empty() # No discard container, cancel summon
 			else:
 				# Create a new LocationIdentifier for the alternative slot
 				var alt_location = LocationIdentifier.new()
@@ -69,21 +77,23 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				alt_location.index = empty_slot
 				holder_location = alt_location
 
-	# 3. Pick a random Tier 2 Unit
-	var tier_2_units = []
+	# 4. Pick a random Tier 1 Unit
+	var tier_1_units = []
 	for unit_def in Database.units.values():
-		if unit_def.tier == 2 and unit_def.category == &"UNIT" and not unit_def.is_hero:
-			tier_2_units.append(unit_def)
+		if unit_def.tier == 1 and unit_def.category == &"UNIT" and not unit_def.is_hero:
+			tier_1_units.append(unit_def)
 	
-	if tier_2_units.is_empty():
-		return {}
+	if tier_1_units.is_empty():
+		return EffectResult.empty()
 	
-	var random_def = tier_2_units.pick_random()
+	var random_def = tier_1_units.pick_random()
 	
-	# 4. Return summon instructions (NOT the instance!)
-	# BattleManager will create the instance during simulation
-	return {
+	# 5. Return EffectResult with summon instructions
+	# CombatSimulator will process summon_request via EffectHandlers
+	var result := EffectResult.new()
+	result.summon_request = {
 		"summon_unit_id": random_def.id,
 		"holder_uuid": holder_uuid,
 		"holder_location": holder_location
 	}
+	return result

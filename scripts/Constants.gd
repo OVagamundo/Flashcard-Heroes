@@ -4,6 +4,18 @@ extends Node
 # --- Location Container Tags ---
 # Conceptual location for items equipped on a unit
 const CONTAINER_EQUIPPED_ITEM = &"equipped_item"
+
+const BATTLE_CONTAINER_TAGS = {
+	PLAYER_LINEUP = &"PlayerLineup",
+	PLAYER_BENCH = &"PlayerBench",
+	PLAYER_ITEM_INVENTORY = &"ItemInventory",
+	ENEMY_LINEUP = &"EnemyLineup",
+	ENEMY_BENCH = &"EnemyBench",
+	BATTLE_DISCARD_PILE = &"DiscardPile",
+	ENEMY_TRINKETS = &"EnemyTrinkets",
+	PLAYER_TRINKETS = &"PlayerTrinkets",
+}
+
 # Run State Containers
 const CONTAINER_PLAYER_LINEUP = &"PlayerLineup"
 const CONTAINER_PLAYER_BENCH = &"PlayerBench"
@@ -105,3 +117,23 @@ const WINDOW_EFFECT_INSPECTION = &"EffectInspection"
 const WINDOW_END_BATTLE = &"EndBattlePopup"
 const WINDOW_FLASHCARD = &"FlashcardMinigame"
 const WINDOW_RESULTS = &"ResultsPopup"
+
+# --- Ability Priority System ---
+const PRIORITY_GUARDIAN_INTERCEPT = 300
+const PRIORITY_TRINKET_SUMMON = 210
+const PRIORITY_UNIT_SUMMON = 205
+const PRIORITY_ITEM_SUMMON = 200
+const PRIORITY_RESILIENT_AURA = 100
+const PRIORITY_ON_HURT_HEAL = 100
+const PRIORITY_ON_ATTACK_BUFF = 100
+const PRIORITY_COUNTER_ATTACK = 50
+const PRIORITY_DEFENSIVE_STANCE = 10
+const PRIORITY_SHOCKWAVE = 10
+const PRIORITY_MIRROR_STRIKE = 10
+const PRIORITY_STANDARD = 0
+const PRIORITY_LIFESTEAL = 0
+const PRIORITY_TURN_START_HEAL = 0
+const PRIORITY_PASSIVE_HEAL = 0
+const PRIORITY_ALLY_DEATH_BUFF = 0
+const PRIORITY_BOSS_SUMMON = -50
+const PRIORITY_EXTRA_ACTION = -100

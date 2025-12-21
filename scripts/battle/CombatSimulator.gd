@@ -1,6 +1,7 @@
 # res://scripts/battle/CombatSimulator.gd
 class_name CombatSimulator
 extends RefCounted
+const C = preload("res://scripts/Constants.gd")
 
 ## CombatSimulator encapsulates the turn-based combat simulation data.
 ## This class is responsible for:
@@ -221,10 +222,10 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 			var current_reaction = _pending_reactions.pop_front()
 			
 			var reaction_events: Array[CombatEvent] = []
-			battle_manager._resolve_single_effect_request(current_reaction, reaction_events, death_tracking)
+			resolve_effect_request(current_reaction, reaction_events, death_tracking, battle_manager)
 			
 			# Collect inline events (on_before_attack heals etc.)
-			var inline_evts = battle_manager.collect_inline_events()
+			var inline_evts = collect_and_clear_inline_events()
 			turn_log.append_array(inline_evts)
 			
 			turn_log.append_array(reaction_events)
@@ -239,7 +240,7 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
 			var kill_reaction = _pending_reactions.pop_front()
 			var kill_reaction_events: Array[CombatEvent] = []
-			battle_manager._resolve_single_effect_request(kill_reaction, kill_reaction_events, death_tracking)
+			resolve_effect_request(kill_reaction, kill_reaction_events, death_tracking, battle_manager)
 			turn_log.append_array(kill_reaction_events)
 		
 		# Check battle-over AFTER all reactions for this actor
@@ -254,9 +255,9 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		var final_reaction = _pending_reactions.pop_front()
 		
 		var final_reaction_events: Array[CombatEvent] = []
-		battle_manager._resolve_single_effect_request(final_reaction, final_reaction_events, death_tracking)
+		resolve_effect_request(final_reaction, final_reaction_events, death_tracking, battle_manager)
 		
-		var final_inline_evts = battle_manager.collect_inline_events()
+		var final_inline_evts = collect_and_clear_inline_events()
 		turn_log.append_array(final_inline_evts)
 		
 		turn_log.append_array(final_reaction_events)
@@ -266,6 +267,437 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		turn_log.append_array(final_death_events)
 	
 	return turn_log
+
+# ============================================================================
+# EFFECT RESOLUTION (Moved from BattleManager)
+# ============================================================================
+
+## Resolve a single effect request. This is the core effect execution logic.
+## @param request: The effect request to resolve
+## @param out_events: Array to append generated events to
+## @param death_tracking: Dictionary for death deduplication
+## @param bm: BattleManager reference for state access
+func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary, bm) -> void:
+	# Validate source is still alive (allow empty source UUID for trinket effects)
+	var source = null
+	if not request.source_uuid.is_empty():
+		source = bm.get_instance_by_uuid(request.source_uuid)
+		if not is_instance_valid(source):
+			return
+		# Only gate dead UNIT sources; allow ITEM/TRINKET sources to execute
+		# Exceptions:
+		# 1. Reactive abilities (counter-attacks, retaliation) allowed post-mortem
+		# 2. on_death abilities - the dying unit IS expected to be dead when these execute
+		var src_def = source.get_definition()
+		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
+			# Allow if this is the dying unit's own on_death trigger
+			var dying_uuid: String = request.trigger_context.get("dying_uuid", "")
+			var is_own_death_trigger: bool = (dying_uuid == request.source_uuid)
+			
+			# Check if ability has execute_on_lethal flag via AbilitiesRegistry or source instance
+			var is_reactive_ability: bool = false
+			var ability_def = bm._get_ability_definition(request.ability_id, source)
+			if is_instance_valid(ability_def) and ability_def.execute_on_lethal:
+				is_reactive_ability = true
+			
+			if not is_own_death_trigger and not is_reactive_ability:
+				return
+
+	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
+	var exec_targets: Array[String] = []
+	exec_targets.append_array(request.resolved_targets)
+	var is_basic_attack := (request.ability_id == &"basic_attack")
+	
+	# For ALL abilities (basic or triggered), validate targets are still alive AND in battle
+	# Filter out dead targets to prevent ghost attacks
+	# NOTE: Must check location_container_tag because reset_battle_stats_silent() restores HP before discard
+	var valid_targets: Array[String] = []
+	for target_uuid in exec_targets:
+		var target_inst = bm.get_instance_by_uuid(target_uuid)
+		if is_instance_valid(target_inst) and target_inst.current_hp > 0:
+			# Also verify the target is still in an active battle container (not discard/removed)
+			var loc_tag: StringName = target_inst.location_container_tag
+			var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
+								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
+								 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
+								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+			if is_in_battle:
+				valid_targets.append(target_uuid)
+	
+	# Allow targetless effects (e.g., summons) to proceed
+	# They will provide their own targets in the return data
+	# Only abort if we EXPECTED targets but they're all invalid
+	if valid_targets.is_empty() and not exec_targets.is_empty():
+		return
+	
+	exec_targets = valid_targets
+	
+	# For basic attacks only, apply retargeting to frontmost if needed
+	if is_basic_attack and exec_targets.size() > 0:
+		var first_target = bm.get_instance_by_uuid(exec_targets[0])
+		if not is_instance_valid(first_target) or first_target.current_hp <= 0:
+			var attacker_is_player: bool = false
+			if is_instance_valid(source):
+				attacker_is_player = bm._is_player_unit(source)
+			var new_target_inst = bm._get_frontmost_target(attacker_is_player)
+			if is_instance_valid(new_target_inst):
+				exec_targets[0] = new_target_inst.ball_uuid
+			else:
+				return
+	# Execute without emitting UI; capture results for events
+	var _damage := 0
+	if is_instance_valid(request.effect_definition):
+		var sim_ctx = request.trigger_context.duplicate(true)
+		sim_ctx["is_simulation"] = true
+		sim_ctx["ability_id"] = request.ability_id
+		
+		# Zero-Instance-Query Compliance: Pre-populate source data
+		# This allows effects to use context data instead of querying instances
+		# Data is snapshotted at the EXACT moment before execute(), reflecting current simulation state
+		if is_instance_valid(source):
+			var source_def = source.get_definition()
+			var stat_provider = source # Default: use source's own stats
+			
+			if is_instance_valid(source_def):
+				sim_ctx["source_category"] = source_def.category
+				
+				# For items, use the HOLDER's stats (not the item's stats which are 0)
+				# Also include holder UUID so effects can identify the attacker
+				if source_def.category == &"ITEM" and not source.equipped_on_uuid.is_empty():
+					sim_ctx["source_holder_uuid"] = source.equipped_on_uuid
+					var holder = bm.get_instance_by_uuid(source.equipped_on_uuid)
+					if is_instance_valid(holder):
+						stat_provider = holder
+			
+			# Snapshot stats from the appropriate provider (source for units, holder for items)
+			sim_ctx["source_pwr"] = stat_provider.current_pwr
+			sim_ctx["source_hp"] = stat_provider.current_hp
+		
+		var _effect_script_path = request.effect_definition.get_script().resource_path if request.effect_definition.get_script() else "no_script"
+		var res = request.effect_definition.execute(request.source_uuid, exec_targets, bm, sim_ctx)
+		
+		# CRITICAL: Collect on_before_attack inline events IMMEDIATELY after effect execution
+		# These events (like Defensive Stance heal) must appear BEFORE any damage events
+		# to maintain correct causal order: HEAL → DAMAGE (not DAMAGE → HEAL)
+		var before_attack_inline_evts = collect_and_clear_inline_events()
+		out_events.append_array(before_attack_inline_evts)
+		
+		# NEW: Handle EffectResult returns (migrated effects)
+		# EffectResult is the new standardized return type that encapsulates events and trigger data
+		if res is EffectResult:
+			var effect_result: EffectResult = res
+			
+			# Handle delegated damage requests (from EffectModifyStat negative HP)
+			# This routes through the proper damage pipeline with armor/burn/guardian handling
+			if not effect_result.damage_request.is_empty():
+				var dmg_data: Dictionary = effect_result.damage_request
+				var stat: String = dmg_data.get("stat", "")
+				var amount: int = dmg_data.get("amount", 0)
+				var targets: Array = dmg_data.get("targets", [])
+				
+				if stat == "hp" and amount < 0 and not targets.is_empty():
+					var dmg_source: GachaBallInstance = bm.get_instance_by_uuid(request.source_uuid)
+					var resolved_targets: Array[String] = []
+					var target_display_names: Array[String] = []
+					for t in targets:
+						var tgt = bm.get_instance_by_uuid(String(t))
+						resolved_targets.append(String(t))
+						target_display_names.append(BattleHelpers.get_instance_display_name(tgt))
+					
+					var source_name := ""
+					if is_instance_valid(dmg_source):
+						source_name = BattleHelpers.get_instance_display_name(dmg_source)
+					if source_name == "":
+						source_name = String(request.ability_id)
+					
+					var damage_result := EffectHandlers.handle_damage_effect(
+						request, resolved_targets, dmg_source, source_name, target_display_names, amount, false, bm
+					)
+					out_events.append_array(damage_result.events)
+					
+					if damage_result.should_return:
+						return
+					
+					# Trigger on_hurt for damaged units
+					for tgt_uuid in damage_result.damaged_uuids:
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+					
+					# Drain on_hurt reactions
+					drain_reactions_inline(0, bm)
+					var hurt_inline_evts = collect_and_clear_inline_events()
+					out_events.append_array(hurt_inline_evts)
+					
+					# Trigger on_kill for killed units
+					for tgt_uuid in damage_result.damaged_uuids:
+						var tgt = bm.get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt) and tgt.current_hp <= 0:
+							bm.trigger_on_kill(request.source_uuid, tgt_uuid)
+					
+					# Death check
+					bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+					return
+			
+			# Handle summon request (from EffectSummonOnDeath, EffectSummonT2OnDeath, EffectResurrectFirstKilledUnit)
+			if not effect_result.summon_request.is_empty():
+				var summon_result := EffectHandlers.handle_summon_unit(request, effect_result.summon_request, bm)
+				bm._apply_summon_result(summon_result)
+				out_events.append_array(summon_result.events)
+				# Summon doesn't have follow-up triggers, no return needed
+			
+			# Handle multiple summon request for boss effects (from EffectBossSummon)
+			if not effect_result.summon_units_request.is_empty():
+				var effect_data := {
+					"summon_units": effect_result.summon_units_request,
+					"team": effect_result.summon_team
+				}
+				var summon_result := EffectHandlers.handle_summon_units(request, effect_data, bm)
+				bm._apply_summon_result(summon_result)
+				out_events.append_array(summon_result.events)
+				# Boss summon doesn't have follow-up triggers, no return needed
+			
+			# Handle cascade damage request (from EffectCascadeAOE)
+			# TWO-PHASE PROCESSING for visual "wave" effect:
+			# Phase 1: Apply all damage + DAMAGE events in sequence
+			# Phase 2: Process all reactions (counter-attacks, on_kill) one target at a time
+			if not effect_result.cascade_request.is_empty():
+				var cascade_list = effect_result.cascade_request
+				
+				# Phase 1: Apply all damage via EffectHandlers
+				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_list, source, bm)
+				out_events.append_array(cascade_result.events)
+				
+				# Phase 2: Process reactions one target at a time (after all damage shown)
+				for hit_data in cascade_result.hit_targets:
+					var target_uuid: String = hit_data.uuid
+					var damage_amount: int = hit_data.amount
+					var was_killed: bool = hit_data.was_killed
+					
+					# Trigger on_hurt for counter-attacks
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					
+					# Drain on_hurt reactions for THIS target
+					drain_reactions_inline(0, bm)
+					var cascade_hurt_inline_evts = collect_and_clear_inline_events()
+					out_events.append_array(cascade_hurt_inline_evts)
+					
+					# Trigger on_kill if killed
+					if was_killed:
+						bm.trigger_on_kill(request.source_uuid, target_uuid)
+				
+				# Check for deaths after cascade
+				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+				return
+			
+			out_events.append_array(effect_result.events)
+			
+			# Fire triggers based on result data
+			for damaged_uuid in effect_result.damaged_uuids:
+				var damage_amount: int = effect_result.events[0].data.get("visual_payload", {}).get("amount", 0) if not effect_result.events.is_empty() else 0
+				bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
+			
+			# Drain on_hurt reactions
+			if not effect_result.damaged_uuids.is_empty():
+				drain_reactions_inline(0, bm)
+				var hurt_inline_evts = collect_and_clear_inline_events()
+				out_events.append_array(hurt_inline_evts)
+			
+			# Fire on_kill triggers
+			for killed_uuid in effect_result.killed_uuids:
+				bm.trigger_on_kill(request.source_uuid, killed_uuid)
+			
+			# Death check (unless skipped by effect)
+			if not effect_result.skip_death_check:
+				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+			return
+		
+		# LEGACY: Normalize integer returns to dictionary format
+		# This must happen before the TYPE_DICTIONARY check so the normalized value gets processed
+		if typeof(res) == TYPE_INT:
+			var legacy_damage_amount = int(res)
+			res = {
+				"stat": "hp",
+				"amount": - legacy_damage_amount,
+				"targets": exec_targets
+			}
+		
+		# LEGACY: Structured stat change results (Dictionary)
+		if typeof(res) == TYPE_DICTIONARY:
+			var effect_data: Dictionary = res
+			
+				# Handle cascading damage (special case for AOE shockwave)
+			# TWO-PHASE PROCESSING for visual "wave" effect:
+			# Phase 1: Apply all damage + DAMAGE events in sequence
+			# Phase 2: Process all reactions (counter-attacks, on_kill) one target at a time
+			if effect_data.has("cascade_damage"):
+				if OS.is_debug_build():
+					print("[CS] Processing cascade_damage from ability:", request.ability_id, "source:", request.source_uuid)
+				var cascade_list = effect_data.get("cascade_damage", [])
+				
+				# Phase 1: Apply all damage via EffectHandlers
+				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_list, source, bm)
+				out_events.append_array(cascade_result.events)
+				
+				# Phase 2: Process reactions one target at a time (after all damage shown)
+				for hit_data in cascade_result.hit_targets:
+					var target_uuid: String = hit_data.uuid
+					var damage_amount: int = hit_data.amount
+					var was_killed: bool = hit_data.was_killed
+					
+					# Trigger on_hurt for counter-attacks
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					
+					# Drain on_hurt reactions for THIS target
+					drain_reactions_inline(0, bm)
+					var cascade_hurt_inline_evts = collect_and_clear_inline_events()
+					out_events.append_array(cascade_hurt_inline_evts)
+					
+					# Trigger on_kill if killed
+					if was_killed:
+						bm.trigger_on_kill(request.source_uuid, target_uuid)
+				
+				# Check for deaths after cascade
+				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+				return
+
+			# Handle extra action effects (e.g., Bloodlust Edge on kill)
+			# NOTE: extra_action handled via EffectResult (Bloodlust Edge)
+
+			# Standard single-stat change processing
+			var stat: String = String(effect_data.get("stat", ""))
+			var amount: int = int(effect_data.get("amount", 0))
+			var targets: Array = effect_data.get("targets", [])
+			var skip_bump: bool = bool(effect_data.get("skip_bump", false))
+			var resolved_targets: Array[String] = []
+			var target_names: Array[String] = []
+			for raw_target in targets:
+				var target_uuid := String(raw_target)
+				resolved_targets.append(target_uuid)
+				var target_inst = bm.get_instance_by_uuid(target_uuid)
+				var target_label: String = bm._get_instance_display_name(target_inst)
+				if target_label == "":
+					target_label = target_uuid
+				target_names.append(target_label)
+			var source_name := ""
+			if not String(request.source_uuid).is_empty():
+				var src_inst = bm.get_instance_by_uuid(request.source_uuid)
+				source_name = bm._get_instance_display_name(src_inst)
+			if source_name == "":
+				source_name = String(request.ability_id)
+		
+			if stat == "hp" and not resolved_targets.is_empty():
+				# NOTE: prevented_lethal (Aegis Charm) handled via EffectResult
+				# Damage (amount < 0) - Shared with BasicAttack logic
+				# NOTE: All healing effects (amount >= 0) now return EffectResult and use that path.
+				if amount < 0:
+					var dmg_source: GachaBallInstance = bm.get_instance_by_uuid(request.source_uuid)
+					var target_display_names: Array[String] = []
+					for t in resolved_targets:
+						var tgt = bm.get_instance_by_uuid(t)
+						target_display_names.append(BattleHelpers.get_instance_display_name(tgt))
+					
+					var damage_result := EffectHandlers.handle_damage_effect(
+						request, resolved_targets, dmg_source, source_name, target_display_names, amount, skip_bump, bm
+					)
+					out_events.append_array(damage_result.events)
+					
+					if damage_result.should_return:
+						return
+					
+					# CRITICAL: Trigger on_hurt AFTER apply_stat_delta so condition checks see post-damage HP
+					for tgt_uuid in damage_result.damaged_uuids:
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+					
+					# AEGIS FIX: Drain on_hurt effects BEFORE death check
+					drain_reactions_inline(0, bm)
+					
+					# CRITICAL: Collect inline events (like LETHAL_SAVE) immediately
+					var hurt_inline_evts = collect_and_clear_inline_events()
+					out_events.append_array(hurt_inline_evts)
+					
+					# DETERMINISTIC ON_KILL: If this damage killed the target, trigger on_kill immediately
+					for tgt_uuid in damage_result.damaged_uuids:
+						var tgt = bm.get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt) and tgt.current_hp <= 0:
+							bm.trigger_on_kill(request.source_uuid, tgt_uuid)
+			# NOTE: stat == "pwr" handled via EffectResult (EffectModifyStat, EffectBuffTwoRandomAllies)
+				
+			elif stat == "burn_stacks" and not resolved_targets.is_empty():
+				out_events.append(EffectHandlers.handle_burn_stacks(request, resolved_targets, amount, bm))
+			elif stat == "armor_stacks" and not resolved_targets.is_empty():
+				out_events.append(bm.handle_armor_stacks(request, resolved_targets, amount))
+			# Handle summon effects (e.g., item_t2_c02)
+			elif effect_data.has("summon_unit_id"):
+				var summon_result := EffectHandlers.handle_summon_unit(request, effect_data, bm)
+				bm._apply_summon_result(summon_result)
+				out_events.append_array(summon_result.events)
+			# Handle boss summon effects (array of units to summon)
+			elif effect_data.has("summon_units"):
+				var summon_result := EffectHandlers.handle_summon_units(request, effect_data, bm)
+				bm._apply_summon_result(summon_result)
+				out_events.append_array(summon_result.events)
+			# NOTE: multi_heal and multi_buff branches removed - those effects now return EffectResult directly
+	# CRITICAL FIX: Death check MUST run unconditionally after any effect execution
+	# This was previously inside the TYPE_DICTIONARY block, causing deaths from the
+	# last attack of a turn to miss on_ally_death triggers when effect returned null
+	bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+
+## Drain pending reactions inline during effect execution.
+## Used to process on_before_attack defensive abilities BEFORE damage is calculated.
+## @param start_index: Only process reactions at index >= start_index
+## @param bm: BattleManager reference
+func drain_reactions_inline(start_index: int, bm) -> void:
+	# Only process reactions that were added AFTER start_index
+	if start_index >= _pending_reactions.size():
+		return # No new reactions to process
+	
+	# Extract only the new reactions (from start_index to end)
+	var reactions_to_process: Array[EffectRequest] = []
+	for i in range(start_index, _pending_reactions.size()):
+		reactions_to_process.append(_pending_reactions[i])
+	
+	# Remove them from the main queue to process them locally
+	_pending_reactions.resize(start_index)
+	
+	# Sort by priority before processing
+	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	
+	for request in reactions_to_process:
+		# Capture events to _inline_events so they can be collected by the outer loop
+		# IMPORTANT: Pass a special death_tracking that disables death checking
+		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)
+		
+		# RECURSIVE PROCESSING: If this effect triggered new reactions, process them immediately
+		if not _pending_reactions.is_empty():
+			drain_reactions_inline(0, bm)
+
+## Drain ONLY execute_on_lethal reactions WITHOUT recursive cascade processing.
+## @param start_index: Only process reactions at index >= start_index
+## @param bm: BattleManager reference
+func drain_lethal_reactions(start_index: int, bm) -> void:
+	if start_index >= _pending_reactions.size():
+		return # No reactions to process
+	
+	# Extract reactions from start_index to end
+	var reactions_to_process: Array[EffectRequest] = []
+	for i in range(start_index, _pending_reactions.size()):
+		reactions_to_process.append(_pending_reactions[i])
+	
+	# Clear the processed range
+	_pending_reactions.resize(start_index)
+	
+	# Sort by priority
+	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	
+	# Process ONLY these reactions - do NOT recursively drain new ones
+	for request in reactions_to_process:
+		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)
+		# NOTE: We intentionally do NOT call drain_reactions_inline(0, bm) here
+
+## Collect and clear inline events. Returns the collected events.
+func collect_and_clear_inline_events() -> Array[CombatEvent]:
+	var events = _inline_events.duplicate()
+	_inline_events.clear()
+	return events
 
 # ============================================================================
 # CLEANUP

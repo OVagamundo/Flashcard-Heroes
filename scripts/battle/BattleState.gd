@@ -12,17 +12,9 @@ extends RefCounted
 ## BattleManager creates and holds an instance of this class, delegating data operations.
 ## Note: FixedArrayContainer and GrowableGridContainer are global classes, no preload needed.
 
-# Container tag constants - mirrored from BattleManager for internal use
-const BATTLE_CONTAINER_TAGS = {
-	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
-	PLAYER_ITEM_INVENTORY = &"ItemInventory",
-	ENEMY_LINEUP = &"EnemyLineup",
-	ENEMY_BENCH = &"EnemyBench",
-	BATTLE_DISCARD_PILE = &"DiscardPile",
-	ENEMY_TRINKETS = &"EnemyTrinkets",
-	PLAYER_TRINKETS = &"PlayerTrinkets",
-}
+# Container tag constants - imported from BattleManager (single source of truth)
+const C = preload("res://scripts/Constants.gd")
+const BATTLE_CONTAINER_TAGS = C.BATTLE_CONTAINER_TAGS
 
 # ============================================================================
 # STATE DATA

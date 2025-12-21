@@ -6,11 +6,9 @@ extends RefCounted
 ## All methods are static and take battle_manager for instance lookups.
 
 const C = preload("res://scripts/Constants.gd")
+const BM = preload("res://scripts/BattleManager.gd")
 
-# Container tags (duplicated for static access)
-const PLAYER_LINEUP := &"PlayerLineup"
-const ENEMY_LINEUP := &"EnemyLineup"
-const PLAYER_TRINKETS := &"PlayerTrinkets"
+# Use BattleManager.BATTLE_CONTAINER_TAGS for container tag constants
 
 # ============================================================================
 # TARGET RESOLUTION
@@ -37,7 +35,7 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				if is_instance_valid(holder):
 					is_player_team = battle_manager._is_player_unit(holder)
 			elif src_def.category == &"TRINKET":
-				is_player_team = (source_instance.location_container_tag == PLAYER_TRINKETS)
+				is_player_team = (source_instance.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
 			else:
 				is_player_team = battle_manager._is_player_unit(source_instance)
 	else:
@@ -77,7 +75,7 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				return [target.ball_uuid]
 			return []
 		&"FRONTMOST_ALLY":
-			var ally_lineup_tag = PLAYER_LINEUP if is_player_team else ENEMY_LINEUP
+			var ally_lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var living_allies = battle_manager.get_instances_in_container(ally_lineup_tag).filter(func(unit): return unit.current_hp > 0)
 			if living_allies.is_empty():
 				return []
@@ -95,13 +93,13 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 						best_index = idx
 			return [best_unit.ball_uuid]
 		C.TARGET_RANDOM_ENEMY:
-			var enemies = battle_manager.get_instances_in_container(ENEMY_LINEUP if is_player_team else PLAYER_LINEUP).filter(func(u): return u.current_hp > 0)
+			var enemies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u): return u.current_hp > 0)
 			if not enemies.is_empty():
 				var random_enemy = enemies[randi() % enemies.size()]
 				return [random_enemy.ball_uuid]
 			return []
 		C.TARGET_RANDOM_ALLY:
-			var allies = battle_manager.get_instances_in_container(PLAYER_LINEUP if is_player_team else ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
 			if not allies.is_empty():
 				var random_ally = allies[randi() % allies.size()]
 				return [random_ally.ball_uuid]
@@ -120,7 +118,7 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				uuids.append(ally.ball_uuid)
 			return uuids
 		C.TARGET_ALL_ALLIES:
-			var allies = battle_manager.get_instances_in_container(PLAYER_LINEUP if is_player_team else ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
 			var uuids: Array[String] = []
 			for ally in allies:
 				uuids.append(ally.ball_uuid)
@@ -150,8 +148,8 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 	match condition_def.condition_type:
 		C.COND_TEAM_SIZE_LESS_THAN_ENEMY:
 			var is_source_player = battle_manager._is_player_unit(source_instance)
-			var ally_count = battle_manager.get_instances_in_container(PLAYER_LINEUP if is_source_player else ENEMY_LINEUP).size()
-			var enemy_count = battle_manager.get_instances_in_container(ENEMY_LINEUP if is_source_player else PLAYER_LINEUP).size()
+			var ally_count = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_source_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).size()
+			var enemy_count = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_source_player else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).size()
 			result = ally_count < enemy_count
 		C.COND_SLOT_AHEAD_IS_EMPTY:
 			var slot_ahead = battle_manager._get_slot_ahead(source_instance)

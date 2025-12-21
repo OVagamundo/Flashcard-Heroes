@@ -1,5 +1,7 @@
 class_name TestEnvironmentManager
-extends Control
+extends Node
+
+const C = preload("res://scripts/Constants.gd")
 
 # This manager handles the "God Mode" UI and logic for the Test Environment.
 # It is instantiated into the TestBattle scene.
@@ -212,7 +214,7 @@ func _on_spawn_item_pressed() -> void:
 	if not def: return
 	var instance = GachaBallInstance.new()
 	instance.initialize(def)
-	battle_manager.bm_add_instance(instance, BattleManager.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
 	SignalBus.emit_signal("battle_inventory_changed")
 	print("[TestMode] Spawned item: %s to inventory" % id)
 

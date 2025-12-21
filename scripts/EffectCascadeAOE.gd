@@ -1,6 +1,7 @@
 # res://scripts/EffectCascadeAOE.gd
 @tool
 extends EffectDefinition
+const C = preload("res://scripts/Constants.gd")
 
 ## An effect that deals cascading damage to the frontmost enemy and adjacent slots behind.
 ## 1. Finds the frontmost LIVING enemy (like basic attack)
@@ -13,9 +14,9 @@ extends EffectDefinition
 ##   - cascade_falloff: float (default 0.5) - multiplier applied per slot behind
 ##   - cascade_depth: int (default 2) - how many slots BEHIND the frontmost to check
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
 	if targets.is_empty():
-		return null
+		return EffectResult.empty()
 
 	# Zero-Instance-Query Compliant: Use centralized stat calculator
 	var base_damage = StatScaling.calculate(parameters.get("damage"), _context, "EffectCascadeAOE")
@@ -28,18 +29,18 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_instance):
 		push_warning("[EffectCascadeAOE] source instance not found for team detection")
-		return null
+		return EffectResult.empty()
 	
 	var is_player_unit = battle_manager._is_player_unit(source_instance)
 	var container_tag: StringName
 	if is_player_unit:
-		container_tag = battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	else:
-		container_tag = battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	
 	var container = battle_manager.get_container(container_tag)
 	if not is_instance_valid(container):
-		return null
+		return EffectResult.empty()
 	
 	# Step 1: Find the frontmost LIVING enemy (respecting attack direction)
 	# Player attacks from left to right (finds index 0 first)
@@ -69,11 +70,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				break
 	
 	if frontmost_slot == -1:
-		return null # No living enemies
+		return EffectResult.empty() # No living enemies
 	
 	# Step 2: Calculate damage for frontmost slot + cascade_depth slots behind
 	# on_before_damage is triggered for each target in the loop below.
-	# on_hurt is triggered by BattleManager after applying damage from cascade_damage.
+	# on_hurt is triggered by CombatSimulator after applying damage from cascade_request.
 	var damage_data: Array = []
 	var current_damage = base_damage
 	var damage_index: int = 0 # For skip_bump logic
@@ -106,21 +107,19 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var damage_amount = int(current_damage)
 		
 		# Trigger on_before_damage for this target (defensive abilities like Defensive Stance)
-		var is_simulation: bool = _context.get("is_simulation", false)
 		var before_attack_context: Dictionary = {
 			"source_uuid": target.ball_uuid,
 			"defender_uuid": target.ball_uuid,
 			"attacker_uuid": source_uuid,
 			"target_initial_hp": target.current_hp,
-			"is_simulation": is_simulation
+			"is_simulation": true
 		}
 		AbilityResolver.process_trigger(&"on_before_damage", before_attack_context)
 		
 		# Drain the on_before_damage reactions immediately (like BasicAttackEffect does)
-		if is_simulation:
-			battle_manager.drain_pending_reactions_inline(0)
+		battle_manager.drain_pending_reactions_inline(0)
 		
-		# Add to damage data - BattleManager will handle applying damage and triggering on_hurt
+		# Add to damage data - CombatSimulator will handle applying damage and triggering on_hurt
 		damage_data.append({
 			"target": target.ball_uuid,
 			"amount": damage_amount,
@@ -131,15 +130,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		current_damage = current_damage * falloff
 
 	if damage_data.is_empty():
-		return null
+		return EffectResult.empty()
 
-	# Return structured data for BattleManager to process
-	var target_uuids: Array[String] = []
-	for d in damage_data:
-		target_uuids.append(d.target)
-
-	return {
-		"stat": "hp",
-		"cascade_damage": damage_data,
-		"targets": target_uuids
-	}
+	# Return EffectResult with cascade_request for CombatSimulator to process
+	var result := EffectResult.new()
+	result.cascade_request = damage_data
+	return result

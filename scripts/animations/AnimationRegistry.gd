@@ -35,4 +35,11 @@ static func load_standard_animations() -> void:
 	var summon_anim_script = load("res://scripts/animations/SummonAnimation.gd")
 	register("summon", summon_anim_script.new())
 	
-	print("[AnimationRegistry] Loaded animations: ", _animations.keys())
+	var guardian_anim_script = load("res://scripts/animations/GuardianInterceptAnimation.gd")
+	register("guardian_intercept", guardian_anim_script.new())
+	
+	var lethal_save_anim_script = load("res://scripts/animations/LethalSaveAnimation.gd")
+	register("lethal_save", lethal_save_anim_script.new())
+	
+	if OS.is_debug_build():
+		print("[AnimationRegistry] Loaded animations: ", _animations.keys())

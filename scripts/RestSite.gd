@@ -4,6 +4,8 @@ extends Control
 @onready var train_hp_button: Button = %TrainHPButton
 @onready var train_pwr_button: Button = %TrainPWRButton
 @onready var leave_button: Button = %LeaveButton
+@onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
+@onready var description_label: Label = $CenterContainer/VBoxContainer/DescriptionLabel
 
 enum TrainingType {NONE, HP, PWR}
 var _current_training: TrainingType = TrainingType.NONE
@@ -17,6 +19,17 @@ func _ready() -> void:
 	# Connect to flashcard completion signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
+	
+	# Connect to locale changes
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
+
+func _update_localized_text() -> void:
+	title_label.text = tr("ui.rest_site")
+	description_label.text = tr("ui.choose_action")
+	train_hp_button.text = tr("ui.train_hp")
+	train_pwr_button.text = tr("ui.train_pwr")
+	leave_button.text = tr("ui.leave")
 
 func _on_train_pressed(type: TrainingType) -> void:
 	_current_training = type
@@ -47,11 +60,11 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	var stat_type = "HP" if _current_training == TrainingType.HP else "PWR"
 
 	# Display ResultsPopup
-	var results_text := "No gains this time."
+	var results_text := tr("ui.no_gains")
 	if stat_gain > 0:
-		results_text = "Your Hero gained +%d %s." % [stat_gain, stat_type]
+		results_text = tr("ui.hero_gained") % [stat_gain, stat_type]
 	WindowManager.open_modal_window(&"ResultsPopup", {
-		"populate_args": ["Training Complete!", results_text, "Continue"]
+		"populate_args": [tr("ui.training_complete"), results_text, tr("ui.continue")]
 	})
 
 func _on_results_acknowledged() -> void:

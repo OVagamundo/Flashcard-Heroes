@@ -1,6 +1,7 @@
-# res://scripts/effects/EffectMirrorSlotAttack.gd
+# res://scripts/EffectMirrorSlotAttack.gd
 @tool
 extends EffectDefinition
+const C = preload("res://scripts/Constants.gd")
 
 ## An effect that deals damage to the enemy in the mirrored slot position.
 ## If no enemy exists at the mirrored slot, falls back to the backmost enemy.
@@ -20,9 +21,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Get source's slot index from its own team's container
 	var source_container_tag: StringName
 	if is_player_unit:
-		source_container_tag = battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		source_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	else:
-		source_container_tag = battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		source_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	
 	var source_container = battle_manager.get_container(source_container_tag)
 	if not is_instance_valid(source_container):
@@ -35,9 +36,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Get enemy lineup container
 	var enemy_container_tag: StringName
 	if is_player_unit:
-		enemy_container_tag = battle_manager.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		enemy_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	else:
-		enemy_container_tag = battle_manager.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		enemy_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	
 	var enemy_container = battle_manager.get_container(enemy_container_tag)
 	if not is_instance_valid(enemy_container):

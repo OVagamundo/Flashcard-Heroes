@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://l5mhu3dnclc4"]
+[gd_scene load_steps=10 format=3 uid="uid://l5mhu3dnclc4"]
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 [ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
+[ext_resource type="Script" path="res://scripts/animations/UnitAnimationController.gd" id="8_anim_ctrl"]
+
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("2_outline")
@@ -36,6 +38,9 @@ anchor_bottom = 1.0
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxEmpty_unit")
 script = ExtResource("1_cm7jq")
+
+[node name="AnimationController" type="Node" parent="."]
+script = ExtResource("8_anim_ctrl")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2

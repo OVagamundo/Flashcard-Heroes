@@ -6,18 +6,8 @@ extends RefCounted
 ## Responsible for creating battle copies of units from RunState and placing them.
 
 const RS = preload("res://scripts/RunState.gd")
+const C = preload("res://scripts/Constants.gd")
 # EncounterDefinition is a global class, no preload needed
-
-const BATTLE_CONTAINER_TAGS = {
-	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
-	PLAYER_ITEM_INVENTORY = &"ItemInventory",
-	ENEMY_LINEUP = &"EnemyLineup",
-	ENEMY_BENCH = &"EnemyBench",
-	BATTLE_DISCARD_PILE = &"DiscardPile",
-	ENEMY_TRINKETS = &"EnemyTrinkets",
-	PLAYER_TRINKETS = &"PlayerTrinkets",
-}
 
 # ============================================================================
 # HELPER UTILITIES
@@ -112,9 +102,9 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 		if is_hero:
 			var hero_battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid, "")
 			if hero_battle_uuid:
-				var hero_container = state.get_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+				var hero_container = state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 				hero_container.set_uuid(0, hero_battle_uuid)
-				state.update_instance_location(hero_battle_uuid, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+				state.update_instance_location(hero_battle_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
 			continue
 		
 		if is_trinket_definition(def):
@@ -140,11 +130,11 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 		else:
 			match perm_loc.container:
 				RS.RUN_CONTAINER_TAGS.PLAYER_LINEUP:
-					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 				RS.RUN_CONTAINER_TAGS.PLAYER_BENCH:
-					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
 				RS.RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-					target_container_name = BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
+					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
 				_:
 					continue
 
@@ -159,7 +149,7 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: EncounterDefin
 		_setup_fallback_enemy_lineup(state)
 		return
 	
-	var lineup_container = state.get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	var lineup_container = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	for placement in encounter_def.enemy_placements:
 		var unit_id = placement.get("id", placement.get("unit_id", ""))
 		var unit_def = Database.get_definition(unit_id)
@@ -186,12 +176,12 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: EncounterDefin
 			_perform_static_equip(item_inst, enemy_inst)
 		
 		lineup_container.set_uuid(placement.position, enemy_inst.ball_uuid)
-		state.update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, placement.position)
+		state.update_instance_location(enemy_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, placement.position)
 
 static func _setup_fallback_enemy_lineup(state: BattleState) -> void:
 	# Fallback to hardcoded enemy lineup for testing or broken encounters
 	var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
-	var lineup_container = state.get_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	var lineup_container = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	
 	for i in range(min(enemy_unit_ids.size(), 5)):
 		var unit_def = Database.get_definition(enemy_unit_ids[i])
@@ -203,7 +193,7 @@ static func _setup_fallback_enemy_lineup(state: BattleState) -> void:
 		state.register_instance(enemy_inst)
 		
 		lineup_container.set_uuid(i, enemy_inst.ball_uuid)
-		state.update_instance_location(enemy_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
+		state.update_instance_location(enemy_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
 
 static func _perform_static_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	var empty_slot_idx: int = unit_instance.equipped_item_uuids.find("")
@@ -220,7 +210,7 @@ static func setup_enemy_trinkets(state: BattleState, encounter_def: EncounterDef
 	if not is_instance_valid(encounter_def):
 		return
 	
-	var et_container := state.get_container(BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+	var et_container := state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
 	if not is_instance_valid(et_container):
 		return
 	
@@ -233,7 +223,7 @@ static func setup_enemy_trinkets(state: BattleState, encounter_def: EncounterDef
 		trinket_inst.initialize_from_trinket(trinket_def)
 		state.register_instance(trinket_inst)
 		et_container.set_uuid(slot_index, trinket_inst.ball_uuid)
-		state.update_instance_location(trinket_inst.ball_uuid, BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, slot_index)
+		state.update_instance_location(trinket_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, slot_index)
 		state.enemy_trinkets.append(trinket_inst)
 		slot_index += 1
 
@@ -242,7 +232,7 @@ static func setup_player_trinkets(state: BattleState) -> void:
 	if not is_instance_valid(GameManager.run_state):
 		return
 	
-	var pt_container := state.get_container(BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
+	var pt_container := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
 	var slot_index := 0
 	
 	for perm_inst in GameManager.run_state.get_all_instances().values():
@@ -260,5 +250,5 @@ static func setup_player_trinkets(state: BattleState) -> void:
 			continue
 		state.register_instance(battle_trinket)
 		pt_container.set_uuid(slot_index, battle_trinket.ball_uuid)
-		state.update_instance_location(battle_trinket.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, slot_index)
+		state.update_instance_location(battle_trinket.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, slot_index)
 		slot_index += 1

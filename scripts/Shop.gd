@@ -7,10 +7,12 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 @onready var buy_button: Button = %BuyButton
 @onready var reroll_button: Button = %RerollButton
 @onready var leave_button: Button = %LeaveButton
+@onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 
 var _current_shop_instances: Array = []
 var _selected_cost: int = 0
 var _price_labels_container: HBoxContainer
+var _current_reroll_cost: int = 1
 
 func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
@@ -29,25 +31,21 @@ func _ready() -> void:
 	
 	# Add background input handling for the new InteractionContext system
 	gui_input.connect(_on_gui_input)
+	
+	# Connect to locale changes
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
+
+func _update_localized_text() -> void:
+	title_label.text = tr("ui.shop")
+	buy_button.text = tr("ui.buy")
+	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
+	leave_button.text = tr("ui.back_to_path")
 
 func populate(context: Dictionary) -> void:
 	_current_shop_instances = context.get("shop_instances", [])
-	var reroll_cost: int = context.get("reroll_cost", 1)
-	reroll_button.text = "Reroll (%d Gold)" % reroll_cost
-
-	# Debug: Print info about the instances we received
-	# print("Shop received instances: ", _current_shop_instances.size())
-	for i in range(_current_shop_instances.size()):
-		var inst = _current_shop_instances[i]
-		if is_instance_valid(inst):
-			var _def = inst.get_definition()
-			# print("  [%d] UUID: %s, Type: %s, HP: %d, PWR: %d" % [
-			# 	i,
-			# 	inst.ball_uuid,
-			# 	def.id if is_instance_valid(def) else "No Def",
-			# 	inst.current_hp,
-			# 	inst.current_pwr
-			# ])
+	_current_reroll_cost = context.get("reroll_cost", 1)
+	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 
 	# Clear existing price labels
 	for child in _price_labels_container.get_children():
@@ -66,13 +64,8 @@ func populate(context: Dictionary) -> void:
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
-			# Debug: Print instance info before populating the view
-			var def = inst_for_slot.get_definition()
-			# print("Populating slot ", i, " with instance: ", 
-			# 	def.id if is_instance_valid(def) else "No Def", 
-			# 	" (HP: ", inst_for_slot.current_hp, ", PWR: ", inst_for_slot.current_pwr, ")")
-			
 			# Ensure the instance has valid stats before populating
+			var def = inst_for_slot.get_definition()
 			if inst_for_slot.current_hp <= 0 or inst_for_slot.current_pwr <= 0:
 				print("Warning: Instance has invalid stats, resetting from definition")
 				if is_instance_valid(def):
@@ -93,15 +86,13 @@ func populate(context: Dictionary) -> void:
 		if is_instance_valid(inst_for_slot):
 			var shop_def = inst_for_slot.get_definition()
 			var price = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
-			price_label.text = "%d Gold" % price
+			price_label.text = tr("ui.gold_price") % price
 		else:
 			price_label.text = "" # Empty text for slots without items
 		price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		price_label.add_theme_font_size_override("font_size", 12)
 		price_label.custom_minimum_size = Vector2(120, 30)
 		_price_labels_container.add_child(price_label)
-	
-	# Don't clear selection here as it might interfere with double-click inspection
 
 func _find_instance_for_slot(slot_index: int) -> GachaBallInstance:
 	for inst in _current_shop_instances:
@@ -116,11 +107,11 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 		if is_instance_valid(instance):
 			var shop_def = instance.get_definition()
 			_selected_cost = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
-			buy_button.text = "Buy (%d Gold)" % _selected_cost
+			buy_button.text = tr("ui.buy_gold") % _selected_cost
 			buy_button.disabled = false
 			return
 
-	buy_button.text = "Buy"
+	buy_button.text = tr("ui.buy")
 	buy_button.disabled = true
 	_selected_cost = 0
 

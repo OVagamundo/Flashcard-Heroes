@@ -14,11 +14,11 @@ func populate(context: Dictionary) -> void:
 	var is_victory: bool = context.get("is_victory", false)
 	_is_victory = is_victory
 	if is_victory:
-		title_label.text = "VICTORY!"
-		return_button.text = "Continue"
+		title_label.text = tr("ui.victory")
+		return_button.text = tr("ui.continue")
 	else:
-		title_label.text = "DEFEAT"
-		return_button.text = "Return to Title"
+		title_label.text = tr("ui.defeat")
+		return_button.text = tr("ui.return_to_title")
 
 func _on_return_button_pressed() -> void:
 	if _is_victory:

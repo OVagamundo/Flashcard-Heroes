@@ -125,8 +125,11 @@ func _show_card_introduction() -> void:
 	var card_data = Database.get_flashcard_definition(_new_card_id)
 	if not card_data.is_empty():
 		intro_question_label.text = card_data.get("question", "Error: No question")
-		intro_answer_label.text = "Answer: %s" % card_data.get("answer", "Error")
-		intro_explanation_label.text = "Explanation: %s" % card_data.get("explanation", "No explanation available")
+		intro_answer_label.text = tr("ui.answer") % card_data.get("answer", "Error")
+		var explanation = card_data.get("explanation", "")
+		if explanation.is_empty():
+			explanation = tr("ui.no_explanation")
+		intro_explanation_label.text = tr("ui.explanation") % explanation
 	
 	# Set panel to mastery level 1 color for new cards
 	_update_panel_color(FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN])
@@ -168,7 +171,7 @@ func _process(delta: float) -> void:
 func _update_timer_display() -> void:
 	"""Update the timer display"""
 	timer_label.text = "%.1f" % max(0, _session_timer)
-	score_label.text = "Score: %d" % _correct_answers
+	score_label.text = tr("ui.score") % _correct_answers
 
 func _show_next_question() -> void:
 	"""Show the next question with 9 answer choices (used for initial load)"""
@@ -342,14 +345,35 @@ func _has_hero_timer_extend() -> bool:
 
 
 func _flash_button_correct(correct_answer_id: StringName) -> void:
-	"""Flash the correct answer button green"""
+	"""Flash the correct answer button green and spawn token pop VFX"""
 	for i in range(choices_grid.get_child_count()):
 		var button: Control = choices_grid.get_child(i)
 		if not is_instance_valid(button):
 			continue
 		if button.text == Database.get_flashcard_definition(correct_answer_id).get("answer", ""):
 			button.modulate = Color.LIGHT_GREEN
+			
+			# Spawn Mario-style token pop from button center
+			_spawn_token_pop(button)
 			break
+
+func _spawn_token_pop(button: Control) -> void:
+	"""Spawn a token pop VFX at the button's center"""
+	const TokenPopScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
+	
+	var token_pop = TokenPopScene.instantiate()
+	
+	# Get button center in global coordinates
+	var button_rect = button.get_global_rect()
+	var spawn_pos = Vector2(
+		button_rect.position.x + button_rect.size.x / 2,
+		button_rect.position.y + button_rect.size.y / 2
+	)
+	
+	# Add to scene and play
+	add_child(token_pop)
+	token_pop.global_position = spawn_pos
+	token_pop.play()
 
 func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 	"""Flash the incorrect answer button red"""

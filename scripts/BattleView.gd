@@ -103,7 +103,7 @@ func _redraw_board() -> void:
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):
 		var discard_count = discard_container.get_all_non_empty_uuids().size()
-		discard_pile_button.text = "Discard Pile (%d)" % discard_count
+		discard_pile_button.text = tr("ui.discard_pile_count") % discard_count
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
 	if not is_instance_valid(battle_manager):
@@ -202,7 +202,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 func _update_gacha_token_label(new_amount: int) -> void:
-	gacha_token_label.text = "Tokens: %d" % new_amount
+	gacha_token_label.text = tr("ui.tokens_count") % new_amount
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	var is_management_phase = (phase_name == &"MANAGEMENT")

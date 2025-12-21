@@ -1,21 +1,18 @@
 class_name ProjectileAnimation
 extends BattleAnimation
 
-const StatProjectileScene = preload("res://scenes/vfx/StatProjectile.tscn")
+# NOTE: VFX scene preloads moved to VFXFactory autoload
 
 func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
 	var stat = String(payload.get("stat", "hp"))
 	var amount = int(payload.get("amount", 0))
-	var color_hint = String(payload.get("color", "red"))
+	var _color_hint = String(payload.get("color", "red"))
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
 	# Get visual registry from animator
 	var source_uuid = String(payload.get("source_uuid", "")) # Passed in payload or context
-	
-	# If source_uuid is missing from payload, check if it's in the event context (BattleAnimator might need to pass it)
-	# For now, we assume payload has it or we can't find source.
 	
 	# DECOUPLING FIX: Use position snapshots instead of visual_registry
 	# Determine start position from snapshot
@@ -42,17 +39,9 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			is_self_cast = true
 			launch_pos = end_pos
 		
-		# Instantiate and launch
-		var projectile = StatProjectileScene.instantiate()
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			battle_view.add_child(projectile)
-			projectile.setup(abs(amount), stat, launch_pos, end_pos, is_self_cast)
+		# Instantiate and launch using VFXFactory
+		var projectile = VFXFactory.spawn_projectile_on_layer(abs(amount), stat, launch_pos, end_pos, is_self_cast)
+		if projectile:
 			projectile.launch()
-			
-			# We await each impact to keep the "one by one" feel if multiple targets
-			# Or we can just let them fly. The original logic awaited.
-			# Since execute() is async (awaited by animator), we should await here if we want sequential.
+			# Await impact to keep the "one by one" feel if multiple targets
 			await projectile.impact
-		else:
-			projectile.queue_free()

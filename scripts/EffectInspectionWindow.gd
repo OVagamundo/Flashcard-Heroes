@@ -43,13 +43,6 @@ func _configure_mouse_filters() -> void:
 				stack.append(child)
 
 
-
-
-
-
-
-
-
 func populate(context: Dictionary) -> void:
 	var effect_definitions: Variant = context.get("effect_definition")
 	# Accept either a single definition or an array of definitions
@@ -61,8 +54,8 @@ func populate(context: Dictionary) -> void:
 
 	# If no abilities, show placeholder instead of closing
 	if defs.is_empty():
-		name_label.text = "Effects"
-		description_label.text = "This unit has no special effects."
+		name_label.text = tr("ui.effects")
+		description_label.text = tr("ui.no_effects")
 		return
 
 	# Display the first effect definition; support Dictionary or Object types
@@ -78,8 +71,8 @@ func populate(context: Dictionary) -> void:
 		desc_key = first.get("description_key") if first.has_method("get") else (first.description_key if "description_key" in first else "")
 
 	if name_key == "" and desc_key == "":
-		name_label.text = "Effects"
-		description_label.text = "No details available for this effect."
+		name_label.text = tr("ui.effects")
+		description_label.text = tr("ui.no_effect_details")
 		return
 
 	name_label.text = tr(name_key)

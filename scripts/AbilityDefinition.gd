@@ -20,9 +20,9 @@ extends Resource
 @export var description_key: String
 
 ## Execution priority. Higher numbers resolve first. Default 0 for all existing abilities.
-## See scripts/AbilityPriorities.gd for named constants and full reference.
-##
-## Quick Reference (from AbilityPriorities.gd):
+## See scripts/Constants.gd for named constants (PRIORITY_*) and full reference.
+## Default is 0 (PRIORITY_STANDARD).
+## Quick Reference (from Constants.gd):
 ##  300: GUARDIAN_INTERCEPT (Damage interception)
 ##  210: TRINKET_SUMMON (Soul Echo resurrection)
 ##  100: RESILIENT_AURA (On-hurt buffs/heals)

@@ -22,5 +22,8 @@ class_name PathNodeDefinition extends Resource
 ## Potential rewards for completing this node
 @export var rewards: Array[RewardDefinition]
 
+## Boss level for boss encounters (1-5)
+@export var boss_level: int = 0
+
 ## Relative difficulty level (1-5)
-@export var difficulty: int = 1 
+@export var difficulty: int = 1

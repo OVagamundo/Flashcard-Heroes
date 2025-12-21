@@ -10,23 +10,32 @@ func _ready() -> void:
 	return_button.pressed.connect(_on_return_button_pressed)
 
 func populate(context: Dictionary) -> void:
-	title_label.text = "RUN COMPLETE!"
+	title_label.text = tr("ui.run_complete")
+	return_button.text = tr("ui.return_to_title")
 	
 	var days: int = context.get("days", 0)
 	var bosses: int = context.get("bosses_defeated", 5)
 	var enemies: int = context.get("enemies_defeated", 0)
 	var gold_earned: int = context.get("gold_earned", 0)
 	
-	stats_label.text = """[center][b]Congratulations![/b]
+	stats_label.text = """[center][b]%s[/b]
 
-You have defeated all 5 bosses and completed your run!
+%s
 
-[b]Final Statistics[/b]
+[b]%s[/b]
 
-Days Survived: %d
-Bosses Defeated: %d
-Enemies Slain: %d
-Gold Earned: %d[/center]""" % [days, bosses, enemies, gold_earned]
+%s: %d
+%s: %d
+%s: %d
+%s: %d[/center]""" % [
+		tr("ui.congratulations"),
+		tr("ui.run_complete_message"),
+		tr("ui.final_statistics"),
+		tr("ui.days_survived"), days,
+		tr("ui.bosses_defeated"), bosses,
+		tr("ui.enemies_slain"), enemies,
+		tr("ui.gold_earned"), gold_earned
+	]
 
 func _on_return_button_pressed() -> void:
 	SignalBus.emit_signal("title_scene_requested")

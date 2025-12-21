@@ -67,31 +67,55 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 
 ## Loads the translation CSV file and adds it to the TranslationServer
 func _load_translations() -> void:
-	# Create a new Translation resource
-	var translation = Translation.new()
-	translation.locale = "en"
+	# Create Translation resources for each supported language
+	var translation_en = Translation.new()
+	translation_en.locale = "en"
+	
+	var translation_pt = Translation.new()
+	translation_pt.locale = "pt_BR"
 	
 	# Load the CSV file
 	var csv_file = FileAccess.open("res://localization/game.csv", FileAccess.READ)
 	if not csv_file:
 		return
 	
-	# Skip the header line
+	# Read the header line to get column indices
 	var header = csv_file.get_csv_line()
+	var en_col = -1
+	var pt_col = -1
+	for i in range(header.size()):
+		if header[i] == "en":
+			en_col = i
+		elif header[i] == "pt_BR":
+			pt_col = i
+	
+	if en_col == -1:
+		return
 	
 	# Read all translation pairs
 	while not csv_file.eof_reached():
 		var line = csv_file.get_csv_line()
 		if line.size() >= 2:
 			var key = line[0]
-			var value = line[1]
-			translation.add_message(key, value)
+			if en_col < line.size():
+				translation_en.add_message(key, line[en_col])
+			if pt_col != -1 and pt_col < line.size():
+				translation_pt.add_message(key, line[pt_col])
 	
 	csv_file.close()
 	
-	# Add the translation to the server
-	TranslationServer.add_translation(translation)
+	# Add the translations to the server
+	TranslationServer.add_translation(translation_en)
+	if pt_col != -1:
+		TranslationServer.add_translation(translation_pt)
+	
+	# Set default locale (could load from saved preference later)
 	TranslationServer.set_locale("en")
+
+## Sets the game locale and triggers UI updates
+func set_locale(locale: String) -> void:
+	TranslationServer.set_locale(locale)
+	SignalBus.emit_signal("locale_changed")
 
 
 ## A central helper to find any definition by its ID (Unit, Item, Trinket).

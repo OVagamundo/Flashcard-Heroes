@@ -96,6 +96,36 @@ signal unit_flash_effect(unit_uuid: String, flash_color: Color)
 ## @param unit_uuid: String - The UUID of the unit that finished flashing
 signal unit_flash_finished(unit_uuid: String)
 
+# -----------------------------------------------------------------------------
+# COMPOSABLE ANIMATION EFFECTS (Independent parallel effects)
+# -----------------------------------------------------------------------------
+
+## Color flash effect - shader-based color tint that fades over time
+## @param unit_uuid: String - The UUID of the unit to flash
+## @param flash_color: Color - The color to flash
+## @param duration: float - How long the flash should fade
+signal unit_color_flash(unit_uuid: String, flash_color: Color, duration: float)
+
+## Emitted when color flash completes
+signal unit_color_flash_finished(unit_uuid: String)
+
+## Deformation effect - squish/stretch on icon scale
+## @param unit_uuid: String - The UUID of the unit
+## @param deform_type: StringName - Type: "SQUISH_BOUNCE", "STRETCH_BOUNCE", "HIT_IMPACT", "HOP_DEFORM"
+signal unit_deform(unit_uuid: String, deform_type: StringName)
+
+## Emitted when deformation completes
+signal unit_deform_finished(unit_uuid: String)
+
+## Movement effect - position animation
+## @param unit_uuid: String - The UUID of the unit
+## @param move_type: StringName - Type: "HOP", "RECOIL", "BUMP"
+## @param direction: Vector2 - Direction for directional moves (e.g., recoil direction)
+signal unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
+
+## Emitted when movement completes
+signal unit_move_finished(unit_uuid: String)
+
 ## Emitted to request a short pre-hit "bump" animation from the attacker.
 ## @param unit_uuid: String - The attacker unit UUID
 ## @param direction: Vector2 - Screen-space direction to bump (e.g., right for player, left for enemy)
@@ -331,3 +361,10 @@ signal results_acknowledged
 ## Emitted when game state should be saved
 
 ## Emitted when game state should be loaded
+
+# -----------------------------------------------------------------------------
+# LOCALIZATION SIGNALS
+# -----------------------------------------------------------------------------
+
+## Emitted when the game locale changes
+signal locale_changed

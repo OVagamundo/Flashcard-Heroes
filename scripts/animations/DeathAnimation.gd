@@ -9,7 +9,6 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 		if SignalBus.has_signal("unit_death_fade"):
 			SignalBus.emit_signal("unit_death_fade", target_uuid)
 			
-		animator._current_animation_uuid = target_uuid
 		await animator.wait_for_animation_completion("death_fade", target_uuid)
 		
 		# Cleanup from registry

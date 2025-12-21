@@ -1,4 +1,4 @@
-# res://scripts/effects/EffectBossSummon.gd
+# res://scripts/EffectBossSummon.gd
 @tool
 extends EffectDefinition
 
@@ -8,7 +8,7 @@ extends EffectDefinition
 ## Note: This effect queries container state during end_of_turn, which is a stable game state.
 ## Container queries are valid here because we're not in a transitional death state.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> Dictionary:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
 	# The source is the boss unit - if this trigger fired, it exists
 	# No need to validate source instance - the trigger system already did that
 	# 1. Get budget from parameters
@@ -18,7 +18,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Note: Container queries at end_of_turn are valid (stable game state)
 	var enemy_container = battle_manager.get_container(&"EnemyLineup")
 	if not is_instance_valid(enemy_container):
-		return {}
+		return EffectResult.empty()
 	
 	var max_slots: int = 5
 	var filled_slots: int = 0
@@ -28,19 +28,19 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var empty_slots: int = max_slots - filled_slots
 	
 	if empty_slots <= 0:
-		return {}
+		return EffectResult.empty()
 	
 	# 3. Generate summons within budget
 	var summon_data: Array = _generate_summons(budget, empty_slots)
 	
 	if summon_data.is_empty():
-		return {}
+		return EffectResult.empty()
 	
-	# 4. Return summon instructions for BattleManager
-	return {
-		"summon_units": summon_data,
-		"team": "ENEMY"
-	}
+	# 4. Return EffectResult with summon instructions
+	var result := EffectResult.new()
+	result.summon_units_request = summon_data
+	result.summon_team = "ENEMY"
+	return result
 
 func _generate_summons(budget: int, max_units: int) -> Array:
 	# Get available units (exclude heroes and bosses)

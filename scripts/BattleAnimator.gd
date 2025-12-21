@@ -7,11 +7,11 @@ const ANIM_TIMEOUT_DURATION = 1.1
 const BUMP_DURATION = 0.5
 
 var _hp_snapshot: Dictionary = {}
-var _current_animation_uuid: String = "" # Track which unit is currently animating
 var _dead_units: Dictionary = {} # Track units that have already animated death this turn
 var _visual_registry: Dictionary = {} # UUID -> GachaBallView (for puppet mode)
 var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vector2} - captured at animation start
 var _pending_guardian_return: String = "" # UUID of Guardian needing to return after damage
+var _tracker: AnimationCompletionTracker # Animation completion tracking
 
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
@@ -22,6 +22,8 @@ func _ready() -> void:
 	add_to_group("battle_animator")
 	# Initialize animations
 	AnimationRegistry.load_standard_animations()
+	# Initialize animation completion tracker
+	_tracker = AnimationCompletionTracker.new(get_tree())
 
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
 	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
@@ -90,9 +92,11 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 						else:
 							push_warning("[BattleAnimator] Failed to register %s: Slot %d in %s is empty" % [uuid, index, container_tag])
 					else:
-						print("[BattleAnimator] Failed to register ", uuid, ": Index ", index, " out of bounds for ", container_tag)
+						if OS.is_debug_build():
+							print("[BattleAnimator] Failed to register ", uuid, ": Index ", index, " out of bounds for ", container_tag)
 				else:
-					print("[BattleAnimator] Failed to register ", uuid, ": Invalid container or index")
+					if OS.is_debug_build():
+						print("[BattleAnimator] Failed to register ", uuid, ": Invalid container or index")
 	
 	await play_turn(turn_log)
 
@@ -111,13 +115,12 @@ func play_turn(events: Array[CombatEvent]) -> void:
 	await _animate_events(events)
 
 func _animate_events(events: Array[CombatEvent]) -> void:
-	# Connect to animation completion signals for this turn
-	_connect_animation_signals()
-	
+	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
 	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
-	print("[ANIM] ========== START ANIMATION SEQUENCE: %d events ==========" % events.size())
-	for evt in events:
-		evt.log_sim() # Log each event for cross-reference with simulation
+	if OS.is_debug_build():
+		print("[ANIM] ========== START ANIMATION SEQUENCE: %d events ==========" % events.size())
+		for evt in events:
+			evt.log_sim() # Log each event for cross-reference with simulation
 
 	var processed_count: int = 0
 	for event in events:
@@ -169,7 +172,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						continue
 						
 					_dead_units[dead_uuid] = true
-					_current_animation_uuid = dead_uuid
 					
 					if SignalBus.has_signal("unit_death_fade"):
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
@@ -242,63 +244,34 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 								}
 								
 								# Trigger summon animation
-								_current_animation_uuid = new_unit_uuid
 								if SignalBus.has_signal("unit_summon_fade"):
 									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
 									await wait_for_animation_completion("summon_fade", new_unit_uuid)
 
 			CombatEvent.Type.LETHAL_SAVE:
-				# Aegis Charm: unit floats up golden then lands back
-				if event.target_uuids.size() > 0:
-					var saved_uuid := event.target_uuids[0]
-					var payload = event.visual_payload
-					var heal_amount: int = int(payload.get("heal_amount", 1))
-					_current_animation_uuid = saved_uuid
-					
-					if SignalBus.has_signal("unit_lethal_save"):
-						SignalBus.emit_signal("unit_lethal_save", saved_uuid)
-						await wait_for_animation_completion("lethal_save", saved_uuid)
-					
-					# Update HP label to 1 after animation completes
-					apply_hp_delta(saved_uuid, heal_amount, 1)
+				# Aegis Charm: use dedicated LethalSaveAnimation
+				var anim = AnimationRegistry.get_animation("lethal_save")
+				if anim:
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Lethal save animation not found in registry!")
 
 			CombatEvent.Type.GUARDIAN_INTERCEPT:
-				# Guardian Sentinel: leaps to ally's position to intercept lethal damage
-				var payload = event.visual_payload
-				var guardian_uuid: String = String(payload.get("guardian_uuid", ""))
-				var original_target_uuid: String = String(payload.get("original_target_uuid", ""))
-				
-				print("[BattleAnimator] Processing GUARDIAN_INTERCEPT: guardian=%s original=%s" % [guardian_uuid.substr(0, 20), original_target_uuid.substr(0, 20)])
-				
-				var guardian_view = _visual_registry.get(guardian_uuid)
-				var target_pos = get_snapshot_position(original_target_uuid)
-				
-				if is_instance_valid(guardian_view) and not target_pos.is_empty():
-					# Leap to target's position
-					_current_animation_uuid = guardian_uuid
-					if guardian_view.has_method("animate_leap_to"):
-						await guardian_view.animate_leap_to(target_pos.center)
-					else:
-						# Fallback: instant move
-						guardian_view.global_position = Vector2(
-							target_pos.center.x - guardian_view.size.x / 2,
-							target_pos.center.y - guardian_view.size.y / 2
-						)
-					
-					# Mark guardian for return after damage animation completes
-					_pending_guardian_return = guardian_uuid
-					print("[BattleAnimator] Guardian leaped to position, damage event follows")
+				# Guardian Sentinel: use dedicated GuardianInterceptAnimation
+				var anim = AnimationRegistry.get_animation("guardian_intercept")
+				if anim:
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Guardian intercept animation not found in registry!")
 
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
-	
-	# Disconnect animation signals when done
-	_disconnect_animation_signals()
+	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
 	
 	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
-	print("[ANIM] ========== ANIMATION SEQUENCE COMPLETE: %d events processed ==========" % processed_count)
-	
-	print("[BattleAnimator] Emitting turn_animation_finished!")
+	if OS.is_debug_build():
+		print("[ANIM] ========== ANIMATION SEQUENCE COMPLETE: %d events processed ==========" % processed_count)
+		print("[BattleAnimator] Emitting turn_animation_finished!")
 	emit_signal("turn_animation_finished")
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
@@ -373,109 +346,32 @@ func register_dynamic_position(uuid: String, view: GachaBallView) -> void:
 			"position": rect.position,
 			"size": rect.size,
 			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-		}
+			}
 		_visual_registry[uuid] = view
-func _connect_animation_signals() -> void:
-	# Connect to animation completion signals with filtering
-	if not SignalBus.unit_flash_finished.is_connected(_on_unit_flash_finished):
-		SignalBus.unit_flash_finished.connect(_on_unit_flash_finished)
-	if not SignalBus.unit_bump_finished.is_connected(_on_unit_bump_finished):
-		SignalBus.unit_bump_finished.connect(_on_unit_bump_finished)
-	if not SignalBus.unit_death_fade_finished.is_connected(_on_unit_death_fade_finished):
-		SignalBus.unit_death_fade_finished.connect(_on_unit_death_fade_finished)
-	if not SignalBus.unit_summon_fade_finished.is_connected(_on_unit_summon_fade_finished):
-		SignalBus.unit_summon_fade_finished.connect(_on_unit_summon_fade_finished)
-	if not SignalBus.unit_melee_lunge_finished.is_connected(_on_unit_melee_lunge_finished):
-		SignalBus.unit_melee_lunge_finished.connect(_on_unit_melee_lunge_finished)
-	if not SignalBus.unit_melee_return_finished.is_connected(_on_unit_melee_return_finished):
-		SignalBus.unit_melee_return_finished.connect(_on_unit_melee_return_finished)
-	if not SignalBus.unit_lethal_save_finished.is_connected(_on_unit_lethal_save_finished):
-		SignalBus.unit_lethal_save_finished.connect(_on_unit_lethal_save_finished)
 
-func _disconnect_animation_signals() -> void:
-	# Disconnect animation completion signals
-	if SignalBus.unit_flash_finished.is_connected(_on_unit_flash_finished):
-		SignalBus.unit_flash_finished.disconnect(_on_unit_flash_finished)
-	if SignalBus.unit_bump_finished.is_connected(_on_unit_bump_finished):
-		SignalBus.unit_bump_finished.disconnect(_on_unit_bump_finished)
-	if SignalBus.unit_death_fade_finished.is_connected(_on_unit_death_fade_finished):
-		SignalBus.unit_death_fade_finished.disconnect(_on_unit_death_fade_finished)
-	if SignalBus.unit_summon_fade_finished.is_connected(_on_unit_summon_fade_finished):
-		SignalBus.unit_summon_fade_finished.disconnect(_on_unit_summon_fade_finished)
-	if SignalBus.unit_melee_lunge_finished.is_connected(_on_unit_melee_lunge_finished):
-		SignalBus.unit_melee_lunge_finished.disconnect(_on_unit_melee_lunge_finished)
-	if SignalBus.unit_melee_return_finished.is_connected(_on_unit_melee_return_finished):
-		SignalBus.unit_melee_return_finished.disconnect(_on_unit_melee_return_finished)
-	if SignalBus.unit_lethal_save_finished.is_connected(_on_unit_lethal_save_finished):
-		SignalBus.unit_lethal_save_finished.disconnect(_on_unit_lethal_save_finished)
-
-# Signal handlers that filter by current animation UUID
-func _on_unit_flash_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-func _on_unit_bump_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-func _on_unit_death_fade_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-func _on_unit_summon_fade_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-func _on_unit_melee_lunge_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-func _on_unit_melee_return_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-func _on_unit_lethal_save_finished(unit_uuid: String) -> void:
-	# Only respond if this is the unit we're currently waiting for
-	if unit_uuid == _current_animation_uuid:
-		_current_animation_uuid = ""
-
-# Robust animation waiting with timeout fallback
+# Animation waiting now delegated to AnimationCompletionTracker
+# All signal connect/disconnect and callback methods removed
 func wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
-	var timeout_duration: float
+	# Map string type to enum
+	var anim_type: AnimationCompletionTracker.AnimationType
 	match animation_type:
-		"bump":
-			timeout_duration = ANIM_TIMEOUT_DURATION # Bump is 1.0s
 		"flash":
-			timeout_duration = ANIM_TIMEOUT_DURATION # Flash is 1.0s
+			anim_type = AnimationCompletionTracker.AnimationType.FLASH
+		"bump":
+			anim_type = AnimationCompletionTracker.AnimationType.BUMP
 		"death_fade":
-			timeout_duration = ANIM_TIMEOUT_DURATION # Death fade is 1.0s
+			anim_type = AnimationCompletionTracker.AnimationType.DEATH_FADE
 		"summon_fade":
-			timeout_duration = ANIM_TIMEOUT_DURATION # Summon fade is 1.0s
+			anim_type = AnimationCompletionTracker.AnimationType.SUMMON_FADE
 		"melee_lunge":
-			timeout_duration = 1.5 # Melee lunge is ~1.0s (windup + lunge), add buffer
+			anim_type = AnimationCompletionTracker.AnimationType.MELEE_LUNGE
 		"melee_return":
-			timeout_duration = 0.4 # Melee return is ~0.2s, add buffer
+			anim_type = AnimationCompletionTracker.AnimationType.MELEE_RETURN
 		"lethal_save":
-			timeout_duration = 2.0 # Lethal save is ~1.4s, add buffer
+			anim_type = AnimationCompletionTracker.AnimationType.LETHAL_SAVE
+		"move":
+			anim_type = AnimationCompletionTracker.AnimationType.MOVE
 		_:
-			timeout_duration = ANIM_TIMEOUT_DURATION # Default fallback
+			anim_type = AnimationCompletionTracker.AnimationType.FLASH # Default fallback
 	
-	# Create timeout timer
-	var timeout_timer = get_tree().create_timer(timeout_duration)
-	
-	# Wait for either the signal (via _current_animation_uuid being cleared) or timeout
-	while _current_animation_uuid == expected_uuid and timeout_timer.time_left > 0:
-		await get_tree().process_frame
-	
-	# If we timed out, log it for debugging
-	if _current_animation_uuid == expected_uuid:
-		print("[BattleAnimator] Animation timeout for ", animation_type, " on unit ", expected_uuid)
-	
-	# Ensure UUID is cleared
-	_current_animation_uuid = ""
+	await _tracker.await_completion(expected_uuid, anim_type)

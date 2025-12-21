@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://dkqt6token_pop"]
+
+[ext_resource type="Script" path="res://scripts/vfx/TokenPopVFX.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/textures/token_100yen.png" id="2_token"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparkle"]
+emission_shape = 1
+emission_sphere_radius = 10.0
+direction = Vector3(0, -1, 0)
+spread = 60.0
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+gravity = Vector3(0, 200, 0)
+scale_min = 0.5
+scale_max = 1.0
+color = Color(1, 0.9, 0.3, 1)
+
+[node name="TokenPopVFX" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="TokenSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_token")
+
+[node name="Particles" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 12
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_sparkle")

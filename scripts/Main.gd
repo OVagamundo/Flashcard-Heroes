@@ -226,7 +226,7 @@ func _on_shop_scene_requested(context: Dictionary) -> void:
 
 func _update_day_label(day: int) -> void:
 	if is_instance_valid(days_label):
-		days_label.text = "Day %d" % day
+		days_label.text = tr("ui.day") % day
 
 func _on_run_data_changed() -> void:
 	if is_instance_valid(GameManager.run_state):

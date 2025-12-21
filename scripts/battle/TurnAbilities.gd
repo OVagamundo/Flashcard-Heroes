@@ -9,12 +9,7 @@ extends RefCounted
 ##   - Triggering on_turn_end abilities
 ##   - Processing status effects (burn damage)
 
-const BATTLE_CONTAINER_TAGS = {
-	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
-	ENEMY_LINEUP = &"EnemyLineup",
-	ENEMY_BENCH = &"EnemyBench",
-}
+const C = preload("res://scripts/Constants.gd")
 
 # ============================================================================
 # BATTLE START ABILITIES
@@ -22,8 +17,9 @@ const BATTLE_CONTAINER_TAGS = {
 
 ## Trigger on_battle_start for all units in lineup
 static func trigger_battle_start_abilities(state: BattleState) -> void:
-	var all_units := state.get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	all_units.append_array(state.get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP))
+	var all_units := state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	all_units.append_array(state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP))
+
 	
 	for unit in all_units:
 		var battle_start_context: Dictionary = {"source_uuid": unit.ball_uuid}
@@ -48,8 +44,8 @@ static func trigger_turn_start_abilities(current_turn: int) -> bool:
 static func process_burn_damage(state: BattleState, get_display_name_callback: Callable, apply_stat_delta_callback: Callable) -> Array[CombatEvent]:
 	var events: Array[CombatEvent] = []
 	
-	var all_units := state.get_instances_in_container(BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	all_units.append_array(state.get_instances_in_container(BATTLE_CONTAINER_TAGS.ENEMY_LINEUP))
+	var all_units := state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	all_units.append_array(state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP))
 	
 	for unit in all_units:
 		if unit.current_hp <= 0:
@@ -59,9 +55,15 @@ static func process_burn_damage(state: BattleState, get_display_name_callback: C
 		if burn_stacks > 0:
 			var damage := burn_stacks
 			var old_hp := unit.current_hp
+			var old_armor := unit.get_status_effect_amount(&"armor")
 			
-			# Apply damage via callback
-			var new_hp: int = apply_stat_delta_callback.call(unit, "hp", -damage)
+			# Apply damage via callback (apply_stat_delta now returns dictionary for damage)
+			var damage_result = apply_stat_delta_callback.call(unit, "hp", -damage)
+			
+			# Extract data from dictionary return
+			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if damage_result is Dictionary else unit.current_hp
+			var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
+			var new_armor: int = damage_result.get("new_armor", 0) if damage_result is Dictionary else 0
 			
 			var max_hp := 0
 			var unit_def := unit.get_definition()
@@ -80,9 +82,13 @@ static func process_burn_damage(state: BattleState, get_display_name_callback: C
 					"is_burn_damage": true,
 					"targets_old_hp": [old_hp],
 					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
+					"targets_max_hp": [max_hp],
+					"targets_old_armor": [old_armor],
+					"targets_new_armor": [new_armor],
+					"armor_consumed": [armor_consumed]
 				}
 			}))
+
 	
 	return events
 

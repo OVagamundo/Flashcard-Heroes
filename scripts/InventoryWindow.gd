@@ -20,6 +20,20 @@ func _ready() -> void:
 	tier_1_grid.gui_input.connect(_on_grid_gui_input)
 	tier_2_grid.gui_input.connect(_on_grid_gui_input)
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
+	
+	# Connect to locale changes
+	SignalBus.locale_changed.connect(_update_localized_text)
+
+func _update_localized_text() -> void:
+	# Update tier labels if they exist
+	var tier_labels = get_tree().get_nodes_in_group("tier_labels")
+	for label in tier_labels:
+		if label.name == "Tier1Label":
+			label.text = tr("ui.tier_1")
+		elif label.name == "Tier2Label":
+			label.text = tr("ui.tier_2")
+		elif label.name == "Tier3Label":
+			label.text = tr("ui.tier_3")
 
 func _exit_tree() -> void:
 	if SignalBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):

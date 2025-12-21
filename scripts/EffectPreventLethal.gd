@@ -1,4 +1,4 @@
-# res://scripts/effects/EffectPreventLethal.gd
+# res://scripts/EffectPreventLethal.gd
 @tool
 extends EffectDefinition
 
@@ -8,11 +8,10 @@ extends EffectDefinition
 ## 
 ## DOCUMENTATION COMPLIANT: Uses context keys only (ZERO-INSTANCE-QUERY RULE)
 ## Required context keys: victim_uuid, victim_team, victim_current_hp, team
-## 
-## Returns: Dictionary with prevented_lethal flag for BattleManager to create
-## LETHAL_SAVE CombatEvent (presentation layer handles animation)
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+	var is_simulation: bool = context.get("is_simulation", false)
+	
 	# 1. Get data from context (ZERO-INSTANCE-QUERY compliant)
 	var victim_uuid: String = context.get("victim_uuid", "")
 	var victim_team: String = context.get("victim_team", "")
@@ -24,31 +23,31 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Validate required context keys
 	if victim_uuid.is_empty():
 		print("[EffectPreventLethal] EXIT: victim_uuid is empty")
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	if victim_team.is_empty():
 		print("[EffectPreventLethal] EXIT: victim_team is empty (context missing)")
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	if trinket_team.is_empty():
 		print("[EffectPreventLethal] EXIT: trinket team is empty (context missing)")
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	# 2. Check victim is on same team as trinket
 	if victim_team != trinket_team:
 		print("[EffectPreventLethal] EXIT: Team mismatch - victim=%s, trinket=%s" % [victim_team, trinket_team])
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	# 3. Check if damage was lethal (HP <= 0)
 	if victim_current_hp > 0:
 		print("[EffectPreventLethal] EXIT: HP > 0, not lethal")
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	# 4. Check once-per-turn flag
 	var aegis_flag_key := "aegis_prevented_" + trinket_team
 	if battle_manager._turn_metadata.get(aegis_flag_key, false):
 		print("[EffectPreventLethal] EXIT: Already triggered this turn for team %s" % trinket_team)
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	# 5. Calculate heal amount to bring HP to 1
 	# current_hp is negative or 0, so we need to heal by (1 - current_hp)
@@ -59,12 +58,45 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	
 	print("[EffectPreventLethal] Prevented lethal damage for %s (team=%s), healing by %d" % [victim_uuid, trinket_team, heal_amount])
 	
-	# Return data for BattleManager to process
-	# NOTE: No signal emission here - presentation layer handles animation
-	# based on prevented_lethal flag in the returned data
-	return {
-		"stat": "hp",
-		"amount": heal_amount,
-		"targets": [victim_uuid],
-		"prevented_lethal": true
-	}
+	if is_simulation:
+		# NEW: Return EffectResult with LETHAL_SAVE event
+		var result := EffectResult.new()
+		
+		# Get victim instance to apply heal and for display name
+		var victim = battle_manager.get_instance_by_uuid(victim_uuid)
+		if not is_instance_valid(victim):
+			return EffectResult.empty()
+		
+		# Apply heal to model
+		battle_manager.apply_stat_delta(victim, "hp", heal_amount)
+		
+		# Get display name
+		var victim_name: String = BattleHelpers.get_instance_display_name(victim)
+		
+		# Log message
+		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+			"text": "Aegis Charm saves %s from lethal damage!" % victim_name
+		}))
+		
+		# LETHAL_SAVE event
+		result.add_event(CombatEvent.new(CombatEvent.Type.LETHAL_SAVE, {
+			"source_uuid": _source_uuid,
+			"target_uuids": [victim_uuid],
+			"ability_id": context.get("ability_id", &"aegis_charm"),
+			"visual_payload": {
+				"saved_uuid": victim_uuid,
+				"heal_amount": heal_amount
+			}
+		}))
+		
+		result.mark_healed(victim_uuid)
+		result.state_applied = true
+		return result
+	else:
+		# Legacy execution mode
+		return {
+			"stat": "hp",
+			"amount": heal_amount,
+			"targets": [victim_uuid],
+			"prevented_lethal": true
+		}

@@ -17,5 +17,7 @@ extends Resource
 ## @param targets: Array[String] - An array of target UUIDs.
 ## @param battle_manager: BattleManager - A reference to the current BattleManager.
 ## @param context: Dictionary - The original context of the event that started this chain.
+## @return EffectResult - Structured result containing events and trigger data.
+##         Returns null for backwards compatibility during migration (treated as empty result).
 func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: Dictionary) -> Variant:
 	return null

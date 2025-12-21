@@ -1,4 +1,4 @@
-# res://scripts/effects/EffectRetriggerTurnAttack.gd
+# res://scripts/EffectRetriggerTurnAttack.gd
 @tool
 extends EffectDefinition
 
@@ -10,11 +10,13 @@ extends EffectDefinition
 const C = preload("res://scripts/Constants.gd")
 
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> Variant:
+	var is_simulation: bool = _context.get("is_simulation", false)
+	
 	# --- NON-STACKING CHECK ---
 	# If Double Strike already executed this turn, skip
 	if _context.get("double_strike_executed", false):
 		print("[DoubleStrike] Skipping - already executed this turn (non-stacking)")
-		return null
+		return EffectResult.empty() if is_simulation else null
 	_context["double_strike_executed"] = true
 	
 	# Determine attacker (for items, use the holder)
@@ -27,14 +29,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	var attacker = battle_manager.get_instance_by_uuid(attacker_uuid)
 	if not is_instance_valid(attacker):
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	# --- FIND FRESH TARGET ---
 	var is_player = battle_manager._is_player_unit(attacker)
 	var target = battle_manager._get_frontmost_target(is_player)
 	if not is_instance_valid(target):
 		print("[DoubleStrike] No front enemy found, skipping")
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	print("[DoubleStrike] Performing FRESH turn action for %s -> %s" % [attacker_uuid, target.ball_uuid])
 	
@@ -57,7 +59,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	# Check if an ability replaced the basic attack
 	if double_strike_context.get("attack_replaced", false):
-		return null
+		return EffectResult.empty() if is_simulation else null
 	
 	# Mark that on_attack was already triggered
 	double_strike_context["on_attack_already_triggered"] = true
@@ -71,4 +73,6 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		)
 		battle_manager.enqueue_effect_request(basic_attack_request)
 	
-	return null # No direct damage from this effect
+	# NEW: Return EffectResult.empty() in simulation mode
+	# This effect works by queueing attacks, no direct events needed
+	return EffectResult.empty() if is_simulation else null

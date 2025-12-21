@@ -5,6 +5,9 @@ extends RefCounted
 ## EffectHandlers contains specialized handlers for different effect types.
 ## This breaks down the monolithic _resolve_single_effect_request into focused methods.
 
+const BM = preload("res://scripts/BattleManager.gd")
+const C = preload("res://scripts/Constants.gd")
+
 # ============================================================================
 # CONTEXT TYPES
 # ============================================================================
@@ -172,255 +175,6 @@ static func handle_burn_stacks(
 	})
 
 # ============================================================================
-# PWR BUFF HANDLER
-# ============================================================================
-
-## Handle pwr buff stat changes
-## Returns an array of CombatEvents (log message + buff event)
-static func handle_pwr_buff(
-	request: EffectRequest,
-	resolved_targets: Array[String],
-	target_names: Array[String],
-	amount: int,
-	battle_manager: Node
-) -> Array[CombatEvent]:
-	var events: Array[CombatEvent] = []
-	
-	# Log message
-	if not target_names.is_empty():
-		var log_targets_str := ", ".join(target_names)
-		if log_targets_str != "":
-			events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "Gains %d PWR: %s" % [amount, log_targets_str]}))
-	
-	var targets_old_pwr: Array[int] = []
-	var targets_new_pwr: Array[int] = []
-	
-	for target_uuid in resolved_targets:
-		var tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(target_uuid)
-		if is_instance_valid(tgt):
-			targets_old_pwr.append(tgt.current_pwr)
-			var new_p = battle_manager.apply_stat_delta(tgt, "pwr", amount)
-			targets_new_pwr.append(new_p)
-		else:
-			targets_old_pwr.append(0)
-			targets_new_pwr.append(0)
-	
-	events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-		"source_uuid": request.source_uuid,
-		"target_uuids": resolved_targets,
-		"ability_id": request.ability_id,
-		"trigger_type": request.trigger_context.get("trigger_type", ""),
-		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": request.source_uuid,
-			"amount": amount,
-			"stat": "pwr",
-			"targets_old_pwr": targets_old_pwr,
-			"targets_new_pwr": targets_new_pwr
-		}
-	}))
-	
-	return events
-
-# ============================================================================
-# MULTI-HEAL HANDLER
-# ============================================================================
-
-## Handle multi_heal effects (multiple targets healed independently)
-## Returns an array of CombatEvents
-static func handle_multi_heal(
-	request: EffectRequest,
-	effect_data: Dictionary,
-	battle_manager: Node
-) -> Array[CombatEvent]:
-	var events: Array[CombatEvent] = []
-	var heals: Array = effect_data.get("heals", [])
-	var animation_source_uuid: String = effect_data.get("animation_source_uuid", request.source_uuid)
-	var heal_stat: String = effect_data.get("stat", "hp")
-	
-	for heal_data in heals:
-		var target_uuid: String = String(heal_data.get("target", ""))
-		var heal_amount: int = int(heal_data.get("amount", 0))
-		
-		if target_uuid.is_empty() or heal_amount <= 0:
-			continue
-		
-		var tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(target_uuid)
-		if not is_instance_valid(tgt):
-			continue
-		
-		# Capture old HP
-		var old_hp: int = tgt.current_hp
-		var max_hp: int = 0
-		var tgt_def := tgt.get_definition()
-		if is_instance_valid(tgt_def):
-			max_hp = tgt_def.base_hp
-		
-		# Apply heal
-		var new_hp = battle_manager.apply_stat_delta(tgt, "hp", heal_amount)
-		
-		# Get target name for log
-		var target_name: String = BattleHelpers.get_instance_display_name(tgt)
-		
-		# Get source name for log
-		var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
-		var heal_source_name: String = BattleHelpers.get_instance_display_name(anim_source)
-		
-		if heal_source_name != "" and target_name != "":
-			events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [heal_source_name, target_name, heal_amount]}))
-		
-		# Create HEAL event
-		events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-			"source_uuid": request.source_uuid,
-			"target_uuids": [target_uuid],
-			"ability_id": request.ability_id,
-			"trigger_type": request.trigger_context.get("trigger_type", ""),
-			"ability_holder_uuid": animation_source_uuid,
-			"visual_payload": {
-				"source_uuid": animation_source_uuid,
-				"amount": heal_amount,
-				"stat": heal_stat,
-				"skip_bump": false,
-				"targets_old_hp": [old_hp],
-				"targets_new_hp": [new_hp],
-				"targets_max_hp": [max_hp]
-			}
-		}))
-	
-	return events
-
-# ============================================================================
-# MULTI-BUFF HANDLER
-# ============================================================================
-
-## Handle multi_buff effects (multiple targets buffed independently)
-## Returns an array of CombatEvents
-static func handle_multi_buff(
-	request: EffectRequest,
-	effect_data: Dictionary,
-	battle_manager: Node
-) -> Array[CombatEvent]:
-	var events: Array[CombatEvent] = []
-	var buffs: Array = effect_data.get("buffs", [])
-	var animation_source_uuid: String = effect_data.get("animation_source_uuid", request.source_uuid)
-	var buff_stat: String = effect_data.get("stat", "pwr")
-	
-	for buff_data in buffs:
-		var target_uuid: String = String(buff_data.get("target", ""))
-		var buff_amount: int = int(buff_data.get("amount", 0))
-		
-		if target_uuid.is_empty() or buff_amount <= 0:
-			continue
-		
-		var tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(target_uuid)
-		if not is_instance_valid(tgt):
-			continue
-		
-		# Capture old value
-		var old_val: int = tgt.current_pwr if buff_stat == "pwr" else tgt.current_hp
-		
-		# Apply buff
-		var new_val = battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount)
-		
-		# Get display names
-		var target_name: String = BattleHelpers.get_instance_display_name(tgt)
-		var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
-		var buff_source_name: String = BattleHelpers.get_instance_display_name(anim_source)
-		
-		var stat_name: String = "PWR" if buff_stat == "pwr" else "HP"
-		if buff_source_name != "" and target_name != "":
-			events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s grants %s +%d %s" % [buff_source_name, target_name, buff_amount, stat_name]}))
-		
-		# Create BUFF event - use correct key names based on stat
-		var visual_payload := {
-			"source_uuid": animation_source_uuid,
-			"amount": buff_amount,
-			"stat": buff_stat,
-		}
-		# BuffAnimation expects targets_new_pwr for pwr stat, targets_new_val for others
-		if buff_stat == "pwr":
-			visual_payload["targets_old_pwr"] = [old_val]
-			visual_payload["targets_new_pwr"] = [new_val]
-		else:
-			visual_payload["targets_old_val"] = [old_val]
-			visual_payload["targets_new_val"] = [new_val]
-		
-		events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": request.source_uuid,
-			"target_uuids": [target_uuid],
-			"ability_id": request.ability_id,
-			"trigger_type": request.trigger_context.get("trigger_type", ""),
-			"ability_holder_uuid": animation_source_uuid,
-			"visual_payload": visual_payload
-		}))
-	
-	return events
-
-# ============================================================================
-# HEAL EFFECT HANDLER
-# ============================================================================
-
-## Handle standard heal effects (amount >= 0)
-## Returns an array of CombatEvents (log message + heal event)
-static func handle_heal_effect(
-	request: EffectRequest,
-	resolved_targets: Array[String],
-	source_name: String,
-	target_names: Array[String],
-	amount: int,
-	skip_bump: bool,
-	battle_manager: Node
-) -> Array[CombatEvent]:
-	var events: Array[CombatEvent] = []
-	
-	# Log message
-	var heal_target_name := ""
-	if not target_names.is_empty():
-		heal_target_name = target_names[0]
-	if source_name != "" and heal_target_name != "":
-		events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s heals %s for %d HP" % [source_name, heal_target_name, amount]}))
-	
-	# Apply HP delta and capture old/new values
-	var targets_old_hp: Array[int] = []
-	var targets_new_hp: Array[int] = []
-	var targets_max_hp: Array[int] = []
-	
-	for tgt_uuid in resolved_targets:
-		var tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(tgt_uuid)
-		if is_instance_valid(tgt):
-			targets_old_hp.append(tgt.current_hp)
-			var new_hp = battle_manager.apply_stat_delta(tgt, "hp", amount)
-			targets_new_hp.append(new_hp)
-			var tgt_def := tgt.get_definition()
-			if is_instance_valid(tgt_def):
-				targets_max_hp.append(tgt_def.base_hp)
-			else:
-				targets_max_hp.append(0)
-		else:
-			targets_old_hp.append(0)
-			targets_new_hp.append(0)
-			targets_max_hp.append(0)
-	
-	events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-		"source_uuid": request.source_uuid,
-		"target_uuids": resolved_targets,
-		"ability_id": request.ability_id,
-		"trigger_type": request.trigger_context.get("trigger_type", ""),
-		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": request.source_uuid,
-			"amount": amount,
-			"stat": "hp",
-			"skip_bump": skip_bump,
-			"targets_old_hp": targets_old_hp,
-			"targets_new_hp": targets_new_hp,
-			"targets_max_hp": targets_max_hp
-		}
-	}))
-	
-	return events
-
-# ============================================================================
 # DAMAGE RESULT CLASS
 # ============================================================================
 
@@ -437,11 +191,7 @@ class DamageResult:
 # DAMAGE EFFECT HANDLER
 # ============================================================================
 
-## Container tags for battle validation
-const PLAYER_LINEUP := &"PlayerLineup"
-const ENEMY_LINEUP := &"EnemyLineup"
-const PLAYER_BENCH := &"PlayerBench"
-const ENEMY_BENCH := &"EnemyBench"
+## Container tags for battle validation - use C.BATTLE_CONTAINER_TAGS
 
 ## Handle damage effects (amount < 0)
 ## Returns DamageResult with events and damaged_uuids for trigger callbacks
@@ -494,8 +244,8 @@ static func handle_damage_effect(
 		if not is_instance_valid(tgt) or tgt.current_hp <= 0:
 			continue
 		var loc_tag: StringName = tgt.location_container_tag
-		var is_in_battle: bool = (loc_tag == PLAYER_LINEUP or loc_tag == ENEMY_LINEUP or
-								  loc_tag == PLAYER_BENCH or loc_tag == ENEMY_BENCH)
+		var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
+								  loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
 		if not is_in_battle:
 			continue
 		
@@ -525,33 +275,31 @@ static func handle_damage_effect(
 		targets_old_hp.append(tgt.current_hp)
 		targets_old_burn.append(tgt.get_status_effect_amount(&"burn"))
 		
-		# ARMOR MITIGATION: Armor absorbs damage before HP
-		var incoming_damage = abs(amount)
-		var armor_stacks = tgt.get_status_effect_amount(&"armor")
-		targets_old_armor.append(armor_stacks) # Track for visualization
-		var hp_damage = incoming_damage # How much damage goes to HP after armor
-		var armor_consumed = 0
+		# Capture old armor BEFORE apply_stat_delta modifies it
+		var old_armor = tgt.get_status_effect_amount(&"armor")
+		targets_old_armor.append(old_armor)
 		
-		if armor_stacks > 0 and incoming_damage > 0:
-			armor_consumed = mini(armor_stacks, incoming_damage)
-			hp_damage = incoming_damage - armor_consumed
-			# Consume armor stacks (silent - DamageAnimation will handle visuals)
-			battle_manager.apply_stat_delta(tgt, "armor_stacks", -armor_consumed)
+		# CENTRALIZED ARMOR: apply_stat_delta now handles armor mitigation automatically
+		# It returns a dictionary with armor data for animations
+		var damage_result = battle_manager.apply_stat_delta(tgt, "hp", amount) # amount is negative
+		
+		# Skip if target was already dead
+		if damage_result == null:
+			continue
+		
+		# Extract data from the damage result dictionary
+		var new_hp: int = damage_result.get("new_hp", tgt.current_hp)
+		var armor_consumed: int = damage_result.get("armor_consumed", 0)
+		var new_armor: int = damage_result.get("new_armor", 0)
+		var hp_damage: int = damage_result.get("hp_damage", 0)
 		
 		armor_consumed_list.append(armor_consumed)
-		targets_new_armor.append(maxi(0, armor_stacks - armor_consumed))
-		
-		# Apply remaining damage to HP (negative for damage)
-		var new_hp = tgt.current_hp
-		if hp_damage > 0:
-			new_hp = battle_manager.apply_stat_delta(tgt, "hp", -hp_damage)
-			# Only add to damaged_uuids if HP actually changed
-			# This ensures on_hurt only triggers when HP was affected (not just armor)
-			result.damaged_uuids.append(tgt_uuid)
-		elif armor_consumed > 0:
-			# Armor absorbed all damage - still add to damaged_uuids for animation purposes
-			result.damaged_uuids.append(tgt_uuid)
+		targets_new_armor.append(new_armor)
 		targets_new_hp.append(new_hp)
+		
+		# Add to damaged_uuids if HP or armor was affected
+		if hp_damage > 0 or armor_consumed > 0:
+			result.damaged_uuids.append(tgt_uuid)
 		
 		var tgt_def := tgt.get_definition()
 		if is_instance_valid(tgt_def):
@@ -563,6 +311,7 @@ static func handle_damage_effect(
 		if should_apply_burn:
 			burn_val = battle_manager.apply_stat_delta(tgt, "burn_stacks", 1)
 		targets_new_burn.append(burn_val)
+
 	
 	# Skip if all targets were dead/invalid
 	if result.damaged_uuids.is_empty():
@@ -582,9 +331,9 @@ static func handle_damage_effect(
 	var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
 	if is_instance_valid(anim_source):
 		var src_tag: StringName = anim_source.location_container_tag
-		if src_tag == PLAYER_LINEUP or src_tag == PLAYER_BENCH:
+		if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 			bump_dir = Vector2(1, 0)
-		elif src_tag == ENEMY_LINEUP or src_tag == ENEMY_BENCH:
+		elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
 			bump_dir = Vector2(-1, 0)
 	
 	# Add DAMAGE event with ARMOR data included for unified animation
@@ -690,11 +439,19 @@ static func handle_cascade_damage(
 		
 		var old_hp := cascade_tgt.current_hp
 		var old_burn := cascade_tgt.get_status_effect_amount(&"burn")
-		var new_hp = battle_manager.apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
+		
+		# apply_stat_delta now returns a dictionary with armor mitigation data
+		var damage_result = battle_manager.apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
 		
 		# Skip if target was already dead (apply_stat_delta returns null)
-		if new_hp == null:
+		if damage_result == null:
 			continue
+		
+		# Extract data from the damage result dictionary
+		var new_hp: int = damage_result.get("new_hp", cascade_tgt.current_hp)
+		var armor_consumed: int = damage_result.get("armor_consumed", 0)
+		var old_armor: int = damage_result.get("old_armor", 0)
+		var new_armor: int = damage_result.get("new_armor", 0)
 		
 		var max_hp := 0
 		var tgt_def := cascade_tgt.get_definition()
@@ -719,9 +476,9 @@ static func handle_cascade_damage(
 		var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
 		if is_instance_valid(anim_source):
 			var src_tag: StringName = anim_source.location_container_tag
-			if src_tag == PLAYER_LINEUP or src_tag == PLAYER_BENCH:
+			if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 				bump_dir = Vector2(1, 0)
-			elif src_tag == ENEMY_LINEUP or src_tag == ENEMY_BENCH:
+			elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
 				bump_dir = Vector2(-1, 0)
 		
 		result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
@@ -739,6 +496,9 @@ static func handle_cascade_damage(
 				"targets_max_hp": [max_hp],
 				"targets_old_burn": [old_burn],
 				"targets_new_burn": [burn_val],
+				"targets_old_armor": [old_armor],
+				"targets_new_armor": [new_armor],
+				"armor_consumed": [armor_consumed],
 				"attack_type": "melee",
 				"original_target_uuid": original_target_uuid,
 				"projectile_data": {
@@ -892,7 +652,7 @@ static func handle_summon_units(
 	
 	var summon_list: Array = effect_data.get("summon_units", [])
 	var team: String = effect_data.get("team", "ENEMY")
-	var target_container_tag: StringName = ENEMY_LINEUP if team == "ENEMY" else PLAYER_LINEUP
+	var target_container_tag: StringName = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	
 	# Get container for slot finding
 	var lineup_container = battle_manager.get_container(target_container_tag)

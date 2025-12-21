@@ -6,7 +6,13 @@ var _node_def
 
 func populate(node_def) -> void:
 	_node_def = node_def
-	text = node_def.display_name_key
+	# Use translation for the display name
+	if node_def.boss_level > 0:
+		# Boss node: format with boss level
+		text = tr(node_def.display_name_key) % node_def.boss_level
+	else:
+		# Normal node: just translate the key
+		text = tr(node_def.display_name_key)
 	# Allow BATTLE, SHOP, and REST nodes to be enabled.
 	disabled = not (node_def.node_type in ["BATTLE", "SHOP", "REST"])
 

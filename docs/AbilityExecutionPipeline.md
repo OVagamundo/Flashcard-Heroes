@@ -24,7 +24,7 @@ Base class for effect scripts. Concrete implementations (e.g., `EffectModifyStat
 | Property | Type | Purpose |
 |----------|------|---------|
 | `parameters` | Dictionary | Effect-specific config (damage amount, stat name, etc.) |
-| `target_type` | StringName | How to resolve targets (`SELF`, `ATTACK_TARGET`, `ALL_ENEMIES`, etc.) |
+| `target_type` | StringName | How to resolve targets (e.g., `C.TARGET_SELF`, `C.TARGET_ALL_ENEMIES`) |
 
 **Key Method:**
 ```gdscript
@@ -56,6 +56,8 @@ The simulation→presentation bridge. Created by BattleManager after effect exec
 | `DEATH` | Unit died | `target_uuids` |
 | `SUMMON` | Unit spawned | `snapshot`, `old_unit_location` |
 | `BUFF` | Stat change | `stat`, `amount`, `new_val` |
+| `GUARDIAN_INTERCEPT` | Damage interception | `guardian_uuid`, `protected_uuid` |
+| `LETHAL_SAVE` | Death prevention | `saved_uuid`, `heal_amount` |
 
 ---
 
@@ -277,32 +279,44 @@ if valid_targets.is_empty() and not exec_targets.is_empty():
 
 ## 6. Effect Return Value Format
 
-Effects must return structured data for BattleManager to create events:
+Effects return one of two types depending on category:
 
-### Damage/Heal/Buff
+### EffectResult (Heals, Buffs, Damage, Utility)
 ```gdscript
-return {
-    "stat": "hp",        # or "pwr", "burn_stacks", etc.
-    "amount": -5,        # negative = damage, positive = heal/buff
+# For Heals/Buffs:
+var result := EffectResult.new()
+result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+    "target_uuids": [uuid],
+    "visual_payload": { "amount": 5, "stat": "hp", ... }
+}))
+result.state_applied = true
+return result
+
+# For Damage (uses damage_request for delegation to EffectHandlers):
+var result := EffectResult.new()
+result.damage_request = {
+    "stat": "hp",
+    "amount": -5,  # Negative = damage
     "targets": [uuid1, uuid2]
 }
+return result
 ```
 
-### Summon
+### Dictionary (Summons)
 ```gdscript
+# Summon
 return {
     "summon_unit_id": "unit_t2_a",
     "holder_uuid": dying_uuid,
     "holder_location": LocationIdentifier
 }
-```
 
-### Multi-Target Buff/Heal
-```gdscript
+# Cascade AOE (special case)
 return {
-    "multi_buff": true,
-    "buffs": [{"uuid": uuid1, "amount": 2}, {...}],
-    "stat": "pwr"
+    "cascade_damage": [
+        {"target": uuid1, "amount": 5},
+        {"target": uuid2, "amount": 3}
+    ]
 }
 ```
 

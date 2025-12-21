@@ -64,3 +64,5 @@ Develop Core Concept: Synthesize the Tier, Shapes, and Elements into a concept (
 Apply Color Hierarchy Rule: Assign the Primary, Secondary, and Blended colors to the concept's anatomy and features.
 Execute Pixel Art: Draw the unit portrait adhering to all palette, shading, and outline specifications.
 Assemble the Card: Place the final portrait onto a card background that matches its Tier and color recipe. Add the two numerical stat values according to the UI rules.
+
+The great inspiration for the pixel art and general aesthetic is the game "Cross Blitz" including visual effects and shaders.

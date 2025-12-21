@@ -1,14 +1,15 @@
 class_name BuffAnimation
 extends BattleAnimation
 
-const StatProjectileScene = preload("res://scenes/vfx/StatProjectile.tscn")
+# NOTE: VFX scene preloads moved to VFXFactory autoload
 
 func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
 	var source_uuid = String(payload.get("source_uuid", ""))
 	var amount = int(payload.get("amount", 0))
 	var stat = String(payload.get("stat", "pwr"))
 	
-	print("[BuffAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
+	if OS.is_debug_build():
+		print("[BuffAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -21,10 +22,15 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), stat, color_hint)
 		if proj: projectiles.append(proj)
 		
-	# Wait for impact
-	for proj in projectiles:
-		if is_instance_valid(proj):
-			await proj.impact
+	# Wait for impact - if we have projectiles, wait for them
+	# If no projectiles (missing snapshots), wait a simulated duration
+	if projectiles.is_empty():
+		# No projectiles - wait for simulated flight time so effects feel right
+		await animator.get_tree().create_timer(0.5).timeout
+	else:
+		for proj in projectiles:
+			if is_instance_valid(proj):
+				await proj.impact
 			
 	# 2. Apply Buff
 	# 2. Apply Buff (Parallel)
@@ -50,9 +56,13 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				
 			animator.apply_pwr_delta(target_uuid, amount, new_pwr)
 			
-			if SignalBus.has_signal("unit_flash_effect"):
-				# Use Pure Yellow (1, 1, 0) so G >= R is true -> Triggers HOP animation
-				SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 1.0, 0.4))
+			# Composable Effects: Color flash + hop deform + hop move (positive buff)
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
+			if SignalBus.has_signal("unit_move"):
+				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
 				
 		elif stat == "burn_stacks":
 			var new_val = 0
@@ -62,8 +72,11 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				new_val = int(payload.get("new_val", 0)) # Fallback
 				
 			animator.apply_burn_stack(target_uuid, new_val)
-			if SignalBus.has_signal("unit_flash_effect"):
-				SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(1.0, 0.4, 0.0)) # Orange
+			# Composable Effects: Orange flash + hit impact (debuff - no hop)
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, Color(1.0, 0.4, 0.0), AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, &"HIT_IMPACT")
 		
 		elif stat == "armor_stacks":
 			# Dedicated armor handler - same pattern as burn
@@ -74,8 +87,11 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				new_val = int(payload.get("new_val", 0)) # Fallback
 				
 			animator.apply_armor_stack(target_uuid, new_val)
-			if SignalBus.has_signal("unit_flash_effect"):
-				SignalBus.emit_signal("unit_flash_effect", target_uuid, Color(0.7, 0.7, 0.8)) # Silver/grey for armor
+			# Composable Effects: Silver flash + squish bounce (positive buff)
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, Color(0.7, 0.7, 0.8), AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, &"SQUISH_BOUNCE")
 		
 		elif stat.ends_with("_stacks"):
 			# Generic status effect handling (armor_stacks, etc.)
@@ -86,59 +102,23 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			else:
 				new_val = int(payload.get("new_val", 0)) # Fallback
 			
-			print("[BuffAnimation] Applying status '%s' new_val=%d to %s" % [status_id, new_val, target_uuid])
+			if OS.is_debug_build():
+				print("[BuffAnimation] Applying status '%s' new_val=%d to %s" % [status_id, new_val, target_uuid])
 			animator.apply_status_stack(target_uuid, StringName(status_id), new_val)
-			if SignalBus.has_signal("unit_flash_effect"):
-				# Use grey flash for armor, default for others
-				var flash_color = Color(0.7, 0.7, 0.7) if status_id == "armor" else Color(0.8, 0.8, 0.8)
-				SignalBus.emit_signal("unit_flash_effect", target_uuid, flash_color)
+			# Composable Effects: Grey flash + squish bounce
+			var flash_color = Color(0.7, 0.7, 0.7) if status_id == "armor" else Color(0.8, 0.8, 0.8)
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, &"SQUISH_BOUNCE")
 
-	# Wait for animation completion (just wait for the last one, as they run in parallel)
+	# Wait for animation completion (wait for move if we did a hop, otherwise deform)
 	if final_target_uuid != "":
-		animator._current_animation_uuid = final_target_uuid
-		await animator.wait_for_animation_completion("flash", final_target_uuid)
+		if stat == "pwr":
+			await animator.wait_for_animation_completion("move", final_target_uuid)
+		else:
+			# For non-hop animations, just wait a short duration
+			await animator.get_tree().create_timer(AnimationConstants.DEFORM_DURATION * 3).timeout
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
-	# DECOUPLING FIX: Use position snapshots instead of visual_registry
-	var tgt_snap = animator.get_snapshot_position(target_uuid)
-	if tgt_snap.is_empty(): return null
-	
-	var start_pos = Vector2.ZERO
-	var is_source_valid = false
-	var src_snap = animator.get_snapshot_position(source_uuid)
-	if not src_snap.is_empty():
-		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
-		is_source_valid = true
-	
-	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
-	
-	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
-	var launch_pos = end_pos if is_self_cast else start_pos
-	
-	var projectile = StatProjectileScene.instantiate()
-	# POOLING/LAYERING FIX: Use EffectsLayer so it renders above TopBar
-	var effects_layer = animator.get_tree().get_first_node_in_group("effects_layer")
-	if is_instance_valid(effects_layer):
-		# Calculate Viewport Offset (TopArea height)
-		var viewport_offset = Vector2.ZERO
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			var viewport = battle_view.get_viewport()
-			if viewport and viewport.get_parent() is Control:
-				viewport_offset = viewport.get_parent().global_position
-		
-		effects_layer.add_child(projectile)
-		projectile.setup(amount, stat, launch_pos + viewport_offset, end_pos + viewport_offset, is_self_cast)
-		projectile.launch()
-		return projectile
-	else:
-		# Fallback
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			battle_view.add_child(projectile)
-			projectile.setup(amount, stat, launch_pos, end_pos, is_self_cast)
-			projectile.launch()
-			return projectile
-		else:
-			projectile.queue_free()
-			return null
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)

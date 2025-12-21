@@ -17,6 +17,7 @@ var _window_scenes: Dictionary = {
 	&"UnitInspection": load("res://scenes/UnitInspectionWindow.tscn"),
 	&"ItemInspection": load("res://scenes/ItemInspectionWindow.tscn"),
 	&"EffectInspection": load("res://scenes/EffectInspectionWindow.tscn"),
+	&"Options": load("res://scenes/OptionsWindow.tscn"),
 }
 
 var _modal_stack: Array[Control] = []

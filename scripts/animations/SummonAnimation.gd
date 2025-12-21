@@ -13,5 +13,4 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 			SignalBus.emit_signal("unit_summon_fade", target_uuid)
 			
 		# Wait for appear animation
-		animator._current_animation_uuid = target_uuid
 		await animator.wait_for_animation_completion("summon_fade", target_uuid)

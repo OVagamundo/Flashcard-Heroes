@@ -1,14 +1,8 @@
 class_name DamageAnimation
 extends BattleAnimation
 
-const StatProjectileScene = preload("res://scenes/vfx/StatProjectile.tscn")
-const FloatingDamageNumberScene = preload("res://scenes/vfx/FloatingDamageNumber.tscn")
-
-# Animation timing: Total 1.0s, with travel-to-target being 2x return time
-# Breakdown: 0.1 (windup) + 0.6 (lunge to target) + 0.3 (return) = 1.0s total
-const BUMP_DURATION = 0.5
-const MELEE_LUNGE_DURATION = 0.6 # Travel to target (2x return time)
-const MELEE_RETURN_DURATION = 0.3 # Return time (half of travel time)
+# NOTE: VFX scene preloads moved to VFXFactory autoload
+# NOTE: Animation timing constants are in AnimationConstants.gd
 
 func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
 	var source_uuid = String(payload.get("source_uuid", ""))
@@ -22,7 +16,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Ensure this is always a coroutine (GDScript quirk)
 	await animator.get_tree().process_frame
 	
-	print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
+	if OS.is_debug_build():
+		print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
 	
 	# Get visual registry - ONLY used for view updates, NOT position lookups
 	# Position data comes from animator.get_snapshot_position() for decoupling
@@ -73,17 +68,16 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# 1. Melee Lunge - attacker jumps to target
 		if target_position != Vector2.ZERO:
-			animator._current_animation_uuid = source_uuid
 			SignalBus.emit_signal("unit_melee_lunge", source_uuid, target_position)
 			await animator.wait_for_animation_completion("melee_lunge", source_uuid)
 		
-		# 2. Immediately return - attacker jumps back to original position
-		animator._current_animation_uuid = source_uuid
+		# 2. IMPACT! - Apply damage effects NOW (while attacker is at target)
+		# This makes the hit feel impactful - recoil/flash happens at moment of contact
+		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+		
+		# 3. Return - attacker jumps back to original position
 		SignalBus.emit_signal("unit_melee_return", source_uuid)
 		await animator.wait_for_animation_completion("melee_return", source_uuid)
-		
-		# 3. AFTER return - spawn floating damage numbers and apply effects
-		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
 	
 	# ------------------------------------------------------------------
 	# RANGED ATTACK ANIMATION (Future - uses projectiles)
@@ -108,7 +102,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# Wait for Bump Impact
 		if should_bump:
-			await animator.get_tree().create_timer(BUMP_DURATION).timeout
+			await animator.get_tree().create_timer(AnimationConstants.BUMP_TOTAL_DURATION).timeout
 		
 		# Apply Damage
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -163,117 +157,51 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 			var new_burn = targets_new_burn[i] if i < targets_new_burn.size() else 0
 			animator.apply_burn_stack(target_uuid, new_burn)
 			
-		# Trigger Flash
-		var flash_color = Color(1.0, 0.6, 0.6) # Red
+		# Trigger Composable Effects (run in parallel)
+		var flash_color = Color.WHITE # White flash for hurt
 		if is_burn_damage:
 			flash_color = Color(1.0, 0.3, 0.0) # Orange for Burn
 		
-		if SignalBus.has_signal("unit_flash_effect"):
-			SignalBus.emit_signal("unit_flash_effect", target_uuid, flash_color)
+		# Determine recoil direction based on team
+		# Player units recoil LEFT (away from enemies on their right)
+		# Enemy units recoil RIGHT (away from players on their left)
+		var recoil_direction = Vector2.LEFT # Default for player units
+		var target_view = animator._visual_registry.get(target_uuid)
+		if is_instance_valid(target_view) and target_view is GachaBallView:
+			# Check if sprite is flipped (enemies are flipped)
+			if target_view.icon_rect and target_view.icon_rect.flip_h:
+				recoil_direction = Vector2.RIGHT # Enemy recoils right
 		
-		# Wait for flash completion before moving to next target
-		animator._current_animation_uuid = target_uuid
-		await animator.wait_for_animation_completion("flash", target_uuid)
+		# Color flash
+		if SignalBus.has_signal("unit_color_flash"):
+			SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
+		
+		# Deformation (hit impact)
+		if SignalBus.has_signal("unit_deform"):
+			SignalBus.emit_signal("unit_deform", target_uuid, &"HIT_IMPACT")
+		
+		# Movement (recoil back)
+		if SignalBus.has_signal("unit_move"):
+			SignalBus.emit_signal("unit_move", target_uuid, &"RECOIL", recoil_direction)
+		
+		# Wait for movement completion (longest animation)
+		await animator.wait_for_animation_completion("move", target_uuid)
 
-func _spawn_floating_damage(animator: Node, target_uuid: String, damage: int) -> void:
+func _spawn_floating_damage(_animator: Node, target_uuid: String, damage: int) -> void:
 	# DECOUPLING FIX: Use position snapshot instead of visual_registry
-	var tgt_snap = animator.get_snapshot_position(target_uuid)
+	var tgt_snap = _animator.get_snapshot_position(target_uuid)
 	if tgt_snap.is_empty(): return
 	
 	var spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
-	
-	var damage_number = FloatingDamageNumberScene.instantiate()
-	# POOLING/LAYERING FIX: Use EffectsLayer so it renders above TopBar
-	var effects_layer = animator.get_tree().get_first_node_in_group("effects_layer")
-	if is_instance_valid(effects_layer):
-		# Calculate Viewport Offset (TopArea height)
-		var viewport_offset = Vector2.ZERO
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			var viewport = battle_view.get_viewport()
-			if viewport and viewport.get_parent() is Control:
-				viewport_offset = viewport.get_parent().global_position
-				
-		effects_layer.add_child(damage_number)
-		damage_number.setup(damage, spawn_pos + viewport_offset)
-		damage_number.play()
-	else:
-		# Fallback to battle view if layer missing
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			battle_view.add_child(damage_number)
-			damage_number.setup(damage, spawn_pos)
-			damage_number.play()
-		else:
-			damage_number.queue_free()
+	VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, false)
 
-func _spawn_floating_armor_damage(animator: Node, target_uuid: String, damage: int) -> void:
+func _spawn_floating_armor_damage(_animator: Node, target_uuid: String, damage: int) -> void:
 	# Spawn grey floating damage number for armor consumption
-	var tgt_snap = animator.get_snapshot_position(target_uuid)
+	var tgt_snap = _animator.get_snapshot_position(target_uuid)
 	if tgt_snap.is_empty(): return
 	
 	var spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
-	
-	var damage_number = FloatingDamageNumberScene.instantiate()
-	var effects_layer = animator.get_tree().get_first_node_in_group("effects_layer")
-	if is_instance_valid(effects_layer):
-		var viewport_offset = Vector2.ZERO
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			var viewport = battle_view.get_viewport()
-			if viewport and viewport.get_parent() is Control:
-				viewport_offset = viewport.get_parent().global_position
-				
-		effects_layer.add_child(damage_number)
-		damage_number.setup_armor(damage, spawn_pos + viewport_offset) # Grey color
-		damage_number.play()
-	else:
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			battle_view.add_child(damage_number)
-			damage_number.setup_armor(damage, spawn_pos) # Grey color
-			damage_number.play()
-		else:
-			damage_number.queue_free()
+	VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, true) # true = armor (grey)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
-	# DECOUPLING FIX: Use position snapshots instead of visual_registry
-	var tgt_snap = animator.get_snapshot_position(target_uuid)
-	if tgt_snap.is_empty(): return
-	
-	var start_pos = Vector2.ZERO
-	var is_source_valid = false
-	var src_snap = animator.get_snapshot_position(source_uuid)
-	if not src_snap.is_empty():
-		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
-		is_source_valid = true
-	
-	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
-	
-	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
-	var launch_pos = end_pos if is_self_cast else start_pos
-	
-	var projectile = StatProjectileScene.instantiate()
-	# POOLING/LAYERING FIX: Use EffectsLayer so it renders above TopBar
-	var effects_layer = animator.get_tree().get_first_node_in_group("effects_layer")
-	if is_instance_valid(effects_layer):
-		# Calculate Viewport Offset (TopArea height)
-		var viewport_offset = Vector2.ZERO
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			var viewport = battle_view.get_viewport()
-			if viewport and viewport.get_parent() is Control:
-				viewport_offset = viewport.get_parent().global_position
-		
-		effects_layer.add_child(projectile)
-		projectile.setup(amount, stat, launch_pos + viewport_offset, end_pos + viewport_offset, is_self_cast)
-		projectile.launch()
-	else:
-		# Fallback
-		var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-		if is_instance_valid(battle_view):
-			battle_view.add_child(projectile)
-			projectile.setup(amount, stat, launch_pos, end_pos, is_self_cast)
-			projectile.launch()
-		else:
-			projectile.queue_free()
+	VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
