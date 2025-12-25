@@ -2,6 +2,10 @@
 class_name GachaBallView
 extends PanelContainer
 
+# Size scale constants for different contexts
+const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
+const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
+
 @onready var icon_rect: TextureRect = %Icon
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var hp_container: Control = %HPContainer
@@ -37,16 +41,15 @@ var _visual_armor_stacks: int = 0 # Armor stacks - same pattern as burn
 var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
 var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
 var _bound_uuid: String = "" # UUID bound during populate()
+var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
+var _registered_with_overlay: bool = false # Track if registered with UnitLabelOverlay
 # NOTE: Animation state variables (_melee_origin_position, _flash_tween, etc.)
 # are now managed by UnitAnimationController child node
 
 
 func _ready() -> void:
-	# Reorder UI: Move StatsContainer (HP/PWR) to the top (index 0)
-	var vbox = get_node("VBoxContainer")
-	var stats_container = vbox.get_node("StatsContainer")
-	vbox.move_child(stats_container, 0)
-	
+	# StatsContainer (Top) is already correctly positioned in the scene file
+	# BottomStatsContainer is likewise correctly positioned below the icon
 	# IMPORTANT: Duplicate the shader material so each instance has its own
 	# Otherwise all GachaBallViews would share the same material and selection state
 	if icon_rect and icon_rect.material:
@@ -82,6 +85,10 @@ func _exit_tree() -> void:
 func get_instance_uuid() -> String:
 	return _instance_uuid
 
+## Set the size scale for this view (2.0 for battle, 1.0 for windows)
+func set_size_scale(size_scale: float) -> void:
+	_size_scale = size_scale
+
 func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true, single_click_inspect: bool = false) -> void:
 	self._location = loc
 	self._instance_uuid = visual_data.get("uuid", "")
@@ -106,14 +113,19 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
+		# Apply fixed size based on texture and scale factor
+		if icon_rect.texture:
+			var tex_size = icon_rect.texture.get_size() * _size_scale
+			icon_rect.custom_minimum_size = tex_size
+			icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		else:
+			# Fallback for missing textures
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
 	_update_stats()
 	visible = true
-
-	# Units/Items also use Aspect Centered to prevent squished icons
-	# The SlotView constrains the size, so we want to fit within it while keeping aspect ratio.
-	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 	# Set tooltip from localization key
 	var loc_key: String = visual_data.get("display_name_key", "")
@@ -353,8 +365,8 @@ func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
 ## Update dynamic status icons for any status effect tracked in _visual_status_effects.
 ## Creates icons on-the-fly using StatusEffectRegistry if they don't exist.
 func _update_dynamic_status_icons() -> void:
-	# Get the stats container to add icons to
-	var stats_container = get_node_or_null("VBoxContainer/StatsContainer")
+	# Get the bottom stats container to add icons to (below the unit)
+	var stats_container = get_node_or_null("StatsOverlay/BottomStatsContainer")
 	if not is_instance_valid(stats_container):
 		return
 	
@@ -393,12 +405,12 @@ func _create_status_icon(status_id: StringName, parent: Node) -> void:
 		return
 	
 	# Create TextureRect for icon
-	var icon_rect = TextureRect.new()
-	icon_rect.custom_minimum_size = Vector2(48, 48)
-	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon_rect.texture = status_def.icon
-	icon_rect.scale = Vector2.ZERO # Start scaled down for animation
+	var status_icon_rect = TextureRect.new()
+	status_icon_rect.custom_minimum_size = Vector2(48, 48)
+	status_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	status_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	status_icon_rect.texture = status_def.icon
+	status_icon_rect.scale = Vector2.ZERO # Start scaled down for animation
 	
 	# Create label for stack count
 	var label = Label.new()
@@ -412,15 +424,15 @@ func _create_status_icon(status_id: StringName, parent: Node) -> void:
 	label.add_theme_constant_override("outline_size", 4)
 	label.add_theme_font_size_override("font_size", 24)
 	
-	icon_rect.add_child(label)
-	parent.add_child(icon_rect)
+	status_icon_rect.add_child(label)
+	parent.add_child(status_icon_rect)
 	
 	# Store reference
-	_status_icon_nodes[status_id] = icon_rect
+	_status_icon_nodes[status_id] = status_icon_rect
 	
 	# Animate in
 	var tween = create_tween()
-	tween.tween_property(icon_rect, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(status_icon_rect, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 ## Animate a status effect change (for non-burn effects)
 func animate_status_change(status_id: StringName, new_stacks: int) -> void:

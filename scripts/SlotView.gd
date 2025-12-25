@@ -7,6 +7,13 @@ var _location: LocationIdentifier
 var _interaction_mode: StringName = &"FULLY_INTERACTIVE"
 var _window_group_id: int = 0
 
+# Size scale for gachaball views (2.0 for battle, 1.0 for windows)
+var _size_scale: float = 2.0 # Default to battle scale
+
+## Set size scale for gachaball views in this slot
+func set_size_scale(size_scale: float) -> void:
+	_size_scale = size_scale
+
 func _ready() -> void:
 	# Add a simple stylebox to make the empty slot visible.
 	var style = StyleBoxFlat.new()
@@ -85,6 +92,10 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	if not is_instance_valid(view):
 		push_error("[SlotView] Failed to instantiate GachaBallView!")
 		return
+	
+	# Set size scale before adding to tree (so populate uses correct scale)
+	if view.has_method("set_size_scale"):
+		view.set_size_scale(_size_scale)
 	
 	add_child(view)
 	

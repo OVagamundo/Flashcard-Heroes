@@ -305,25 +305,31 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 		result.unit_changed_uuid = parent.ball_uuid
 	else:
 		# If this is a player unit with equipped items, unequip and move them to inventory
-		if instance.equipped_item_uuids.size() > 0 and is_player_unit(instance):
-			var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
-			for i in range(instance.equipped_item_uuids.size()):
-				var it_uuid := instance.equipped_item_uuids[i]
-				if it_uuid.is_empty():
-					continue
-				var it := get_instance(it_uuid)
-				if not is_instance_valid(it):
-					continue
-				instance.equipped_item_uuids[i] = ""
-				it.equipped_on_uuid = ""
-				it.equipped_slot_index = -1
-				if is_instance_valid(inv):
-					var empty := inv.find_first_empty_slot()
-					if empty != -1:
-						inv.set_uuid(empty, it.ball_uuid)
-						update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
-					else:
-						return result
+		if instance.equipped_item_uuids.size() > 0:
+			if is_player_unit(instance):
+				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+				for i in range(instance.equipped_item_uuids.size()):
+					var it_uuid := instance.equipped_item_uuids[i]
+					if it_uuid.is_empty():
+						continue
+					var it := get_instance(it_uuid)
+					if not is_instance_valid(it):
+						continue
+					instance.equipped_item_uuids[i] = ""
+					it.equipped_on_uuid = ""
+					it.equipped_slot_index = -1
+					if is_instance_valid(inv):
+						var empty := inv.find_first_empty_slot()
+						if empty != -1:
+							inv.set_uuid(empty, it.ball_uuid)
+							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
+						else:
+							return result
+			else:
+				# Enemy unit: destroy equipped items
+				for it_uuid in instance.equipped_item_uuids:
+					if not it_uuid.is_empty():
+						_battle_instances.erase(it_uuid)
 		# Extra hardening: clear any stray items that believe they are equipped on this unit
 		if is_player_unit(instance):
 			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)

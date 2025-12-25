@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://l5mhu3dnclc4"]
+[gd_scene load_steps=12 format=3 uid="uid://l5mhu3dnclc4"]
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 [ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
@@ -9,20 +9,14 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
 [ext_resource type="Script" path="res://scripts/animations/UnitAnimationController.gd" id="8_anim_ctrl"]
 
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("2_outline")
 shader_parameter/outline_color = Color(1.0, 1.0, 1.0, 1.0)
 shader_parameter/outline_width = 3.0
 shader_parameter/outline_enabled = false
 
-
-
-
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_burn_bg"]
 bg_color = Color(1.0, 0.3, 0.0, 0.9)
-
 content_margin_left = 10.0
 content_margin_top = 6.0
 content_margin_right = 10.0
@@ -53,112 +47,6 @@ layout_mode = 2
 size_flags_vertical = 3
 material = SubResource("ShaderMaterial_outline")
 
-	[node name="StatsContainer" type="HBoxContainer" parent="VBoxContainer"]
-	layout_mode = 2
-	alignment = 1
-
-	[node name="HPContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
-	unique_name_in_owner = true
-	custom_minimum_size = Vector2(48, 48)
-	layout_mode = 2
-	texture = ExtResource("4_icon_heart")
-	expand_mode = 1
-	stretch_mode = 5
-
-	[node name="HPLabel" type="Label" parent="VBoxContainer/StatsContainer/HPContainer"]
-	unique_name_in_owner = true
-	layout_mode = 1
-	anchors_preset = 15
-	anchor_right = 1.0
-	anchor_bottom = 1.0
-	grow_horizontal = 2
-	grow_vertical = 2
-	theme_override_colors/font_color = Color(1, 1, 1, 1)
-	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-	theme_override_constants/outline_size = 4
-	theme_override_fonts/font = ExtResource("3_stat_font")
-	theme_override_font_sizes/font_size = 24
-	text = "0"
-	horizontal_alignment = 1
-	vertical_alignment = 1
-
-	[node name="PWRContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
-	unique_name_in_owner = true
-	custom_minimum_size = Vector2(48, 48)
-	layout_mode = 2
-	texture = ExtResource("5_icon_power")
-	expand_mode = 1
-	stretch_mode = 5
-
-	[node name="PWRLabel" type="Label" parent="VBoxContainer/StatsContainer/PWRContainer"]
-	unique_name_in_owner = true
-	layout_mode = 1
-	anchors_preset = 15
-	anchor_right = 1.0
-	anchor_bottom = 1.0
-	grow_horizontal = 2
-	grow_vertical = 2
-	theme_override_colors/font_color = Color(1, 1, 1, 1)
-	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-	theme_override_constants/outline_size = 4
-	theme_override_fonts/font = ExtResource("3_stat_font")
-	theme_override_font_sizes/font_size = 24
-	text = "0"
-	horizontal_alignment = 1
-	vertical_alignment = 1
-
-	[node name="BurnContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
-	unique_name_in_owner = true
-	visible = false
-	custom_minimum_size = Vector2(48, 48)
-	layout_mode = 2
-	texture = ExtResource("6_icon_burn")
-	expand_mode = 1
-	stretch_mode = 5
-	
-	[node name="BurnLabel" type="Label" parent="VBoxContainer/StatsContainer/BurnContainer"]
-	unique_name_in_owner = true
-	layout_mode = 1
-	anchors_preset = 15
-	anchor_right = 1.0
-	anchor_bottom = 1.0
-	grow_horizontal = 2
-	grow_vertical = 2
-	theme_override_colors/font_color = Color(1, 1, 1, 1)
-	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-	theme_override_constants/outline_size = 4
-	theme_override_fonts/font = ExtResource("3_stat_font")
-	theme_override_font_sizes/font_size = 24
-	text = "0"
-	horizontal_alignment = 1
-	vertical_alignment = 1
-
-	[node name="ArmorContainer" type="TextureRect" parent="VBoxContainer/StatsContainer"]
-	unique_name_in_owner = true
-	visible = false
-	custom_minimum_size = Vector2(48, 48)
-	layout_mode = 2
-	texture = ExtResource("7_icon_armor")
-	expand_mode = 1
-	stretch_mode = 5
-	
-	[node name="ArmorLabel" type="Label" parent="VBoxContainer/StatsContainer/ArmorContainer"]
-	unique_name_in_owner = true
-	layout_mode = 1
-	anchors_preset = 15
-	anchor_right = 1.0
-	anchor_bottom = 1.0
-	grow_horizontal = 2
-	grow_vertical = 2
-	theme_override_colors/font_color = Color(1, 1, 1, 1)
-	theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-	theme_override_constants/outline_size = 4
-	theme_override_fonts/font = ExtResource("3_stat_font")
-	theme_override_font_sizes/font_size = 24
-	text = "0"
-	horizontal_alignment = 1
-	vertical_alignment = 1
-
 [node name="ItemGrid" type="GridContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -166,3 +54,131 @@ size_flags_vertical = 0
 theme_override_constants/h_separation = 2
 theme_override_constants/v_separation = 2
 columns = 2
+
+[node name="StatsOverlay" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="StatsContainer" type="HBoxContainer" parent="StatsOverlay"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 48.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="HPContainer" type="TextureRect" parent="StatsOverlay/StatsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("4_icon_heart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HPLabel" type="Label" parent="StatsOverlay/StatsContainer/HPContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_stat_font")
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PWRContainer" type="TextureRect" parent="StatsOverlay/StatsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("5_icon_power")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PWRLabel" type="Label" parent="StatsOverlay/StatsContainer/PWRContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_stat_font")
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomStatsContainer" type="HBoxContainer" parent="StatsOverlay"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="BurnContainer" type="TextureRect" parent="StatsOverlay/BottomStatsContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("6_icon_burn")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BurnLabel" type="Label" parent="StatsOverlay/BottomStatsContainer/BurnContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_stat_font")
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ArmorContainer" type="TextureRect" parent="StatsOverlay/BottomStatsContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("7_icon_armor")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ArmorLabel" type="Label" parent="StatsOverlay/BottomStatsContainer/ArmorContainer"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_stat_font")
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1

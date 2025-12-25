@@ -10,7 +10,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 @onready var player_bench: HBoxContainer = get_node("TeamAreas/PlayerArea/BenchAndInventory/PlayerBench")
 @onready var item_inventory: HBoxContainer = get_node("TeamAreas/PlayerArea/BenchAndInventory/ItemInventory")
 @onready var enemy_lineup: HBoxContainer = %EnemyLineupContainer
-@onready var gacha_token_label: Label = %GachaTokenLabel
+
 @onready var discard_pile_button: Button = %DiscardPileButton
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
@@ -37,7 +37,10 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 			
 			# Apply battle-specific layout settings (responsive width, fixed height)
 			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			slot_view.custom_minimum_size = Vector2(0, 250)
+			if container_name == &"EnemyTrinkets":
+				slot_view.custom_minimum_size = Vector2(0, 90)
+			else:
+				slot_view.custom_minimum_size = Vector2(0, 250)
 			
 			# Apply container-specific color scheme
 			if slot_view.has_method("set_slot_color"):
@@ -60,7 +63,7 @@ func _ready() -> void:
 
 	# Connect to all relevant state change signals
 	SignalBus.battle_inventory_changed.connect(_redraw_board)
-	SignalBus.gacha_tokens_changed.connect(_update_gacha_token_label)
+
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	
 	# Connect this view's buttons to emit the correct intent signals
@@ -92,7 +95,6 @@ func _redraw_board() -> void:
 	   current_phase == BattleManager.Phases.END_OF_TURN:
 		return
 	
-	_update_gacha_token_label(battle_manager.get_gacha_tokens())
 
 	_populate_container(player_lineup, "PlayerLineup", false)
 	_populate_container(player_bench, "PlayerBench", false)
@@ -201,8 +203,6 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			if container_name == &"EnemyLineup":
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
-func _update_gacha_token_label(new_amount: int) -> void:
-	gacha_token_label.text = tr("ui.tokens_count") % new_amount
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	var is_management_phase = (phase_name == &"MANAGEMENT")

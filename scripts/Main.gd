@@ -247,6 +247,9 @@ func _populate_player_trinkets() -> void:
 			continue
 		for child in slot_view.get_children():
 			child.queue_free()
+		# Use 1x scale for player trinkets (smaller sprites at top bar)
+		if slot_view.has_method("set_size_scale"):
+			slot_view.set_size_scale(1.0)
 		var loc = LocationIdentifier.new()
 		loc.container = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
 		loc.index = i

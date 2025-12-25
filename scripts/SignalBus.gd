@@ -186,6 +186,25 @@ signal unit_lethal_save_finished(unit_uuid: String)
 ## Emitted when battle inventory changes (units/items added/removed)
 signal battle_inventory_changed
 
+# -----------------------------------------------------------------------------
+# UNIT LABEL OVERLAY SIGNALS (Decoupled stat display system)
+# -----------------------------------------------------------------------------
+
+## Emitted when a unit view is registered for label overlay tracking
+## @param uuid: String - The unit UUID
+## @param view: GachaBallView - The view to track
+signal unit_view_registered(uuid: String, view: GachaBallView)
+
+## Emitted when a unit view is unregistered from label overlay tracking
+## @param uuid: String - The unit UUID being unregistered
+signal unit_view_unregistered(uuid: String)
+
+## Emitted when a unit's label should be updated in the overlay
+## @param uuid: String - The unit UUID
+## @param stat_name: StringName - The stat name (hp, pwr, burn_stacks, armor_stacks)
+## @param value: int - The new value
+signal unit_label_update(uuid: String, stat_name: StringName, value: int)
+
 ## Emitted for each combat animation event (driven by BattleAnimator)
 ## @param event: CombatEvent - The animation event being played
 signal log_animation_event(event: CombatEvent)

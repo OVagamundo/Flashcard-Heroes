@@ -47,7 +47,7 @@ offset_right = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 0
 alignment = 1
 
 [node name="PlayerArea" type="VBoxContainer" parent="TeamAreas"]
@@ -68,7 +68,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 0
 alignment = 1
 
 [node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
@@ -119,7 +119,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 3.0
 mouse_filter = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 0
 alignment = 1
 
 [node name="BenchSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
@@ -146,7 +146,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
 mouse_filter = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 0
 
 [node name="ItemIventorySlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/ItemInventory"]
 custom_minimum_size = Vector2(0, 250)
@@ -191,7 +191,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 0
 alignment = 1
 
 [node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
@@ -229,51 +229,73 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="TrinketSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyTrinketBar"]
+[node name="EnemyBenchComposite" type="VBoxContainer" parent="TeamAreas/EnemyArea"]
 custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="TrinketSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyTrinketBar"]
-custom_minimum_size = Vector2(0, 250)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="TrinketSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyTrinketBar"]
-custom_minimum_size = Vector2(0, 250)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="TrinketSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyTrinketBar"]
-custom_minimum_size = Vector2(0, 250)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="TrinketSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyTrinketBar"]
-custom_minimum_size = Vector2(0, 250)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="DiscardArea" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
-layout_mode = 2
 mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 0
+
+[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
 alignment = 1
 
-[node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 60)
+[node name="TrinketSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+
+[node name="ButtonMargins" type="MarginContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="DiscardArea" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 mouse_filter = 1
 theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 0
@@ -281,9 +303,11 @@ theme_override_fonts/font = ExtResource("6_label_font")
 theme_override_font_sizes/font_size = 12
 text = "Discard Pile (0)"
 
-[node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/DiscardArea"]
+[node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -292,15 +316,12 @@ theme_override_fonts/font = ExtResource("6_label_font")
 theme_override_font_sizes/font_size = 14
 text = "End Turn"
 
-[node name="GachaTokenLabel" type="Label" parent="TeamAreas/EnemyArea/DiscardArea"]
-unique_name_in_owner = true
+
+
+[node name="EnemyDummyDiscard" type="Control" parent="TeamAreas/EnemyArea"]
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("7_stat_font")
-theme_override_font_sizes/font_size = 18
-text = "Tokens: 0"
+mouse_filter = 2
 
 [node name="Control3" type="Control" parent="TeamAreas/EnemyArea"]
 layout_mode = 2

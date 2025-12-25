@@ -118,6 +118,8 @@ func _initialize_grids_if_needed() -> void:
 		var slot_count = container.get_all_uuids().size()
 		for i in range(slot_count):
 			var slot_view = _SlotView.instantiate()
+			# Use 1x scale for inventory window (smaller sprites)
+			slot_view.set_size_scale(1.0)
 			grid_node.add_child(slot_view)
 			# Configure interaction context for run inventory slots (FULLY_INTERACTIVE)
 			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)

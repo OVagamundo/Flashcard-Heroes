@@ -34,6 +34,8 @@ func populate(context: Dictionary) -> void:
 		if is_instance_valid(instance):
 			# Create a SlotView to wrap the GachaBallView, similar to InventoryWindow
 			var slot_view = _SlotView.instantiate()
+			# Use 1x scale for discard pile window (smaller sprites)
+			slot_view.set_size_scale(1.0)
 			discard_grid.add_child(slot_view)
 			slot_view.populate(loc)
 			# Discard pile is inspection-only: disable selection/drag
@@ -51,6 +53,8 @@ func populate(context: Dictionary) -> void:
 					gacha_view.set_interaction_context(&"INSPECTION_ONLY", instance.get_definition().category, 1)
 		else:
 			var slot_view = _SlotView.instantiate()
+			# Use 1x scale for discard pile window (smaller sprites)
+			slot_view.set_size_scale(1.0)
 			discard_grid.add_child(slot_view)
 			slot_view.populate(loc)
 			# Empty slots in discard pile are also inspection-only
