@@ -264,6 +264,25 @@ signal unit_inventory_changed(unit_uuid: String)
 signal inventory_ui_refresh_requested
 
 # -----------------------------------------------------------------------------
+# SLOT INDICATOR SIGNALS
+# -----------------------------------------------------------------------------
+
+## Emitted to show indicators on valid drop target slots
+## @param locations: Array[LocationIdentifier] - The valid target locations to highlight
+signal show_slot_indicators(locations: Array)
+
+## Emitted to hide all slot indicators
+signal hide_slot_indicators
+
+## Emitted when a drag operation starts (for slot indicators)
+## @param origin_context: InteractionContext - The dragged item's context
+signal drag_started(origin_context: InteractionContext)
+
+## Emitted when a drag operation ends
+## @param was_handled: bool - Whether the drop was handled
+signal drag_ended(was_handled: bool)
+
+# -----------------------------------------------------------------------------
 # SHOP SYSTEM SIGNALS
 # -----------------------------------------------------------------------------
 

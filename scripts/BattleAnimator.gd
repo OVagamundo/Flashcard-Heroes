@@ -68,10 +68,14 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 						var slot_view = children[index]
 						
 						if is_instance_valid(slot_view) and slot_view.get_child_count() > 0:
-							# GachaBallView is first child of SlotView
-							var gacha_view = slot_view.get_child(0)
+							# Find GachaBallView among children (indicator TextureRect may also be present)
+							var gacha_view: GachaBallView = null
+							for child in slot_view.get_children():
+								if child is GachaBallView:
+									gacha_view = child
+									break
 							
-							if is_instance_valid(gacha_view) and gacha_view is GachaBallView:
+							if is_instance_valid(gacha_view):
 								# Register and initialize view from snapshot VALUES
 								_visual_registry[uuid] = gacha_view
 								

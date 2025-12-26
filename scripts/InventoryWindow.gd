@@ -167,8 +167,11 @@ func _populate_grids() -> void:
 
 		for i in range(slot_views.size()):
 			var slot_view: SlotView = slot_views[i]
-			# Clear any previous content (like a GachaBallView) from the slot.
+			# Clear any previous content (except indicator overlay)
 			for child in slot_view.get_children():
+				# Skip the indicator overlay (TextureRect with z_index 10)
+				if child is TextureRect and child.z_index == 10:
+					continue
 				child.queue_free()
 
 			var loc = LocationIdentifier.new(container_name, i)
@@ -188,8 +191,11 @@ func _populate_grids() -> void:
 				var visual_data = VisualDataAdapter.create_visual_data(instance)
 				slot_view.set_content(visual_data, true, false, false)
 				
-				# Configure interaction context
-				if slot_view.get_child_count() > 0:
-					var gacha_view = slot_view.get_child(0)
-					if gacha_view is GachaBallView:
-						gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
+				# Configure interaction context - find GachaBallView among children
+				var gacha_view: GachaBallView = null
+				for child in slot_view.get_children():
+					if child is GachaBallView:
+						gacha_view = child
+						break
+				if is_instance_valid(gacha_view):
+					gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)

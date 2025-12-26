@@ -33,6 +33,7 @@ FlashcardManager="*res://scripts/FlashcardManager.gd"
 BattleLogger="*res://scripts/BattleLogger.gd"
 StatusEffectRegistry="*res://scripts/StatusEffectRegistry.gd"
 VFXFactory="*res://scripts/vfx/VFXFactory.gd"
+SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
 
 [debug]
 

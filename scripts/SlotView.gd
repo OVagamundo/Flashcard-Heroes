@@ -10,6 +10,11 @@ var _window_group_id: int = 0
 # Size scale for gachaball views (2.0 for battle, 1.0 for windows)
 var _size_scale: float = 2.0 # Default to battle scale
 
+# Indicator overlay for valid drop targets
+var _indicator: TextureRect = null
+var _indicator_tween: Tween = null
+const INDICATOR_TEXTURE = preload("res://assets/ui/textures/Indicator.png")
+
 ## Set size scale for gachaball views in this slot
 func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
@@ -24,6 +29,13 @@ func _ready() -> void:
 	
 	# Connect to granular stat change signal for targeted updates
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
+	
+	# Connect to slot indicator signals
+	SignalBus.show_slot_indicators.connect(_on_show_slot_indicators)
+	SignalBus.hide_slot_indicators.connect(_on_hide_slot_indicators)
+	
+	# Create indicator overlay (initially hidden)
+	_create_indicator()
 
 ## Set custom color for this slot based on container type
 func set_slot_color(container_name: StringName) -> void:
@@ -58,14 +70,98 @@ func set_slot_color(container_name: StringName) -> void:
 func _exit_tree() -> void:
 	if SignalBus.unit_stat_changed.is_connected(_on_unit_stat_changed):
 		SignalBus.unit_stat_changed.disconnect(_on_unit_stat_changed)
+	if SignalBus.show_slot_indicators.is_connected(_on_show_slot_indicators):
+		SignalBus.show_slot_indicators.disconnect(_on_show_slot_indicators)
+	if SignalBus.hide_slot_indicators.is_connected(_on_hide_slot_indicators):
+		SignalBus.hide_slot_indicators.disconnect(_on_hide_slot_indicators)
 
 	# If a drag is active while this slot is being freed, end it to prevent leaks
 	if GlobalInteractionRouter.is_drag_active():
 		GlobalInteractionRouter.end_drag(false)
 		GlobalInteractionRouter.end_drag_visuals(false)
+	
+	# Stop any running indicator tween
+	if is_instance_valid(_indicator_tween):
+		_indicator_tween.kill()
 
 func _notification(_what) -> void:
 	pass
+
+# --- Indicator Overlay Methods ---
+
+## Create the indicator overlay (called in _ready)
+func _create_indicator() -> void:
+	_indicator = TextureRect.new()
+	_indicator.texture = INDICATOR_TEXTURE
+	_indicator.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_indicator.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_indicator.visible = false
+	_indicator.z_index = 10 # Ensure it's on top
+	
+	# Set anchors to fill parent
+	_indicator.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_indicator.set_offsets_preset(Control.PRESET_FULL_RECT)
+	
+	add_child(_indicator)
+
+## Show indicator if this slot is in the valid locations list
+func _on_show_slot_indicators(locations: Array) -> void:
+	if not is_instance_valid(_location) or not is_instance_valid(_indicator):
+		return
+	
+	# Check if this slot's location is in the valid targets
+	var should_show = false
+	for loc in locations:
+		if loc is LocationIdentifier:
+			if loc.container == _location.container and loc.index == _location.index:
+				should_show = true
+				break
+	
+	if should_show:
+		_show_indicator()
+	else:
+		_hide_indicator()
+
+## Hide indicator
+func _on_hide_slot_indicators() -> void:
+	_hide_indicator()
+
+## Show the indicator with pulse animation
+func _show_indicator() -> void:
+	if not is_instance_valid(_indicator):
+		return
+	
+	_indicator.visible = true
+	_indicator.modulate.a = 0.8
+	_indicator.pivot_offset = _indicator.size / 2.0
+	
+	# Start pulse animation
+	_start_pulse_animation()
+
+## Hide the indicator and stop animation
+func _hide_indicator() -> void:
+	if not is_instance_valid(_indicator):
+		return
+	
+	_indicator.visible = false
+	
+	# Stop pulse animation
+	if is_instance_valid(_indicator_tween):
+		_indicator_tween.kill()
+		_indicator_tween = null
+
+## Pulse animation - scale oscillates between 0.9 and 1.1
+func _start_pulse_animation() -> void:
+	if is_instance_valid(_indicator_tween):
+		_indicator_tween.kill()
+	
+	_indicator.scale = Vector2.ONE
+	
+	_indicator_tween = create_tween()
+	_indicator_tween.set_loops()
+	_indicator_tween.tween_property(_indicator, "scale", Vector2(1.08, 1.08), 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_indicator_tween.tween_property(_indicator, "scale", Vector2(0.95, 0.95), 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
 func populate(loc: LocationIdentifier) -> void:
 	self._location = loc
@@ -73,9 +169,10 @@ func populate(loc: LocationIdentifier) -> void:
 
 ## Set the content of this slot using VisualData
 func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_click_inspect: bool = false, is_enemy: bool = false) -> void:
-	# Clear existing content
+	# Clear existing content (but preserve the indicator overlay)
 	for child in get_children():
-		child.queue_free()
+		if child != _indicator:
+			child.queue_free()
 	
 	if visual_data.is_empty():
 		return

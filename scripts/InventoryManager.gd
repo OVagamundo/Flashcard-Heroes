@@ -85,7 +85,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 		return
 
 	if not is_instance_valid(target_instance):
-		if _is_valid_placement(source_instance, target_loc):
+		if is_valid_placement(source_instance, target_loc):
 			_move(source_loc, target_loc)
 			GlobalInteractionRouter.end_drag(true)
 		else:
@@ -111,7 +111,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 		return
 
 	# Case 4: Possible Swap
-	if _is_valid_placement(source_instance, target_loc) and _is_valid_placement(target_instance, source_loc):
+	if is_valid_placement(source_instance, target_loc) and is_valid_placement(target_instance, source_loc):
 		_swap(source_loc, target_loc)
 		GlobalInteractionRouter.end_drag(true)
 		return
@@ -327,7 +327,9 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 
 # --- Other Helpers ---
 
-func _is_valid_placement(instance_to_check: GachaBallInstance, target_loc: LocationIdentifier) -> bool:
+## Check if placing an instance into a target location is valid
+## Made public for SlotIndicatorController to reuse this validation logic
+func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: LocationIdentifier) -> bool:
 	if not is_instance_valid(instance_to_check): return true
 
 	var def = instance_to_check.get_definition()

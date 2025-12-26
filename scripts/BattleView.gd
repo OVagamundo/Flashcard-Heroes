@@ -121,10 +121,13 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		if child is PanelContainer:
 			slots.append(child)
 
-	# 2. Remove all children from every slot, including any pre-existing GachaBallView or other nodes.
+	# 2. Remove all children from every slot (except the indicator overlay).
 	for slot in slots:
 		for content in slot.get_children():
-			content.queue_free() # Use queue_free to ensure Godot cleans up after this frame
+			# Skip the indicator overlay (TextureRect with z_index 10)
+			if content is TextureRect and content.z_index == 10:
+				continue
+			content.queue_free()
 
 	var uuids = data_container.get_all_uuids()
 
@@ -155,8 +158,13 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				var def = instance.get_definition()
 				if is_instance_valid(def):
 					if slot.get_child_count() > 0:
-						var view = slot.get_child(0)
-						if view is GachaBallView:
+						# Find GachaBallView among children (indicator TextureRect may also be present)
+						var view: GachaBallView = null
+						for child in slot.get_children():
+							if child is GachaBallView:
+								view = child
+								break
+						if is_instance_valid(view):
 							# In test mode, allow full interaction with enemy units
 							if battle_manager.is_test_mode:
 								view.set_interaction_context(&"FULLY_INTERACTIVE", def.category, 0)
@@ -253,6 +261,9 @@ func _populate_enemy_trinkets() -> void:
 	for i in range(slots.size()):
 		var slot_view = slots[i]
 		for child in slot_view.get_children():
+			# Skip the indicator overlay (TextureRect with z_index 10)
+			if child is TextureRect and child.z_index == 10:
+				continue
 			child.queue_free()
 		var loc = LocationIdentifier.new()
 		loc.container = &"EnemyTrinkets"
@@ -267,6 +278,11 @@ func _populate_enemy_trinkets() -> void:
 				var visual_data = VisualDataAdapter.create_visual_data(instance)
 				slot_view.set_content(visual_data, true, true, false)
 				if slot_view.get_child_count() > 0:
-					var view = slot_view.get_child(0)
-					if view is GachaBallView and view.has_method("set_interaction_context"):
+					# Find GachaBallView among children (indicator TextureRect may also be present)
+					var view: GachaBallView = null
+					for child in slot_view.get_children():
+						if child is GachaBallView:
+							view = child
+							break
+					if is_instance_valid(view) and view.has_method("set_interaction_context"):
 						view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)

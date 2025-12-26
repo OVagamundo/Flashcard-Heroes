@@ -50,8 +50,11 @@ func populate(context: Dictionary) -> void:
 
 	for i in range(slot_nodes.size()):
 		var slot_view = slot_nodes[i]
-		# 1. Clear any old GachaBallView from the persistent slot.
+		# 1. Clear any old GachaBallView from the persistent slot (preserve indicators).
 		for child in slot_view.get_children():
+			# Skip the indicator overlay (TextureRect with z_index 10)
+			if child is TextureRect and child.z_index == 10:
+				continue
 			child.queue_free()
 		
 		# 2. Create the location identifier for this slot.
@@ -92,6 +95,9 @@ func _on_confirm_pressed() -> void:
 		SignalBus.emit_signal("selection_clear_requested")
 		for slot_view in choices_container.get_children():
 			for child in slot_view.get_children():
+				# Skip the indicator overlay
+				if child is TextureRect and child.z_index == 10:
+					continue
 				child.queue_free()
 
 func _on_gold_pressed() -> void:
@@ -106,6 +112,9 @@ func _on_gold_pressed() -> void:
 	SignalBus.emit_signal("selection_clear_requested")
 	for slot_view in choices_container.get_children():
 		for child in slot_view.get_children():
+			# Skip the indicator overlay
+			if child is TextureRect and child.z_index == 10:
+				continue
 			child.queue_free()
 
 func _on_back_to_path_pressed() -> void:

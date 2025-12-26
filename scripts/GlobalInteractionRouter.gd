@@ -276,14 +276,15 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 			# Clear selection after any action (valid or invalid)
 			commands.append(Command.new(CommandType.DESELECT))
 		else:
-			var sel_c = _current_selection.location.container if _current_selection and _current_selection.location else StringName("<nil>")
-			var tgt_c = context.location.container if context and context.location else StringName("<nil>")
-			var sel_g = get_context_group(sel_c)
-			var tgt_g = get_context_group(tgt_c)
-			# GR-5: Close on Invalid Action Click
-			if not _is_close_suppressed_for_context(context):
+			# Not a valid action target - this is a "Change of Focus" (Rule S2)
+			# Only close windows if clicking OUTSIDE the inspection group
+			# Clicks on selectable items INSIDE windows should preserve the window
+			var click_inside_window = _is_click_inside_inspection_group(context)
+			if not click_inside_window and not _is_close_suppressed_for_context(context):
+				# GR-5: Close on Invalid Action Click (only for clicks outside windows)
 				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			commands.append(Command.new(CommandType.DESELECT))
+			commands.append(Command.new(CommandType.SELECT, {"context": context}))
 	else:
 		# No current selection, just select this item
 		commands.append(Command.new(CommandType.SELECT, {"context": context}))
@@ -339,8 +340,9 @@ func _handle_empty_slot_interaction(context: InteractionContext) -> Array[Comman
 			# Clear selection after any action (valid or invalid)
 			commands.append(Command.new(CommandType.DESELECT))
 		else:
-			# Invalid action - clear selection and close inspection windows
-			if not _is_close_suppressed_for_context(context):
+			# Invalid target - only close windows if clicking OUTSIDE the inspection group
+			var click_inside_window = _is_click_inside_inspection_group(context)
+			if not click_inside_window and not _is_close_suppressed_for_context(context):
 				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			commands.append(Command.new(CommandType.DESELECT))
 	
