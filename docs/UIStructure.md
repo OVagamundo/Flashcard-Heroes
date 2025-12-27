@@ -78,3 +78,35 @@ All horizontal slot containers (`HBoxContainer`) are configured to create contin
 **Critical Note:** The script `BattleView.gd` manages the content of the board and takes authority over slot configuration.
 *   **Instantiation:** Replaces properties of `PanelContainer` placeholders with `SlotView` instances.
 *   **Sizing Override:** The script applies default minimum sizes. Special cases (like 90px Enemy Trinkets) must be explicitly handled in the script's `_initialize_slots` method, or they will be overwritten to the default 250px.
+
+---
+
+## 4. Inventory GachaBallView Visuals
+
+### True 2x Scale System
+The inventory uses a "True 2x Scale" system for pixel-perfect rendering:
+
+| Element | Size | Notes |
+|---------|------|-------|
+| **Slot** | 192x192px | Fixed `custom_minimum_size` |
+| **Unit/Item Sprite** | 128x128px | Centered inside slot |
+| **Gachaball Overlay** | 192x192px | Glass capsule texture over sprite |
+| **Selection Ring** | 192x192px | White circle outline when selected |
+
+### Visual Hierarchy (Z-Order)
+Bottom to top stacking in `GachaBallView`:
+1. **Unit Sprite** (or Item sprite)
+2. **Gachaball Overlay** (transparent glass capsule)
+3. **Selection Ring** (visible when selected)
+4. **Stats Overlay** (HP/PWR labels, burn/armor indicators)
+
+### Drag Preview
+When dragging a gachaball in inventory mode:
+- Shows unit/item sprite + gachaball overlay + selection ring
+- Centered on cursor using a container twice the preview size
+- Uses `force_inventory_mode = true` for free-floating balls
+
+### Implementation Files
+- **[GachaBallView.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/GachaBallView.gd)**: `_has_overlay_heuristic()`, `_get_drag_data()`, `force_inventory_mode`
+- **[InventoryWindow.tscn](file:///Users/danhh/Desktop/Flashcard%20Heroes/scenes/InventoryWindow.tscn)**: 3-column grid with 192px slots
+

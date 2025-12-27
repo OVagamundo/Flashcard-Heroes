@@ -289,7 +289,72 @@ This strictly prevents "visual drift" where animations might leave a unit slight
 
 ---
 
-## 7. Common Pitfalls
+## 8. Gacha Draw Animation
+
+When a player draws from a gacha machine, a gachaball "jumps" from the machine to its destination slot with a satisfying arc animation.
+
+### 8.1 Signal Flow
+
+```mermaid
+sequenceDiagram
+    participant BM as BattleManager
+    participant SB as SignalBus
+    participant BV as BattleView
+
+    BM->>SB: emit("gacha_draw_animated", draw_result)
+    SB->>BV: _on_gacha_draw_animated(draw_result)
+    Note over BV: Suppress redraw, play animation
+    BV->>BV: _force_refresh_after_anim()
+    Note over BV: Redraw board, play landing bounce
+```
+
+**Key Signal:** `gacha_draw_animated(draw_result)`
+- Emitted **before** `battle_inventory_changed` to set suppression flag
+- Contains destination slot info, item UUID, and source tier
+
+### 8.2 Animation Phases
+
+| Phase | Duration | Description |
+|-------|----------|-------------|
+| **Launch** | 0.45s | Ball shoots from machine with Bezier arc |
+| **Refresh** | 1 frame | Slot content appears after ball lands |
+| **Bounce** | 0.38s | Rubber-ball squish/stretch/settle on slot |
+
+### 8.3 Arc Trajectory (Bezier Curve)
+
+```gdscript
+# Quadratic Bezier: P = (1-t)²·P0 + 2·(1-t)·t·P1 + t²·P2
+var control_point := Vector2(
+    (start.x + end.x) / 2.0,  # Centered
+    min(start.y, end.y) - 400  # 400px above
+)
+var eased_t = pow(t, 0.55)  # Fast start, snappy landing
+```
+
+- **Start**: Center of the gacha machine knob
+- **End**: Center of destination slot (with 96px Y offset for visual centering)
+- **Control Point**: Horizontally centered, 400px above
+
+### 8.4 Landing Bounce
+
+After the ball lands and the slot refreshes, a rubber-ball bounce plays on the `icon_rect`:
+
+| Phase | Scale | Duration | Easing |
+|-------|-------|----------|--------|
+| **Squish** | (1.2, 0.8) | 0.08s | EASE_OUT |
+| **Stretch** | (0.9, 1.15) | 0.12s | EASE_OUT |
+| **Small squish** | (1.05, 0.95) | 0.08s | EASE_IN_OUT |
+| **Settle** | (1.0, 1.0) | 0.1s | ELASTIC |
+
+### 8.5 Implementation Files
+
+- **[BattleManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleManager.gd)**: Emits `gacha_draw_animated` in `bm_draw_gacha_instance()`
+- **[BattleView.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleView.gd)**: `_on_gacha_draw_animated()` and `_force_refresh_after_anim()`
+- **[SignalBus.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/SignalBus.gd)**: `gacha_draw_animated` signal definition
+
+---
+
+## 9. Common Pitfalls
 
 - **"Ghost Animations"**: Playing an animation on a UUID that was removed in a previous event.
     - *Fix*: Always check `is_instance_valid(view)` before animating.
@@ -298,3 +363,4 @@ This strictly prevents "visual drift" where animations might leave a unit slight
     - *Fix*: Ensure `DAMAGE` events include `new_hp` in payload, and `GachaBallView` uses that value directly.
 - **Missing Sfx**:
     - *Fix*: Call `AudioManager` inside the `tween_callback` to sync sound with visual impact.
+

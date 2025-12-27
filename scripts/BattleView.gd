@@ -65,6 +65,7 @@ func _ready() -> void:
 	SignalBus.battle_inventory_changed.connect(_redraw_board)
 
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
+	SignalBus.gacha_draw_animated.connect(_on_gacha_draw_animated)
 	
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
@@ -141,7 +142,9 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		var instance: GachaBallInstance = null
 		if i < uuids.size():
 			var uuid = uuids[i]
-			instance = battle_manager.get_instance(uuid)
+			# If this UUID is currently animating, pretend the slot is empty so it doesn't snap in yet
+			if not (uuid in _pending_animated_uuids):
+				instance = battle_manager.get_instance(uuid)
 
 		if is_instance_valid(instance):
 			# Create visual data using the adapter
@@ -286,3 +289,212 @@ func _populate_enemy_trinkets() -> void:
 							break
 					if is_instance_valid(view) and view.has_method("set_interaction_context"):
 						view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+
+# --- Gacha Animation Logic ---
+
+var _pending_animated_uuids: Array[String] = []
+
+func _on_gacha_draw_animated(draw_result) -> void:
+	# Add the drawn UUID to the pending list. This prevents _populate_container from
+	# showing it in the grid prematurely (it will be filtered out).
+	if draw_result.drawn_uuid:
+		_pending_animated_uuids.append(draw_result.drawn_uuid)
+	
+	# Force an immediate redraw. This ensures that if the item was already snapped
+	# into the slot by a race condition, it is now hidden/cleared.
+	_redraw_board()
+	
+	# Attempt to find the Gacha Machine (Start Position)
+	var main_node = get_tree().get_root().find_child("Main", true, false)
+	if not is_instance_valid(main_node):
+		_force_refresh_after_anim()
+		return
+	
+	# Assuming machines are GachaMachine1, GachaMachine2, GachaMachine3
+	# and we need to map Tier (int) to Machine (1/2/3)
+	# The Tier comes from battle_manager.get_inventory_tier_instances(tier) context?
+	# Wait, draw_result doesn't have Tier. But bm_draw_gacha_instance was called with tier.
+	# We need the source tier to determine the machine.
+	# InventoryOperations.DrawResult does NOT store "tier" but it stores "source_container".
+	# source_container = "BattleInventoryT%d" % tier.
+	var tier = 1
+	if draw_result.source_container.ends_with("T2"): tier = 2
+	elif draw_result.source_container.ends_with("T3"): tier = 3
+	
+	var machine_path = "VBoxContainer/BottomArea/HBoxContainer/GachaMachine%d/KnobButton" % tier
+	var knob_node = main_node.get_node_or_null(machine_path)
+	var start_pos: Vector2
+	if knob_node:
+		start_pos = knob_node.get_global_rect().get_center()
+	else:
+		start_pos = get_viewport_rect().get_center() # Fallback
+	
+	# Determine End Position
+	var end_pos: Vector2
+	var dest_slot_view: Control = null
+	
+	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
+		end_pos = discard_pile_button.get_global_rect().get_center()
+	else:
+		# Map destination container to UI container
+		var target_ui_container: HBoxContainer = null
+		if draw_result.dest_container == "PlayerBench":
+			target_ui_container = player_bench
+		elif draw_result.dest_container == "ItemInventory":
+			target_ui_container = item_inventory
+		
+		if target_ui_container and draw_result.dest_slot >= 0 and draw_result.dest_slot < target_ui_container.get_child_count():
+			dest_slot_view = target_ui_container.get_child(draw_result.dest_slot)
+			end_pos = dest_slot_view.get_global_rect().get_center()
+		else:
+			# Fallback if slot not found
+			end_pos = start_pos
+	
+	# Spawn animated ball
+	var anim_ball = GachaBallViewScene.instantiate()
+	
+	# Add to effects layer FIRST (ensures @onready vars are initialized)
+	var effects_layer = main_node.get_node_or_null("EffectsLayer")
+	if effects_layer:
+		effects_layer.add_child(anim_ball)
+	else:
+		add_child(anim_ball)
+	
+	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
+	anim_ball.force_inventory_mode = true
+	anim_ball.custom_minimum_size = Vector2(192, 192)
+	anim_ball.size = Vector2(192, 192)
+	
+	# Populate with visual data (after added to tree so @onready vars work)
+	var instance = battle_manager.get_instance(draw_result.drawn_uuid)
+	if is_instance_valid(instance):
+		var visual_data = VisualDataAdapter.create_visual_data(instance)
+		anim_ball.populate(null, visual_data)
+	
+	# Set pivot to center for proper centering during animation
+	anim_ball.pivot_offset = anim_ball.size / 2.0
+	
+	# Calculate final target position (CENTER of the slot)
+	# end_pos is already the center of the slot rect from get_global_rect().get_center()
+	# We want anim_ball's CENTER to land there, so we position anim_ball such that:
+	# anim_ball.global_position + pivot_offset = end_pos
+	# => anim_ball.global_position = end_pos - pivot_offset
+	# But pivot_offset is in local coords, scaled by scale. At final scale (1.0), it's size/2.
+	
+	# For animation, we'll track the CENTER position and derive global_position from it
+	var start_center: Vector2 = start_pos
+	# Offset end position DOWN significantly to land in the visual center of the slot
+	# The ball is 192px, the slot is ~250px tall, and anchoring is top-left
+	# So we need to offset by roughly half the ball size to center it vertically
+	var end_center: Vector2 = end_pos + Vector2(0, 96) # Ball radius (192/2) to center
+	
+	# Initial setup: place ball at start (small scale, centered on knob)
+	var initial_scale := 0.3
+	anim_ball.scale = Vector2(initial_scale, initial_scale)
+	# Position so that visual center is at start_center
+	anim_ball.global_position = start_center - (anim_ball.pivot_offset * initial_scale)
+	
+	# Arc parameters
+	var arc_height := 400.0 # Peak height above the highest point
+	var duration := 0.45 # Snappy fast animation
+	
+	# Quadratic Bezier curve for natural basketball arc
+	# P0 = start_center (launch point)
+	# P1 = control point (apex of the arc)
+	# P2 = end_center (landing point)
+	var control_point := Vector2(
+		(start_center.x + end_center.x) / 2.0, # Horizontally centered
+		min(start_center.y, end_center.y) - arc_height # Above both points
+	)
+	
+	# Use tween_method to animate along the Bezier curve
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_LINEAR)
+	
+	# Animate t from 0 to 1
+	tween.tween_method(func(t: float):
+		# VIOLENT POP-OUT with snappy landing
+		# Ball shoots out fast, slows at peak, then accelerates down
+		var eased_t = pow(t, 0.55) # Fast start AND snappy landing
+		
+		# Scale animation (grows quickly then settles)
+		var scale_eased = 1.0 - pow(1.0 - t, 2)
+		var current_scale = lerp(initial_scale, 1.0, scale_eased)
+		anim_ball.scale = Vector2(current_scale, current_scale)
+		
+		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
+		var inv_t = 1.0 - eased_t
+		var pos = (inv_t * inv_t * start_center) + \
+				  (2.0 * inv_t * eased_t * control_point) + \
+				  (eased_t * eased_t * end_center)
+		
+		# Position ball so its CENTER is at pos
+		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
+	, 0.0, 1.0, duration)
+	
+	# Clean up after animation
+	tween.tween_callback(func():
+		anim_ball.queue_free()
+		_force_refresh_after_anim(draw_result)
+	)
+
+func _force_refresh_after_anim(draw_result = null) -> void:
+	if draw_result and draw_result.drawn_uuid:
+		_pending_animated_uuids.erase(draw_result.drawn_uuid)
+	
+	_redraw_board()
+	
+	# Trigger bounce animation on the landed unit/item
+	if draw_result == null:
+		return
+	
+	# Skip bounce for discard pile
+	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
+		return
+	
+	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
+	await get_tree().process_frame
+	
+	# Find the target slot
+	var target_ui_container: HBoxContainer = null
+	if draw_result.dest_container == "PlayerBench":
+		target_ui_container = player_bench
+	elif draw_result.dest_container == "ItemInventory":
+		target_ui_container = item_inventory
+	
+	if not target_ui_container:
+		return
+	if draw_result.dest_slot < 0 or draw_result.dest_slot >= target_ui_container.get_child_count():
+		return
+	
+	var slot = target_ui_container.get_child(draw_result.dest_slot)
+	
+	# Find the GachaBallView inside the slot
+	var ball_view: GachaBallView = null
+	for child in slot.get_children():
+		if child is GachaBallView:
+			ball_view = child
+			break
+	
+	if not is_instance_valid(ball_view):
+		return
+	
+	# Access the icon_rect directly from the GachaBallView (it's a public property)
+	var icon_rect = ball_view.icon_rect
+	if not is_instance_valid(icon_rect):
+		return
+	
+	# Rubber ball bounce animation - squish on landing, then stretch up, settle
+	var bounce_tween = create_tween()
+	
+	# Store pivot for centered scaling
+	icon_rect.pivot_offset = icon_rect.size / 2.0
+	
+	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 2: Stretch upward (bounce up)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 3: Small squish
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Phase 4: Settle to normal
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)

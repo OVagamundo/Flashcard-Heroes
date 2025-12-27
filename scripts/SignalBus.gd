@@ -224,6 +224,10 @@ signal end_turn_requested
 ## @param tier: int - The tier to draw from
 signal draw_gacha_requested(tier: int)
 
+## Emitted when gacha draw result needs to be animated
+## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
+signal gacha_draw_animated(draw_result)
+
 ## Emitted when gacha tokens change
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
@@ -245,6 +249,10 @@ signal selection_changed(new_location: LocationIdentifier)
 
 ## Emitted when selection should be cleared
 signal selection_clear_requested
+
+## Emitted after a successful inventory action (move/swap/merge/equip) for bounce animation
+## @param target_uuids: Array[String] - UUIDs of instances that were affected and should bounce
+signal inventory_action_completed(target_uuids: Array)
 
 ## Emitted when inventory action is attempted
 ## @param source_loc: LocationIdentifier - Source location

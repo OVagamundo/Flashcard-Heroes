@@ -6,6 +6,10 @@ extends PanelContainer
 const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
 const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
 
+# Gachaball overlay texture path for inventory items
+const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaball.png"
+const GACHABALL_SELECTION_PATH = "res://assets/ui/textures/gachaballselected.png"
+
 @onready var icon_rect: TextureRect = %Icon
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var hp_container: Control = %HPContainer
@@ -42,7 +46,16 @@ var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
 var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
 var _bound_uuid: String = "" # UUID bound during populate()
 var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
-var _registered_with_overlay: bool = false # Track if registered with UnitLabelOverlay
+
+# Drag deformation state (rubber toy physics)
+var _is_dragging: bool = false
+var _drag_first_frame: bool = true # Skip velocity calc on first frame after drag start
+var _last_mouse_pos: Vector2 = Vector2.ZERO
+var _drag_velocity: Vector2 = Vector2.ZERO
+var _original_icon_scale: Vector2 = Vector2.ONE
+var _original_icon_rotation: float = 0.0
+var _drag_preview: Control = null # Reference to the drag preview for deformation
+
 # NOTE: Animation state variables (_melee_origin_position, _flash_tween, etc.)
 # are now managed by UnitAnimationController child node
 
@@ -59,6 +72,7 @@ func _ready() -> void:
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
+		bus.connect("inventory_action_completed", _on_inventory_action_completed)
 		
 		# unit_visual_stat_update is still handled here for puppet mode updates
 		if bus.has_signal("unit_visual_stat_update"):
@@ -66,7 +80,49 @@ func _ready() -> void:
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
 		# are now handled by UnitAnimationController child node
 
+func _process(delta: float) -> void:
+	# Drag deformation: Apply rubber-toy physics to drag preview based on velocity
+	if not _is_dragging: return
+	if not is_instance_valid(_drag_preview): return
+	
+	var mouse_pos = get_global_mouse_position()
+	
+	# Skip velocity calculation on first frame to prevent initial spike
+	if _drag_first_frame:
+		_drag_first_frame = false
+		_last_mouse_pos = mouse_pos
+		return
+	
+	var velocity = (mouse_pos - _last_mouse_pos) / max(delta, 0.001)
+	_last_mouse_pos = mouse_pos
+	
+	# Smooth velocity for less jittery deformation
+	_drag_velocity = _drag_velocity.lerp(velocity, 0.25)
+	
+	# --- Pendulum swing (realistic momentum-based) ---
+	var target_rotation = clamp(_drag_velocity.x * 0.0001, -0.12, 0.12)
+	_drag_preview.rotation = lerp(_drag_preview.rotation, target_rotation, 0.15)
+	
+	# --- Stretch only when moving UP (sag effect) ---
+	var stretch_factor := 0.0
+	# Clamp velocity to prevent infinite stretch on potential spikes
+	var clamped_velocity_y = max(_drag_velocity.y, -2000.0)
+	
+	if clamped_velocity_y < -100: # Only when moving up fast enough
+		# Limit max stretch to 20% (0.2) to prevent "spaghetti" effect
+		stretch_factor = clamp(-clamped_velocity_y * 0.00005, 0.0, 0.2)
+	
+	# Target scale - return to 1.0 when not stretching
+	var target_scale = Vector2(1.0 - stretch_factor * 0.15, 1.0 + stretch_factor)
+	
+	# Quick return to normal scale (faster lerp when near 1.0)
+	var lerp_speed = 0.3 if stretch_factor < 0.01 else 0.15
+	_drag_preview.scale = _drag_preview.scale.lerp(target_scale, lerp_speed)
+
 func _exit_tree() -> void:
+	# Reset drag deformation state if still dragging
+	_reset_drag_deformation()
+	
 	# Proactively disconnect signals and end any active drag to prevent leaks
 	var bus = get_node_or_null("/root/SignalBus")
 	if is_instance_valid(bus):
@@ -115,17 +171,85 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 		icon_rect.texture = visual_data.get("icon")
 		# Apply fixed size based on texture and scale factor
 		if icon_rect.texture:
-			var tex_size = icon_rect.texture.get_size() * _size_scale
-			icon_rect.custom_minimum_size = tex_size
-			icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
-			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			# For Inventory (where overlay exists), keep icon smaller (1x) centered in 2x slot
+			# For Battle, scale icon to 2x
+			if _size_scale == WINDOW_SCALE or (_size_scale == BATTLE_SCALE and get_viewport().gui_get_focus_owner() == null): # Fallback heuristic
+				pass
+			
+			# Logic: If we are in inventory (using overlay), we want the icon to stay 1x (64px) 
+			# but the container to be 2x (128px).
+			# check if overlay was added? No easy way to check here without state.
+			# Let's use the fact that we added the overlay in _update_item_slots which is called AFTER this.
+			# We'll set the size here assuming standard behavior, and if needed we can adjust.
+			
+			# ACTUALLY: The user wants units INSIDE the ball.
+			# If slot is 128px, ball is 128px.
+			# Unit should be 64px (native) centered.
+			
+			var target_size = icon_rect.texture.get_size() * _size_scale
+			
+			# Hack: If this is the inventory view (which we can infer or pass via populate options? No...)
+			# Let's rely on _create_gachaball_overlay to fix it? No, populate sets min_size.
+			
+			# Better: Always expand to _size_scale for the CONTAINER, but logic for content:
+			icon_rect.custom_minimum_size = target_size
+			
+			# If we are in inventory (indicated by checking if we are going to add overlay)
+			# We can't know for sure easily. 
+			# Let's change how we set stretch mode.
+			
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # Fill the slot with the rect
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED # Center texture
+			
+			# BUT, if we want to scale up for Battle (no overlay), we NEED to scale the texture.
+			# STRETCH_KEEP_ASPECT_CENTERED doesn't scale up.
+			
+			# Dual logic:
+			if _size_scale > 1.0 and not _has_overlay_heuristic():
+				# Battle Mode: Scale UP
+				icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.custom_minimum_size = target_size
+				
+				# Remove unit sprite if present (switching back to Battle)
+				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+				if unit_sprite: unit_sprite.queue_free()
+			else:
+				# Inventory Mode: Fixed slot size (192), Unit (128) centered inside
+				icon_rect.custom_minimum_size = Vector2(192, 192)
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.texture = null # Clear main texture, use child sprite
+				
+				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+				if not unit_sprite:
+					unit_sprite = TextureRect.new()
+					unit_sprite.name = "UnitSprite"
+					icon_rect.add_child(unit_sprite)
+					unit_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					unit_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+				
+				# Configure unit sprite size and position (no anchor preset, direct positioning)
+				unit_sprite.custom_minimum_size = Vector2(128, 128)
+				unit_sprite.size = Vector2(128, 128)
+				unit_sprite.position = Vector2(32, 32) # (192-128)/2 = 32px margin
+				unit_sprite.texture = visual_data.get("icon")
+				unit_sprite.visible = true
 		else:
 			# Fallback for missing textures
 			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			
+			# Ensure cleanup if switching contexts (unlikely but safe)
+			var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+			if unit_sprite: unit_sprite.queue_free()
 	
 	_update_stats()
 	visible = true
+
+	# Add gachaball overlay for inventory windows
+	if _has_overlay_heuristic():
+		_create_gachaball_overlay()
 
 	# Set tooltip from localization key
 	var loc_key: String = visual_data.get("display_name_key", "")
@@ -480,6 +604,36 @@ func _update_item_slots() -> void:
 	# Item slots can be used for other purposes if needed
 	pass
 
+## Create gachaball overlay for inventory windows
+## This adds the gachaball.png texture on top of unit/item sprites
+func _create_gachaball_overlay() -> void:
+	if not is_instance_valid(icon_rect):
+		return
+	
+	# Check if overlay already exists (prevent duplication on repopulate)
+	if get_node_or_null("GachaBallOverlay"):
+		return
+	
+	# Load the overlay texture
+	var overlay_texture = load(GACHABALL_OVERLAY_PATH)
+	if not is_instance_valid(overlay_texture):
+		return
+	
+	# Create overlay TextureRect
+	var overlay = TextureRect.new()
+	overlay.name = "GachaBallOverlay"
+	overlay.texture = overlay_texture
+	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	overlay.stretch_mode = TextureRect.STRETCH_SCALE # Scale to fill 192px
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.custom_minimum_size = Vector2(192, 192)
+	overlay.size = Vector2(192, 192)
+	
+	# Add as sibling to VBox (Icon) but before StatsOverlay to ensure correct Z-order:
+	# 0: Anim, 1: VBox(Unit), 2: Overlay(Ball), 3: Stats(Labels)
+	add_child(overlay)
+	move_child(overlay, 2)
+
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
 	var node: Node = self.get_parent()
@@ -577,19 +731,98 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	_pressed_pending_click = false
 	# Do NOT close windows on drag start. Closing ancestor windows can free the
 	# source view or the engine-managed drag preview and cause errors.
+	
+	# --- Drag Deformation: Start tracking ---
+	_is_dragging = true
+	_drag_first_frame = true # Skip first velocity calc
+	_last_mouse_pos = get_global_mouse_position()
+	_drag_velocity = Vector2.ZERO
+	if is_instance_valid(icon_rect):
+		_original_icon_scale = icon_rect.scale
+		_original_icon_rotation = icon_rect.rotation
+	
+	# Get the correct texture for drag preview
+	var drag_texture: Texture2D = icon_rect.texture
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	if unit_sprite and unit_sprite.texture:
+		drag_texture = unit_sprite.texture
+	
+	# Create container for drag preview (to show both unit and ball in inventory mode)
+	# To center the preview on cursor: use a container twice the size, then offset content by -half
+	# Override preview size for battle logic to ensure squareness and prevent "too big" issues
+	# Battle views might be stretched by layout, but the drag preview should be a clean square.
+	var preview_size: Vector2
+	if _has_overlay_heuristic():
+		preview_size = Vector2(192, 192)
+	else:
+		# In Battle (2x scale), usually 64->128. But user reports 128 is "much smaller".
+		# Inventory uses 192. Let's match inventory size for consistency and larger visuals.
+		var base_size = 192.0
+		preview_size = Vector2(base_size, base_size)
+
+	var container_size = preview_size * 2 # Double size to allow centering
+	var offset = - preview_size / 2 # Offset to center content on top-left (where cursor is)
+	
+	var preview_container = Control.new()
+	preview_container.custom_minimum_size = container_size
+	
+	# Add unit/item texture
 	var preview = TextureRect.new()
-	preview.texture = icon_rect.texture
+	preview.texture = drag_texture
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	# Make drag preview 20% larger than the actual icon
-	preview.custom_minimum_size = icon_rect.size * 1.2
+	preview.stretch_mode = TextureRect.STRETCH_SCALE
+	if _has_overlay_heuristic():
+		# In inventory mode: unit is 128 in 192 slot = 2/3 size ratio
+		var unit_size = preview_size * (128.0 / 192.0)
+		preview.custom_minimum_size = unit_size
+		preview.size = unit_size
+		preview.position = offset + (preview_size - unit_size) / 2 # Center unit
+	else:
+		preview.custom_minimum_size = preview_size
+		preview.size = preview_size
+		preview.position = offset
+	preview_container.add_child(preview)
 	
-	# Apply outline shader to drag preview
-	if icon_rect.material:
-		var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
-		drag_mat.set_shader_parameter("outline_enabled", true)
-		preview.material = drag_mat
+	# Add gachaball overlay for inventory mode
+	if _has_overlay_heuristic():
+		var overlay_texture = load(GACHABALL_OVERLAY_PATH)
+		if overlay_texture:
+			var overlay_preview = TextureRect.new()
+			overlay_preview.texture = overlay_texture
+			overlay_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			overlay_preview.stretch_mode = TextureRect.STRETCH_SCALE
+			overlay_preview.custom_minimum_size = preview_size
+			overlay_preview.size = preview_size
+			overlay_preview.position = offset
+			preview_container.add_child(overlay_preview)
+		
+		# Add selection outline circle for drag feedback
+		var selection_texture = load(GACHABALL_SELECTION_PATH)
+		if selection_texture:
+			var selection_ring = TextureRect.new()
+			selection_ring.texture = selection_texture
+			selection_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			selection_ring.stretch_mode = TextureRect.STRETCH_SCALE
+			selection_ring.custom_minimum_size = preview_size
+			selection_ring.size = preview_size
+			selection_ring.position = offset
+			preview_container.add_child(selection_ring)
+	else:
+		# Battle mode: Apply outline shader to unit preview
+		if icon_rect.material:
+			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
+			drag_mat.set_shader_parameter("outline_enabled", true)
+			preview.material = drag_mat
 	
-	set_drag_preview(preview)
+	# Store reference to drag preview for deformation animation
+	_drag_preview = preview_container
+	# Initialize scale and pivot for deformation
+	_drag_preview.scale = Vector2.ONE
+	_drag_preview.pivot_offset = Vector2.ZERO
+	
+	# Skip first frame velocity calc to avoid spike
+	_last_mouse_pos = get_global_mouse_position()
+	set_drag_preview(preview_container)
 
 	var placeholder = Control.new()
 	placeholder.custom_minimum_size = self.size
@@ -652,21 +885,63 @@ func _apply_selection_feedback() -> void:
 	if not is_inside_tree(): return
 	if not is_instance_valid(icon_rect): return
 	
-	# Use shader-based outline that follows sprite contour
-	var mat = icon_rect.material as ShaderMaterial
-	if mat:
-		mat.set_shader_parameter("outline_enabled", _is_selected)
-	
-	# Scale the icon slightly larger when selected for a "pop" effect
-	if _is_selected:
-		icon_rect.scale = Vector2(1.1, 1.1)
-		icon_rect.pivot_offset = icon_rect.size / 2 # Scale from center
+	# In inventory mode, use a white circle outline texture for selection
+	var overlay = get_node_or_null("GachaBallOverlay")
+	if overlay and _has_overlay_heuristic():
+		# Create/show selection ring when selected
+		var selection_ring = get_node_or_null("SelectionRing")
+		if _is_selected:
+			if not selection_ring:
+				var selection_texture = load(GACHABALL_SELECTION_PATH)
+				if selection_texture:
+					selection_ring = TextureRect.new()
+					selection_ring.name = "SelectionRing"
+					selection_ring.texture = selection_texture
+					selection_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					selection_ring.stretch_mode = TextureRect.STRETCH_SCALE
+					selection_ring.custom_minimum_size = Vector2(192, 192)
+					selection_ring.size = Vector2(192, 192)
+					selection_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					# Add after overlay (on top)
+					add_child(selection_ring)
+					move_child(selection_ring, 3) # After overlay (2), before stats (4)
+			if selection_ring:
+				selection_ring.visible = true
+			
+			# Also apply scale effect
+			overlay.scale = Vector2(1.05, 1.05)
+			overlay.pivot_offset = overlay.size / 2
+		else:
+			if selection_ring:
+				selection_ring.visible = false
+			overlay.scale = Vector2(1.0, 1.0)
 	else:
-		icon_rect.scale = Vector2(1.0, 1.0)
+		# Battle mode: Use shader-based outline on icon_rect
+		var mat = icon_rect.material as ShaderMaterial
+		if mat:
+			mat.set_shader_parameter("outline_enabled", _is_selected)
+		
+		# Scale the icon slightly larger when selected for a "pop" effect
+		if _is_selected:
+			icon_rect.scale = Vector2(1.1, 1.1)
+			icon_rect.pivot_offset = icon_rect.size / 2 # Scale from center
+		else:
+			icon_rect.scale = Vector2(1.0, 1.0)
 
 func _notification(what: int) -> void:
 	# Fallback: if a drag ends without any drop target handling it, restore visuals
 	if what == NOTIFICATION_DRAG_END:
+		if _is_dragging and not is_drag_successful():
+			# Drag failed (dropped on nothing) - trigger bounce "back" to slot
+			# Ensure GIR knows drag is done so it unhides the view
+			if GlobalInteractionRouter.is_drag_active():
+				GlobalInteractionRouter.end_drag(false)
+			
+			# Wait a frame to ensure visibility is applied? Usually end_drag is immediate.
+			_play_landing_bounce()
+			
+		# Reset drag deformation state
+		_reset_drag_deformation()
 		# Reset local drag flag
 		_drag_initiated_for_click = false
 		if GlobalInteractionRouter.is_drag_active():
@@ -686,3 +961,59 @@ func animate_leap_return() -> void:
 	var controller = get_node_or_null("AnimationController")
 	if is_instance_valid(controller) and controller.has_method("animate_leap_return"):
 		await controller.animate_leap_return()
+
+var force_inventory_mode: bool = false
+
+## Heuristic to check if we should render in "Inventory Mode" (2x scale, 192px slot, circle outline)
+## 1. Checks if parent name contains "InventoryWindow"
+## 2. Checks if force_inventory_mode is set
+func _has_overlay_heuristic() -> bool:
+	if force_inventory_mode:
+		return true
+	var p = get_parent()
+	while p:
+		if "InventoryWindow" in p.name: return true
+		p = p.get_parent()
+	return false
+
+# --- Bounce Animation for Inventory Actions ---
+
+func _on_inventory_action_completed(target_uuids: Array) -> void:
+	if _bound_uuid in target_uuids:
+		# Wait one frame for UI refresh to complete
+		await get_tree().process_frame
+		_play_landing_bounce()
+
+func _reset_drag_deformation() -> void:
+	if not _is_dragging: return
+	_is_dragging = false
+	_drag_velocity = Vector2.ZERO
+	_drag_preview = null
+	if is_instance_valid(icon_rect):
+		icon_rect.scale = _original_icon_scale
+		icon_rect.rotation = _original_icon_rotation
+
+func _play_landing_bounce() -> void:
+	if not is_instance_valid(icon_rect): return
+	
+	# Store original values before animation
+	var original_scale = icon_rect.scale
+	var original_pos = icon_rect.position
+	icon_rect.pivot_offset = icon_rect.size / 2.0
+	
+	# Start position: Slightly above (falling from a small height)
+	var fall_height := 40.0
+	icon_rect.position.y -= fall_height
+	
+	var bounce_tween = create_tween()
+	
+	# Phase 0: Fall down quickly (simulates drop from small height)
+	bounce_tween.tween_property(icon_rect, "position:y", original_pos.y, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 2: Stretch upward (bounce up)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 3: Small squish
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# Phase 4: Settle to normal
+	bounce_tween.tween_property(icon_rect, "scale", original_scale, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)

@@ -114,9 +114,7 @@ func _compute_valid_targets(source_instance: GachaBallInstance, source_loc: Loca
 			target_loc.container = container_name
 			target_loc.index = i
 			
-			# Skip self
-			if target_loc.container == source_loc.container and target_loc.index == source_loc.index:
-				continue
+			# Note: Original slot is now included as valid target (for cancel-drop bounce)
 			
 			# Check if this is a valid target
 			if _is_valid_target(source_instance, source_loc, target_loc, all_instances):

@@ -371,8 +371,12 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	# Validate and emit
 	if OS.is_debug_build():
 		_bm_validate_state_consistency()
+	
+	# Emit animation signal FIRST so BattleView can suppress the redraw
+	SignalBus.emit_signal("gacha_draw_animated", draw_result)
+	
+	# Then emit inventory changed (BattleView will skip redraw due to suppression flag)
 	_emit_battle_inventory_changed()
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
 	
 	# If pool emptied, trigger reshuffle for next draw
 	if draw_result.pool_emptied:

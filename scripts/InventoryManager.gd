@@ -28,6 +28,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 			if is_instance_valid(owner):
 				owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
 			GlobalInteractionRouter.end_drag(true)
+			SignalBus.emit_signal("inventory_action_completed", [early_target_instance.ball_uuid])
 			return
 
 
@@ -46,6 +47,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 						# Use atomic equip with explicit slot
 						data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 						GlobalInteractionRouter.end_drag(true)
+						SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
 						return
 
 	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
@@ -102,7 +104,15 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 
 	var all_instances_db = data_owner.get_all_instances()
 
-	# Case 3: Possible Merge
+	# Case 3: Same-slot drop (return to original position) - trigger bounce, no action
+	# Must be checked BEFORE merge to avoid self-merge edge cases
+	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
+		SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid])
+		# Return unhandled (false) so GIR unhides the source view immediately
+		GlobalInteractionRouter.end_drag(false)
+		return
+
+	# Case 4: Possible Merge
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
 		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
@@ -110,7 +120,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 		GlobalInteractionRouter.end_drag(false)
 		return
 
-	# Case 4: Possible Swap
+	# Case 5: Possible Swap
 	if is_valid_placement(source_instance, target_loc) and is_valid_placement(target_instance, source_loc):
 		_swap(source_loc, target_loc)
 		GlobalInteractionRouter.end_drag(true)
@@ -158,6 +168,7 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 			# Atomic equip handles removal and signaling
 			data_owner.equip_item(instance_to_move.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 			SignalBus.emit_signal("selection_clear_requested")
+			SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
 			return
 
 	# Default move behaviour for normal containers
@@ -165,6 +176,7 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	if not is_instance_valid(owner): return
 	owner.move_instance(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("inventory_action_completed", [instance_to_move.ball_uuid])
 
 func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
 	var data_owner = _get_data_owner()
@@ -179,6 +191,7 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	data_owner.swap_instances(source_loc, target_loc)
 
 	SignalBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid, target_instance.ball_uuid])
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
@@ -294,6 +307,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")
+	SignalBus.emit_signal("inventory_action_completed", [new_instance.ball_uuid])
 
 # --- Single-Responsibility Helpers ---
 
