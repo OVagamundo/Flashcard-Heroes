@@ -996,7 +996,11 @@ func _has_overlay_heuristic() -> bool:
 		return true
 	var p = get_parent()
 	while p:
+		# Check for inventory, shop, reward, or discard pile parent contexts
 		if "InventoryWindow" in p.name: return true
+		if "Shop" in p.name: return true
+		if "Reward" in p.name: return true
+		if "DiscardPile" in p.name: return true
 		p = p.get_parent()
 	return false
 

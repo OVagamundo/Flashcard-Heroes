@@ -57,19 +57,24 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			var is_enemy_team = holder_location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var empty_slot = _find_empty_slot_back_to_front(container, is_enemy_team)
 			if empty_slot == -1:
-				# No lineup slots available - send to discard pile instead
-				var discard_container = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-				if is_instance_valid(discard_container):
-					var discard_slot = discard_container.find_first_empty_slot()
-					if discard_slot != -1:
-						var discard_location = LocationIdentifier.new()
-						discard_location.container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-						discard_location.index = discard_slot
-						holder_location = discard_location
-					else:
-						return EffectResult.empty() # Discard pile is also full, cancel summon
+				# No lineup slots available
+				if is_enemy_team:
+					# Enemy team: cancel summon entirely (enemies have no discard pile)
+					return EffectResult.empty()
 				else:
-					return EffectResult.empty() # No discard container, cancel summon
+					# Player team: send to discard pile
+					var discard_container = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+					if is_instance_valid(discard_container):
+						var discard_slot = discard_container.find_first_empty_slot()
+						if discard_slot != -1:
+							var discard_location = LocationIdentifier.new()
+							discard_location.container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+							discard_location.index = discard_slot
+							holder_location = discard_location
+						else:
+							return EffectResult.empty() # Discard pile is also full, cancel summon
+					else:
+						return EffectResult.empty() # No discard container, cancel summon
 			else:
 				# Create a new LocationIdentifier for the alternative slot
 				var alt_location = LocationIdentifier.new()

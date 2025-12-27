@@ -57,15 +57,15 @@ theme_override_constants/separation = 30
 alignment = 1
 
 [node name="ShopSlot0" parent="CenterContainer/VBoxContainer/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(150, 180)
+custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 
 [node name="ShopSlot1" parent="CenterContainer/VBoxContainer/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(150, 180)
+custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 
 [node name="ShopSlot2" parent="CenterContainer/VBoxContainer/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(150, 180)
+custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 
 [node name="ActionButtonsContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]

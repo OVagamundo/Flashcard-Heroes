@@ -126,7 +126,7 @@ mouse_filter = 2
 
 [node name="TopArea" type="PanelContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_top")
@@ -138,38 +138,55 @@ mouse_filter = 2
 [node name="LeftStats" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 15
+theme_override_constants/separation = 40
 alignment = 0
 mouse_filter = 2
 
-[node name="GoldIcon" type="TextureRect" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
-custom_minimum_size = Vector2(48, 48)
+[node name="LeftMargin" type="Control" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="GoldGroup" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="GoldIcon" type="TextureRect" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
+custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("8_gold_coin")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="GoldLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
+[node name="GoldLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 48
 text = "0"
 vertical_alignment = 1
 
-[node name="TokenIcon" type="TextureRect" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
-custom_minimum_size = Vector2(48, 48)
+[node name="TokenGroup" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="TokenIcon" type="TextureRect" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
+custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("9_token_coin")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TokensLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
+[node name="TokensLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 48
 text = "5"
 vertical_alignment = 1
 

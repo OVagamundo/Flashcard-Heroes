@@ -55,6 +55,8 @@ func populate(context: Dictionary) -> void:
 
 	for i in range(slot_nodes.size()):
 		var slot_view = slot_nodes[i]
+		# Set size scale for inventory-style rendering (2.0 = 192px slots)
+		slot_view.set_size_scale(2.0)
 		# Clear any previous content (except indicator overlay)
 		for child in slot_view.get_children():
 			# Skip the indicator overlay (TextureRect with z_index 10)

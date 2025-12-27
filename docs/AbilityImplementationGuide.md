@@ -389,14 +389,26 @@ When a unit takes lethal damage but has an ability with `execute_on_lethal = tru
 > [!IMPORTANT]
 > Abilities with `execute_on_lethal = false` (default) are **discarded** if the source is dead.
 
-### C. Board Space
-Summon abilities gracefully handle full boards:
-- Try original slot first
-- If occupied by resurrection, find empty slot
-- If no slots, send to discard pile
-- If discard full, cancel summon
+### C. Board Space and Summon Slot Priority
 
-**Rule:** Effects that return summon data don't need to handle this - `BattleManager` does.
+When multiple summon effects trigger from the same death (e.g., item summon + trinket resurrection), the system uses **priority-based slot allocation**:
+
+**Execution Order (by priority):**
+| Priority | Source | Effect |
+|----------|--------|--------|
+| 210 | Trinket (Soul Echo) | Resurrection - gets the dying unit's slot first |
+| 205 | Unit ability | Unit on-death summon |
+| 200 | Item (Last Wish) | Item on-death summon - gets remaining slots |
+
+**Slot Resolution Order (per summon):**
+1. **Original slot** (dying unit's position) - first summon to execute claims this
+2. **Alternative slots** (back-to-front search: player 4→0, enemy 0→4)
+3. **No slots available:**
+   - **Player team:** Send summoned unit to battle discard pile
+   - **Enemy team:** Cancel summon entirely (enemies have no discard pile)
+4. **Discard pile full (player only):** Cancel summon
+
+**Rule:** Effects that return summon data don't need to handle this - `EffectHandlers` does.
 
 ### D. Infinite Loops
 The `AbilityResolver` limits trigger depth to prevent chain reactions.

@@ -358,6 +358,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		for evt in lethal_evts:
 			out_events.append(evt)
 
+	# PRIORITY FIX: Collect all dying units and their data FIRST, then fire triggers in batches
+	# This ensures priority sorting works across BOTH on_death (item, priority 200) AND 
+	# on_ally_death (trinket, priority 210) triggers.
+	var dying_units_data: Array[Dictionary] = [] # [{unit, death_location, team}]
 	
 	# Check player units (LINEUP and BENCH)
 	var player_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
@@ -372,18 +376,13 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 						_track_first_killed(bm, unit, "PLAYER")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
-						var death_ctx := {
-							"dying_uuid": unit.ball_uuid,
-							"dying_team": "PLAYER",
-							"dying_location": death_location,
+						dying_units_data.append({
+							"unit": unit,
+							"death_location": death_location,
+							"team": "PLAYER",
+							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
-						}
-						AbilityResolver.process_trigger(&"on_death", death_ctx)
-						
-						if has_lethal_counter_abilities(unit, bm._battle_instances):
-							_defer_ally_death(bm, unit, death_location, "player")
-						else:
-							_emit_immediate_death(bm, unit, death_location, "PLAYER", out_events, death_tracking)
+						})
 				
 				deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
@@ -402,22 +401,46 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 						_track_first_killed(bm, unit, "ENEMY")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
-						var death_ctx := {
-							"dying_uuid": unit.ball_uuid,
-							"dying_team": "ENEMY",
-							"dying_location": death_location,
+						dying_units_data.append({
+							"unit": unit,
+							"death_location": death_location,
+							"team": "ENEMY",
+							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
-						}
-						AbilityResolver.process_trigger(&"on_death", death_ctx)
-						
-						if has_lethal_counter_abilities(unit, bm._battle_instances):
-							_defer_ally_death(bm, unit, death_location, "enemy")
-						else:
-							_emit_immediate_death(bm, unit, death_location, "ENEMY", out_events, death_tracking)
+						})
 				
 				deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
 				bm._perform_unit_death_cleanup(unit)
+	
+	# PHASE 1: Fire ALL on_death triggers (queues item summons, priority 200)
+	for data in dying_units_data:
+		var death_ctx := {
+			"dying_uuid": data.unit.ball_uuid,
+			"dying_team": data.team,
+			"dying_location": data.death_location,
+			"equipped_items": data.equipped_items
+		}
+		AbilityResolver.process_trigger(&"on_death", death_ctx)
+	
+	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
+	# and emit DEATH events
+	for data in dying_units_data:
+		if data.has_lethal_counter:
+			_defer_ally_death(bm, data.unit, data.death_location, data.team.to_lower())
+		else:
+			# Emit DEATH event
+			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking)
+			if death_event != null:
+				out_events.append(death_event)
+			
+			# Fire on_ally_death trigger
+			var ally_death_ctx := {
+				"fainting_ally_uuid": data.unit.ball_uuid,
+				"fainting_ally_location": data.death_location,
+				"fainting_ally_team": data.team
+			}
+			AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 	
 	# Store deferred deaths for processing after counter-attacks complete
 	if not deferred_deaths.is_empty():
@@ -425,7 +448,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		existing_deferred.append_array(deferred_deaths)
 		bm.set_meta("deferred_deaths", existing_deferred)
 	
-	# DEATH PRIORITY: Drain remaining cascading reactions
+	# PHASE 3: Drain ALL reactions AFTER both trigger types have queued
+	# Priority sorting now correctly orders trinket (210) before item (200)
 	if is_simulation and out_events != null and not bm._pending_reactions.is_empty():
 		bm.drain_pending_reactions_inline(0)
 		var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
@@ -434,6 +458,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	
 	if something_changed and not is_simulation:
 		bm._emit_battle_inventory_changed()
+
 
 # ============================================================================
 # PRIVATE HELPERS FOR DEATH WITH COUNTER DELAY

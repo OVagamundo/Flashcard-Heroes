@@ -31,15 +31,15 @@ theme_override_constants/separation = 20
 alignment = 1
 
 [node name="RewardSlot0" parent="RewardChoicesContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(120, 150)
+custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 
 [node name="RewardSlot1" parent="RewardChoicesContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(120, 150)
+custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 
 [node name="RewardSlot2" parent="RewardChoicesContainer" instance=ExtResource("2_slot_view")]
-custom_minimum_size = Vector2(120, 150)
+custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 
 [node name="ActionButtonsContainer" type="HBoxContainer" parent="."]
