@@ -364,3 +364,28 @@ After the ball lands and the slot refreshes, a rubber-ball bounce plays on the `
 - **Missing Sfx**:
     - *Fix*: Call `AudioManager` inside the `tween_callback` to sync sound with visual impact.
 
+
+---
+
+## 10. Drag & Drop Interaction Animations
+
+These animations provide feedback during the interactive drag phase (User Input), unlike the playback-driven combat animations.
+
+### 10.1 Drag Deformation
+- **Script**: `GachaBallView.gd`
+- **Behavior**:
+    - **Pick up**: Scale up slightly, follow mouse.
+    - **Drag**: "Rubber band" deformation based on mouse velocity (`_process` loop).
+    - **Drop**: Reset to normal scale.
+
+### 10.2 Landing Bounce (Drop Feedback)
+- **Function**: `_play_landing_bounce()` in `GachaBallView`.
+- **Trigger**:
+    - **Successful Move**: Triggered by `_on_inventory_action_completed` when the item lands in its new slot.
+    - **Failed/Cancelled Drop**: Triggered by `_notification(NOTIFICATION_DRAG_END)` when the drag is released on an invalid target OR rejected by inventory logic.
+- **Logic Failure Handling**:
+    - `GachaBallView` listens to `SignalBus.drag_ended(was_handled)`.
+    - If `was_handled` is false (InventoryManager rejected the move), `_logical_drag_success` is set to false.
+    - `_notification` checks both Godot's mechanical success (hit a control?) AND `_logical_drag_success`.
+    - **Rule**: If either fails, the item bounces back to its original slot.
+- **Clean Start Rule**: `_reset_drag_deformation()` (scale 1.0) must occur **before** `_play_landing_bounce()` starts, otherwise the reset will clobber the animation tween.

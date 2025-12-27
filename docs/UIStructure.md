@@ -108,5 +108,7 @@ When dragging a gachaball in inventory mode:
 
 ### Implementation Files
 - **[GachaBallView.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/GachaBallView.gd)**: `_has_overlay_heuristic()`, `_get_drag_data()`, `force_inventory_mode`
-- **[InventoryWindow.tscn](file:///Users/danhh/Desktop/Flashcard%20Heroes/scenes/InventoryWindow.tscn)**: 3-column grid with 192px slots
+- **[InventoryWindow.tscn](file:///Users/danhh/Desktop/Flashcard%20Heroes/scenes/InventoryWindow.tscn)**: 3-column grid with 192px slots.
+    - Layout: Fills vertical space between top bar and machines (anchors 0.1 to 0.75).
+    - Styling: Each tier column has a distinct colored background (Teal, Blue, Purple) matching the gacha machines.
 

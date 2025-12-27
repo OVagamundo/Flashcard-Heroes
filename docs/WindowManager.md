@@ -103,6 +103,7 @@ Anchor Tracking Policy:
 
 - __Deferred pass (`_deferred_position`)__: awaited for one frame to allow layout to settle; computes an initial position using current `custom_minimum_size`/`size`.
 - __Finalize pass (`_finalize_position`)__: awaited again (after `show()`); corrects the position using the final computed size to eliminate layout jitter and off‑by‑one clamps.
+- __Async Safety Rule__: Any function that awaits `process_frame` MUST re-verify that `window`, `anchor`, and `parent_window` are still `is_instance_valid()` immediately after the `await`. Windows can be closed/freed during the frame delay (e.g. by rapid user input or scene changes), and interacting with freed objects will cause a crash.
 - This makes placement robust across dynamic content, fonts, and theme changes.
 
 ## 5.3 Root vs Child Positioning Rules

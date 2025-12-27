@@ -1,7 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://b0fs8lab4tsoa"]
+[gd_scene load_steps=6 format=3 uid="uid://b0fs8lab4tsoa"]
 
 [ext_resource type="Script" path="res://scripts/InventoryWindow.gd" id="1_yvw8v"]
 [ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tier1"]
+bg_color = Color(0, 0.5, 0.5, 0.4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tier2"]
+bg_color = Color(0.2, 0.2, 0.6, 0.4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tier3"]
+bg_color = Color(0.4, 0.0, 0.6, 0.4)
 
 [node name="InventoryWindow" type="Control"]
 layout_mode = 3
@@ -16,17 +25,13 @@ script = ExtResource("1_yvw8v")
 [node name="PanelContainer" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 7
+anchors_preset = -1
 anchor_left = 0.5
-anchor_top = 1.0
+anchor_top = 0.1
 anchor_right = 0.5
-anchor_bottom = 1.0
-offset_top = -260
-offset_bottom = -260
-size_flags_horizontal = 4
-size_flags_vertical = 4
+anchor_bottom = 0.75
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
 mouse_filter = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
@@ -42,22 +47,25 @@ theme_override_font_sizes/font_size = 32
 text = "Inventory"
 horizontal_alignment = 1
 
-
 [node name="GridsArea" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 512)
 layout_mode = 2
 mouse_filter = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="Tier1Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+[node name="Tier1Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tier1")
+
+[node name="Tier1Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
 custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 4
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.8, 0.5, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -67,14 +75,14 @@ theme_override_font_sizes/font_size = 14
 text = "Tier 1"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column"]
-custom_minimum_size = Vector2(576, 512)
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
+custom_minimum_size = Vector2(576, 0)
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="Tier1Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Column/ScrollContainer"]
+[node name="Tier1Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column/ScrollContainer"]
 unique_name_in_owner = true
 name = "Tier1InventoryGrid"
 size_flags_horizontal = 3
@@ -83,13 +91,18 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 3
 
-[node name="Tier2Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+[node name="Tier2Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tier2")
+
+[node name="Tier2Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
 custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 4
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.5, 0.9, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -99,14 +112,14 @@ theme_override_font_sizes/font_size = 14
 text = "Tier 2"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column"]
-custom_minimum_size = Vector2(576, 512)
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
+custom_minimum_size = Vector2(576, 0)
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="Tier2Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Column/ScrollContainer"]
+[node name="Tier2Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column/ScrollContainer"]
 unique_name_in_owner = true
 name = "Tier2InventoryGrid"
 size_flags_horizontal = 3
@@ -115,13 +128,18 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 3
 
-[node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+[node name="Tier3Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tier3")
+
+[node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
 custom_minimum_size = Vector2(640, 0)
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 4
 
-[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column"]
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.6, 0.3, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -131,14 +149,14 @@ theme_override_font_sizes/font_size = 14
 text = "Tier 3"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column"]
-custom_minimum_size = Vector2(576, 512)
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
+custom_minimum_size = Vector2(576, 0)
 layout_mode = 2
 mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="Tier3Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Column/ScrollContainer"]
+[node name="Tier3Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column/ScrollContainer"]
 unique_name_in_owner = true
 name = "Tier3InventoryGrid"
 size_flags_horizontal = 3
