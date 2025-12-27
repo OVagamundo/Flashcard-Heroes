@@ -43,6 +43,12 @@ var _current_choices: Array[StringName] = []
 var _current_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
 var _panel_style: StyleBoxFlat = null
 
+# Token counter references for live update
+var _token_group: Control = null
+var _token_group_original_parent: Node = null
+var _token_group_original_index: int = -1
+var _tokens_pending: int = 0 # Tokens that are mid-animation
+
 func _ready() -> void:
 	# Connect to the FlashcardManager's minigame_finished signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
@@ -53,6 +59,70 @@ func _ready() -> void:
 	
 	# Setup question label font styling
 	_setup_question_label_style()
+	
+	# Find and exempt token counter from dimming
+	_setup_token_counter_exemption()
+
+func _setup_token_counter_exemption() -> void:
+	"""Find the TokenGroup in Main and reparent it to stay above the dimming layer"""
+	# Find Main node via GameManager's registered main node
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		return
+	
+	# Find TokenGroup using unique name
+	_token_group = main_node.get_node_or_null("%TokenGroup")
+	if not is_instance_valid(_token_group):
+		return
+	
+	# Store original parent info for restoration
+	_token_group_original_parent = _token_group.get_parent()
+	_token_group_original_index = _token_group.get_index()
+	
+	# Reparent to ModalLayer so it appears above the BackgroundBlocker but at same level as minigame
+	var modal_layer = main_node.get_node_or_null("%ModalLayer")
+	if is_instance_valid(modal_layer):
+		# Use call_deferred to avoid tree modification conflicts
+		_reparent_token_group_deferred.call_deferred(_token_group, modal_layer)
+
+func _reparent_token_group_deferred(token_group: Control, new_parent: Node) -> void:
+	"""Deferred helper to safely reparent token group"""
+	if not is_instance_valid(token_group) or not is_instance_valid(new_parent):
+		return
+	if token_group.get_parent() == new_parent:
+		return # Already in target parent
+	
+	var global_pos = token_group.global_position
+	token_group.reparent(new_parent)
+	token_group.global_position = global_pos
+
+func _restore_token_counter() -> void:
+	"""Restore TokenGroup to its original parent"""
+	if not is_instance_valid(_token_group) or not is_instance_valid(_token_group_original_parent):
+		return
+	
+	# Only restore if currently not in original parent
+	if _token_group.get_parent() == _token_group_original_parent:
+		return # Already in original parent, nothing to do
+	
+	# Use call_deferred to avoid tree modification conflicts during _exit_tree
+	_restore_token_group_deferred.call_deferred()
+
+func _restore_token_group_deferred() -> void:
+	"""Deferred helper to safely restore token group to original parent"""
+	if not is_instance_valid(_token_group) or not is_instance_valid(_token_group_original_parent):
+		return
+	if _token_group.get_parent() == _token_group_original_parent:
+		return # Already restored
+	
+	var global_pos = _token_group.global_position
+	_token_group.reparent(_token_group_original_parent)
+	
+	# Safely move to original index
+	if _token_group_original_index >= 0 and _token_group_original_index < _token_group_original_parent.get_child_count():
+		_token_group_original_parent.move_child(_token_group, _token_group_original_index)
+	
+	_token_group.global_position = global_pos
 
 func _setup_question_label_style() -> void:
 	"""Configure the question label with NotoSansJP font and proper styling"""
@@ -148,6 +218,7 @@ func _start_minigame_session() -> void:
 	_is_introducing_new_card = false
 	_correct_answers = 0
 	_total_answers = 0
+	_tokens_pending = 0
 	
 	# Show the game UI
 	question_label.show()
@@ -353,12 +424,25 @@ func _flash_button_correct(correct_answer_id: StringName) -> void:
 		if button.text == Database.get_flashcard_definition(correct_answer_id).get("answer", ""):
 			button.modulate = Color.LIGHT_GREEN
 			
-			# Spawn Mario-style token pop from button center
+			# Spawn Mario-style token pop from button center, flying to token counter
 			_spawn_token_pop(button)
 			break
 
+func _get_token_counter_target_position() -> Vector2:
+	"""Get the global position of the token counter icon for animation target"""
+	if not is_instance_valid(_token_group):
+		# Fallback: return screen center top area
+		return Vector2(get_viewport_rect().size.x / 2, 60)
+	
+	# Get center of the TokenGroup
+	var token_rect = _token_group.get_global_rect()
+	return Vector2(
+		token_rect.position.x + token_rect.size.x / 2,
+		token_rect.position.y + token_rect.size.y / 2
+	)
+
 func _spawn_token_pop(button: Control) -> void:
-	"""Spawn a token pop VFX at the button's center"""
+	"""Spawn a token pop VFX at the button's center that flies to token counter"""
 	const TokenPopScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
 	
 	var token_pop = TokenPopScene.instantiate()
@@ -370,10 +454,32 @@ func _spawn_token_pop(button: Control) -> void:
 		button_rect.position.y + button_rect.size.y / 2
 	)
 	
-	# Add to scene and play
+	# Get target position (token counter)
+	var target_pos = _get_token_counter_target_position()
+	
+	# Track pending token
+	_tokens_pending += 1
+	
+	# Connect to animation_finished to update counter when token lands
+	token_pop.animation_finished.connect(_on_token_landed)
+	
+	# Add to scene and play with target
 	add_child(token_pop)
 	token_pop.global_position = spawn_pos
-	token_pop.play()
+	token_pop.play(target_pos)
+
+func _on_token_landed() -> void:
+	"""Called when a token animation completes - update the counter live"""
+	_tokens_pending -= 1
+	
+	# Find BattleManager to update tokens
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.has_method("add_gacha_token"):
+		bm.add_gacha_token(1)
+	else:
+		# Fallback: emit signal directly if we can access the tokens
+		# This shouldn't normally happen in battle context
+		pass
 
 func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 	"""Flash the incorrect answer button red"""
@@ -390,7 +496,8 @@ func _end_minigame() -> void:
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,
 		"total_answers": _total_answers,
-		"incorrect_answers": _total_answers - _correct_answers
+		"incorrect_answers": _total_answers - _correct_answers,
+		"tokens_already_awarded": _correct_answers - _tokens_pending # Tokens that completed animation
 	}
 	
 	# Call FlashcardManager's completion method
@@ -405,5 +512,8 @@ func _on_flashcard_completed(_results: Dictionary) -> void:
 	pass
 
 func _exit_tree() -> void:
+	# Restore token counter to original position before cleanup
+	_restore_token_counter()
+	
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)

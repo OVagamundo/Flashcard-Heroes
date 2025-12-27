@@ -394,6 +394,11 @@ func _bm_validate_state_consistency() -> bool:
 func get_gacha_tokens() -> int:
 	return _gacha_tokens
 
+func add_gacha_token(amount: int = 1) -> void:
+	"""Add gacha tokens and emit signal for UI update. Used for live token updates."""
+	_gacha_tokens += amount
+	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+
 func get_current_phase_name() -> StringName:
 	var phase_name: StringName
 	match _current_battle_phase:
@@ -1434,13 +1439,10 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 
 func _on_results_acknowledged() -> void:
 	"""Called when player acknowledges the results popup"""
+	# NOTE: Tokens are now awarded LIVE during animation via add_gacha_token()
+	# The FlashcardMinigame calls add_gacha_token(1) each time a token lands
+	# So we no longer need to bulk-award tokens here
 	
-	var correct_answers: int = _last_minigame_results.get("correct_answers", 0)
-	var gacha_gain = correct_answers
-	
-	_gacha_tokens += gacha_gain
-	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
-
 	_last_minigame_results.clear()
 	
 	SignalBus.emit_signal("close_modal_requested")

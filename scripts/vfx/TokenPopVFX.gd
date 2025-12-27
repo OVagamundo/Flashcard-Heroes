@@ -2,19 +2,26 @@
 class_name TokenPopVFX
 extends Node2D
 
-## Mario-style coin pop animation for correct flashcard answers
-## Token pops up, flips horizontally like a coin, lands back at spawn point
-## Starts white and fades to coin texture, particle burst on landing
+## Juicy coin pop animation for correct flashcard answers
+## Token pops up with a satisfying arc, spins, and flies to the token counter
+## Includes scale bounce, gold glow trail, and satisfying landing effects
 
 const TOKEN_TEXTURE = preload("res://assets/ui/textures/token_100yen.png")
 
-# Animation parameters
-const POP_HEIGHT := 300.0 # How high the token rises
-const POP_UP_DURATION := 0.15 # Time to reach peak
-const POP_DOWN_DURATION := 0.12 # Time to land
-const FLIP_COUNT := 1 # Number of horizontal flips (less spin)
-const WHITE_FADE_DURATION := 0.06 # Time to fade from white to normal
-const COIN_SCALE := 0.17 # Coin size
+# Animation parameters - tuned for satisfying "juice"
+const INITIAL_SCALE := 0.08 # Start small for dramatic pop
+const MAX_SCALE := 0.25 # Overshoot scale at peak
+const FINAL_SCALE := 0.17 # Normal coin size
+const POP_HEIGHT := 180.0 # Height of initial pop
+const POP_UP_DURATION := 0.18 # Time to reach peak (slower = more satisfying)
+const HANG_TIME := 0.05 # Brief pause at peak
+const FLY_TO_TARGET_DURATION := 0.30 # Time to fly to target
+const FLIP_COUNT := 3 # More flips = more satisfying
+const WOBBLE_AMOUNT := 15.0 # Side-to-side wobble during flight (in pixels)
+
+# Color effects
+const GLOW_COLOR := Color(1.0, 0.95, 0.6, 1.0) # Golden glow
+const WHITE_FLASH_DURATION := 0.08
 
 signal animation_finished
 
@@ -22,7 +29,9 @@ signal animation_finished
 @onready var particles: GPUParticles2D = $Particles
 
 var _start_position: Vector2 = Vector2.ZERO
+var _target_position: Vector2 = Vector2.ZERO
 var _flip_tween: Tween = null
+var _wobble_tween: Tween = null
 
 func _ready() -> void:
 	# Setup token sprite
@@ -32,72 +41,115 @@ func _ready() -> void:
 		add_child(token_sprite)
 	
 	token_sprite.texture = TOKEN_TEXTURE
-	token_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
+	token_sprite.scale = Vector2(INITIAL_SCALE, INITIAL_SCALE)
 
-func setup(spawn_position: Vector2) -> void:
-	"""Set the spawn position for the token"""
+func setup(spawn_position: Vector2, target_pos: Vector2 = Vector2.ZERO) -> void:
+	"""Set the spawn position and optional target position for the token"""
 	_start_position = spawn_position
+	_target_position = target_pos
 	global_position = spawn_position
 
-func play() -> void:
-	"""Play the Mario-style coin pop animation"""
+func play(target_pos: Vector2 = Vector2.ZERO) -> void:
+	"""Play the juicy coin pop and fly animation"""
 	_start_position = global_position
 	
-	# Start with white tint (pops into existence instantly white)
+	# Use provided target, or fall back to setup target
+	var fly_target := target_pos if target_pos != Vector2.ZERO else _target_position
+	if fly_target == Vector2.ZERO:
+		fly_target = _start_position
+	
+	# Start with white flash and small scale
 	token_sprite.modulate = Color.WHITE
+	token_sprite.scale = Vector2(INITIAL_SCALE, INITIAL_SCALE)
 	
-	# Create main movement tween
-	var move_tween = create_tween()
-	
-	# Pop UP with ease-out (slowing down as it rises - like fighting gravity)
+	# === PHASE 1: POP UP with scale overshoot ===
 	var peak_pos = Vector2(_start_position.x, _start_position.y - POP_HEIGHT)
-	move_tween.tween_property(self, "global_position", peak_pos, POP_UP_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
-	# Fall back DOWN with ease-in (accelerating as it falls - gravity)
-	move_tween.tween_property(self, "global_position", _start_position, POP_DOWN_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	var move_tween = create_tween()
+	move_tween.set_parallel(false)
 	
-	# Start horizontal flip animation (runs in parallel)
+	# Pop up with elastic feel
+	move_tween.tween_property(self, "global_position", peak_pos, POP_UP_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	
+	# Hang at peak briefly
+	move_tween.tween_interval(HANG_TIME)
+	
+	# === PHASE 2: FLY TO TARGET with wobble ===
+	move_tween.tween_property(self, "global_position", fly_target, FLY_TO_TARGET_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	
+	# Scale animation: small -> overshoot big -> settle to normal
+	var scale_tween = create_tween()
+	# Pop to max size with overshoot
+	scale_tween.tween_property(token_sprite, "scale", Vector2(MAX_SCALE, MAX_SCALE), POP_UP_DURATION * 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Settle to normal size
+	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE, FINAL_SCALE), POP_UP_DURATION * 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	# Shrink as approaching target (absorbed effect)
+	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE * 0.6, FINAL_SCALE * 0.6), FLY_TO_TARGET_DURATION).set_delay(HANG_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	
+	# Color: white flash -> golden glow -> normal
+	var color_tween = create_tween()
+	color_tween.tween_property(token_sprite, "modulate", GLOW_COLOR, WHITE_FLASH_DURATION).set_trans(Tween.TRANS_SINE)
+	color_tween.tween_property(token_sprite, "modulate", Color.WHITE, POP_UP_DURATION - WHITE_FLASH_DURATION)
+	
+	# Start spinning
 	_start_horizontal_flip()
 	
-	# Fade from white to normal coin color, then fade out at end
-	var color_tween = create_tween()
-	color_tween.tween_property(token_sprite, "modulate", Color.WHITE, 0.03) # Hold white briefly
-	color_tween.tween_property(token_sprite, "modulate", Color(1, 1, 1, 1), WHITE_FADE_DURATION)
-	# Fade out near the end
-	color_tween.tween_property(token_sprite, "modulate:a", 0.0, 0.08).set_delay(POP_UP_DURATION - 0.02)
+	# Add wobble during flight phase
+	_start_wobble(POP_UP_DURATION + HANG_TIME)
 	
-	# Wait for landing, then burst particles and remove
+	# Wait for landing
 	await move_tween.finished
 	
-	# Stop flipping
+	# Stop animations
 	if _flip_tween and _flip_tween.is_valid():
 		_flip_tween.kill()
-	token_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE) # Reset to normal size
+	if _wobble_tween and _wobble_tween.is_valid():
+		_wobble_tween.kill()
 	
-	# Particle burst on landing
+	# Quick scale squash on "impact"
+	var squash_tween = create_tween()
+	token_sprite.scale = Vector2(FINAL_SCALE * 0.8, FINAL_SCALE * 0.4) # Squash
+	squash_tween.tween_property(token_sprite, "scale", Vector2(0.0, 0.0), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	
+	# Bright flash on landing
+	token_sprite.modulate = Color(1.5, 1.4, 1.0, 1.0) # Extra bright
+	
+	# Particle burst at landing
 	if is_instance_valid(particles):
 		particles.emitting = true
 	
-	# Wait for particles then cleanup
-	await get_tree().create_timer(0.15).timeout
+	await squash_tween.finished
+	token_sprite.visible = false
+	
+	# Emit signal so counter updates
 	animation_finished.emit()
+	
+	# Wait for particles then cleanup
+	await get_tree().create_timer(0.2).timeout
 	queue_free()
 
 func _start_horizontal_flip() -> void:
-	"""Animate horizontal flip like a spinning coin"""
-	# Flip by scaling X from 1 -> 0 -> -1 -> 0 -> 1 (one full flip)
-	# Do this FLIP_COUNT times
-	
+	"""Animate spinning coin effect"""
 	_flip_tween = create_tween()
 	_flip_tween.set_loops(FLIP_COUNT)
 	
-	var flip_duration = (POP_UP_DURATION + POP_DOWN_DURATION) / FLIP_COUNT / 2.0
+	var total_duration = POP_UP_DURATION + HANG_TIME + FLY_TO_TARGET_DURATION
+	var flip_duration = total_duration / FLIP_COUNT / 4.0
 	
-	# Scale X: 1 -> 0 (turning away)
+	# Full rotation cycle using scale.x
 	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	# Scale X: 0 -> -COIN_SCALE (showing back side / continue turn)
-	_flip_tween.tween_property(token_sprite, "scale:x", -COIN_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	# Scale X: -COIN_SCALE -> 0 (turning back)
+	_flip_tween.tween_property(token_sprite, "scale:x", -FINAL_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	# Scale X: 0 -> COIN_SCALE (back to front)
-	_flip_tween.tween_property(token_sprite, "scale:x", COIN_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flip_tween.tween_property(token_sprite, "scale:x", FINAL_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+func _start_wobble(delay: float) -> void:
+	"""Add a subtle side-to-side wobble during flight"""
+	_wobble_tween = create_tween()
+	_wobble_tween.set_loops(4)
+	
+	var wobble_duration = FLY_TO_TARGET_DURATION / 4.0
+	
+	# Wobble using rotation
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 15.0, wobble_duration * 0.5).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -15.0, wobble_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, wobble_duration * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

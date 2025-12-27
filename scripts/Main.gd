@@ -175,8 +175,96 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	context.interaction_mode = &"FULLY_INTERACTIVE"
 	context.window_group_id = 0
 	SignalBus.emit_signal("interaction_context_received", context)
+	
+	# Animate tokens flying from counter to machine, then proceed with draw
+	_animate_token_spend(tier, button)
+
+func _animate_token_spend(tier: int, _button: BaseButton) -> void:
+	"""Animate tokens flying from counter to gacha machine before drawing"""
+	const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
+	
+	# Get token counter position (source)
+	var token_group = get_node_or_null("%TokenGroup")
+	if not is_instance_valid(token_group):
+		# No animation, just draw
+		SignalBus.emit_signal("draw_gacha_requested", tier)
+		return
+	
+	var token_rect = token_group.get_global_rect()
+	var start_pos = Vector2(
+		token_rect.position.x + token_rect.size.x / 2,
+		token_rect.position.y + token_rect.size.y / 2
+	)
+	
+	# Get target gacha machine
+	var target_machine: Control = null
+	match tier:
+		1: target_machine = gacha_machine_1
+		2: target_machine = gacha_machine_2
+		3: target_machine = gacha_machine_3
+	
+	if not is_instance_valid(target_machine):
+		SignalBus.emit_signal("draw_gacha_requested", tier)
+		return
+	
+	var machine_rect = target_machine.get_global_rect()
+	var target_pos = Vector2(
+		machine_rect.position.x + machine_rect.size.x / 2,
+		machine_rect.position.y + machine_rect.size.y * 0.4 # Aim for coin slot area
+	)
+	
+	# Spawn tokens with stagger - each one triggers machine reaction on landing
+	var tokens_to_spawn = tier
+	var stagger_delay = 0.12 # Increased delay for more dramatic sequential tosses
+	
+	for i in range(tokens_to_spawn):
+		var token_vfx = TokenSpendScene.instantiate()
+		add_child(token_vfx)
+		
+		# Connect to coin_landed to trigger machine reaction
+		token_vfx.coin_landed.connect(_on_coin_landed_on_machine.bind(target_machine))
+		
+		# Slight random offset to start position for natural feel
+		var offset = Vector2(randf_range(-20, 20), randf_range(-10, 10))
+		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
+	
+	# Wait for all animations to complete, then trigger draw
+	# TokenSpendVFX.TOSS_DURATION = 0.45
+	var total_wait = (tokens_to_spawn - 1) * stagger_delay + 0.55
+	await get_tree().create_timer(total_wait).timeout
+	
 	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
+
+func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
+	"""React when a coin lands on a gacha machine - bounce and flash"""
+	if not is_instance_valid(machine):
+		return
+	
+	# Ensure we ignore unused warning for target_pos (for future particle effects)
+	var _unused = target_pos
+	
+	# Find the MachineImage child for the flash effect
+	var machine_image = machine.get_node_or_null("MachineImage")
+	if not is_instance_valid(machine_image):
+		return
+	
+	# Set pivot for scaling from bottom center
+	machine.pivot_offset = Vector2(machine.size.x / 2, machine.size.y)
+	
+	# Create juicy bounce and flash effect
+	var reaction_tween = create_tween()
+	reaction_tween.set_parallel(true)
+	
+	# Quick scale bounce - squash then stretch back
+	reaction_tween.tween_property(machine, "scale", Vector2(1.03, 0.97), 0.04).set_trans(Tween.TRANS_SINE)
+	reaction_tween.tween_property(machine, "scale", Vector2(0.98, 1.02), 0.06).set_delay(0.04).set_trans(Tween.TRANS_SINE)
+	reaction_tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	# Flash bright on the machine image
+	var flash_color = Color(1.3, 1.25, 1.1, 1.0) # Warm bright flash
+	reaction_tween.tween_property(machine_image, "modulate", flash_color, 0.03)
+	reaction_tween.tween_property(machine_image, "modulate", Color.WHITE, 0.12).set_delay(0.03)
 
 func _on_battle_inventory_changed() -> void:
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
@@ -207,13 +295,97 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 
 func _on_gold_changed(new_amount: int) -> void:
 	if is_instance_valid(gold_label):
+		var old_text = gold_label.text
 		gold_label.text = "%d" % new_amount
+		
+		# Only animate if value actually changed (not initial load)
+		if old_text != gold_label.text:
+			_animate_gold_counter_pop()
+
+func _animate_gold_counter_pop() -> void:
+	"""Juicy pop animation for the gold counter when it updates"""
+	if not is_instance_valid(gold_label):
+		return
+	
+	# Kill any existing tween on this label
+	if gold_label.has_meta("_pop_tween"):
+		var existing_tween = gold_label.get_meta("_pop_tween")
+		if existing_tween is Tween and existing_tween.is_valid():
+			existing_tween.kill()
+	
+	# Get gold group for scaling
+	var gold_group = gold_label.get_parent()
+	if not is_instance_valid(gold_group):
+		return
+	
+	# Set pivot to center for proper scaling
+	gold_group.pivot_offset = gold_group.size / 2
+	
+	# Create juicy pop tween
+	var pop_tween = create_tween()
+	gold_label.set_meta("_pop_tween", pop_tween)
+	
+	pop_tween.set_parallel(true)
+	
+	# Scale: pop big then bounce back
+	pop_tween.tween_property(gold_group, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	# Color flash - gold color
+	var flash_color = Color(1.0, 0.85, 0.3, 1.0) # Gold flash
+	pop_tween.tween_property(gold_label, "modulate", flash_color, 0.05)
+	pop_tween.tween_property(gold_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
 
 func _on_gacha_tokens_changed(new_amount: int) -> void:
 	if is_instance_valid(tokens_label):
+		var old_text = tokens_label.text
 		tokens_label.text = "%d" % new_amount
-	else:
-		pass
+		
+		# Only animate if value actually changed (not initial load)
+		if old_text != tokens_label.text:
+			_animate_token_counter_pop()
+
+func _animate_token_counter_pop() -> void:
+	"""Juicy pop animation for the token counter when it updates"""
+	if not is_instance_valid(tokens_label):
+		return
+	
+	# Kill any existing tween on this label
+	if tokens_label.has_meta("_pop_tween"):
+		var existing_tween = tokens_label.get_meta("_pop_tween")
+		if existing_tween is Tween and existing_tween.is_valid():
+			existing_tween.kill()
+	
+	# Store original values
+	var token_group = tokens_label.get_parent()
+	if not is_instance_valid(token_group):
+		return
+	
+	# Set pivot to center for proper scaling
+	token_group.pivot_offset = token_group.size / 2
+	
+	# Create juicy pop tween
+	var pop_tween = create_tween()
+	tokens_label.set_meta("_pop_tween", pop_tween)
+	
+	# Flash colors - ensure we have valid colors
+	var original_color = Color.WHITE
+	if tokens_label.has_theme_color_override("font_color"):
+		original_color = tokens_label.get_theme_color("font_color")
+	var flash_color = Color(1.0, 0.9, 0.2, 1.0) # Bright gold
+	
+	# Set initial color override if not already set
+	tokens_label.add_theme_color_override("font_color", original_color)
+	
+	pop_tween.set_parallel(true)
+	
+	# Scale: pop big then bounce back
+	pop_tween.tween_property(token_group, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(token_group, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	# Color flash - use modulate instead which is guaranteed to work
+	pop_tween.tween_property(tokens_label, "modulate", flash_color, 0.05)
+	pop_tween.tween_property(tokens_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
 
 func _on_shop_scene_requested(context: Dictionary) -> void:
 	_clear_content_area()

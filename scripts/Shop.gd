@@ -2,6 +2,7 @@
 extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
 @onready var buy_button: Button = %BuyButton
@@ -132,10 +133,88 @@ func _on_buy_pressed() -> void:
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
 		if is_instance_valid(instance):
-			SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
+			# Disable button during animation
+			buy_button.disabled = true
+			# Animate gold coins then purchase
+			_animate_gold_spend(_selected_cost, buy_button, func():
+				SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
+				buy_button.disabled = false
+			)
 
 func _on_reroll_pressed() -> void:
-	SignalBus.emit_signal("shop_reroll_requested")
+	# Disable button during animation
+	reroll_button.disabled = true
+	# Animate gold coins then reroll
+	_animate_gold_spend(_current_reroll_cost, reroll_button, func():
+		SignalBus.emit_signal("shop_reroll_requested")
+		reroll_button.disabled = false
+	)
+
+func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callable) -> void:
+	"""Animate gold coins flying from gold counter to target button"""
+	# Find gold counter in Main
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		on_complete.call()
+		return
+	
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group):
+		on_complete.call()
+		return
+	
+	var gold_rect = gold_group.get_global_rect()
+	var start_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	
+	var btn_rect = target_button.get_global_rect()
+	var target_pos = Vector2(
+		btn_rect.position.x + btn_rect.size.x / 2,
+		btn_rect.position.y + btn_rect.size.y / 2
+	)
+	
+	# Spawn gold coins with stagger
+	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
+	var stagger_delay = 0.08
+	
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScene.new()
+		add_child(coin_vfx)
+		
+		# Connect to trigger button reaction
+		coin_vfx.coin_landed.connect(_on_gold_landed_on_button.bind(target_button))
+		
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
+	
+	# Wait for animations then call completion callback
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	await get_tree().create_timer(total_wait).timeout
+	on_complete.call()
+
+func _on_gold_landed_on_button(_target_pos: Vector2, button: Button) -> void:
+	"""React when a gold coin lands on a button - flash and bounce"""
+	if not is_instance_valid(button):
+		return
+	
+	# Set pivot for scaling from center
+	button.pivot_offset = button.size / 2
+	
+	# Create bounce and flash effect
+	var reaction_tween = create_tween()
+	reaction_tween.set_parallel(true)
+	
+	# Quick scale bounce
+	reaction_tween.tween_property(button, "scale", Vector2(1.05, 0.95), 0.03)
+	reaction_tween.tween_property(button, "scale", Vector2(0.97, 1.03), 0.05).set_delay(0.03)
+	reaction_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.08).set_trans(Tween.TRANS_ELASTIC)
+	
+	# Flash bright gold
+	var flash_color = Color(1.3, 1.2, 0.8, 1.0)
+	reaction_tween.tween_property(button, "modulate", flash_color, 0.03)
+	reaction_tween.tween_property(button, "modulate", Color.WHITE, 0.1).set_delay(0.03)
 
 func _on_leave_pressed() -> void:
 	SignalBus.emit_signal("path_choice_scene_requested")
