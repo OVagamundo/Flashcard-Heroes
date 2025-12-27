@@ -725,12 +725,16 @@ func end_drag(_was_handled: bool) -> void:
 	# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background
 	# close so that the ensuing REQUEST_ACTION can set precise window-tied suppression.
 	if _was_handled:
+		# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background
+		# close so that the ensuing REQUEST_ACTION can set precise window-tied suppression.
 		# Use a minimal duration; precise suppression will override shortly after
 		_suppress_close_parent_window_id = 0
 		var until_ts := Time.get_ticks_msec() + 420
 		_suppress_close_until_msec = until_ts
 	# Centralize drag visual cleanup so views don't have to decide
+	# IMMEDIATE VISUAL CLEANUP: Do not defer this. 
 	_end_drag_visuals(_was_handled)
+	
 	# Inform listeners that a drag has ended (optional hook for visuals)
 	if SignalBus.has_signal("drag_ended"):
 		SignalBus.emit_signal("drag_ended", _was_handled)

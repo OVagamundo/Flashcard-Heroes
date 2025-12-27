@@ -18,12 +18,50 @@ If you want to set size, change the anchors or consider using set_deferred().
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Target object freed before starting, aborting Tweener.
-   at: start (scene/animation/tween.cpp:594)
-WARNING: Target object freed before starting, aborting Tweener.
-   at: start (scene/animation/tween.cpp:594)
-WARNING: Target object freed before starting, aborting Tweener.
-   at: start (scene/animation/tween.cpp:594)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[BM] _enqueue_attack_for:hero_timekeeper_1766800102_38_70024-> target:unit_t3_b_1766800102_75_78583
+[BM] _enqueue_attack_for:unit_t3_c_1766800102_64_95022-> target:unit_t3_b_1766800102_75_78583
+[ANIM] ========== START ANIMATION SEQUENCE: 5 events ==========
+[SIM] Event#0: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#1: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t3_b_1766800102_75_78583]
+[SIM] Event#2: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#3: DAMAGE | src=unit_t3_c_1766800102 | targets=[unit_t3_b_1766800102_75_78583]
+[SIM] Event#4: DEATH | src= | targets=[unit_t3_b_1766800102_75_78583]
+[BattleLog] [1:2] Timekeeper deals 3 dmg to Guardian Sentinel 
+[BattleLog] [1:3] Timekeeper attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 6→3)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800102_75_78583"] source: hero_timekeeper_1766800102_38_70024 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [1:4] Soul Caller deals 5 dmg to Guardian Sentinel 
+[BattleLog] [1:5] Soul Caller attacks unit_t3_... for 5 damage (basic_attack, on_attack) (HP: 3→-2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800102_75_78583"] source: unit_t3_c_1766800102_64_95022 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_c_1766800102 type 5
+[BattleLog] [1:6] └─ unit_t3_... is defeated! 
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 5 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[BattleLog] [1:7] Battle ended 
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+Applying stat change - Type: PWR, Gain: 2
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+Applying stat change - Type: HP, Gain: 2
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
+[BattleLog] [2:1] ═══ TURN 2 ═══ 
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
@@ -37,6 +75,9 @@ If you want to set size, change the anchors or consider using set_deferred().
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
 WARNING: Target object freed before starting, aborting Tweener.
    at: start (scene/animation/tween.cpp:594)
 WARNING: Target object freed before starting, aborting Tweener.
@@ -44,3 +85,725 @@ WARNING: Target object freed before starting, aborting Tweener.
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
+[BM] _enqueue_attack_for:hero_timekeeper_1766800202_86_42725-> target:unit_t3_b_1766800202_125_99468
+[EffectPreventLethal] execute called - victim=unit_t3_b_1766800202_125_99468, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=2
+[EffectPreventLethal] EXIT: HP > 0, not lethal
+[BM] _enqueue_attack_for:unit_t3_d_1766800202_113_69243-> target:unit_t3_b_1766800202_125_99468
+[EffectPreventLethal] execute called - victim=unit_t3_b_1766800202_125_99468, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-4
+[EffectPreventLethal] Prevented lethal damage for unit_t3_b_1766800202_125_99468 (team=ENEMY), healing by 5
+[BM] _enqueue_attack_for:unit_t1_a_1766800202_88_90831-> target:unit_t3_b_1766800202_125_99468
+[EffectPreventLethal] execute called - victim=unit_t3_b_1766800202_125_99468, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=0
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t1_b_1766800202_90_06400-> target:unit_t1_a_1766800202_127_47478
+[EffectPreventLethal] execute called - victim=unit_t1_a_1766800202_127_47478, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-1
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t2_b_1766800202_126_60432-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=52
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[EffectPreventLethal] execute called - victim=unit_t3_d_1766800202_113_69243, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=7
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[EffectPreventLethal] execute called - victim=unit_t1_a_1766800202_88_90831, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=2
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:unit_t1_b_1766800202_128_60068-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=53
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:boss_1_1766800202_130_14675-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=43
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[ANIM] ========== START ANIMATION SEQUENCE: 41 events ==========
+[SIM] Event#5: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#6: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t3_b_1766800202_125_99468]
+[SIM] Event#7: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#8: DAMAGE | src=unit_t3_d_1766800202 | targets=[unit_t3_b_1766800202_125_99468]
+[SIM] Event#9: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#10: LETHAL_SAVE | src=trinket_aegis_176680 | targets=[unit_t3_b_1766800202_125_99468]
+[SIM] Event#11: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#12: DAMAGE | src=unit_t1_a_1766800202 | targets=[unit_t3_b_1766800202_125_99468]
+[SIM] Event#13: DEATH | src= | targets=[unit_t3_b_1766800202_125_99468]
+[SIM] Event#14: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#15: DAMAGE | src=unit_t1_b_1766800202 | targets=[unit_t1_a_1766800202_127_47478]
+[SIM] Event#16: DEATH | src= | targets=[unit_t1_a_1766800202_127_47478]
+[SIM] Event#17: DAMAGE | src=unit_t2_b_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#18: DAMAGE | src=unit_t2_b_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#19: DAMAGE | src=unit_t2_b_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#20: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#21: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#22: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#23: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#24: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#25: HEAL | src=unit_t3_d_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#26: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#27: HEAL | src=unit_t3_d_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#28: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#29: BUFF | src=unit_t3_d_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#30: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#31: BUFF | src=unit_t3_d_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#32: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#33: HEAL | src=unit_t1_a_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#34: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#35: DAMAGE | src=unit_t1_b_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#36: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#37: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#38: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#39: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#40: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#41: DAMAGE | src=boss_1_1766800202_13 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#42: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#43: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#44: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#45: HEAL | src=item_t3_a_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[BattleLog] [2:2] Timekeeper deals 4 dmg to Guardian Sentinel 
+[BattleLog] [2:3] Timekeeper attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800202_125_99468"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [2:4] Sakura Spirit deals 6 dmg to Guardian Sentinel 
+[BattleLog] [2:5] Sakura Spirit attacks unit_t3_... for 6 damage (basic_attack, on_attack) (HP: 2→-4)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800202_125_99468"] source: unit_t3_d_1766800202_113_69243 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_d_1766800202 type 5
+[BattleLog] [2:6] Aegis Charm saves Guardian Sentinel from lethal damage! 
+[LethalSaveAnimation] Saving unit unit_t3_b_1766800202 with Aegis Charm
+[LethalSaveAnimation] Save animation complete, HP set to 5
+[BattleLog] [2:7] Apprentice deals 1 dmg to Guardian Sentinel 
+[BattleLog] [2:8] Apprentice attacks unit_t3_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800202_125_99468"] source: unit_t1_a_1766800202_88_90831 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1766800202 type 5
+[BattleLog] [2:9] └─ unit_t3_... is defeated! 
+[BattleLog] [2:10] Squire deals 3 dmg to Apprentice 
+[BattleLog] [2:11] Squire attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 2→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1766800202_127_47478"] source: unit_t1_b_1766800202_90_06400 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800202 type 5
+[BattleLog] [2:12] └─ unit_t1_... is defeated! 
+[BattleLog] [2:13] Berserker attacks Timekeeper for 4 damage (HP: 56→52)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: unit_t2_b_1766800202_126_60432 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_b_1766800202 type 5
+[BattleLog] [2:14] Berserker attacks Sakura Spirit for 2 damage (HP: 7→5)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1766800202_113_69243"] source: unit_t2_b_1766800202_126_60432 attack_type: melee
+[BattleLog] [2:15] Berserker attacks Apprentice for 1 damage (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1766800202_88_90831"] source: unit_t2_b_1766800202_126_60432 attack_type: melee
+[BattleLog] [2:16] Timekeeper heals Sakura Spirit for 2 HP 
+[BattleLog] [2:17] Heart Stone heals Sakura Spirit for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 5→7)
+[BattleLog] [2:18] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [2:19] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 52→54)
+[BattleLog] [2:20] Sakura Spirit heals Apprentice for 1 HP 
+[BattleLog] [2:21] Sakura Spirit heals Apprentice for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 1→2)
+[BattleLog] [2:22] Sakura Spirit heals Timekeeper for 1 HP 
+[BattleLog] [2:23] Sakura Spirit heals Timekeeper for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 54→55)
+[BattleLog] [2:24] Sakura Spirit grants Apprentice +1 PWR 
+[BattleLog] [2:25] Sakura Spirit grants Apprentice +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [2:26] Sakura Spirit grants Timekeeper +1 PWR 
+[BattleLog] [2:27] Sakura Spirit grants Timekeeper +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [2:28] Apprentice heals Apprentice for 2 HP 
+[BattleLog] [2:29] Apprentice heals Apprentice for 2 HP (unit_tier1a_passive_heal, on_hurt) (HP: 2→4)
+[BattleLog] [2:30] Squire deals 2 dmg to Timekeeper 
+[BattleLog] [2:31] Squire attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 55→53)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: unit_t1_b_1766800202_128_60068 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800202 type 5
+[BattleLog] [2:32] Timekeeper heals Sakura Spirit for 2 HP 
+[BattleLog] [2:33] Heart Stone heals Sakura Spirit for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 7→9)
+[BattleLog] [2:34] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [2:35] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 53→55)
+[BattleLog] [2:36] The Awakened Guardian deals 12 dmg to Timekeeper 
+[BattleLog] [2:37] The Awakened Guardian attacks Timekeeper for 12 damage (basic_attack, on_attack) (HP: 55→43)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: boss_1_1766800202_130_14675 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 5
+[BattleLog] [2:38] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [2:39] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 43→45)
+[BattleLog] [2:40] Timekeeper heals Apprentice for 2 HP 
+[BattleLog] [2:41] Heart Stone heals Apprentice for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 4→6)
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 41 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[ANIM] ========== START ANIMATION SEQUENCE: 2 events ==========
+[SIM] Event#46: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t2_c_1766800266_134_02234]
+[SIM] Event#47: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t1_b_1766800266_135_99007]
+[BattleLog] [2:42] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [2:43] └─ The Awakened Guardian summons New Unit! 
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 2 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[BattleLog] [3:1] ═══ TURN 3 ═══ 
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[ANIM] ========== START ANIMATION SEQUENCE: 2 events ==========
+[SIM] Event#48: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#49: HEAL | src=item_t1_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[BattleLog] [3:2] Koi's Blessing heals Sakura Spirit for 2 HP 
+[BattleLog] [3:3] Koi's Blessing heals Sakura Spirit for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 9→11)
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 2 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[BM] _enqueue_attack_for:hero_timekeeper_1766800202_86_42725-> target:unit_t2_c_1766800266_134_02234
+[EffectPreventLethal] execute called - victim=unit_t2_c_1766800266_134_02234, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-4
+[EffectPreventLethal] Prevented lethal damage for unit_t2_c_1766800266_134_02234 (team=ENEMY), healing by 5
+[BM] _enqueue_attack_for:unit_t3_d_1766800202_113_69243-> target:unit_t2_c_1766800266_134_02234
+[EffectPreventLethal] execute called - victim=unit_t2_c_1766800266_134_02234, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-5
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t1_a_1766800202_88_90831-> target:unit_t1_b_1766800266_135_99007
+[EffectPreventLethal] execute called - victim=unit_t1_b_1766800266_135_99007, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-1
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[EffectPreventLethal] execute called - victim=unit_t1_a_1766800202_88_90831, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=4
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:unit_t3_d_1766800202_114_65545-> target:unit_t2_b_1766800202_126_60432
+[EffectPreventLethal] execute called - victim=unit_t2_b_1766800202_126_60432, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-5
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t1_b_1766800202_90_06400-> target:unit_t1_b_1766800202_128_60068
+[EffectPreventLethal] execute called - victim=unit_t1_b_1766800202_128_60068, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=0
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[EffectPreventLethal] execute called - victim=unit_t1_b_1766800202_90_06400, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=-1
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:unit_t1_b_1766800311_136_01009-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=46
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:boss_1_1766800202_130_14675-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=34
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[ANIM] ========== START ANIMATION SEQUENCE: 38 events ==========
+[SIM] Event#50: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#51: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t2_c_1766800266_134_02234]
+[SIM] Event#52: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#53: LETHAL_SAVE | src=trinket_aegis_176680 | targets=[unit_t2_c_1766800266_134_02234]
+[SIM] Event#54: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#55: HEAL | src=item_t3_c_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#56: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#57: DAMAGE | src=unit_t3_d_1766800202 | targets=[unit_t2_c_1766800266_134_02234]
+[SIM] Event#58: DEATH | src= | targets=[unit_t2_c_1766800266_134_02234]
+[SIM] Event#59: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#60: DAMAGE | src=unit_t1_a_1766800202 | targets=[unit_t1_b_1766800266_135_99007]
+[SIM] Event#61: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#62: DAMAGE | src=unit_t1_b_1766800266 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#63: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#64: HEAL | src=unit_t1_a_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#65: DEATH | src= | targets=[unit_t1_b_1766800266_135_99007]
+[SIM] Event#66: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#67: DAMAGE | src=unit_t3_d_1766800202 | targets=[unit_t2_b_1766800202_126_60432]
+[SIM] Event#68: DEATH | src= | targets=[unit_t2_b_1766800202_126_60432]
+[SIM] Event#69: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#70: DAMAGE | src=unit_t1_b_1766800202 | targets=[unit_t1_b_1766800202_128_60068]
+[SIM] Event#71: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#72: DAMAGE | src=unit_t1_b_1766800202 | targets=[unit_t1_b_1766800202_90_06400]
+[SIM] Event#73: SUMMON | src=item_t2_c02_17668002 | targets=[unit_t1_b_1766800311_136_01009]
+[SIM] Event#74: DEATH | src= | targets=[unit_t1_b_1766800202_90_06400]
+[SIM] Event#75: DEATH | src= | targets=[unit_t1_b_1766800202_128_60068]
+[SIM] Event#76: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#77: DAMAGE | src=unit_t1_b_1766800311 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#78: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#79: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_d_1766800202_114_65545]
+[SIM] Event#80: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#81: HEAL | src=item_t3_a_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#82: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#83: DAMAGE | src=boss_1_1766800202_13 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#84: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#85: HEAL | src=item_t3_a_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#86: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#87: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[BattleLog] [3:4] Timekeeper deals 7 dmg to Knight 
+[BattleLog] [3:5] Timekeeper attacks unit_t2_... for 7 damage (basic_attack, on_attack) (HP: 3→-4)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1766800266_134_02234"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [3:6] Aegis Charm saves Knight from lethal damage! 
+[LethalSaveAnimation] Saving unit unit_t2_c_1766800266 with Aegis Charm
+[LethalSaveAnimation] Save animation complete, HP set to 5
+[BattleLog] [3:7] Timekeeper heals for 1 HP (Lifesteal) 
+[BattleLog] [3:8] Lifesteal Ring heals Timekeeper for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 47→48)
+[BattleLog] [3:9] Sakura Spirit deals 6 dmg to Knight 
+[BattleLog] [3:10] Sakura Spirit attacks unit_t2_... for 6 damage (basic_attack, on_attack) (HP: 1→-5)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1766800266_134_02234"] source: unit_t3_d_1766800202_113_69243 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_d_1766800202 type 5
+[BattleLog] [3:11] └─ unit_t2_... is defeated! 
+[BattleLog] [3:12] Apprentice deals 2 dmg to Squire 
+[BattleLog] [3:13] Apprentice attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1766800266_135_99007"] source: unit_t1_a_1766800202_88_90831 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1766800202 type 5
+[BattleLog] [3:14] Squire deals 2 dmg to Apprentice 
+[BattleLog] [3:15] unit_t1_... attacks Apprentice for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 6→4)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1766800202_88_90831"] source: unit_t1_b_1766800266_135_99007 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800266 type 5
+[BattleLog] [3:16] Apprentice heals Apprentice for 2 HP 
+[BattleLog] [3:17] Apprentice heals Apprentice for 2 HP (unit_tier1a_passive_heal, on_hurt) (HP: 4→6)
+[BattleLog] [3:18] └─ unit_t1_... is defeated! 
+[BattleLog] [3:19] Sakura Spirit deals 7 dmg to Berserker 
+[BattleLog] [3:20] Sakura Spirit attacks unit_t2_... for 7 damage (basic_attack, on_attack) (HP: 2→-5)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1766800202_126_60432"] source: unit_t3_d_1766800202_114_65545 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_d_1766800202 type 5
+[BattleLog] [3:21] └─ unit_t2_... is defeated! 
+[BattleLog] [3:22] Squire deals 3 dmg to Squire 
+[BattleLog] [3:23] Squire attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 3→0)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1766800202_128_60068"] source: unit_t1_b_1766800202_90_06400 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800202 type 5
+[BattleLog] [3:24] Squire deals 2 dmg to Squire 
+[BattleLog] [3:25] unit_t1_... attacks Squire for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1766800202_90_06400"] source: unit_t1_b_1766800202_128_60068 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800202 type 5
+[BattleLog] [3:26] └─ item_t2_... summons New Unit! 
+[BattleLog] [3:27] └─ Squire is defeated! 
+[BattleLog] [3:28] └─ unit_t1_... is defeated! 
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800202 type 2
+[BattleLog] [3:29] Squire deals 2 dmg to Timekeeper 
+[BattleLog] [3:30] Squire attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 48→46)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: unit_t1_b_1766800311_136_01009 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800311 type 5
+[BattleLog] [3:31] Timekeeper heals Sakura Spirit for 2 HP 
+[BattleLog] [3:32] Heart Stone heals Sakura Spirit for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
+[BattleLog] [3:33] Timekeeper heals Apprentice for 2 HP 
+[BattleLog] [3:34] Heart Stone heals Apprentice for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
+[BattleLog] [3:35] The Awakened Guardian deals 12 dmg to Timekeeper 
+[BattleLog] [3:36] The Awakened Guardian attacks Timekeeper for 12 damage (basic_attack, on_attack) (HP: 46→34)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: boss_1_1766800202_130_14675 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 5
+[BattleLog] [3:37] Timekeeper heals Apprentice for 2 HP 
+[BattleLog] [3:38] Heart Stone heals Apprentice for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 8→10)
+[BattleLog] [3:39] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [3:40] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 34→36)
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 38 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[ANIM] ========== START ANIMATION SEQUENCE: 3 events ==========
+[SIM] Event#88: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t3_c_1766800339_137_56724]
+[SIM] Event#89: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t1_b_1766800339_138_54913]
+[SIM] Event#90: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t1_b_1766800339_139_40506]
+[BattleLog] [3:41] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [3:42] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [3:43] └─ The Awakened Guardian summons New Unit! 
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 3 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[BattleLog] [4:1] ═══ TURN 4 ═══ 
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[ANIM] ========== START ANIMATION SEQUENCE: 2 events ==========
+[SIM] Event#91: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#92: HEAL | src=item_t1_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[BattleLog] [4:2] Koi's Blessing heals Sakura Spirit for 2 HP 
+[BattleLog] [4:3] Koi's Blessing heals Sakura Spirit for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 13→15)
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 2 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[BM] _enqueue_attack_for:hero_timekeeper_1766800202_86_42725-> target:unit_t3_c_1766800339_137_56724
+[EffectPreventLethal] execute called - victim=unit_t3_c_1766800339_137_56724, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-8
+[EffectPreventLethal] Prevented lethal damage for unit_t3_c_1766800339_137_56724 (team=ENEMY), healing by 9
+[BM] _enqueue_attack_for:unit_t3_d_1766800202_113_69243-> target:unit_t3_c_1766800339_137_56724
+[EffectPreventLethal] execute called - victim=unit_t3_c_1766800339_137_56724, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-7
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t1_a_1766800202_88_90831-> target:unit_t2_c_1766800361_140_53657
+[EffectPreventLethal] execute called - victim=unit_t2_c_1766800361_140_53657, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-1
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t3_d_1766800202_114_65545-> target:unit_t1_b_1766800339_138_54913
+[EffectPreventLethal] execute called - victim=unit_t1_b_1766800339_138_54913, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-6
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[EffectPreventLethal] execute called - victim=unit_t3_d_1766800202_114_65545, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=6
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:unit_t3_b_1766800202_110_84049-> target:unit_t1_b_1766800339_139_40506
+[EffectPreventLethal] execute called - victim=unit_t1_b_1766800339_139_40506, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-4
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[EffectPreventLethal] execute called - victim=unit_t3_b_1766800202_110_84049, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=5
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:unit_t1_b_1766800311_136_01009-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=38
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[EffectPreventLethal] execute called - victim=boss_1_1766800202_130_14675, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=8
+[EffectPreventLethal] EXIT: HP > 0, not lethal
+[EffectPreventLethal] execute called - victim=unit_t3_d_1766800202_113_69243, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=11
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:boss_1_1766800202_130_14675-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=28
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[EffectPreventLethal] execute called - victim=boss_1_1766800202_130_14675, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=1
+[EffectPreventLethal] EXIT: HP > 0, not lethal
+[EffectPreventLethal] execute called - victim=unit_t3_b_1766800202_110_84049, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=1
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[ANIM] ========== START ANIMATION SEQUENCE: 75 events ==========
+[SIM] Event#93: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#94: BUFF | src=item_t3_b_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#95: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#96: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#97: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#98: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t3_c_1766800339_137_56724]
+[SIM] Event#99: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#100: LETHAL_SAVE | src=trinket_aegis_176680 | targets=[unit_t3_c_1766800339_137_56724]
+[SIM] Event#101: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#102: HEAL | src=item_t3_c_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#103: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#104: DAMAGE | src=unit_t3_d_1766800202 | targets=[unit_t3_c_1766800339_137_56724]
+[SIM] Event#105: DEATH | src= | targets=[unit_t3_c_1766800339_137_56724]
+[SIM] Event#106: SUMMON | src=unit_t3_c_1766800339 | targets=[unit_t2_c_1766800361_140_53657]
+[SIM] Event#107: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#108: DAMAGE | src=unit_t1_a_1766800202 | targets=[unit_t2_c_1766800361_140_53657]
+[SIM] Event#109: DEATH | src= | targets=[unit_t2_c_1766800361_140_53657]
+[SIM] Event#110: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#111: DAMAGE | src=unit_t3_d_1766800202 | targets=[unit_t1_b_1766800339_138_54913]
+[SIM] Event#112: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#113: DAMAGE | src=unit_t1_b_1766800339 | targets=[unit_t3_d_1766800202_114_65545]
+[SIM] Event#114: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#115: HEAL | src=unit_t3_d_1766800202 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#116: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#117: HEAL | src=unit_t3_d_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#118: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#119: BUFF | src=unit_t3_d_1766800202 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#120: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#121: BUFF | src=unit_t3_d_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#122: DEATH | src= | targets=[unit_t1_b_1766800339_138_54913]
+[SIM] Event#123: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#124: DAMAGE | src=unit_t3_b_1766800202 | targets=[unit_t1_b_1766800339_139_40506]
+[SIM] Event#125: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#126: DAMAGE | src=unit_t1_b_1766800339 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#127: DEATH | src= | targets=[unit_t1_b_1766800339_139_40506]
+[SIM] Event#128: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#129: DAMAGE | src=unit_t1_b_1766800311 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#130: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#131: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#132: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#133: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#134: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#135: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#136: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#137: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_d_1766800202_114_65545]
+[SIM] Event#138: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#139: DAMAGE | src=item_t3_d_1766800202 | targets=[boss_1_1766800202_130_14675]
+[SIM] Event#140: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#141: DAMAGE | src=item_t3_d_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#142: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#143: HEAL | src=unit_t3_d_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#144: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#145: HEAL | src=unit_t3_d_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#146: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#147: BUFF | src=unit_t3_d_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#148: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#149: BUFF | src=unit_t3_d_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#150: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#151: HEAL | src=item_t3_c_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#152: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#153: DAMAGE | src=boss_1_1766800202_13 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#154: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#155: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#156: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#157: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#158: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#159: BUFF | src=item_t3_b_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#160: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#161: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#162: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#163: DAMAGE | src=item_t3_d_1766800202 | targets=[boss_1_1766800202_130_14675]
+[SIM] Event#164: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#165: DAMAGE | src=item_t3_d_1766800202 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#166: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#167: HEAL | src=item_t3_c_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[BattleLog] [4:4] Timekeeper grants Apprentice +2 PWR 
+[BattleLog] [4:5] Power Amulet grants Apprentice +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:6] Timekeeper grants Sakura Spirit +2 PWR 
+[BattleLog] [4:7] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:8] Timekeeper deals 13 dmg to Soul Caller 
+[BattleLog] [4:9] Timekeeper attacks unit_t3_... for 13 damage (basic_attack, on_attack) (HP: 5→-8)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1766800339_137_56724"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [4:10] Aegis Charm saves Soul Caller from lethal damage! 
+[LethalSaveAnimation] Saving unit unit_t3_c_1766800339 with Aegis Charm
+[LethalSaveAnimation] Save animation complete, HP set to 9
+[BattleLog] [4:11] Timekeeper heals for 2 HP (Lifesteal) 
+[BattleLog] [4:12] Lifesteal Ring heals Timekeeper for 2 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 38→40)
+[BattleLog] [4:13] Sakura Spirit deals 8 dmg to Soul Caller 
+[BattleLog] [4:14] Sakura Spirit attacks unit_t3_... for 8 damage (basic_attack, on_attack) (HP: 1→-7)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1766800339_137_56724"] source: unit_t3_d_1766800202_113_69243 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_d_1766800202 type 5
+[BattleLog] [4:15] └─ unit_t3_... is defeated! 
+[BattleLog] [4:16] └─ unit_t3_... summons New Unit! 
+[BattleLog] [4:17] Apprentice deals 4 dmg to Knight 
+[BattleLog] [4:18] Apprentice attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 3→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1766800361_140_53657"] source: unit_t1_a_1766800202_88_90831 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1766800202 type 5
+[BattleLog] [4:19] └─ unit_t2_... is defeated! 
+[BattleLog] [4:20] Sakura Spirit deals 7 dmg to Squire 
+[BattleLog] [4:21] Sakura Spirit attacks unit_t1_... for 7 damage (basic_attack, on_attack) (HP: 1→-6)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1766800339_138_54913"] source: unit_t3_d_1766800202_114_65545 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_d_1766800202 type 5
+[BattleLog] [4:22] Squire deals 2 dmg to Sakura Spirit 
+[BattleLog] [4:23] unit_t1_... attacks Sakura Spirit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 8→6)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1766800202_114_65545"] source: unit_t1_b_1766800339_138_54913 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800339 type 5
+[BattleLog] [4:24] Sakura Spirit heals Guardian Sentinel for 1 HP 
+[BattleLog] [4:25] Sakura Spirit heals Guardian Sentinel for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 6→7)
+[BattleLog] [4:26] Sakura Spirit heals Apprentice for 1 HP 
+[BattleLog] [4:27] Sakura Spirit heals Apprentice for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 10→11)
+[BattleLog] [4:28] Sakura Spirit grants Guardian Sentinel +1 PWR 
+[BattleLog] [4:29] Sakura Spirit grants Guardian Sentinel +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:30] Sakura Spirit grants Apprentice +1 PWR 
+[BattleLog] [4:31] Sakura Spirit grants Apprentice +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:32] └─ unit_t1_... is defeated! 
+[BattleLog] [4:33] Guardian Sentinel deals 5 dmg to Squire 
+[BattleLog] [4:34] Guardian Sentinel attacks unit_t1_... for 5 damage (basic_attack, on_attack) (HP: 1→-4)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1766800339_139_40506"] source: unit_t3_b_1766800202_110_84049 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1766800202 type 5
+[BattleLog] [4:35] Squire deals 2 dmg to Guardian Sentinel 
+[BattleLog] [4:36] unit_t1_... attacks Guardian Sentinel for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800202_110_84049"] source: unit_t1_b_1766800339_139_40506 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800339 type 5
+[BattleLog] [4:37] └─ unit_t1_... is defeated! 
+[BattleLog] [4:38] Squire deals 2 dmg to Timekeeper 
+[BattleLog] [4:39] Squire attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 40→38)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: unit_t1_b_1766800311_136_01009 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800311 type 5
+[BattleLog] [4:40] Timekeeper heals Guardian Sentinel for 2 HP 
+[BattleLog] [4:41] Heart Stone heals Guardian Sentinel for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 5→7)
+[BattleLog] [4:42] Timekeeper heals Sakura Spirit for 2 HP 
+[BattleLog] [4:43] Heart Stone heals Sakura Spirit for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 15→17)
+[BattleLog] [4:44] Timekeeper grants Sakura Spirit +2 PWR 
+[BattleLog] [4:45] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:46] Timekeeper grants Sakura Spirit +2 PWR 
+[BattleLog] [4:47] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:48] Vengeful Thorn deals 6 dmg to The Awakened Guardian 
+[BattleLog] [4:49] Vengeful Thorn attacks The Awakened Guardian for 6 damage (item_tier3d_retaliate_random, on_hurt) (HP: 14→8)
+[DamageAnimation] Executing for targets: ["boss_1_1766800202_130_14675"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [4:50] Vengeful Thorn deals 6 dmg to Sakura Spirit 
+[BattleLog] [4:51] Vengeful Thorn attacks Sakura Spirit for 6 damage (item_tier3d_retaliate_random, on_hurt) (HP: 17→11)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1766800202_113_69243"] source: boss_1_1766800202_130_14675 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 5
+[BattleLog] [4:52] Sakura Spirit heals Apprentice for 1 HP 
+[BattleLog] [4:53] Sakura Spirit heals Apprentice for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 11→12)
+[BattleLog] [4:54] Sakura Spirit heals Timekeeper for 1 HP 
+[BattleLog] [4:55] Sakura Spirit heals Timekeeper for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 38→39)
+[BattleLog] [4:56] Sakura Spirit grants Apprentice +1 PWR 
+[BattleLog] [4:57] Sakura Spirit grants Apprentice +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:58] Sakura Spirit grants Timekeeper +1 PWR 
+[BattleLog] [4:59] Sakura Spirit grants Timekeeper +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:60] Timekeeper heals for 1 HP (Lifesteal) 
+[BattleLog] [4:61] Lifesteal Ring heals Timekeeper for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 39→40)
+[BattleLog] [4:62] The Awakened Guardian deals 12 dmg to Timekeeper 
+[BattleLog] [4:63] The Awakened Guardian attacks Timekeeper for 12 damage (basic_attack, on_attack) (HP: 40→28)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: boss_1_1766800202_130_14675 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 5
+[BattleLog] [4:64] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [4:65] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 28→30)
+[BattleLog] [4:66] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [4:67] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 30→32)
+[BattleLog] [4:68] Timekeeper grants Timekeeper +2 PWR 
+[BattleLog] [4:69] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:70] Timekeeper grants Sakura Spirit +2 PWR 
+[BattleLog] [4:71] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:72] Vengeful Thorn deals 7 dmg to The Awakened Guardian 
+[BattleLog] [4:73] Vengeful Thorn attacks The Awakened Guardian for 7 damage (item_tier3d_retaliate_random, on_hurt) (HP: 8→1)
+[DamageAnimation] Executing for targets: ["boss_1_1766800202_130_14675"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [4:74] Vengeful Thorn deals 6 dmg to Guardian Sentinel 
+[BattleLog] [4:75] Vengeful Thorn attacks Guardian Sentinel for 6 damage (item_tier3d_retaliate_random, on_hurt) (HP: 7→1)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800202_110_84049"] source: boss_1_1766800202_130_14675 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 5
+[BattleLog] [4:76] Timekeeper heals for 1 HP (Lifesteal) 
+[BattleLog] [4:77] Lifesteal Ring heals Timekeeper for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 32→33)
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 75 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[ANIM] ========== START ANIMATION SEQUENCE: 2 events ==========
+[SIM] Event#168: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t3_a_1766800407_141_70479]
+[SIM] Event#169: SUMMON | src=boss_1_1766800202_13 | targets=[unit_t2_c_1766800407_142_83663]
+[BattleLog] [4:78] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [4:79] └─ The Awakened Guardian summons New Unit! 
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 2 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[BattleLog] [5:1] ═══ TURN 5 ═══ 
+[FlashcardManager] _on_minigame_complete called. Correct: 2
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 17 }
+[FlashcardManager] Signal emitted successfully
+[ANIM] ========== START ANIMATION SEQUENCE: 2 events ==========
+[SIM] Event#170: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#171: HEAL | src=item_t1_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[BattleLog] [5:2] Koi's Blessing heals Sakura Spirit for 2 HP 
+[BattleLog] [5:3] Koi's Blessing heals Sakura Spirit for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 11→13)
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 2 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Target object freed before starting, aborting Tweener.
+   at: start (scene/animation/tween.cpp:594)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[BM] _enqueue_attack_for:hero_timekeeper_1766800202_86_42725-> target:unit_t3_a_1766800407_141_70479
+[EffectPreventLethal] execute called - victim=unit_t3_a_1766800407_141_70479, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-12
+[EffectPreventLethal] Prevented lethal damage for unit_t3_a_1766800407_141_70479 (team=ENEMY), healing by 13
+[BM] _enqueue_attack_for:unit_t3_d_1766800202_113_69243-> target:unit_t3_a_1766800407_141_70479
+[EffectPreventLethal] execute called - victim=unit_t3_a_1766800407_141_70479, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-11
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t1_a_1766800202_88_90831-> target:unit_t2_c_1766800407_142_83663
+[EffectPreventLethal] execute called - victim=unit_t2_c_1766800407_142_83663, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-2
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[BM] _enqueue_attack_for:unit_t2_b_1766800202_98_06782-> target:unit_t1_b_1766800311_136_01009
+[EffectPreventLethal] execute called - victim=unit_t1_b_1766800311_136_01009, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-3
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[EffectPreventLethal] execute called - victim=unit_t3_b_1766800202_110_84049, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=0
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[EffectPreventLethal] execute called - victim=boss_1_1766800202_130_14675, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-1
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=30
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[BM] _enqueue_attack_for:unit_t3_b_1766800202_110_84049-> target:hero_timekeeper_1766800202_86_42725
+[EffectPreventLethal] execute called - victim=hero_timekeeper_1766800202_86_42725, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=26
+[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
+[EffectPreventLethal] execute called - victim=unit_t1_a_1766800438_143_02334, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-6
+[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
+[ANIM] ========== START ANIMATION SEQUENCE: 50 events ==========
+[SIM] Event#172: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#173: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#174: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#175: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#176: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#177: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t3_a_1766800407_141_70479]
+[SIM] Event#178: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#179: LETHAL_SAVE | src=trinket_aegis_176680 | targets=[unit_t3_a_1766800407_141_70479]
+[SIM] Event#180: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#181: HEAL | src=item_t3_c_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#182: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#183: DAMAGE | src=unit_t3_d_1766800202 | targets=[unit_t3_a_1766800407_141_70479]
+[SIM] Event#184: DEATH | src= | targets=[unit_t3_a_1766800407_141_70479]
+[SIM] Event#185: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#186: HEAL | src=unit_t2_c_1766800407 | targets=[unit_t2_c_1766800407_142_83663]
+[SIM] Event#187: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#188: BUFF | src=unit_t2_c_1766800407 | targets=[unit_t2_c_1766800407_142_83663]
+[SIM] Event#189: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#190: DAMAGE | src=unit_t1_a_1766800202 | targets=[unit_t2_c_1766800407_142_83663]
+[SIM] Event#191: DEATH | src= | targets=[unit_t2_c_1766800407_142_83663]
+[SIM] Event#192: DAMAGE | src=unit_t2_b_1766800202 | targets=[unit_t1_b_1766800311_136_01009]
+[SIM] Event#193: DAMAGE | src=unit_t2_b_1766800202 | targets=[boss_1_1766800202_130_14675]
+[SIM] Event#194: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#195: GUARDIAN_INTERCEPT | src=unit_t3_b_1766800202 | targets=[unit_t2_b_1766800202_98_06782]
+[SIM] Event#196: DAMAGE | src=unit_t1_b_1766800311 | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#197: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#198: DAMAGE | src=item_t3_d_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#199: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#200: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#201: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#202: HEAL | src=item_t3_a_1766800202 | targets=[unit_t1_a_1766800202_88_90831]
+[SIM] Event#203: DEATH | src= | targets=[unit_t3_b_1766800202_110_84049]
+[SIM] Event#204: SUMMON | src=item_t2_c02_17668002 | targets=[unit_t1_a_1766800438_143_02334]
+[SIM] Event#205: DEATH | src= | targets=[unit_t1_b_1766800311_136_01009]
+[SIM] Event#206: DEATH | src= | targets=[boss_1_1766800202_130_14675]
+[SIM] Event#207: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#208: DAMAGE | src=unit_t3_b_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#209: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#210: HEAL | src=item_t3_a_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#211: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#212: HEAL | src=item_t3_a_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#213: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#214: BUFF | src=item_t3_b_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#215: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#216: BUFF | src=item_t3_b_1766800202 | targets=[unit_t3_d_1766800202_113_69243]
+[SIM] Event#217: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#218: DAMAGE | src=item_t3_d_1766800202 | targets=[unit_t1_a_1766800438_143_02334]
+[SIM] Event#219: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#220: HEAL | src=item_t3_c_1766800202 | targets=[hero_timekeeper_1766800202_86_42725]
+[SIM] Event#221: DEATH | src= | targets=[unit_t1_a_1766800438_143_02334]
+[BattleLog] [5:4] Timekeeper grants Guardian Sentinel +2 PWR 
+[BattleLog] [5:5] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [5:6] Timekeeper grants Guardian Sentinel +2 PWR 
+[BattleLog] [5:7] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [5:8] Timekeeper deals 16 dmg to Shadow Striker 
+[BattleLog] [5:9] Timekeeper attacks unit_t3_... for 16 damage (basic_attack, on_attack) (HP: 4→-12)
+[DamageAnimation] Executing for targets: ["unit_t3_a_1766800407_141_70479"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [5:10] Aegis Charm saves Shadow Striker from lethal damage! 
+[LethalSaveAnimation] Saving unit unit_t3_a_1766800407 with Aegis Charm
+[LethalSaveAnimation] Save animation complete, HP set to 13
+[BattleLog] [5:11] Timekeeper heals for 3 HP (Lifesteal) 
+[BattleLog] [5:12] Lifesteal Ring heals Timekeeper for 3 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 33→36)
+[BattleLog] [5:13] Sakura Spirit deals 12 dmg to Shadow Striker 
+[BattleLog] [5:14] Sakura Spirit attacks unit_t3_... for 12 damage (basic_attack, on_attack) (HP: 1→-11)
+[DamageAnimation] Executing for targets: ["unit_t3_a_1766800407_141_70479"] source: unit_t3_d_1766800202_113_69243 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_d_1766800202 type 5
+[BattleLog] [5:15] └─ unit_t3_... is defeated! 
+[BattleLog] [5:16] Knight heals Knight for 1 HP 
+[BattleLog] [5:17] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
+[BattleLog] [5:18] Knight grants Knight +1 PWR 
+[BattleLog] [5:19] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [5:20] Apprentice deals 6 dmg to Knight 
+[BattleLog] [5:21] Apprentice attacks unit_t2_... for 6 damage (basic_attack, on_attack) (HP: 4→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1766800407_142_83663"] source: unit_t1_a_1766800202_88_90831 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1766800202 type 5
+[BattleLog] [5:22] └─ unit_t2_... is defeated! 
+[BattleLog] [5:23] Berserker attacks unit_t1_... for 4 damage (HP: 1→-3)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1766800311_136_01009"] source: unit_t2_b_1766800202_98_06782 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_b_1766800202 type 5
+[BattleLog] [5:24] Berserker attacks boss_1_1... for 2 damage (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["boss_1_1766800202_130_14675"] source: unit_t2_b_1766800202_98_06782 attack_type: melee
+[BattleLog] [5:25] Squire deals 2 dmg to Berserker 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1766800202 leaping to protect unit_t2_b_1766800202
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [5:26] unit_t1_... attacks Guardian Sentinel for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1766800202_110_84049"] source: unit_t1_b_1766800311_136_01009 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1766800311 type 5
+[BattleLog] [5:27] Vengeful Thorn deals 6 dmg to Timekeeper 
+[BattleLog] [5:28] item_t3_... attacks Timekeeper for 6 damage (item_tier3d_retaliate_random, on_hurt) (HP: 36→30)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: boss_1_1766800202_130_14675 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 5
+[BattleLog] [5:29] Timekeeper heals Sakura Spirit for 2 HP 
+[BattleLog] [5:30] Heart Stone heals Sakura Spirit for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 13→15)
+[BattleLog] [5:31] Timekeeper heals Apprentice for 2 HP 
+[BattleLog] [5:32] Heart Stone heals Apprentice for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 12→14)
+[BattleLog] [5:33] └─ Guardian Sentinel is defeated! 
+[BattleLog] [5:34] └─ item_t2_... summons New Unit! 
+[BattleLog] [5:35] └─ unit_t1_... is defeated! 
+[BattleLog] [5:36] └─ boss_1_1... is defeated! 
+[AnimationCompletionTracker] Timeout for boss_1_1766800202_13 type 2
+[BattleLog] [5:37] Guardian Sentinel deals 4 dmg to Timekeeper 
+[BattleLog] [5:38] Guardian Sentinel attacks Timekeeper for 4 damage (basic_attack, on_attack) (HP: 30→26)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1766800202_86_42725"] source: unit_t3_b_1766800202_110_84049 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1766800202 type 4
+[AnimationCompletionTracker] Timeout for unit_t3_b_1766800202 type 5
+[BattleLog] [5:39] Timekeeper heals Sakura Spirit for 2 HP 
+[BattleLog] [5:40] Heart Stone heals Sakura Spirit for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 15→17)
+[BattleLog] [5:41] Timekeeper heals Timekeeper for 2 HP 
+[BattleLog] [5:42] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 26→28)
+[BattleLog] [5:43] Timekeeper grants Timekeeper +2 PWR 
+[BattleLog] [5:44] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [5:45] Timekeeper grants Sakura Spirit +2 PWR 
+[BattleLog] [5:46] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [5:47] Vengeful Thorn deals 8 dmg to Apprentice 
+[BattleLog] [5:48] Vengeful Thorn attacks unit_t1_... for 8 damage (item_tier3d_retaliate_random, on_hurt) (HP: 2→-6)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1766800438_143_02334"] source: hero_timekeeper_1766800202_86_42725 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
+[BattleLog] [5:49] Timekeeper heals for 1 HP (Lifesteal) 
+[BattleLog] [5:50] Lifesteal Ring heals Timekeeper for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 28→29)
+[BattleLog] [5:51] └─ unit_t1_... is defeated! 
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 50 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[BattleLog] [5:52] Battle ended 
+Warning: Instance has invalid stats, resetting from definition
+[ItemInspection] Ability:  | Key: Your team's damage applies 1 Burn. Burn deals damage at end of turn, then halves. | Desc: Your team's damage applies 1 Burn. Burn deals damage at end of turn, then halves.

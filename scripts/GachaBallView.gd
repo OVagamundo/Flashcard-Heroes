@@ -77,6 +77,9 @@ func _ready() -> void:
 		# unit_visual_stat_update is still handled here for puppet mode updates
 		if bus.has_signal("unit_visual_stat_update"):
 			bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
+			
+		if bus.has_signal("drag_ended"):
+			bus.drag_ended.connect(_on_drag_ended)
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
 		# are now handled by UnitAnimationController child node
 
@@ -136,6 +139,12 @@ func _exit_tree() -> void:
 	if GlobalInteractionRouter.is_drag_active():
 		GlobalInteractionRouter.end_drag(false)
 		GlobalInteractionRouter.end_drag_visuals(false)
+
+var _logical_drag_success: bool = false
+
+func _on_drag_ended(was_handled: bool) -> void:
+	if _is_dragging:
+		_logical_drag_success = was_handled
 
 ## Helper method for SlotView to check UUID
 func get_instance_uuid() -> String:
@@ -764,6 +773,8 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var offset = - preview_size / 2 # Offset to center content on top-left (where cursor is)
 	
 	var preview_container = Control.new()
+	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX # Stay on top
 	preview_container.custom_minimum_size = container_size
 	
 	# Add unit/item texture
@@ -852,7 +863,7 @@ func _drop_data(_at_position, _data) -> void:
 	# Create a target interaction context and route via GIR
 	var target_ctx = _create_interaction_context(&"DROP")
 	SignalBus.emit_signal("interaction_context_received", target_ctx)
-
+	
 	# Do not end drag visuals here. The InventoryManager will decide whether the
 	# action was handled and call GlobalInteractionRouter.end_drag(true/false)
 	# accordingly. This prevents the source from remaining hidden after invalid actions.
@@ -931,22 +942,35 @@ func _apply_selection_feedback() -> void:
 func _notification(what: int) -> void:
 	# Fallback: if a drag ends without any drop target handling it, restore visuals
 	if what == NOTIFICATION_DRAG_END:
-		if _is_dragging and not is_drag_successful():
-			# Drag failed (dropped on nothing) - trigger bounce "back" to slot
-			# Ensure GIR knows drag is done so it unhides the view
+		var godot_successful = is_drag_successful()
+		var was_dragging_me = _is_dragging # Capture local state before reset
+		
+		# Combine Godot's mechanical success with our logical success (from inventory)
+		# If we dropped on a slot (Godot success) but Inventory rejected it (logic fail),
+		# we must treat it as a failure and bounce.
+		var combined_success = godot_successful and _logical_drag_success
+		
+		# Reset deformation first so we start animation from a clean state (scale 1.0)
+		_reset_drag_deformation()
+		
+		# If drag was NOT successful (dropped on nothing OR rejected by logic), bounce back
+		if was_dragging_me and not combined_success:
 			if GlobalInteractionRouter.is_drag_active():
 				GlobalInteractionRouter.end_drag(false)
 			
-			# Wait a frame to ensure visibility is applied? Usually end_drag is immediate.
 			_play_landing_bounce()
-			
-		# Reset drag deformation state
-		_reset_drag_deformation()
+		
 		# Reset local drag flag
 		_drag_initiated_for_click = false
+		_logical_drag_success = false # Reset for next time
+		
+		# Ensure drag signals are cleared if they haven't been already
 		if GlobalInteractionRouter.is_drag_active():
-			GlobalInteractionRouter.end_drag(false)
-			GlobalInteractionRouter.end_drag_visuals(false)
+			# If it was successful, it's likely already handled by InventoryManager calling end_drag(true)
+			# But if we are here and it's still active, it might be a race or unhandled case.
+			# Safe default: end it as handled if successful (to keep view hidden/transferred), false if not.
+			GlobalInteractionRouter.end_drag(combined_success)
+			GlobalInteractionRouter.end_drag_visuals(combined_success)
 
 # -----------------------------------------------------------------------------
 # Guardian Leap (Forwarding to UnitAnimationController)
@@ -980,7 +1004,11 @@ func _has_overlay_heuristic() -> bool:
 
 func _on_inventory_action_completed(target_uuids: Array) -> void:
 	if _bound_uuid in target_uuids:
-		# Wait one frame for UI refresh to complete
+		# VISUAL FEEDBACK: Be extremely aggressive about visibility
+		if not visible:
+			visible = true
+			
+		# Wait one frame for UI layout and redraw to complete
 		await get_tree().process_frame
 		_play_landing_bounce()
 
@@ -995,6 +1023,12 @@ func _reset_drag_deformation() -> void:
 
 func _play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return
+	
+	# Force visibility: If this view was the drag source, it might still be hidden.
+	if not visible:
+		visible = true
+	if is_instance_valid(get_parent()):
+		get_parent().visible = true # Ensure parent slot is visible too
 	
 	# Store original values before animation
 	var original_scale = icon_rect.scale

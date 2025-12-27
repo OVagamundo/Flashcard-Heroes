@@ -277,6 +277,9 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 	if not is_instance_valid(window): return
 	# Ensure layout has settled for the newly added window before measuring
 	await get_tree().process_frame
+	
+	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
+	if not is_instance_valid(window): return
 
 	var position: Vector2
 	# SIMPLIFIED RULE: If a parent window is provided, ALWAYS position relative to it.
@@ -314,6 +317,9 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 func _finalize_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = "") -> void:
 	if not is_instance_valid(window): return
 	await get_tree().process_frame
+	
+	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
+	if not is_instance_valid(window): return
 	var position: Vector2
 	# Keep the simplified parent-first rule for child windows
 	if is_instance_valid(parent_window):

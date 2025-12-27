@@ -263,7 +263,11 @@ func _drop_data(_at_position, data) -> void:
 
 	# Create a target interaction context and route via GIR
 	var target_ctx = _create_interaction_context(&"DROP")
+	
+	# IMMEDIATE VISUAL FEEDBACK: Hide indicator now.
+	_hide_indicator()
+	
 	SignalBus.emit_signal("interaction_context_received", target_ctx)
-
+	
 	# Do not end drag here; InventoryManager will decide handled/unhandled and
 	# call GlobalInteractionRouter.end_drag(true/false) centrally.
