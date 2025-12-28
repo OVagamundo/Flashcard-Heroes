@@ -136,7 +136,7 @@ func _load_content(scene_resource: PackedScene) -> void:
 	_clear_content_area()
 	var instance = scene_resource.instantiate()
 	_current_content_node = instance
-	content_area.get_node("SubViewport").add_child(instance)
+	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	_load_content(BATTLE_SCENE)
@@ -419,9 +419,9 @@ func _populate_player_trinkets() -> void:
 			continue
 		for child in slot_view.get_children():
 			child.queue_free()
-		# Use 1x scale for player trinkets (smaller sprites at top bar)
+		# Use 2x scale for player trinkets (128x128 display, 64x64 native texture)
 		if slot_view.has_method("set_size_scale"):
-			slot_view.set_size_scale(1.0)
+			slot_view.set_size_scale(2.0)
 		var loc = LocationIdentifier.new()
 		loc.container = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
 		loc.index = i

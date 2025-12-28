@@ -38,9 +38,14 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 			# Apply battle-specific layout settings (responsive width, fixed height)
 			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			if container_name == &"EnemyTrinkets":
-				slot_view.custom_minimum_size = Vector2(0, 90)
+				slot_view.custom_minimum_size = Vector2(128, 128)
+				# Use 2x scale for trinkets (128x128 display, 64x64 native texture)
+				if slot_view.has_method("set_size_scale"):
+					slot_view.set_size_scale(2.0)
 			else:
-				slot_view.custom_minimum_size = Vector2(0, 250)
+				slot_view.custom_minimum_size = Vector2(192, 192)
+				# slot_view.size_flags_horizontal = 3 # Default is Expand if container set
+				# Dont force Shrink Center (4) as it breaks alignment between split containers
 			
 			# Apply container-specific color scheme
 			if slot_view.has_method("set_slot_color"):
@@ -50,6 +55,31 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 func _ready() -> void:
+	# --- LAYOUT FIX INJECTION ---
+	# Force Top Alignment and Insert Spacers to guarantee gap below Top Bar
+	var team_areas = get_node_or_null("TeamAreas")
+	if team_areas:
+		# Player Area Fix
+		var player_area_node = team_areas.get_node_or_null("PlayerArea")
+		if player_area_node and player_area_node is BoxContainer:
+			player_area_node.alignment = BoxContainer.ALIGNMENT_BEGIN
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(0, 60) # 60px Top Gap
+			spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			player_area_node.add_child(spacer)
+			player_area_node.move_child(spacer, 0)
+			
+		# Enemy Area Fix
+		var enemy_area_node = team_areas.get_node_or_null("EnemyArea")
+		if enemy_area_node and enemy_area_node is BoxContainer:
+			enemy_area_node.alignment = BoxContainer.ALIGNMENT_BEGIN
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(0, 60) # 60px Top Gap
+			spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			enemy_area_node.add_child(spacer)
+			enemy_area_node.move_child(spacer, 0)
+	# ----------------------------
+
 	# Guard against duplicate BattleView instances which would cause multiple
 	# emissions of draw_gacha_requested per click.
 	add_to_group("battle_view")
@@ -81,7 +111,9 @@ func _ready() -> void:
 	# The initial draw is now handled directly in _ready to avoid race conditions.
 	# Subsequent updates will be handled by the battle_inventory_changed signal.
 	_redraw_board()
+	_redraw_board()
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
+
 
 func _redraw_board() -> void:
 	if not is_instance_valid(battle_manager):
@@ -271,6 +303,9 @@ func _populate_enemy_trinkets() -> void:
 		var loc = LocationIdentifier.new()
 		loc.container = &"EnemyTrinkets"
 		loc.index = i
+		# Use 2x scale for enemy trinkets (128x128 display, 64x64 native texture)
+		if slot_view.has_method("set_size_scale"):
+			slot_view.set_size_scale(2.0)
 		if slot_view.has_method("populate"):
 			slot_view.populate(loc)
 			if slot_view.has_method("set_interaction_context"):

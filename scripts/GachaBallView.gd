@@ -215,16 +215,36 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 			
 			# Dual logic:
 			if _size_scale > 1.0 and not _has_overlay_heuristic():
-				# Battle Mode: Scale UP
-				icon_rect.expand_mode = TextureRect.EXPAND_KEEP_SIZE
+				# Battle Mode: Use UnitSprite to enforce 128x128 scale inside 192x192 slot
+				icon_rect.custom_minimum_size = target_size # 192x192
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				icon_rect.custom_minimum_size = target_size
+				icon_rect.texture = null # Clear main texture
 				
-				# Remove unit sprite if present (switching back to Battle)
+				# Use child sprite for strictly sized unit/item
 				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-				if unit_sprite: unit_sprite.queue_free()
-			else:
+				if not unit_sprite:
+					unit_sprite = TextureRect.new()
+					unit_sprite.name = "UnitSprite"
+					icon_rect.add_child(unit_sprite)
+					unit_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					unit_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+				
+				# Configure unit sprite size and position
+				unit_sprite.custom_minimum_size = Vector2(128, 128)
+				unit_sprite.size = Vector2(128, 128)
+				# Center in 192x192 slot: (192-128)/2 = 32
+				unit_sprite.position = Vector2(32, 32)
+				unit_sprite.texture = visual_data.get("icon")
+				unit_sprite.visible = true
+				
+				# Setup Battle Layout (Underlay)
+				_setup_battle_stats_layout()
+			elif _has_overlay_heuristic():
 				# Inventory Mode: Fixed slot size (192), Unit (128) centered inside
+				# Ensure Overlay Layout
+				_setup_overlay_stats_layout()
 				icon_rect.custom_minimum_size = Vector2(192, 192)
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icon_rect.texture = null # Clear main texture, use child sprite
@@ -244,6 +264,20 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				unit_sprite.position = Vector2(32, 32) # (192-128)/2 = 32px margin
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
+				unit_sprite.texture = visual_data.get("icon")
+				unit_sprite.visible = true
+			else:
+				# Compact Mode: Native size (1x scale) for TopArea trinkets
+				# Ensure Layout (Compact uses overlay usually? or nothing? Assuming overlay/hidden)
+				_setup_overlay_stats_layout()
+				# Use native texture size and center in the slot
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.custom_minimum_size = target_size
+				
+				# Remove unit sprite if present (not needed in compact mode)
+				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+				if unit_sprite: unit_sprite.queue_free()
 		else:
 			# Fallback for missing textures
 			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -283,7 +317,13 @@ func set_is_enemy(is_enemy: bool, definition_id: StringName = &"") -> void:
 	if is_instance_valid(icon_rect):
 		# Boss sprites are already facing the player direction, so don't flip them
 		var is_boss: bool = String(definition_id).begins_with("boss_")
-		icon_rect.flip_h = is_enemy and not is_boss
+		var should_flip = is_enemy and not is_boss
+		icon_rect.flip_h = should_flip
+		
+		# Also flip the UnitSprite child if it exists (Battle Mode scaling)
+		var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+		if unit_sprite:
+			unit_sprite.flip_h = should_flip
 
 func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive
@@ -500,6 +540,9 @@ func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
 func _update_dynamic_status_icons() -> void:
 	# Get the bottom stats container to add icons to (below the unit)
 	var stats_container = get_node_or_null("StatsOverlay/BottomStatsContainer")
+	if %StatsUnderlay.visible and %Row2:
+		stats_container = %Row2
+		
 	if not is_instance_valid(stats_container):
 		return
 	
@@ -1055,3 +1098,50 @@ func _play_landing_bounce() -> void:
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	# Phase 4: Settle to normal
 	bounce_tween.tween_property(icon_rect, "scale", original_scale, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+# ------------------------------------------------------------------
+# Layout Helpers
+
+func _setup_battle_stats_layout() -> void:
+	if not %StatsUnderlay: return
+	
+	%StatsOverlay.visible = false
+	%StatsUnderlay.visible = true
+	
+	# Move Main Stats to Row1 (with 32x32 size)
+	if hp_container.get_parent() != %Row1:
+		hp_container.reparent(%Row1)
+		pwr_container.reparent(%Row1)
+		hp_container.custom_minimum_size = Vector2(32, 32)
+		pwr_container.custom_minimum_size = Vector2(32, 32)
+		
+	# Move Secondary Stats to Row2 (with 32x32 size)
+	if burn_container.get_parent() != %Row2:
+		burn_container.reparent(%Row2)
+		armor_container.reparent(%Row2)
+		burn_container.custom_minimum_size = Vector2(32, 32)
+		armor_container.custom_minimum_size = Vector2(32, 32)
+
+func _setup_overlay_stats_layout() -> void:
+	if not %StatsOverlay: return
+	
+	%StatsUnderlay.visible = false
+	%StatsOverlay.visible = true
+	
+	var top_container = %StatsContainer
+	var bottom_container = %BottomStatsContainer
+	
+	if not top_container or not bottom_container: return
+	
+	# Move Main Stats back to Top Container (48x48)
+	if hp_container.get_parent() != top_container:
+		hp_container.reparent(top_container)
+		pwr_container.reparent(top_container)
+		hp_container.custom_minimum_size = Vector2(48, 48)
+		pwr_container.custom_minimum_size = Vector2(48, 48)
+		
+	# Move Secondary Stats back to Bottom Container (48x48)
+	if burn_container.get_parent() != bottom_container:
+		burn_container.reparent(bottom_container)
+		armor_container.reparent(bottom_container)
+		burn_container.custom_minimum_size = Vector2(48, 48)
+		armor_container.custom_minimum_size = Vector2(48, 48)
