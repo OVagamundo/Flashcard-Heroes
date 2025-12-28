@@ -238,6 +238,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				unit_sprite.position = Vector2(32, 32)
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
+				# CRITICAL: Copy shader material so flash effects work on visible sprite
+				if icon_rect.material:
+					unit_sprite.material = icon_rect.material.duplicate()
 				
 				# Setup Battle Layout (Underlay)
 				_setup_battle_stats_layout()
@@ -266,6 +269,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				unit_sprite.visible = true
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
+				# CRITICAL: Copy shader material so flash effects work on visible sprite
+				if icon_rect.material:
+					unit_sprite.material = icon_rect.material.duplicate()
 			else:
 				# Compact Mode: Native size (1x scale) for TopArea trinkets
 				# Ensure Layout (Compact uses overlay usually? or nothing? Assuming overlay/hidden)

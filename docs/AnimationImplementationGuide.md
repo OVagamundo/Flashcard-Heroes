@@ -346,10 +346,51 @@ After the ball lands and the slot refreshes, a rubber-ball bounce plays on the `
 | **Small squish** | (1.05, 0.95) | 0.08s | EASE_IN_OUT |
 | **Settle** | (1.0, 1.0) | 0.1s | ELASTIC |
 
-### 8.5 Implementation Files
+### 8.5 Machine Bounce Animation
+
+The gacha machine bounces when:
+- **Tokens arrive** (tossed from token counter)
+- **Gachaball pops out** (at start of draw animation)
+- **Gachaball returns** (from Shop/Reward purchase)
+
+**Function:** `trigger_machine_bounce(tier: int)` in [Main.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Main.gd)
+
+```gdscript
+# Machine bounce effect (squash then stretch back)
+var reaction_tween = create_tween()
+reaction_tween.set_parallel(true)
+reaction_tween.tween_property(machine, "scale", Vector2(1.03, 0.97), 0.04)
+reaction_tween.tween_property(machine, "scale", Vector2(0.98, 1.02), 0.06).set_delay(0.04)
+reaction_tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC)
+```
+
+### 8.6 Shop/Reward Gachaball Return Animation
+
+When purchasing from Shop or confirming a Reward, the selected gachaball animates from its slot to the corresponding tier's gacha machine.
+
+**Direction:** Slot → Machine (inverse of draw animation)
+
+**Animation Parameters:** (identical to draw animation)
+- Duration: `0.45s`
+- Arc height: `400px` above highest point
+- Easing: `pow(t, 0.55)` - fast start, snappy landing
+- Scale: Constant `1.0` throughout
+
+**Tier Mapping:**
+- Tier 1 items → GachaMachine1
+- Tier 2 items → GachaMachine2
+- Tier 3 items → GachaMachine3
+- Trinkets → GachaMachine3 (no tier, uses highest)
+
+**Implementation Files:**
+- [Shop.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Shop.gd): `_animate_gachaball_to_machine()`
+- [Reward.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Reward.gd): `_animate_gachaball_to_machine()`
+
+### 8.7 Implementation Files
 
 - **[BattleManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleManager.gd)**: Emits `gacha_draw_animated` in `bm_draw_gacha_instance()`
 - **[BattleView.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleView.gd)**: `_on_gacha_draw_animated()` and `_force_refresh_after_anim()`
+- **[Main.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Main.gd)**: `trigger_machine_bounce()` for machine bounce effects
 - **[SignalBus.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/SignalBus.gd)**: `gacha_draw_animated` signal definition
 
 ---

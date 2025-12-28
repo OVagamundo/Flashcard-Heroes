@@ -364,6 +364,10 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	else:
 		start_pos = get_viewport_rect().get_center() # Fallback
 	
+	# Trigger machine bounce when ball pops out
+	if main_node.has_method("trigger_machine_bounce"):
+		main_node.trigger_machine_bounce(tier)
+	
 	# Determine End Position
 	var end_pos: Vector2
 	var dest_slot_view: Control = null

@@ -375,11 +375,14 @@ func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
 	container.offset_right = 0
 	container.offset_top = 0
 	container.offset_bottom = 0
+	# CRITICAL: Let mouse clicks pass through to the slot
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(container)
 	
 	# Spacer for vertical centering
 	var top_spacer = Control.new()
 	top_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.add_child(top_spacer)
 	
 	if hp_value > 0:
@@ -391,6 +394,7 @@ func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
 		hp_label.add_theme_color_override("font_color", Color.RED)
 		hp_label.add_theme_color_override("font_outline_color", Color.WHITE)
 		hp_label.add_theme_constant_override("outline_size", 6)
+		hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.add_child(hp_label)
 	
 	if pwr_value > 0:
@@ -402,11 +406,13 @@ func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
 		pwr_label.add_theme_color_override("font_color", Color.BLACK)
 		pwr_label.add_theme_color_override("font_outline_color", Color.WHITE)
 		pwr_label.add_theme_constant_override("outline_size", 6)
+		pwr_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.add_child(pwr_label)
 	
 	# Bottom spacer for vertical centering
 	var bottom_spacer = Control.new()
 	bottom_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.add_child(bottom_spacer)
 
 # --- Prize Application ---
@@ -543,6 +549,8 @@ func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void
 		if hp_proj:
 			hp_proj.launch()
 			await hp_proj.impact
+			# Hop after HP projectile lands
+			_do_hero_buff_hop(AnimationConstants.COLOR_HEAL_BUFF)
 	
 	# Launch PWR projectile AFTER HP is done
 	if pwr_value > 0:
@@ -555,22 +563,23 @@ func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void
 		if pwr_proj:
 			pwr_proj.launch()
 			await pwr_proj.impact
+			# Hop after PWR projectile lands
+			_do_hero_buff_hop(Color(0.8, 0.4, 1.0))
 	
 	# If no projectiles, wait for pop animation
 	if hp_value == 0 and pwr_value == 0:
 		await pop_tween.finished
 	
-	# Apply visual feedback to hero on impact
+	# Wait for hero animation to complete
+	await get_tree().create_timer(0.3).timeout
+
+func _do_hero_buff_hop(flash_color: Color) -> void:
+	"""Apply hop animation to hero when buff projectile lands"""
 	if is_instance_valid(GameManager.run_state) and is_instance_valid(GameManager.run_state.hero_instance):
 		var hero_uuid = GameManager.run_state.hero_instance.ball_uuid
-		# Color: green for both, red for HP only, purple for PWR only
-		var flash_color = AnimationConstants.COLOR_HEAL_BUFF if hp_value > 0 and pwr_value > 0 else (AnimationConstants.COLOR_HEAL_BUFF if hp_value > 0 else Color(0.8, 0.4, 1.0))
 		SignalBus.emit_signal("unit_color_flash", hero_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 		SignalBus.emit_signal("unit_deform", hero_uuid, &"HOP_DEFORM")
 		SignalBus.emit_signal("unit_move", hero_uuid, &"HOP", Vector2.ZERO)
-	
-	# Wait for hero animation to complete
-	await get_tree().create_timer(0.3).timeout
 
 func _clear_prize_slot(prize_index: int) -> void:
 	"""Clear a prize slot's visual content"""

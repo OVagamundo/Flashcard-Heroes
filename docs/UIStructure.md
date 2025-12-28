@@ -79,6 +79,12 @@ All horizontal slot containers (`HBoxContainer`) are configured to create contin
 *   **Instantiation:** Replaces properties of `PanelContainer` placeholders with `SlotView` instances.
 *   **Sizing Override:** The script applies default minimum sizes. Special cases (like 90px Enemy Trinkets) must be explicitly handled in the script's `_initialize_slots` method, or they will be overwritten to the default 250px.
 
+### Layout Fix Injection
+The `BattleView.gd` script includes a runtime layout fix in `_ready()` to ensure proper spacing:
+*   **Top Gap Spacer:** Inserts a 60px `Control` spacer as the first child of both `PlayerArea` and `EnemyArea`.
+*   **Purpose:** Guarantees a consistent gap below the top bar, preventing the top row of units from being cropped.
+*   **Alignment:** Sets `BoxContainer.ALIGNMENT_BEGIN` on both areas to anchor content to the top.
+
 ---
 
 ## 4. Inventory GachaBallView Visuals

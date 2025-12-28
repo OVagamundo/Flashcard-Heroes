@@ -106,6 +106,19 @@ func _get_uuid() -> String:
 	return _view._instance_uuid if is_instance_valid(_view) else ""
 
 # =============================================================================
+# Helper to get the active shader material (from UnitSprite if visible, else icon_rect)
+# =============================================================================
+func _get_active_material() -> ShaderMaterial:
+	if not is_instance_valid(_icon_rect):
+		return null
+	# Check if UnitSprite exists and is visible (used for scaled icons)
+	var unit_sprite = _icon_rect.get_node_or_null("UnitSprite")
+	if is_instance_valid(unit_sprite) and unit_sprite.visible and unit_sprite.material:
+		return unit_sprite.material as ShaderMaterial
+	# Fallback to icon_rect material
+	return _icon_rect.material as ShaderMaterial
+
+# =============================================================================
 # Helper to reset icon scale to original
 # =============================================================================
 func _reset_icon_scale() -> void:
@@ -147,7 +160,7 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	fade_tween.tween_property(_view, "position", levitate_target, AC.DEATH_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	fade_tween.tween_property(_view, "modulate:a", 0.0, AC.DEATH_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
-	var mat = _icon_rect.material as ShaderMaterial if is_instance_valid(_icon_rect) else null
+	var mat = _get_active_material()
 	if mat:
 		fade_tween.tween_method(func(v): mat.set_shader_parameter("alpha_multiplier", v), 1.0, 0.0, AC.DEATH_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
@@ -171,7 +184,7 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	_view.position = start_position
 	_icon_rect.scale = AC.SQUISH_SCALE # Start narrow & tall (stretched in direction of fall)
 	
-	var mat = _icon_rect.material as ShaderMaterial if is_instance_valid(_icon_rect) else null
+	var mat = _get_active_material()
 	if mat:
 		mat.set_shader_parameter("alpha_multiplier", 0.0)
 	
@@ -277,7 +290,7 @@ func _on_unit_flash_effect(unit_uuid: String, flash_color: Color) -> void:
 	_flash_unit_color(flash_color)
 
 func _flash_unit_color(flash_color: Color) -> void:
-	var mat = _icon_rect.material as ShaderMaterial if is_instance_valid(_icon_rect) else null
+	var mat = _get_active_material()
 	
 	if not mat:
 		var original_modulate: Color = _view.modulate
@@ -297,8 +310,8 @@ func _flash_unit_color(flash_color: Color) -> void:
 		_flash_tween.kill()
 		_view.modulate = base_modulate
 		_reset_icon_scale()
-		if is_instance_valid(_icon_rect) and _icon_rect.material:
-			(_icon_rect.material as ShaderMaterial).set_shader_parameter("flash_intensity", 0.0)
+		if _get_active_material():
+			_get_active_material().set_shader_parameter("flash_intensity", 0.0)
 		original_position = _view.global_position
 	
 	var is_heal_or_buff := flash_color.g >= flash_color.r
@@ -375,7 +388,7 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	var original_position: Vector2 = _view.position
 	var levitate_target := Vector2(original_position.x, original_position.y - AC.LETHAL_SAVE_LEVITATE_HEIGHT)
 	
-	var mat = _icon_rect.material as ShaderMaterial if is_instance_valid(_icon_rect) else null
+	var mat = _get_active_material()
 	
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
@@ -483,7 +496,7 @@ func _on_unit_color_flash(unit_uuid: String, flash_color: Color, duration: float
 	if _get_uuid() != unit_uuid:
 		return
 	
-	var mat = _icon_rect.material as ShaderMaterial if is_instance_valid(_icon_rect) else null
+	var mat = _get_active_material()
 	if not mat:
 		return
 	

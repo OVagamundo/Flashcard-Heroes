@@ -244,6 +244,22 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	# Ensure we ignore unused warning for target_pos (for future particle effects)
 	var _unused = target_pos
 	
+	_play_machine_bounce(machine)
+
+## Public function to trigger machine bounce animation from external scripts
+## Used when gachballs arrive at or depart from a machine
+func trigger_machine_bounce(tier: int) -> void:
+	var target_machine: Control = null
+	match tier:
+		1: target_machine = gacha_machine_1
+		2: target_machine = gacha_machine_2
+		3: target_machine = gacha_machine_3
+	
+	if is_instance_valid(target_machine):
+		_play_machine_bounce(target_machine)
+
+func _play_machine_bounce(machine: Control) -> void:
+	"""Internal function that plays the bounce and flash animation on a machine"""
 	# Find the MachineImage child for the flash effect
 	var machine_image = machine.get_node_or_null("MachineImage")
 	if not is_instance_valid(machine_image):
