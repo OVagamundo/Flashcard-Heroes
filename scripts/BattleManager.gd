@@ -1421,12 +1421,7 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	# TDD Section 9.4: Battle Flow
 	# This handler is only for the battle context.
 	# BattleManager only exists during battle, so we don't need to check is_in_battle.
-	# Force close any lingering FlashcardMinigame window to prevent freeze.
-	# This acts as a failsafe if WindowManager.open_modal_window() fails to close it.
-	var minigame = get_tree().get_root().find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame):
-		minigame.queue_free()
-
+	# NOTE: Window closing is now handled by FlashcardManager
 	_last_minigame_results = results
 
 	var correct_answers: int = results.get("correct_answers", 0)

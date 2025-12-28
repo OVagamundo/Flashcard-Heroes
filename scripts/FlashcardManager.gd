@@ -123,13 +123,18 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 		progress.record_answer(was_correct, _run_state_ref.day)
 
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
-	"""Called when the minigame is completed"""
+	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""
 	print("[FlashcardManager] _on_minigame_complete called. Correct: ", correct)
 	# Store results before cleanup
 	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
-	# Clear references first
-	_minigame_instance = null # Allow a new game to start
+	# CRITICAL: Close the window - FlashcardManager owns the minigame lifecycle
+	# This ensures the window closes regardless of what encounter started it
+	if is_instance_valid(_minigame_instance):
+		_minigame_instance.queue_free()
+	
+	# Clear references
+	_minigame_instance = null
 	_run_state_ref = null
 	_active_deck_ids.clear()
 	

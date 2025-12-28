@@ -183,3 +183,5 @@ ui.score,Score: %d,Pontuação: %d
 ui.answer,Answer: %s,Resposta: %s
 ui.explanation,Explanation: %s,Explicação: %s
 ui.no_explanation,No explanation available,Nenhuma explicação disponível
+ui.study,Study (+Tokens),Estudar (+Fichas)
+ui.stat_prize,Stat Prize,Prêmio de Atributo

@@ -396,6 +396,10 @@ signal flashcard_progress_updated(card_id: StringName, new_progress: FlashcardPr
 ## Emitted when results are acknowledged
 signal results_acknowledged
 
+## Emitted when a token is earned during flashcard minigame (non-battle context)
+## @param amount: int - Number of tokens earned (usually 1)
+signal flashcard_token_earned(amount: int)
+
 # -----------------------------------------------------------------------------
 # DEBUG & DEVELOPMENT SIGNALS
 # -----------------------------------------------------------------------------

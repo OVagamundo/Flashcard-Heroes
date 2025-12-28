@@ -7,17 +7,14 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
-[BattleLog] [1:1] ═══ TURN 1 ═══ 
-[FlashcardManager] _on_minigame_complete called. Correct: 5
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
+'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
+'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[FlashcardManager] _on_minigame_complete called. Correct: 16
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 16, "incorrect_answers": 80 }
 [FlashcardManager] Signal emitted successfully
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
@@ -34,136 +31,21 @@ If you want to set size, change the anchors or consider using set_deferred().
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-[BM] _enqueue_attack_for:hero_timekeeper_1766872690_44_50797-> target:unit_t3_b_1766872690_84_14688
-[BattleLog] [1:2] └─ "Bloodlust" grants Timekeeper an extra action! 
-[Bloodlust] Granting extra action to: hero_timekeeper_1766872690_44_50797
-[BM] _enqueue_attack_for:hero_timekeeper_1766872690_44_50797-> target:unit_t1_a_1766872724_88_98807
-[BattleLog] [1:3] └─ "Bloodlust" grants Timekeeper an extra action! 
-[Bloodlust] Granting extra action to: hero_timekeeper_1766872690_44_50797
-[BM] _enqueue_attack_for:hero_timekeeper_1766872690_44_50797-> target:unit_t1_a_1766872690_86_43361
-[BattleLog] [1:4] └─ "Bloodlust" grants Timekeeper an extra action! 
-[Bloodlust] Granting extra action to: hero_timekeeper_1766872690_44_50797
-[BM] _enqueue_attack_for:hero_timekeeper_1766872690_44_50797-> target:unit_t1_a_1766872690_87_60072
-[BattleLog] [1:5] └─ "Bloodlust" grants Timekeeper an extra action! 
-[Bloodlust] Granting extra action to: hero_timekeeper_1766872690_44_50797
-[BM] _enqueue_attack_for:hero_timekeeper_1766872690_44_50797-> target:unit_t2_b_1766872690_83_69438
-[BattleLog] [1:6] └─ "Bloodlust" grants Timekeeper an extra action! 
-[Bloodlust] Granting extra action to: hero_timekeeper_1766872690_44_50797
-[ANIM] ========== START ANIMATION SEQUENCE: 46 events ==========
-[SIM] Event#0: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#1: BUFF | src=item_t3_b_1766872690 | targets=[unit_t3_b_1766872690_67_42554]
-[SIM] Event#2: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#3: BUFF | src=item_t3_b_1766872690 | targets=[hero_timekeeper_1766872690_44_50797]
-[SIM] Event#4: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#5: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t3_b_1766872690_84_14688]
-[SIM] Event#6: DEATH | src= | targets=[unit_t3_b_1766872690_84_14688]
-[SIM] Event#7: SUMMON | src=item_t2_c02_17668726 | targets=[unit_t1_a_1766872724_88_98807]
-[SIM] Event#8: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#9: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#10: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#11: BUFF | src=item_t3_b_1766872690 | targets=[hero_timekeeper_1766872690_44_50797]
-[SIM] Event#12: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#13: BUFF | src=item_t3_b_1766872690 | targets=[unit_t3_b_1766872690_67_42554]
-[SIM] Event#14: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#15: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t1_a_1766872724_88_98807]
-[SIM] Event#16: DEATH | src= | targets=[unit_t1_a_1766872724_88_98807]
-[SIM] Event#17: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#18: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#19: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#20: BUFF | src=item_t3_b_1766872690 | targets=[hero_timekeeper_1766872690_44_50797]
-[SIM] Event#21: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#22: BUFF | src=item_t3_b_1766872690 | targets=[hero_timekeeper_1766872690_44_50797]
-[SIM] Event#23: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#24: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t1_a_1766872690_86_43361]
-[SIM] Event#25: DEATH | src= | targets=[unit_t1_a_1766872690_86_43361]
-[SIM] Event#26: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#27: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#28: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#29: BUFF | src=item_t3_b_1766872690 | targets=[unit_t3_b_1766872690_67_42554]
-[SIM] Event#30: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#31: BUFF | src=item_t3_b_1766872690 | targets=[unit_t1_b_1766872690_47_58904]
-[SIM] Event#32: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#33: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t1_a_1766872690_87_60072]
-[SIM] Event#34: DEATH | src= | targets=[unit_t1_a_1766872690_87_60072]
-[SIM] Event#35: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#36: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#37: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#38: BUFF | src=item_t3_b_1766872690 | targets=[hero_timekeeper_1766872690_44_50797]
-[SIM] Event#39: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#40: BUFF | src=item_t3_b_1766872690 | targets=[hero_timekeeper_1766872690_44_50797]
-[SIM] Event#41: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#42: DAMAGE | src=hero_timekeeper_1766 | targets=[unit_t2_b_1766872690_83_69438]
-[SIM] Event#43: DEATH | src= | targets=[unit_t2_b_1766872690_83_69438]
-[SIM] Event#44: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#45: LOG_MESSAGE | src= | targets=[none]
-[BattleLog] [1:7] Timekeeper grants Guardian Sentinel +2 PWR 
-[BattleLog] [1:8] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:9] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [1:10] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:11] Timekeeper deals 10 dmg to Guardian Sentinel 
-[BattleLog] [1:12] Timekeeper attacks unit_t3_... for 10 damage (basic_attack, on_attack) (HP: 8→-2)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1766872690_84_14688"] source: hero_timekeeper_1766872690_44_50797 attack_type: melee
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
-[BattleLog] [1:13] └─ unit_t3_... is defeated! 
-[BattleLog] [1:14] └─ item_t2_... summons New Unit! 
-[BattleLog] [1:15] Gained 1 gold! 
-[BattleLog] [1:16] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:17] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [1:18] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:19] Timekeeper grants Guardian Sentinel +2 PWR 
-[BattleLog] [1:20] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:21] Timekeeper deals 12 dmg to Apprentice 
-[BattleLog] [1:22] Timekeeper attacks unit_t1_... for 12 damage (basic_attack, on_attack) (HP: 2→-10)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1766872724_88_98807"] source: hero_timekeeper_1766872690_44_50797 attack_type: melee
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
-[BattleLog] [1:23] └─ unit_t1_... is defeated! 
-[BattleLog] [1:24] Gained 1 gold! 
-[BattleLog] [1:25] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:26] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [1:27] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:28] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [1:29] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:30] Timekeeper deals 16 dmg to Apprentice 
-[BattleLog] [1:31] Timekeeper attacks unit_t1_... for 16 damage (basic_attack, on_attack) (HP: 2→-14)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1766872690_86_43361"] source: hero_timekeeper_1766872690_44_50797 attack_type: melee
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
-[BattleLog] [1:32] └─ unit_t1_... is defeated! 
-[BattleLog] [1:33] Gained 1 gold! 
-[BattleLog] [1:34] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:35] Timekeeper grants Guardian Sentinel +2 PWR 
-[BattleLog] [1:36] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:37] Timekeeper grants Squire +2 PWR 
-[BattleLog] [1:38] Power Amulet grants Squire +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:39] Timekeeper deals 16 dmg to Apprentice 
-[BattleLog] [1:40] Timekeeper attacks unit_t1_... for 16 damage (basic_attack, on_attack) (HP: 2→-14)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1766872690_87_60072"] source: hero_timekeeper_1766872690_44_50797 attack_type: melee
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
-[BattleLog] [1:41] └─ unit_t1_... is defeated! 
-[BattleLog] [1:42] Gained 1 gold! 
-[BattleLog] [1:43] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:44] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [1:45] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:46] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [1:47] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:48] Timekeeper deals 20 dmg to Berserker 
-[BattleLog] [1:49] Timekeeper attacks unit_t2_... for 20 damage (basic_attack, on_attack) (HP: 2→-18)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1766872690_83_69438"] source: hero_timekeeper_1766872690_44_50797 attack_type: melee
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1766 type 5
-[BattleLog] [1:50] └─ unit_t2_... is defeated! 
-[BattleLog] [1:51] Gained 1 gold! 
-[BattleLog] [1:52] Timekeeper triggers Bloodlust! 
-[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 46 events processed ==========
-[BattleAnimator] Emitting turn_animation_finished!
-[BattleLog] [1:53] Battle ended 
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2378)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
+'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
+'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 52 }
+[FlashcardManager] Signal emitted successfully
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)

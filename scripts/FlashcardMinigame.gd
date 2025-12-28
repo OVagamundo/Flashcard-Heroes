@@ -472,14 +472,15 @@ func _on_token_landed() -> void:
 	"""Called when a token animation completes - update the counter live"""
 	_tokens_pending -= 1
 	
-	# Find BattleManager to update tokens
+	# Find BattleManager to update tokens (battle context)
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if is_instance_valid(bm) and bm.has_method("add_gacha_token"):
 		bm.add_gacha_token(1)
 	else:
-		# Fallback: emit signal directly if we can access the tokens
-		# This shouldn't normally happen in battle context
-		pass
+		# Non-battle context (Rest Site, etc.): emit signal directly
+		# Find current token count from whoever is listening
+		# This increments the displayed count by 1
+		SignalBus.emit_signal("flashcard_token_earned", 1)
 
 func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 	"""Flash the incorrect answer button red"""
