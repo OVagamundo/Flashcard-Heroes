@@ -98,17 +98,30 @@ func _on_confirm_pressed() -> void:
 		var instance = GameManager.get_instance_by_uuid(_reward_uuids[selected_loc.index])
 		var visual_data: Dictionary = {}
 		var tier: int = 1
+		var target_trinket_slot: int = -1 # Will be set for trinkets
 		if is_instance_valid(instance):
 			visual_data = VisualDataAdapter.create_visual_data(instance)
 			var def = instance.get_definition()
 			if def is GachaBallDefinition:
 				tier = int(def.tier)
-			# Trinkets go to machine 3
+			# Trinkets go to the player trinket bar (NOT a machine)
 			if is_instance_valid(def) and def.category == &"TRINKET":
-				tier = 3
+				tier = -1 # Special marker for trinket
+				# CRITICAL: Capture the target slot BEFORE the signal adds the trinket
+				if is_instance_valid(GameManager.run_state):
+					var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+					if trinket_container and trinket_container.has_method("find_first_empty_slot"):
+						target_trinket_slot = trinket_container.find_first_empty_slot()
+						if target_trinket_slot < 0:
+							target_trinket_slot = 0 # Default to first slot if full
 		
 		var uuid = _reward_uuids[selected_loc.index]
-		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+		
+		# For non-trinkets, emit signal immediately
+		# For trinkets, delay until animation ends to prevent early slot appearance
+		if tier != -1:
+			SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+		
 		# Hide old buttons, show the new one
 		confirm_button.visible = false
 		gold_button.visible = false
@@ -122,9 +135,13 @@ func _on_confirm_pressed() -> void:
 					continue
 				child.queue_free()
 		
-		# Trigger gachaball animation to machine
+		# Trigger gachaball animation
 		if not visual_data.is_empty():
-			_animate_gachaball_to_machine(start_pos, visual_data, tier)
+			if tier == -1:
+				# Trinkets: pass uuid so signal can be emitted AFTER animation
+				_animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
+			else:
+				_animate_gachaball_to_machine(start_pos, visual_data, tier)
 
 func _on_gold_pressed() -> void:
 	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
@@ -202,14 +219,17 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
 	# For animation, track CENTER position and derive global_position from it
-	var start_center: Vector2 = start_pos
+	# Add vertical offset to start_pos (slot center is above ball visual center in 192px slot)
+	var start_center: Vector2 = start_pos + Vector2(0, 96) # Offset down to match ball visual center
 	var end_center: Vector2 = end_pos
 	
-	# Initial setup: place ball at start (full scale)
-	anim_ball.scale = Vector2(1.0, 1.0)
-	anim_ball.global_position = start_center - anim_ball.pivot_offset
+	# MATCH BATTLE DRAW: Start small, grow to full size
+	var initial_scale := 0.3
+	var final_scale := 1.0
+	anim_ball.scale = Vector2(initial_scale, initial_scale)
+	anim_ball.global_position = start_center - (anim_ball.pivot_offset * initial_scale)
 	
-	# Arc parameters - SAME as battle scene
+	# MATCH BATTLE DRAW: Arc and duration parameters
 	var arc_height := 400.0 # Peak height above the highest point
 	var duration := 0.45 # Snappy fast animation
 	
@@ -223,10 +243,15 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
-	# Animate t from 0 to 1 - SAME easing as battle scene
+	# MATCH BATTLE DRAW: Same easing for pop-out effect
 	tween.tween_method(func(t: float):
-		# Same easing as battle scene - fast start, snappy landing
+		# Fast start AND snappy landing (same as battle draw)
 		var eased_t = pow(t, 0.55)
+		
+		# Scale animation: grows quickly then settles (same as battle draw)
+		var scale_eased = 1.0 - pow(1.0 - t, 2)
+		var current_scale = lerp(initial_scale, final_scale, scale_eased)
+		anim_ball.scale = Vector2(current_scale, current_scale)
 		
 		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
 		var inv_t = 1.0 - eased_t
@@ -234,8 +259,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 				  (2.0 * inv_t * eased_t * control_point) + \
 				  (eased_t * eased_t * end_center)
 		
-		# Position ball so its CENTER is at pos
-		anim_ball.global_position = pos - anim_ball.pivot_offset
+		# Position ball so its CENTER is at pos (accounting for current scale)
+		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
 	, 0.0, 1.0, duration)
 	
 	# Clean up and trigger machine bounce when ball lands
@@ -244,4 +269,103 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 		# Trigger machine bounce
 		if main_node.has_method("trigger_machine_bounce"):
 			main_node.trigger_machine_bounce(tier)
+	)
+
+func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int, instance_uuid: String) -> void:
+	"""Animate a gachaball from its reward slot to the player trinket bar"""
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		# Emit signal anyway to ensure data consistency
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
+		return
+	
+	# Get target: PlayerTrinketBar in TopArea
+	var trinket_bar = main_node.get_node_or_null("VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar")
+	if not is_instance_valid(trinket_bar):
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
+		return
+	
+	# Use the pre-captured slot index (before signal was emitted)
+	# Clamp to valid slot range
+	var slot_count = trinket_bar.get_child_count()
+	target_slot_index = clampi(target_slot_index, 0, slot_count - 1)
+	
+	# Get the target slot
+	var target_slot = trinket_bar.get_child(target_slot_index) if target_slot_index < slot_count else null
+	if not is_instance_valid(target_slot):
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
+		return
+	
+	var end_pos: Vector2 = target_slot.get_global_rect().get_center()
+	
+	# Spawn animated ball
+	var anim_ball = GachaBallViewScene.instantiate()
+	
+	# Add to effects layer
+	var effects_layer = main_node.get_node_or_null("EffectsLayer")
+	if effects_layer:
+		effects_layer.add_child(anim_ball)
+	else:
+		add_child(anim_ball)
+	
+	# Configure visual style: Use 128px ball (matches slot size)
+	anim_ball.force_inventory_mode = true
+	anim_ball.custom_minimum_size = Vector2(128, 128)
+	anim_ball.size = Vector2(128, 128)
+	
+	# Populate with visual data
+	anim_ball.populate(null, visual_data)
+	
+	# Set pivot to center for proper centering during animation
+	anim_ball.pivot_offset = anim_ball.size / 2.0
+	
+	# For animation, track CENTER position and derive global_position from it
+	var start_center: Vector2 = start_pos
+	var end_center: Vector2 = end_pos
+	
+	# MATCH BATTLE DRAW: Start small, grow to full size
+	var initial_scale := 0.3
+	var final_scale := 1.0
+	anim_ball.scale = Vector2(initial_scale, initial_scale)
+	anim_ball.global_position = start_center - (anim_ball.pivot_offset * initial_scale)
+	
+	# MATCH BATTLE DRAW: Arc and duration parameters
+	var arc_height := 400.0 # Peak height above the highest point
+	var duration := 0.45 # Snappy fast animation
+	
+	# Quadratic Bezier curve for natural arc
+	var control_point := Vector2(
+		(start_center.x + end_center.x) / 2.0, # Horizontally centered
+		min(start_center.y, end_center.y) - arc_height # Above both points
+	)
+	
+	# Use tween_method to animate along the Bezier curve
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_LINEAR)
+	
+	# MATCH BATTLE DRAW: Same easing for pop-out effect
+	tween.tween_method(func(t: float):
+		# Fast start AND snappy landing (same as battle draw)
+		var eased_t = pow(t, 0.55)
+		
+		# Scale animation: grows quickly then settles (same as battle draw)
+		var scale_eased = 1.0 - pow(1.0 - t, 2)
+		var current_scale = lerp(initial_scale, final_scale, scale_eased)
+		anim_ball.scale = Vector2(current_scale, current_scale)
+		
+		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
+		var inv_t = 1.0 - eased_t
+		var pos = (inv_t * inv_t * start_center) + \
+				  (2.0 * inv_t * eased_t * control_point) + \
+				  (eased_t * eased_t * end_center)
+		
+		# Position ball so its CENTER is at pos (accounting for current scale)
+		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
+	, 0.0, 1.0, duration)
+	
+	# Clean up when ball lands then emit signal to add trinket
+	tween.tween_callback(func():
+		anim_ball.queue_free()
+		# NOW emit the delayed signal to add the trinket to RunState
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
 	)

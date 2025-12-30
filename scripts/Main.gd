@@ -435,9 +435,10 @@ func _populate_player_trinkets() -> void:
 			continue
 		for child in slot_view.get_children():
 			child.queue_free()
-		# Use 2x scale for player trinkets (128x128 display, 64x64 native texture)
+		# Use 1x scale for player trinkets (compact 128x128 display, native 64x64 texture)
+		# NOTE: TopArea slots are 128x128 which can't fit 2x Battle Mode (192x192)
 		if slot_view.has_method("set_size_scale"):
-			slot_view.set_size_scale(2.0)
+			slot_view.set_size_scale(1.0)
 		var loc = LocationIdentifier.new()
 		loc.container = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
 		loc.index = i

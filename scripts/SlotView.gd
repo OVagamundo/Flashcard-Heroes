@@ -14,8 +14,11 @@ var _size_scale: float = 2.0 # Default to battle scale
 var _indicator: TextureRect = null
 var _indicator_tween: Tween = null
 const INDICATOR_TEXTURE = preload("res://assets/ui/textures/Indicator.png")
+# Base slot size at 1x scale
+const BASE_SLOT_SIZE: int = 96
 
 ## Set size scale for gachaball views in this slot
+## NOTE: This only sets internal scale for GachaBallView. Caller is responsible for slot size.
 func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 

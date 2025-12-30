@@ -271,14 +271,17 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
 	# For animation, track CENTER position and derive global_position from it
-	var start_center: Vector2 = start_pos
+	# Add vertical offset to start_pos (slot center is above ball visual center in 192px slot)
+	var start_center: Vector2 = start_pos + Vector2(0, 96) # Offset down to match ball visual center
 	var end_center: Vector2 = end_pos
 	
-	# Initial setup: place ball at start (full scale)
-	anim_ball.scale = Vector2(1.0, 1.0)
-	anim_ball.global_position = start_center - anim_ball.pivot_offset
+	# MATCH BATTLE DRAW: Start small, grow to full size
+	var initial_scale := 0.3
+	var final_scale := 1.0
+	anim_ball.scale = Vector2(initial_scale, initial_scale)
+	anim_ball.global_position = start_center - (anim_ball.pivot_offset * initial_scale)
 	
-	# Arc parameters - SAME as battle scene
+	# MATCH BATTLE DRAW: Arc and duration parameters
 	var arc_height := 400.0 # Peak height above the highest point
 	var duration := 0.45 # Snappy fast animation
 	
@@ -292,10 +295,15 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
-	# Animate t from 0 to 1 - SAME easing as battle scene
+	# MATCH BATTLE DRAW: Same easing for pop-out effect
 	tween.tween_method(func(t: float):
-		# Same easing as battle scene - fast start, snappy landing
+		# Fast start AND snappy landing (same as battle draw)
 		var eased_t = pow(t, 0.55)
+		
+		# Scale animation: grows quickly then settles (same as battle draw)
+		var scale_eased = 1.0 - pow(1.0 - t, 2)
+		var current_scale = lerp(initial_scale, final_scale, scale_eased)
+		anim_ball.scale = Vector2(current_scale, current_scale)
 		
 		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
 		var inv_t = 1.0 - eased_t
@@ -303,8 +311,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 				  (2.0 * inv_t * eased_t * control_point) + \
 				  (eased_t * eased_t * end_center)
 		
-		# Position ball so its CENTER is at pos
-		anim_ball.global_position = pos - anim_ball.pivot_offset
+		# Position ball so its CENTER is at pos (accounting for current scale)
+		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
 	, 0.0, 1.0, duration)
 	
 	# Clean up and trigger machine bounce when ball lands

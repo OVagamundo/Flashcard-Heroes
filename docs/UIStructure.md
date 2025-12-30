@@ -79,11 +79,21 @@ All horizontal slot containers (`HBoxContainer`) are configured to create contin
 *   **Instantiation:** Replaces properties of `PanelContainer` placeholders with `SlotView` instances.
 *   **Sizing Override:** The script applies default minimum sizes. Special cases (like 90px Enemy Trinkets) must be explicitly handled in the script's `_initialize_slots` method, or they will be overwritten to the default 250px.
 
-### Layout Fix Injection
+### Layout Fix Injection (CRITICAL)
 The `BattleView.gd` script includes a runtime layout fix in `_ready()` to ensure proper spacing:
-*   **Top Gap Spacer:** Inserts a 60px `Control` spacer as the first child of both `PlayerArea` and `EnemyArea`.
+
+*   **Top Gap Spacer:** Inserts an **80px** `Control` spacer as the first child of both `PlayerArea` and `EnemyArea`.
 *   **Purpose:** Guarantees a consistent gap below the top bar, preventing the top row of units from being cropped.
 *   **Alignment:** Sets `BoxContainer.ALIGNMENT_BEGIN` on both areas to anchor content to the top.
+
+> [!CAUTION]
+> **Slot Sizing Override:** `BattleView._initialize_slots()` replaces scene placeholders with SlotView instances and sets their sizes. All battle slots must use **192x192** for 2x scale. Do NOT use `SlotView.set_size_scale()` to set slot size - it only configures the internal GachaBallView scaling, not the slot dimensions. The caller is responsible for setting `custom_minimum_size` on the slot.
+
+> [!WARNING]  
+> **Centering Issue:** If battle content appears stuck to the top with excess space at the bottom, verify that:
+> 1. The spacer injection code in `BattleView.gd _ready()` is executing (lines ~55-78).
+> 2. Spacer height is set correctly (80px).
+> 3. `set_size_scale()` is NOT overriding `custom_minimum_size` on slots.
 
 ---
 

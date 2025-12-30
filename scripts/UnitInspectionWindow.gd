@@ -183,7 +183,10 @@ func _rebuild_item_grid() -> void:
 
 	# Ensure the correct number of persistent SlotViews exist.
 	while item_grid.get_child_count() < unit_definition.item_slot_count:
-		item_grid.add_child(_SlotView.instantiate())
+		var slot_view = _SlotView.instantiate()
+		# Use 1x scale for inspection window items (96x96 fixed size)
+		slot_view.set_size_scale(1.0)
+		item_grid.add_child(slot_view)
 	while item_grid.get_child_count() > unit_definition.item_slot_count:
 		item_grid.get_child(item_grid.get_child_count() - 1).queue_free()
 
