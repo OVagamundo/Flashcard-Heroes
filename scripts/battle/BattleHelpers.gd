@@ -64,7 +64,10 @@ static func get_ally_behind(state: BattleState, source_instance: GachaBallInstan
 	if behind_uuid.is_empty():
 		return null
 	
-	return state.get_instance(behind_uuid)
+	var inst := state.get_instance(behind_uuid)
+	if is_instance_valid(inst) and inst.current_hp > 0:
+		return inst
+	return null
 
 ## Find a unit with the intercept_lethal tag on the specified team that can intercept damage.
 ## Returns the unit with highest HP, or null if none available.
@@ -123,8 +126,17 @@ static func get_slot_ahead(state: BattleState, source_instance: GachaBallInstanc
 	if source_index == -1:
 		return null
 	
-	var ahead_index := source_index + 1
-	if ahead_index >= container.get_size():
+	var is_player := state.is_player_unit(source_instance)
+	
+	# For players (right-to-left), "ahead" (toward enemy) means higher index
+	# For enemies (left-to-right), "ahead" (toward player) means lower index
+	var ahead_index: int
+	if is_player:
+		ahead_index = source_index + 1
+	else:
+		ahead_index = source_index - 1
+	
+	if ahead_index < 0 or ahead_index >= container.get_size():
 		return null
 	
 	var ahead_uuid := container.get_uuid(ahead_index)

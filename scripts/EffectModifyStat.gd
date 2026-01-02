@@ -45,7 +45,24 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			return damage_result
 		
 		# HEALS (positive HP) and BUFFS (positive PWR) use new EffectResult path
+		# MULTI-TARGET BATCHING: Collect all target data first, then create ONE event
+		# This enables simultaneous projectile animations for multi-target abilities
 		var result := EffectResult.new()
+		
+		# Collect data for all targets
+		var all_target_uuids: Array[String] = []
+		var all_old_vals: Array[int] = []
+		var all_new_vals: Array[int] = []
+		var all_max_hp: Array[int] = []
+		var target_names: Array[String] = []
+		
+		# Get source name once
+		var source_name: String = ""
+		if not _source_uuid.is_empty():
+			var src = battle_manager.get_instance_by_uuid(_source_uuid)
+			source_name = BattleHelpers.get_instance_display_name(src)
+		if source_name == "":
+			source_name = String(context.get("ability_id", "effect"))
 		
 		for target_uuid in valid_targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
@@ -60,24 +77,31 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			# Apply stat change
 			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount)
 			
-			# Get source name for log
-			var source_name: String = ""
-			if not _source_uuid.is_empty():
-				var src = battle_manager.get_instance_by_uuid(_source_uuid)
-				source_name = BattleHelpers.get_instance_display_name(src)
-			if source_name == "":
-				source_name = String(context.get("ability_id", "effect"))
-			
-			var target_name: String = BattleHelpers.get_instance_display_name(tgt)
+			# Collect data
+			all_target_uuids.append(target_uuid)
+			all_old_vals.append(old_val)
+			all_new_vals.append(new_val)
+			all_max_hp.append(max_hp)
+			target_names.append(BattleHelpers.get_instance_display_name(tgt))
 			
 			if stat == "hp":
-				# HEAL event
-				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-					"text": "%s heals %s for %d HP" % [source_name, target_name, amount]
-				}))
+				result.mark_healed(target_uuid)
+		
+		# Create batched event for all targets at once (enables simultaneous projectiles)
+		if not all_target_uuids.is_empty():
+			if stat == "hp":
+				# Log message with all target names
+				var log_text: String
+				if target_names.size() == 1:
+					log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
+				else:
+					log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
+				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+				
+				# Single HEAL event with all targets batched
 				result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
 					"source_uuid": _source_uuid,
-					"target_uuids": [target_uuid],
+					"target_uuids": all_target_uuids,
 					"ability_id": context.get("ability_id", &"modify_stat"),
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
@@ -86,20 +110,24 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						"amount": amount,
 						"stat": stat,
 						"skip_bump": false,
-						"targets_old_hp": [old_val],
-						"targets_new_hp": [new_val],
-						"targets_max_hp": [max_hp]
+						"targets_old_hp": all_old_vals,
+						"targets_new_hp": all_new_vals,
+						"targets_max_hp": all_max_hp
 					}
 				}))
-				result.mark_healed(target_uuid)
 			elif stat == "pwr":
-				# BUFF event
-				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-					"text": "%s grants %s +%d PWR" % [source_name, target_name, amount]
-				}))
+				# Log message with all target names
+				var log_text: String
+				if target_names.size() == 1:
+					log_text = "%s grants %s +%d PWR" % [source_name, target_names[0], amount]
+				else:
+					log_text = "%s grants %s +%d PWR" % [source_name, " and ".join(target_names), amount]
+				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+				
+				# Single BUFF event with all targets batched
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": _source_uuid,
-					"target_uuids": [target_uuid],
+					"target_uuids": all_target_uuids,
 					"ability_id": context.get("ability_id", &"modify_stat"),
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
@@ -107,8 +135,8 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						"source_uuid": _source_uuid,
 						"amount": amount,
 						"stat": stat,
-						"targets_old_pwr": [old_val],
-						"targets_new_pwr": [new_val]
+						"targets_old_pwr": all_old_vals,
+						"targets_new_pwr": all_new_vals
 					}
 				}))
 		

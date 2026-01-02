@@ -55,7 +55,7 @@ The Shop.tscn scene and its script ([Shop.gd](file:///Users/danhh/Desktop/Flashc
    - It moves the GachaBallInstance from its `_temporary_shop_master_dict` to the permanent `RunState.run_instances` dictionary.
    - It updates the instance's location properties to place it in the correct `RunInventoryT<n>` container.
    - It removes the UUID from the `_temporary_shop_container`, leaving the shop slot empty.
-6. **GachaBall Animation:** `_animate_gachaball_to_machine()` animates the purchased gachaball from its shop slot to the corresponding tier's gacha machine with a Bezier arc (same animation as battle draw, but reversed direction).
+6. **GachaBall Animation:** `_animate_gachaball_to_machine()` animates the purchased gachaball from its shop slot to the corresponding tier's gacha machine with a Bezier arc. The animation now matches the battle draw exactly: starts at 0.3 scale and grows to 1.0, with a 400px arc height and 0.45s duration.
 7. **Machine Bounce:** When the ball lands, `Main.trigger_machine_bounce(tier)` is called to bounce the target machine.
 8. **UI Refresh:** The GameManager emits a `shop_stock_refreshed` signal, causing the Shop.tscn to update its view, showing the empty slot.
 
@@ -77,7 +77,8 @@ Although the `interaction_mode` is `SELECTION_ONLY`, players can still inspect i
 
 ## 4. Animation Implementation
 
-See [AnimationImplementationGuide.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/AnimationImplementationGuide.md) Section 8.5-8.6 for details on:
+See [AnimationImplementationGuide.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/AnimationImplementationGuide.md) Section 8.5-8.8 for details on:
 - Gold coin tossing animation (`_animate_gold_spend()`)
 - GachaBall return animation (`_animate_gachaball_to_machine()`)
+- Trinket bar animation (`_animate_gachaball_to_trinket_bar()`)
 - Machine bounce effect (`trigger_machine_bounce()`)

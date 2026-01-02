@@ -781,9 +781,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		return null
 		
 	# TDD 4.3.III.5: Prevent dragging in Inspection-Only contexts
-	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
-	if context_group == &"InspectionOnly":
-		return null
+	if is_instance_valid(_location):
+		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
+		if context_group == &"InspectionOnly":
+			return null
 
 	_drag_initiated_for_click = true
 	_pressed_pending_click = false
@@ -900,9 +901,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 
 func _can_drop_data(_at_position, data) -> bool:
 	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
-	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
-	if context_group == &"InspectionOnly":
-		return false
+	if is_instance_valid(_location):
+		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
+		if context_group == &"InspectionOnly":
+			return false
 		
 	return data is Dictionary and data.has("source_loc")
 
@@ -984,7 +986,7 @@ func _apply_selection_feedback() -> void:
 		# Scale the icon slightly larger when selected for a "pop" effect
 		if _is_selected:
 			icon_rect.scale = Vector2(1.1, 1.1)
-			icon_rect.pivot_offset = icon_rect.size / 2 # Scale from center
+			# NOTE: Don't touch pivot_offset here - animations set their own pivot via _ensure_pivot()
 		else:
 			icon_rect.scale = Vector2(1.0, 1.0)
 
@@ -1086,7 +1088,16 @@ func _play_landing_bounce() -> void:
 	# Store original values before animation
 	var original_scale = icon_rect.scale
 	var original_pos = icon_rect.position
-	icon_rect.pivot_offset = icon_rect.size / 2.0
+	
+	# CRITICAL: Match pivot_offset to what UnitAnimationController uses if present
+	# Combat units use bottom-center pivot, inventory uses center pivot
+	var controller = get_node_or_null("AnimationController")
+	if is_instance_valid(controller):
+		# Match UnitAnimationController's bottom-center pivot
+		icon_rect.pivot_offset = Vector2(icon_rect.size.x / 2.0, icon_rect.size.y)
+	else:
+		# Inventory/Shop/Reward mode: use center pivot
+		icon_rect.pivot_offset = icon_rect.size / 2.0
 	
 	# Start position: Slightly above (falling from a small height)
 	var fall_height := 40.0

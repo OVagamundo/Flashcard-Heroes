@@ -35,8 +35,10 @@ func _ready() -> void:
 	
 	# CRITICAL: Set pivot to bottom-center so scaling is grounded at the feet
 	# This makes squish/stretch appear from the ground up, not from center
+	# NOTE: We set _original_icon_scale here but NOT pivot_offset!
+	# Pivot must be set at animation time because populate() hasn't run yet
+	# and icon_rect.size is likely (0,0) at this point.
 	if is_instance_valid(_icon_rect):
-		_icon_rect.pivot_offset = Vector2(_icon_rect.size.x / 2.0, _icon_rect.size.y)
 		_original_icon_scale = _icon_rect.scale
 	
 	_connect_signals()
@@ -126,6 +128,14 @@ func _reset_icon_scale() -> void:
 		_icon_rect.scale = _original_icon_scale
 
 # =============================================================================
+# Helper to ensure pivot is set correctly before animation
+# Must be called at the START of any animation that uses scale
+# =============================================================================
+func _ensure_pivot() -> void:
+	if is_instance_valid(_icon_rect) and _icon_rect.size != Vector2.ZERO:
+		_icon_rect.pivot_offset = Vector2(_icon_rect.size.x / 2.0, _icon_rect.size.y)
+
+# =============================================================================
 # BUMP ATTACK ANIMATION
 # =============================================================================
 func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
@@ -177,6 +187,8 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_ensure_pivot() # Recalculate pivot with current size
+	
 	var original_position: Vector2 = _view.position
 	var start_position := Vector2(original_position.x, original_position.y - AC.SUMMON_DROP_HEIGHT)
 	
@@ -223,6 +235,8 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	_original_z_index = _view.z_index
 	_view.z_index = 100
 	
+	_ensure_pivot() # Recalculate pivot with current size
+	
 	var mid_y = min(_melee_origin_position.y, target_position.y) - AC.MELEE_ARC_HEIGHT
 	var direction_to_target = (target_position - _melee_origin_position).normalized()
 	var windup_pos = _melee_origin_position - (direction_to_target * AC.MELEE_WINDUP_DISTANCE)
@@ -260,6 +274,8 @@ func _on_melee_lunge_tween_finished() -> void:
 func _on_unit_melee_return(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
+	
+	_ensure_pivot() # Recalculate pivot with current size
 	
 	var tween = _view.create_tween()
 	
@@ -306,6 +322,9 @@ func _flash_unit_color(flash_color: Color) -> void:
 	
 	# CRITICAL: Detach from parent layout so position animation works
 	_view.top_level = true
+	
+	_ensure_pivot() # Recalculate pivot with current size
+	
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
 		_view.modulate = base_modulate
@@ -438,6 +457,8 @@ func animate_leap_to(target_center: Vector2) -> void:
 	
 	var tween = _view.create_tween()
 	
+	_ensure_pivot() # Recalculate pivot with current size
+	
 	# Phase 1: Squish icon before leap (anticipation)
 	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
@@ -468,6 +489,8 @@ func animate_leap_return() -> void:
 		return
 	
 	var tween = _view.create_tween()
+	
+	_ensure_pivot() # Recalculate pivot with current size
 	
 	# Phase 1: Stretch icon for return jump
 	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -533,6 +556,8 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 		_reset_icon_scale()
 	
 	_deform_tween = _view.create_tween()
+	
+	_ensure_pivot() # Recalculate pivot with current size
 	
 	match deform_type:
 		&"SQUISH_BOUNCE":

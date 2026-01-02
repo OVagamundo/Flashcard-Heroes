@@ -370,11 +370,15 @@ When purchasing from Shop or confirming a Reward, the selected gachaball animate
 
 **Direction:** Slot → Machine (inverse of draw animation)
 
-**Animation Parameters:** (identical to draw animation)
-- Duration: `0.45s`
-- Arc height: `400px` above highest point
-- Easing: `pow(t, 0.55)` - fast start, snappy landing
-- Scale: Constant `1.0` throughout
+**Animation Parameters:** (now identical to draw animation)
+| Parameter | Value |
+|-----------|-------|
+| Duration | `0.45s` |
+| Arc height | `400px` above highest point |
+| Position easing | `pow(t, 0.55)` - fast start, snappy landing |
+| Scale | `0.3 → 1.0` (grows during flight) |
+| Scale easing | `1.0 - pow(1.0 - t, 2)` - fast initial growth, settling |
+| Start offset | `+96px Y` to match ball visual center in 192px slot |
 
 **Tier Mapping:**
 - Tier 1 items → GachaMachine1
@@ -386,7 +390,29 @@ When purchasing from Shop or confirming a Reward, the selected gachaball animate
 - [Shop.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Shop.gd): `_animate_gachaball_to_machine()`
 - [Reward.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Reward.gd): `_animate_gachaball_to_machine()`
 
-### 8.7 Implementation Files
+### 8.7 Trinket Reward Animation (Boss Fight)
+
+When claiming a trinket reward from a boss fight, the trinket animates to the player's trinket bar in the TopArea.
+
+**Direction:** Reward slot → PlayerTrinketBar slot
+
+**Key Behavior:**
+- Signal is **delayed** until animation completes (prevents early slot visibility)
+- Target slot is captured **before** signal emission to ensure correct targeting
+
+**Animation Parameters:** (same as battle draw)
+| Parameter | Value |
+|-----------|-------|
+| Duration | `0.45s` |
+| Arc height | `400px` above highest point |
+| Position easing | `pow(t, 0.55)` - fast start, snappy landing |
+| Scale | `0.3 → 1.0` (grows during flight) |
+| Scale easing | `1.0 - pow(1.0 - t, 2)` - fast initial growth, settling |
+| Ball size | `128x128px` (matches trinket bar slot) |
+
+**Implementation:** [Reward.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/Reward.gd): `_animate_gachaball_to_trinket_bar()`
+
+### 8.8 Implementation Files
 
 - **[BattleManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleManager.gd)**: Emits `gacha_draw_animated` in `bm_draw_gacha_instance()`
 - **[BattleView.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleView.gd)**: `_on_gacha_draw_animated()` and `_force_refresh_after_anim()`

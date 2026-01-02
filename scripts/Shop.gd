@@ -271,21 +271,20 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
 	# For animation, track CENTER position and derive global_position from it
-	# Add vertical offset to start_pos (slot center is above ball visual center in 192px slot)
-	var start_center: Vector2 = start_pos + Vector2(0, 96) # Offset down to match ball visual center
+	# Start exactly centered on the ball in the slot
+	var start_center: Vector2 = start_pos
 	var end_center: Vector2 = end_pos
 	
-	# MATCH BATTLE DRAW: Start small, grow to full size
-	var initial_scale := 0.3
-	var final_scale := 1.0
-	anim_ball.scale = Vector2(initial_scale, initial_scale)
-	anim_ball.global_position = start_center - (anim_ball.pivot_offset * initial_scale)
+	# FIXED SIZE: No scale changes, constant 1.0 scale throughout
+	var constant_scale := 1.0
+	anim_ball.scale = Vector2(constant_scale, constant_scale)
+	anim_ball.global_position = start_center - (anim_ball.pivot_offset * constant_scale)
 	
-	# MATCH BATTLE DRAW: Arc and duration parameters
-	var arc_height := 400.0 # Peak height above the highest point
-	var duration := 0.45 # Snappy fast animation
+	# Arc parameters - fast and smooth
+	var arc_height := 200.0 # Peak height above the highest point
+	var duration := 0.45 # Faster animation
 	
-	# Quadratic Bezier curve for natural basketball arc
+	# Quadratic Bezier curve for natural arc
 	var control_point := Vector2(
 		(start_center.x + end_center.x) / 2.0, # Horizontally centered
 		min(start_center.y, end_center.y) - arc_height # Above both points
@@ -295,15 +294,10 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
-	# MATCH BATTLE DRAW: Same easing for pop-out effect
+	# Nearly linear easing: smooth and fast
 	tween.tween_method(func(t: float):
-		# Fast start AND snappy landing (same as battle draw)
-		var eased_t = pow(t, 0.55)
-		
-		# Scale animation: grows quickly then settles (same as battle draw)
-		var scale_eased = 1.0 - pow(1.0 - t, 2)
-		var current_scale = lerp(initial_scale, final_scale, scale_eased)
-		anim_ball.scale = Vector2(current_scale, current_scale)
+		# Almost linear: pow(t, 1.05) - very subtle ease for natural feel
+		var eased_t = pow(t, 1.05)
 		
 		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
 		var inv_t = 1.0 - eased_t
@@ -311,8 +305,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 				  (2.0 * inv_t * eased_t * control_point) + \
 				  (eased_t * eased_t * end_center)
 		
-		# Position ball so its CENTER is at pos (accounting for current scale)
-		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
+		# Position ball so its CENTER is at pos (constant scale)
+		anim_ball.global_position = pos - (anim_ball.pivot_offset * constant_scale)
 	, 0.0, 1.0, duration)
 	
 	# Clean up and trigger machine bounce when ball lands

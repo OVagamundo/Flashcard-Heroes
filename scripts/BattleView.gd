@@ -523,8 +523,9 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	# Rubber ball bounce animation - squish on landing, then stretch up, settle
 	var bounce_tween = create_tween()
 	
-	# Store pivot for centered scaling
-	icon_rect.pivot_offset = icon_rect.size / 2.0
+	# CRITICAL: Match pivot_offset to what UnitAnimationController uses for battle units
+	# Battle units use bottom-center pivot (grounded at feet)
+	icon_rect.pivot_offset = Vector2(icon_rect.size.x / 2.0, icon_rect.size.y)
 	
 	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
