@@ -434,6 +434,9 @@ func _populate_player_trinkets() -> void:
 		if not is_instance_valid(slot_view):
 			continue
 		for child in slot_view.get_children():
+			# Skip indicator (z_index 10) and slot background (z_index -1)
+			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
+				continue
 			child.queue_free()
 		# Use 1x scale for player trinkets (compact 128x128 display, native 64x64 texture)
 		# NOTE: TopArea slots are 128x128 which can't fit 2x Battle Mode (192x192)

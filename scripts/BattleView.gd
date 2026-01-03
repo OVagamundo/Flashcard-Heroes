@@ -151,11 +151,11 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		if child is PanelContainer:
 			slots.append(child)
 
-	# 2. Remove all children from every slot (except the indicator overlay).
+	# 2. Remove all children from every slot (except indicator and background).
 	for slot in slots:
 		for content in slot.get_children():
-			# Skip the indicator overlay (TextureRect with z_index 10)
-			if content is TextureRect and content.z_index == 10:
+			# Skip the indicator overlay (z_index 10) and slot background (z_index -1)
+			if content is TextureRect and (content.z_index == 10 or content.z_index == -1):
 				continue
 			content.queue_free()
 
@@ -293,8 +293,8 @@ func _populate_enemy_trinkets() -> void:
 	for i in range(slots.size()):
 		var slot_view = slots[i]
 		for child in slot_view.get_children():
-			# Skip the indicator overlay (TextureRect with z_index 10)
-			if child is TextureRect and child.z_index == 10:
+			# Skip the indicator overlay (z_index 10) and slot background (z_index -1)
+			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 				continue
 			child.queue_free()
 		var loc = LocationIdentifier.new()
@@ -523,9 +523,8 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	# Rubber ball bounce animation - squish on landing, then stretch up, settle
 	var bounce_tween = create_tween()
 	
-	# CRITICAL: Match pivot_offset to what UnitAnimationController uses for battle units
-	# Battle units use bottom-center pivot (grounded at feet)
-	icon_rect.pivot_offset = Vector2(icon_rect.size.x / 2.0, icon_rect.size.y)
+	# Store pivot for centered scaling
+	icon_rect.pivot_offset = icon_rect.size / 2.0
 	
 	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

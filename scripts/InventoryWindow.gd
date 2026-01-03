@@ -172,10 +172,10 @@ func _populate_grids() -> void:
 
 		for i in range(slot_views.size()):
 			var slot_view: SlotView = slot_views[i]
-			# Clear any previous content (except indicator overlay)
+			# Clear any previous content (except indicator and background)
 			for child in slot_view.get_children():
-				# Skip the indicator overlay (TextureRect with z_index 10)
-				if child is TextureRect and child.z_index == 10:
+				# Skip the indicator overlay (z_index 10) and slot background (z_index -1)
+				if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 					continue
 				child.queue_free()
 

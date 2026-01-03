@@ -979,16 +979,10 @@ func _apply_selection_feedback() -> void:
 			overlay.scale = Vector2(1.0, 1.0)
 	else:
 		# Battle mode: Use shader-based outline on icon_rect
+		# NOTE: Do NOT modify icon_rect.scale here - it conflicts with animations
 		var mat = icon_rect.material as ShaderMaterial
 		if mat:
 			mat.set_shader_parameter("outline_enabled", _is_selected)
-		
-		# Scale the icon slightly larger when selected for a "pop" effect
-		if _is_selected:
-			icon_rect.scale = Vector2(1.1, 1.1)
-			# NOTE: Don't touch pivot_offset here - animations set their own pivot via _ensure_pivot()
-		else:
-			icon_rect.scale = Vector2(1.0, 1.0)
 
 func _notification(what: int) -> void:
 	# Fallback: if a drag ends without any drop target handling it, restore visuals
@@ -1079,42 +1073,32 @@ func _reset_drag_deformation() -> void:
 func _play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return
 	
-	# Force visibility: If this view was the drag source, it might still be hidden.
+	# Force visibility
 	if not visible:
 		visible = true
 	if is_instance_valid(get_parent()):
-		get_parent().visible = true # Ensure parent slot is visible too
+		get_parent().visible = true
 	
-	# Store original values before animation
-	var original_scale = icon_rect.scale
-	var original_pos = icon_rect.position
-	
-	# CRITICAL: Match pivot_offset to what UnitAnimationController uses if present
-	# Combat units use bottom-center pivot, inventory uses center pivot
+	# For battle units with AnimationController, delegate to composable system
+	# This uses proper tween management (kill existing, restore state) built into controller
 	var controller = get_node_or_null("AnimationController")
-	if is_instance_valid(controller):
-		# Match UnitAnimationController's bottom-center pivot
-		icon_rect.pivot_offset = Vector2(icon_rect.size.x / 2.0, icon_rect.size.y)
-	else:
-		# Inventory/Shop/Reward mode: use center pivot
-		icon_rect.pivot_offset = icon_rect.size / 2.0
+	if is_instance_valid(controller) and not _bound_uuid.is_empty():
+		SignalBus.emit_signal("unit_deform", _bound_uuid, &"LANDING_BOUNCE")
+		return
 	
-	# Start position: Slightly above (falling from a small height)
-	var fall_height := 40.0
-	icon_rect.position.y -= fall_height
+	# For non-battle units (inventory window, shop, reward), use simple inline tween
+	# These don't have AnimationController and pivot is center-based
+	if icon_rect.size == Vector2.ZERO:
+		return # Layout not ready
 	
-	var bounce_tween = create_tween()
+	icon_rect.pivot_offset = icon_rect.size / 2.0
+	var original_scale := icon_rect.scale
 	
-	# Phase 0: Fall down quickly (simulates drop from small height)
-	bounce_tween.tween_property(icon_rect, "position:y", original_pos.y, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# Phase 2: Stretch upward (bounce up)
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# Phase 3: Small squish
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	# Phase 4: Settle to normal
-	bounce_tween.tween_property(icon_rect, "scale", original_scale, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	var tween := create_tween()
+	tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(icon_rect, "scale", original_scale, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 # ------------------------------------------------------------------
 # Layout Helpers
 

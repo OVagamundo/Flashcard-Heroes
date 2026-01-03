@@ -3,6 +3,7 @@ extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
+const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
 @onready var buy_button: Button = %BuyButton
@@ -61,7 +62,7 @@ func populate(context: Dictionary) -> void:
 		# Clear any previous content (except indicator overlay)
 		for child in slot_view.get_children():
 			# Skip the indicator overlay (TextureRect with z_index 10)
-			if child is TextureRect and child.z_index == 10:
+			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 				continue
 			child.queue_free()
 
@@ -133,6 +134,18 @@ func _on_buy_pressed() -> void:
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
 		if is_instance_valid(instance):
+			# PRE-VALIDATION: Check if player has enough gold BEFORE animating
+			var current_gold: int = 0
+			if is_instance_valid(GameManager.run_state):
+				current_gold = GameManager.run_state.gold
+			
+			if current_gold < _selected_cost:
+				# Insufficient gold - play rejection feedback
+				var main_node = GameManager._active_main_node
+				var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+				RejectionFeedbackScript.play_rejection_with_counter(buy_button, gold_group, get_tree())
+				return
+			
 			# Capture slot position and visual data BEFORE purchase
 			var slot_nodes = slots_container.get_children()
 			var slot_view = slot_nodes[selected_loc.index] if selected_loc.index < slot_nodes.size() else null
@@ -159,6 +172,18 @@ func _on_buy_pressed() -> void:
 			)
 
 func _on_reroll_pressed() -> void:
+	# PRE-VALIDATION: Check if player has enough gold BEFORE animating
+	var current_gold: int = 0
+	if is_instance_valid(GameManager.run_state):
+		current_gold = GameManager.run_state.gold
+	
+	if current_gold < _current_reroll_cost:
+		# Insufficient gold - play rejection feedback
+		var main_node = GameManager._active_main_node
+		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
+		return
+	
 	# Disable button during animation
 	reroll_button.disabled = true
 	# Animate gold coins then reroll

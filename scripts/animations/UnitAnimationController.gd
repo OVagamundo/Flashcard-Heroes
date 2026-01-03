@@ -17,7 +17,10 @@ var _flash_tween: Tween = null
 var _flash_original_position: Vector2 = Vector2.ZERO
 var _original_z_index: int = 0
 var _guardian_original_position: Vector2 = Vector2.ZERO
-var _original_icon_scale: Vector2 = Vector2.ONE
+
+# The actual sprite to animate (UnitSprite in Battle mode, icon_rect otherwise)
+# Using this instead of icon_rect prevents child movement during scale
+var _sprite: TextureRect = null
 
 # Independent effect tweens (composable animation system)
 var _color_tween: Tween = null
@@ -33,23 +36,14 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_icon_rect = _view.icon_rect
 	
-	# CRITICAL: Set pivot to bottom-center so scaling is grounded at the feet
-	# This makes squish/stretch appear from the ground up, not from center
-	# NOTE: We set _original_icon_scale here but NOT pivot_offset!
-	# Pivot must be set at animation time because populate() hasn't run yet
-	# and icon_rect.size is likely (0,0) at this point.
-	if is_instance_valid(_icon_rect):
-		_original_icon_scale = _icon_rect.scale
-	
 	_connect_signals()
 
 func _exit_tree() -> void:
 	_disconnect_signals()
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
-	# Reset icon scale on cleanup
-	if is_instance_valid(_icon_rect):
-		_icon_rect.scale = _original_icon_scale
+	# Reset sprite scale on cleanup
+	_reset_sprite_scale()
 
 func _connect_signals() -> void:
 	var bus = get_node_or_null("/root/SignalBus")
@@ -121,19 +115,43 @@ func _get_active_material() -> ShaderMaterial:
 	return _icon_rect.material as ShaderMaterial
 
 # =============================================================================
-# Helper to reset icon scale to original
+# Helper to get the animatable sprite
+# In Battle mode, this is UnitSprite child; otherwise icon_rect itself
 # =============================================================================
+func _get_sprite() -> TextureRect:
+	if is_instance_valid(_sprite):
+		return _sprite
+	if not is_instance_valid(_icon_rect):
+		return null
+	# Try UnitSprite child first (Battle mode has sprite at (32,32))
+	var unit_sprite = _icon_rect.get_node_or_null("UnitSprite")
+	if is_instance_valid(unit_sprite):
+		_sprite = unit_sprite
+	else:
+		_sprite = _icon_rect # Fallback for non-battle mode
+	return _sprite
+
+# =============================================================================
+# Helper to reset sprite scale to (1, 1)
+# =============================================================================
+func _reset_sprite_scale() -> void:
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite):
+		sprite.scale = Vector2.ONE
+
+# Legacy alias for compatibility
 func _reset_icon_scale() -> void:
-	if is_instance_valid(_icon_rect):
-		_icon_rect.scale = _original_icon_scale
+	_reset_sprite_scale()
 
 # =============================================================================
 # Helper to ensure pivot is set correctly before animation
-# Must be called at the START of any animation that uses scale
+# Uses BOTTOM-CENTER pivot so squish/stretch appears grounded at feet
 # =============================================================================
 func _ensure_pivot() -> void:
-	if is_instance_valid(_icon_rect) and _icon_rect.size != Vector2.ZERO:
-		_icon_rect.pivot_offset = Vector2(_icon_rect.size.x / 2.0, _icon_rect.size.y)
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite.size != Vector2.ZERO:
+		# Bottom-center pivot: scaling appears grounded at unit's feet
+		sprite.pivot_offset = Vector2(sprite.size.x / 2.0, sprite.size.y)
 
 # =============================================================================
 # BUMP ATTACK ANIMATION
@@ -187,14 +205,16 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
-	_ensure_pivot() # Recalculate pivot with current size
+	var sprite := _get_sprite()
+	_ensure_pivot() # Set bottom-center pivot on sprite
 	
 	var original_position: Vector2 = _view.position
 	var start_position := Vector2(original_position.x, original_position.y - AC.SUMMON_DROP_HEIGHT)
 	
 	_view.modulate.a = 0.0
 	_view.position = start_position
-	_icon_rect.scale = AC.SQUISH_SCALE # Start narrow & tall (stretched in direction of fall)
+	if is_instance_valid(sprite):
+		sprite.scale = AC.SQUISH_SCALE # Start narrow & tall (stretched in direction of fall)
 	
 	var mat = _get_active_material()
 	if mat:
@@ -212,16 +232,16 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	
 	fade_tween.set_parallel(false)
 	
-	# Phase 2: Stretch (wide/short) on landing impact
-	fade_tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
-	# Phase 3: Return to normal scale with elastic bounce
-	fade_tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	# Phase 2: Stretch (wide/short) on landing impact - USE SPRITE not _icon_rect
+	if is_instance_valid(sprite):
+		fade_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		# Phase 3: Return to normal scale with elastic bounce
+		fade_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	fade_tween.finished.connect(_on_summon_fade_tween_finished)
 
 func _on_summon_fade_tween_finished() -> void:
-	_reset_icon_scale()
+	_reset_sprite_scale()
 	SignalBus.emit_signal("unit_summon_fade_finished", _get_uuid())
 
 # =============================================================================
@@ -231,11 +251,12 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	var sprite := _get_sprite()
 	_melee_origin_position = _view.global_position
 	_original_z_index = _view.z_index
 	_view.z_index = 100
 	
-	_ensure_pivot() # Recalculate pivot with current size
+	_ensure_pivot() # Set bottom-center pivot on sprite
 	
 	var mid_y = min(_melee_origin_position.y, target_position.y) - AC.MELEE_ARC_HEIGHT
 	var direction_to_target = (target_position - _melee_origin_position).normalized()
@@ -243,14 +264,16 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	
 	var tween = _view.create_tween()
 	
-	# Windup: Move back + SQUISH icon (narrow & tall)
+	# Windup: Move back + SQUISH sprite (narrow & tall)
 	tween.set_parallel(true)
 	tween.tween_property(_view, "global_position", windup_pos, AC.MELEE_WINDUP_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.MELEE_WINDUP_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.MELEE_WINDUP_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.set_parallel(false)
 	
-	# Lunge: Bezier arc with STRETCH icon (wide & short)
-	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Lunge: Bezier arc with STRETCH sprite (wide & short)
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	tween.tween_method(
 		func(t: float):
@@ -264,7 +287,8 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	).set_trans(Tween.TRANS_LINEAR)
 	
 	# Impact: Quick SQUISH on hit
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	tween.finished.connect(_on_melee_lunge_tween_finished)
 
@@ -275,26 +299,29 @@ func _on_unit_melee_return(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
-	_ensure_pivot() # Recalculate pivot with current size
+	var sprite := _get_sprite()
+	_ensure_pivot() # Set bottom-center pivot on sprite
 	
 	var tween = _view.create_tween()
 	
-	# Return: STRETCH icon during jump back
-	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Return: STRETCH sprite during jump back
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Move back to origin
 	tween.tween_property(_view, "global_position", _melee_origin_position, AC.MELEE_RETURN_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	# Land: SQUISH then normalize with elastic
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	tween.finished.connect(_on_melee_return_tween_finished)
 
 func _on_melee_return_tween_finished() -> void:
 	_view.z_index = _original_z_index
 	_view.global_position = _melee_origin_position
-	_reset_icon_scale()
+	_reset_sprite_scale()
 	SignalBus.emit_signal("unit_melee_return_finished", _get_uuid())
 
 # =============================================================================
@@ -307,6 +334,7 @@ func _on_unit_flash_effect(unit_uuid: String, flash_color: Color) -> void:
 
 func _flash_unit_color(flash_color: Color) -> void:
 	var mat = _get_active_material()
+	var sprite := _get_sprite()
 	
 	if not mat:
 		var original_modulate: Color = _view.modulate
@@ -316,22 +344,26 @@ func _flash_unit_color(flash_color: Color) -> void:
 		fallback_tween.finished.connect(_on_flash_tween_finished)
 		return
 	
-	var original_position: Vector2 = _view.global_position
-	_flash_original_position = original_position
-	var base_modulate: Color = _view.modulate
-	
-	# CRITICAL: Detach from parent layout so position animation works
-	_view.top_level = true
-	
-	_ensure_pivot() # Recalculate pivot with current size
-	
+	# CRITICAL: Kill ALL tweens that modify scale to prevent conflicts
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
-		_view.modulate = base_modulate
-		_reset_icon_scale()
+		_view.top_level = false # Re-attach to parent first
+		_view.global_position = _flash_original_position # Restore to true origin
+		_view.modulate = Color.WHITE
 		if _get_active_material():
 			_get_active_material().set_shader_parameter("flash_intensity", 0.0)
-		original_position = _view.global_position
+	if _deform_tween and _deform_tween.is_valid():
+		_deform_tween.kill()
+	_reset_sprite_scale()
+	
+	# NOW capture the resting position as origin (guaranteed correct)
+	var original_position: Vector2 = _view.global_position
+	_flash_original_position = original_position
+	
+	# Detach from parent layout so position animation works
+	_view.top_level = true
+	
+	_ensure_pivot() # Set bottom-center pivot on sprite
 	
 	var is_heal_or_buff := flash_color.g >= flash_color.r
 	var is_gold_flash := flash_color.r > 0.9 and flash_color.g > 0.7 and flash_color.g < 0.95 and flash_color.b < 0.2
@@ -350,22 +382,26 @@ func _flash_unit_color(flash_color: Color) -> void:
 		var hop_target = Vector2(original_position.x, original_position.y - AC.FLASH_HOP_HEIGHT)
 		
 		# Squish down (anticipation)
-		_flash_tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		if is_instance_valid(sprite):
+			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		
 		# Stretch and jump up
 		_flash_tween.set_parallel(true)
-		_flash_tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		if is_instance_valid(sprite):
+			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_flash_tween.tween_property(_view, "global_position", hop_target, AC.FLASH_HOP_UP_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_flash_tween.set_parallel(false)
 		
 		# Fall and squish on landing
 		_flash_tween.set_parallel(true)
-		_flash_tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		if is_instance_valid(sprite):
+			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		_flash_tween.tween_property(_view, "global_position", original_position, AC.FLASH_HOP_DOWN_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		_flash_tween.set_parallel(false)
 		
 		# Return to normal scale
-		_flash_tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		if is_instance_valid(sprite):
+			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	else:
 		# HURT: Instant recoil + stretch -> return to normal
 		var recoil_direction := Vector2.RIGHT if _icon_rect.flip_h else Vector2.LEFT
@@ -374,13 +410,15 @@ func _flash_unit_color(flash_color: Color) -> void:
 		# Instant recoil + stretch (hit by impact)
 		_flash_tween.set_parallel(true)
 		_flash_tween.tween_property(_view, "global_position", recoil_target, AC.FLASH_RECOIL_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		_flash_tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.FLASH_RECOIL_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		if is_instance_valid(sprite):
+			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.FLASH_RECOIL_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_flash_tween.set_parallel(false)
 		
 		# Return to normal position and scale
 		_flash_tween.set_parallel(true)
 		_flash_tween.tween_property(_view, "global_position", original_position, AC.FLASH_RETURN_DURATION).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-		_flash_tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.FLASH_RETURN_DURATION).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		if is_instance_valid(sprite):
+			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.FLASH_RETURN_DURATION).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		_flash_tween.set_parallel(false)
 	
 	# Flash fade happens independently in parallel
@@ -394,7 +432,7 @@ func _flash_unit_color(flash_color: Color) -> void:
 func _on_flash_tween_finished() -> void:
 	_view.top_level = false # Re-attach to parent layout
 	_view.global_position = _flash_original_position
-	_reset_icon_scale()
+	_reset_sprite_scale()
 	SignalBus.emit_signal("unit_flash_finished", _get_uuid())
 
 # =============================================================================
@@ -480,7 +518,7 @@ func animate_leap_to(target_center: Vector2) -> void:
 	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 5: Return icon to normal scale
-	tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
 
@@ -502,7 +540,7 @@ func animate_leap_return() -> void:
 	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 4: Return icon to normal scale
-	tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
 	
@@ -542,53 +580,60 @@ func _on_unit_color_flash(unit_uuid: String, flash_color: Color, duration: float
 	
 	_color_tween.finished.connect(func(): SignalBus.emit_signal("unit_color_flash_finished", _get_uuid()))
 
-# --- DEFORMATION (squish/stretch on icon scale) ---
+# --- DEFORMATION (squish/stretch on sprite scale) ---
 func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
-	if not is_instance_valid(_icon_rect):
+	var sprite := _get_sprite()
+	if not is_instance_valid(sprite):
 		return
 	
-	# Kill existing deform tween
+	# Kill ALL tweens that modify scale to prevent conflicts
 	if _deform_tween and _deform_tween.is_valid():
 		_deform_tween.kill()
-		_reset_icon_scale()
+	if _flash_tween and _flash_tween.is_valid():
+		_flash_tween.kill()
+		_view.top_level = false # Restore from flash's detached state
+		_view.global_position = _flash_original_position
+	_reset_sprite_scale()
 	
 	_deform_tween = _view.create_tween()
 	
-	_ensure_pivot() # Recalculate pivot with current size
+	_ensure_pivot() # Set center pivot on sprite
 	
 	match deform_type:
 		&"SQUISH_BOUNCE":
 			# Squish (narrow/tall) → return with elastic
-			_deform_tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"STRETCH_BOUNCE":
 			# Stretch (wide/short) → return with elastic
-			_deform_tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(_icon_rect, "scale", _original_icon_scale, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"HIT_IMPACT":
-			# Impact: Quick stretch then elastic return (synced with recoil)
-			# Recoil is 0.08s out + 0.2s return
-			_deform_tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, 0.04).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(_icon_rect, "scale", _original_icon_scale, 0.24).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			# Impact: Quick stretch then elastic return
+			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, 0.04).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"HOP_DEFORM":
 			# Synced with HOP movement (0.12s up + 0.18s down = 0.3s total)
-			# Phase 1: Quick anticipation squish (before launch)
-			_deform_tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, 0.03).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			# Phase 2: Stretch while rising (matches hop up ~0.12s)
-			_deform_tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			# Phase 3: Squish on landing (matches hop down ~0.18s, squish at impact)
-			_deform_tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-			# Phase 4: Elastic return (settling bounce)
-			_deform_tween.tween_property(_icon_rect, "scale", _original_icon_scale, 0.12).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, 0.03).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		
+		&"LANDING_BOUNCE":
+			# Inventory action landing feedback (drop/swap/equip)
+			_deform_tween.tween_property(sprite, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	_deform_tween.finished.connect(func():
-		_reset_icon_scale()
+		_reset_sprite_scale()
 		SignalBus.emit_signal("unit_deform_finished", _get_uuid())
 	)
 

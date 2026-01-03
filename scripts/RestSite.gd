@@ -6,6 +6,7 @@ extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
+const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 
 # Machine references
 @onready var hp_machine: Control = %HPMachine
@@ -122,10 +123,10 @@ func _update_token_display() -> void:
 	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
 
 func _update_button_states() -> void:
-	"""Enable/disable draw buttons based on token count"""
-	hp_draw_button.disabled = _tokens < COST_HP
-	pwr_draw_button.disabled = _tokens < COST_PWR
-	both_draw_button.disabled = _tokens < COST_BOTH
+	"""Buttons are always enabled - rejection feedback plays when tokens insufficient"""
+	# Buttons stay enabled - clicking with insufficient tokens shows rejection animation
+	# rather than being silently disabled
+	pass
 
 # --- Draw Logic ---
 
@@ -140,16 +141,18 @@ func _on_both_draw_pressed() -> void:
 
 func _try_draw_stat(stat_type: StatType, cost: int, machine: Control) -> void:
 	"""Attempt to draw a stat prize from a machine"""
+	# Get references needed for both rejection feedback and success animation
+	var main_node = GameManager._active_main_node
+	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
+	
 	if _tokens < cost:
+		# Insufficient tokens - play rejection feedback
+		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
 		return
 	
 	# Disable button during animation
 	var button = machine.get_node("DrawButton")
 	button.disabled = true
-	
-	# Get token group position from Main for animation
-	var main_node = GameManager._active_main_node
-	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
 	
 	# Animate token spend from top-area to machine
 	await _animate_token_spend(machine, cost, token_group)

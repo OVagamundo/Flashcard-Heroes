@@ -17,18 +17,21 @@ const INDICATOR_TEXTURE = preload("res://assets/ui/textures/Indicator.png")
 # Base slot size at 1x scale
 const BASE_SLOT_SIZE: int = 96
 
+# Slot background stylebox
+var _background_style: StyleBoxTexture
+
 ## Set size scale for gachaball views in this slot
 ## NOTE: This only sets internal scale for GachaBallView. Caller is responsible for slot size.
 func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
 func _ready() -> void:
-	# Add a simple stylebox to make the empty slot visible.
-	var style = StyleBoxFlat.new()
-	style.set_bg_color(Color(0, 0, 0, 0.2))
-	style.set_border_width_all(1)
-	style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
-	add_theme_stylebox_override("panel", style)
+	# Configure the slot background using properties to render the texture
+	_background_style = StyleBoxTexture.new()
+	_background_style.texture = load("res://assets/ui/textures/slot.png")
+	# Default neutral tint
+	_background_style.modulate_color = Color(0.5, 0.5, 0.5, 0.6)
+	add_theme_stylebox_override("panel", _background_style)
 	
 	# Connect to granular stat change signal for targeted updates
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
@@ -42,33 +45,21 @@ func _ready() -> void:
 
 ## Set custom color for this slot based on container type
 func set_slot_color(container_name: StringName) -> void:
-	var style = StyleBoxFlat.new()
+	if not is_instance_valid(_background_style):
+		return
 	
-	# Define color schemes for different container types
+	# Tint the slot background texture based on container type
 	match container_name:
 		&"PlayerLineup":
-			style.set_bg_color(Color(0.15, 0.2, 0.3, 0.3))
-			style.set_border_width_all(2)
-			style.set_border_color(Color(0.3, 0.5, 0.8, 0.6))
+			_background_style.modulate_color = Color(0.3, 0.5, 0.8, 0.8)
 		&"PlayerBench":
-			style.set_bg_color(Color(0.15, 0.25, 0.15, 0.3))
-			style.set_border_width_all(2)
-			style.set_border_color(Color(0.3, 0.7, 0.3, 0.6))
+			_background_style.modulate_color = Color(0.3, 0.7, 0.3, 0.8)
 		&"ItemInventory":
-			style.set_bg_color(Color(0.25, 0.15, 0.25, 0.3))
-			style.set_border_width_all(2)
-			style.set_border_color(Color(0.7, 0.3, 0.7, 0.6))
+			_background_style.modulate_color = Color(0.7, 0.3, 0.7, 0.8)
 		&"EnemyLineup":
-			style.set_bg_color(Color(0.3, 0.15, 0.15, 0.3))
-			style.set_border_width_all(2)
-			style.set_border_color(Color(0.8, 0.3, 0.3, 0.6))
+			_background_style.modulate_color = Color(0.8, 0.3, 0.3, 0.8)
 		_:
-			# Default color scheme
-			style.set_bg_color(Color(0, 0, 0, 0.2))
-			style.set_border_width_all(1)
-			style.set_border_color(Color(0.5, 0.5, 0.5, 0.5))
-	
-	add_theme_stylebox_override("panel", style)
+			_background_style.modulate_color = Color(0.5, 0.5, 0.5, 0.6)
 
 func _exit_tree() -> void:
 	if SignalBus.unit_stat_changed.is_connected(_on_unit_stat_changed):
@@ -172,10 +163,12 @@ func populate(loc: LocationIdentifier) -> void:
 
 ## Set the content of this slot using VisualData
 func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_click_inspect: bool = false, is_enemy: bool = false) -> void:
-	# Clear existing content (but preserve the indicator overlay)
+	# Clear existing content (preserve indicator and background)
+	# Clear existing content (preserve indicator)
 	for child in get_children():
-		if child != _indicator:
-			child.queue_free()
+		if child == _indicator:
+			continue
+		child.queue_free()
 	
 	if visual_data.is_empty():
 		return

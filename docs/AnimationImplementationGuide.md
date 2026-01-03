@@ -139,10 +139,13 @@ The animation system uses **three independent effect channels** that run in para
 | Channel | Signal | Purpose | Controller |
 |---------|--------|---------|------------|
 | **Color Flash** | `unit_color_flash` | Shader-based tint that fades | `_on_unit_color_flash()` |
-| **Deformation** | `unit_deform` | Squish/stretch on icon scale | `_on_unit_deform()` |
+| **Deformation** | `unit_deform` | Squish/stretch on sprite scale | `_on_unit_deform()` |
 | **Movement** | `unit_move` | Position animation (hop, recoil) | `_on_unit_move()` |
 
 Each channel has its own tween that runs independently. You can combine any effects freely!
+
+> [!IMPORTANT]
+> **Sprite vs Icon Container:** Scale animations target the `UnitSprite` child (in Battle mode) or `icon_rect` directly (Inventory mode), NOT the `icon_rect` container when a UnitSprite child exists. This prevents diagonal movement caused by scaling a container with positioned children. Use `_get_sprite()` helper to get the correct node.
 
 ### 4.2 Signal Signatures
 
@@ -166,6 +169,7 @@ SignalBus.emit_signal("unit_move", unit_uuid, &"MOVE_TYPE", direction)
 | `STRETCH_BOUNCE` | Wide & short → elastic return | Impact, jump peak |
 | `HIT_IMPACT` | Stretch → elastic return | Taking damage |
 | `HOP_DEFORM` | Squish→Stretch→Squish→Return | Full hop cycle (heal/buff) |
+| `LANDING_BOUNCE` | Squish→Stretch→Squish→Settle | Inventory action feedback (swap/equip/drop) |
 
 **Movement Types:**
 | Type | Description | Direction |
@@ -450,6 +454,9 @@ These animations provide feedback during the interactive drag phase (User Input)
 - **Trigger**:
     - **Successful Move**: Triggered by `_on_inventory_action_completed` when the item lands in its new slot.
     - **Failed/Cancelled Drop**: Triggered by `_notification(NOTIFICATION_DRAG_END)` when the drag is released on an invalid target OR rejected by inventory logic.
+- **Implementation**:
+    - **Battle Mode (has AnimationController)**: Delegates to `UnitAnimationController` via `unit_deform` signal with `LANDING_BOUNCE` type. Uses the sprite animation system with bottom-center pivot.
+    - **Inventory/Shop Mode (no controller)**: Uses inline tween on `icon_rect` with center pivot.
 - **Logic Failure Handling**:
     - `GachaBallView` listens to `SignalBus.drag_ended(was_handled)`.
     - If `was_handled` is false (InventoryManager rejected the move), `_logical_drag_success` is set to false.

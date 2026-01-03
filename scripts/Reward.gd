@@ -55,7 +55,7 @@ func populate(context: Dictionary) -> void:
 		# 1. Clear any old GachaBallView from the persistent slot (preserve indicators).
 		for child in slot_view.get_children():
 			# Skip the indicator overlay (TextureRect with z_index 10)
-			if child is TextureRect and child.z_index == 10:
+			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 				continue
 			child.queue_free()
 		
@@ -131,7 +131,7 @@ func _on_confirm_pressed() -> void:
 		for sv in choices_container.get_children():
 			for child in sv.get_children():
 				# Skip the indicator overlay
-				if child is TextureRect and child.z_index == 10:
+				if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 					continue
 				child.queue_free()
 		
@@ -156,7 +156,7 @@ func _on_gold_pressed() -> void:
 	for slot_view in choices_container.get_children():
 		for child in slot_view.get_children():
 			# Skip the indicator overlay
-			if child is TextureRect and child.z_index == 10:
+			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 				continue
 			child.queue_free()
 

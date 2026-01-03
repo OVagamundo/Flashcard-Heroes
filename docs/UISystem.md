@@ -81,6 +81,15 @@ The UI uses **phase-based blocking** to prevent interference with animations.
 - **SlotView**: Ignores update signals during animation phases
 - **Why**: Prevents UI rebuilds from destroying the Animator's `_visual_registry`
 
+### SlotView Architecture
+`SlotView` uses a specialized rendering approach to ensure robust z-ordering and persistence:
+- **StyleBoxTexture**: The slot background is rendered using a `StyleBoxTexture` applied to the `PanelContainer`'s panel style, rather than a child scene.
+  - **Reasoning**: This prevents the background from being accidentally destroyed by child cleanup scripts (which often clear all children to refresh content).
+  - **Z-Ordering**: Ensures the background is always drawn behind the content (z-index -1 logic handled via style modulation layering).
+- **Slot.png**: Uses `res://assets/ui/textures/slot.png` (96x96px) which scales to fit the container.
+- **Tinting**: Backgrounds are tinted programmatically via `StyleBoxTexture.modulate_color` based on the container type (e.g., Blue for Player Lineup, Red for Enemy).
+
+
 ### Visual Data Adapter Pattern
 - **Strict Decoupling**: `GachaBallView` no longer accepts `GachaBallInstance` objects. It only accepts a `GachaBallVisualData` dictionary.
 - **VisualDataAdapter**: A static helper class that converts `GachaBallInstance` (or `TrinketDefinition`) into a `GachaBallVisualData` dictionary.

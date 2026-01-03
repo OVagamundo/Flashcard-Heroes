@@ -8,121 +8,22 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
-[TestMode] Registered unit: unit_t1_a at EnemyLineup slot 0
-[TestMode] Registered unit: unit_t1_b at EnemyLineup slot 1
-[TestMode] Registered unit: unit_t1_b at EnemyLineup slot 2
-[TestMode] Registered unit: unit_t1_b at EnemyLineup slot 3
-[TestMode] Registered unit: unit_t3_d at PlayerLineup slot 1
-[TestMode] Registered unit: unit_t3_d at PlayerLineup slot 2
-[TestMode] Registered unit: unit_t3_d at PlayerLineup slot 3
-[TestMode] Registered unit: unit_t3_d at PlayerLineup slot 4
-[BM] _enqueue_attack_for:unit_t3_d_1767397752_13_04833-> target:unit_t1_a_1767397735_6_45208
-[BM] _enqueue_attack_for:unit_t3_d_1767397752_12_05247-> target:unit_t1_b_1767397741_7_76939
-[BM] _enqueue_attack_for:unit_t3_d_1767397752_11_44627-> target:unit_t1_b_1767397741_8_91139
-[BM] _enqueue_attack_for:unit_t3_d_1767397752_10_35225-> target:unit_t1_b_1767397742_9_02031
-[BM] _enqueue_attack_for:hero_timekeeper_1767397726_2_91345-> target:unit_t3_d_1767397726_3_20130
-[BM] _enqueue_attack_for:unit_t3_d_1767397726_3_20130-> target:unit_t3_d_1767397752_13_04833
-[ANIM] ========== START ANIMATION SEQUENCE: 39 events ==========
-[SIM] Event#0: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#1: DAMAGE | src=unit_t3_d_1767397752 | targets=[unit_t1_a_1767397735_6_45208]
-[SIM] Event#2: DEATH | src= | targets=[unit_t1_a_1767397735_6_45208]
-[SIM] Event#3: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#4: DAMAGE | src=unit_t3_d_1767397752 | targets=[unit_t1_b_1767397741_7_76939]
-[SIM] Event#5: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#6: DAMAGE | src=unit_t1_b_1767397741 | targets=[unit_t3_d_1767397752_12_05247]
-[SIM] Event#7: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#8: HEAL | src=unit_t3_d_1767397752 | targets=[unit_t3_d_1767397752_11_44627, unit_t3_d_1767397752_13_04833]
-[SIM] Event#9: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#10: BUFF | src=unit_t3_d_1767397752 | targets=[unit_t3_d_1767397752_11_44627, unit_t3_d_1767397752_13_04833]
-[SIM] Event#11: DEATH | src= | targets=[unit_t1_b_1767397741_7_76939]
-[SIM] Event#12: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#13: DAMAGE | src=unit_t3_d_1767397752 | targets=[unit_t1_b_1767397741_8_91139]
-[SIM] Event#14: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#15: DAMAGE | src=unit_t1_b_1767397741 | targets=[unit_t3_d_1767397752_11_44627]
-[SIM] Event#16: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#17: HEAL | src=unit_t3_d_1767397752 | targets=[unit_t3_d_1767397752_10_35225, unit_t3_d_1767397752_12_05247]
-[SIM] Event#18: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#19: BUFF | src=unit_t3_d_1767397752 | targets=[unit_t3_d_1767397752_10_35225, unit_t3_d_1767397752_12_05247]
-[SIM] Event#20: DEATH | src= | targets=[unit_t1_b_1767397741_8_91139]
-[SIM] Event#21: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#22: DAMAGE | src=unit_t3_d_1767397752 | targets=[unit_t1_b_1767397742_9_02031]
-[SIM] Event#23: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#24: DAMAGE | src=unit_t1_b_1767397742 | targets=[unit_t3_d_1767397752_10_35225]
-[SIM] Event#25: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#26: HEAL | src=unit_t3_d_1767397752 | targets=[hero_timekeeper_1767397726_2_91345, unit_t3_d_1767397752_11_44627]
-[SIM] Event#27: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#28: BUFF | src=unit_t3_d_1767397752 | targets=[hero_timekeeper_1767397726_2_91345, unit_t3_d_1767397752_11_44627]
-[SIM] Event#29: DEATH | src= | targets=[unit_t1_b_1767397742_9_02031]
-[SIM] Event#30: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#31: DAMAGE | src=hero_timekeeper_1767 | targets=[unit_t3_d_1767397726_3_20130]
-[SIM] Event#32: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#33: DAMAGE | src=unit_t3_d_1767397726 | targets=[unit_t3_d_1767397752_13_04833]
-[SIM] Event#34: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#35: HEAL | src=unit_t3_d_1767397752 | targets=[unit_t3_d_1767397752_12_05247]
-[SIM] Event#36: LOG_MESSAGE | src= | targets=[none]
-[SIM] Event#37: BUFF | src=unit_t3_d_1767397752 | targets=[unit_t3_d_1767397752_12_05247]
-[SIM] Event#38: DEATH | src= | targets=[unit_t3_d_1767397752_13_04833]
-[BattleLog] [0:1] Sakura Spirit deals 6 dmg to Apprentice 
-[BattleLog] [0:2] Sakura Spirit attacks unit_t1_... for 6 damage (basic_attack, on_attack) (HP: 2→-4)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767397735_6_45208"] source: unit_t3_d_1767397752_13_04833 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767397752 type 5
-[BattleLog] [0:3] └─ unit_t1_... is defeated! 
-[BattleLog] [0:4] Sakura Spirit deals 6 dmg to Squire 
-[BattleLog] [0:5] Sakura Spirit attacks unit_t1_... for 6 damage (basic_attack, on_attack) (HP: 1→-5)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767397741_7_76939"] source: unit_t3_d_1767397752_12_05247 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767397752 type 5
-[BattleLog] [0:6] Squire deals 2 dmg to Sakura Spirit 
-[BattleLog] [0:7] unit_t1_... attacks Sakura Spirit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 6→4)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767397752_12_05247"] source: unit_t1_b_1767397741_7_76939 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767397741 type 5
-[BattleLog] [0:8] Sakura Spirit heals Sakura Spirit and Sakura Spirit for 1 HP 
-[BattleLog] [0:9] Sakura Spirit heals Sakura Spirit for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 6→7)
-[BattleLog] [0:10] Sakura Spirit grants Sakura Spirit and Sakura Spirit +1 PWR 
-[BattleLog] [0:11] Sakura Spirit grants Sakura Spirit +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=2
-[BattleLog] [0:12] └─ unit_t1_... is defeated! 
-[BattleLog] [0:13] Sakura Spirit deals 7 dmg to Squire 
-[BattleLog] [0:14] Sakura Spirit attacks unit_t1_... for 7 damage (basic_attack, on_attack) (HP: 1→-6)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767397741_8_91139"] source: unit_t3_d_1767397752_11_44627 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767397752 type 5
-[BattleLog] [0:15] Squire deals 2 dmg to Sakura Spirit 
-[BattleLog] [0:16] unit_t1_... attacks Sakura Spirit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767397752_11_44627"] source: unit_t1_b_1767397741_8_91139 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767397741 type 5
-[BattleLog] [0:17] Sakura Spirit heals Sakura Spirit and Sakura Spirit for 1 HP 
-[BattleLog] [0:18] Sakura Spirit heals Sakura Spirit for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 6→7)
-[BattleLog] [0:19] Sakura Spirit grants Sakura Spirit and Sakura Spirit +1 PWR 
-[BattleLog] [0:20] Sakura Spirit grants Sakura Spirit +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=2
-[BattleLog] [0:21] └─ unit_t1_... is defeated! 
-[BattleLog] [0:22] Sakura Spirit deals 7 dmg to Squire 
-[BattleLog] [0:23] Sakura Spirit attacks unit_t1_... for 7 damage (basic_attack, on_attack) (HP: 1→-6)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767397742_9_02031"] source: unit_t3_d_1767397752_10_35225 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767397752 type 5
-[BattleLog] [0:24] Squire deals 2 dmg to Sakura Spirit 
-[BattleLog] [0:25] unit_t1_... attacks Sakura Spirit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767397752_10_35225"] source: unit_t1_b_1767397742_9_02031 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767397742 type 5
-[BattleLog] [0:26] Sakura Spirit heals Timekeeper and Sakura Spirit for 1 HP 
-[BattleLog] [0:27] Sakura Spirit heals Timekeeper for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 50→51)
-[BattleLog] [0:28] Sakura Spirit grants Timekeeper and Sakura Spirit +1 PWR 
-[BattleLog] [0:29] Sakura Spirit grants Timekeeper +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=2
-[BattleLog] [0:30] └─ unit_t1_... is defeated! 
-[BattleLog] [0:31] Timekeeper deals 3 dmg to Sakura Spirit 
-[BattleLog] [0:32] Timekeeper attacks Sakura Spirit for 3 damage (basic_attack, on_attack) (HP: 6→3)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767397726_3_20130"] source: hero_timekeeper_1767397726_2_91345 attack_type: melee
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [0:33] Sakura Spirit deals 8 dmg to Sakura Spirit 
-[BattleLog] [0:34] Sakura Spirit attacks Sakura Spirit for 8 damage (basic_attack, on_attack) (HP: 7→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767397752_13_04833"] source: unit_t3_d_1767397726_3_20130 attack_type: melee
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767397726 type 5
-[BattleLog] [0:35] Sakura Spirit heals Sakura Spirit for 1 HP 
-[BattleLog] [0:36] Sakura Spirit heals Sakura Spirit for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 5→6)
-[BattleLog] [0:37] Sakura Spirit grants Sakura Spirit +1 PWR 
-[BattleLog] [0:38] Sakura Spirit grants Sakura Spirit +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [0:39] └─ Sakura Spirit is defeated! 
-[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 39 events processed ==========
-[BattleAnimator] Emitting turn_animation_finished!
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
