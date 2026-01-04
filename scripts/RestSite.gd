@@ -38,6 +38,9 @@ var _has_studied: bool = false # Study button only works once per rest site
 enum StatType {HP, PWR, BOTH}
 
 func _ready() -> void:
+	# AUDIO HOOK: Rest Site BGM
+	Audio.play_music(SoundRegistry.BGM_REST)
+	
 	# Connect buttons
 	hp_draw_button.pressed.connect(_on_hp_draw_pressed)
 	pwr_draw_button.pressed.connect(_on_pwr_draw_pressed)
@@ -273,6 +276,9 @@ func _animate_token_spend(target_machine: Control, cost: int, token_group: Contr
 		
 		token_vfx.coin_landed.connect(_on_coin_landed.bind(target_machine))
 		
+		# AUDIO HOOK: Token spend sound (staggered pitch for each token)
+		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
+		
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 	
@@ -283,6 +289,9 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	"""Machine bounce reaction when coin lands"""
 	if not is_instance_valid(machine):
 		return
+	
+	# AUDIO HOOK: Token land on machine
+	Audio.play_sfx("token_land")
 	
 	var machine_image = machine.get_node_or_null("MachineImage")
 	if not is_instance_valid(machine_image):
@@ -452,6 +461,9 @@ func _on_prize_slot_gui_input(event: InputEvent, prize_index: int) -> void:
 
 func _apply_prize(prize_index: int) -> void:
 	"""Apply a prize to the hero"""
+	# AUDIO HOOK: Prize slot clicked
+	Audio.play_sfx("ui_click")
+	
 	var prize_to_apply: Dictionary = {}
 	var prize_array_index: int = -1
 	
@@ -510,6 +522,9 @@ func _apply_stat_to_hero(prize_data: Dictionary) -> void:
 
 func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void:
 	"""Animate prize ball: hop + flash + pop into projectile"""
+	# AUDIO HOOK: Buff animation start (hop sound)
+	Audio.play_sfx("ui_drag_drop")
+	
 	var prize_slot = prize_lineup.get_child(prize_index + 1)
 	var hero_slot_view = hero_slot
 	
@@ -603,6 +618,10 @@ func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void
 
 func _do_hero_buff_hop(flash_color: Color) -> void:
 	"""Apply hop animation to hero when buff projectile lands"""
+	# AUDIO HOOK: Buff received + hop
+	Audio.play_sfx("unit_buff")
+	Audio.play_sfx("unit_hop")
+	
 	if is_instance_valid(GameManager.run_state) and is_instance_valid(GameManager.run_state.hero_instance):
 		var hero_uuid = GameManager.run_state.hero_instance.ball_uuid
 		SignalBus.emit_signal("unit_color_flash", hero_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)

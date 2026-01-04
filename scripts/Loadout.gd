@@ -13,6 +13,9 @@ var _hero_defs: Array[GachaBallDefinition] = []
 var _deck_meta: Array[Dictionary] = []
 
 func _ready() -> void:
+	# AUDIO HOOK: Loadout BGM
+	Audio.play_music(SoundRegistry.BGM_LOADOUT)
+	
 	_populate_heroes()
 	_populate_decks()
 	start_button.pressed.connect(_on_start_run_pressed)

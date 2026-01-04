@@ -137,6 +137,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.DAMAGE:
 				# Use the dedicated DamageAnimation class which handles bumps, projectiles, and flashes
+				# NOTE: Audio is handled inside DamageAnimation at proper timing (lunge + impact)
 				var anim = AnimationRegistry.get_animation("damage")
 				if anim:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
@@ -154,6 +155,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# Use the dedicated HealAnimation class which handles projectiles and flashes
 				var anim = AnimationRegistry.get_animation("heal")
 				if anim:
+					# AUDIO HOOK: Heal (play BEFORE await so sound syncs with animation start)
+					Audio.play_sfx("combat_heal")
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Heal animation not found in registry!")
@@ -162,6 +165,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				# Use the dedicated BuffAnimation class which handles projectiles and flashes
 				var anim = AnimationRegistry.get_animation("buff")
 				if anim:
+					# AUDIO HOOK: Buff (play BEFORE await so sound syncs with animation start)
+					Audio.play_sfx("combat_buff")
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Buff animation not found in registry!")
@@ -176,6 +181,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						continue
 						
 					_dead_units[dead_uuid] = true
+					
+					# AUDIO HOOK: Death
+					Audio.play_sfx("combat_death")
 					
 					if SignalBus.has_signal("unit_death_fade"):
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
@@ -250,6 +258,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 								# Trigger summon animation
 								if SignalBus.has_signal("unit_summon_fade"):
 									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
+									# AUDIO HOOK: Summon
+									Audio.play_sfx("combat_summon")
 									await wait_for_animation_completion("summon_fade", new_unit_uuid)
 
 			CombatEvent.Type.LETHAL_SAVE:

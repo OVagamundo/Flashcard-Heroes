@@ -17,6 +17,9 @@ static func play_rejection(target: Control, tree: SceneTree) -> void:
 	if not is_instance_valid(target) or not is_instance_valid(tree):
 		return
 	
+	# AUDIO HOOK: Rejection sound
+	Audio.play_sfx("ui_rejection")
+	
 	# Store original position
 	var original_pos := target.position
 	

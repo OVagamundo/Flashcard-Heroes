@@ -162,6 +162,10 @@ func close_child_windows(window_group_id: int, parent_window_id: int = -1) -> vo
 
 # Public API for GIR (Rules W2, W4, W5).
 func close_all_inspection_windows() -> void:
+	# AUDIO HOOK: Window close sound (play once even if multiple windows)
+	if not _active_inspection_group.is_empty():
+		Audio.play_sfx("ui_window_close")
+	
 	for window in _active_inspection_group:
 		if is_instance_valid(window):
 			stop_tracking_window(window.get_instance_id())
@@ -254,6 +258,9 @@ func _open_contextual_window(context: Dictionary) -> void:
 	window_instance.hide()
 	_register_window(window_instance, false) # Register as NON-modal.
 	_active_inspection_group.push_back(window_instance)
+	
+	# AUDIO HOOK: Window open sound
+	Audio.play_sfx("ui_window_open")
 
 	if window_instance.has_method("populate"):
 		window_instance.populate(populate_context)

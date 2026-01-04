@@ -139,6 +139,10 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	SignalBus.emit_signal("battle_state_changed", true)
 	SignalBus.emit_signal("battle_state_changed", true)
 	_emit_battle_inventory_changed()
+	
+	# AUDIO HOOK: Battle BGM
+	Audio.play_music(SoundRegistry.BGM_BATTLE)
+	
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Emit unit_stat_changed for all units that have equipped items after UI is populated
