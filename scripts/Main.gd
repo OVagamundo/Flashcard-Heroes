@@ -165,6 +165,9 @@ func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 
 func _on_path_choice_scene_requested() -> void:
 	_load_content(PATH_CHOICE_SCENE)
+	# AUDIO HOOK: Menu BGM (Returning from battle or shop)
+	Audio.play_music(SoundRegistry.BGM_MENU)
+	
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 
@@ -263,6 +266,9 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 		# Connect to coin_landed to trigger machine reaction
 		token_vfx.coin_landed.connect(_on_coin_landed_on_machine.bind(target_machine))
 		
+		# AUDIO HOOK: Token spend (play for each token)
+		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
+		
 		# Slight random offset to start position for natural feel
 		var offset = Vector2(randf_range(-20, 20), randf_range(-10, 10))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
@@ -279,6 +285,9 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""
 	if not is_instance_valid(machine):
 		return
+	
+	# AUDIO HOOK: Token land on machine
+	Audio.play_sfx("token_land")
 	
 	# Ensure we ignore unused warning for target_pos (for future particle effects)
 	var _unused = target_pos

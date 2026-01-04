@@ -7,6 +7,9 @@ const NodeViewScene = preload("res://scenes/NodeView.tscn")
 @onready var node_container: HBoxContainer = $CenterContainer/HBoxContainer
 
 func _ready() -> void:
+	# AUDIO HOOK: Path Choice BGM
+	Audio.play_music(SoundRegistry.BGM_PATHCHOICE)
+	
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.advance_day(1)
 	

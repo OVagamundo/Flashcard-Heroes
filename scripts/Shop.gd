@@ -37,6 +37,9 @@ func _ready() -> void:
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
+	
+	# AUDIO HOOK: Shop BGM
+	Audio.play_music(SoundRegistry.BGM_SHOP)
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")
@@ -190,6 +193,8 @@ func _on_buy_pressed() -> void:
 			# Animate gold coins then purchase, then animate gachaball
 			_animate_gold_spend(_selected_cost, buy_button, func():
 				SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
+				# AUDIO HOOK: Buy
+				Audio.play_sfx("shop_buy")
 				buy_button.disabled = false
 				# After purchase, animate gachaball to machine
 				_animate_gachaball_to_machine(start_pos, visual_data, tier)
@@ -213,6 +218,8 @@ func _on_reroll_pressed() -> void:
 	# Animate gold coins then reroll
 	_animate_gold_spend(_current_reroll_cost, reroll_button, func():
 		SignalBus.emit_signal("shop_reroll_requested")
+		# AUDIO HOOK: Reroll
+		Audio.play_sfx("shop_reroll")
 		reroll_button.disabled = false
 	)
 
@@ -254,6 +261,9 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 		
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
+		# AUDIO HOOK: Coin Spawn
+		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05)) # Pitch up slightly for each coin
+
 	
 	# Wait for animations then call completion callback
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
@@ -262,6 +272,9 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 
 func _on_gold_landed_on_button(_target_pos: Vector2, button: Button) -> void:
 	"""React when a gold coin lands on a button - flash and bounce"""
+	# AUDIO HOOK: Coin Land
+	Audio.play_sfx("coin_land")
+	
 	if not is_instance_valid(button):
 		return
 	
@@ -300,6 +313,9 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	
 	# Spawn animated ball
 	var anim_ball = GachaBallViewScene.instantiate()
+	
+	# AUDIO HOOK: Ball toss sound at animation start
+	Audio.play_sfx("ui_drag_drop")
 	
 	# Add to effects layer
 	var effects_layer = main_node.get_node_or_null("EffectsLayer")
@@ -360,6 +376,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	
 	# Clean up and trigger machine bounce when ball lands
 	tween.tween_callback(func():
+		# AUDIO HOOK: Ball land sound
+		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
 		# Trigger machine bounce
 		if main_node.has_method("trigger_machine_bounce"):

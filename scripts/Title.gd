@@ -5,6 +5,9 @@ extends Control
 @onready var options_button: Button = %OptionsButton
 
 func _ready() -> void:
+	# AUDIO HOOK: Title BGM
+	Audio.play_music(SoundRegistry.BGM_TITLE)
+	
 	# The Title screen should now transition to the Loadout scene, not start a run directly.
 	start_run_button.pressed.connect(func(): SignalBus.emit_signal("loadout_scene_requested"))
 	options_button.pressed.connect(_on_options_pressed)

@@ -68,6 +68,10 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# 1. Melee Lunge - attacker jumps to target
 		if target_position != Vector2.ZERO:
+			# AUDIO HOOK: Attack lunge whoosh (before movement starts)
+			if OS.is_debug_build():
+				print("[DamageAnimation] Playing LUNGE sound: unit_toss")
+			Audio.play_sfx("unit_toss")
 			SignalBus.emit_signal("unit_melee_lunge", source_uuid, target_position)
 			await animator.wait_for_animation_completion("melee_lunge", source_uuid)
 		
@@ -134,6 +138,9 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		var new_hp = targets_new_hp[i] if i < targets_new_hp.size() else 0
 		var armor_consumed = armor_consumed_list[i] if i < armor_consumed_list.size() else 0
 		var new_armor = targets_new_armor[i] if i < targets_new_armor.size() else 0
+		
+		# AUDIO HOOK: Damage sound for each target hit
+		Audio.play_sfx("combat_hit")
 		
 		# ARMOR EFFECTS FIRST (before HP)
 		if armor_consumed > 0:

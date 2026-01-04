@@ -1084,6 +1084,9 @@ func _reset_drag_deformation() -> void:
 func _play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return
 	
+	# AUDIO HOOK: Play hop sound for all landing bounces
+	Audio.play_sfx("unit_hop")
+	
 	# Force visibility
 	if not visible:
 		visible = true

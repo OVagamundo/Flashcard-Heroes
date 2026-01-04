@@ -174,6 +174,10 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	# Default move behaviour for normal containers
 	var owner = _get_data_owner()
 	if not is_instance_valid(owner): return
+	
+	# AUDIO HOOK: Drop/move sound
+	Audio.play_sfx("unit_land")
+	
 	owner.move_instance(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal("inventory_action_completed", [instance_to_move.ball_uuid])
@@ -186,6 +190,9 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
+	
+	# AUDIO HOOK: Swap sound
+	Audio.play_sfx("ui_swap")
 
 	# Use atomic swap APIs
 	data_owner.swap_instances(source_loc, target_loc)
@@ -304,6 +311,9 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
 
 	# (removals were performed earlier for all non-same-unit item merges)
+	
+	# AUDIO HOOK: Merge/upgrade sound
+	Audio.play_sfx("ui_merge")
 
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")

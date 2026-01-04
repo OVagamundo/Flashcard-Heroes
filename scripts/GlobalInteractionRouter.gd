@@ -545,8 +545,10 @@ func _execute_command(command: Command) -> void:
 	match command.cmd:
 		CommandType.DESELECT:
 			_execute_deselect()
+			# No sound for deselect usually, or maybe a soft one
 		CommandType.SELECT:
 			_execute_select(command.context.get("context"))
+			Audio.play_sfx("ui_select")
 		CommandType.OPEN_INSPECTION_WINDOW:
 			_execute_open_inspection_window(command.context)
 		CommandType.CLOSE_ALL_INSPECTION_WINDOWS:
@@ -555,6 +557,8 @@ func _execute_command(command: Command) -> void:
 			_execute_close_child_windows(command.context.get("window_group_id", 0), command.context.get("parent_window_id", -1))
 		CommandType.REQUEST_ACTION:
 			_execute_request_action(command.context)
+			# AUDIO HOOK: Action requested (usually a valid click)
+			Audio.play_sfx("ui_click")
 		CommandType.INVALID_ACTION:
 			_execute_invalid_action()
 
@@ -730,6 +734,9 @@ func start_drag(origin_context: InteractionContext) -> void:
 	# Inform listeners that a drag has started (optional hook for visuals)
 	if SignalBus.has_signal("drag_started"):
 		SignalBus.emit_signal("drag_started", origin_context)
+	
+	# AUDIO HOOK: Drag Start
+	Audio.play_sfx("ui_drag_start")
 
 ## Public API: end a drag operation (called by InteractionManager)
 func end_drag(_was_handled: bool) -> void:
@@ -747,6 +754,12 @@ func end_drag(_was_handled: bool) -> void:
 	# Centralize drag visual cleanup so views don't have to decide
 	# IMMEDIATE VISUAL CLEANUP: Do not defer this. 
 	_end_drag_visuals(_was_handled)
+	
+	# AUDIO HOOK: Drag End
+	if _was_handled:
+		Audio.play_sfx("ui_drag_drop")
+	else:
+		Audio.play_sfx("ui_deselect")
 	
 	# Inform listeners that a drag has ended (optional hook for visuals)
 	if SignalBus.has_signal("drag_ended"):

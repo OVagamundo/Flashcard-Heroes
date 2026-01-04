@@ -141,6 +141,9 @@ func _setup_question_label_style() -> void:
 
 func populate(context: Dictionary) -> void:
 	"""Called by WindowManager when the modal window is opened"""
+	# AUDIO HOOK: Minigame popup opening sound
+	Audio.play_sfx("ui_window_open")
+	
 	_run_state = context.get("run_state")
 	# Coerce active_deck into Array[StringName]
 	var raw_deck: Variant = context.get("active_deck", null)
@@ -211,6 +214,9 @@ func _on_got_it_pressed() -> void:
 
 func _start_minigame_session() -> void:
 	"""Start the 3-second sprint mini-game"""
+	# AUDIO HOOK: High-intensity minigame BGM
+	Audio.play_music(SoundRegistry.BGM_MINIGAME)
+	
 	card_intro_container.hide()
 	
 	# TDD: 5-second session timer for the entire session
@@ -351,12 +357,16 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 			# Generic hero: +1s on correct
 			_session_timer += 1.0
 		_flash_button_correct(selected_answer_id)
+		# AUDIO HOOK: Correct
+		Audio.play_sfx("minigame_correct")
 	else:
 		# Check for generic hero penalty on wrong answer
 		if _has_hero_timer_extend():
 			# Generic hero: -0.5s on wrong
 			_session_timer -= 0.5
 		_flash_button_incorrect(selected_answer_id)
+		# AUDIO HOOK: Incorrect
+		Audio.play_sfx("minigame_incorrect")
 	
 	# Get the next question BEFORE flashing so we know the target color
 	var next_question: Dictionary = FlashcardManager.get_next_question()
@@ -494,6 +504,13 @@ func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 
 func _end_minigame() -> void:
 	"""End the mini-game when timer expires"""
+	# AUDIO HOOK: Restore previous scene's BGM when minigame ends
+	# Context-aware: restore Battle BGM if in combat, RestSite BGM otherwise
+	if GameManager.is_in_battle:
+		Audio.play_music(SoundRegistry.BGM_BATTLE)
+	else:
+		Audio.play_music(SoundRegistry.BGM_REST)
+	
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,
 		"total_answers": _total_answers,

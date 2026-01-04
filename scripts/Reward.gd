@@ -12,6 +12,9 @@ var _reward_uuids: Array[String] = []
 var _gold_amount: int = 0
 
 func _ready() -> void:
+	# AUDIO HOOK: Reward BGM
+	Audio.play_music(SoundRegistry.BGM_REWARD)
+	
 	SignalBus.selection_changed.connect(_on_selection_changed)
 	confirm_button.disabled = true
 	confirm_button.pressed.connect(_on_confirm_pressed)
@@ -231,6 +234,9 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	# Spawn animated ball
 	var anim_ball = GachaBallViewScene.instantiate()
 	
+	# AUDIO HOOK: Ball toss sound
+	Audio.play_sfx("ui_drag_drop")
+	
 	# Add to effects layer
 	var effects_layer = main_node.get_node_or_null("EffectsLayer")
 	if effects_layer:
@@ -290,6 +296,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	
 	# Clean up and trigger machine bounce when ball lands
 	tween.tween_callback(func():
+		# AUDIO HOOK: Ball land sound
+		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
 		# Trigger machine bounce
 		if main_node.has_method("trigger_machine_bounce"):
