@@ -7,21 +7,176 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 9 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-Warning: Instance has invalid stats, resetting from definition
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
+[TestMode] Registered unit: unit_t3_b at PlayerLineup slot 1
+[TestMode] Registered unit: unit_t3_b at PlayerLineup slot 2
+[TestMode] Registered unit: unit_t3_b at PlayerLineup slot 3
+[TestMode] Registered unit: unit_t3_b at PlayerLineup slot 4
+[TestMode] Registered unit: unit_t3_b at EnemyLineup slot 0
+[TestMode] Registered unit: unit_t3_b at EnemyLineup slot 1
+[TestMode] Registered unit: unit_t3_b at EnemyLineup slot 4
+[BM] _enqueue_attack_for:unit_t3_b_1767544053_9_05387-> target:unit_t3_b_1767544055_10_18054
+[BM] _enqueue_attack_for:unit_t3_b_1767544053_8_35020-> target:unit_t3_b_1767544055_10_18054
+[BM] _enqueue_attack_for:unit_t3_b_1767544052_7_31079-> target:unit_t3_b_1767544055_10_18054
+[BM] _enqueue_attack_for:unit_t3_b_1767544051_6_23742-> target:unit_t3_b_1767544055_10_18054
+[BM] _enqueue_attack_for:hero_timekeeper_1767544044_2_44565-> target:unit_t3_b_1767544055_10_18054
+[BM] _enqueue_attack_for:unit_t3_b_1767544055_10_18054-> target:unit_t3_b_1767544053_9_05387
+[BM] _enqueue_attack_for:unit_t1_a_1767544044_5_96638-> target:unit_t3_b_1767544053_9_05387
+[BM] _enqueue_attack_for:unit_t2_a_1767544044_3_23547-> target:unit_t3_b_1767544053_9_05387
+[ANIM] ========== START ANIMATION SEQUENCE: 24 events ==========
+[SIM] Event#0: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#1: DAMAGE | src=unit_t3_b_1767544053 | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#2: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#3: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544056 | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#4: DAMAGE | src=unit_t3_b_1767544053 | targets=[unit_t3_b_1767544056_11_92064]
+[SIM] Event#5: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#6: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544056 | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#7: DAMAGE | src=unit_t3_b_1767544052 | targets=[unit_t3_b_1767544056_12_41299]
+[SIM] Event#8: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#9: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544056 | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#10: DAMAGE | src=unit_t3_b_1767544051 | targets=[unit_t3_b_1767544056_11_92064]
+[SIM] Event#11: DEATH | src= | targets=[unit_t3_b_1767544056_11_92064]
+[SIM] Event#12: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#13: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544056 | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#14: DAMAGE | src=hero_timekeeper_1767 | targets=[unit_t3_b_1767544056_12_41299]
+[SIM] Event#15: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#16: DEATH | src= | targets=[unit_t3_b_1767544056_12_41299]
+[SIM] Event#17: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#18: DAMAGE | src=unit_t3_b_1767544055 | targets=[unit_t3_b_1767544053_9_05387]
+[SIM] Event#19: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#20: DAMAGE | src=unit_t1_a_1767544044 | targets=[unit_t3_b_1767544053_9_05387]
+[SIM] Event#21: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#22: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544051 | targets=[unit_t3_b_1767544053_9_05387]
+[SIM] Event#23: DAMAGE | src=unit_t2_a_1767544044 | targets=[unit_t3_b_1767544051_6_23742]
+[BattleLog] [0:1] Guardian Sentinel deals 4 dmg to Guardian Sentinel 
+[BattleLog] [0:2] Guardian Sentinel attacks Guardian Sentinel for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544055_10_18054"] source: unit_t3_b_1767544053_9_05387 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544053 type 5
+[BattleLog] [0:3] Guardian Sentinel deals 4 dmg to Guardian Sentinel 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544056 leaping to protect unit_t3_b_1767544055
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [0:4] Guardian Sentinel attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544056_11_92064"] source: unit_t3_b_1767544053_8_35020 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544053 type 5
+[BattleLog] [0:5] Guardian Sentinel deals 4 dmg to Guardian Sentinel 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544056 leaping to protect unit_t3_b_1767544055
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [0:6] Guardian Sentinel attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544056_12_41299"] source: unit_t3_b_1767544052_7_31079 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544052 type 5
+[BattleLog] [0:7] Guardian Sentinel deals 4 dmg to Guardian Sentinel 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544056 leaping to protect unit_t3_b_1767544055
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [0:8] Guardian Sentinel attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 2→-2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544056_11_92064"] source: unit_t3_b_1767544051_6_23742 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544051 type 5
+[BattleLog] [0:9] └─ unit_t3_... is defeated! 
+[BattleLog] [0:10] Timekeeper deals 2 dmg to Guardian Sentinel 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544056 leaping to protect unit_t3_b_1767544055
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [0:11] Timekeeper attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544056_12_41299"] source: hero_timekeeper_1767544044_2_44565 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
+[BattleLog] [0:12] Gained 1 gold! 
+[BattleLog] [0:13] └─ unit_t3_... is defeated! 
+[BattleLog] [0:14] Guardian Sentinel deals 4 dmg to Guardian Sentinel 
+[BattleLog] [0:15] Guardian Sentinel attacks Guardian Sentinel for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544053_9_05387"] source: unit_t3_b_1767544055_10_18054 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544055 type 5
+[BattleLog] [0:16] Apprentice deals 1 dmg to Guardian Sentinel 
+[BattleLog] [0:17] Apprentice attacks Guardian Sentinel for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544053_9_05387"] source: unit_t1_a_1767544044_5_96638 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1767544044 type 5
+[BattleLog] [0:18] Guardian deals 4 dmg to Guardian Sentinel 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544051 leaping to protect unit_t3_b_1767544053
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [0:19] Guardian attacks Guardian Sentinel for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544051_6_23742"] source: unit_t2_a_1767544044_3_23547 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_a_1767544044 type 5
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 24 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
-[FlashcardManager] _on_minigame_complete called. Correct: 2
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
+[TestMode] Registered unit: unit_t2_b at EnemyLineup slot 1
+[TestMode] Registered unit: unit_t2_b at EnemyLineup slot 4
+[BM] _enqueue_attack_for:unit_t3_b_1767544053_9_05387-> target:unit_t3_b_1767544055_10_18054
+[BM] _enqueue_attack_for:unit_t3_b_1767544053_8_35020-> target:unit_t2_b_1767551421_13_67160
+[BM] _enqueue_attack_for:unit_t3_b_1767544052_7_31079-> target:unit_t1_a_1767544044_5_96638
+[BM] _enqueue_attack_for:unit_t3_b_1767544051_6_23742-> target:unit_t2_a_1767544044_3_23547
+[BM] _enqueue_attack_for:hero_timekeeper_1767544044_2_44565-> target:unit_t2_a_1767544044_3_23547
+[BM] _enqueue_attack_for:unit_t2_a_1767544044_3_23547-> target:unit_t3_b_1767544053_9_05387
+[BM] _enqueue_attack_for:unit_t2_b_1767551422_14_34949-> target:unit_t3_b_1767544053_9_05387
+[ANIM] ========== START ANIMATION SEQUENCE: 26 events ==========
+[SIM] Event#24: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#25: DAMAGE | src=unit_t3_b_1767544053 | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#26: DEATH | src= | targets=[unit_t3_b_1767544055_10_18054]
+[SIM] Event#27: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#28: DAMAGE | src=unit_t3_b_1767544053 | targets=[unit_t2_b_1767551421_13_67160]
+[SIM] Event#29: DEATH | src= | targets=[unit_t2_b_1767551421_13_67160]
+[SIM] Event#30: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#31: DAMAGE | src=unit_t3_b_1767544052 | targets=[unit_t1_a_1767544044_5_96638]
+[SIM] Event#32: DEATH | src= | targets=[unit_t1_a_1767544044_5_96638]
+[SIM] Event#33: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#34: HEAL | src=unit_t2_a_1767544044 | targets=[unit_t2_a_1767544044_3_23547]
+[SIM] Event#35: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#36: DAMAGE | src=unit_t3_b_1767544051 | targets=[unit_t2_a_1767544044_3_23547]
+[SIM] Event#37: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#38: HEAL | src=unit_t2_a_1767544044 | targets=[unit_t2_a_1767544044_3_23547]
+[SIM] Event#39: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#40: DAMAGE | src=hero_timekeeper_1767 | targets=[unit_t2_a_1767544044_3_23547]
+[SIM] Event#41: LOG_MESSAGE | src= | targets=[none]
+[SIM] Event#42: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544052 | targets=[unit_t3_b_1767544053_9_05387]
+[SIM] Event#43: DAMAGE | src=unit_t2_a_1767544044 | targets=[unit_t3_b_1767544052_7_31079]
+[SIM] Event#44: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544053 | targets=[unit_t3_b_1767544053_9_05387]
+[SIM] Event#45: DAMAGE | src=unit_t2_b_1767551422 | targets=[unit_t3_b_1767544053_8_35020]
+[SIM] Event#46: GUARDIAN_INTERCEPT | src=unit_t3_b_1767544051 | targets=[unit_t3_b_1767544053_8_35020]
+[SIM] Event#47: DAMAGE | src=unit_t2_b_1767551422 | targets=[unit_t3_b_1767544051_6_23742]
+[SIM] Event#48: DAMAGE | src=unit_t2_b_1767551422 | targets=[unit_t3_b_1767544052_7_31079]
+[SIM] Event#49: DEATH | src= | targets=[unit_t3_b_1767544051_6_23742]
+[BattleLog] [1:2] Guardian Sentinel deals 4 dmg to Guardian Sentinel 
+[BattleLog] [1:3] Guardian Sentinel attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 2→-2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544055_10_18054"] source: unit_t3_b_1767544053_9_05387 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544053 type 5
+[BattleLog] [1:4] └─ unit_t3_... is defeated! 
+[BattleLog] [1:5] Guardian Sentinel deals 4 dmg to Berserker 
+[BattleLog] [1:6] Guardian Sentinel attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 2→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1767551421_13_67160"] source: unit_t3_b_1767544053_8_35020 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544053 type 5
+[BattleLog] [1:7] └─ unit_t2_... is defeated! 
+[BattleLog] [1:8] Guardian Sentinel deals 4 dmg to Apprentice 
+[BattleLog] [1:9] Guardian Sentinel attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 2→-2)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1767544044_5_96638"] source: unit_t3_b_1767544052_7_31079 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544052 type 5
+[BattleLog] [1:10] └─ unit_t1_... is defeated! 
+[BattleLog] [1:11] Guardian heals Guardian for 2 HP 
+[BattleLog] [1:12] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
+[BattleLog] [1:13] Guardian Sentinel deals 4 dmg to Guardian 
+[BattleLog] [1:14] Guardian Sentinel attacks Guardian for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1767544044_3_23547"] source: unit_t3_b_1767544051_6_23742 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t3_b_1767544051 type 5
+[BattleLog] [1:15] Guardian heals Guardian for 2 HP 
+[BattleLog] [1:16] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 2→4)
+[BattleLog] [1:17] Timekeeper deals 2 dmg to Guardian 
+[BattleLog] [1:18] Timekeeper attacks Guardian for 2 damage (basic_attack, on_attack) (HP: 4→2)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1767544044_3_23547"] source: hero_timekeeper_1767544044_2_44565 attack_type: melee
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
+[BattleLog] [1:19] Guardian deals 4 dmg to Guardian Sentinel 
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544052 leaping to protect unit_t3_b_1767544053
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [1:20] Guardian attacks Guardian Sentinel for 4 damage (basic_attack, on_attack) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544052_7_31079"] source: unit_t2_a_1767544044_3_23547 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_a_1767544044 type 5
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544053 leaping to protect unit_t3_b_1767544053
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [1:21] Berserker attacks Guardian Sentinel for 4 damage (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544053_8_35020"] source: unit_t2_b_1767551422_14_34949 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_b_1767551422 type 5
+[GuardianInterceptAnimation] Guardian unit_t3_b_1767544051 leaping to protect unit_t3_b_1767544053
+[GuardianInterceptAnimation] Leap complete, pending return after damage
+[BattleLog] [1:22] Berserker attacks Guardian Sentinel for 2 damage (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544051_6_23742"] source: unit_t2_b_1767551422_14_34949 attack_type: melee
+[BattleLog] [1:23] Berserker attacks Guardian Sentinel for 1 damage (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t3_b_1767544052_7_31079"] source: unit_t2_b_1767551422_14_34949 attack_type: melee
+[BattleLog] [1:24] └─ Guardian Sentinel is defeated! 
+[ANIM] ========== ANIMATION SEQUENCE COMPLETE: 26 events processed ==========
+[BattleAnimator] Emitting turn_animation_finished!
+[BattleLog] [2:1] ═══ TURN 2 ═══ 

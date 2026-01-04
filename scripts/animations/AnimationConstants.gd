@@ -81,3 +81,8 @@ const DEFORM_DURATION := 0.08 # Deformation time (increased slightly for sync)
 # HURT RECOIL (Enhanced)
 # =============================================================================
 const HURT_RECOIL_DISTANCE := 35.0 # Very noticeable recoil (was 15px)
+
+# =============================================================================
+# STAGGERED ENTRY ANIMATION
+# =============================================================================
+const ENTRY_STAGGER_DELAY := 0.1 # 100ms between each ball appearing

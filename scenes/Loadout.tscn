@@ -48,7 +48,7 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("2_title_font")
 theme_override_font_sizes/font_size = 36
-text = "FLASHCARD HEROES"
+text = "Loadout Selection"
 horizontal_alignment = 1
 
 [node name="HeroLabel" type="Label" parent="VBoxContainer"]

@@ -3,7 +3,6 @@ extends Control
 
 @onready var start_run_button: Button = %StartRunButton
 @onready var options_button: Button = %OptionsButton
-@onready var game_title: Label = $CenterContainer/VBoxContainer/GameTitle
 
 func _ready() -> void:
 	# The Title screen should now transition to the Loadout scene, not start a run directly.
@@ -15,7 +14,6 @@ func _ready() -> void:
 	_update_localized_text()
 
 func _update_localized_text() -> void:
-	game_title.text = tr("ui.title")
 	start_run_button.text = tr("ui.start_run")
 	options_button.text = tr("ui.options")
 

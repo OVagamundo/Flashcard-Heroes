@@ -7,6 +7,10 @@ This document explains how to implement visual feedback in Flashcard Heroes (The
 > **The Golden Rule of Animation:**
 > The Animator is **STATELESS**. It must NEVER query the game state (e.g., `unit.current_hp`). It only visualizes exactly what is defined in the `CombatEvent`.
 
+> [!TIP]
+> **The Reuse Principle:**
+> Always **reuse existing animation logic** (e.g., `UnitAnimationController._on_unit_move` or `_on_unit_deform`) instead of creating new manual tweens. This ensures consistent physics (gravity, pivot points, squash/stretch) across the game and prevents regression.
+
 ---
 
 ## 1. The Presentation Pipeline
@@ -264,22 +268,31 @@ The `GachaBallView` controls the individual unit's visuals. These are the **Pupp
 - **`animate_leap_to(target_center)`**: Guardian Sentinel leap animation.
 - **`animate_leap_return()`**: Guardian Sentinel return animation.
 
+> [!CAUTION]
+> **UUID Lookup Ban (Position Data):**
+> Generally, positional data should come from `animator.get_snapshot_position(uuid)` to ensure stability.
+> **Exception (Dynamic Actors):** If a unit is *actively moving* (e.g., Guardian Intercept, Melee Lunge) and you need to attach VFX to it (like damage numbers), you **MAY** query `_visual_registry` to get the live view's `global_position`.
+> - **Rule**: Always fall back to the snapshot position if the view is missing or invalid.
+
+- Event ordering in TurnLog is the ONLY truth
+
+### Presentation Phase (The Playback)
+- **Driven by Events**: The Animator reads `CombatEvent` objects.
+- **Visual Payloads**: The `visual_payload` dictionary in the event is the **sole source of truth** for the View during playback (e.g., `targets_new_hp`, `targets_new_poison`).
+- **Signals**: The Animator emits signals (e.g., `unit_bump_attack`, `unit_flash_effect`) to trigger specific one-shot animations on the Views.
+
+### View Guidance
+- **One-Shot Animations**: Views subscribe to signals like `unit_bump_attack` and play a tween.
+- **Completion Signals**: Views **must** emit a completion signal (e.g., `unit_bump_finished`) when the animation ends so the Animator can proceed.
+- **Stacked Effects**: The Animator replays events sequentially. Views should render each update distinctly (e.g., two small heals instead of one big jump).
+
+### Debug Logging Standards
 > [!NOTE]
-> Low-level animations (flash, bump, death fade, melee lunge) are handled by the `UnitAnimationController` child node, not `GachaBallView` directly. `BattleAnimator` triggers these via signals. See **Section 4: Composable Animation Effects** for the independent color/deform/move channels.
+> **Log Separation Rule**: Debug logs should only show the **presentation layer**, not simulation internals.
 
----
-
-## 6. Best Practices
-
-### A. Async Await is King
-The animator depends on `await` to maintain timing.
-- **Correct**: `await view.animate_bump(...)`
-- **Wrong**: `view.animate_bump(...)` (Running without await desyncs the event queue)
-
-### B. Parallel vs Sequential
-- **Sequential**: `await` each step. Used for main action chains (Attack -> Damage -> Death).
-- **Parallel**: Create tweens/animations but don't `await` them individually, or use `Parallel` command if implemented.
-- **Grouped**: For AOE, loop through all targets and start animations, then `await get_tree().create_timer(duration).timeout` to wait for all.
+- **Event Queue Log**: Shows what WILL be presented (printed before animations)
+- **Animator Logs**: Show what IS being presented (e.g., "Processing DEATH event")
+- **Simulation Logs**: Should be commented out or conditional (they pollute the presentation log).timeout` to wait for all.
 
 ### C. No Logic in Animation
 **NEVER** calculate damage, roll dice, or check conditions in `BattleAnimator`.
@@ -463,3 +476,17 @@ These animations provide feedback during the interactive drag phase (User Input)
     - `_notification` checks both Godot's mechanical success (hit a control?) AND `_logical_drag_success`.
     - **Rule**: If either fails, the item bounces back to its original slot.
 - **Clean Start Rule**: `_reset_drag_deformation()` (scale 1.0) must occur **before** `_play_landing_bounce()` starts, otherwise the reset will clobber the animation tween.
+
+---
+
+## 11. Selection Feedback
+
+Triggered when a GachaBall is selected/inspected.
+
+### 11.1 Visuals
+- **Bounce (Visual)**: Uses `UnitAnimationController`'s standardized `HOP` and `HOP_DEFORM` logic (30px jump, squash/stretch).
+- **Outline (Visual)**: Thick white outline via `sprite_outline.gdshader` (param `outline_width: 3.0`).
+
+### 11.2 Implementation
+- **Reuse Principle**: Instead of creating custom tweens, `GachaBallView` calls `UnitAnimationController.play_selection_bounce()`.
+- **Method**: This internally triggers `_on_unit_move(&"HOP")` and `_on_unit_deform(&"HOP_DEFORM")`, ensuring it shares physics with combat events and respects the bottom-center pivot.

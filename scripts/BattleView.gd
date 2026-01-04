@@ -94,6 +94,9 @@ func _ready() -> void:
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	SignalBus.gacha_draw_animated.connect(_on_gacha_draw_animated)
 	
+	# Connect to battle_state_changed to trigger entry animation on EVERY battle start
+	SignalBus.battle_state_changed.connect(_on_battle_state_changed)
+	
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
 	discard_pile_button.pressed.connect(func(): SignalBus.emit_signal("display_discard_pile_requested"))
@@ -110,6 +113,62 @@ func _ready() -> void:
 	_redraw_board()
 	_redraw_board()
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
+	
+	# Animate initial unit entry (first battle only - subsequent battles via signal)
+	await get_tree().process_frame
+	_animate_initial_unit_entry()
+
+func _on_battle_state_changed(is_in_battle: bool) -> void:
+	"""Called when battle state changes - triggers entry animation on battle start"""
+	if is_in_battle:
+		# Wait for board to be redrawn first
+		await get_tree().process_frame
+		await get_tree().process_frame
+		_animate_initial_unit_entry()
+
+func _animate_initial_unit_entry() -> void:
+	"""Animate hero and enemy units appearing one-by-one when entering battle"""
+	var all_units: Array = []
+	
+	# Collect units from PlayerLineup (typically just the hero)
+	for slot in player_lineup.get_children():
+		if slot is PanelContainer:
+			for child in slot.get_children():
+				if child is GachaBallView:
+					all_units.append(child)
+					break
+	
+	# Collect units from EnemyLineup
+	for slot in enemy_lineup.get_children():
+		if slot is PanelContainer:
+			for child in slot.get_children():
+				if child is GachaBallView:
+					all_units.append(child)
+					break
+	
+	# Animate each unit with stagger
+	for i in range(all_units.size()):
+		var ball_view: GachaBallView = all_units[i]
+		if not is_instance_valid(ball_view):
+			continue
+		
+		# Find the correct sprite to animate (UnitSprite for battle mode)
+		var sprite_node = ball_view.icon_rect.get_node_or_null("UnitSprite")
+		var target_node = sprite_node if is_instance_valid(sprite_node) else ball_view.icon_rect
+		
+		if is_instance_valid(target_node):
+			# Hide initially
+			target_node.scale = Vector2.ZERO
+			target_node.pivot_offset = target_node.size / 2.0
+			
+			# Schedule delayed reveal with bounce
+			var delay = i * AnimationConstants.ENTRY_STAGGER_DELAY
+			get_tree().create_timer(delay).timeout.connect(func():
+				if is_instance_valid(target_node):
+					target_node.scale = Vector2.ONE
+				if is_instance_valid(ball_view):
+					ball_view._play_landing_bounce()
+			)
 
 
 func _redraw_board() -> void:

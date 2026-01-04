@@ -165,3 +165,16 @@ print("[BattleAnimator] Processing DAMAGE event")  # Shows what user sees
 - **Stateless Actions:** The UI does not modify data directly. It requests actions via the GIR (`REQUEST_ACTION`).
 - **InventoryManager:** Validates the action (Move, Swap, Merge, Equip) and updates the data model.
 - **Reactive Updates:** Views listen for signals (e.g., `battle_inventory_changed`) to rebuild or refresh their content.
+
+---
+
+## 6. Visual Feedback Standards
+
+To ensure a "premium" feel (as per golden rule), all interactive elements must provide immediate, juicy feedback.
+
+### Selection & Hover
+- **Selection**:
+    - **Animation**: Physics-based "Hop" (bounce up/down with squash/stretch).
+    - **Highlight**: Thick white outline (Shader parameter `outline_enabled=true`, `outline_width=3.0`).
+- **Consistency**: This feedback applies to **ALL** GachaBalls, whether in Shop, Reward, Inventory, or Battle/Equipped slots.
+- **Mechanism**: Views subscribe to `SignalBus.view_selected` (Global) rather than handling local input, ensuring feedback matches the GIR's truth.

@@ -114,6 +114,7 @@ ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of
 item_t3_d.name,Vengeful Thorn,Espinho Vingativo
 item_t3_d.desc,A thorny charm that strikes back at those who harm its bearer.,Um amuleto espinhoso que revida aqueles que ferem seu portador.
 ui.title,FLASHCARD HEROES,FLASHCARD HEROES
+ui.loadout_selection,Loadout Selection,Seleção de Loadout
 ui.start_run,Start Run,Iniciar Jogatina
 ui.options,Options,Opções
 ui.choose_hero,Choose Hero,Escolher Herói

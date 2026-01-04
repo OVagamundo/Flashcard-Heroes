@@ -224,8 +224,7 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 	
 	# Check for inspection events
 	if _is_inspection_event(context):
-		# GR-2: Clear Selection on Open
-		commands.append(Command.new(CommandType.DESELECT))
+		# Parent remains selected when its inspection window opens
 		# GR-1: Open on Request
 		commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 			"context": context,
@@ -240,8 +239,7 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 		&"SELECTION_ONLY":
 			commands.append_array(_handle_selection_only(context))
 		&"INSPECTION_ONLY":
-			# Single-click inspection
-			commands.append(Command.new(CommandType.DESELECT))
+			# Single-click inspection - parent remains selected
 			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 				"context": context,
 				"anchor_view_id": context.source_view_instance_id
@@ -256,8 +254,8 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 	# Check if we have a current selection
 	if _current_selection != null:
 		# Re-Selection Inspects (S4): single-click on already-selected opens inspection
+		# Keep parent selected when opening its inspection window
 		if _current_selection.source_view_instance_id == context.source_view_instance_id:
-			commands.append(Command.new(CommandType.DESELECT))
 			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 				"context": context,
 				"anchor_view_id": context.source_view_instance_id
@@ -310,7 +308,7 @@ func _handle_selection_only(context: InteractionContext) -> Array[Command]:
 			and _current_selection.location.container == context.location.container \
 			and _current_selection.location.index == context.location.index
 		if same_view or same_loc:
-			commands.append(Command.new(CommandType.DESELECT))
+			# Keep parent selected when opening its inspection window
 			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 				"context": context,
 				"anchor_view_id": context.source_view_instance_id
@@ -377,8 +375,7 @@ func _handle_ui_link_interaction(context: InteractionContext) -> Array[Command]:
 		"parent_window_id": parent_window_id
 	}))
 	
-	# Then open the effects inspection window
-	commands.append(Command.new(CommandType.DESELECT))
+	# Then open the effects inspection window (parent remains selected)
 	commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 		"context": context,
 		"anchor_view_id": context.source_view_instance_id

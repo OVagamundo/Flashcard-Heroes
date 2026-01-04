@@ -97,6 +97,38 @@ func populate(context: Dictionary) -> void:
 		price_label.add_theme_font_size_override("font_size", 12)
 		price_label.custom_minimum_size = Vector2(120, 30)
 		_price_labels_container.add_child(price_label)
+	
+	# Wait one frame for layout to complete, then animate entry
+	await get_tree().process_frame
+	_animate_staggered_entry()
+
+func _animate_staggered_entry() -> void:
+	"""Animate gachaballs appearing one-by-one with landing bounce"""
+	var slot_nodes = slots_container.get_children()
+	var ball_index: int = 0
+	
+	for slot_view in slot_nodes:
+		# Find GachaBallView in slot
+		var ball_view: GachaBallView = null
+		for child in slot_view.get_children():
+			if child is GachaBallView:
+				ball_view = child
+				break
+		
+		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+			# Hide initially
+			ball_view.icon_rect.scale = Vector2.ZERO
+			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
+			
+			# Schedule delayed reveal with bounce
+			var delay = ball_index * AnimationConstants.ENTRY_STAGGER_DELAY
+			get_tree().create_timer(delay).timeout.connect(func():
+				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+					ball_view.icon_rect.scale = Vector2.ONE
+					ball_view._play_landing_bounce()
+			)
+			ball_index += 1
+
 
 func _find_instance_for_slot(slot_index: int) -> GachaBallInstance:
 	for inst in _current_shop_instances:

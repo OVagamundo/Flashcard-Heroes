@@ -292,6 +292,37 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	
 	tween.finished.connect(_on_melee_lunge_tween_finished)
 
+# =============================================================================
+# SELECTION FEEDBACK
+# =============================================================================
+# =============================================================================
+# SELECTION FEEDBACK
+# =============================================================================
+func play_selection_bounce() -> void:
+	if not is_inside_tree():
+		return
+		
+	# Reuse standard HOP animation (Move + Deform)
+	# This ensures correct pivot handling (_ensure_pivot called in deform)
+	# and consistent physics with other hop/bounce effects.
+	var uuid = _get_uuid()
+	_on_unit_move(uuid, &"HOP", Vector2.ZERO)
+	_on_unit_deform(uuid, &"HOP_DEFORM")
+
+func set_selection_outline(enabled: bool) -> void:
+	var sprite := _get_sprite()
+	if not is_instance_valid(sprite):
+		return
+		
+	var mat = sprite.material as ShaderMaterial
+	if is_instance_valid(mat):
+		mat.set_shader_parameter("outline_enabled", enabled)
+		if enabled:
+			# Ensure width is thick as requested (user said "thick white outlines")
+			mat.set_shader_parameter("outline_width", 3.0)
+			mat.set_shader_parameter("outline_color", Color.WHITE)
+
+
 func _on_melee_lunge_tween_finished() -> void:
 	SignalBus.emit_signal("unit_melee_lunge_finished", _get_uuid())
 

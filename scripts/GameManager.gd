@@ -344,6 +344,8 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				var instance = REST_SITE_SCENE.instantiate()
 				_active_main_node._current_content_node = instance
 				_active_main_node.content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+				# Sync background texture to full-screen SceneBackground
+				_active_main_node._sync_scene_background(instance)
 
 func _enter_shop() -> void:
 	_reroll_cost = 1

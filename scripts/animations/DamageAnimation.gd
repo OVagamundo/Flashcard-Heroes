@@ -188,20 +188,42 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		await animator.wait_for_animation_completion("move", target_uuid)
 
 func _spawn_floating_damage(_animator: Node, target_uuid: String, damage: int) -> void:
-	# DECOUPLING FIX: Use position snapshot instead of visual_registry
-	var tgt_snap = _animator.get_snapshot_position(target_uuid)
-	if tgt_snap.is_empty(): return
+	# GUARDIAN FIX: Try to use live position first, as the unit might have moved (intercept)
+	var target_view = _animator._visual_registry.get(target_uuid)
+	var spawn_pos = Vector2.ZERO
+	var found_pos = false
+
+	if is_instance_valid(target_view) and target_view.is_inside_tree():
+		spawn_pos = target_view.global_position + (target_view.size * Vector2(0.5, 0.3))
+		found_pos = true
+	else:
+		# Fallback: Use snapshot (Safe mode)
+		var tgt_snap = _animator.get_snapshot_position(target_uuid)
+		if not tgt_snap.is_empty():
+			spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
+			found_pos = true
 	
-	var spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
-	VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, false)
+	if found_pos:
+		VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, false)
 
 func _spawn_floating_armor_damage(_animator: Node, target_uuid: String, damage: int) -> void:
-	# Spawn grey floating damage number for armor consumption
-	var tgt_snap = _animator.get_snapshot_position(target_uuid)
-	if tgt_snap.is_empty(): return
+	# GUARDIAN FIX: Try to use live position first
+	var target_view = _animator._visual_registry.get(target_uuid)
+	var spawn_pos = Vector2.ZERO
+	var found_pos = false
 	
-	var spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
-	VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, true) # true = armor (grey)
+	if is_instance_valid(target_view) and target_view.is_inside_tree():
+		spawn_pos = target_view.global_position + (target_view.size * Vector2(0.5, 0.3))
+		found_pos = true
+	else:
+		# Fallback: Use snapshot
+		var tgt_snap = _animator.get_snapshot_position(target_uuid)
+		if not tgt_snap.is_empty():
+			spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
+			found_pos = true
+
+	if found_pos:
+		VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, true) # true = armor (grey)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
 	VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)

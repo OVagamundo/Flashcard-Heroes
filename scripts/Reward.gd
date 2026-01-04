@@ -78,6 +78,37 @@ func populate(context: Dictionary) -> void:
 			var visual_data = VisualDataAdapter.create_visual_data(inst)
 			slot_view.set_content(visual_data, true, false, false)
 
+	# Wait one frame for layout to complete, then animate entry
+	await get_tree().process_frame
+	_animate_staggered_entry()
+
+func _animate_staggered_entry() -> void:
+	"""Animate reward choices appearing one-by-one with landing bounce"""
+	var slot_nodes = choices_container.get_children()
+	var ball_index: int = 0
+	
+	for slot_view in slot_nodes:
+		# Find GachaBallView in slot
+		var ball_view: GachaBallView = null
+		for child in slot_view.get_children():
+			if child is GachaBallView:
+				ball_view = child
+				break
+		
+		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+			# Hide initially
+			ball_view.icon_rect.scale = Vector2.ZERO
+			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
+			
+			# Schedule delayed reveal with bounce
+			var delay = ball_index * AnimationConstants.ENTRY_STAGGER_DELAY
+			get_tree().create_timer(delay).timeout.connect(func():
+				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+					ball_view.icon_rect.scale = Vector2.ONE
+					ball_view._play_landing_bounce()
+			)
+			ball_index += 1
+
 
 func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	var is_valid_selection = new_location and new_location.container == &"Rewards"

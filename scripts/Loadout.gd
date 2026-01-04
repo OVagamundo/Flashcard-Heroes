@@ -23,7 +23,7 @@ func _ready() -> void:
 	_update_localized_text()
 
 func _update_localized_text() -> void:
-	title_label.text = tr("ui.title")
+	title_label.text = tr("ui.loadout_selection")
 	start_button.text = tr("ui.start_run")
 	test_button.text = tr("ui.test_mode")
 	hero_label.text = tr("ui.choose_hero")

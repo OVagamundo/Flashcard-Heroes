@@ -58,6 +58,7 @@ var _drag_preview: Control = null # Reference to the drag preview for deformatio
 
 # NOTE: Animation state variables (_melee_origin_position, _flash_tween, etc.)
 # are now managed by UnitAnimationController child node
+var _anim_controller: UnitAnimationController = null
 
 
 func _ready() -> void:
@@ -67,6 +68,9 @@ func _ready() -> void:
 	# Otherwise all GachaBallViews would share the same material and selection state
 	if icon_rect and icon_rect.material:
 		icon_rect.material = icon_rect.material.duplicate()
+
+	_anim_controller = get_node_or_null("AnimationController")
+
 	
 	var bus = get_node("/root/SignalBus")
 	if is_instance_valid(bus):
@@ -924,6 +928,8 @@ func _on_view_selected(view: Control, _loc: LocationIdentifier) -> void:
 	if view == self:
 		_is_selected = true
 		_apply_selection_feedback()
+		if is_instance_valid(_anim_controller):
+			_anim_controller.play_selection_bounce()
 
 func _on_view_deselected(view: Control) -> void:
 	if view == self:
@@ -947,6 +953,10 @@ func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void
 func _apply_selection_feedback() -> void:
 	if not is_inside_tree(): return
 	if not is_instance_valid(icon_rect): return
+	
+	# Apply outline shader (universal feedback)
+	if is_instance_valid(_anim_controller):
+		_anim_controller.set_selection_outline(_is_selected)
 	
 	# In inventory mode, use a white circle outline texture for selection
 	var overlay = get_node_or_null("GachaBallOverlay")

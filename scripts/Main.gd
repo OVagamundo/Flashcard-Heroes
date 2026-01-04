@@ -5,6 +5,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 
 @onready var content_area: SubViewportContainer = %ContentArea
+@onready var scene_background: TextureRect = %SceneBackground
 
 # Gacha machine containers
 @onready var gacha_machine_1: Control = %GachaMachine1
@@ -138,6 +139,24 @@ func _load_content(scene_resource: PackedScene) -> void:
 	var instance = scene_resource.instantiate()
 	_current_content_node = instance
 	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	
+	# Sync background texture to full-screen SceneBackground
+	_sync_scene_background(instance)
+
+func _sync_scene_background(scene_instance: Node) -> void:
+	"""Extract background texture from loaded scene and apply to full-screen SceneBackground"""
+	if not is_instance_valid(scene_background):
+		return
+	
+	# Look for a Background TextureRect child in the scene
+	var bg_node = scene_instance.get_node_or_null("Background")
+	if is_instance_valid(bg_node) and bg_node is TextureRect:
+		scene_background.texture = bg_node.texture
+		# Hide the scene's internal background since we're using the full-screen one
+		bg_node.visible = false
+	else:
+		# No background in scene - clear the full-screen background
+		scene_background.texture = null
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	_load_content(BATTLE_SCENE)
@@ -156,6 +175,9 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 	_current_content_node = instance
 	# Correctly parent the new scene inside the MarginContainer
 	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	
+	# Sync background texture to full-screen SceneBackground
+	_sync_scene_background(instance)
 	
 	if instance.has_method("populate"):
 		instance.populate(context)
@@ -425,6 +447,9 @@ func _on_shop_scene_requested(context: Dictionary) -> void:
 	var instance = SHOP_SCENE.instantiate()
 	_current_content_node = instance
 	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	
+	# Sync background texture to full-screen SceneBackground
+	_sync_scene_background(instance)
 	
 	if instance.has_method("populate"):
 		instance.populate(context)

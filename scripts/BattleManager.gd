@@ -447,6 +447,8 @@ func _change_phase(new_phase: Phases) -> void:
 				# Transition to results acknowledged (which triggers turn start abilities)
 				call_deferred("_on_results_acknowledged")
 			elif is_instance_valid(GameManager.run_state):
+				# Delay flashcard start to allow entry animation to complete
+				await get_tree().create_timer(1.0).timeout
 				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 			# Note: The management phase will be triggered by _on_results_acknowledged
 		Phases.MANAGEMENT:

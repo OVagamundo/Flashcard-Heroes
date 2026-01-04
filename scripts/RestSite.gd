@@ -68,7 +68,7 @@ func _update_localized_text() -> void:
 	# Button text stays as "X Tokens" (set in scene)
 
 func _populate_hero_slot() -> void:
-	"""Display the hero in the first slot"""
+	"""Display the hero in the first slot with entry animation"""
 	if not is_instance_valid(GameManager.run_state) or not is_instance_valid(GameManager.run_state.hero_instance):
 		return
 	
@@ -77,6 +77,31 @@ func _populate_hero_slot() -> void:
 	
 	if hero_slot.has_method("set_content"):
 		hero_slot.set_content(visual_data, true, false, false)
+	
+	# Animate hero entry after layout is ready
+	await get_tree().process_frame
+	_animate_hero_entry()
+
+func _animate_hero_entry() -> void:
+	"""Animate hero appearing with landing bounce"""
+	# Find GachaBallView in hero slot
+	var ball_view: GachaBallView = null
+	for child in hero_slot.get_children():
+		if child is GachaBallView:
+			ball_view = child
+			break
+	
+	if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+		# Hide initially
+		ball_view.icon_rect.scale = Vector2.ZERO
+		ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
+		
+		# Animate reveal with bounce (small delay for polish)
+		get_tree().create_timer(0.05).timeout.connect(func():
+			if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+				ball_view.icon_rect.scale = Vector2.ONE
+				ball_view._play_landing_bounce()
+		)
 
 func _setup_prize_slot_clicks() -> void:
 	"""Setup click handlers for prize slots"""
