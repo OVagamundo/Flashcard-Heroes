@@ -2,6 +2,7 @@
 extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 
 @onready var content_area: SubViewportContainer = %ContentArea
 
@@ -161,6 +162,22 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
+	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
+		var current_tokens: int = bm.get_gacha_tokens()
+		if current_tokens < tier:
+			# Insufficient tokens - play rejection feedback on machine and token counter
+			var target_machine: Control = null
+			match tier:
+				1: target_machine = gacha_machine_1
+				2: target_machine = gacha_machine_2
+				3: target_machine = gacha_machine_3
+			var token_group = get_node_or_null("%TokenGroup")
+			if is_instance_valid(target_machine):
+				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
+			return
+	
 	# TDD Safeguard: Disable button immediately on press.
 	button.disabled = true
 	# Ensure UI focus doesn't interfere

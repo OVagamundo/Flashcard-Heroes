@@ -7,7 +7,7 @@
 [ext_resource type="Script" path="res://scripts/TestEnvironmentManager.gd" id="5_testenv"]
 [ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="6_label_font"]
 [ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="7_stat_font"]
-[ext_resource type="Texture2D" path="res://assets/sprites/backgrounds/spring_battle.png" id="8_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/BGs/battle.png" id="8_bg"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3

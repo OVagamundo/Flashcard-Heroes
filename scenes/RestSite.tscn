@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/gachamachinetier1.png" id="5_machine1"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/gachamachinetier2.png" id="6_machine2"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/gachamachinetier3.png" id="7_machine3"]
+[ext_resource type="Texture2D" path="res://assets/ui/BGs/rest.png" id="8_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.12, 0.14, 0.18, 1)
@@ -92,7 +93,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="BackgroundPanel" type="Panel" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -100,7 +101,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+texture = ExtResource("8_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1

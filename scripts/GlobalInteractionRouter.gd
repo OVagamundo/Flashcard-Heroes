@@ -147,8 +147,16 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	# If a drag is active, this incoming context is the drop target.
-	# Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
 	if _is_drag_active and _drag_origin_context != null:
+		# Check if source is from a SelectionOnly context (Shop, Rewards)
+		# In SelectionOnly contexts, dragging is for selection/inspection only - no actions are valid
+		var source_group = get_context_group(_drag_origin_context.location.container) if _drag_origin_context.location else &""
+		if source_group == &"SelectionOnly":
+			# Keep the dragged item selected, don't try to process an action
+			# The item was already selected in start_drag()
+			return commands
+		
+		# For other contexts: Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
 		var req_ctx: Dictionary = {
 			"source_context": _drag_origin_context,
 			"target_context": context,
@@ -704,6 +712,14 @@ func start_drag(origin_context: InteractionContext) -> void:
 	# Full input lock during COMBAT: do not start drags
 	if _is_combat_phase:
 		return
+	
+	# Per docs: "It clears any current selection"
+	if _current_selection != null:
+		_execute_deselect()
+	
+	# Select the dragged item so user sees visual feedback
+	_execute_select(origin_context)
+	
 	_is_drag_active = true
 	_drag_origin_context = origin_context
 	# Prune only child windows of the source's parent inspection window on drag start.

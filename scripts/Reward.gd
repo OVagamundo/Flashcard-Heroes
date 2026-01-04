@@ -1,8 +1,8 @@
-extends VBoxContainer
+extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 
-@onready var title_label: Label = $TitleLabel
+@onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
 @onready var confirm_button: Button = %ConfirmSelectionButton
 @onready var gold_button: Button = %TakeGoldButton

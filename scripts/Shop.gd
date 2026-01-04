@@ -83,15 +83,7 @@ func populate(context: Dictionary) -> void:
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
 			slot_view.set_content(visual_data, true, false, false)
-			
-			# Find GachaBallView among children (indicator TextureRect may also be present)
-			var gacha_view: GachaBallView = null
-			for child in slot_view.get_children():
-				if child is GachaBallView:
-					gacha_view = child
-					break
-			if is_instance_valid(gacha_view):
-				gacha_view.set_interaction_context(&"SELECTION_ONLY", &"UNIT", 0)
+			# Note: SlotView.set_content now propagates interaction context automatically
 		
 		# Always create a price label for each slot to maintain positioning
 		var price_label = Label.new()

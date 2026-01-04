@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://cvorou27dlts"]
+[gd_scene load_steps=6 format=3 uid="uid://cvorou27dlts"]
 
 [ext_resource type="Script" uid="uid://6d52omscjhhr" path="res://scripts/Title.gd" id="1_abcde"]
 [ext_resource type="FontFile" uid="uid://xjhwakxngoa5" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="2_title_font"]
 [ext_resource type="Theme" uid="uid://dc7mufvgvjvck" path="res://resources/GameTheme.tres" id="3_iyajp"]
 [ext_resource type="FontFile" uid="uid://cl64dwatceoc5" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
+[ext_resource type="Texture2D" uid="uid://kbbuaaimfk7t" path="res://assets/ui/BGs/tittle.png" id="4_bg"]
 
 [node name="Title" type="Control"]
 layout_mode = 3
@@ -14,7 +15,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_abcde")
 
-[node name="BackgroundPanel" type="Panel" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,6 +23,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1

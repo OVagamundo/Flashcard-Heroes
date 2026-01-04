@@ -781,6 +781,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		return null
 		
 	# TDD 4.3.III.5: Prevent dragging in Inspection-Only contexts
+	# (DiscardPile, Trinkets, EnemyLineup - can only inspect, not drag)
 	if is_instance_valid(_location):
 		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 		if context_group == &"InspectionOnly":
