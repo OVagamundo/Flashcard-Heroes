@@ -71,10 +71,13 @@ Existing event types supported by `BattleAnimator`:
 | `HEAL` | Green flash, float number, HP bar rise | `amount`, `stat="hp"`, `targets_old_hp`, `targets_new_hp` |
 | `BUFF` | Icon popup, stat change text | `stat`, `amount` |
 | `DEATH` | Fade out, remove from scene | `target_uuids` |
-| `SUMMON` | Fade in new unit unit | `new_unit_uuid`, `snapshot` |
+| `DAMAGE_BURN` | Fire flash, float number (end of turn) | `amount`, `targets` |
+| `SUMMON` | Fade in new unit | `new_unit_uuid`, `snapshot` |
 | `LETHAL_SAVE` | Turn gold, float up, return to 1 HP | `saved_uuid` |
 | `GUARDIAN_INTERCEPT` | Leap in front of ally, take damage | `guardian_uuid`, `protected_uuid` |
 | `LOG_MESSAGE` | Floating text above unit | `text` |
+| `PROJECTILE` | Visual-only projectile flight | `source_uuid`, `target_uuid`, `vfx_id` |
+| `VFX_POPUP` | Floating text with color | `target_uuid`, `text`, `color` |
 
 ---
 
@@ -253,6 +256,41 @@ sequenceDiagram
     Note over T: Hit effects at moment of contact
     A->>A: 3. Return (melee_return)
     Note over A: Attacker jumps back
+```
+
+### 4.8 Audio Integration
+
+Combat animations trigger audio at specific timing points for synchronized feedback.
+
+**Audio Hook Pattern:**
+```gdscript
+# Play sound BEFORE visual starts (no await delay)
+Audio.play_sfx("combat_hit")
+SignalBus.emit_signal("unit_deform", uuid, &"HIT_IMPACT")
+```
+
+**Sound Timing in DamageAnimation:**
+
+| Phase | Sound ID | Timing |
+|-------|----------|--------|
+| Lunge start | `unit_toss` | Before `unit_melee_lunge` signal |
+| Impact (per target) | `combat_hit` | In `_apply_damage_effects()` loop |
+
+**Sound Timing in Other Animations:**
+
+| Animation | Sound ID | Timing |
+|-----------|----------|--------|
+| `HealAnimation` | `combat_heal` | Before heal projectile |
+| `BuffAnimation` | `combat_buff` | Before buff applies |
+| `SummonAnimation` | `combat_summon` | After fade-in |
+| `DeathAnimation` | `combat_death` | Before fade-out |
+
+**GachaBallView Hop Sound:**
+All unit landing bounces automatically play `unit_hop` via `_play_landing_bounce()`:
+```gdscript
+func _play_landing_bounce() -> void:
+    Audio.play_sfx("unit_hop")  # Global hop sound
+    # ... animation code
 ```
 
 ---

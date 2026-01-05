@@ -236,10 +236,10 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 				
 				# Configure unit sprite size and position
-				unit_sprite.custom_minimum_size = Vector2(128, 128)
-				unit_sprite.size = Vector2(128, 128)
-				# Center in 192x192 slot: (192-128)/2 = 32
-				unit_sprite.position = Vector2(32, 32)
+				unit_sprite.custom_minimum_size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
+				unit_sprite.size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
+				# Center in 2x slot
+				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_CENTER_OFFSET)
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
 				# CRITICAL: Copy shader material so flash effects work on visible sprite
@@ -252,7 +252,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				# Inventory Mode: Fixed slot size (192), Unit (128) centered inside
 				# Ensure Overlay Layout
 				_setup_overlay_stats_layout()
-				icon_rect.custom_minimum_size = Vector2(192, 192)
+				icon_rect.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icon_rect.texture = null # Clear main texture, use child sprite
 				
@@ -266,9 +266,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 				
 				# Configure unit sprite size and position (no anchor preset, direct positioning)
-				unit_sprite.custom_minimum_size = Vector2(128, 128)
-				unit_sprite.size = Vector2(128, 128)
-				unit_sprite.position = Vector2(32, 32) # (192-128)/2 = 32px margin
+				unit_sprite.custom_minimum_size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
+				unit_sprite.size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
+				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_CENTER_OFFSET)
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
 				unit_sprite.texture = visual_data.get("icon")
@@ -465,7 +465,7 @@ func set_visual_state(snapshot: Dictionary) -> void:
 			if status_id == &"burn" or status_id == &"armor":
 				continue
 			_visual_status_effects[status_id] = int(effects[status_id])
-			print("[GachaBallView] set_visual_state restored %s=%d for %s" % [status_id, effects[status_id], _instance_uuid])
+			# Restored generic status effects
 		_update_dynamic_status_icons()
 	
 	_update_stats()
@@ -688,8 +688,8 @@ func _create_gachaball_overlay() -> void:
 	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	overlay.stretch_mode = TextureRect.STRETCH_SCALE # Scale to fill 192px
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.custom_minimum_size = Vector2(192, 192)
-	overlay.size = Vector2(192, 192)
+	overlay.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+	overlay.size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	
 	# Add as sibling to VBox (Icon) but before StatsOverlay to ensure correct Z-order:
 	# 0: Anim, 1: VBox(Unit), 2: Overlay(Ball), 3: Stats(Labels)
@@ -817,11 +817,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Battle views might be stretched by layout, but the drag preview should be a clean square.
 	var preview_size: Vector2
 	if _has_overlay_heuristic():
-		preview_size = Vector2(192, 192)
+		preview_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	else:
-		# In Battle (2x scale), usually 64->128. But user reports 128 is "much smaller".
-		# Inventory uses 192. Let's match inventory size for consistency and larger visuals.
-		var base_size = 192.0
+		# Match inventory size for consistency and larger visuals.
+		var base_size = float(C.SLOT_SIZE_2X)
 		preview_size = Vector2(base_size, base_size)
 
 	var container_size = preview_size * 2 # Double size to allow centering
@@ -838,8 +837,8 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_SCALE
 	if _has_overlay_heuristic():
-		# In inventory mode: unit is 128 in 192 slot = 2/3 size ratio
-		var unit_size = preview_size * (128.0 / 192.0)
+		# In inventory mode: unit is centered in slot
+		var unit_size = preview_size * (float(C.UNIT_SPRITE_SIZE) / float(C.SLOT_SIZE_2X))
 		preview.custom_minimum_size = unit_size
 		preview.size = unit_size
 		preview.position = offset + (preview_size - unit_size) / 2 # Center unit

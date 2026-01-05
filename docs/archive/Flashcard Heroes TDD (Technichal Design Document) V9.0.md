@@ -1,8 +1,16 @@
 @ -0,0 +1,147 @@
-# Flashcard Heroes - Technical Design Document (V9.2)
+# Flashcard Heroes - Technical Design Document (V9.3)
 
-**Version:** 9.2
+**Version:** 9.3
 **Status:** Active
+
+**Architectural Update (V9.3):** This version adds comprehensive audio integration:
+1.  **Audio System:** Centralized audio management via `Audio.gd` (static wrapper) and `AudioManager.gd` (pooled playback with crossfade).
+2.  **SoundRegistry:** Semantic sound ID mapping (`unit_hop`, `combat_hit`, `ui_click`) to audio resources.
+3.  **Global Button Sounds:** `SceneManager` automatically hooks all Button nodes for hover sounds.
+4.  **Combat Animation Audio:** `DamageAnimation.gd` plays distinct sounds for lunge (whoosh) and impact (hit).
+5.  **Scene BGM:** Each scene triggers its BGM in `_ready()` with 0.1s crossfade for instant transitions.
+
 **Architectural Update (V9.2):** This version introduces further optimizations and robustness improvements:
 1.  **Optimized Ability Resolution:** `AbilityResolver` now uses a single-pass O(N) bucketing algorithm instead of multiple O(N) passes, improving performance for complex board states.
 2.  **Robust Encounter Generation:** `EncounterGenerator` now uses a "gap-filling" algorithm to maximize budget usage and includes a safe fallback mechanism for generation failures.
@@ -111,6 +119,12 @@ The game logic is modularized into distinct systems and managers, each with a cl
     -   **Application:** `apply_stat_delta()` handles stacking, removal, and snapshotting.
     -   **Processing:** `BattleManager` processes effects (damage, decay) at specific phases (e.g., End of Turn).
     -   **Extensibility:** Designed to support arbitrary effects via data-driven IDs.
+-   **Audio System:** Centralized audio management with pooled playback and semantic sound IDs.
+    -   (See `docs/AudioSystem.md`)
+    -   **Components:** `Audio.gd` (static wrapper), `AudioManager.gd` (singleton), `SoundRegistry.gd` (ID mapping).
+    -   **SFX Pool:** 16 pre-instantiated players with pitch variance (0.95-1.05).
+    -   **BGM Crossfade:** 0.1s fade with prewarming for instant playback.
+    -   **Integration Points:** SceneManager (button hovers), DamageAnimation (combat sounds), InventoryManager (swap/merge sounds).
 
 ### 3.2 Interaction & UI Managers
 

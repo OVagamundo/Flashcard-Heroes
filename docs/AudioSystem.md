@@ -1,74 +1,191 @@
 # Audio System Documentation
 
 ## Overview
-The audio system in *Flashcard Heroes* is built around a central `AudioManager` singleton. It handles:
--   **SFX Playback**: Fire-and-forget sound effects with pitch variance for realism.
--   **Music Management**: Smooth crossfading between background music tracks.
--   **Volume Control**: Integrated with Godot's AudioServer buses (Master, Music, SFX).
+The audio system in *Flashcard Heroes* provides immersive audio feedback for all game interactions. It's built around a central `AudioManager` singleton with a static `Audio` wrapper for convenient access.
 
 ## Technical Architecture
 
-### 1. AudioManager (Global Scope)
--   **Script**: `res://scripts/AudioManager.gd`
--   **Access**: `AudioManager.play_sfx("id")` (global autoload/singleton access).
--   **Pooling**: Uses a pool of `AudioStreamPlayer` nodes to prevent instantiation stutter.
--   **Registry**: Loads sound resources from `res://assets/audio/` and maps them to string IDs.
+### 1. Audio Access Pattern
+```gdscript
+# SFX - Fire and forget with pitch variance
+Audio.play_sfx("combat_hit")
 
-### 2. Integration Pattern
--   **UI**: Button clicks are hooked in `GlobalInteractionRouter` or via custom button scripts.
--   **Combat**: `BattleAnimator` emits signals or calls `AudioManager` directly during animation events (Damage, Death, Summon).
--   **Shop**: Specialized shop logic triggers coin and gacha sounds.
+# BGM - Automatic crossfade with looping
+Audio.play_music(SoundRegistry.BGM_BATTLE)
+```
+
+### 2. Core Components
+
+| Component | File | Role |
+|-----------|------|------|
+| **Audio** | `Audio.gd` | Static wrapper class for global access |
+| **AudioManager** | `AudioManager.gd` | Singleton handling playback with pooling |
+| **SoundRegistry** | `SoundRegistry.gd` | Centralized sound ID → AudioStream mapping |
+
+### 3. AudioManager Features
+- **SFX Pool**: 16 pre-instantiated `AudioStreamPlayer` nodes prevent stutter
+- **Pitch Variance**: Random 0.95-1.05 pitch for natural sound variety
+- **BGM Crossfade**: 0.1s fade between music tracks
+- **BGM Prewarming**: All BGM streams are touched on startup for instant playback
+- **Looping**: OGG Vorbis streams are automatically set to loop
 
 ---
 
-## Asset Sourcing Guide
+## Sound Registry (SoundRegistry.gd)
 
-We use **Creative Commons Zero (CC0)** assets to ensure commercial safety. The primary source is **Kenney**, known for high-quality, cohesive game assets.
+### Sound Categories
 
-### Recommended Asset Packs
+#### UI Sounds
+| Sound ID | Description | Audio File |
+|----------|-------------|------------|
+| `ui_click` | Button press | `ui/click1.ogg` |
+| `ui_hover` | Button hover/focus | `ui/switch1.ogg` |
+| `ui_error` | Invalid action | `ui/error1.ogg` |
+| `ui_window_open` | Window opens | `ui/drop.ogg` |
+| `ui_window_close` | Window closes | `ui/click1.ogg` |
 
-Please download the following packs and extract them into `res://assets/audio/`:
+#### Action Sounds (New)
+| Sound ID | Description | Audio File |
+|----------|-------------|------------|
+| `unit_hop` | Unit landing bounce | `action/hop.ogg` |
+| `unit_toss` | Fast movement/lunge/toss | `action/whoosh.ogg` |
+| `unit_land` | Unit lands on slot | `action/land.ogg` |
+| `unit_buff` | Buff applied | `action/buff.ogg` |
+| `combat_hit` | Damage dealt | `action/hit.ogg` |
 
-#### 1. UI Sounds (Clicks, Hovers, Alerts)
-*   **Name**: Kenney UI Audio
-*   **Source**: [Kenney.nl](https://kenney.nl/assets/ui-audio) or [OpenGameArt Direct](https://opengameart.org/content/ui-audio-0)
-*   **Target Folder**: `res://assets/audio/sfx/ui/`
-*   **Files Needed**:
-    -   `click1.ogg` -> `ui_click`
-    -   `switch1.ogg` -> `ui_hover`
-    -   `error1.ogg` -> `ui_error`
+#### Combat Sounds
+| Sound ID | Description | Audio File |
+|----------|-------------|------------|
+| `combat_heal` | Healing effect | `action/buff.ogg` |
+| `combat_buff` | Combat buff | `action/buff.ogg` |
+| `combat_death` | Unit dies | `combat/step.ogg` |
+| `combat_summon` | Unit summoned | `action/land.ogg` |
 
-#### 2. RPG Combat Sounds (Hits, Magic)
-*   **Name**: Kenney RPG Audio
-*   **Source**: [Kenney.nl](https://kenney.nl/assets/rpg-audio)
-*   **Target Folder**: `res://assets/audio/sfx/combat/`
-*   **Files Needed**:
-    -   `chop.ogg` / `handleCoins.ogg` (repurposed) -> `combat_hit`
-    -   `footstep00.ogg` -> `combat_step`
+#### Inventory Sounds
+| Sound ID | Description | Audio File |
+|----------|-------------|------------|
+| `ui_swap` | Items swapped | `action/whoosh.ogg` |
+| `ui_merge` | Items merged/upgraded | `action/buff.ogg` |
+| `ui_drag_start` | Drag begins | `action/whoosh.ogg` |
+| `ui_drag_drop` | Drag ends | `action/land.ogg` |
 
-#### 3. Casino/Gacha Sounds (Chips, Cards, Dice)
-*   **Name**: Kenney Casino Audio
-*   **Source**: [Kenney.nl](https://kenney.nl/assets/casino-audio) or [OpenGameArt Direct](https://opengameart.org/content/casino-audio-0)
-*   **Target Folder**: `res://assets/audio/sfx/shop/`
-*   **Files Needed**:
-    -   `chipLay1.ogg` -> `coin_land`
-    -   `cardSlide1.ogg` / `cardPlace1.ogg` -> `ui_card_flip`
-    -   `dieThrow1.ogg` -> `shop_reroll`
+#### Shop/Token Sounds
+| Sound ID | Description | Audio File |
+|----------|-------------|------------|
+| `coin_land` | Coin animation | `shop/coin.ogg` |
+| `token_spend` | Token spent | `shop/coin.ogg` |
+| `token_land` | Token lands | `action/land.ogg` |
 
-### Directory Structure
+#### Minigame Sounds
+| Sound ID | Description | Audio File |
+|----------|-------------|------------|
+| `minigame_correct` | Correct answer | `action/buff.ogg` |
+| `minigame_incorrect` | Wrong answer | `ui/error1.ogg` |
+
+### Background Music Tracks
+| Constant | Scene | File |
+|----------|-------|------|
+| `BGM_TITLE` | Title screen | `bgm/title.ogg` |
+| `BGM_LOADOUT` | Loadout selection | `bgm/loadout.ogg` |
+| `BGM_PATHCHOICE` | Path choice | `bgm/pathchoice.ogg` |
+| `BGM_BATTLE` | Combat | `bgm/battle.ogg` |
+| `BGM_SHOP` | Shop scene | `bgm/shop.ogg` |
+| `BGM_REST` | Rest site | `bgm/rest.ogg` |
+| `BGM_REWARD` | Reward selection | `bgm/reward.ogg` |
+| `BGM_MINIGAME` | Flashcard minigame | `bgm/minigame.ogg` |
+
+---
+
+## Integration Points
+
+### Global Button Hover Sounds
+`SceneManager.gd` automatically hooks all `Button` nodes via `get_tree().node_added` signal:
+```gdscript
+func _on_node_added(node: Node) -> void:
+    if node is Button:
+        node.mouse_entered.connect(_on_button_hovered)
+        node.focus_entered.connect(_on_button_hovered)
 ```
-res://
-  assets/
-    audio/
-      bgm/      # Background music files
-      sfx/      # Sound effects
-        ui/
-        combat/
-        shop/
+
+### Combat Animation Sounds
+`DamageAnimation.gd` handles melee attack sounds:
+1. **Lunge start** → `Audio.play_sfx("unit_toss")` (whoosh)
+2. **Impact** → `Audio.play_sfx("combat_hit")` (hit per target)
+
+### Inventory Operations
+`InventoryManager.gd` plays sounds for:
+- `_swap()` → `Audio.play_sfx("ui_swap")`
+- `_merge()` → `Audio.play_sfx("ui_merge")`
+- `_move()` → `Audio.play_sfx("unit_land")`
+
+### Unit Animations
+`GachaBallView.gd` plays `unit_hop` in `_play_landing_bounce()` for all unit landing animations.
+
+### Scene BGM
+Each scene calls `Audio.play_music()` in its `_ready()`:
+- `Title.gd` → `BGM_TITLE`
+- `PathChoice.gd` → `BGM_PATHCHOICE`
+- `BattleManager.gd` → `BGM_BATTLE`
+- `Shop.gd` → `BGM_SHOP`
+- `RestSite.gd` → `BGM_REST`
+- `Reward.gd` → `BGM_REWARD`
+- `FlashcardMinigame.gd` → `BGM_MINIGAME`
+
+---
+
+## Directory Structure
 ```
+res://assets/audio/
+├── bgm/
+│   ├── title.ogg
+│   ├── loadout.ogg
+│   ├── pathchoice.ogg
+│   ├── battle.ogg
+│   ├── shop.ogg
+│   ├── rest.ogg
+│   ├── reward.ogg
+│   └── minigame.ogg
+└── sfx/
+    ├── ui/
+    │   ├── click1.ogg
+    │   ├── switch1.ogg
+    │   ├── error1.ogg
+    │   └── drop.ogg
+    ├── action/
+    │   ├── hop.ogg
+    │   ├── buff.ogg
+    │   ├── land.ogg
+    │   ├── hit.ogg
+    │   └── whoosh.ogg
+    ├── combat/
+    │   ├── hit.ogg (legacy)
+    │   └── step.ogg
+    └── shop/
+        └── coin.ogg
+```
+
+---
 
 ## Adding New Sounds
-1.  Place the `.ogg` or `.wav` file in the appropriate folder.
-2.  Open `scripts/SoundRegistry.gd` (or `AudioManager.gd`).
-3.  Add the mapping: `"my_new_sound": preload("res://assets/audio/sfx/my_file.ogg")`.
-4.  Call it in code: `AudioManager.play_sfx("my_new_sound")`.
+
+1. **Add the audio file** to the appropriate folder in `res://assets/audio/sfx/`
+2. **Add a constant** in `SoundRegistry.gd`:
+   ```gdscript
+   const MY_NEW_SOUND = preload("res://assets/audio/sfx/folder/my_sound.ogg")
+   ```
+3. **Add to SOUNDS dictionary**:
+   ```gdscript
+   "my_sound_id": MY_NEW_SOUND,
+   ```
+4. **Call from code**:
+   ```gdscript
+   Audio.play_sfx("my_sound_id")
+   ```
+5. **Restart Godot** to import new audio files
+
+---
+
+## Asset Sources
+All audio assets are **CC0 (Creative Commons Zero)** licensed:
+- **Kenney.nl** - UI Audio, Casino Audio, RPG Audio packs
+- **OpenGameArt.org** - Action sounds (hop, buff, land, hit, whoosh)

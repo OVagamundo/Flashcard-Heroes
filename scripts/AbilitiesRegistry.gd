@@ -199,8 +199,6 @@ const ABILITIES: Dictionary = {
 		"effect": "Grant +1 PWR to a random ally when an ally dies",
 	},
 	
-	# Note: Burn Vial is still hardcoded in BattleManager
-	# TODO: Migrate to ability system with on_damage_dealt trigger
 }
 
 ## Get information about an ability

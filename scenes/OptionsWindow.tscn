@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://d1r64ueux6drg"]
 
 [ext_resource type="Script" path="res://scripts/OptionsWindow.gd" id="1_script"]
-[ext_resource type="Theme" uid="uid://dc7mufvgvjvck" path="res://resources/GameTheme.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/ui/game_theme.tres" id="2_theme"]
 [ext_resource type="FontFile" uid="uid://cl64dwatceoc5" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_font"]
 
 [node name="OptionsWindow" type="Control"]

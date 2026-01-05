@@ -15,7 +15,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# --- NON-STACKING CHECK ---
 	# If Double Strike already executed this turn, skip
 	if _context.get("double_strike_executed", false):
-		print("[DoubleStrike] Skipping - already executed this turn (non-stacking)")
+		# Skipping - already executed this turn (non-stacking)
 		return EffectResult.empty() if is_simulation else null
 	_context["double_strike_executed"] = true
 	
@@ -35,10 +35,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var is_player = battle_manager._is_player_unit(attacker)
 	var target = battle_manager._get_frontmost_target(is_player)
 	if not is_instance_valid(target):
-		print("[DoubleStrike] No front enemy found, skipping")
+		# No front enemy found, skipping
 		return EffectResult.empty() if is_simulation else null
 	
-	print("[DoubleStrike] Performing FRESH turn action for %s -> %s" % [attacker_uuid, target.ball_uuid])
+	# Performing FRESH turn action
 	
 	# --- BUILD CONTEXT FOR FRESH TURN ACTION ---
 	# Use CAUSE_ABILITY_RETRIGGER to prevent Tiger's Spirit from self-triggering

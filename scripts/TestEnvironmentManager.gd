@@ -216,7 +216,7 @@ func _on_spawn_item_pressed() -> void:
 	instance.initialize(def)
 	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
 	SignalBus.emit_signal("battle_inventory_changed")
-	print("[TestMode] Spawned item: %s to inventory" % id)
+
 
 func _on_spawn_trinket_pressed() -> void:
 	var selection = trinket_list.get_selected_items()

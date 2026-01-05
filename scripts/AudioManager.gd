@@ -34,8 +34,6 @@ func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
 		return
 	
 	# Debug: Log what we're playing
-	if OS.is_debug_build():
-		print("[AudioManager] Playing SFX: ", sound_id)
 	
 	# Get next available player from pool
 	var player = _sfx_pool[_current_sfx_index]
@@ -52,12 +50,8 @@ func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
 
 ## Play background music with crossfade and looping
 func play_music(stream: AudioStream, crossfade_duration: float = 0.1) -> void:
-	if OS.is_debug_build():
-		print("[AudioManager] play_music called at: ", Time.get_ticks_msec(), "ms")
-	
 	if _music_player.stream == stream and _music_player.playing:
-		if OS.is_debug_build():
-			print("[AudioManager] Same track already playing, skipping")
+		# Same track already playing, skipping
 		return
 	
 	# Enable looping for OGG Vorbis streams
@@ -65,8 +59,6 @@ func play_music(stream: AudioStream, crossfade_duration: float = 0.1) -> void:
 		stream.loop = true
 		
 	if _music_player.playing:
-		if OS.is_debug_build():
-			print("[AudioManager] Crossfading from previous track (", crossfade_duration, "s)")
 		# Quick fade out for snappy transitions
 		var tween = create_tween()
 		tween.tween_property(_music_player, "volume_db", -80.0, crossfade_duration)
@@ -75,16 +67,12 @@ func play_music(stream: AudioStream, crossfade_duration: float = 0.1) -> void:
 			_music_player.stream = stream
 			_music_player.volume_db = 0.0 # Reset volume
 			_music_player.play()
-			if OS.is_debug_build():
-				print("[AudioManager] New track started at: ", Time.get_ticks_msec(), "ms")
+
 		)
 	else:
-		if OS.is_debug_build():
-			print("[AudioManager] No previous music, starting immediately")
 		_music_player.stream = stream
 		_music_player.play()
-		if OS.is_debug_build():
-			print("[AudioManager] Track started at: ", Time.get_ticks_msec(), "ms")
+
 
 func stop_music(fade_duration: float = 1.0) -> void:
 	if _music_player.playing:

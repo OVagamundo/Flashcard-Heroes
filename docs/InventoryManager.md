@@ -123,43 +123,27 @@ Rationale: This creates a closed-loop economy within each battle. It ensures the
 End of Battle Cleanup
 Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.
 State Preservation: The original RunState and its RunInventory remain completely untouched and unmodified by the events of the battle. This ensures a clean state for the next encounter.
-4. Implementation & Refactoring Notes
+## 4. Shop System
 
-> [!TIP]
-> **Status: COMPLETED** - The refactoring items below have been implemented. They are preserved for historical context.
+The Shop uses **temporary state** stored in GameManager (not a separate ShopManager):
+- `_temporary_shop_master_dict`: Actual `GachaBallInstance` objects
+- `_temporary_shop_container`: `FixedArrayContainer(3)` with UUIDs
+- `_reroll_cost`: Escalates with each reroll (starts at 1)
 
-This section details the specific, actionable changes required to refactor the current codebase to align with this V2.0 document and the new Global Interaction Router (GIR) architecture. The goal is to make the code more efficient, clear, and robust while preserving the correct, validated game behavior.
-Refactoring Item 1: Centralize Context Logic in the GIR
-Objective: To establish the GlobalInteractionRouter as the single source of truth for determining the "functional context group" of any given container.
-Current State: This logic currently resides in InteractionManager.gd, which is being deprecated.
-Required Changes:
-Migrate Function: In scripts/InteractionManager.gd, find the function _get_container_functional_group. Copy its entire contents.
-In scripts/GlobalInteractionRouter.gd, paste this function and rename it to get_context_group (making it public).
-Update Dependencies: Perform a project-wide search for any calls to InteractionManager.get_context_group and change them to GlobalInteractionRouter.get_context_group. This will primarily affect GachaBallView.gd and InventoryManager.gd.
-Refactoring Item 2: Decouple and Refine the Gacha Reshuffle Mechanism
-Objective: To make the reshuffle logic an explicit part of the Gacha draw action, improving efficiency and code clarity.
-Current State: The reshuffle is inefficiently triggered by the generic battle_inventory_changed signal, which fires on every single inventory manipulation.
-Required Changes (in scripts/BattleManager.gd):
-Delete Obsolete Function: Delete the entire _check_and_trigger_reshuffles() function.
-Disconnect Signal: In the _ready() or _connect_signals() function, delete the line that connects EventBus.battle_inventory_changed to the now-deleted function.
-Refactor Draw Logic: Replace the entire _on_draw_gacha_requested(tier: int) function with the new, architecturally compliant implementation. The new version will contain the following critical logic flow:
-Check for tokens and if the pool is empty.
-Spend tokens and pick a random instance.
-Remove the instance from its draw pool FIRST.
-Place the instance in its destination (PlayerBench/ItemInventory) or discard it if the destination is full.
-Immediately after removing the instance, check if the draw pool is now empty. If it is, call _reshuffle_discard_pile(tier) directly.
-Finally, emit battle_inventory_changed once to update the UI.
-Refactoring Item 3: Make Equip Logic More Explicit
-Objective: To make the code for Rule I3 (Equip Legality) a direct 1-to-1 match with the document's explicit wording.
-Current State: The code uses an indirect check (target_loc.container in [&"PlayerLineup", &"PlayerBench"]) to validate an equip action.
-Required Changes (in scripts/InventoryManager.gd):
-Navigate to the _on_try_inventory_action function.
-Locate the "Item on Unit (Equip)" logic block.
-Modify the if condition to explicitly check that the source item's location container is &"ItemInventory". This makes the code a direct implementation of the rule, improving readability and future-proofing the logic.
-Refactoring Item 4: Ensure Atomic State Updates During Reshuffle
-Objective: To ensure the "Golden Rule" is followed during the reshuffle process, where an instance's location "truth" and the container "index" are updated together.
-Current State: The current _reshuffle_discard_pile function in BattleManager.gd has a mix of logic that could be better organized. It calls _remove_instance_from_container and then manually sets the new location.
-Required Changes (in scripts/BattleManager.gd):
-Create a new, private helper function: _place_in_container_slot(instance, container_tag, slot_index). This function's sole responsibility will be to perform the two atomic steps: updating the DataContainer (the index) and updating the GachaBallInstance's location properties (the truth).
-Modify the _reshuffle_discard_pile function to use this new helper. After removing the instance from the discard pile, it will simply call _place_in_container_slot() to correctly place it in the draw pool.
-Modify the _on_draw_gacha_requested function to also use this new helper, ensuring consistent and atomic state changes for all GachaBall movements.
+### Purchase Flow
+1. Player selects item → clicks "Buy"
+2. Gold coin animation from counter → Buy button
+3. `shop_purchase_requested(uuid, cost)` emitted
+4. GameManager validates gold + item exists
+5. Moves instance from temp dict → `RunState.run_instances`
+6. Gachaball animates to tier's gacha machine
+7. `shop_stock_refreshed` signal updates UI
+
+### Reroll Flow
+1. Player clicks "Reroll" → gold animation
+2. GameManager deducts cost, increments `_reroll_cost`
+3. `_generate_shop_stock()` creates new items
+4. UI refreshes via `shop_stock_refreshed`
+
+### Interaction Mode
+Shop uses `SELECTION_ONLY` - items can be selected and inspected but not dragged or moved.

@@ -547,7 +547,7 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	}
 	
 	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
-	print("[BM] _enqueue_attack_for:", attacker.ball_uuid, "-> target:", target.ball_uuid)
+	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
 	# Generic trigger (Power Amulet & Extra Attack both listen to this now, filtered by condition)
 	AbilityResolver.process_trigger(&"on_attack", context)
 	

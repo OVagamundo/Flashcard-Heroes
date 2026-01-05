@@ -107,8 +107,7 @@ func _initialize_grids_if_needed() -> void:
 	if _grids_initialized:
 		return
 	
-	# Inventory uses 2x scale (192x192px) square slots with no gaps (Matches 2x gachaball)
-	const INVENTORY_SLOT_SIZE: int = 192
+	# Inventory uses 2x scale square slots (matches 2x gachaball)
 	
 	var grids: Dictionary = {1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid}
 	for tier in grids:
@@ -124,7 +123,7 @@ func _initialize_grids_if_needed() -> void:
 			# Use 2x scale for inventory window (same as battle board)
 			slot_view.set_size_scale(2.0)
 			# Force square slots matching 2x sprite size
-			slot_view.custom_minimum_size = Vector2(INVENTORY_SLOT_SIZE, INVENTORY_SLOT_SIZE)
+			slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 			grid_node.add_child(slot_view)
 			# Configure interaction context for run inventory slots (FULLY_INTERACTIVE)
 			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)

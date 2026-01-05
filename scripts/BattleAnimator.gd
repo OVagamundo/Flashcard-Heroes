@@ -96,11 +96,9 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 						else:
 							push_warning("[BattleAnimator] Failed to register %s: Slot %d in %s is empty" % [uuid, index, container_tag])
 					else:
-						if OS.is_debug_build():
-							print("[BattleAnimator] Failed to register ", uuid, ": Index ", index, " out of bounds for ", container_tag)
+						pass
 				else:
-					if OS.is_debug_build():
-						print("[BattleAnimator] Failed to register ", uuid, ": Invalid container or index")
+					pass
 	
 	await play_turn(turn_log)
 
@@ -121,15 +119,8 @@ func play_turn(events: Array[CombatEvent]) -> void:
 func _animate_events(events: Array[CombatEvent]) -> void:
 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
 	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
-	if OS.is_debug_build():
-		print("[ANIM] ========== START ANIMATION SEQUENCE: %d events ==========" % events.size())
-		for evt in events:
-			evt.log_sim() # Log each event for cross-reference with simulation
-
-	var processed_count: int = 0
+	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
 	for event in events:
-		processed_count += 1
-		
 		SignalBus.log_animation_event.emit(event)
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
@@ -283,9 +274,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
 	
 	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
-	if OS.is_debug_build():
-		print("[ANIM] ========== ANIMATION SEQUENCE COMPLETE: %d events processed ==========" % processed_count)
-		print("[BattleAnimator] Emitting turn_animation_finished!")
+	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
 	emit_signal("turn_animation_finished")
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
