@@ -118,11 +118,7 @@ func remove_instance_by_uuid(uuid: String) -> void:
 # Atomic mutation API
 # ------------------------------------------------------------------
 
-# Trinkets: routing and exclusivity
-# TODO: When trinkets are introduced, route TRINKET-category instances to a dedicated
-#  'player_trinkets' container and keep an 'active_trinkets' list synchronized for
-#  AbilityResolver lookups. Do NOT enforce exclusivity here; player-only trinkets are
-#  valid on the player side. Enforce duplicate prevention and max slots at this layer.
+# Trinkets are automatically routed to PlayerTrinkets container in add_instance()
 func add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
 	# Adds an instance to the given container/index atomically.
 	if not is_instance_valid(instance):

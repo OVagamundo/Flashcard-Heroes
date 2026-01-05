@@ -26,6 +26,6 @@ func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Nod
 	# Non-simulation: actually add gold to RunState
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.add_gold(amount)
-		print("[EffectGainGold] Gained %d gold from kill" % amount)
+		# Gained gold from kill
 	
 	return amount

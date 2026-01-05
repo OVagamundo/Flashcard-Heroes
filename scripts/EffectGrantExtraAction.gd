@@ -25,7 +25,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# Grant the extra action via BattleManager
 		var unit_name = BattleLogger.get_unit_name(holder_uuid)
 		BattleLogger.log_extra_action(unit_name, "Bloodlust")
-		print("[Bloodlust] Granting extra action to: ", holder_uuid)
+		# Granting extra action
 		battle_manager.grant_extra_action(holder_uuid)
 		
 		# NEW: Return EffectResult with LOG_MESSAGE event

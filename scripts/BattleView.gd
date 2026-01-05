@@ -37,8 +37,8 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 			
 			# Apply battle-specific layout settings (responsive width, fixed height)
 			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			# All battle slots use 192x192 (2x scale: 192 = 96 base * 2)
-			slot_view.custom_minimum_size = Vector2(192, 192)
+			# All battle slots use 2x scale
+			slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 			if slot_view.has_method("set_size_scale"):
 				slot_view.set_size_scale(2.0)
 				# slot_view.size_flags_horizontal = 3 # Default is Expand if container set

@@ -15,9 +15,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Ensure this is a coroutine
 	await animator.get_tree().process_frame
 	
-	if OS.is_debug_build():
-		print("[LethalSaveAnimation] Saving unit %s with Aegis Charm (heal_amount=%d)" % [saved_uuid.substr(0, 20), heal_amount])
-	
+
 	# Emit lethal save signal for visual effect (golden glow + float)
 	if SignalBus.has_signal("unit_lethal_save"):
 		SignalBus.emit_signal("unit_lethal_save", saved_uuid)
@@ -28,6 +26,3 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# But the unit survives with exactly 1 HP
 	const SURVIVAL_HP: int = 1
 	animator.apply_hp_delta(saved_uuid, heal_amount, SURVIVAL_HP)
-	
-	if OS.is_debug_build():
-		print("[LethalSaveAnimation] Save animation complete, HP set to %d" % SURVIVAL_HP)

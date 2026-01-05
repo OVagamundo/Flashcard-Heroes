@@ -16,9 +16,7 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	# Ensure this is a coroutine
 	await animator.get_tree().process_frame
 	
-	if OS.is_debug_build():
-		print("[GuardianInterceptAnimation] Guardian %s leaping to protect %s" % [guardian_uuid.substr(0, 20), original_target_uuid.substr(0, 20)])
-	
+
 	# Get view from visual registry
 	var guardian_view = animator._visual_registry.get(guardian_uuid)
 	var target_pos = animator.get_snapshot_position(original_target_uuid)
@@ -44,5 +42,3 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	# Mark guardian for return after damage animation completes
 	# BattleAnimator checks _pending_guardian_return after DAMAGE events
 	animator._pending_guardian_return = guardian_uuid
-	if OS.is_debug_build():
-		print("[GuardianInterceptAnimation] Leap complete, pending return after damage")

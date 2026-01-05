@@ -118,6 +118,12 @@ const WINDOW_END_BATTLE = &"EndBattlePopup"
 const WINDOW_FLASHCARD = &"FlashcardMinigame"
 const WINDOW_RESULTS = &"ResultsPopup"
 
+# --- UI Sizing ---
+const SLOT_SIZE_BASE: int = 96
+const SLOT_SIZE_2X: int = 192
+const UNIT_SPRITE_SIZE: int = 128
+const SLOT_CENTER_OFFSET: int = 32 # (192-128)/2
+
 # --- Ability Priority System ---
 const PRIORITY_GUARDIAN_INTERCEPT = 300
 const PRIORITY_TRINKET_SUMMON = 210

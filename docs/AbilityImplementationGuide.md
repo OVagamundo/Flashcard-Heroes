@@ -362,6 +362,28 @@ The `BattleAnimator` is dumb. It only knows what you tell it in `CombatEvent.vis
 
 ---
 
+## 5.1 Status Effect System
+
+### Built-in Status Effects
+
+| Effect | Mechanic | Stacking |
+|--------|----------|----------|
+| **Burn** | Deals stacks as damage at turn end, then reduces by 1 | Additive |
+| **Armor** | Absorbs damage before HP, consumed on hit | Additive |
+
+### Implementation Pattern
+Status effects are defined in `StatusEffectRegistry.gd` and visualized on `GachaBallView` via dedicated containers:
+- `burn_container` / `burn_label`
+- `armor_container` / `armor_label`
+
+### Adding a New Status Effect
+1. Create `StatusEffectDefinition` resource in `resources/status_effects/`
+2. Register in `StatusEffectRegistry.load_definitions()`
+3. Add visual container to `GachaBallView.tscn` (or use dynamic `_update_dynamic_status_icons()`)
+4. Handle in `TurnAbilities.process_end_of_turn_effects()` if it has turn-based behavior
+
+---
+
 ## 6. Complex Interaction Pitfalls
 
 ### A. Death Tracking Architecture
