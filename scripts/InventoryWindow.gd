@@ -59,6 +59,21 @@ func populate(context: Dictionary) -> void:
 	
 	# Trigger the initial population and drawing of the grids.
 	_populate_grids()
+	
+	# Show context-appropriate inventory tutorial (deferred to allow window to render)
+	call_deferred("_show_inventory_tutorial")
+
+
+func _show_inventory_tutorial() -> void:
+	"""Show the appropriate inventory tutorial after the window renders"""
+	if _is_battle_context:
+		TutorialManager.show_tutorial(&"gacha_inspect_battle", [
+			{"text": tr("tutorial.gacha_inspect_battle")}
+		])
+	else:
+		TutorialManager.show_tutorial(&"gacha_inspect_run", [
+			{"text": tr("tutorial.gacha_inspect_run")}
+		])
 
 func _on_ui_refresh() -> void:
 	if not self.visible:

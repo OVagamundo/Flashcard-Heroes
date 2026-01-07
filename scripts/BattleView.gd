@@ -94,8 +94,15 @@ func _ready() -> void:
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	SignalBus.gacha_draw_animated.connect(_on_gacha_draw_animated)
 	
+	# Connect to unit death signals for robust tracking
+	SignalBus.unit_death_fade.connect(_on_unit_death_fade_start)
+	SignalBus.unit_death_fade_finished.connect(_on_unit_death_fade_finished)
+	
 	# Connect to battle_state_changed to trigger entry animation on EVERY battle start
 	SignalBus.battle_state_changed.connect(_on_battle_state_changed)
+	
+	# Connect to SignalBus.results_acknowledged to show battle management tutorial
+	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 	
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
@@ -125,6 +132,62 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 		await get_tree().process_frame
 		await get_tree().process_frame
 		_animate_initial_unit_entry()
+
+
+func _on_results_acknowledged() -> void:
+	"""Called when results popup is closed - show battle management tutorial"""
+	# Check if we are in MANAGEMENT phase (which we should be after minigame)
+	if battle_manager.get_current_phase() == BattleManager.Phases.MANAGEMENT:
+		# Wait a frame for the results popup to fully close/free
+		await get_tree().process_frame
+		TutorialManager.show_tutorial(&"battle_management_intro", [
+			{"text": tr("tutorial.battle_management")}
+		])
+
+# Track pending player deaths to handle potential race conditions where
+# the instance is removed from the registry before the fade finishes.
+var _pending_player_deaths: Dictionary = {}
+
+func _on_unit_death_fade_start(unit_uuid: String) -> void:
+	"""Called when death animation starts - capture unit state while valid"""
+	if not is_instance_valid(battle_manager):
+		return
+		
+	var instance = battle_manager.get_instance(unit_uuid)
+	if is_instance_valid(instance):
+		# Check if it's a player unit by its location (Player units go to DiscardPile/Lineup/Bench)
+		# Note: When dying, they might be in DiscardPile technically, or still in Lineup
+		var is_player_unit = instance.location_container_tag == &"DiscardPile" or \
+							 instance.location_container_tag == &"PlayerLineup" or \
+							 instance.location_container_tag == &"PlayerBench"
+		
+		# Also check definition as fallback (Hero is always player)
+		if not is_player_unit:
+			var def = instance.get_definition()
+			if def and def.is_hero:
+				is_player_unit = true
+				
+		if is_player_unit:
+			_pending_player_deaths[unit_uuid] = true
+
+func _on_unit_death_fade_finished(unit_uuid: String) -> void:
+	"""Called when a unit finishes death animation - show death tutorial if it was a player unit"""
+	# Check our pending tracker first (most robust)
+	var was_player_unit = _pending_player_deaths.get(unit_uuid, false)
+	_pending_player_deaths.erase(unit_uuid)
+	
+	# Fallback: Try looking up instance if we missed the start signal
+	if not was_player_unit and is_instance_valid(battle_manager):
+		var instance = battle_manager.get_instance(unit_uuid)
+		if is_instance_valid(instance):
+			was_player_unit = instance.location_container_tag == &"DiscardPile" or \
+							  instance.location_container_tag == &"PlayerLineup" or \
+							  instance.location_container_tag == &"PlayerBench"
+	
+	if was_player_unit:
+		TutorialManager.show_tutorial(&"unit_death_intro", [
+			{"text": tr("tutorial.unit_death")}
+		])
 
 func _animate_initial_unit_entry() -> void:
 	"""Animate hero and enemy units appearing one-by-one when entering battle"""
@@ -546,6 +609,13 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	# Skip bounce for discard pile
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		return
+	
+	# Show first draw tutorial (3 pages) - only on first successful draw
+	TutorialManager.show_tutorial(&"first_draw", [
+		{"text": tr("tutorial.first_draw_1")},
+		{"text": tr("tutorial.first_draw_2")},
+		{"text": tr("tutorial.first_draw_3")}
+	])
 	
 	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
 	await get_tree().process_frame

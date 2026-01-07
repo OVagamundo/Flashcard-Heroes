@@ -9,6 +9,7 @@ var _window_scenes: Dictionary = {
 	&"RunCompletePopup": load("res://scenes/RunCompletePopup.tscn"),
 	&"FlashcardMinigame": load("res://scenes/FlashcardMinigame.tscn"),
 	&"ResultsPopup": load("res://scenes/ResultsPopup.tscn"),
+	&"TutorialPopup": load("res://scenes/TutorialPopup.tscn"),
 	
 	# --- Contextual Windows (Managed by _active_inspection_group) ---
 	&"Inventory": load("res://scenes/InventoryWindow.tscn"),
@@ -64,6 +65,26 @@ func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 
+	return window_instance
+
+
+## Opens a tutorial popup as an overlay WITHOUT closing existing windows.
+## This allows tutorials to appear on top of FlashcardMinigame, InventoryWindow, etc.
+func open_tutorial_overlay(context: Dictionary = {}) -> Control:
+	if not _window_scenes.has(&"TutorialPopup"):
+		push_error("[WindowManager] TutorialPopup not found in _window_scenes")
+		return null
+	
+	# Do NOT close existing windows - tutorials overlay on top
+	var window_instance = _window_scenes[&"TutorialPopup"].instantiate()
+	_get_modal_layer().add_child(window_instance)
+	# Add to modal stack so it can be properly cleaned up
+	_modal_stack.push_back(window_instance)
+	_register_window(window_instance, true)
+	
+	if window_instance.has_method("populate"):
+		window_instance.populate(context)
+	
 	return window_instance
 
 # Public entry point for the Inventory Window.

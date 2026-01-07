@@ -128,6 +128,10 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	# Store results before cleanup
 	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
+	# Check for deck expansion (new cards) if user mastered current ones
+	if is_instance_valid(_run_state_ref):
+		_run_state_ref.check_deck_expansion()
+	
 	# CRITICAL: Close the window - FlashcardManager owns the minigame lifecycle
 	# This ensures the window closes regardless of what encounter started it
 	if is_instance_valid(_minigame_instance):

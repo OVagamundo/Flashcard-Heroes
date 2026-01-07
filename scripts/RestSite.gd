@@ -63,6 +63,11 @@ func _ready() -> void:
 	_update_button_states()
 	_populate_hero_slot()
 	_setup_prize_slot_clicks()
+	
+	# Show rest site tutorial
+	TutorialManager.show_tutorial(&"rest_site_intro", [
+		{"text": tr("tutorial.rest_site")}
+	])
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.rest_site")

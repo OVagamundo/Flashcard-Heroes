@@ -104,6 +104,11 @@ func populate(context: Dictionary) -> void:
 	# Wait one frame for layout to complete, then animate entry
 	await get_tree().process_frame
 	_animate_staggered_entry()
+	
+	# Show shop tutorial
+	TutorialManager.show_tutorial(&"shop_intro", [
+		{"text": tr("tutorial.shop")}
+	])
 
 func _animate_staggered_entry() -> void:
 	"""Animate gachaballs appearing one-by-one with landing bounce"""

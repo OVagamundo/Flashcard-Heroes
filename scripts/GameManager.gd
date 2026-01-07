@@ -61,6 +61,10 @@ func get_pending_rewards() -> Dictionary:
 	}
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
+	# User Requirement: Start fresh tutorials every run if enabled
+	if TutorialManager:
+		TutorialManager.reset_all_tutorials()
+		
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id)
 	SignalBus.emit_signal("main_scene_requested")
