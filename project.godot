@@ -34,6 +34,7 @@ BattleLogger="*res://scripts/BattleLogger.gd"
 StatusEffectRegistry="*res://scripts/StatusEffectRegistry.gd"
 VFXFactory="*res://scripts/vfx/VFXFactory.gd"
 SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
+TutorialManager="*res://scripts/TutorialManager.gd"
 
 [debug]
 

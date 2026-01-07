@@ -21,9 +21,16 @@ func _ready() -> void:
 	start_button.pressed.connect(_on_start_run_pressed)
 	test_button.pressed.connect(_on_test_mode_pressed)
 	
+	
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
+	
+	# Show loadout tutorial
+	TutorialManager.show_tutorial(&"loadout_intro", [
+		{"text": tr("tutorial.loadout")}
+	])
+
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.loadout_selection")
@@ -31,12 +38,14 @@ func _update_localized_text() -> void:
 	test_button.text = tr("ui.test_mode")
 	hero_label.text = tr("ui.choose_hero")
 	deck_label.text = tr("ui.choose_deck")
+	deck_label.text = tr("ui.choose_deck")
 	
 	# Re-populate heroes to update translated names
 	var hero_selection = hero_button.selected
 	_populate_heroes()
 	if hero_selection >= 0 and hero_selection < hero_button.item_count:
 		hero_button.select(hero_selection)
+
 
 func _populate_heroes() -> void:
 	_hero_defs = Database.get_hero_definitions()

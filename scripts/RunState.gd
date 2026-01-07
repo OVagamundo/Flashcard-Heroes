@@ -19,6 +19,8 @@ const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
 # Flashcard learning progress - key = card_id (StringName), value = FlashcardProgress
 @export var flashcard_progress: Dictionary = {} # key = StringName, value = FlashcardProgress
 @export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
+@export var deck_def_id: StringName = &"" # The definition ID of the chosen deck
+@export var cards_presented_count: int = 0 # Updates the progressive presentation of cards
 
 # All containers indexed by name (e.g., "RunInventoryT1", "PlayerLineup", etc.)
 var _containers: Dictionary[StringName, DataContainer] = {}
@@ -609,9 +611,11 @@ func start_new_run() -> void:
 	_containers.clear()
 	flashcard_progress.clear()
 	active_deck_ids.clear()
+	cards_presented_count = 0
 
 func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	start_new_run()
+	self.deck_def_id = deck_id
 	
 	# Create hero instance from the selected hero definition
 	var hero_def = Database.get_definition(hero_def_id)
@@ -635,9 +639,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 			flashcard_progress[card_id] = progress
 	
 	# Populate the initial active deck with the first 10 cards
-	# Note: In a real SRS, we might want to load existing progress, but for a new run
-	# we start fresh or load from a persistent profile (out of scope for this task).
-	# For now, we just take the first 10 cards of the deck.
+	# Required for minigame distractors (needs 10 cards minimum)
 	for i in range(min(10, deck_card_ids.size())):
 		active_deck_ids.append(deck_card_ids[i])
 	
@@ -710,3 +712,40 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"unit_t1_a", &"unit_t1_b",
 				&"item_t1_a", &"item_t1_b"
 			]
+
+func check_deck_expansion() -> bool:
+	"""Checks if the active deck should be expanded based on mastery/progress.
+	Adds 1 new card if all currently active cards have been seen aka 'taught'."""
+	if deck_def_id == &"":
+		return false
+	
+	var full_deck = Database.get_cards_for_deck(deck_def_id)
+	if full_deck.is_empty() or active_deck_ids.size() >= full_deck.size():
+		return false
+	
+	# Check if current active deck is 'taught' (all cards seen/reviewed at least once)
+	var all_taught = true
+	for id in active_deck_ids:
+		# If progress missing, we haven't seen it
+		if not flashcard_progress.has(id):
+			all_taught = false
+			break
+		
+		# If last_review_day is 0, we haven't answered it in a valid run yet
+		# This effectively gates adding new cards until all current ones are 'introduced'
+		var progress = flashcard_progress[id]
+		if progress.last_review_day <= 0:
+			all_taught = false
+			break
+	
+	if all_taught:
+		# Add EXACTLY ONE new card (the next available one from full_deck)
+		# This ensures cards are introduced one by one as the user learns.
+		for i in range(full_deck.size()):
+			var card_id = full_deck[i]
+			if not active_deck_ids.has(card_id):
+				active_deck_ids.append(card_id)
+				SignalBus.emit_signal("run_data_changed")
+				return true
+			
+	return false

@@ -413,6 +413,20 @@ signal flashcard_token_earned(amount: int)
 ## Emitted when game state should be loaded
 
 # -----------------------------------------------------------------------------
+# TUTORIAL SYSTEM SIGNALS
+# -----------------------------------------------------------------------------
+
+## Emitted when a tutorial popup should be shown
+## @param tutorial_id: StringName - Unique identifier for the tutorial
+## @param pages: Array - Array of page dictionaries with text and optional anchor_path
+## @param anchor: Control - Optional control to point an arrow at
+signal tutorial_requested(tutorial_id: StringName, pages: Array, anchor: Control)
+
+## Emitted when a tutorial is dismissed (completed)
+## @param tutorial_id: StringName - The tutorial that was dismissed
+signal tutorial_dismissed(tutorial_id: StringName)
+
+# -----------------------------------------------------------------------------
 # LOCALIZATION SIGNALS
 # -----------------------------------------------------------------------------
 

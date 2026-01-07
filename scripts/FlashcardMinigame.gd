@@ -165,14 +165,24 @@ func populate(context: Dictionary) -> void:
 
 func _check_for_new_card() -> void:
 	"""Check if a new card should be introduced to the active deck"""
-	# TDD: Card Introduction - one new card is introduced per minigame session
-	# until all cards from the Main Deck have been introduced
 	
 	if not is_instance_valid(_run_state):
 		_is_introducing_new_card = false
 		return
 	
-	# Find a card that's not yet in the active deck
+	# PHASE 1: Presentation of Initial Cards
+	# Even though they are already in the active deck (for engine reasons),
+	# we want to "introduce" them one by one via the popup.
+	if _run_state.cards_presented_count < 10 and _run_state.cards_presented_count < _run_state.active_deck_ids.size():
+		# Present the next card in the initial set
+		_new_card_id = _run_state.active_deck_ids[_run_state.cards_presented_count]
+		_run_state.cards_presented_count += 1
+		# Signal that we are introducing a card (Re-uses same UI logic)
+		_is_introducing_new_card = true
+		return
+
+	# PHASE 2: Deck Expansion
+	# Once all 10 initial cards are presented, we look for genuinely new cards from the pool.
 	var all_cards = _run_state.flashcard_progress.keys()
 	for card_id in all_cards:
 		if not _run_state.active_deck_ids.has(card_id):
@@ -206,6 +216,17 @@ func _show_card_introduction() -> void:
 	
 	# Set panel to mastery level 1 color for new cards
 	_update_panel_color(FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN])
+	
+	# Show new card tutorial (deferred to ensure UI is ready)
+	call_deferred("_show_new_card_tutorial")
+
+
+func _show_new_card_tutorial() -> void:
+	"""Show new card tutorial overlay"""
+	TutorialManager.show_tutorial(&"new_card_intro", [
+		{"text": tr("tutorial.new_card_1")},
+		{"text": tr("tutorial.new_card_2")}
+	])
 
 func _on_got_it_pressed() -> void:
 	"""Called when player clicks 'Got It!' on card introduction"""
