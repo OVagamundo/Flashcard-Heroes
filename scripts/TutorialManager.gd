@@ -49,6 +49,26 @@ func show_tutorial(tutorial_id: StringName, pages: Array, anchor: Control = null
 	SignalBus.emit_signal("tutorial_requested", tutorial_id, pages, anchor)
 
 
+## Show a tutorial popup and WAIT until it's dismissed
+## Use this when calling from combat animations or other sequences that should pause
+## @returns: Signal that completes when tutorial is dismissed (or immediately if not shown)
+func show_tutorial_and_wait(tutorial_id: StringName, pages: Array, anchor: Control = null) -> void:
+	print("[TutorialManager] Requesting blocking tutorial: ", tutorial_id)
+	if not tutorials_enabled:
+		print("[TutorialManager] Blocked: Tutorials disabled")
+		return
+	if is_completed(tutorial_id):
+		print("[TutorialManager] Blocked: Already completed")
+		return
+	
+	print("[TutorialManager] Emitting signal for blocking tutorial: ", tutorial_id)
+	SignalBus.emit_signal("tutorial_requested", tutorial_id, pages, anchor)
+	
+	# Wait for this specific tutorial to be dismissed
+	await SignalBus.tutorial_dismissed
+	print("[TutorialManager] Tutorial dismissed: ", tutorial_id)
+
+
 ## Get tooltip text for an element if tutorials are enabled
 ## Returns empty string if disabled
 func get_tooltip(element_id: StringName) -> String:
