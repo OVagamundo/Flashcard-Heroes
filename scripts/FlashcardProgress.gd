@@ -29,6 +29,9 @@ const MASTERY_COLORS: Array[Color] = [
 ## Last day this card was reviewed (for SRS algorithm)
 @export var last_review_day: int = 0
 
+## Total number of times this card has been reviewed
+@export var times_reviewed: int = 0
+
 ## Get the color associated with the current mastery level
 func get_mastery_color() -> Color:
 	return MASTERY_COLORS[clampi(mastery_level, MASTERY_MIN, MASTERY_MAX)]
@@ -42,6 +45,7 @@ func get_mastery_label() -> String:
 ## @param current_day: int - The current day of the run
 func record_answer(was_correct: bool, current_day: int) -> void:
 	last_review_day = current_day
+	times_reviewed += 1
 	
 	if was_correct:
 		mastery_level = mini(MASTERY_MAX, mastery_level + 1)

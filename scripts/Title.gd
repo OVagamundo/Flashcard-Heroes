@@ -4,6 +4,7 @@ extends Control
 @onready var start_run_button: Button = %StartRunButton
 @onready var options_button: Button = %OptionsButton
 @onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
+@onready var continue_button: Button = %ContinueButton
 
 func _input(event: InputEvent) -> void:
 	# Debug Header: Reset tutorials with Shift+T
@@ -19,6 +20,13 @@ func _ready() -> void:
 	print("[Title] Ready. TutorialManager.tutorials_enabled: ", TutorialManager.tutorials_enabled)
 	# AUDIO HOOK: Title BGM
 	Audio.play_music(SoundRegistry.BGM_TITLE)
+	
+	# Continue button - only visible if save exists
+	if SaveManager.has_save():
+		continue_button.visible = true
+		continue_button.pressed.connect(_on_continue_pressed)
+	else:
+		continue_button.visible = false
 	
 	# The Title screen should now transition to the Loadout scene, not start a run directly.
 	start_run_button.pressed.connect(func():
@@ -43,6 +51,8 @@ func _ready() -> void:
 func _update_localized_text() -> void:
 	start_run_button.text = tr("ui.start_run")
 	options_button.text = tr("ui.options")
+	if continue_button:
+		continue_button.text = tr("ui.continue")
 	if tutorial_checkbox:
 		tutorial_checkbox.text = tr("ui.show_tutorials")
 
@@ -53,3 +63,13 @@ func _on_options_pressed() -> void:
 		"populate_context": {}
 	}
 	WindowManager._open_contextual_window(context)
+
+func _on_continue_pressed() -> void:
+	var loaded_state: RunState = SaveManager.load_run()
+	if is_instance_valid(loaded_state):
+		GameManager.run_state = loaded_state
+		GameManager.loading_from_save = true
+		SignalBus.emit_signal("main_scene_requested")
+	else:
+		push_error("[Title] Failed to load saved run")
+		continue_button.visible = false
