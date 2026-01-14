@@ -124,14 +124,17 @@ static func has_lethal_counter_abilities(unit: GachaBallInstance, battle_instanc
 # ============================================================================
 
 ## Create a DEATH event if not already created for this unit
-static func create_death_event_if_needed(unit_uuid: String, death_tracking: Dictionary) -> CombatEvent:
+## @param unit_uuid: UUID of the dying unit
+## @param death_tracking: Dictionary to track which deaths were already processed
+## @param container_tag: Optional container tag to include in payload (for tutorial detection)
+static func create_death_event_if_needed(unit_uuid: String, death_tracking: Dictionary, container_tag: StringName = &"") -> CombatEvent:
 	if death_tracking.has(unit_uuid):
 		return null # Already created
 	
 	death_tracking[unit_uuid] = true
 	return CombatEvent.new(CombatEvent.Type.DEATH, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {}
+		"visual_payload": {"container_tag": container_tag}
 	})
 
 # ============================================================================
@@ -263,7 +266,7 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {}
+					"visual_payload": {"container_tag": unit.location_container_tag}
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -297,7 +300,7 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {}
+					"visual_payload": {"container_tag": unit.location_container_tag}
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -429,8 +432,9 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		if data.has_lethal_counter:
 			_defer_ally_death(bm, data.unit, data.death_location, data.team.to_lower())
 		else:
-			# Emit DEATH event
-			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking)
+			# Emit DEATH event with container_tag for player unit detection
+			var death_container_tag: StringName = data.death_location.container if is_instance_valid(data.death_location) else &""
+			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking, death_container_tag)
 			if death_event != null:
 				out_events.append(death_event)
 			

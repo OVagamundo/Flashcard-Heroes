@@ -3,7 +3,10 @@ OpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4
 
 [Title] Ready. TutorialManager.tutorials_enabled: true
 [TutorialManager] Requesting tutorial: loadout_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Emitting signal for: loadout_intro
+[TutorialManager] Signal received, opening overlay for: loadout_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -11,29 +14,12 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 [TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Tutorials disabled
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-Warning: Instance has invalid stats, resetting from definition
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Emitting signal for: path_choice_intro
+[TutorialManager] Signal received, opening overlay for: path_choice_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
 'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -41,1302 +27,178 @@ WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxConta
 'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 [TutorialManager] Requesting tutorial: rest_site_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Emitting signal for: rest_site_intro
+[TutorialManager] Signal received, opening overlay for: rest_site_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 [TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[TutorialManager] Requesting tutorial: rest_site_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 5
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Blocked: Already completed
+Warning: Instance has invalid stats, resetting from definition
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Emitting signal for: shop_intro
+[TutorialManager] Signal received, opening overlay for: shop_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 [TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[TutorialManager] Requesting tutorial: rest_site_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Emitting signal for: new_card_intro
+[TutorialManager] Signal received, opening overlay for: new_card_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 [FlashcardManager] _on_minigame_complete called. Correct: 5
 [FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
-[BattleLog] [1:2] Koi's Blessing heals Shadow Striker for 2 HP 
-[BattleLog] [1:3] Koi's Blessing heals Shadow Striker for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 5→7)
+[TutorialManager] Requesting tutorial: battle_management_intro
+[TutorialManager] Emitting signal for: battle_management_intro
+[TutorialManager] Signal received, opening overlay for: battle_management_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Emitting signal for: first_draw
+[TutorialManager] Signal received, opening overlay for: first_draw
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [1:4] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [1:5] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [1:6] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [1:7] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [1:8] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [1:9] Squire deals 3 dmg to Shadow Striker 
-[BattleLog] [1:10] Squire attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 7→4)
-[DamageAnimation] Executing for targets: ["unit_t3_a_1767794028_84_83695"] source: unit_t1_b_1767794028_48_94712 attack_type: melee
+[TutorialManager] Blocked: Already completed
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[BattleLog] [1:2] Apprentice deals 1 dmg to Berserker 
+[BattleLog] [1:3] Apprentice attacks unit_t2_... for 1 damage (basic_attack, on_attack) (HP: 4→3)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1768352494_80_86099"] source: unit_t1_a_1768352494_43_74396 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794028 type 5
-[BattleLog] [1:11] Squire deals 3 dmg to Shadow Striker 
-[BattleLog] [1:12] Squire attacks unit_t3_... for 3 damage (double_strike_attack, on_attack) (HP: 4→1)
-[DamageAnimation] Executing for targets: ["unit_t3_a_1767794028_84_83695"] source: unit_t1_b_1767794028_48_94712 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1768352494 type 5
+[BattleLog] [1:4] Apprentice deals 2 dmg to Berserker 
+[BattleLog] [1:5] Apprentice attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 3→1)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1768352494_80_86099"] source: unit_t1_a_1768352494_42_36635 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794028 type 5
-[BattleLog] [1:13] Timekeeper deals 25 dmg to Shadow Striker 
-[BattleLog] [1:14] Timekeeper attacks unit_t3_... for 25 damage (basic_attack, on_attack) (HP: 1→-24)
-[DamageAnimation] Executing for targets: ["unit_t3_a_1767794028_84_83695"] source: hero_timekeeper_1767794028_44_08501 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1768352494 type 5
+[BattleLog] [1:6] Squire deals 3 dmg to Berserker 
+[BattleLog] [1:7] Squire attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 1→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1768352494_80_86099"] source: unit_t1_b_1768352494_44_21390 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [1:15] Timekeeper heals for 5 HP (Lifesteal) 
-[BattleLog] [1:16] Lifesteal Ring heals Timekeeper for 5 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 55→60)
-[BattleLog] [1:17] Gained 1 gold! 
-[BattleLog] [1:18] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:19] └─ unit_t3_... is defeated! 
-[BattleLog] [1:20] Knight heals Knight for 1 HP 
-[BattleLog] [1:21] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 5→6)
-[BattleLog] [1:22] Knight grants Knight +1 PWR 
-[BattleLog] [1:23] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[AnimationCompletionTracker] Timeout for unit_t1_b_1768352494 type 5
+[BattleLog] [1:8] └─ unit_t2_... is defeated! 
+[BattleLog] [1:9] └─ item_t2_... summons New Unit! 
+[BattleLog] [1:10] Timekeeper deals 2 dmg to Apprentice 
+[BattleLog] [1:11] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1768352545_85_12907"] source: hero_timekeeper_1768352494_41_72531 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1768 type 5
+[BattleLog] [1:12] Gained 1 gold! 
+[BattleLog] [1:13] └─ unit_t1_... is defeated! 
+[BattleLog] [1:14] Soul Caller deals 5 dmg to Apprentice 
+[BattleLog] [1:15] Soul Caller attacks Apprentice for 5 damage (basic_attack, on_attack) (HP: 4→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1768352494_43_74396"] source: unit_t3_c_1768352494_79_64766 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768352494 type 5
+[BattleLog] [1:16] └─ Apprentice is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Emitting signal for blocking tutorial: unit_death_intro
+[TutorialManager] Signal received, opening overlay for: unit_death_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[TutorialManager] Tutorial dismissed: unit_death_intro
+[BattleLog] [1:17] └─ Summoning Scroll summons New Unit! 
+[BattleLog] [1:18] unit_t2_... attacks Apprentice for 4 damage (HP: 2→-2)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1768352545_86_66112"] source: unit_t2_b_1768352494_78_25568 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_b_1768352494 type 5
+[BattleLog] [1:19] unit_t2_... attacks Apprentice for 2 damage (HP: 3→1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1768352494_42_36635"] source: unit_t2_b_1768352494_78_25568 attack_type: melee
+[BattleLog] [1:20] unit_t2_... attacks Squire for 1 damage (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1768352494_44_21390"] source: unit_t2_b_1768352494_78_25568 attack_type: melee
+[BattleLog] [1:21] Apprentice heals Apprentice for 2 HP 
+[BattleLog] [1:22] Apprentice heals Apprentice for 2 HP (unit_tier1a_passive_heal, on_hurt) (HP: 1→3)
+[BattleLog] [1:23] Phoenix Elixir heals Apprentice for 1 HP 
+[BattleLog] [1:24] Phoenix Elixir heals Apprentice for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 3→4)
+[BattleLog] [1:25] Phoenix Elixir grants Apprentice +1 PWR 
+[BattleLog] [1:26] Phoenix Elixir grants Apprentice +1 PWR (item_tier2c_passive_heal, on_hurt) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:24] Vengeance Charm grants Knight +1 PWR 
-[BattleLog] [1:25] trinket_vengeance grants unit_t2_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
+[BattleLog] [1:27] Squire deals 3 dmg to Berserker 
+[BattleLog] [1:28] Squire attacks unit_t2_... for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 2→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1768352494_78_25568"] source: unit_t1_b_1768352494_44_21390 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1768352494 type 5
+[BattleLog] [1:29] Phoenix Elixir heals Squire for 1 HP 
+[BattleLog] [1:30] Phoenix Elixir heals Squire for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 1→2)
+[BattleLog] [1:31] Phoenix Elixir grants Squire +1 PWR 
+[BattleLog] [1:32] Phoenix Elixir grants Squire +1 PWR (item_tier2c_passive_heal, on_hurt) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:26] Timekeeper deals 25 dmg to Knight 
-[BattleLog] [1:27] Timekeeper attacks unit_t2_... for 25 damage (basic_attack, on_attack) (HP: 6→-19)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794028_86_87816"] source: hero_timekeeper_1767794028_44_08501 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [1:28] Vengeful Thorn deals 3 dmg to Knight 
-[BattleLog] [1:29] item_t3_... attacks Knight for 3 damage (item_tier3d_retaliate_random, on_hurt) (HP: 4→1)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794028_58_50949"] source: unit_t2_c_1767794028_86_87816 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1767794028 type 5
-[BattleLog] [1:30] Timekeeper heals for 5 HP (Lifesteal) 
-[BattleLog] [1:31] Lifesteal Ring heals Timekeeper for 5 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 60→65)
-[BattleLog] [1:32] Gained 1 gold! 
-[BattleLog] [1:33] Timekeeper triggers Bloodlust! 
+[BattleLog] [1:33] └─ Apprentice is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Already completed
 [BattleLog] [1:34] └─ unit_t2_... is defeated! 
-[BattleLog] [1:35] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [1:36] trinket_vengeance grants boss_1_1... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:37] Timekeeper deals 25 dmg to Apprentice 
-[BattleLog] [1:38] Timekeeper attacks unit_t1_... for 25 damage (basic_attack, on_attack) (HP: 2→-23)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794028_83_04638"] source: hero_timekeeper_1767794028_44_08501 attack_type: melee
+[BattleLog] [1:35] Sakura Spirit deals 7 dmg to Apprentice 
+[BattleLog] [1:36] Sakura Spirit attacks Apprentice for 7 damage (basic_attack, on_attack) (HP: 4→-3)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1768352494_42_36635"] source: unit_t3_d_1768352494_82_59305 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [1:39] Timekeeper heals for 5 HP (Lifesteal) 
-[BattleLog] [1:40] Lifesteal Ring heals Timekeeper for 5 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 65→70)
-[BattleLog] [1:41] Gained 1 gold! 
-[BattleLog] [1:42] Timekeeper triggers Bloodlust! 
+[AnimationCompletionTracker] Timeout for unit_t3_d_1768352494 type 5
+[BattleLog] [1:37] └─ Apprentice is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Already completed
+[BattleLog] [1:38] Squire deals 2 dmg to Squire 
+[BattleLog] [1:39] unit_t1_... attacks Squire for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1768352494_44_21390"] source: unit_t1_b_1768352494_84_72682 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1768352494 type 5
+[BattleLog] [1:40] Squire deals 4 dmg to Squire 
+[BattleLog] [1:41] Squire attacks unit_t1_... for 4 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 1→-3)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1768352494_84_72682"] source: unit_t1_b_1768352494_44_21390 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1768352494 type 5
+[BattleLog] [1:42] └─ Squire is defeated! 
 [BattleLog] [1:43] └─ unit_t1_... is defeated! 
-[BattleLog] [1:44] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [1:45] trinket_vengeance grants boss_1_1... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:46] Timekeeper deals 25 dmg to The Awakened Guardian 
-[BattleLog] [1:47] Timekeeper attacks boss_1_1... for 25 damage (basic_attack, on_attack) (HP: 14→-11)
-[DamageAnimation] Executing for targets: ["boss_1_1767794028_88_37500"] source: hero_timekeeper_1767794028_44_08501 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [1:48] Vengeful Thorn deals 7 dmg to Timekeeper 
-[BattleLog] [1:49] item_t3_... attacks Timekeeper for 7 damage (item_tier3d_retaliate_random, on_hurt) (HP: 70→63)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794028_44_08501"] source: boss_1_1767794028_88_37500 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1767794028_88 type 5
-[BattleLog] [1:50] Timekeeper heals for 5 HP (Lifesteal) 
-[BattleLog] [1:51] Lifesteal Ring heals Timekeeper for 5 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 63→68)
-[BattleLog] [1:52] Gained 1 gold! 
-[BattleLog] [1:53] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:54] └─ item_t2_... summons New Unit! 
-[BattleLog] [1:55] └─ boss_1_1... is defeated! 
-[AnimationCompletionTracker] Timeout for boss_1_1767794028_88 type 2
-[BattleLog] [1:56] Vengeance Charm grants Squire +1 PWR 
-[BattleLog] [1:57] trinket_vengeance grants unit_t1_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:58] Timekeeper deals 25 dmg to Squire 
-[BattleLog] [1:59] Timekeeper attacks unit_t1_... for 25 damage (basic_attack, on_attack) (HP: 1→-24)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794070_92_92460"] source: hero_timekeeper_1767794028_44_08501 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [1:60] Timekeeper heals for 5 HP (Lifesteal) 
-[BattleLog] [1:61] Lifesteal Ring heals Timekeeper for 5 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 68→73)
-[BattleLog] [1:62] Squire deals 3 dmg to Timekeeper 
-[BattleLog] [1:63] unit_t1_... attacks Timekeeper for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 73→70)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794028_44_08501"] source: unit_t1_b_1767794070_92_92460 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794070 type 5
-[BattleLog] [1:64] Gained 1 gold! 
-[BattleLog] [1:65] Timekeeper triggers Bloodlust! 
-[BattleLog] [1:66] └─ unit_t1_... is defeated! 
-[BattleLog] [1:67] Battle ended 
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
 [BattleLog] [2:1] ═══ TURN 2 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 6
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleLog] [2:2] Koi's Blessing heals Squire for 2 HP 
-[BattleLog] [2:3] Koi's Blessing heals Squire for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 2→4)
-[BattleLog] [2:4] Healing Amulet heals Squire for 2 HP 
-[BattleLog] [2:5] trinket_healing_amulet heals Squire for 2 HP (trinket_healing_amulet_heal, on_turn_start) (HP: 1→3)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [2:6] Squire deals 3 dmg to Squire 
-[BattleLog] [2:7] Squire attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 6→3)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1767794112_135_07662"] source: unit_t1_b_1767794112_99_06614 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [2:8] Squire deals 3 dmg to Squire 
-[BattleLog] [2:9] Squire attacks unit_t3_... for 3 damage (double_strike_attack, on_attack) (HP: 3→0)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1767794112_135_07662"] source: unit_t1_b_1767794112_99_06614 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [2:10] └─ unit_t3_... is defeated! 
-[BattleLog] [2:11] Squire deals 3 dmg to Squire 
-[BattleLog] [2:12] Squire attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 3→0)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794112_141_19028"] source: unit_t1_b_1767794112_100_94467 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [2:13] Squire deals 3 dmg to Squire 
-[BattleLog] [2:14] unit_t1_... attacks Squire for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 1→-2)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794112_100_94467"] source: unit_t1_b_1767794112_141_19028 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [2:15] └─ Squire is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [2:16] └─ unit_t1_... is defeated! 
-[BattleLog] [2:17] Guardian heals Guardian for 2 HP 
-[BattleLog] [2:18] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 6→8)
-[BattleLog] [2:19] Timekeeper deals 21 dmg to Guardian 
-[BattleLog] [2:20] Timekeeper attacks unit_t2_... for 21 damage (basic_attack, on_attack) (HP: 8→-13)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1767794112_138_06586"] source: hero_timekeeper_1767794112_96_89351 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [2:21] Gained 1 gold! 
-[BattleLog] [2:22] └─ unit_t2_... is defeated! 
-[BattleLog] [2:23] └─ item_t2_... summons New Unit! 
-[BattleLog] [2:24] Apprentice deals 1 dmg to Squire 
-[BattleLog] [2:25] unit_t1_... attacks Squire for 1 damage (basic_attack, on_attack) (HP: 1→0)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794112_99_06614"] source: unit_t1_a_1767794146_147_21142 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1767794146 type 5
-[BattleLog] [2:26] Squire deals 3 dmg to Apprentice 
-[BattleLog] [2:27] Squire attacks unit_t1_... for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 2→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794146_147_21142"] source: unit_t1_b_1767794112_99_06614 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [2:28] └─ unit_t1_... is defeated! 
-[BattleLog] [2:29] └─ Squire is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [2:30] Soul Caller deals 5 dmg to Timekeeper 
-[BattleLog] [2:31] Soul Caller attacks Timekeeper for 5 damage (basic_attack, on_attack) (HP: 53→51)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794112_96_89351"] source: unit_t3_c_1767794112_137_43753 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1767794112 type 5
-[BattleLog] [2:32] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [2:33] Squire attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 51→49)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794112_96_89351"] source: unit_t1_b_1767794112_143_67297 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [3:1] ═══ TURN 3 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleLog] [3:2] Koi's Blessing heals Squire for 2 HP 
-[BattleLog] [3:3] Koi's Blessing heals Squire for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 4→6)
-[BattleLog] [3:4] Healing Amulet heals Soul Caller for 2 HP 
-[BattleLog] [3:5] trinket_healing_amulet heals Soul Caller for 2 HP (trinket_healing_amulet_heal, on_turn_start) (HP: 5→7)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [3:6] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [3:7] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [3:8] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [3:9] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [3:10] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:11] Timekeeper grants Guardian Sentinel +2 PWR 
-[BattleLog] [3:12] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:13] Timekeeper deals 29 dmg to Soul Caller 
-[BattleLog] [3:14] Timekeeper attacks unit_t3_... for 29 damage (basic_attack, on_attack) (HP: 7→-22)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794112_137_43753"] source: hero_timekeeper_1767794112_96_89351 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [3:15] └─ unit_t3_... is defeated! 
-[BattleLog] [3:16] └─ unit_t3_... summons New Unit! 
-[BattleLog] [3:17] Gained 1 gold! 
-[BattleLog] [3:18] Timekeeper triggers Bloodlust! 
-[BattleLog] [3:19] Timekeeper grants Squire +2 PWR 
-[BattleLog] [3:20] Power Amulet grants Squire +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:21] Timekeeper grants Guardian Sentinel +2 PWR 
-[BattleLog] [3:22] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:23] Timekeeper deals 29 dmg to Berserker 
-[BattleLog] [3:24] Timekeeper attacks unit_t2_... for 29 damage (basic_attack, on_attack) (HP: 2→-27)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1767794218_148_06827"] source: hero_timekeeper_1767794112_96_89351 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [3:25] └─ unit_t2_... is defeated! 
-[BattleLog] [3:26] Gained 1 gold! 
-[BattleLog] [3:27] Timekeeper triggers Bloodlust! 
-[BattleLog] [3:28] Timekeeper grants Guardian Sentinel +2 PWR 
-[BattleLog] [3:29] Power Amulet grants Guardian Sentinel +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:30] Timekeeper grants Squire +2 PWR 
-[BattleLog] [3:31] Power Amulet grants Squire +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:32] Timekeeper deals 29 dmg to Squire 
-[BattleLog] [3:33] Timekeeper attacks unit_t1_... for 29 damage (basic_attack, on_attack) (HP: 6→-23)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794112_143_67297"] source: hero_timekeeper_1767794112_96_89351 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [3:34] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [3:35] unit_t1_... attacks Timekeeper for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 49→49)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794112_96_89351"] source: unit_t1_b_1767794112_143_67297 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794112 type 5
-[BattleLog] [3:36] Gained 1 gold! 
-[BattleLog] [3:37] Timekeeper triggers Bloodlust! 
-[BattleLog] [3:38] └─ unit_t1_... is defeated! 
-[BattleLog] [3:39] Battle ended 
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-Warning: Instance has invalid stats, resetting from definition
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[TutorialManager] Requesting tutorial: rest_site_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[TutorialManager] Requesting tutorial: rest_site_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
-[BattleLog] [4:1] ═══ TURN 4 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 [FlashcardManager] _on_minigame_complete called. Correct: 4
 [FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 [TutorialManager] Requesting tutorial: battle_management_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 [TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[EffectPreventLethal] execute called - victim=unit_t3_d_1767794663_198_80285, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=3
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[EffectPreventLethal] execute called - victim=unit_t3_b_1767794663_203_55130, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-24
-[EffectPreventLethal] Prevented lethal damage for unit_t3_b_1767794663_203_55130 (team=ENEMY), healing by 25
-[EffectPreventLethal] execute called - victim=unit_t3_b_1767794663_203_55130, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-5
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=unit_t3_c_1767794663_196_73837, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=5
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[BattleLog] [4:2] └─ "Bloodlust" grants Berserker an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t3_d_1767794663_198_80285, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-3
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=unit_t3_c_1767794663_196_73837, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=3
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[BattleLog] [4:3] └─ "Bloodlust" grants Berserker an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t1_a_1767794696_210_44948, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=1
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[EffectPreventLethal] execute called - victim=unit_t3_c_1767794663_196_73837, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-3
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=unit_t1_a_1767794696_210_44948, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-1
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[BattleLog] [4:4] └─ "Bloodlust" grants Berserker an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t2_c_1767794663_201_59866, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=6
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[BattleLog] [4:5] └─ "Bloodlust" grants Berserker an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t2_b_1767794696_211_60714, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-4
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=unit_t2_c_1767794663_201_59866, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=7
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[BattleLog] [4:6] └─ "Bloodlust" grants Berserker an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t2_c_1767794663_201_59866, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=2
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[EffectPreventLethal] execute called - victim=boss_2_1767794663_205_32087, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=16
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[EffectPreventLethal] execute called - victim=hero_timekeeper_1767794663_155_14895, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=52
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[EffectPreventLethal] execute called - victim=unit_t2_c_1767794663_201_59866, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-4
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=boss_2_1767794663_205_32087, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=13
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[EffectPreventLethal] execute called - victim=unit_t3_c_1767794663_181_11055, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=-3
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[BattleLog] [4:7] └─ "Bloodlust" grants Berserker an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t1_a_1767794696_213_09137, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-4
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=boss_2_1767794663_205_32087, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=10
-[EffectPreventLethal] EXIT: HP > 0, not lethal
-[EffectPreventLethal] execute called - victim=unit_t2_b_1767794663_167_28110, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=-6
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[EffectPreventLethal] execute called - victim=unit_t2_a_1767794696_212_39547, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=-11
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[BattleLog] [4:8] Soul Caller deals 5 dmg to Sakura Spirit 
-[BattleLog] [4:9] Soul Caller attacks unit_t3_... for 5 damage (basic_attack, on_attack) (HP: 8→3)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767794663_198_80285"] source: unit_t3_c_1767794663_181_11055 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1767794663 type 5
-[BattleLog] [4:10] Sakura Spirit heals Soul Caller for 1 HP 
-[BattleLog] [4:11] unit_t3_... heals unit_t3_... for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 7→8)
-[BattleLog] [4:12] Sakura Spirit grants Soul Caller +1 PWR 
-[BattleLog] [4:13] unit_t3_... grants unit_t3_... +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:14] Timekeeper deals 32 dmg to Sakura Spirit 
-[BattleLog] [4:15] Timekeeper attacks unit_t3_... for 32 damage (basic_attack, on_attack) (HP: 8→-24)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1767794663_203_55130"] source: hero_timekeeper_1767794663_155_14895 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [4:16] Aegis Charm saves Guardian Sentinel from lethal damage! 
-[BattleLog] [4:17] Berserker attacks unit_t3_... for 6 damage (HP: 1→-5)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1767794663_203_55130"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:18] Berserker attacks unit_t3_... for 3 damage (HP: 8→5)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794663_196_73837"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:19] Berserker triggers Bloodlust! 
-[BattleLog] [4:20] └─ unit_t3_... is defeated! 
-[BattleLog] [4:21] └─ item_t2_... summons New Unit! 
-[BattleLog] [4:22] Knight heals Knight for 1 HP 
-[BattleLog] [4:23] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 5→6)
-[BattleLog] [4:24] Knight grants Knight +1 PWR 
-[BattleLog] [4:25] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:26] Berserker attacks unit_t3_... for 6 damage (HP: 3→-3)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767794663_198_80285"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:27] Berserker attacks unit_t3_... for 3 damage (HP: 5→2)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794663_196_73837"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:28] Berserker attacks unit_t1_... for 1 damage (HP: 2→1)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794696_210_44948"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:29] Sakura Spirit heals Soul Caller for 1 HP 
-[BattleLog] [4:30] unit_t3_... heals unit_t3_... for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 2→3)
-[BattleLog] [4:31] Sakura Spirit grants Soul Caller +1 PWR 
-[BattleLog] [4:32] unit_t3_... grants unit_t3_... +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:33] Berserker triggers Bloodlust! 
-[BattleLog] [4:34] Apprentice heals Apprentice for 1 HP 
-[BattleLog] [4:35] unit_t1_... heals unit_t1_... for 1 HP (unit_tier1a_passive_heal, on_hurt) (HP: 1→2)
-[BattleLog] [4:36] └─ unit_t3_... is defeated! 
-[BattleLog] [4:37] Knight heals Knight for 1 HP 
-[BattleLog] [4:38] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 6→7)
-[BattleLog] [4:39] Knight grants Knight +1 PWR 
-[BattleLog] [4:40] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:41] Berserker attacks unit_t3_... for 6 damage (HP: 3→-3)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794663_196_73837"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:42] Berserker attacks unit_t1_... for 3 damage (HP: 2→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794696_210_44948"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:43] Berserker attacks unit_t2_... for 1 damage (HP: 7→6)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794663_201_59866"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:44] Berserker triggers Bloodlust! 
-[BattleLog] [4:45] Berserker triggers Bloodlust! 
-[BattleLog] [4:46] └─ unit_t3_... is defeated! 
-[BattleLog] [4:47] └─ unit_t1_... is defeated! 
-[BattleLog] [4:48] └─ unit_t3_... summons New Unit! 
-[BattleLog] [4:49] Knight heals Knight for 1 HP 
-[BattleLog] [4:50] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 6→7)
-[BattleLog] [4:51] Knight grants Knight +1 PWR 
-[BattleLog] [4:52] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:53] Knight heals Knight for 1 HP 
-[BattleLog] [4:54] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 7→8)
-[BattleLog] [4:55] Knight grants Knight +1 PWR 
-[BattleLog] [4:56] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:57] Berserker attacks unit_t2_... for 6 damage (HP: 2→-4)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1767794696_211_60714"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:58] Berserker attacks unit_t2_... for 1 damage (HP: 8→7)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794663_201_59866"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:59] Berserker triggers Bloodlust! 
-[BattleLog] [4:60] └─ unit_t2_... is defeated! 
-[BattleLog] [4:61] Knight heals Knight for 1 HP 
-[BattleLog] [4:62] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 7→8)
-[BattleLog] [4:63] Knight grants Knight +1 PWR 
-[BattleLog] [4:64] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:65] Berserker attacks unit_t2_... for 6 damage (HP: 8→2)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794663_201_59866"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:66] Berserker attacks The Shadow Warden for 3 damage (HP: 19→16)
-[DamageAnimation] Executing for targets: ["boss_2_1767794663_205_32087"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:67] Vengeful Thorn deals 8 dmg to Timekeeper 
-[BattleLog] [4:68] Vengeful Thorn attacks Timekeeper for 8 damage (item_tier3d_retaliate_random, on_hurt) (HP: 57→52)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794663_155_14895"] source: boss_2_1767794663_205_32087 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_2_1767794663_20 type 5
-[BattleLog] [4:69] Berserker attacks unit_t2_... for 6 damage (HP: 2→-4)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794663_201_59866"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:70] Berserker attacks The Shadow Warden for 3 damage (HP: 16→13)
-[DamageAnimation] Executing for targets: ["boss_2_1767794663_205_32087"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:71] Vengeful Thorn deals 8 dmg to Soul Caller 
-[BattleLog] [4:72] Vengeful Thorn attacks Soul Caller for 8 damage (item_tier3d_retaliate_random, on_hurt) (HP: 5→-3)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794663_181_11055"] source: boss_2_1767794663_205_32087 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_2_1767794663_20 type 5
-[BattleLog] [4:73] Berserker triggers Bloodlust! 
-[BattleLog] [4:74] └─ Soul Caller is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [4:75] └─ unit_t2_... is defeated! 
-[BattleLog] [4:76] └─ Soul Caller summons New Unit! 
-[BattleLog] [4:77] └─ item_t2_... summons New Unit! 
-[BattleLog] [4:78] Berserker attacks unit_t1_... for 6 damage (HP: 2→-4)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794696_213_09137"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794663 type 5
-[BattleLog] [4:79] Berserker attacks The Shadow Warden for 3 damage (HP: 13→10)
-[DamageAnimation] Executing for targets: ["boss_2_1767794663_205_32087"] source: unit_t2_b_1767794663_167_28110 attack_type: melee
-[BattleLog] [4:80] Vengeful Thorn deals 8 dmg to Berserker 
-[BattleLog] [4:81] Vengeful Thorn attacks Berserker for 8 damage (item_tier3d_retaliate_random, on_hurt) (HP: 2→-6)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1767794663_167_28110"] source: boss_2_1767794663_205_32087 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_2_1767794663_20 type 5
-[BattleLog] [4:82] └─ Berserker is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [4:83] └─ unit_t1_... is defeated! 
-[BattleLog] [4:84] Guardian heals Guardian for 2 HP 
-[BattleLog] [4:85] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [4:86] The Shadow Warden deals 17 dmg to Guardian 
-[BattleLog] [4:87] The Shadow Warden attacks Guardian for 17 damage (basic_attack, on_attack) (HP: 6→-11)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1767794696_212_39547"] source: boss_2_1767794663_205_32087 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_2_1767794663_20 type 5
-[BattleLog] [4:88] └─ Guardian is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [4:89] └─ The Shadow Warden summons New Unit! 
-[BattleLog] [4:90] └─ The Shadow Warden summons New Unit! 
-[BattleLog] [4:91] └─ The Shadow Warden summons New Unit! 
-[BattleLog] [4:92] └─ The Shadow Warden summons New Unit! 
-[BattleLog] [5:1] ═══ TURN 5 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[TutorialManager] Requesting tutorial: battle_management_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[EffectPreventLethal] execute called - victim=unit_t3_b_1767794752_217_54910, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-30
-[EffectPreventLethal] Prevented lethal damage for unit_t3_b_1767794752_217_54910 (team=ENEMY), healing by 31
-[EffectPreventLethal] execute called - victim=unit_t3_b_1767794752_217_54910, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-11
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[BattleLog] [5:2] └─ "Bloodlust" grants Sakura Spirit an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t3_a_1767794752_214_06661, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-8
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[BattleLog] [5:3] └─ "Bloodlust" grants Sakura Spirit an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t1_a_1767794752_215_56482, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-10
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[BattleLog] [5:4] └─ "Bloodlust" grants Sakura Spirit an extra action! 
-[EffectPreventLethal] execute called - victim=unit_t2_b_1767794752_216_06463, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-10
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[BattleLog] [5:5] └─ "Bloodlust" grants Sakura Spirit an extra action! 
-[EffectPreventLethal] execute called - victim=boss_2_1767794663_205_32087, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-2
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=unit_t3_d_1767794663_182_72728, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=-1
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[EffectPreventLethal] execute called - victim=hero_timekeeper_1767794663_155_14895, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=53
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[BattleLog] [5:6] Timekeeper grants Sakura Spirit +2 PWR 
-[BattleLog] [5:7] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [5:8] Timekeeper grants Sakura Spirit +2 PWR 
-[BattleLog] [5:9] Power Amulet grants Sakura Spirit +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [5:10] Timekeeper deals 36 dmg to Shadow Striker 
-[BattleLog] [5:11] Timekeeper attacks unit_t3_... for 36 damage (basic_attack, on_attack) (HP: 6→-30)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1767794752_217_54910"] source: hero_timekeeper_1767794663_155_14895 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [5:12] Aegis Charm saves Guardian Sentinel from lethal damage! 
-[BattleLog] [5:13] Sakura Spirit deals 12 dmg to Shadow Striker 
-[BattleLog] [5:14] Sakura Spirit attacks unit_t3_... for 12 damage (basic_attack, on_attack) (HP: 1→-11)
-[DamageAnimation] Executing for targets: ["unit_t3_b_1767794752_217_54910"] source: unit_t3_d_1767794663_182_72728 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767794663 type 5
-[BattleLog] [5:15] Sakura Spirit triggers Bloodlust! 
-[BattleLog] [5:16] └─ unit_t3_... is defeated! 
-[BattleLog] [5:17] Sakura Spirit deals 12 dmg to Shadow Striker 
-[BattleLog] [5:18] Sakura Spirit attacks unit_t3_... for 12 damage (basic_attack, on_attack) (HP: 4→-8)
-[DamageAnimation] Executing for targets: ["unit_t3_a_1767794752_214_06661"] source: unit_t3_d_1767794663_182_72728 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767794663 type 5
-[BattleLog] [5:19] Sakura Spirit triggers Bloodlust! 
-[BattleLog] [5:20] └─ unit_t3_... is defeated! 
-[BattleLog] [5:21] Sakura Spirit deals 12 dmg to Apprentice 
-[BattleLog] [5:22] Sakura Spirit attacks unit_t1_... for 12 damage (basic_attack, on_attack) (HP: 2→-10)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794752_215_56482"] source: unit_t3_d_1767794663_182_72728 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767794663 type 5
-[BattleLog] [5:23] Sakura Spirit triggers Bloodlust! 
-[BattleLog] [5:24] └─ unit_t1_... is defeated! 
-[BattleLog] [5:25] Sakura Spirit deals 12 dmg to Berserker 
-[BattleLog] [5:26] Sakura Spirit attacks unit_t2_... for 12 damage (basic_attack, on_attack) (HP: 2→-10)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1767794752_216_06463"] source: unit_t3_d_1767794663_182_72728 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767794663 type 5
-[BattleLog] [5:27] Sakura Spirit triggers Bloodlust! 
-[BattleLog] [5:28] └─ unit_t2_... is defeated! 
-[BattleLog] [5:29] Sakura Spirit deals 12 dmg to The Shadow Warden 
-[BattleLog] [5:30] Sakura Spirit attacks boss_2_1... for 12 damage (basic_attack, on_attack) (HP: 10→-2)
-[DamageAnimation] Executing for targets: ["boss_2_1767794663_205_32087"] source: unit_t3_d_1767794663_182_72728 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1767794663 type 5
-[BattleLog] [5:31] Vengeful Thorn deals 8 dmg to Sakura Spirit 
-[BattleLog] [5:32] item_t3_... attacks Sakura Spirit for 8 damage (item_tier3d_retaliate_random, on_hurt) (HP: 7→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1767794663_182_72728"] source: boss_2_1767794663_205_32087 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_2_1767794663_20 type 5
-[BattleLog] [5:33] Sakura Spirit heals Timekeeper for 1 HP 
-[BattleLog] [5:34] Sakura Spirit heals Timekeeper for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 52→53)
-[BattleLog] [5:35] Sakura Spirit grants Timekeeper +1 PWR 
-[BattleLog] [5:36] Sakura Spirit grants Timekeeper +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [5:37] └─ item_t2_... summons New Unit! 
-[BattleLog] [5:38] └─ Sakura Spirit is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [5:39] └─ boss_2_1... is defeated! 
-[AnimationCompletionTracker] Timeout for boss_2_1767794663_20 type 2
-[BattleLog] [5:40] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [5:41] Squire attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 53→53)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794663_155_14895"] source: unit_t1_b_1767794789_218_35418 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794789 type 5
-[BattleLog] [5:42] System grants Timekeeper -1 ARMOR_STACKS 
-[BuffAnimation] execute() called - stat='armor_stacks' amount=-1 targets=1
-[BattleLog] [6:1] ═══ TURN 6 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[TutorialManager] Requesting tutorial: battle_management_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[EffectPreventLethal] execute called - victim=unit_t1_b_1767794789_218_35418, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-42
-[EffectPreventLethal] Prevented lethal damage for unit_t1_b_1767794789_218_35418 (team=ENEMY), healing by 43
-[EffectPreventLethal] execute called - victim=hero_timekeeper_1767794663_155_14895, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=67
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[EffectPreventLethal] execute called - victim=hero_timekeeper_1767794663_155_14895, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=70
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[BattleLog] [6:2] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [6:3] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [6:4] Timekeeper grants Timekeeper +2 PWR 
-[BattleLog] [6:5] Power Amulet grants Timekeeper +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [6:6] Timekeeper deals 43 dmg to Squire 
-[BattleLog] [6:7] Timekeeper attacks Squire for 43 damage (basic_attack, on_attack) (HP: 1→-42)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794789_218_35418"] source: hero_timekeeper_1767794663_155_14895 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [6:8] Aegis Charm saves Squire from lethal damage! 
-[BattleLog] [6:9] Timekeeper heals for 8 HP (Lifesteal) 
-[BattleLog] [6:10] Lifesteal Ring heals Timekeeper for 8 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 59→67)
-[BattleLog] [6:11] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [6:12] Squire attacks Timekeeper for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 67→67)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794663_155_14895"] source: unit_t1_b_1767794789_218_35418 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794789 type 5
-[BattleLog] [6:13] Timekeeper heals Timekeeper for 2 HP 
-[BattleLog] [6:14] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 67→69)
-[BattleLog] [6:15] Timekeeper heals Timekeeper for 2 HP 
-[BattleLog] [6:16] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 69→71)
-[BattleLog] [6:17] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [6:18] Squire attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 71→70)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794663_155_14895"] source: unit_t1_b_1767794789_218_35418 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794789 type 5
-[BattleLog] [6:19] Timekeeper heals Timekeeper for 2 HP 
-[BattleLog] [6:20] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 70→72)
-[BattleLog] [6:21] Timekeeper heals Timekeeper for 2 HP 
-[BattleLog] [6:22] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 72→74)
-[BattleLog] [7:1] ═══ TURN 7 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[TutorialManager] Requesting tutorial: battle_management_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[EffectPreventLethal] execute called - victim=unit_t1_b_1767794789_218_35418, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=0
-[EffectPreventLethal] Prevented lethal damage for unit_t1_b_1767794789_218_35418 (team=ENEMY), healing by 1
-[EffectPreventLethal] execute called - victim=unit_t1_a_1767794663_156_35095, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=2
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[EffectPreventLethal] execute called - victim=unit_t1_b_1767794789_218_35418, victim_team=ENEMY, trinket_team=ENEMY, victim_hp=-42
-[EffectPreventLethal] EXIT: Already triggered this turn for team ENEMY
-[EffectPreventLethal] execute called - victim=hero_timekeeper_1767794663_155_14895, victim_team=PLAYER, trinket_team=ENEMY, victim_hp=82
-[EffectPreventLethal] EXIT: Team mismatch - victim=PLAYER, trinket=ENEMY
-[BattleLog] [7:2] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [7:3] Apprentice deals 1 dmg to Squire 
-[BattleLog] [7:4] Apprentice attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794789_218_35418"] source: unit_t1_a_1767794663_156_35095 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1767794663 type 5
-[BattleLog] [7:5] Aegis Charm saves Squire from lethal damage! 
-[BattleLog] [7:6] Squire deals 2 dmg to Apprentice 
-[BattleLog] [7:7] unit_t1_... attacks Apprentice for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 4→2)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794663_156_35095"] source: unit_t1_b_1767794789_218_35418 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794789 type 5
-[BattleLog] [7:8] Apprentice heals Apprentice for 1 HP 
-[BattleLog] [7:9] Apprentice heals Apprentice for 1 HP (unit_tier1a_passive_heal, on_hurt) (HP: 2→3)
-[BattleLog] [7:10] Timekeeper grants Apprentice +2 PWR 
-[BattleLog] [7:11] Power Amulet grants Apprentice +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [7:12] Timekeeper grants Shadow Striker +2 PWR 
-[BattleLog] [7:13] Power Amulet grants Shadow Striker +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [7:14] Timekeeper deals 43 dmg to Squire 
-[BattleLog] [7:15] Timekeeper attacks unit_t1_... for 43 damage (basic_attack, on_attack) (HP: 1→-42)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1767794789_218_35418"] source: hero_timekeeper_1767794663_155_14895 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [7:16] Timekeeper heals for 8 HP (Lifesteal) 
-[BattleLog] [7:17] Lifesteal Ring heals Timekeeper for 8 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 74→82)
-[BattleLog] [7:18] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [7:19] unit_t1_... attacks Timekeeper for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 82→82)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794663_155_14895"] source: unit_t1_b_1767794789_218_35418 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1767794789 type 5
-[BattleLog] [7:20] Timekeeper heals Apprentice for 2 HP 
-[BattleLog] [7:21] Heart Stone heals Apprentice for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 3→5)
-[BattleLog] [7:22] Timekeeper heals Apprentice for 2 HP 
-[BattleLog] [7:23] Heart Stone heals Apprentice for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 5→7)
-[BattleLog] [7:24] Gained 1 gold! 
-[BattleLog] [7:25] Timekeeper triggers Bloodlust! 
-[BattleLog] [7:26] └─ unit_t1_... is defeated! 
-[BattleLog] [7:27] Battle ended 
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
-[BattleLog] [8:1] ═══ TURN 8 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleLog] [8:2] Koi's Blessing heals Soul Caller for 2 HP 
-[BattleLog] [8:3] Koi's Blessing heals Soul Caller for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 7→9)
-[BattleLog] [8:4] Healing Amulet heals Soul Caller for 2 HP 
-[BattleLog] [8:5] trinket_healing_amulet heals Soul Caller for 2 HP (trinket_healing_amulet_heal, on_turn_start) (HP: 14→16)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [8:6] └─ "Bloodlust" grants Guardian an extra action! 
-[BattleLog] [8:7] └─ "Bloodlust" grants Guardian an extra action! 
-[BattleLog] [8:8] └─ "Bloodlust" grants Guardian an extra action! 
-[BattleLog] [8:9] └─ "Bloodlust" grants Guardian an extra action! 
-[BattleLog] [8:10] Soul Caller deals 5 dmg to Soul Caller 
-[BattleLog] [8:11] Soul Caller attacks unit_t3_... for 5 damage (basic_attack, on_attack) (HP: 16→11)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794908_263_02418"] source: unit_t3_c_1767794908_247_17464 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1767794908 type 5
-[BattleLog] [8:12] Soul Caller heals Knight for 2 HP 
-[BattleLog] [8:13] item_t3_... heals Knight for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 9→11)
-[BattleLog] [8:14] Soul Caller heals Guardian for 2 HP 
-[BattleLog] [8:15] item_t3_... heals Guardian for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
-[BattleLog] [8:16] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [8:17] item_t3_... heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 9→11)
-[BattleLog] [8:18] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [8:19] item_t3_... heals unit_t3_... for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 11→13)
-[BattleLog] [8:20] Phoenix Elixir heals Soul Caller for 1 HP 
-[BattleLog] [8:21] item_t2_... heals unit_t3_... for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 13→14)
-[BattleLog] [8:22] Phoenix Elixir grants Soul Caller +1 PWR 
-[BattleLog] [8:23] item_t2_... grants unit_t3_... +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [8:24] Timekeeper deals 32 dmg to Soul Caller 
-[BattleLog] [8:25] Timekeeper attacks unit_t3_... for 32 damage (basic_attack, on_attack) (HP: 14→-18)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794908_263_02418"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [8:26] Soul Caller heals Guardian for 2 HP 
-[BattleLog] [8:27] item_t3_... heals Guardian for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 8→10)
-[BattleLog] [8:28] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [8:29] item_t3_... heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 11→13)
-[BattleLog] [8:30] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [8:31] item_t3_... heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 13→15)
-[BattleLog] [8:32] Soul Caller heals Guardian for 2 HP 
-[BattleLog] [8:33] item_t3_... heals Guardian for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 10→12)
-[BattleLog] [8:34] Timekeeper heals for 6 HP (Lifesteal) 
-[BattleLog] [8:35] Lifesteal Ring heals Timekeeper for 6 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 59→65)
-[BattleLog] [8:36] Gained 1 gold! 
-[BattleLog] [8:37] └─ unit_t3_... is defeated! 
-[BattleLog] [8:38] └─ unit_t3_... summons New Unit! 
-[BattleLog] [8:39] Knight heals Knight for 1 HP 
-[BattleLog] [8:40] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 7→8)
-[BattleLog] [8:41] Knight grants Knight +1 PWR 
-[BattleLog] [8:42] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [8:43] Knight heals Knight for 1 HP 
-[BattleLog] [8:44] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 11→12)
-[BattleLog] [8:45] Knight grants Knight +1 PWR 
-[BattleLog] [8:46] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [8:47] Berserker attacks Soul Caller for 4 damage (HP: 7→3)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794908_247_17464"] source: unit_t2_b_1767794934_284_81141 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_b_1767794934 type 5
-[BattleLog] [8:48] Knight deals 4 dmg to Soul Caller 
-[BattleLog] [8:49] Knight attacks Soul Caller for 4 damage (basic_attack, on_attack) (HP: 3→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794908_247_17464"] source: unit_t2_c_1767794908_278_12475 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1767794908 type 5
-[BattleLog] [8:50] └─ Soul Caller is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [8:51] └─ trinket_soul_echo summons New Unit! 
-[BattleLog] [8:52] └─ Soul Caller summons New Unit! 
-[BattleLog] [8:53] └─ Summoning Scroll summons New Unit! 
-[BattleLog] [8:54] Guardian deals 6 dmg to Soul Caller 
-[BattleLog] [8:55] Guardian attacks Soul Caller for 6 damage (basic_attack, on_attack) (HP: 5→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794934_285_49400"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [8:56] Guardian triggers Bloodlust! 
-[BattleLog] [8:57] └─ Soul Caller is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [8:58] └─ Soul Caller summons New Unit! 
-[BattleLog] [8:59] Guardian deals 6 dmg to Berserker 
-[BattleLog] [8:60] Guardian attacks Berserker for 6 damage (basic_attack, on_attack) (HP: 2→-4)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1767794934_288_36336"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [8:61] Guardian triggers Bloodlust! 
-[BattleLog] [8:62] └─ Berserker is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [8:63] Guardian heals Guardian for 2 HP 
-[BattleLog] [8:64] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [8:65] Guardian deals 6 dmg to Guardian 
-[BattleLog] [8:66] Guardian attacks Guardian for 6 damage (basic_attack, on_attack) (HP: 6→0)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1767794934_286_21645"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [8:67] Guardian triggers Bloodlust! 
-[BattleLog] [8:68] └─ Guardian is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [8:69] Guardian deals 6 dmg to Apprentice 
-[BattleLog] [8:70] Guardian attacks Apprentice for 6 damage (basic_attack, on_attack) (HP: 2→-4)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767794934_287_70719"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [8:71] Guardian triggers Bloodlust! 
-[BattleLog] [8:72] └─ Apprentice is defeated! 
-[TutorialManager] Requesting tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [8:73] Guardian deals 6 dmg to Timekeeper 
-[BattleLog] [8:74] Guardian attacks Timekeeper for 6 damage (basic_attack, on_attack) (HP: 65→62)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [8:75] Soul Caller grants Knight +2 PWR 
-[BattleLog] [8:76] Power Amulet grants Knight +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [8:77] Soul Caller grants Knight +2 PWR 
-[BattleLog] [8:78] Power Amulet grants Knight +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [8:79] Soul Caller deals 12 dmg to Timekeeper 
-[BattleLog] [8:80] Soul Caller attacks Timekeeper for 12 damage (basic_attack, on_attack) (HP: 62→50)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t3_c_1767794908_273_96164 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1767794908 type 5
-[BattleLog] [8:81] Knight deals 6 dmg to Timekeeper 
-[BattleLog] [8:82] Knight attacks Timekeeper for 6 damage (basic_attack, on_attack) (HP: 50→44)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t2_c_1767794908_267_22168 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1767794908 type 5
-[BattleLog] [9:1] ═══ TURN 9 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 1
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 1, "incorrect_answers": 1 }
-[FlashcardManager] Signal emitted successfully
-[BattleLog] [9:2] Koi's Blessing heals Soul Caller for 2 HP 
-[BattleLog] [9:3] Koi's Blessing heals Soul Caller for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 15→17)
-[BattleLog] [9:4] Healing Amulet heals Berserker for 2 HP 
-[BattleLog] [9:5] trinket_healing_amulet heals Berserker for 2 HP (trinket_healing_amulet_heal, on_turn_start) (HP: 2→4)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [9:6] Timekeeper deals 32 dmg to Berserker 
-[BattleLog] [9:7] Timekeeper attacks unit_t2_... for 32 damage (basic_attack, on_attack) (HP: 4→-28)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1767794934_284_81141"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [9:8] Timekeeper heals for 6 HP (Lifesteal) 
-[BattleLog] [9:9] Lifesteal Ring heals Timekeeper for 6 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 44→50)
-[BattleLog] [9:10] Gained 1 gold! 
-[BattleLog] [9:11] └─ unit_t2_... is defeated! 
-[BattleLog] [9:12] Knight heals Knight for 1 HP 
-[BattleLog] [9:13] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 8→9)
-[BattleLog] [9:14] Knight grants Knight +1 PWR 
-[BattleLog] [9:15] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [9:16] Knight heals Knight for 1 HP 
-[BattleLog] [9:17] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 12→13)
-[BattleLog] [9:18] Knight grants Knight +1 PWR 
-[BattleLog] [9:19] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [9:20] Shadow Striker deals 9 dmg to Knight 
-[BattleLog] [9:21] Shadow Striker attacks unit_t2_... for 9 damage (unit_tier3a_mirror_strike, on_attack) (HP: 9→0)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794908_267_22168"] source: unit_t3_a_1767794908_244_80080 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_a_1767794908 type 5
-[BattleLog] [9:22] └─ unit_t2_... is defeated! 
-[BattleLog] [9:23] └─ item_t2_... summons New Unit! 
-[BattleLog] [9:24] └─ item_t2_... summons New Unit! 
-[BattleLog] [9:25] Knight heals Knight for 1 HP 
-[BattleLog] [9:26] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 13→14)
-[BattleLog] [9:27] Knight grants Knight +1 PWR 
-[BattleLog] [9:28] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [9:29] Knight deals 8 dmg to Timekeeper 
-[BattleLog] [9:30] Knight attacks Timekeeper for 8 damage (basic_attack, on_attack) (HP: 50→45)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t2_c_1767794908_278_12475 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1767794908 type 5
-[BattleLog] [9:31] Guardian deals 6 dmg to Timekeeper 
-[BattleLog] [9:32] Guardian attacks Timekeeper for 6 damage (basic_attack, on_attack) (HP: 45→39)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [9:33] Soul Caller grants Soul Caller +2 PWR 
-[BattleLog] [9:34] Power Amulet grants Soul Caller +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [9:35] Soul Caller grants Soul Caller +2 PWR 
-[BattleLog] [9:36] Power Amulet grants Soul Caller +2 PWR (item_tier3b_on_attack_buff, on_attack) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [9:37] Soul Caller deals 16 dmg to Timekeeper 
-[BattleLog] [9:38] Soul Caller attacks Timekeeper for 16 damage (basic_attack, on_attack) (HP: 39→23)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t3_c_1767794908_273_96164 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1767794908 type 5
-[BattleLog] [9:39] Apprentice deals 1 dmg to Timekeeper 
-[BattleLog] [9:40] Apprentice attacks Timekeeper for 1 damage (basic_attack, on_attack) (HP: 23→22)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t1_a_1767795005_289_85542 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1767795005 type 5
-[BattleLog] [10:1] ═══ TURN 10 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 2
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 1 }
-[FlashcardManager] Signal emitted successfully
-[BattleLog] [10:2] Koi's Blessing heals Soul Caller for 2 HP 
-[BattleLog] [10:3] Koi's Blessing heals Soul Caller for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 17→19)
-[BattleLog] [10:4] Healing Amulet heals Apprentice for 2 HP 
-[BattleLog] [10:5] trinket_healing_amulet heals Apprentice for 2 HP (trinket_healing_amulet_heal, on_turn_start) (HP: 2→4)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [10:6] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:7] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:8] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:9] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:10] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:11] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:12] └─ "Bloodlust" grants Timekeeper an extra action! 
-[BattleLog] [10:13] Timekeeper deals 36 dmg to Apprentice 
-[BattleLog] [10:14] Timekeeper attacks unit_t1_... for 36 damage (basic_attack, on_attack) (HP: 4→-32)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767795005_290_03587"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:15] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:16] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 24→31)
-[BattleLog] [10:17] Gained 1 gold! 
-[BattleLog] [10:18] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:19] └─ unit_t1_... is defeated! 
-[BattleLog] [10:20] Knight heals Knight for 1 HP 
-[BattleLog] [10:21] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 14→15)
-[BattleLog] [10:22] Knight grants Knight +1 PWR 
-[BattleLog] [10:23] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [10:24] Timekeeper deals 36 dmg to Knight 
-[BattleLog] [10:25] Timekeeper attacks unit_t2_... for 36 damage (basic_attack, on_attack) (HP: 15→-21)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1767794908_278_12475"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:26] Knight heals Guardian for 2 HP 
-[BattleLog] [10:27] item_t3_... heals unit_t2_... for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 12→14)
-[BattleLog] [10:28] Knight heals Soul Caller for 2 HP 
-[BattleLog] [10:29] item_t3_... heals unit_t3_... for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 19→21)
-[BattleLog] [10:30] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:31] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 31→38)
-[BattleLog] [10:32] Gained 1 gold! 
-[BattleLog] [10:33] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:34] └─ unit_t2_... is defeated! 
-[BattleLog] [10:35] └─ item_t2_... summons New Unit! 
-[BattleLog] [10:36] Timekeeper deals 36 dmg to Apprentice 
-[BattleLog] [10:37] Timekeeper attacks unit_t1_... for 36 damage (basic_attack, on_attack) (HP: 2→-34)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767795052_291_67165"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:38] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:39] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 38→45)
-[BattleLog] [10:40] Gained 1 gold! 
-[BattleLog] [10:41] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:42] └─ unit_t1_... is defeated! 
-[BattleLog] [10:43] Guardian heals Guardian for 2 HP 
-[BattleLog] [10:44] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 14→16)
-[BattleLog] [10:45] Timekeeper deals 36 dmg to Guardian 
-[BattleLog] [10:46] Timekeeper attacks unit_t2_... for 36 damage (basic_attack, on_attack) (HP: 16→-20)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1767794908_270_32979"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:47] Vengeful Thorn deals 3 dmg to Timekeeper 
-[BattleLog] [10:48] item_t3_... attacks Timekeeper for 3 damage (item_tier3d_retaliate_random, on_hurt) (HP: 45→45)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1767794908_222_85649"] source: unit_t2_a_1767794908_270_32979 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1767794908 type 5
-[BattleLog] [10:49] Vengeful Thorn deals 18 dmg to Soul Caller 
-[BattleLog] [10:50] Vengeful Thorn attacks unit_t3_... for 18 damage (item_tier3d_retaliate_random, on_hurt) (HP: 21→3)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794908_273_96164"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:51] Timekeeper heals for 3 HP (Lifesteal) 
-[BattleLog] [10:52] Lifesteal Ring heals Timekeeper for 3 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 45→48)
-[BattleLog] [10:53] Phoenix Elixir heals Soul Caller for 1 HP 
-[BattleLog] [10:54] item_t2_... heals unit_t3_... for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 3→4)
-[BattleLog] [10:55] Phoenix Elixir grants Soul Caller +1 PWR 
-[BattleLog] [10:56] item_t2_... grants unit_t3_... +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [10:57] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:58] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 48→55)
-[BattleLog] [10:59] Gained 1 gold! 
-[BattleLog] [10:60] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:61] └─ unit_t2_... is defeated! 
-[BattleLog] [10:62] Timekeeper deals 36 dmg to Soul Caller 
-[BattleLog] [10:63] Timekeeper attacks unit_t3_... for 36 damage (basic_attack, on_attack) (HP: 4→-32)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1767794908_273_96164"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:64] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:65] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 55→62)
-[BattleLog] [10:66] Gained 1 gold! 
-[BattleLog] [10:67] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:68] └─ unit_t3_... is defeated! 
-[BattleLog] [10:69] └─ unit_t3_... summons New Unit! 
-[BattleLog] [10:70] Guardian heals Guardian for 2 HP 
-[BattleLog] [10:71] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [10:72] Timekeeper deals 36 dmg to Guardian 
-[BattleLog] [10:73] Timekeeper attacks unit_t2_... for 36 damage (basic_attack, on_attack) (HP: 6→-30)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1767795052_292_80398"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:74] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:75] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 62→69)
-[BattleLog] [10:76] Gained 1 gold! 
-[BattleLog] [10:77] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:78] └─ unit_t2_... is defeated! 
-[BattleLog] [10:79] Timekeeper deals 36 dmg to Apprentice 
-[BattleLog] [10:80] Timekeeper attacks unit_t1_... for 36 damage (basic_attack, on_attack) (HP: 2→-34)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1767795005_289_85542"] source: hero_timekeeper_1767794908_222_85649 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1767 type 5
-[BattleLog] [10:81] Timekeeper heals for 7 HP (Lifesteal) 
-[BattleLog] [10:82] Lifesteal Ring heals Timekeeper for 7 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 69→76)
-[BattleLog] [10:83] Gained 1 gold! 
-[BattleLog] [10:84] Timekeeper triggers Bloodlust! 
-[BattleLog] [10:85] └─ unit_t1_... is defeated! 
-[BattleLog] [10:86] Battle ended 
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
