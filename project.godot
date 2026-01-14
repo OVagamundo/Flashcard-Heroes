@@ -35,6 +35,7 @@ StatusEffectRegistry="*res://scripts/StatusEffectRegistry.gd"
 VFXFactory="*res://scripts/vfx/VFXFactory.gd"
 SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
 TutorialManager="*res://scripts/TutorialManager.gd"
+SaveManager="*res://scripts/SaveManager.gd"
 
 [debug]
 

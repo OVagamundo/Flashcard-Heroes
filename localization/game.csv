@@ -221,3 +221,4 @@ tooltip.trinket_slot,Trinket - Provides passive bonuses for your entire run.,Tri
 tooltip.reroll,Refresh shop stock. Cost increases each reroll.,Atualiza estoque da loja. Custo aumenta a cada rerolar.
 tooltip.train_hp,Spend tokens from the minigame to permanently increase hero HP.,Gaste fichas do minigame para aumentar permanentemente o HP do herói.
 tooltip.train_pwr,Spend tokens from the minigame to permanently increase hero PWR.,Gaste fichas do minigame para aumentar permanentemente o PWR do herói.
+ui.continue,Continue,Continuar

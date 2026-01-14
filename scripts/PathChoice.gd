@@ -11,7 +11,13 @@ func _ready() -> void:
 	Audio.play_music(SoundRegistry.BGM_PATHCHOICE)
 	
 	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.advance_day(1)
+		if GameManager.loading_from_save:
+			print("[PathChoice] Loading from save, skipping day advance. Current Day: ", GameManager.run_state.day)
+			GameManager.loading_from_save = false
+		else:
+			GameManager.run_state.advance_day(1)
+			# Save checkpoint after day advances
+			SaveManager.save_run(GameManager.run_state)
 	
 	var current_day: int = 1
 	if is_instance_valid(GameManager.run_state):

@@ -348,6 +348,68 @@ func get_ability(index: int) -> AbilityDefinition:
 		return abilities[index]
 	return null
 
+# --- Serialization ---
+## Converts this instance to a Dictionary for saving.
+func to_save_dict() -> Dictionary:
+	return {
+		"definition_id": String(definition_id),
+		"ball_uuid": ball_uuid,
+		"origin_uuid": origin_uuid,
+		"current_hp": current_hp,
+		"current_pwr": current_pwr,
+		"location_container_tag": String(location_container_tag),
+		"location_slot_index": location_slot_index,
+		"equipped_on_uuid": equipped_on_uuid,
+		"equipped_slot_index": equipped_slot_index,
+		"equipped_item_uuids": equipped_item_uuids.duplicate(),
+		"dynamic_tags": _serialize_tags(),
+		"status_effects": status_effects.duplicate(),
+	}
+
+## Restores this instance from a saved Dictionary.
+func from_save_dict(data: Dictionary) -> void:
+	definition_id = StringName(data.get("definition_id", ""))
+	ball_uuid = data.get("ball_uuid", "")
+	origin_uuid = data.get("origin_uuid", "")
+	current_hp = data.get("current_hp", 0)
+	current_pwr = data.get("current_pwr", 0)
+	location_container_tag = StringName(data.get("location_container_tag", ""))
+	location_slot_index = data.get("location_slot_index", -1)
+	equipped_on_uuid = data.get("equipped_on_uuid", "")
+	equipped_slot_index = data.get("equipped_slot_index", -1)
+	
+	# Restore equipped_item_uuids
+	var saved_items: Array = data.get("equipped_item_uuids", [])
+	equipped_item_uuids.clear()
+	for item_uuid in saved_items:
+		equipped_item_uuids.append(str(item_uuid))
+	
+	_deserialize_tags(data.get("dynamic_tags", []))
+	
+	# Restore status effects
+	var saved_effects: Dictionary = data.get("status_effects", {})
+	status_effects.clear()
+	for key in saved_effects.keys():
+		status_effects[StringName(str(key))] = saved_effects[key]
+	
+	# Re-initialize abilities from definition
+	var def = get_definition()
+	if is_instance_valid(def) and "ability_definitions" in def and def.ability_definitions != null:
+		abilities.clear()
+		for ability_def in def.ability_definitions:
+			abilities.append(ability_def.duplicate())
+
+func _serialize_tags() -> Array:
+	var result: Array = []
+	for tag in dynamic_tags:
+		result.append(String(tag))
+	return result
+
+func _deserialize_tags(data: Array) -> void:
+	dynamic_tags.clear()
+	for tag_str in data:
+		dynamic_tags.append(StringName(str(tag_str)))
+
 # --- Utilities ---
 func get_definition() -> Resource:
 	return Database.get_definition(definition_id)

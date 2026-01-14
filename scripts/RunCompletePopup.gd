@@ -38,5 +38,7 @@ func populate(context: Dictionary) -> void:
 	]
 
 func _on_return_button_pressed() -> void:
+	# Clear save on run completion (victory)
+	SaveManager.clear_save()
 	SignalBus.emit_signal("title_scene_requested")
 	queue_free()

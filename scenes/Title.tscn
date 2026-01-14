@@ -39,6 +39,20 @@ theme = ExtResource("3_iyajp")
 layout_mode = 2
 theme_override_constants/separation = 40
 
+[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("3_label_font")
+theme_override_font_sizes/font_size = 20
+text = "Continue"
+
 [node name="StartRunButton" type="Button" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 70)

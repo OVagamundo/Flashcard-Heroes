@@ -749,3 +749,123 @@ func check_deck_expansion() -> bool:
 				return true
 			
 	return false
+
+# ------------------------------------------------------------------
+# Serialization (Save/Load)
+# ------------------------------------------------------------------
+
+## Converts the entire run state to a Dictionary for saving.
+func to_save_dict() -> Dictionary:
+	var data: Dictionary = {
+		"gold": gold,
+		"day": day,
+		"current_boss_level": current_boss_level,
+		"bosses_defeated": bosses_defeated,
+		"total_enemies_defeated": total_enemies_defeated,
+		"total_gold_earned": total_gold_earned,
+		"deck_def_id": String(deck_def_id),
+		"cards_presented_count": cards_presented_count,
+		# Serialize all instances
+		"instances": {},
+		# Serialize container UUIDs
+		"containers": {},
+		# Flashcard progress and active deck
+		"flashcard_progress": _serialize_flashcard_progress(),
+		"active_deck_ids": _serialize_active_deck_ids(),
+	}
+	# Serialize instances
+	for uuid in run_instances.keys():
+		var inst: GachaBallInstance = run_instances[uuid]
+		if is_instance_valid(inst):
+			data["instances"][uuid] = inst.to_save_dict()
+	# Serialize containers (store their UUID arrays)
+	for cname in _containers.keys():
+		var c: DataContainer = _containers[cname]
+		if is_instance_valid(c):
+			data["containers"][String(cname)] = c.get_all_uuids()
+	return data
+
+## Restores the run state from a saved Dictionary.
+func from_save_dict(data: Dictionary) -> void:
+	gold = data.get("gold", 0)
+	day = data.get("day", 1)
+	current_boss_level = data.get("current_boss_level", 0)
+	bosses_defeated = data.get("bosses_defeated", 0)
+	total_enemies_defeated = data.get("total_enemies_defeated", 0)
+	total_gold_earned = data.get("total_gold_earned", 0)
+	deck_def_id = StringName(data.get("deck_def_id", ""))
+	cards_presented_count = data.get("cards_presented_count", 0)
+	
+	# Clear and restore instances
+	run_instances.clear()
+	hero_instance = null
+	var inst_data: Dictionary = data.get("instances", {})
+	for uuid in inst_data.keys():
+		var inst := GachaBallInstance.new()
+		inst.from_save_dict(inst_data[uuid])
+		run_instances[uuid] = inst
+		# Identify hero instance
+		var def_id := String(inst.definition_id)
+		if def_id == "hero" or def_id.begins_with("hero_"):
+			hero_instance = inst
+	
+	# Clear and restore containers
+	_containers.clear()
+	var cont_data: Dictionary = data.get("containers", {})
+	for cname_str in cont_data.keys():
+		var cname := StringName(cname_str)
+		var uuids: Array = cont_data[cname_str]
+		var container: DataContainer
+		# Create appropriate container type based on name
+		if cname_str.begins_with("RunInventoryT"):
+			container = GrowableGridContainer.new(max(24, uuids.size()))
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+			container = FixedArrayContainer.new(5)
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
+			container = FixedArrayContainer.new(2)
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
+			container = FixedArrayContainer.new(5)
+		else:
+			container = FixedArrayContainer.new(max(5, uuids.size()))
+		# Populate container with saved UUIDs
+		for i in range(uuids.size()):
+			if i < container.get_size():
+				container.set_uuid(i, uuids[i])
+		_containers[cname] = container
+	
+	# Restore flashcard progress
+	_deserialize_flashcard_progress(data.get("flashcard_progress", {}))
+	_deserialize_active_deck_ids(data.get("active_deck_ids", []))
+
+func _serialize_flashcard_progress() -> Dictionary:
+	var result: Dictionary = {}
+	for key in flashcard_progress.keys():
+		var prog: FlashcardProgress = flashcard_progress[key]
+		if is_instance_valid(prog):
+			result[String(key)] = {
+				"mastery_level": prog.mastery_level,
+				"times_reviewed": prog.times_reviewed,
+				"last_review_day": prog.last_review_day
+			}
+	return result
+
+func _deserialize_flashcard_progress(data: Dictionary) -> void:
+	flashcard_progress.clear()
+	for key_str in data.keys():
+		var prog := FlashcardProgress.new()
+		var d: Dictionary = data[key_str]
+		prog.mastery_level = d.get("mastery_level", 1)
+		prog.times_reviewed = d.get("times_reviewed", 0)
+		prog.last_review_day = d.get("last_review_day", 0)
+		flashcard_progress[StringName(key_str)] = prog
+
+func _serialize_active_deck_ids() -> Array:
+	var result: Array = []
+	for id in active_deck_ids:
+		result.append(String(id))
+	return result
+
+func _deserialize_active_deck_ids(data: Array) -> void:
+	active_deck_ids.clear()
+	for id_str in data:
+		active_deck_ids.append(StringName(str(id_str)))

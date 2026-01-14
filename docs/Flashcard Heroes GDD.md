@@ -11,7 +11,9 @@ Node Resolution: The player selects and resolves one node (e.g., Battle, Shop, E
 Progression & Iteration: After resolving a node, the game's "Day" counter advances, increasing difficulty. The player returns to Path Selection.
 Boss Encounters: At specific progression milestones, mandatory boss battle nodes appear.
 Run Conclusion: The run ends in Victory (defeating the Final Boss) or Failure (Hero HP reaches zero).
-2.2. Scene Transitions
+2.2. Save & Continue
+The game features a checkpoint-based save system. A run is automatically saved at the start of each "Day" (when entering the Path Selection screen). Players can quit the game and resume their run from the Title Screen via a "Continue" button. However, to maintain the high stakes, the save file is deleted immediately upon Victory or Defeat.
+2.3. Scene Transitions
 The game fluidly transitions between states (e.g., Path Choice ↔ Battle) while maintaining the persistent state of the current run (Hero HP, Gold, Run Inventory, etc.). Temporary battle-specific data is created for each battle and discarded afterward.
 3. Player Resources
 Hero Health (HP): The current health of the player's Hero Unit serves as the overall health for the entire run. If it reaches 0, the run ends. It persists between all encounters.
