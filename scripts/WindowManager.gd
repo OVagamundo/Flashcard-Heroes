@@ -65,7 +65,17 @@ func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
 
+	# Modals usually don't wait for layout, but we need size for pivot.
+	# Let's wait a frame to be safe, similar to contextual windows, or just assume size is ready if it's a scene root with size set.
+	# For safety and consistency with contextual logic:
+	_animate_modal_open_deferred(window_instance)
+
 	return window_instance
+
+func _animate_modal_open_deferred(window: Control) -> void:
+	await get_tree().process_frame
+	if is_instance_valid(window):
+		_animate_window_open(window)
 
 
 ## Opens a tutorial popup as an overlay WITHOUT closing existing windows.
@@ -84,6 +94,8 @@ func open_tutorial_overlay(context: Dictionary = {}) -> Control:
 	
 	if window_instance.has_method("populate"):
 		window_instance.populate(context)
+	
+	_animate_modal_open_deferred(window_instance)
 	
 	return window_instance
 
@@ -280,8 +292,8 @@ func _open_contextual_window(context: Dictionary) -> void:
 	_register_window(window_instance, false) # Register as NON-modal.
 	_active_inspection_group.push_back(window_instance)
 	
-	# AUDIO HOOK: Window open sound
-	Audio.play_sfx("ui_window_open")
+	# AUDIO HOOK: Window open sound is now handled in _animate_window_open
+	# Audio.play_sfx("ui_window_open")
 
 	if window_instance.has_method("populate"):
 		window_instance.populate(populate_context)
@@ -372,7 +384,8 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 		var vp_size: Vector2 = Vector2(viewport_rect.size)
 		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
 	_set_window_screen_position(window, position)
-	window.show()
+	_set_window_screen_position(window, position)
+	_animate_window_open(window)
 
 func _find_ancestor_inspection_window(node: Node) -> Control:
 	if not is_instance_valid(node): return null
@@ -754,3 +767,60 @@ func _clamp_window_to_viewport(pos: Vector2, size: Vector2) -> Vector2:
 	var x = clampf(pos.x, viewport_rect.position.x + margin, viewport_rect.end.x - size.x - margin)
 	var y = clampf(pos.y, viewport_rect.position.y + margin, viewport_rect.end.y - size.y - margin)
 	return Vector2(x, y)
+
+# --- UI ANIMATION ---
+
+const UI_OPEN_REVEAL_SHADER = preload("res://assets/shaders/ui_open_reveal.gdshader")
+
+func _animate_window_open(window: Control) -> void:
+	if not is_instance_valid(window): return
+	
+	# If the window has specific logic to provide the animation target (e.g., inner panel vs root blocker), use it
+	if window.has_method("get_window_to_animate"):
+		window = window.get_window_to_animate()
+		if not is_instance_valid(window): return
+
+	
+	# Prepare shader material
+	var mat = ShaderMaterial.new()
+	mat.shader = UI_OPEN_REVEAL_SHADER
+	# Make sure it's unique so tweens don't conflict if we had shared resources (though new() handles that)
+	window.material = mat
+	mat.set_shader_parameter("progress", 0.0)
+	mat.set_shader_parameter("shine_strength", 0.5)
+	mat.set_shader_parameter("shine_color", Color(1.0, 1.0, 1.0, 0.5))
+	
+	# Initial transform state
+	window.scale = Vector2(0.95, 0.95)
+	# Set pivot to center for nice scaling
+	window.pivot_offset = window.size / 2.0
+	
+	# Initial visibility
+	window.modulate.a = 1.0
+	window.show()
+	
+	# Audio
+	Audio.play_sfx("ui_window_open")
+	
+	# Tween
+	var tween = create_tween()
+	# IMPORTANT: Ensure animation runs even if the game is paused (e.g. Tutorials)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.set_parallel(true)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	
+	# Scale up slightly
+	tween.tween_property(window, "scale", Vector2.ONE, 0.5)
+	
+	# Reveal via shader
+	# Use a simpler ease for the wipe
+	tween.set_trans(Tween.TRANS_CUBIC)
+	# Use tween_property for shader uniform to avoid lambda capture errors
+	tween.tween_property(mat, "shader_parameter/progress", 1.0, 0.5)
+	
+	# Cleanup
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.material = null
+	)
