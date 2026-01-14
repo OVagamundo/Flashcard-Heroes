@@ -42,3 +42,6 @@ func _on_return_button_pressed() -> void:
 	SaveManager.clear_save()
 	SignalBus.emit_signal("title_scene_requested")
 	queue_free()
+
+func get_window_to_animate() -> Control:
+	return $CenterContainer/PanelContainer

@@ -157,3 +157,6 @@ func _exit_tree() -> void:
 	# Ensure game unpauses when popup is removed (closed or scene change)
 	if get_tree():
 		get_tree().paused = false
+
+func get_window_to_animate() -> Control:
+	return popup_panel

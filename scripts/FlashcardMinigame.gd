@@ -556,3 +556,6 @@ func _exit_tree() -> void:
 	
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
+
+func get_window_to_animate() -> Control:
+	return main_panel

@@ -34,4 +34,7 @@ func populate(context: Dictionary) -> void:
 func _on_confirm_pressed() -> void:
 	"""Handles confirm button press"""
 	SignalBus.emit_signal("results_acknowledged")
-	queue_free() 
+	queue_free()
+
+func get_window_to_animate() -> Control:
+	return $CenterContainer/PanelContainer
