@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_timekeeper_time_warp"
+name_key = "ability.hero_timekeeper_time_warp.name"
+description_key = "ability.hero_timekeeper_time_warp.desc"
+trigger = &"passive"
+effects = []

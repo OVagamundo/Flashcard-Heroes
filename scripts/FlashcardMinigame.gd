@@ -419,7 +419,7 @@ func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> voi
 	tween.tween_property(_panel_style, "bg_color", target_color, FLASH_FADE_DURATION).set_delay(FLASH_DURATION)
 
 
-## Check if the current hero has the Timekeeper timer bonus passive (+0.5s on correct)
+## Check if the current hero has the Bounty Hunter timer bonus passive (+0.5s on correct)
 func _has_hero_timer_bonus() -> bool:
 	if not is_instance_valid(GameManager.run_state):
 		return false
@@ -429,10 +429,10 @@ func _has_hero_timer_bonus() -> bool:
 	var def: GachaBallDefinition = hero.get_definition()
 	if not is_instance_valid(def):
 		return false
-	# Timekeeper hero has the timer bonus passive
-	return def.id == &"hero_timekeeper"
+	# Bounty Hunter (basic hero) has the standard timer bonus passive
+	return def.id == &"hero"
 
-## Check if the current hero has the generic hero timer extend passive (+1s correct, -0.5s wrong)
+## Check if the current hero has the Timekeeper timer extend passive (+1s correct, -0.5s wrong)
 func _has_hero_timer_extend() -> bool:
 	if not is_instance_valid(GameManager.run_state):
 		return false
@@ -442,8 +442,8 @@ func _has_hero_timer_extend() -> bool:
 	var def: GachaBallDefinition = hero.get_definition()
 	if not is_instance_valid(def):
 		return false
-	# Generic hero has the timer extend passive
-	return def.id == &"hero"
+	# Timekeeper hero has the timer extend passive
+	return def.id == &"hero_timekeeper"
 
 
 func _flash_button_correct(correct_answer_id: StringName) -> void:
