@@ -21,37 +21,6 @@ WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1118)
-[TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Emitting signal for: gacha_inspect_run
-[TutorialManager] Signal received, opening overlay for: gacha_inspect_run
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Emitting signal for: shop_intro
-[TutorialManager] Signal received, opening overlay for: shop_intro
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[SaveManager] Run saved successfully (Day 2)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/PWRMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/BothMachine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/HPMachine/DrawButton'.
-'VBoxContainer/MachinesArea/HPMachine/DrawButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[TutorialManager] Requesting tutorial: rest_site_intro
-[TutorialManager] Emitting signal for: rest_site_intro
-[TutorialManager] Signal received, opening overlay for: rest_site_intro
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[SaveManager] Run saved successfully (Day 3)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save"]
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
@@ -61,133 +30,40 @@ WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1118)
 WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1118)
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 1
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 1, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 [TutorialManager] Requesting tutorial: battle_management_intro
 [TutorialManager] Emitting signal for: battle_management_intro
 [TutorialManager] Signal received, opening overlay for: battle_management_intro
 WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Emitting signal for: first_draw
-[TutorialManager] Signal received, opening overlay for: first_draw
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[BattleLog] [1:2] Apprentice deals 2 dmg to Soul Caller 
-[BattleLog] [1:3] Apprentice attacks Soul Caller for 2 damage (basic_attack, on_attack) (HP: 9→7)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768390602_81_08516"] source: unit_t1_a_1768390602_42_66940 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1768390602 type 5
-[BattleLog] [1:4] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [1:5] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 7→9)
-[BattleLog] [1:6] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [1:7] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 5→7)
-[BattleLog] [1:8] Apprentice deals 2 dmg to Soul Caller 
-[BattleLog] [1:9] Apprentice attacks Soul Caller for 2 damage (double_strike_attack, on_attack) (HP: 9→7)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768390602_81_08516"] source: unit_t1_a_1768390602_42_66940 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1768390602 type 5
-[BattleLog] [1:10] Soul Caller heals Shadow Striker for 2 HP 
-[BattleLog] [1:11] Heart Stone heals Shadow Striker for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 4→6)
-[BattleLog] [1:12] Soul Caller heals Shadow Striker for 2 HP 
-[BattleLog] [1:13] Heart Stone heals Shadow Striker for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
-[BattleLog] [1:14] Apprentice deals 1 dmg to Soul Caller 
-[BattleLog] [1:15] Apprentice attacks Soul Caller for 1 damage (basic_attack, on_attack) (HP: 7→6)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768390602_81_08516"] source: unit_t1_a_1768390602_43_44822 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1768390602 type 5
-[BattleLog] [1:16] Soul Caller heals Guardian Sentinel for 2 HP 
-[BattleLog] [1:17] Heart Stone heals Guardian Sentinel for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
-[BattleLog] [1:18] Soul Caller heals Shadow Striker for 2 HP 
-[BattleLog] [1:19] Heart Stone heals Shadow Striker for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 8→10)
-[BattleLog] [1:20] Squire deals 2 dmg to Soul Caller 
-[BattleLog] [1:21] Squire attacks Soul Caller for 2 damage (basic_attack, on_attack) (HP: 6→4)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768390602_81_08516"] source: unit_t1_b_1768390602_44_74566 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1768390602 type 5
-[BattleLog] [1:22] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [1:23] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 4→6)
-[BattleLog] [1:24] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [1:25] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
-[BattleLog] [1:26] Timekeeper deals 2 dmg to Soul Caller 
-[BattleLog] [1:27] Timekeeper attacks Soul Caller for 2 damage (basic_attack, on_attack) (HP: 8→6)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768390602_81_08516"] source: hero_timekeeper_1768390602_41_00372 attack_type: melee
+[BattleLog] [1:2] Timekeeper deals 2 dmg to Squire 
+[BattleLog] [1:3] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1768526367_75_00121"] source: hero_timekeeper_1768526367_38_22023 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
 [AnimationCompletionTracker] Timeout for hero_timekeeper_1768 type 5
-[BattleLog] [1:28] Soul Caller heals Guardian Sentinel for 2 HP 
-[BattleLog] [1:29] Heart Stone heals Guardian Sentinel for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 8→10)
-[BattleLog] [1:30] Soul Caller heals Soul Caller for 2 HP 
-[BattleLog] [1:31] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 6→8)
-[BattleLog] [1:32] Soul Caller deals 5 dmg to Apprentice 
-[BattleLog] [1:33] Soul Caller attacks Apprentice for 5 damage (basic_attack, on_attack) (HP: 2→-3)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1768390602_42_66940"] source: unit_t3_c_1768390602_81_08516 attack_type: melee
+[BattleLog] [1:4] Squire deals 2 dmg to Timekeeper 
+[BattleLog] [1:5] unit_t1_... attacks Timekeeper for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 50→48)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1768526367_38_22023"] source: unit_t1_b_1768526367_75_00121 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1768390602 type 5
-[BattleLog] [1:34] └─ Apprentice is defeated! 
-[TutorialManager] Requesting blocking tutorial: unit_death_intro
-[TutorialManager] Emitting signal for blocking tutorial: unit_death_intro
-[TutorialManager] Signal received, opening overlay for: unit_death_intro
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[TutorialManager] Tutorial dismissed: unit_death_intro
-[BattleLog] [1:35] Guardian Sentinel deals 4 dmg to Apprentice 
-[BattleLog] [1:36] Guardian Sentinel attacks Apprentice for 4 damage (basic_attack, on_attack) (HP: 2→-2)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1768390602_43_44822"] source: unit_t3_b_1768390602_78_56277 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_b_1768526367 type 5
+[BattleLog] [1:6] └─ unit_t1_... is defeated! 
+[BattleLog] [1:7] Knight heals Knight for 1 HP 
+[BattleLog] [1:8] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
+[BattleLog] [1:9] Knight grants Knight +1 PWR 
+[BattleLog] [1:10] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:11] Knight deals 4 dmg to Timekeeper 
+[BattleLog] [1:12] Knight attacks Timekeeper for 4 damage (basic_attack, on_attack) (HP: 48→44)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1768526367_38_22023"] source: unit_t2_c_1768526367_76_86650 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_b_1768390602 type 5
-[BattleLog] [1:37] └─ Apprentice is defeated! 
-[TutorialManager] Requesting blocking tutorial: unit_death_intro
-[TutorialManager] Blocked: Already completed
-[BattleLog] [1:38] Soul Caller deals 5 dmg to Squire 
-[BattleLog] [1:39] Soul Caller attacks Squire for 5 damage (basic_attack, on_attack) (HP: 1→-4)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1768390602_44_74566"] source: unit_t3_c_1768390602_79_55144 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_c_1768526367 type 5
+[BattleLog] [1:13] Guardian deals 2 dmg to Timekeeper 
+[BattleLog] [1:14] Guardian attacks Timekeeper for 2 damage (basic_attack, on_attack) (HP: 44→42)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1768526367_38_22023"] source: unit_t2_a_1768526367_77_12527 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1768390602 type 5
-[BattleLog] [1:40] Squire deals 2 dmg to Soul Caller 
-[BattleLog] [1:41] Squire attacks Soul Caller for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768390602_79_55144"] source: unit_t1_b_1768390602_44_74566 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1768390602 type 5
-[BattleLog] [1:42] └─ Squire is defeated! 
-[BattleLog] [1:43] Shadow Striker deals 8 dmg to Timekeeper 
-[BattleLog] [1:44] Shadow Striker attacks Timekeeper for 8 damage (unit_tier3a_mirror_strike, on_attack) (HP: 50→42)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1768390602_41_00372"] source: unit_t3_a_1768390602_80_81394 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_a_1768390602 type 5
+[AnimationCompletionTracker] Timeout for unit_t2_a_1768526367 type 5
 [BattleLog] [2:1] ═══ TURN 2 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[TutorialManager] Requesting tutorial: battle_management_intro
-[TutorialManager] Blocked: Already completed
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.

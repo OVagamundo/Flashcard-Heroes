@@ -58,6 +58,10 @@ func _ready() -> void:
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
 	
+	# Timekeeper hero bonus: Start with 5 tokens for easy testing
+	if _is_timekeeper_hero():
+		_tokens = 5
+	
 	# Initialize token display in top area via existing signal
 	_update_token_display()
 	_update_button_states()
@@ -666,3 +670,15 @@ func _exit_tree() -> void:
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
 	if SignalBus.flashcard_token_earned.is_connected(_on_live_token_earned):
 		SignalBus.flashcard_token_earned.disconnect(_on_live_token_earned)
+
+## Check if the current hero is the Timekeeper (for bonus token passive)
+func _is_timekeeper_hero() -> bool:
+	if not is_instance_valid(GameManager.run_state):
+		return false
+	var hero: GachaBallInstance = GameManager.run_state.hero_instance
+	if not is_instance_valid(hero):
+		return false
+	var def: GachaBallDefinition = hero.get_definition()
+	if not is_instance_valid(def):
+		return false
+	return def.id == &"hero_timekeeper"

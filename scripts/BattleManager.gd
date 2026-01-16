@@ -436,8 +436,10 @@ func _change_phase(new_phase: Phases) -> void:
 			_current_turn += 1
 			_turn_start_abilities_triggered = false
 			
-			# Grant base 5 tokens for the turn
-			_gacha_tokens += 5
+			# Timekeeper hero bonus: +5 tokens for easy testing
+			if _is_timekeeper_hero():
+				_gacha_tokens += 5
+			
 			SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 			
 			# The flashcard mini-game is the first event of the turn.
@@ -887,6 +889,18 @@ func _is_in_player_container_tag(tag: StringName) -> bool:
 
 func _is_player_owned(instance: GachaBallInstance) -> bool:
 	return _state.is_player_owned(instance)
+
+## Check if the current hero is the Timekeeper (for bonus token passive)
+func _is_timekeeper_hero() -> bool:
+	if not is_instance_valid(GameManager.run_state):
+		return false
+	var hero: GachaBallInstance = GameManager.run_state.hero_instance
+	if not is_instance_valid(hero):
+		return false
+	var def: GachaBallDefinition = hero.get_definition()
+	if not is_instance_valid(def):
+		return false
+	return def.id == &"hero_timekeeper"
 
 ## Get the ally unit behind the source unit.
 ## @param source_instance: GachaBallInstance - The source unit

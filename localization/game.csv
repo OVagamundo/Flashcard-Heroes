@@ -1,6 +1,6 @@
 keys,en,pt_BR
-hero.name,Hero,Herói
-hero.desc,The player's champion.,O campeão do jogador.
+hero.name,Bounty Hunter,Caçador de Recompensas
+hero.desc,A skilled hunter who profits from every kill. Earns gold for each enemy slain.,Um caçador habilidoso que lucra com cada morte. Ganha ouro por cada inimigo morto.
 enemy_hero.name,Enemy Hero,Herói Inimigo
 enemy_hero.desc,The enemy's champion.,O campeão do inimigo.
 unit_t1_a.name,Apprentice,Aprendiz
@@ -56,9 +56,11 @@ item_t2_b.desc,Grants an extra action on kill.,Concede uma ação extra ao matar
 ability.item_tier2b_bloodlust.name,Bloodlust,Sede de Sangue
 ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately.","Quando o portador derrota um inimigo, ele age novamente imediatamente."
 hero_timekeeper.name,Timekeeper,Guardião do Tempo
-hero_timekeeper.desc,A scholar who bends time with knowledge. Gains gold for each enemy slain.,Um estudioso que dobra o tempo com conhecimento. Ganha ouro por cada inimigo morto.
+hero_timekeeper.desc,A scholarly mage who has mastered the flow of time itself.,Um mago estudioso que dominou o fluxo do próprio tempo.
 ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter,Caçador de Recompensas
 ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.,Ganha 1 ouro quando este herói mata um inimigo.
+ability.hero_timekeeper_time_warp.name,Time Warp,Distorção Temporal
+ability.hero_timekeeper_time_warp.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.","Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
 unit_t3_d.name,Sakura Spirit,Espírito Sakura
 unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.,Um espírito poderoso guardando as cerejeiras.
 item_t1_a.desc,Restores 5 HP.,Restaura 5 HP.
@@ -222,3 +224,17 @@ tooltip.reroll,Refresh shop stock. Cost increases each reroll.,Atualiza estoque 
 tooltip.train_hp,Spend tokens from the minigame to permanently increase hero HP.,Gaste fichas do minigame para aumentar permanentemente o HP do herói.
 tooltip.train_pwr,Spend tokens from the minigame to permanently increase hero PWR.,Gaste fichas do minigame para aumentar permanentemente o PWR do herói.
 ui.continue,Continue,Continuar
+ui.choose_your_hero,Choose Your Hero,Escolha Seu Herói
+ui.choose_your_deck,Choose Your Flashcard Deck,Escolha Seu Deck de Flashcards
+ui.locked_hero,Locked,Bloqueado
+ui.cards,cards,cartas
+ui.ability,Ability,Habilidade
+ui.hp,HP,HP
+ui.pwr,PWR,PWR
+hero.flavor,"A survivor who learned that every kill counts. Low stats but gold flows freely.","Um sobrevivente que aprendeu que cada morte conta. Stats baixos mas ouro flui livremente."
+hero_timekeeper.flavor,"Master of temporal magic, the Timekeeper bends time itself to extend the minigame timer.","Mestre da magia temporal, o Guardião do Tempo dobra o próprio tempo para estender o cronômetro do minigame."
+deck.katakana.desc,"Learn the angular Japanese syllabary used for foreign words and loanwords.","Aprenda o silabário japonês angular usado para palavras estrangeiras e empréstimos."
+deck.hiragana.desc,"Master the flowing Japanese syllabary for native words and grammar.","Domine o silabário japonês fluido para palavras nativas e gramática."
+deck.kanji_100.desc,"Challenge yourself with 100 essential Chinese characters used in Japanese writing.","Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa."
+deck.german_100.desc,"Build your German vocabulary with 100 common and essential words.","Construa seu vocabulário alemão com 100 palavras comuns e essenciais."
+deck.portuguese_100.desc,"Expand your Portuguese vocabulary with 100 essential everyday words.","Expanda seu vocabulário português com 100 palavras essenciais do dia a dia."

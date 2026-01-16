@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/units/hero.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroTimekeeper_GoldOnKill.tres" id="3_ability"]
 
 [resource]
 script = ExtResource("1_script")
@@ -18,4 +19,4 @@ base_hp = 10
 base_pwr = 2
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = []
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

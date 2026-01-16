@@ -803,8 +803,12 @@ func _animate_window_open(window: Control) -> void:
 	Audio.play_sfx("ui_window_open")
 	
 	# Tween
-	var tween = create_tween()
-	# IMPORTANT: Ensure animation runs even if the game is paused (e.g. Tutorials)
+	# CORRECT IMPLEMENTATION: Bind tween to the window itself.
+	# If the window is freed (e.g. closed mid-animation), the tween is automatically killed.
+	# This prevents "Lambda capture freed" errors naturally without defensive checks.
+	var tween = window.create_tween()
+	
+	# IMPORTANT: Ensure animation runs even if the game is paused
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_parallel(true)
 	tween.set_ease(Tween.EASE_OUT)
@@ -816,11 +820,10 @@ func _animate_window_open(window: Control) -> void:
 	# Reveal via shader
 	# Use a simpler ease for the wipe
 	tween.set_trans(Tween.TRANS_CUBIC)
-	# Use tween_property for shader uniform to avoid lambda capture errors
 	tween.tween_property(mat, "shader_parameter/progress", 1.0, 0.5)
 	
 	# Cleanup
+	# Safe to use lambda here because if window is freed, tween dies and this never runs.
 	tween.chain().tween_callback(func():
-		if is_instance_valid(window):
-			window.material = null
+		window.material = null
 	)
