@@ -1279,8 +1279,8 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 				var decay_delta: int = new_stacks - old_stacks
 				apply_stat_delta(unit, String(status_def.id) + "_stacks", decay_delta)
 			
-			# Emit BUFF event for status decay so animator updates the visual
-			all_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+			# Emit STATUS_EFFECT event for status decay so animator updates the visual
+			all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
 				"visual_payload": {
@@ -1338,7 +1338,7 @@ func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
 
 
 ## Handle armor_stacks stat changes for trinket abilities
-## Applies armor stacks to targets and returns a BUFF event for visual feedback
+## Applies armor stacks to targets and returns a STATUS_EFFECT event for visual feedback
 func handle_armor_stacks(request: EffectRequest, resolved_targets: Array[String], amount: int) -> CombatEvent:
 	var targets_old_val: Array[int] = []
 	var targets_new_val: Array[int] = []
@@ -1353,7 +1353,7 @@ func handle_armor_stacks(request: EffectRequest, resolved_targets: Array[String]
 			targets_old_val.append(0)
 			targets_new_val.append(0)
 	
-	return CombatEvent.new(CombatEvent.Type.BUFF, {
+	return CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": resolved_targets,
 		"ability_id": request.ability_id,

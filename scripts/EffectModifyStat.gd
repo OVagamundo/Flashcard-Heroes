@@ -139,6 +139,31 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						"targets_new_pwr": all_new_vals
 					}
 				}))
+			else:
+				# Generic Stat / Status Effect (e.g. armor_stacks)
+				var log_text: String
+				if target_names.size() == 1:
+					log_text = "%s grants %s +%d %s" % [source_name, target_names[0], amount, stat]
+				else:
+					log_text = "%s grants %s +%d %s" % [source_name, " and ".join(target_names), amount, stat]
+				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+				
+				# STATUS_EFFECT event
+				result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+					"source_uuid": _source_uuid,
+					"target_uuids": all_target_uuids,
+					"ability_id": context.get("ability_id", &"modify_stat"),
+					"trigger_type": context.get("trigger_type", ""),
+					"ability_holder_uuid": _source_uuid,
+					"visual_payload": {
+						"source_uuid": _source_uuid,
+						"amount": amount,
+						"stat": stat,
+						"targets_old_val": all_old_vals,
+						"targets_new_val": all_new_vals,
+						"new_val": all_new_vals[0] if not all_new_vals.is_empty() else 0
+					}
+				}))
 		
 		result.state_applied = true
 		return result

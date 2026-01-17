@@ -8,7 +8,8 @@ enum Type {
 	DEATH,
 	DAMAGE_BURN, # End of turn burn damage
 	SUMMON, # Payload must contain snapshot of new unit
-	BUFF, # Payload: { "stat": "pwr", "amount": 1, "is_debuff": false }
+	BUFF, # Payload: { "stat": "hp" or "pwr", "amount": int } - Core stats only
+	STATUS_EFFECT, # Payload: { "stat": "*_stacks", "amount": int } - burn, armor, etc.
 	MOVE, # Payload: { "from_slot": 1, "to_slot": 2 }
 	PROJECTILE, # Visual only: { "source_uuid": str, "target_uuid": str, "vfx_id": str }
 	APPLY_BURN,

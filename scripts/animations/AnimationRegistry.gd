@@ -41,5 +41,8 @@ static func load_standard_animations() -> void:
 	var lethal_save_anim_script = load("res://scripts/animations/LethalSaveAnimation.gd")
 	register("lethal_save", lethal_save_anim_script.new())
 	
+	var status_effect_anim_script = load("res://scripts/animations/StatusEffectAnimation.gd")
+	register("status_effect", status_effect_anim_script.new())
+	
 	if OS.is_debug_build():
 		print("[AnimationRegistry] Loaded animations: ", _animations.keys())
