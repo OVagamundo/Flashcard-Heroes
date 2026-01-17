@@ -35,20 +35,19 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# Determine color and effect based on stat type
 		var flash_color: Color
-		var number_color: Color
 		
 		if stat == "burn_stacks":
 			flash_color = Color(1.0, 0.4, 0.0) # Orange
-			number_color = Color(1.0, 0.5, 0.1) # Bright orange
+			var _number_color = Color(1.0, 0.5, 0.1) # Bright orange (unused, kept for reference)
 			animator.apply_burn_stack(target_uuid, new_val)
 		elif stat == "armor_stacks":
 			flash_color = Color(0.5, 0.5, 0.5) # Pure Grey (Opaque)
-			number_color = Color(0.6, 0.6, 0.6) # Grey
+			var _number_color_armor = Color(0.6, 0.6, 0.6) # Grey (unused, kept for reference)
 			animator.apply_armor_stack(target_uuid, new_val)
 		else:
 			# Generic status effect
 			flash_color = Color(0.7, 0.7, 0.7)
-			number_color = Color(0.6, 0.6, 0.6)
+			# Note: Floating stack numbers removed, values display in container labels
 			var status_id = stat.trim_suffix("_stacks")
 			animator.apply_status_stack(target_uuid, StringName(status_id), new_val)
 		
@@ -60,47 +59,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if SignalBus.has_signal("unit_deform"):
 			SignalBus.emit_signal("unit_deform", target_uuid, &"SQUISH_BOUNCE")
 		
-		# 3. Spawn floating stack number (like damage numbers but colored)
-		_spawn_floating_stack_number(animator, target_uuid, amount, number_color)
+		# NOTE: Stack numbers now display in the container labels with pop animation
+		# (handled by GachaBallView.animate_burn_change / animate_armor_change)
 
 	# Brief wait for visual effect completion
 	await animator.get_tree().create_timer(0.3).timeout
-
-## Spawn a colored floating number showing stack change (like damage numbers)
-func _spawn_floating_stack_number(animator: Node, target_uuid: String, amount: int, color: Color) -> void:
-	# Get target position from visual registry (current position)
-	var target_view = animator._visual_registry.get(target_uuid)
-	var spawn_pos = Vector2.ZERO
-	var found_pos = false
-	
-	if is_instance_valid(target_view) and target_view.is_inside_tree():
-		# Offset slightly up and to the side to not overlap damage numbers
-		spawn_pos = target_view.global_position + (target_view.size * Vector2(0.6, 0.2))
-		found_pos = true
-	else:
-		# Fallback: Use snapshot
-		var tgt_snap = animator.get_snapshot_position(target_uuid)
-		if not tgt_snap.is_empty():
-			spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x * 0.6, tgt_snap.position.y + tgt_snap.size.y * 0.2)
-			found_pos = true
-	
-	if found_pos and amount != 0:
-		# Spawn the floating number with custom color
-		var damage_number = VFXFactory.create_damage_number()
-		var effects_layer = VFXFactory.get_effects_layer()
-		
-		if is_instance_valid(effects_layer):
-			var offset = VFXFactory.get_viewport_offset()
-			effects_layer.add_child(damage_number)
-			damage_number.setup(abs(amount), spawn_pos + offset, color)
-			damage_number.play()
-		elif is_instance_valid(animator):
-			var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
-			if is_instance_valid(battle_view):
-				battle_view.add_child(damage_number)
-				damage_number.setup(abs(amount), spawn_pos, color)
-				damage_number.play()
-			else:
-				damage_number.queue_free()
-		else:
-			damage_number.queue_free()

@@ -677,17 +677,25 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	match hero_id:
 		&"hero_timekeeper":
-			# 2 of ALL units and items across all tiers
+			# 2 of ALL units and items across all 3 tiers (for testing)
 			return [
 				# Tier 1
 				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
 				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
 				# Tier 2
 				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c",
-				&"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c", &"item_t2_a", &"item_t2_a",
-			# Tier 3
-				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c", &"unit_t3_d", &"unit_t3_d",
-				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c", &"item_t3_d", &"item_t3_d"
+				&"item_t2_a", &"item_t2_a", &"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c",
+				# Tier 3
+				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c",
+				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f",
+				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c",
+				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f"
+			]
+		&"hero_bounty_hunter":
+			# Bounty Hunter: Only 6 tier 1 gachaballs (3 units + 3 items)
+			return [
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
+				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b"
 			]
 		&"hero":
 			# Generic hero: 2 copies of selected units/items per tier

@@ -480,14 +480,17 @@ func animate_burn_change(target_stacks: int) -> void: # Renamed from animate_poi
 		burn_label.text = str(target_stacks)
 		
 		if old_stacks == 0:
-			# Pop in - need animation
+			# Initial appearance: scale from zero then pop
 			burn_container.scale = Vector2.ZERO
 			var tween = create_tween()
-			tween.tween_property(burn_container, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tween.tween_property(burn_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tween.tween_callback(_pop_container.bind(burn_container))
+		elif target_stacks > old_stacks:
+			# Stacks increased: pop the container
+			_pop_container(burn_container)
 		
-		# Flash label
-		if is_instance_valid(burn_container) and burn_container.visible:
-			_flash_label(burn_label) # Renamed from poison_label
+		# Always flash label on change
+		_flash_label(burn_label)
 			
 	else:
 		# Fade out - need animation
@@ -506,21 +509,23 @@ func animate_armor_change(target_stacks: int) -> void:
 		armor_label.text = str(target_stacks)
 		
 		if old_stacks == 0:
-			# Pop in - need animation
+			# Initial appearance: scale from zero then pop
 			armor_container.scale = Vector2.ZERO
 			var tween = create_tween()
-			tween.tween_property(armor_container, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tween.tween_property(armor_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tween.tween_callback(_pop_container.bind(armor_container))
+		elif target_stacks > old_stacks:
+			# Stacks increased: pop the container
+			_pop_container(armor_container)
 		
-		# Flash label
-		if is_instance_valid(armor_container) and armor_container.visible:
-			_flash_label(armor_label)
+		# Always flash label on change
+		_flash_label(armor_label)
 			
 	else:
 		# Fade out - need animation
 		var tween = create_tween()
 		tween.tween_property(armor_container, "scale", Vector2.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 		tween.tween_callback(func(): armor_container.visible = false)
-
 ## Animate armor stat change with countdown (for damage visualization)
 ## Similar to animate_stat_change but for armor - counts down from current to new value
 func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
@@ -628,11 +633,16 @@ func animate_status_change(status_id: StringName, new_stacks: int) -> void:
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	# type: "hp" or "pwr"
 	var label = hp_label if type == "hp" else pwr_label
+	var container = hp_container if type == "hp" else pwr_container
 	var start_val = _visual_hp if type == "hp" else _visual_pwr
 	
 	# Update internal visual state immediately so subsequent calls are correct
 	if type == "hp": _visual_hp = target_val
 	else: _visual_pwr = target_val
+	
+	# If value increased (buff), pop the container like tokens/gold
+	if target_val > start_val:
+		_pop_container(container)
 	
 	# Flash the label white
 	_flash_label(label)
@@ -651,6 +661,38 @@ func _flash_label(label: Label) -> void:
 	
 	var tween = create_tween()
 	tween.tween_property(label, "modulate", original_modulate, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+## Pop animation for stat containers - scales up then bounces back (like token/gold)
+## Includes color flash just like the token counter animation
+func _pop_container(container: Control) -> void:
+	if not is_instance_valid(container):
+		return
+	
+	# Kill any existing pop tween on this container
+	if container.has_meta("_pop_tween"):
+		var existing = container.get_meta("_pop_tween")
+		if existing is Tween and existing.is_valid():
+			existing.kill()
+	
+	# Set pivot to center for proper scaling
+	container.pivot_offset = container.size / 2
+	
+	# Create pop tween (same pattern as token/gold: scale 2.0x then elastic back + color flash)
+	var pop_tween = create_tween()
+	container.set_meta("_pop_tween", pop_tween)
+	
+	# Flash color - bright gold like tokens
+	var flash_color = Color(1.0, 0.9, 0.2, 1.0) # Same bright gold as token counter
+	
+	pop_tween.set_parallel(true)
+	
+	# Scale: pop big then bounce back (1.4x like token counter)
+	pop_tween.tween_property(container, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(container, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	# Color flash - modulate the container (icon + label together)
+	pop_tween.tween_property(container, "modulate", flash_color, 0.05)
+	pop_tween.tween_property(container, "modulate", Color.WHITE, 0.2).set_delay(0.05)
 
 func _update_item_slots() -> void:
 	# REDESIGNED: Now shows status effects instead of item icons
