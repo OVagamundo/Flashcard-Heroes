@@ -660,7 +660,7 @@ func _refresh_all_prize_slots() -> void:
 
 func _on_leave_pressed() -> void:
 	"""Leave rest site and return to path selection"""
-	# Reset token display to 0 when leaving
+	# Reset token counter to 0 when leaving (tokens don't persist)
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()

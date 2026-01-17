@@ -301,8 +301,14 @@ The `GachaBallView` controls the individual unit's visuals. These are the **Pupp
 
 - **`set_visual_state(snapshot)`**: Instantly updates icon, stats, and frame from a data snapshot.
 - **`animate_stat_change(target_val, delta, type)`**: Animates HP or PWR change.
+  - When buffed (value increases): Container pops (scale 1.4x → elastic return) + label flashes
+  - When damaged/reduced: Label flashes only (no pop)
 - **`animate_burn_change(target_stacks)`**: Animates burn stack changes.
+  - When stacks increase: Container pops (scale 1.4x → elastic return) + label flashes
+  - First appearance: Scale from 0 → pop animation
+  - No floating numbers - value displays in label only
 - **`animate_armor_change(target_stacks)`**: Animates armor stack changes.
+  - Same pop behavior as burn
 - **`animate_leap_to(target_center)`**: Guardian Sentinel leap animation.
 - **`animate_leap_return()`**: Guardian Sentinel return animation.
 

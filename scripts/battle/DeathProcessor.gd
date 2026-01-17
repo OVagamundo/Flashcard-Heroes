@@ -366,10 +366,13 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	# on_ally_death (trinket, priority 210) triggers.
 	var dying_units_data: Array[Dictionary] = [] # [{unit, death_location, team}]
 	
-	# Check player units (LINEUP and BENCH)
+	# Check player units (LINEUP only - bench items are not combatants)
 	var player_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
-	player_units.append_array(bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH).duplicate())
 	for unit in player_units:
+		# Only process UNIT category (not items/trinkets)
+		var def = unit.get_definition()
+		if not is_instance_valid(def) or def.category != &"UNIT":
+			continue
 		if unit.current_hp <= 0:
 			something_changed = true
 			if is_simulation and out_events != null:
@@ -391,10 +394,13 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			elif not is_simulation:
 				bm._perform_unit_death_cleanup(unit)
 	
-	# Check enemy units (same logic)
+	# Check enemy units (LINEUP only - bench items are not combatants)
 	var enemy_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
-	enemy_units.append_array(bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH).duplicate())
 	for unit in enemy_units:
+		# Only process UNIT category (not items/trinkets)
+		var def = unit.get_definition()
+		if not is_instance_valid(def) or def.category != &"UNIT":
+			continue
 		if unit.current_hp <= 0:
 			something_changed = true
 			if is_simulation and out_events != null:

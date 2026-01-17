@@ -179,8 +179,8 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		if apply_burn:
 			var new_burn = targets_new_burn[i] if i < targets_new_burn.size() else 0
 			animator.apply_burn_stack(target_uuid, new_burn)
-			# Spawn orange floating number for burn application
-			_spawn_floating_burn_stacks(animator, target_uuid, new_burn)
+			# NOTE: Floating burn numbers removed - burn stacks now display in the
+			# container label with pop animation (GachaBallView.animate_burn_change)
 			
 		# Trigger Composable Effects (run in parallel)
 		var flash_color = Color.WHITE # White flash for hurt

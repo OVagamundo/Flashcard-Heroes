@@ -351,6 +351,11 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	knob_button_1.disabled = not is_in_battle
 	knob_button_2.disabled = not is_in_battle
 	knob_button_3.disabled = not is_in_battle
+	
+	# Reset token counter to 0 when leaving battle (tokens don't persist between encounters)
+	if not is_in_battle:
+		if is_instance_valid(tokens_label):
+			tokens_label.text = "0"
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
