@@ -54,8 +54,6 @@ func set_slot_color(container_name: StringName) -> void:
 			_background_style.modulate_color = Color(0.3, 0.5, 0.8, 0.8)
 		&"PlayerBench":
 			_background_style.modulate_color = Color(0.3, 0.7, 0.3, 0.8)
-		&"ItemInventory":
-			_background_style.modulate_color = Color(0.7, 0.3, 0.7, 0.8)
 		&"EnemyLineup":
 			_background_style.modulate_color = Color(0.8, 0.3, 0.3, 0.8)
 		_:

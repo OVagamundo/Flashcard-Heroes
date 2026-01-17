@@ -363,7 +363,7 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 			return false
 	
 	# Attempt to draw
-	var draw_result := InventoryOperations.draw_from_tier(_state, tier, 3, 2)
+	var draw_result := InventoryOperations.draw_from_tier(_state, tier, 5)
 	
 	if not draw_result.success:
 		return false

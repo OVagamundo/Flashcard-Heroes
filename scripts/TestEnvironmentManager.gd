@@ -214,7 +214,7 @@ func _on_spawn_item_pressed() -> void:
 	if not def: return
 	var instance = GachaBallInstance.new()
 	instance.initialize(def)
-	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
 	SignalBus.emit_signal("battle_inventory_changed")
 
 

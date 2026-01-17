@@ -48,7 +48,7 @@ class DrawResult:
 
 ## Draw a random instance from a tier pool. Returns DrawResult.
 ## Does NOT handle token costs or signals - caller is responsible.
-static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity: int = 3, item_inv_capacity: int = 2) -> DrawResult:
+static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity: int = 5) -> DrawResult:
 	var result := DrawResult.new()
 	
 	var container_tag: StringName = "BattleInventoryT%d" % tier
@@ -77,12 +77,10 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 	var target_container_tag: StringName
 	var target_capacity: int
 	match def.category:
-		&"UNIT":
+		&"UNIT", &"ITEM":
+			# Both units and items go to the unified bench
 			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
 			target_capacity = player_bench_capacity
-		&"ITEM":
-			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
-			target_capacity = item_inv_capacity
 		_:
 			# Unknown category - discard
 			target_container_tag = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
@@ -181,12 +179,12 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 		if is_instance_valid(existing):
 			existing.equipped_on_uuid = ""
 			existing.equipped_slot_index = -1
-			var inv := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+			var inv := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
 			if is_instance_valid(inv):
 				var empty := inv.find_first_empty_slot()
 				if empty != -1:
 					inv.set_uuid(empty, existing.ball_uuid)
-					state.update_instance_location(existing.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
+					state.update_instance_location(existing.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
 				else:
 					return result
 	

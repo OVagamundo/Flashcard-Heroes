@@ -29,7 +29,6 @@ static var RUN_CONTAINER_TAGS: Dictionary = {
 	HERO = &"Hero",
 	PLAYER_LINEUP = &"PlayerLineup",
 	PLAYER_BENCH = &"PlayerBench",
-	PLAYER_ITEM_INVENTORY = &"ItemInventory",
 	PLAYER_TRINKETS = &"PlayerTrinkets"
 }
 
@@ -99,9 +98,6 @@ func get_container(container_name: StringName) -> DataContainer:
 	# Handle standard containers with default sizes if they don't exist yet
 	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP or container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
 		_containers[container_name] = FixedArrayContainer.new(5)
-		return _containers[container_name]
-	elif container_name == RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-		_containers[container_name] = FixedArrayContainer.new(2)
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 		_containers[container_name] = FixedArrayContainer.new(5)
@@ -292,7 +288,7 @@ func remove_instance(uuid: String) -> bool:
 				if is_instance_valid(it):
 					items_to_rehome.append(it)
 			# Capacity precheck to guarantee atomicity
-			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
 			if not is_instance_valid(inv):
 				return false
 			var inv_uuids := inv.get_all_uuids()
@@ -317,7 +313,7 @@ func remove_instance(uuid: String) -> bool:
 				if empty == -1:
 					return false
 				inv.set_uuid(empty, it2.ball_uuid)
-				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
+				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
 				it2.location_slot_index = empty
 		var container := get_container(loc.container)
 		if not is_instance_valid(container):
@@ -507,20 +503,20 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 		var src_container := get_container(item_loc.container)
 		if is_instance_valid(src_container) and src_container.get_uuid(item_loc.index) == item.ball_uuid:
 			src_container.set_uuid(item_loc.index, "")
-	# If target slot occupied, unequip existing item to ItemInventory (fallback: first empty)
+	# If target slot occupied, unequip existing item to PlayerBench (fallback: first empty)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
 	if not existing_uuid.is_empty():
 		var existing_item := get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
 			existing_item.equipped_on_uuid = ""
 			existing_item.equipped_slot_index = -1
-			# Place into ItemInventory (or any available appropriate container)
-			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+			# Place into PlayerBench (or any available appropriate container)
+			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
 			if is_instance_valid(inv):
 				var empty := inv.find_first_empty_slot()
 				if empty != -1:
 					inv.set_uuid(empty, existing_item.ball_uuid)
-					existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
+					existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
 					existing_item.location_slot_index = empty
 				else:
 					return false
@@ -821,8 +817,6 @@ func from_save_dict(data: Dictionary) -> void:
 			container = GrowableGridContainer.new(max(24, uuids.size()))
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
 			container = FixedArrayContainer.new(5)
-		elif cname == RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-			container = FixedArrayContainer.new(2)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 			container = FixedArrayContainer.new(5)
 		else:

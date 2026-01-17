@@ -14,7 +14,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 	if is_instance_valid(early_source_instance) and is_instance_valid(early_target_instance):
 		var sdef = early_source_instance.get_definition()
 		var tdef = early_target_instance.get_definition()
-		# Rule I3: Allow equipping from any InventoryGrid onto a UNIT on the board
+		# Rule I3: Allow equipping from InventoryGrid or BattleBoard (PlayerBench) onto a UNIT on the board
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 		var allowed_containers = [&"PlayerLineup", &"PlayerBench"]
 		# In test mode, also allow equipping on enemy units
@@ -22,7 +22,17 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 			allowed_containers.append(&"EnemyLineup")
 			allowed_containers.append(&"EnemyBench")
 		
-		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and s_group == &"InventoryGrid" and target_loc.container in allowed_containers:
+		# Items can be equipped from InventoryGrid OR BattleBoard (unified bench holds both units and items)
+		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard"
+		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and is_valid_source and target_loc.container in allowed_containers:
+			# Check if unit has available equip slots
+			var has_empty_slot = early_target_instance.equipped_item_uuids.find("") != -1
+			if not has_empty_slot:
+				# Unit is full - treat as invalid action
+				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+				GlobalInteractionRouter.end_drag(false)
+				return
+			
 			# Use atomic equip API
 			var owner = _get_data_owner()
 			if is_instance_valid(owner):
@@ -41,9 +51,10 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 				var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
 				if is_instance_valid(parent_unit):
 					# If slot already occupied, fall through to swap logic later
-					# Rule I3: Allow equipping into equipped_item from any InventoryGrid and only to empty slot
+					# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard (only to empty slot)
 					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
-					if s_group2 == &"InventoryGrid" and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
+					var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard"
+					if is_valid_source2 and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
 						# Use atomic equip with explicit slot
 						data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 						GlobalInteractionRouter.end_drag(true)
@@ -259,8 +270,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
-	# CORRECTED: A "board merge" now includes the ItemInventory, not just player unit containers.
-	var is_board_merge = target_loc.container.begins_with("Player") or target_loc.container == &"ItemInventory"
+	# A "board merge" includes the PlayerLineup and PlayerBench.
+	var is_board_merge = target_loc.container.begins_with("Player")
 
 	var placed_container: StringName = &""
 	var placed_index: int = -1
@@ -276,13 +287,13 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		# Remove old items first (safe for equipped items)
 		data_owner.remove_instance(source_instance.ball_uuid)
 		data_owner.remove_instance(target_instance.ball_uuid)
-		# Register new item temporarily into ItemInventory, then equip onto the unit slot
-		var temp_container: StringName = &"ItemInventory"
+		# Register new item temporarily into PlayerBench, then equip onto the unit slot
+		var temp_container: StringName = &"PlayerBench"
 		data_owner.add_instance(new_instance, temp_container, -1)
 		data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
 		placed_container = C.CONTAINER_EQUIPPED_ITEM
 		placed_index = target_loc.index
-	# Case 2: Merging on the board (Lineup/Bench/ItemInventory) -> place result into target slot
+	# Case 2: Merging on the board (Lineup/Bench) -> place result into target slot
 	elif is_board_merge:
 		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
 		placed_container = target_loc.container
@@ -380,10 +391,11 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		return target_container_name == C.CONTAINER_EQUIPPED_ITEM and target_loc.unit_uuid == source_loc.unit_uuid
 
 	# 2. If the target is an equipped_item container, only allow equipping
-	#    from ItemInventory (Rule I3). All actual equipping is handled in the
+	#    from PlayerBench or InventoryGrid (Rule I3). All actual equipping is handled in the
 	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
-		return source_loc.container == &"ItemInventory"
+		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
+		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid"
 
 
 	if target_container_name.begins_with("RunInventoryT"):
@@ -397,9 +409,8 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		if not ("tier" in def) or def.tier != container_tier_b:
 			return false
 
-	if target_container_name in [&"PlayerLineup", &"PlayerBench"] and def.category == &"ITEM":
-		return false
-	if target_container_name == &"ItemInventory" and def.category == &"UNIT":
+	# Items cannot be placed in PlayerLineup (only bench and equipped slots)
+	if target_container_name == &"PlayerLineup" and def.category == &"ITEM":
 		return false
 
 	return true

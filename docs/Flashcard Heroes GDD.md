@@ -81,7 +81,7 @@ Management Phase: The player uses Gacha Tokens, deploys units from their bench t
 Combat Phase: All actions resolve automatically without player input.
 End of Turn Phase: End-of-turn abilities resolve. If no victory/defeat condition is met, the next turn begins.
 7.2. Combat & Positional Logic
-Board Structure: The player has 6 slots for their active lineup and 3 for their reserve bench. The Item Inventory also has 3 slots. If the bench or item inventory is full when a GachaBall is acquired, it is sent to the Discard Pile.
+Board Structure: The player has 5 slots for their active lineup and 5 for their reserve bench. The bench can hold both units and items. If the bench is full when a GachaBall is acquired, it is sent to the Discard Pile.
 Action Order: Units act one by one, from back-to-front.
 Player Team (Left Side): The action order is from right to left (slot 6 acts before slot 5).
 Enemy Team (Right Side): The action order is also from their back to their front, which visually is right to left.
@@ -89,7 +89,7 @@ Default Attack: A unit's basic attack deals physical damage equal to its current
 7.3. Item Interactions
 [UPDATED] This section has been updated to reflect the new, more complex item interaction rules.
 
-Equipping: Items are dragged from the player's Item Inventory onto a Unit on the bench or lineup. If the unit has an available item slot, the item will be equipped.
+Equipping: Items are dragged from the player's bench onto a Unit on the bench or lineup. If the unit has an available item slot, the item will be equipped.
 
 Intra-Unit Management: Once an item is equipped on a unit, it can be freely managed on that same unit. The player can:
 - Move: Drag an item to an empty slot on the same unit.
