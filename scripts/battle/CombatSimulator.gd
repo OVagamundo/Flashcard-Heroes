@@ -410,6 +410,25 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					if source_name == "":
 						source_name = String(request.ability_id)
 					
+					# CRITICAL: Trigger on_before_damage for each target BEFORE damage
+					# This allows defensive abilities like Guardian's Defensive Stance to proc
+					for tgt_uuid in resolved_targets:
+						var tgt = bm.get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt) and tgt.current_hp > 0:
+							var before_ctx := {
+								"source_uuid": tgt_uuid, # The target is source of its own defensive ability
+								"defender_uuid": tgt_uuid,
+								"attacker_uuid": request.source_uuid,
+								"target_initial_hp": tgt.current_hp,
+								"is_simulation": true
+							}
+							AbilityResolver.process_trigger(&"on_before_damage", before_ctx)
+					
+					# Drain on_before_damage reactions before damage is applied
+					drain_reactions_inline(0, bm)
+					var before_damage_evts = collect_and_clear_inline_events()
+					out_events.append_array(before_damage_evts)
+					
 					var damage_result := EffectHandlers.handle_damage_effect(
 						request, resolved_targets, dmg_source, source_name, target_display_names, amount, false, bm
 					)

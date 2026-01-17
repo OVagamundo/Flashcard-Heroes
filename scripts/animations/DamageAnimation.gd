@@ -163,11 +163,13 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		if apply_burn:
 			var new_burn = targets_new_burn[i] if i < targets_new_burn.size() else 0
 			animator.apply_burn_stack(target_uuid, new_burn)
+			# Spawn orange floating number for burn application
+			_spawn_floating_burn_stacks(animator, target_uuid, new_burn)
 			
 		# Trigger Composable Effects (run in parallel)
 		var flash_color = Color.WHITE # White flash for hurt
-		if is_burn_damage:
-			flash_color = Color(1.0, 0.3, 0.0) # Orange for Burn
+		if is_burn_damage or apply_burn:
+			flash_color = Color(1.0, 0.4, 0.0) # Orange for Burn (brighter than before)
 		
 		# Determine recoil direction based on team
 		# Player units recoil LEFT (away from enemies on their right)
@@ -231,6 +233,43 @@ func _spawn_floating_armor_damage(_animator: Node, target_uuid: String, damage: 
 
 	if found_pos:
 		VFXFactory.spawn_damage_number_on_layer(damage, spawn_pos, true) # true = armor (grey)
+
+## Helper to spawn floating burn stack number (Orange)
+func _spawn_floating_burn_stacks(_animator: Node, target_uuid: String, amount: int) -> void:
+	var target_view = _animator._visual_registry.get(target_uuid)
+	var spawn_pos = Vector2.ZERO
+	var found_pos = false
+	
+	if is_instance_valid(target_view) and target_view.is_inside_tree():
+		# Offset slightly to assume damage number is center - put this to the right/up
+		spawn_pos = target_view.global_position + (target_view.size * Vector2(0.8, 0.2))
+		found_pos = true
+	else:
+		var tgt_snap = _animator.get_snapshot_position(target_uuid)
+		if not tgt_snap.is_empty():
+			spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x * 0.8, tgt_snap.position.y + tgt_snap.size.y * 0.2)
+			found_pos = true
+			
+	if found_pos and amount != 0:
+		var damage_number = VFXFactory.create_damage_number()
+		var effects_layer = VFXFactory.get_effects_layer()
+		var color = Color(1.0, 0.5, 0.1) # Bright orange for number
+		
+		if is_instance_valid(effects_layer):
+			var offset = VFXFactory.get_viewport_offset()
+			effects_layer.add_child(damage_number)
+			damage_number.setup(abs(amount), spawn_pos + offset, color)
+			damage_number.play()
+		elif is_instance_valid(_animator):
+			var battle_view = _animator.get_tree().get_first_node_in_group("battle_view")
+			if is_instance_valid(battle_view):
+				battle_view.add_child(damage_number)
+				damage_number.setup(abs(amount), spawn_pos, color)
+				damage_number.play()
+			else:
+				damage_number.queue_free()
+		else:
+			damage_number.queue_free()
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
 	VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)

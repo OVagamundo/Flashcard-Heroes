@@ -153,7 +153,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					push_error("[BattleAnimator] Heal animation not found in registry!")
 
 			CombatEvent.Type.BUFF:
-				# Use the dedicated BuffAnimation class which handles projectiles and flashes
+				# Use the dedicated BuffAnimation class for HP/PWR stats
 				var anim = AnimationRegistry.get_animation("buff")
 				if anim:
 					# AUDIO HOOK: Buff (play BEFORE await so sound syncs with animation start)
@@ -161,6 +161,16 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Buff animation not found in registry!")
+
+			CombatEvent.Type.STATUS_EFFECT:
+				# Use the dedicated StatusEffectAnimation class for status effect stacks
+				var anim = AnimationRegistry.get_animation("status_effect")
+				if anim:
+					# AUDIO HOOK: Status effect (same sound as buff for now)
+					Audio.play_sfx("combat_buff")
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Status effect animation not found in registry!")
 
 			CombatEvent.Type.DEATH:
 				# Play death fade on target

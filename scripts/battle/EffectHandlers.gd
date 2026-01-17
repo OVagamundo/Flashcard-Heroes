@@ -159,7 +159,7 @@ static func handle_burn_stacks(
 			targets_old_val.append(0)
 			targets_new_val.append(0)
 	
-	return CombatEvent.new(CombatEvent.Type.BUFF, {
+	return CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": resolved_targets,
 		"ability_id": request.ability_id,
