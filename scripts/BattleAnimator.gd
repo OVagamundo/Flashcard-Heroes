@@ -292,6 +292,14 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				else:
 					push_error("[BattleAnimator] Guardian intercept animation not found in registry!")
 
+			CombatEvent.Type.KAMIKAZE_ATTACK:
+				# Death's Bargain: dying unit lunges to target, attacks, dies at target
+				var anim = AnimationRegistry.get_animation("kamikaze")
+				if anim:
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Kamikaze animation not found in registry!")
+
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker

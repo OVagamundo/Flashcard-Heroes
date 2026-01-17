@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = "ability_item_t2_c_summon"
 name_key = "ability.item_t2_c_summon.name"
-description_key = "item_t2_c02.desc"
+description_key = "item_t2_a.desc"
 trigger = &"on_death"
 priority = 200
 effects = Array[Resource]([ExtResource("2_effect")])
