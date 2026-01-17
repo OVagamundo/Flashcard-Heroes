@@ -66,6 +66,21 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 		&"on_turn_start", &"on_turn_end", &"on_battle_start":
 			# All living units respond
 			return unit.current_hp > 0
+		
+		&"on_enemy_summon":
+			# Only units on the OPPOSING team of the summoned unit respond
+			var summoned_team = context.get("summoned_team", "")
+			var unit_team = _get_instance_team(unit, battle_manager)
+			# Unit must be alive and on the opposite team
+			return unit.current_hp > 0 and unit_team != "" and unit_team != summoned_team
+		
+		&"on_ally_summon":
+			# Only units on the SAME team as the summoned unit respond
+			var summoned_team = context.get("summoned_team", "")
+			var unit_team = _get_instance_team(unit, battle_manager)
+			# Unit must be alive, on the same team, and NOT the summoned unit itself
+			var summoned_uuid = context.get("summoned_uuid", "")
+			return unit.current_hp > 0 and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
 	
 	# Default: respond (for any new triggers)
 	return true

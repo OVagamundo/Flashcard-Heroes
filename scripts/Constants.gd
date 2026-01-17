@@ -71,6 +71,8 @@ const TRIGGER_ON_BATTLE_START = &"on_battle_start" # Battle begins
 
 # Special triggers
 const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled passive (Guardian)
+const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summoned
+const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"
@@ -132,6 +134,8 @@ const PRIORITY_ITEM_SUMMON = 200
 const PRIORITY_RESILIENT_AURA = 100
 const PRIORITY_ON_HURT_HEAL = 100
 const PRIORITY_ON_ATTACK_BUFF = 100
+const PRIORITY_AMBUSH_PREDATOR = 100
+const PRIORITY_SUMMON_BLESSING = 110 # Higher than Ambush Predator so ally buff applies first
 const PRIORITY_COUNTER_ATTACK = 50
 const PRIORITY_DEFENSIVE_STANCE = 10
 const PRIORITY_SHOCKWAVE = 10

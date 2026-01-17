@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectAmbushPredator.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectAmbushPredator_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "damage_ratio": 0.5 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3e_ambush_predator"
+name_key = "ability.unit_tier3e_ambush_predator.name"
+description_key = "ability.unit_tier3e_ambush_predator.desc"
+trigger = &"on_enemy_summon"
+priority = 100
+effects = Array[Resource]([SubResource("EffectAmbushPredator_1")])

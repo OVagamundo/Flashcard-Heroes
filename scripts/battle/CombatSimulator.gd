@@ -442,7 +442,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				var summon_result := EffectHandlers.handle_summon_unit(request, effect_result.summon_request, bm)
 				bm._apply_summon_result(summon_result)
 				out_events.append_array(summon_result.events)
-				# Summon doesn't have follow-up triggers, no return needed
+				# Trigger on_enemy_summon for each new unit
+				_trigger_summon_reactions_for_result(summon_result, out_events, bm)
 			
 			# Handle multiple summon request for boss effects (from EffectBossSummon)
 			if not effect_result.summon_units_request.is_empty():
@@ -453,7 +454,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				var summon_result := EffectHandlers.handle_summon_units(request, effect_data, bm)
 				bm._apply_summon_result(summon_result)
 				out_events.append_array(summon_result.events)
-				# Boss summon doesn't have follow-up triggers, no return needed
+				# Trigger on_enemy_summon for each new unit
+				_trigger_summon_reactions_for_result(summon_result, out_events, bm)
 			
 			# Handle cascade damage request (from EffectCascadeAOE)
 			# TWO-PHASE PROCESSING for visual "wave" effect:
@@ -630,11 +632,15 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				var summon_result := EffectHandlers.handle_summon_unit(request, effect_data, bm)
 				bm._apply_summon_result(summon_result)
 				out_events.append_array(summon_result.events)
+				# Trigger on_enemy_summon for each new unit
+				_trigger_summon_reactions_for_result(summon_result, out_events, bm)
 			# Handle boss summon effects (array of units to summon)
 			elif effect_data.has("summon_units"):
 				var summon_result := EffectHandlers.handle_summon_units(request, effect_data, bm)
 				bm._apply_summon_result(summon_result)
 				out_events.append_array(summon_result.events)
+				# Trigger on_enemy_summon for each new unit
+				_trigger_summon_reactions_for_result(summon_result, out_events, bm)
 			# NOTE: multi_heal and multi_buff branches removed - those effects now return EffectResult directly
 	# CRITICAL FIX: Death check MUST run unconditionally after any effect execution
 	# This was previously inside the TYPE_DICTIONARY block, causing deaths from the
@@ -698,6 +704,63 @@ func collect_and_clear_inline_events() -> Array[CombatEvent]:
 	var events = _inline_events.duplicate()
 	_inline_events.clear()
 	return events
+
+# ============================================================================
+# SUMMON TRIGGER HELPER
+# ============================================================================
+
+## Trigger on_enemy_summon for each new unit in a summon result.
+## Drains reactions immediately to ensure ambush abilities execute before the summoned unit acts.
+## NOTE: Only triggers during COMBAT phase - summons during START_OF_TURN or END_OF_TURN are ignored.
+## @param summon_result: The SummonResult from EffectHandlers
+## @param out_events: Array to append generated events to
+## @param bm: BattleManager reference
+func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonResult, out_events: Array[CombatEvent], bm) -> void:
+	var is_combat_phase: bool = bm.get_current_phase_name() == &"COMBAT"
+	
+	# For each new instance, trigger summon reactions
+	for i in range(summon_result.new_instances.size()):
+		var new_inst: GachaBallInstance = summon_result.new_instances[i]
+		
+		# Determine team from container tag
+		var summoned_team := ""
+		if i < summon_result.container_updates.size():
+			var container_tag: StringName = summon_result.container_updates[i].container_tag
+			if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+				summoned_team = "PLAYER"
+			elif container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+				summoned_team = "ENEMY"
+		
+		# Skip if we can't determine team
+		if summoned_team.is_empty():
+			continue
+		
+		# Create location for context
+		var summoned_location: LocationIdentifier = null
+		if i < summon_result.container_updates.size():
+			summoned_location = LocationIdentifier.new()
+			summoned_location.container = summon_result.container_updates[i].container_tag
+			summoned_location.index = summon_result.container_updates[i].slot
+		
+		# Trigger on_enemy_summon ONLY during combat phase (for abilities like Ambush Predator)
+		if is_combat_phase:
+			TurnAbilities.trigger_on_enemy_summon(new_inst.ball_uuid, summoned_team, summoned_location)
+		
+		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
+		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
+		
+		# Drain reactions immediately so summon abilities execute before the summoned unit acts
+		while not _pending_reactions.is_empty():
+			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+			var reaction = _pending_reactions.pop_front()
+			
+			var reaction_events: Array[CombatEvent] = []
+			resolve_effect_request(reaction, reaction_events, {}, bm)
+			
+			# Collect inline events
+			var inline_evts = collect_and_clear_inline_events()
+			out_events.append_array(inline_evts)
+			out_events.append_array(reaction_events)
 
 # ============================================================================
 # CLEANUP
