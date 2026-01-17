@@ -47,7 +47,26 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		final_target_uuid = target_uuid
 		
-		if stat == "pwr":
+		# STAT BUFFS: HP and PWR (core stats)
+		if stat == "hp":
+			var hp_values = payload.get("targets_new_hp", [])
+			var new_hp = 0
+			if not hp_values.is_empty() and i < hp_values.size():
+				new_hp = int(hp_values[i])
+			else:
+				new_hp = int(payload.get("new_hp", 0)) # Fallback
+			
+			animator.apply_hp_delta(target_uuid, amount, new_hp)
+			
+			# Composable Effects: Color flash + hop deform + hop move (same as PWR buff)
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
+			if SignalBus.has_signal("unit_move"):
+				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
+		
+		elif stat == "pwr":
 			var new_pwr = 0
 			if not pwr_values.is_empty() and i < pwr_values.size():
 				new_pwr = int(pwr_values[i])
@@ -63,7 +82,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
 			if SignalBus.has_signal("unit_move"):
 				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
-				
+		
+		# STATUS EFFECTS: burn, armor, and other stacks (separate from core stats)
 		elif stat == "burn_stacks":
 			var new_val = 0
 			if not burn_values.is_empty() and i < burn_values.size():

@@ -238,3 +238,11 @@ deck.hiragana.desc,"Master the flowing Japanese syllabary for native words and g
 deck.kanji_100.desc,"Challenge yourself with 100 essential Chinese characters used in Japanese writing.","Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa."
 deck.german_100.desc,"Build your German vocabulary with 100 common and essential words.","Construa seu vocabulário alemão com 100 palavras comuns e essenciais."
 deck.portuguese_100.desc,"Expand your Portuguese vocabulary with 100 essential everyday words.","Expanda seu vocabulário português com 100 palavras essenciais do dia a dia."
+unit_t3_e.name,Dreadnought,Dreadnought
+unit_t3_e.desc,A terrifying predator that strikes down newly summoned enemies.,Um predador aterrorizante que abate inimigos recém-invocados.
+ability.unit_tier3e_ambush_predator.name,Ambush Predator,Predador de Emboscada
+ability.unit_tier3e_ambush_predator.desc,"When an enemy unit is summoned, attack it for half this unit's PWR.","Quando uma unidade inimiga é invocada, ataca-a causando metade do PWR desta unidade."
+unit_t3_f.name,Warden,Guardião Protetor
+unit_t3_f.desc,A protective guardian that empowers newly summoned allies.,Um guardião protetor que fortalece aliados recém-invocados.
+ability.unit_tier3f_summon_blessing.name,Summon Blessing,Bênção de Invocação
+ability.unit_tier3f_summon_blessing.desc,"When an ally unit is summoned, grant it +3 HP.","Quando uma unidade aliada é invocada, concede +3 HP."

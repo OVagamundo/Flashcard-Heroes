@@ -146,3 +146,29 @@ static func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 		"killed_uuid": killed_uuid
 	}
 	AbilityResolver.process_trigger(&"on_kill", kill_context)
+
+## Trigger on_enemy_summon when a unit is summoned
+## This allows units like Dreadnought to react and attack the newly summoned unit
+## @param summoned_uuid: String - The UUID of the summoned unit
+## @param summoned_team: String - "PLAYER" or "ENEMY" team of the summoned unit
+## @param summoned_location: LocationIdentifier - Where the unit was summoned
+static func trigger_on_enemy_summon(summoned_uuid: String, summoned_team: String, summoned_location: LocationIdentifier) -> void:
+	var summon_context: Dictionary = {
+		"summoned_uuid": summoned_uuid,
+		"summoned_team": summoned_team,
+		"summoned_location": summoned_location
+	}
+	AbilityResolver.process_trigger(&"on_enemy_summon", summon_context)
+
+## Trigger on_ally_summon when a unit is summoned
+## This allows units to react and buff the newly summoned ally unit
+## @param summoned_uuid: String - The UUID of the summoned unit
+## @param summoned_team: String - "PLAYER" or "ENEMY" team of the summoned unit
+## @param summoned_location: LocationIdentifier - Where the unit was summoned
+static func trigger_on_ally_summon(summoned_uuid: String, summoned_team: String, summoned_location: LocationIdentifier) -> void:
+	var summon_context: Dictionary = {
+		"summoned_uuid": summoned_uuid,
+		"summoned_team": summoned_team,
+		"summoned_location": summoned_location
+	}
+	AbilityResolver.process_trigger(&"on_ally_summon", summon_context)
