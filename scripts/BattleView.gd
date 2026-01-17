@@ -8,7 +8,6 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
 @onready var player_bench: HBoxContainer = get_node("TeamAreas/PlayerArea/BenchAndInventory/PlayerBench")
-@onready var item_inventory: HBoxContainer = get_node("TeamAreas/PlayerArea/BenchAndInventory/ItemInventory")
 @onready var enemy_lineup: HBoxContainer = %EnemyLineupContainer
 
 @onready var discard_pile_button: Button = %DiscardPileButton
@@ -110,7 +109,6 @@ func _ready() -> void:
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")
 	_initialize_slots(player_bench, &"PlayerBench")
-	_initialize_slots(item_inventory, &"ItemInventory")
 	_initialize_slots(enemy_lineup, &"EnemyLineup")
 	_initialize_slots(enemy_trinket_bar, &"EnemyTrinkets")
 
@@ -205,7 +203,6 @@ func _redraw_board() -> void:
 
 	_populate_container(player_lineup, "PlayerLineup", false)
 	_populate_container(player_bench, "PlayerBench", false)
-	_populate_container(item_inventory, "ItemInventory", false)
 	_populate_container(enemy_lineup, "EnemyLineup", true)
 	_populate_enemy_trinkets()
 
@@ -453,8 +450,6 @@ func _on_gacha_draw_animated(draw_result) -> void:
 		var target_ui_container: HBoxContainer = null
 		if draw_result.dest_container == "PlayerBench":
 			target_ui_container = player_bench
-		elif draw_result.dest_container == "ItemInventory":
-			target_ui_container = item_inventory
 		
 		if target_ui_container and draw_result.dest_slot >= 0 and draw_result.dest_slot < target_ui_container.get_child_count():
 			dest_slot_view = target_ui_container.get_child(draw_result.dest_slot)
@@ -579,8 +574,6 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	var target_ui_container: HBoxContainer = null
 	if draw_result.dest_container == "PlayerBench":
 		target_ui_container = player_bench
-	elif draw_result.dest_container == "ItemInventory":
-		target_ui_container = item_inventory
 	
 	if not target_ui_container:
 		return

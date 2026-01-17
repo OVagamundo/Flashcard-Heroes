@@ -109,7 +109,6 @@ alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 3.0
 mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 1
@@ -132,21 +131,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="ItemInventory" type="HBoxContainer" parent="TeamAreas/PlayerArea/BenchAndInventory"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 2.0
-mouse_filter = 2
-theme_override_constants/separation = 0
-
-[node name="ItemIventorySlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/ItemInventory"]
+[node name="BenchSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="ItemIventorySlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/ItemInventory"]
+[node name="BenchSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3

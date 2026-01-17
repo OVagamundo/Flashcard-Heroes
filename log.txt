@@ -14,138 +14,31 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect"]
-[TestMode] Registered unit: unit_t3_f at PlayerLineup slot 1
-[TestMode] Registered unit: unit_t3_f at PlayerLineup slot 2
-[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 3
-[TestMode] Registered unit: unit_t3_e at PlayerLineup slot 4
-[TestMode] Registered unit: unit_t3_e at EnemyLineup slot 0
-[TestMode] Registered unit: unit_t3_f at EnemyLineup slot 1
-[TestMode] Registered trinket: trinket_armor_aura for enemy at slot 0
-[TestMode] Registered trinket: trinket_armor_aura for player at slot 0
-[TestMode] Registered trinket: trinket_burn_vial for player at slot 1
-[TestMode] Registered trinket: trinket_burn_vial for enemy at slot 1
-[TestMode] Registered trinket: trinket_soul_echo for enemy at slot 2
-[TestMode] Registered trinket: trinket_soul_echo for player at slot 2
-[BattleLog] [0:1] Soul Caller deals 5 dmg to Soul Caller 
-[BattleLog] [0:2] Soul Caller attacks unit_t3_... for 5 damage (basic_attack, on_attack) (HP: 5→0)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650136_5_60361"] source: unit_t3_c_1768650152_8_14719 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_c_1768650152 type 5
-[BattleLog] [0:3] └─ unit_t3_... is defeated! 
-[BattleLog] [0:4] └─ trinket_soul_echo summons New Unit! 
-[BattleLog] [0:5] Warden blesses Soul Caller with +3 HP 
-[BattleLog] [0:6] Warden grants unit_t3_... +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
-[BattleLog] [0:7] Dreadnought deals 3 dmg to Soul Caller 
-[BattleLog] [0:8] Dreadnought attacks unit_t3_... for 3 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 8→5)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650216_20_13727"] source: unit_t3_e_1768650156_9_14674 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1768650156 type 5
-[BattleLog] [0:9] Dreadnought deals 7 dmg to Soul Caller 
-[BattleLog] [0:10] Dreadnought attacks unit_t3_... for 7 damage (basic_attack, on_attack) (HP: 5→-2)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650216_20_13727"] source: unit_t3_e_1768650156_9_14674 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1768650156 type 5
-[BattleLog] [0:11] └─ unit_t3_... is defeated! 
-[BattleLog] [0:12] └─ unit_t3_... summons New Unit! 
-[BattleLog] [0:13] Warden blesses Berserker with +3 HP 
-[BattleLog] [0:14] Warden grants unit_t2_... +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
-[BattleLog] [0:15] Dreadnought deals 3 dmg to Berserker 
-[BattleLog] [0:16] Dreadnought attacks unit_t2_... for 3 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 5→2)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1768650216_21_71416"] source: unit_t3_e_1768650156_9_14674 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1768650156 type 5
-[BattleLog] [0:17] Warden deals 5 dmg to Berserker 
-[BattleLog] [0:18] Warden attacks unit_t2_... for 5 damage (basic_attack, on_attack) (HP: 2→-3)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1768650216_21_71416"] source: unit_t3_f_1768650145_7_88483 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_f_1768650145 type 5
-[BattleLog] [0:19] └─ unit_t2_... is defeated! 
-[BattleLog] [0:20] Warden deals 5 dmg to Apprentice 
-[BattleLog] [0:21] Warden attacks unit_t1_... for 5 damage (basic_attack, on_attack) (HP: 4→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1768650136_4_37959"] source: unit_t3_f_1768650144_6_29481 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_f_1768650144 type 5
-[BattleLog] [0:22] └─ unit_t1_... is defeated! 
-[BattleLog] [0:23] └─ item_t2_... summons New Unit! 
-[BattleLog] [0:24] Warden blesses Squire with +3 HP 
-[BattleLog] [0:25] Warden grants unit_t1_... +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
-[BattleLog] [0:26] Dreadnought deals 3 dmg to Squire 
-[BattleLog] [0:27] Dreadnought attacks unit_t1_... for 3 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 4→1)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1768650216_22_73333"] source: unit_t3_e_1768650156_9_14674 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1768650156 type 5
-[BattleLog] [0:28] Squire deals 2 dmg to Dreadnought 
-[BattleLog] [0:29] unit_t1_... attacks Dreadnought for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 5→3)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1768650156_9_14674"] source: unit_t1_b_1768650216_22_73333 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1768650216 type 5
-[BattleLog] [0:30] Timekeeper deals 2 dmg to Squire 
-[BattleLog] [0:31] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1768650216_22_73333"] source: hero_timekeeper_1768650136_2_15288 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1768 type 5
-[BattleLog] [0:32] Squire deals 2 dmg to Timekeeper 
-[BattleLog] [0:33] unit_t1_... attacks Timekeeper for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 50→48)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1768650136_2_15288"] source: unit_t1_b_1768650216_22_73333 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1768650216 type 5
-[BattleLog] [0:34] └─ unit_t1_... is defeated! 
-[BattleLog] [0:35] Apprentice deals 1 dmg to Soul Caller 
-[BattleLog] [0:36] Apprentice attacks Soul Caller for 1 damage (basic_attack, on_attack) (HP: 5→4)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650152_8_14719"] source: unit_t1_a_1768650136_3_66688 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1768650136 type 5
-[BattleLog] [0:37] Warden deals 5 dmg to Soul Caller 
-[BattleLog] [0:38] Warden attacks Soul Caller for 5 damage (basic_attack, on_attack) (HP: 4→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650152_8_14719"] source: unit_t3_f_1768650175_11_39830 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_f_1768650175 type 5
-[BattleLog] [0:39] └─ Soul Caller is defeated! 
-[TutorialManager] Requesting blocking tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [0:40] └─ trinket_soul_echo summons New Unit! 
-[BattleLog] [0:41] Warden blesses Soul Caller with +3 HP 
-[BattleLog] [0:42] Warden grants Soul Caller +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
-[BattleLog] [0:43] Warden blesses Soul Caller with +3 HP 
-[BattleLog] [0:44] Warden grants Soul Caller +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
-[BattleLog] [0:45] Dreadnought deals 3 dmg to Soul Caller 
-[BattleLog] [0:46] Dreadnought attacks Soul Caller for 3 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 11→8)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650216_23_86442"] source: unit_t3_e_1768650170_10_69084 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1768650170 type 5
-[BattleLog] [0:47] └─ Soul Caller summons New Unit! 
-[BattleLog] [0:48] Dreadnought deals 7 dmg to Soul Caller 
-[BattleLog] [0:49] Dreadnought attacks Soul Caller for 7 damage (basic_attack, on_attack) (HP: 8→1)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650216_23_86442"] source: unit_t3_e_1768650170_10_69084 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1768650170 type 5
-[BattleLog] [0:50] Timekeeper takes 1 STATUS_BURN dmg 
-[BattleLog] [0:51] System attacks Timekeeper for 1 damage (HP: 48→47)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1768650136_2_15288"] source:  attack_type: melee
-[StatusEffectAnimation] execute() called - stat='burn_stacks' amount=-1 targets=1
-[BattleLog] [0:52] Dreadnought takes 1 STATUS_BURN dmg 
-[BattleLog] [0:53] System attacks Dreadnought for 1 damage (HP: 3→2)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1768650156_9_14674"] source:  attack_type: melee
-[StatusEffectAnimation] execute() called - stat='burn_stacks' amount=-1 targets=1
-[BattleLog] [0:54] Soul Caller takes 2 STATUS_BURN dmg 
-[BattleLog] [0:55] System attacks Soul Caller for 2 damage (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1768650216_23_86442"] source:  attack_type: melee
-[StatusEffectAnimation] execute() called - stat='burn_stacks' amount=-1 targets=1
-[BattleLog] [0:56] └─ Soul Caller is defeated! 
-[BattleLog] [0:57] └─ Soul Caller summons New Unit! 
-[BattleLog] [0:58] Warden blesses Berserker with +3 HP 
-[BattleLog] [0:59] Warden grants Berserker +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
-[BattleLog] [0:60] Warden blesses Berserker with +3 HP 
-[BattleLog] [0:61] Warden grants Berserker +3 HP (unit_tier3f_summon_blessing, on_ally_summon) 
-[BuffAnimation] execute() called - stat='hp' amount=3 targets=1
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
-[BattleLog] [1:2] Armor Aura grants Apprentice and Warden and Dreadnought +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=3
-[BattleLog] [1:3] Armor Aura grants Timekeeper and Warden and Warden and Dreadnought and Berserker +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=5
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Tutorials disabled
+[FlashcardManager] _on_minigame_complete called. Correct: 7
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[BattleLog] [1:2] Koi's Blessing heals Knight for 2 HP 
+[BattleLog] [1:3] Koi's Blessing heals Knight for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 4→6)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled

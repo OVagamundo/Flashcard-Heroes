@@ -689,10 +689,6 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 	if container_name.begins_with("RunInventoryT") or container_name.begins_with("BattleInventoryT"):
 		return &"InventoryGrid"
 
-	# Non-tiered item storage should also be treated as InventoryGrid
-	if container_name == &"ItemInventory":
-		return &"InventoryGrid"
-
 	# Selection-only containers (can only be selected)
 	if container_name in [&"Rewards", &"Shop"]:
 		return &"SelectionOnly"

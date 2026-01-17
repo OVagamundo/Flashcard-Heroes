@@ -52,7 +52,7 @@ This is the core logic that the InventoryManager enforces. It follows a strict p
 Rule I0: The Context Integrity Rule
 Statement: An action can only be attempted between entities that exist within the same functional context group.
 Mechanism: The manager's first step is to get the context group for the source and target locations from the GIR (e.g., BATTLE_BOARD, INVENTORY_GRID). If the groups do not match, the action is immediately rejected as invalid, and an inventory_action_invalid signal is emitted.
-Rationale: A top-level sanity check that prevents illogical actions, like swapping an unit from the bench with a item on the item inventory or a tier 1 gachaball with a tier 2 or 3 gachaball or vice versa, on the run/battle inventory, that have tier exclusive containers.
+Rationale: A top-level sanity check that prevents illogical actions, like swapping a tier 1 gachaball with a tier 2 or 3 gachaball or vice versa on the run/battle inventory, that have tier exclusive containers.
 Rule I1: The Merge Priority Rule
 Statement: If an interaction between two GachaBalls could possibly be a merge (and is not in conflict with The Context Integrity Rule 0), that possibility must be resolved before any other action is considered.
 Mechanism:
@@ -65,13 +65,13 @@ Statement: An action is interpreted as an "Equip" if and only if a source GachaB
 Mechanism: If no merge is possible, the manager checks the categories of the source and target instances. If they match the criteria, it proceeds to validate the action against the specific equip rules (I3).
 Rationale: Provides a clear, type-based definition for the equip action.
 Rule I3: The Equip Legality Rule
-Statement: A valid Equip action is constrained by the item's origin (InventoryGrid), the unit's capacity, and cross‑unit restrictions.
+Statement: A valid Equip action is constrained by the item's origin (InventoryGrid or BattleBoard), the unit's capacity, and cross‑unit restrictions.
 Validation Checklist:
-The source Item must originate from an InventoryGrid container: `RunInventoryT*`, `BattleInventoryT*`, or `ItemInventory`. (GIR maps `ItemInventory` → `InventoryGrid` for gating.)
-An item already equipped on Unit A cannot be directly moved to Unit B or back to an inventory container. There is no direct player action to un‑equip; items must be removed via explicit unequip flows, not by equip actions.
-The target must be either (a) a UNIT on `PlayerLineup`/`PlayerBench`, or (b) that unit’s empty `equipped_item` slot.
+The source Item must originate from an InventoryGrid container (`RunInventoryT*`, `BattleInventoryT*`) or the `PlayerBench` (BattleBoard context).
+An item already equipped on Unit A cannot be directly moved to Unit B or back to an inventory container. There is no direct player action to un‑equip; items must be removed via explicit unequip flows.
+The target must be a UNIT on `PlayerLineup` or `PlayerBench`, or that unit's empty `equipped_item` slot. **Note:** Items equipped on bench units provide stat bonuses but their triggered abilities do not activate until the unit is in the `PlayerLineup` (combat-active).
 Mechanism: If these checks pass, the manager performs an early equip path: remove the item from its source container and attach it to the target unit's equipped list, updating both the container index and the instance's location (atomic update).
-Rationale: This makes equipping deliberate and predictable while allowing click‑to‑click and drag‑and‑drop equip from any InventoryGrid.
+Rationale: This makes equipping deliberate and predictable while allowing click‑to‑click and drag‑and‑drop equip from bench or inventory.
 Rule I4: The Swap/Move Rule
 Statement: If an action is not a Merge and not an Equip, it is interpreted as a potential Swap or Move.
 Mechanism (Swap): If the target location contains an instance, the manager checks if the source instance can legally occupy the target's slot, AND if the target instance can legally occupy the source's original slot (per Rule I5). If both are true, it's a Swap. The data owner is instructed to exchange their location properties.
@@ -81,13 +81,13 @@ Rule I5: The Placement Legality Rules (The Final Gatekeeper)
 Statement: All Move and Swap actions are ultimately validated against a final set of hard-coded placement restrictions.
 The Definitive Checklist:
 Hero Restriction: The Hero instance can only exist in the PlayerLineup container. It cannot be moved to the bench or any inventory.
-Container Type Restriction: Units cannot be placed in ItemInventory. Items cannot be placed in PlayerLineup or PlayerBench.
+Container Type Restriction: Items cannot be placed in PlayerLineup. Both units and items can be placed in PlayerBench.
 Container Tier Integrity: A GachaBall of Tier X cannot be placed in an inventory container for Tier Y (e.g., RunInventoryT1 cannot hold a Tier 2 item).
 Intra-Unit Item Management: An item already equipped on a unit can only be moved or swapped with other slots on that same unit.
 Rationale: These rules enforce the fundamental structure of the game's inventories and battle board, preventing game-breaking states.
 Rule I6: The Merge Placement Context Rule
 Statement: The destination of a newly created merged GachaBall depends on where the merge was performed.
-Mechanism (Board Merge): If two units are merged on the PlayerLineup or PlayerBench, the new, higher-tier unit is placed in the target's original slot. Same for items merged in the ItemInventory container.
+Mechanism (Board Merge): If two units are merged on the PlayerLineup or PlayerBench, the new, higher-tier unit is placed in the target's original slot. Same for items merged in the PlayerBench container.
 Mechanism (Inventory Merge): If two Tier 1 gachaballs are merged in the RunInventoryT1 container, the new Tier 2 gachaball is placed in the first available slot of the RunInventoryT2 container, the same is valid for merging tier 2 gachaballs that will be placed in the RunInventoryT3 container.
 Rationale: Creates a strategic distinction. Merging on the board is a tactical replacement. Merging in the inventory changes the probabilities of the next draw while in battle, or if done in the Run inventory, it changes your collection (or "deck") permanently for future battles.
 
@@ -109,8 +109,8 @@ Logic: The BattleManager is responsible for executing the draw.
 Cost Check: It verifies if the player has enough Gacha Tokens (token cost according to tier).
 Pool Check: It checks the appropriate BattleInventoryT<n> container (each draw is associated with one of the tier containers).
 Reshuffle Check (Rule G1): If the pool becomes empty with a draw, it triggers the Reshuffle mechanism. If the pool is empty the draw fails and the token is not spent.
-Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first available slot of the PlayerBench (for Units) or ItemInventory (for Items).
-Overflow (Rule G2): If the destination container (PlayerBench or ItemInventory) is full, the drawn instance is sent directly to the DiscardPile.
+Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first available slot of the PlayerBench (for both Units and Items).
+Overflow (Rule G2): If the destination container (PlayerBench) is full, the drawn instance is sent directly to the DiscardPile.
 The Discard Pile & Reshuffle Mechanism
 What Goes to the Discard Pile:
 Drawn GachaBalls when the bench/inventory is full (Rule G2).

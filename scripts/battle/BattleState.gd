@@ -52,9 +52,7 @@ func get_container(container_name: StringName) -> DataContainer:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-			new_container = FixedArrayContainer.new(3)
-		BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-			new_container = FixedArrayContainer.new(2)
+			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
 			new_container = GrowableGridContainer.new(24)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
@@ -193,8 +191,7 @@ func is_player_owned(instance: GachaBallInstance) -> bool:
 	# Player containers or common battle containers (discard, etc.)
 	return (container.begins_with("Player") or
 			container.begins_with("BattleInventory") or
-			container == "DiscardPile" or
-			container == "ItemInventory")
+			container == "DiscardPile")
 
 ## Reshuffle instances of specified tier from discard back to draw pool
 func reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
@@ -307,7 +304,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 		# If this is a player unit with equipped items, unequip and move them to inventory
 		if instance.equipped_item_uuids.size() > 0:
 			if is_player_unit(instance):
-				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
 				for i in range(instance.equipped_item_uuids.size()):
 					var it_uuid := instance.equipped_item_uuids[i]
 					if it_uuid.is_empty():
@@ -322,7 +319,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 						var empty := inv.find_first_empty_slot()
 						if empty != -1:
 							inv.set_uuid(empty, it.ball_uuid)
-							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty)
+							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
 						else:
 							return result
 			else:
@@ -332,7 +329,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 						_battle_instances.erase(it_uuid)
 		# Extra hardening: clear any stray items that believe they are equipped on this unit
 		if is_player_unit(instance):
-			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY)
+			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
 			for k in _battle_instances.keys():
 				var maybe_item: GachaBallInstance = _battle_instances[k]
 				if not is_instance_valid(maybe_item):
@@ -344,7 +341,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 						var empty2 := inv2.find_first_empty_slot()
 						if empty2 != -1:
 							inv2.set_uuid(empty2, maybe_item.ball_uuid)
-							update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY, empty2)
+							update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty2)
 						else:
 							return result
 		remove_instance_from_container(instance)

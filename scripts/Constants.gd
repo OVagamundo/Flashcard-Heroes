@@ -8,7 +8,6 @@ const CONTAINER_EQUIPPED_ITEM = &"equipped_item"
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
 	PLAYER_BENCH = &"PlayerBench",
-	PLAYER_ITEM_INVENTORY = &"ItemInventory",
 	ENEMY_LINEUP = &"EnemyLineup",
 	ENEMY_BENCH = &"EnemyBench",
 	BATTLE_DISCARD_PILE = &"DiscardPile",
@@ -19,7 +18,6 @@ const BATTLE_CONTAINER_TAGS = {
 # Run State Containers
 const CONTAINER_PLAYER_LINEUP = &"PlayerLineup"
 const CONTAINER_PLAYER_BENCH = &"PlayerBench"
-const CONTAINER_ITEM_INVENTORY = &"ItemInventory"
 # Battle State Containers
 const CONTAINER_ENEMY_LINEUP = &"EnemyLineup"
 const CONTAINER_DISCARD_PILE = &"DiscardPile"

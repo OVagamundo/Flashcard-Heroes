@@ -165,8 +165,8 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, source_container: S
 			containers.append(&"PlayerLineup")
 			containers.append(&"PlayerBench")
 		elif is_item:
-			# Items can move to ItemInventory
-			containers.append(&"ItemInventory")
+			# Items can move to PlayerBench
+			containers.append(&"PlayerBench")
 	
 	return containers
 

@@ -133,8 +133,6 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 				RS.RUN_CONTAINER_TAGS.PLAYER_BENCH:
 					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-				RS.RUN_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY:
-					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_ITEM_INVENTORY
 				_:
 					continue
 
