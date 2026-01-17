@@ -57,6 +57,10 @@ var summon_team: String = ""
 ## Format: [{target: uuid, amount: int, skip_bump: bool}, ...]
 var cascade_request: Array = []
 
+## Kamikaze attack request for Death's Bargain on-death effect.
+## Format: {source_uuid: String, target_uuid: String, damage: int, dying_max_hp: int}
+var kamikaze_request: Dictionary = {}
+
 # ============================================================================
 # HELPERS
 # ============================================================================

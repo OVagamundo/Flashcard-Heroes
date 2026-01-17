@@ -39,8 +39,12 @@ ability.item_tier3d_retaliate.name,Retaliation,Retaliação
 ability.item_tier3d_retaliate.desc,"When hurt, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido, causa metade do PWR do portador como dano a um inimigo aleatório."
 ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
 ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies.","Ao ser ferido, concede +1 HP e +1 PWR aos aliados adjacentes."
-item_t2_c02.name,Summoning Scroll,Pergaminho de Invocação
-item_t2_c02.desc,Summons a random Tier 1 unit upon death.,Invoca uma unidade Nível 1 aleatória ao morrer.
+item_t2_a.name,Summoning Scroll,Pergaminho de Invocação
+item_t2_a.desc,Summons a random Tier 1 unit upon death.,Invoca uma unidade Nível 1 aleatória ao morrer.
+item_t3_e.name,Death's Bargain,Barganha da Morte
+item_t3_e.desc,Upon death strikes the mightiest foe.,Ao morrer atinge o inimigo mais poderoso.
+ability.item_t3e_death_damage.name,Final Strike,Golpe Final
+ability.item_t3e_death_damage.desc,When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.,Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP.
 ability.item_t2_c_summon.name,Summon,Invocação
 ability.item_t2_c_summon.desc,"When the holder dies, summon a random Tier 1 unit in their place.","Quando o portador morre, invoca uma unidade Nível 1 aleatória no lugar."
 unit_t2_a.name,Guardian,Guardião

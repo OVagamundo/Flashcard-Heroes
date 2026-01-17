@@ -684,7 +684,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
 				# Tier 2
 				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c",
-				&"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c", &"item_t2_c02", &"item_t2_c02",
+				&"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c", &"item_t2_a", &"item_t2_a",
 			# Tier 3
 				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c", &"unit_t3_d", &"unit_t3_d",
 				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c", &"item_t3_d", &"item_t3_d"

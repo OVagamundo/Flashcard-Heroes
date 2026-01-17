@@ -13,32 +13,219 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 [SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect"]
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze"]
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 1
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 2
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 3
+[TestMode] Registered unit: unit_t3_c at EnemyLineup slot 1
+[TestMode] Registered unit: unit_t3_c at EnemyLineup slot 2
+[TestMode] Registered unit: unit_t3_c at EnemyLineup slot 3
+[BattleLog] [0:1] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [0:2] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [0:3] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [0:4] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [0:5] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [0:6] Soul Caller deals 7 dmg to Soul Caller 
+[BattleLog] [0:7] Soul Caller attacks unit_t3_... for 7 damage (basic_attack, on_attack) (HP: 7→0)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659034_8_73340"] source: unit_t3_c_1768659032_7_30233 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659032 type 5
+[BattleLog] [0:8] └─ unit_t3_... summons New Unit! 
+[BattleLog] [0:9] Soul Caller deals 5 dmg to Knight 
+[BattleLog] [0:10] Soul Caller attacks unit_t2_... for 5 damage (basic_attack, on_attack) (HP: 3→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1768659059_13_14643"] source: unit_t3_c_1768659031_6_20313 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659031 type 5
+[BattleLog] [0:11] └─ unit_t2_... is defeated! 
+[BattleLog] [0:12] Soul Caller deals 5 dmg to Soul Caller 
+[BattleLog] [0:13] Soul Caller attacks unit_t3_... for 5 damage (basic_attack, on_attack) (HP: 5→0)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659035_9_58189"] source: unit_t3_c_1768659031_5_97552 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659031 type 5
+[BattleLog] [0:14] └─ unit_t3_... is defeated! 
+[BattleLog] [0:15] └─ unit_t3_... summons New Unit! 
+[BattleLog] [0:16] Timekeeper deals 2 dmg to Knight 
+[BattleLog] [0:17] Timekeeper attacks Knight for 2 damage (basic_attack, on_attack) (HP: 3→1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1768659059_14_73076"] source: hero_timekeeper_1768659017_2_20665 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1768 type 5
+[BattleLog] [0:18] Knight deals 3 dmg to Soul Caller 
+[BattleLog] [0:19] Knight attacks Soul Caller for 3 damage (basic_attack, on_attack) (HP: 7→4)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659032_7_30233"] source: unit_t2_c_1768659059_14_73076 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_c_1768659059 type 5
+[BattleLog] [0:20] Soul Caller deals 5 dmg to Soul Caller 
+[BattleLog] [0:21] Soul Caller attacks Soul Caller for 5 damage (basic_attack, on_attack) (HP: 4→-1)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659032_7_30233"] source: unit_t3_c_1768659035_10_26365 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659035 type 5
+[BattleLog] [0:22] └─ Soul Caller summons New Unit! 
+[BattleLog] [0:23] Guardian heals Guardian for 2 HP 
+[BattleLog] [0:24] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
+[BattleLog] [0:25] Dreadnought deals 4 dmg to Guardian 
+[BattleLog] [0:26] Dreadnought attacks Guardian for 4 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1768659059_15_57464"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:27] Guardian heals Guardian for 2 HP 
+[BattleLog] [0:28] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 2→4)
+[BattleLog] [0:29] Dreadnought deals 9 dmg to Guardian 
+[BattleLog] [0:30] Dreadnought attacks Guardian for 9 damage (basic_attack, on_attack) (HP: 4→-5)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1768659059_15_57464"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:31] Dreadnought triggers Bloodlust! 
+[BattleLog] [0:32] └─ Guardian is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [0:33] Dreadnought deals 9 dmg to Soul Caller 
+[BattleLog] [0:34] Dreadnought attacks Soul Caller for 9 damage (basic_attack, on_attack) (HP: 5→-4)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659031_6_20313"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:35] Dreadnought triggers Bloodlust! 
+[BattleLog] [0:36] └─ Soul Caller is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [0:37] └─ Soul Caller summons New Unit! 
+[BattleLog] [0:38] Dreadnought deals 4 dmg to Knight 
+[BattleLog] [0:39] Dreadnought attacks Knight for 4 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 3→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1768659059_16_56300"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:40] Dreadnought triggers Bloodlust! 
+[BattleLog] [0:41] └─ Knight is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [0:42] └─ Knight is defeated! 
+[BattleLog] [0:43] Dreadnought deals 9 dmg to Soul Caller 
+[BattleLog] [0:44] Dreadnought attacks Soul Caller for 9 damage (basic_attack, on_attack) (HP: 5→-4)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659031_5_97552"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:45] Dreadnought triggers Bloodlust! 
+[BattleLog] [0:46] └─ Soul Caller is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [0:47] └─ Soul Caller summons New Unit! 
+[BattleLog] [0:48] Guardian heals Guardian for 2 HP 
+[BattleLog] [0:49] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
+[BattleLog] [0:50] Dreadnought deals 4 dmg to Guardian 
+[BattleLog] [0:51] Dreadnought attacks Guardian for 4 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 6→2)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1768659059_17_13783"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:52] Guardian heals Guardian for 2 HP 
+[BattleLog] [0:53] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 2→4)
+[BattleLog] [0:54] Dreadnought deals 9 dmg to Guardian 
+[BattleLog] [0:55] Dreadnought attacks Guardian for 9 damage (basic_attack, on_attack) (HP: 4→-5)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1768659059_17_13783"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:56] Dreadnought triggers Bloodlust! 
+[BattleLog] [0:57] └─ Guardian is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [0:58] Dreadnought deals 9 dmg to Timekeeper 
+[BattleLog] [0:59] Dreadnought attacks Timekeeper for 9 damage (basic_attack, on_attack) (HP: 25→16)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1768659017_2_20665"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [0:60] Dreadnought deals 9 dmg to Timekeeper 
+[BattleLog] [0:61] Dreadnought attacks Timekeeper for 9 damage (basic_attack, on_attack) (HP: 16→7)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1768659017_2_20665"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 1
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 2
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 3
+[TestMode] Registered unit: unit_t3_c at PlayerLineup slot 4
+[BattleLog] [1:2] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [1:3] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [1:4] └─ "Bloodlust" grants Dreadnought an extra action! 
+[BattleLog] [1:5] Soul Caller deals 7 dmg to Soul Caller 
+[BattleLog] [1:6] Soul Caller attacks unit_t3_... for 7 damage (basic_attack, on_attack) (HP: 7→0)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659035_10_26365"] source: unit_t3_c_1768659140_26_86172 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659140 type 5
+[BattleLog] [1:7] Vengeful Thorn deals 4 dmg to Soul Caller 
+[BattleLog] [1:8] item_t3_... attacks Soul Caller for 4 damage (item_tier3d_retaliate_random, on_hurt) (HP: 5→1)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659139_23_46605"] source: unit_t3_c_1768659035_10_26365 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659035 type 5
+[BattleLog] [1:9] Soul Caller heals Timekeeper for 2 HP 
+[BattleLog] [1:10] Heart Stone heals Timekeeper for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 7→9)
+[BattleLog] [1:11] Soul Caller heals Soul Caller for 2 HP 
+[BattleLog] [1:12] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 7→9)
+[BattleLog] [1:13] └─ unit_t3_... summons New Unit! 
+[BattleLog] [1:14] └─ unit_t3_... is defeated! 
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659035 type 2
+[BattleLog] [1:15] Knight heals Knight for 1 HP 
+[BattleLog] [1:16] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 1→2)
+[BattleLog] [1:17] Knight grants Knight +1 PWR 
+[BattleLog] [1:18] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:19] Knight heals Knight for 1 HP 
+[BattleLog] [1:20] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
+[BattleLog] [1:21] Knight grants Knight +1 PWR 
+[BattleLog] [1:22] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:23] Soul Caller deals 5 dmg to Knight 
+[BattleLog] [1:24] Soul Caller attacks unit_t2_... for 5 damage (basic_attack, on_attack) (HP: 4→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1768659154_27_33922"] source: unit_t3_c_1768659140_25_81084 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659140 type 5
+[BattleLog] [1:25] └─ unit_t2_... is defeated! 
+[BattleLog] [1:26] Knight heals Knight for 1 HP 
+[BattleLog] [1:27] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 2→3)
+[BattleLog] [1:28] Knight grants Knight +1 PWR 
+[BattleLog] [1:29] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:30] Soul Caller deals 5 dmg to Knight 
+[BattleLog] [1:31] Soul Caller attacks unit_t2_... for 5 damage (basic_attack, on_attack) (HP: 3→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1768659059_14_73076"] source: unit_t3_c_1768659139_23_46605 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_c_1768659139 type 5
+[BattleLog] [1:32] └─ unit_t2_... is defeated! 
+[BattleLog] [1:33] Timekeeper deals 2 dmg to Dreadnought 
+[BattleLog] [1:34] Timekeeper attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 5→3)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1768659017_3_95183"] source: hero_timekeeper_1768659017_2_20665 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1768 type 5
+[BattleLog] [1:35] Dreadnought deals 9 dmg to Soul Caller 
+[BattleLog] [1:36] unit_t3_... attacks Soul Caller for 9 damage (basic_attack, on_attack) (HP: 6→-3)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659140_26_86172"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [1:37] Soul Caller heals Soul Caller for 2 HP 
+[BattleLog] [1:38] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 9→11)
+[BattleLog] [1:39] Soul Caller heals Soul Caller for 2 HP 
+[BattleLog] [1:40] Heart Stone heals Soul Caller for 2 HP (item_tier3a_on_hurt_heal, on_hurt) (HP: 1→3)
+[BattleLog] [1:41] Dreadnought triggers Bloodlust! 
+[BattleLog] [1:42] └─ Soul Caller summons New Unit! 
+[BattleLog] [1:43] Dreadnought deals 4 dmg to Knight 
+[BattleLog] [1:44] unit_t3_... attacks Knight for 4 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 3→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1768659154_28_14158"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [1:45] Dreadnought triggers Bloodlust! 
+[BattleLog] [1:46] └─ Knight is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
 [TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 7
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[BattleLog] [1:2] Koi's Blessing heals Knight for 2 HP 
-[BattleLog] [1:3] Koi's Blessing heals Knight for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 4→6)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
+[BattleLog] [1:47] └─ Knight is defeated! 
+[BattleLog] [1:48] Dreadnought deals 9 dmg to Soul Caller 
+[BattleLog] [1:49] unit_t3_... attacks Soul Caller for 9 damage (basic_attack, on_attack) (HP: 11→2)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659140_25_81084"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [1:50] Dreadnought deals 9 dmg to Soul Caller 
+[BattleLog] [1:51] unit_t3_... attacks Soul Caller for 9 damage (basic_attack, on_attack) (HP: 2→-7)
+[DamageAnimation] Executing for targets: ["unit_t3_c_1768659140_25_81084"] source: unit_t3_e_1768659017_3_95183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1768659017 type 5
+[BattleLog] [1:52] Dreadnought triggers Bloodlust! 
+[BattleLog] [1:53] └─ Soul Caller is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
 [TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [1:54] └─ Soul Caller summons New Unit! 

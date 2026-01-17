@@ -509,6 +509,50 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 				return
 			
+			# Handle kamikaze attack request (from EffectDeathDamageHighestEnemy)
+			# Creates KAMIKAZE_ATTACK event for animation + applies damage
+			if not effect_result.kamikaze_request.is_empty():
+				var kamikaze_data = effect_result.kamikaze_request
+				var source_uuid: String = kamikaze_data.get("source_uuid", "")
+				var target_uuid: String = kamikaze_data.get("target_uuid", "")
+				var damage: int = kamikaze_data.get("damage", 0)
+				
+				if not target_uuid.is_empty() and damage > 0:
+					var target_inst = bm.get_instance_by_uuid(target_uuid)
+					if is_instance_valid(target_inst) and target_inst.current_hp > 0:
+						var _old_hp = target_inst.current_hp
+						target_inst.current_hp = max(0, target_inst.current_hp - damage)
+						var new_hp = target_inst.current_hp
+						
+						# CRITICAL: Remove the DEATH event for the source since KAMIKAZE_ATTACK
+						# handles the death animation at the target position
+						for i in range(out_events.size() - 1, -1, -1):
+							var evt = out_events[i]
+							if evt.type == CombatEvent.Type.DEATH and evt.target_uuids.has(source_uuid):
+								out_events.remove_at(i)
+								break
+						
+						# Create KAMIKAZE_ATTACK event for animation
+						out_events.append(CombatEvent.new(CombatEvent.Type.KAMIKAZE_ATTACK, {
+							"source_uuid": source_uuid,
+							"target_uuids": [target_uuid],
+							"visual_payload": {
+								"source_uuid": source_uuid,
+								"amount": damage,
+								"targets_new_hp": [new_hp]
+							}
+						}))
+						
+						# Fire on_hurt trigger
+						bm.trigger_on_hurt(target_uuid, damage, source_uuid)
+						
+						# Check for kills
+						if new_hp <= 0:
+							bm.trigger_on_kill(source_uuid, target_uuid)
+				
+				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+				return
+			
 			out_events.append_array(effect_result.events)
 			
 			# Fire triggers based on result data

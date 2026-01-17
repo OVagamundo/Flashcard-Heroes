@@ -123,6 +123,17 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			for ally in allies:
 				uuids.append(ally.ball_uuid)
 			return uuids
+		C.TARGET_HIGHEST_HP_ENEMY:
+			var enemies = battle_manager.get_instances_in_container(
+				C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			).filter(func(u): return u.current_hp > 0)
+			if enemies.is_empty():
+				return []
+			var highest = enemies[0]
+			for enemy in enemies:
+				if enemy.current_hp > highest.current_hp:
+					highest = enemy
+			return [highest.ball_uuid]
 		_:
 			return []
 

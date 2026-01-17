@@ -459,6 +459,24 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
 		for evt in cascade_evts:
 			out_events.append(evt)
+		
+		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
+		# The kamikaze animation handles the death at the target position
+		var kamikaze_sources: Array[String] = []
+		for evt in out_events:
+			if evt.type == CombatEvent.Type.KAMIKAZE_ATTACK:
+				var src = evt.visual_payload.get("source_uuid", "")
+				if not src.is_empty():
+					kamikaze_sources.append(src)
+		
+		if not kamikaze_sources.is_empty():
+			for i in range(out_events.size() - 1, -1, -1):
+				var evt = out_events[i]
+				if evt.type == CombatEvent.Type.DEATH:
+					for target_uuid in evt.target_uuids:
+						if kamikaze_sources.has(target_uuid):
+							out_events.remove_at(i)
+							break
 	
 	if something_changed and not is_simulation:
 		bm._emit_battle_inventory_changed()
