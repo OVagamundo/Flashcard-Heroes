@@ -23,9 +23,9 @@ func _ready() -> void:
 	if is_instance_valid(GameManager.run_state):
 		current_day = GameManager.run_state.day
 	
-	# Check for boss day (every 5th day: 5, 10, 15, 20, 25)
-	if current_day > 0 and current_day % 5 == 0:
-		var boss_level: int = current_day / 5
+	# Check for boss day (every 10th day: 10, 20, 30, 40, 50)
+	if current_day > 0 and current_day % 10 == 0:
+		var boss_level: int = current_day / 10
 		if boss_level >= 1 and boss_level <= 5:
 			_setup_boss_node(boss_level)
 		else:
@@ -55,21 +55,33 @@ func _setup_boss_node(boss_level: int) -> void:
 	node_container.add_child(node_view)
 
 ## Sets up the normal 3-option path choice for non-boss days.
+## Uses equal chances for BATTLE, ELITE, SHOP, REST with no duplicates.
 func _setup_normal_nodes() -> void:
-	var node_types = ["BATTLE", "SHOP", "REST"]
-	node_types.shuffle()
+	# All possible node types with equal weight
+	var all_node_types = ["BATTLE", "ELITE", "SHOP", "REST"]
+	all_node_types.shuffle()
+	
+	# Take the first 3 (no duplicates since we're picking from unique list)
+	var selected_types = all_node_types.slice(0, 3)
 
 	for i in range(3):
 		var node_def = PathNodeDefinition.new()
-		node_def.node_type = node_types[i]
-
-		match node_def.node_type:
-			"BATTLE":
-				node_def.display_name_key = "ui.battle_node"
-			"SHOP":
-				node_def.display_name_key = "ui.shop_node"
-			"REST":
-				node_def.display_name_key = "ui.rest_node"
+		var type_str: String = selected_types[i]
+		
+		# Handle ELITE as a BATTLE subtype
+		if type_str == "ELITE":
+			node_def.node_type = "BATTLE"
+			node_def.subtype = "ELITE"
+			node_def.display_name_key = "ui.elite_battle_node"
+		else:
+			node_def.node_type = type_str
+			match type_str:
+				"BATTLE":
+					node_def.display_name_key = "ui.battle_node"
+				"SHOP":
+					node_def.display_name_key = "ui.shop_node"
+				"REST":
+					node_def.display_name_key = "ui.rest_node"
 
 		var node_view = NodeViewScene.instantiate()
 		node_view.populate(node_def)

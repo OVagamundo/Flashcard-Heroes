@@ -8,7 +8,9 @@ const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
 @export var gold: int = 0
 @export var day: int = 1
 @export var current_boss_level: int = 0 # 0 = not in boss fight, 1-5 = current boss
+@export var current_elite_level: int = 0 # 0 = not in elite fight, 1+ = current elite
 @export var bosses_defeated: int = 0
+@export var elites_defeated: int = 0
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
 @export var hero_instance: GachaBallInstance
@@ -600,7 +602,9 @@ func start_new_run() -> void:
 	gold = 5 # Set starting gold
 	day = 0
 	current_boss_level = 0
+	current_elite_level = 0
 	bosses_defeated = 0
+	elites_defeated = 0
 	total_enemies_defeated = 0
 	total_gold_earned = 0
 	run_instances.clear()
@@ -766,7 +770,9 @@ func to_save_dict() -> Dictionary:
 		"gold": gold,
 		"day": day,
 		"current_boss_level": current_boss_level,
+		"current_elite_level": current_elite_level,
 		"bosses_defeated": bosses_defeated,
+		"elites_defeated": elites_defeated,
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
 		"deck_def_id": String(deck_def_id),
@@ -796,7 +802,9 @@ func from_save_dict(data: Dictionary) -> void:
 	gold = data.get("gold", 0)
 	day = data.get("day", 1)
 	current_boss_level = data.get("current_boss_level", 0)
+	current_elite_level = data.get("current_elite_level", 0)
 	bosses_defeated = data.get("bosses_defeated", 0)
+	elites_defeated = data.get("elites_defeated", 0)
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
