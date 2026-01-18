@@ -7,6 +7,7 @@
 script = ExtResource("1")
 id = &"armor"
 display_name_key = "STATUS_ARMOR"
+description_key = "STATUS_ARMOR_DESC"
 icon = ExtResource("2_icon")
 color = Color(0.6, 0.6, 0.6, 1)
 turn_phase = "END_OF_TURN"

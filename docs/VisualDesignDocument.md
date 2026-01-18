@@ -55,6 +55,27 @@ Stats Display:
 No Labels. The card will display only two numerical values for HP and Power.
 Visual Distinction: The values must be visually distinct. HP should be in a different color then Power. they should both have the same weight.
 Font: Must use a clear, monochromatic, pixel-art friendly font.
+
+### 6.1 Unit View Elements
+Visual rules for dynamic elements overlaid on the unit view during gameplay.
+
+**Equipped Items:**
+- **Position:** Vertically stacked on the **Left Edge** of the unit slot.
+- **Size:** Small, fixed 45x45px icons.
+- **Style:** Purely visual (non-interactive in battle). Must have a 1px white outline to separate from background.
+- **Layout:** Strictly aligned to x=0. Must not overlap the unit sprite (which faces right).
+
+**Status Effects:**
+- **Burn:**
+    - **Visual:** Instant opaque **Orange** flash on the entire unit sprite.
+    - **Feedback:** Floating orange number indicating stack count.
+- **Armor:**
+    - **Visual:** Instant opaque **Grey** flash on the entire unit sprite.
+    - **Feedback:** Floating grey number indicating stack count.
+- **Power Steal (Soul Siphon):**
+    - **Visual:** Uses "Damage" language. Red/Black number popping off the unit.
+    - **Feedback:** Unit performs "Hurt" reaction (shake/flash) just like taking HP damage, even though it is PWR loss.
+
 7. Appendix A: The Gachamon Design Checklist
 To design any unit, follow this exact process to ensure 100% compliance with the guidelines.
 Define the Recipe: State the inputs (e.g., Tier 2, Green(●) + Blue(■)).

@@ -250,8 +250,8 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				instance = battle_manager.get_instance(uuid)
 
 		if is_instance_valid(instance):
-			# Create visual data using the adapter
-			var visual_data = VisualDataAdapter.create_visual_data(instance)
+			# Create visual data using the adapter, pass all_instances for equipped items
+			var visual_data = VisualDataAdapter.create_visual_data(instance, battle_manager.get_all_instances())
 			
 			# Use SlotView's set_content to populate the view
 			# This handles instantiation and population of GachaBallView internally

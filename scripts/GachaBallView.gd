@@ -20,6 +20,8 @@ const GACHABALL_SELECTION_PATH = "res://assets/ui/textures/gachaballselected.png
 @onready var burn_label: Label = %BurnLabel # Renamed from PoisonLabel
 @onready var armor_container: Control = %ArmorContainer
 @onready var armor_label: Label = %ArmorLabel
+@onready var equipped_items_container: HBoxContainer = %EquippedItemsContainer
+@onready var equipped_items_row: HBoxContainer = %EquippedItemsRow
 
 var _location: LocationIdentifier
 var _instance_uuid: String
@@ -44,6 +46,7 @@ var _visual_burn_stacks: int = 0 # Legacy - kept for backward compat
 var _visual_armor_stacks: int = 0 # Armor stacks - same pattern as burn
 var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
 var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
+var _visual_equipped_items: Array = [] # Equipped item data: [{uuid, icon, definition_id}]
 var _bound_uuid: String = "" # UUID bound during populate()
 var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
 
@@ -85,6 +88,9 @@ func _ready() -> void:
 		if bus.has_signal("drag_ended"):
 			bus.drag_ended.connect(_on_drag_ended)
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
+	
+	# Connect click handlers for status effect icons (burn/armor)
+	_setup_status_effect_click_handlers()
 		# are now handled by UnitAnimationController child node
 
 func _process(delta: float) -> void:
@@ -179,6 +185,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_visual_pwr = visual_data.get("pwr", 0)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
+	_visual_equipped_items = visual_data.get("equipped_items", []) # Array of {uuid, icon, definition_id}
 	
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
@@ -704,9 +711,159 @@ func _update_item_slots() -> void:
 	if _entity_type != &"UNIT":
 		return
 	
-	# Status effects are now displayed via permanent labels (poison_label)
-	# Item slots can be used for other purposes if needed
-	pass
+	# Status effects are now displayed via permanent labels (burn_label)
+	# Update equipped items display
+	_update_equipped_items_display()
+
+## Setup click handlers for status effect icons (burn/armor)
+## Opens a tooltip window when clicked
+func _setup_status_effect_click_handlers() -> void:
+	# Ensure burn container is clickable
+	if is_instance_valid(burn_container):
+		burn_container.mouse_filter = Control.MOUSE_FILTER_STOP
+		burn_container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		if not burn_container.is_connected("gui_input", _on_burn_container_clicked):
+			burn_container.gui_input.connect(_on_burn_container_clicked)
+	
+	# Ensure armor container is clickable
+	if is_instance_valid(armor_container):
+		armor_container.mouse_filter = Control.MOUSE_FILTER_STOP
+		armor_container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		if not armor_container.is_connected("gui_input", _on_armor_container_clicked):
+			armor_container.gui_input.connect(_on_armor_container_clicked)
+
+## Handle click on burn container to show status effect tooltip
+func _on_burn_container_clicked(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_open_status_effect_tooltip(&"burn", burn_container)
+		get_viewport().set_input_as_handled()
+
+## Handle click on armor container to show status effect tooltip
+func _on_armor_container_clicked(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_open_status_effect_tooltip(&"armor", armor_container)
+		get_viewport().set_input_as_handled()
+
+## Open a tooltip window for a status effect
+func _open_status_effect_tooltip(status_id: StringName, anchor: Control) -> void:
+	var status_def = StatusEffectRegistry.get_definition(status_id)
+	if not is_instance_valid(status_def):
+		return
+	
+	# Create a context dictionary matching EffectInspectionWindow expectations
+	var effect_context = {
+		"name_key": status_def.display_name_key,
+		"description_key": status_def.description_key
+	}
+	
+	var populate_ctx = {
+		"effect_definition": [effect_context],
+		"source_view": anchor
+	}
+	
+	WindowManager.open_child_contextual_window(&"EffectInspection", anchor, populate_ctx)
+
+## Update the equipped items display showing icons on the left side (behind the unit)
+func _update_equipped_items_display() -> void:
+	# Use the scene-defined EquippedItemsOverlay container
+	var items_overlay = get_node_or_null("%EquippedItemsOverlay")
+	
+	# Clean up old dynamic containers if they exist
+	var old_side = get_node_or_null("EquippedItemsSide")
+	var old_left = get_node_or_null("EquippedItemsLeft")
+	var old_right = get_node_or_null("EquippedItemsRight")
+	if is_instance_valid(old_side): old_side.queue_free()
+	if is_instance_valid(old_left): old_left.queue_free()
+	if is_instance_valid(old_right): old_right.queue_free()
+	
+	if not is_instance_valid(items_overlay):
+		return
+	
+	# Clear existing icons
+	for child in items_overlay.get_children():
+		child.queue_free()
+	
+	# Only show for units in battle context (not items or trinkets)
+	if _entity_type != &"UNIT":
+		items_overlay.visible = false
+		return
+	
+	# Only show in battle context where we have equipped item data
+	if _visual_equipped_items.is_empty():
+		items_overlay.visible = false
+		return
+	
+	items_overlay.visible = true
+	
+	# Calculate icon size to fill slot height with small gaps
+	# Slot height: 192px, 4 items max, 3 gaps of 2px each = 6px total gaps
+	# (192 - 6) / 4 = 46.5px, round to 45px for nice numbers
+	var icon_size: int = 45
+	
+	# Create non-clickable icons for each equipped item
+	for item_data in _visual_equipped_items:
+		if item_data.is_empty():
+			continue
+		
+		var item_icon: Texture2D = item_data.get("icon")
+		var item_uuid: String = item_data.get("uuid", "")
+		
+		if not is_instance_valid(item_icon) or item_uuid.is_empty():
+			continue
+		
+		# Create the item icon texture with white outline
+		var item_rect = TextureRect.new()
+		item_rect.texture = item_icon
+		item_rect.custom_minimum_size = Vector2(icon_size, icon_size)
+		item_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		item_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		item_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE # Non-clickable
+		
+		# Apply white outline shader for visibility
+		var outline_material = load("res://assets/shaders/sprite_outline.gdshader")
+		if outline_material:
+			var mat = ShaderMaterial.new()
+			mat.shader = outline_material
+			mat.set_shader_parameter("outline_color", Color.WHITE)
+			mat.set_shader_parameter("outline_width", 2.0)
+			mat.set_shader_parameter("outline_enabled", true)
+			item_rect.material = mat
+		
+		items_overlay.add_child(item_rect)
+
+## Handle click on an equipped item icon
+func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		# Find the item instance and open its inspection window
+		var all_instances = _get_all_instances_db()
+		if all_instances.has(item_uuid):
+			var item_instance = all_instances[item_uuid]
+			var item_loc = LocationIdentifier.new()
+			item_loc.container = C.CONTAINER_EQUIPPED_ITEM
+			item_loc.unit_uuid = _instance_uuid
+			
+			var populate_ctx = {
+				"source_view": anchor,
+				"instance": item_instance,
+				"location": item_loc
+			}
+			
+			WindowManager.open_child_contextual_window(&"ItemInspection", anchor, populate_ctx)
+		get_viewport().set_input_as_handled()
+
+## Get all instances database from the appropriate game state
+func _get_all_instances_db() -> Dictionary:
+	# Try BattleManager first (during battle)
+	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(battle_manager) and battle_manager.has_method("get_all_instances"):
+		return battle_manager.get_all_instances()
+	
+	# Fall back to RunState (outside battle)
+	var game_manager = get_node_or_null("/root/GameManager")
+	if is_instance_valid(game_manager) and "run_state" in game_manager and is_instance_valid(game_manager.run_state):
+		return game_manager.run_state.run_instances
+	
+	return {}
 
 ## Create gachaball overlay for inventory windows
 ## This adds the gachaball.png texture on top of unit/item sprites
@@ -1169,7 +1326,8 @@ func _setup_battle_stats_layout() -> void:
 		pwr_container.reparent(%Row1)
 		hp_container.custom_minimum_size = Vector2(32, 32)
 		pwr_container.custom_minimum_size = Vector2(32, 32)
-		
+	
+
 	# Move Secondary Stats to Row2 (with 32x32 size)
 	if burn_container.get_parent() != %Row2:
 		burn_container.reparent(%Row2)
@@ -1194,7 +1352,8 @@ func _setup_overlay_stats_layout() -> void:
 		pwr_container.reparent(top_container)
 		hp_container.custom_minimum_size = Vector2(48, 48)
 		pwr_container.custom_minimum_size = Vector2(48, 48)
-		
+	
+
 	# Move Secondary Stats back to Bottom Container (48x48)
 	if burn_container.get_parent() != bottom_container:
 		burn_container.reparent(bottom_container)

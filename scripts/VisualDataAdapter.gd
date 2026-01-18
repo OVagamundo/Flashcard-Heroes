@@ -4,7 +4,7 @@ extends RefCounted
 ## Static helper to convert Simulation Objects into Presentation Data.
 ## This ensures Views remain "dumb" and decoupled from the Simulation layer.
 
-static func create_visual_data(instance: GachaBallInstance) -> Dictionary:
+static func create_visual_data(instance: GachaBallInstance, all_instances: Dictionary = {}) -> Dictionary:
 	if not is_instance_valid(instance):
 		return {}
 
@@ -25,6 +25,23 @@ static func create_visual_data(instance: GachaBallInstance) -> Dictionary:
 		tier = 1 # Trinkets default to tier 1 for display purposes
 		display_name_key = def.name_key if "name_key" in def else ""
 		description_key = def.description_key if "description_key" in def else ""
+	
+	# Build equipped items data for units
+	var equipped_items_data: Array = []
+	if def is GachaBallDefinition and def.category == &"UNIT":
+		for i in range(instance.equipped_item_uuids.size()):
+			var item_uuid = instance.equipped_item_uuids[i]
+			if item_uuid.is_empty():
+				continue
+			var item_instance = all_instances.get(item_uuid)
+			if is_instance_valid(item_instance):
+				var item_def = item_instance.get_definition()
+				if is_instance_valid(item_def):
+					equipped_items_data.append({
+						"uuid": item_uuid,
+						"icon": item_def.icon,
+						"definition_id": item_instance.definition_id
+					})
 
 	var data = {
 		"uuid": instance.ball_uuid,
@@ -41,6 +58,9 @@ static func create_visual_data(instance: GachaBallInstance) -> Dictionary:
 		"burn_stacks": instance.get_status_effect_amount(&"burn"), # Backward compat
 		"armor_stacks": instance.get_status_effect_amount(&"armor"), # Same pattern as burn
 		"status_effects": instance.status_effects.duplicate(), # Generic status effects
+		
+		# Equipped items (for units only)
+		"equipped_items": equipped_items_data,
 		
 		# Metadata
 		"is_player_owned": true, # Default, might need adjustment if we have enemy specific logic

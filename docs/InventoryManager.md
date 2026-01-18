@@ -147,3 +147,12 @@ The Shop uses **temporary state** stored in GameManager (not a separate ShopMana
 
 ### Interaction Mode
 Shop uses `SELECTION_ONLY` - items can be selected and inspected but not dragged or moved.
+
+## 5. Hero Starting Loadouts
+The `RunState` initializes different starting inventories based on the selected hero.
+
+| Hero | Loadout Strategy | Details |
+|------|------------------|---------|
+| **Timekeeper** | **Testing Full Access** | 2 of EVERY unit and item across all 3 tiers. Used for debugging and testing full interactions. |
+| **Bounty Hunter** | **Tier 1 Abundance** | 4 copies of EVERY Tier 1 unit and item (16 total items). No Tier 2 or 3 items. Focuses on rapid early-game merging strategies. |
+| **Generic** | **Standard** | 2 copies of specific items per tier. Default balanced start for standard gameplay. |

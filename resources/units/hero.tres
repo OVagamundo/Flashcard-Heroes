@@ -6,7 +6,7 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"hero"
+id = &"hero_bounty_hunter"
 display_name_key = "hero.name"
 description_key = "hero.desc"
 icon = ExtResource("2_icon")

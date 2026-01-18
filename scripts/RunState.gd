@@ -692,10 +692,12 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f"
 			]
 		&"hero_bounty_hunter":
-			# Bounty Hunter: Only 6 tier 1 gachaballs (3 units + 3 items)
+			# Bounty Hunter: 4 of each Tier 1 gachaball (16 total)
 			return [
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
-				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b"
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
+				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
+				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
+				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
 			]
 		&"hero":
 			# Generic hero: 2 copies of selected units/items per tier
