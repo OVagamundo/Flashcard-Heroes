@@ -97,13 +97,19 @@ func _on_battle_ended(results: Dictionary) -> void:
 		# Note: current_boss_level is reset AFTER reward generation
 		# so _on_battle_won_rewards_pending can detect boss victory
 	
+	# Track elite defeat (no run completion check, just stats)
+	if is_victory and run_state.current_elite_level > 0:
+		run_state.elites_defeated += 1
+	
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
 		SignalBus.emit_signal("battle_won_rewards_pending")
 	
-	# Reset boss level AFTER reward generation so trinkets are offered
+	# Reset boss/elite level AFTER reward generation so trinkets are offered
 	if run_state.current_boss_level > 0:
 		run_state.current_boss_level = 0
+	if run_state.current_elite_level > 0:
+		run_state.current_elite_level = 0
 	
 	# 4) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
@@ -121,14 +127,16 @@ func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	pass
 
 func _on_battle_won_rewards_pending() -> void:
-	# Detect if this was a boss victory
+	# Detect if this was a boss or elite victory (both get trinket rewards)
 	var is_boss_victory = run_state.current_boss_level > 0
+	var is_elite_victory = run_state.current_elite_level > 0
+	var is_special_victory = is_boss_victory or is_elite_victory
 	
 	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
-	if is_boss_victory:
+	if is_special_victory:
 		# Boss rewards: 3 random trinkets
 		var all_trinkets = Database.trinkets.values().duplicate()
 		all_trinkets.shuffle()
@@ -329,13 +337,20 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, budget)
 				# Track current boss level for victory handling
 				run_state.current_boss_level = boss_level
+				run_state.current_elite_level = 0
+			elif node_def.subtype == "ELITE":
+				# Elite encounter - similar to boss but with random boss unit
+				var budget: int = int(floor(run_state.day * 5 * 1.5))
+				encounter_def = EncounterGenerator.generate_elite_encounter(budget)
+				# Track elite level for victory handling (trinket rewards)
+				run_state.current_elite_level = 1
+				run_state.current_boss_level = 0
 			else:
 				# Regular encounter
 				var budget = run_state.day * 5
-				if node_def.subtype == "ELITE":
-					budget = int(floor(budget * 1.5))
 				encounter_def = EncounterGenerator.generate_encounter(budget)
 				run_state.current_boss_level = 0
+				run_state.current_elite_level = 0
 			
 			# Use registered Main node
 			if is_instance_valid(_active_main_node):

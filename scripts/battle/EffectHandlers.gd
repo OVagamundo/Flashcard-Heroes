@@ -685,6 +685,26 @@ static func handle_summon_units(
 		new_unit.initialize(unit_def)
 		new_unit.reset_battle_stats_silent()
 		
+		# Equip items if provided in summon data
+		var item_ids: Array = summon_data.get("items", [])
+		for i in range(mini(item_ids.size(), new_unit.equipped_item_uuids.size())):
+			var item_id = item_ids[i]
+			var item_def = Database.get_definition(item_id)
+			if is_instance_valid(item_def):
+				var item_inst := GachaBallInstance.new()
+				item_inst.initialize(item_def)
+				item_inst.reset_battle_stats_silent()
+				# Link item to unit (equip)
+				new_unit.equipped_item_uuids[i] = item_inst.ball_uuid
+				item_inst.equipped_on_uuid = new_unit.ball_uuid
+				item_inst.equipped_slot_index = i
+				item_inst.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+				item_inst.location_slot_index = i
+				# Apply item bonuses
+				new_unit.current_hp += item_def.bonus_hp
+				new_unit.current_pwr += item_def.bonus_pwr
+				result.new_instances.append(item_inst)
+		
 		result.new_instances.append(new_unit)
 		
 		# Container update

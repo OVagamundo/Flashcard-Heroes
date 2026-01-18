@@ -12,7 +12,8 @@ const CARD_TEXTURES = {
 	"BATTLE": "res://assets/ui/textures/BattlePath.png",
 	"SHOP": "res://assets/ui/textures/ShopCard.png",
 	"REST": "res://assets/ui/textures/RestPath.png",
-	"BOSS": "res://assets/ui/textures/BossPath.png"
+	"BOSS": "res://assets/ui/textures/BossPath.png",
+	"ELITE": "res://assets/ui/textures/EliteBattlePath.png"
 }
 
 func populate(node_def) -> void:
@@ -34,6 +35,8 @@ func populate(node_def) -> void:
 	if type == "BATTLE":
 		if node_def.subtype == "BOSS":
 			bg_color = Color(0.4, 0.1, 0.4) # Boss Purple
+		elif node_def.subtype == "ELITE":
+			bg_color = Color(0.5, 0.2, 0.3) # Elite Dark Red/Purple
 		else:
 			bg_color = Color(0.6, 0.2, 0.2) # Battle Red
 	elif type == "SHOP":
@@ -51,6 +54,8 @@ func populate(node_def) -> void:
 	if node_def.node_type == "BATTLE":
 		if node_def.subtype == "BOSS":
 			tex_path = CARD_TEXTURES["BOSS"]
+		elif node_def.subtype == "ELITE":
+			tex_path = CARD_TEXTURES["ELITE"]
 		else:
 			tex_path = CARD_TEXTURES["BATTLE"]
 	elif CARD_TEXTURES.has(node_def.node_type):

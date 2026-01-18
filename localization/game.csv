@@ -185,6 +185,7 @@ ui.tokens_count,Tokens: %d,Fichas: %d
 ui.day,Day %d,Dia %d
 ui.boss,Boss %d,Chefe %d
 ui.battle_node,Battle,Batalha
+ui.elite_battle_node,Elite Battle,Batalha de Elite
 ui.shop_node,Shop,Loja
 ui.rest_node,Rest Site,Local de Descanso
 ui.effects,Effects,Efeitos

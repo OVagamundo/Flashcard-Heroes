@@ -43,8 +43,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 
 func _generate_summons(budget: int, max_units: int) -> Array:
-	# Get available units (exclude heroes and bosses)
+	# Get available units and items (exclude heroes and bosses)
 	var available_units: Array = []
+	var available_items: Array = []
+	
 	for d in Database.units.values():
 		# Skip hero units
 		if d.id == &"hero" or d.id == &"enemy_hero":
@@ -56,22 +58,80 @@ func _generate_summons(budget: int, max_units: int) -> Array:
 			continue
 		available_units.append(d)
 	
+	for d in Database.items.values():
+		available_items.append(d)
+	
 	if available_units.is_empty():
 		return []
 	
 	# Sort by cost ascending for budget optimization
 	available_units.sort_custom(func(a, b): return a.cost < b.cost)
+	available_items.sort_custom(func(a, b): return a.cost < b.cost)
 	
-	var summons: Array = []
+	var summons: Array = [] # Array of {unit_id: StringName, items: Array[StringName]}
 	var spent: int = 0
 	
-	# Fill slots within budget
-	while spent < budget and summons.size() < max_units:
+	# Phase 1: Mandatory unit spend (at least 50% on units)
+	var min_unit_spend: int = int(floor(budget * 0.5))
+	while spent < min_unit_spend and summons.size() < max_units:
 		var affordable = available_units.filter(func(u): return u.cost <= (budget - spent))
 		if affordable.is_empty():
 			break
 		var chosen = affordable.pick_random()
-		summons.append({"unit_id": chosen.id})
+		summons.append({"unit_id": chosen.id, "items": [], "item_slots": chosen.item_slot_count})
 		spent += chosen.cost
+	
+	# Phase 2: Flexible spending on units or items
+	while spent < budget:
+		var remaining = budget - spent
+		
+		# Build weighted options: units (weight 3) vs items (weight 2)
+		var options: Array = []
+		
+		# Add unit options if we haven't maxed out
+		if summons.size() < max_units:
+			for u in available_units:
+				if u.cost <= remaining:
+					options.append({"type": "unit", "def": u, "weight": 3})
+		
+		# Add item options if we have units with free item slots
+		var total_free_slots: int = 0
+		for s in summons:
+			total_free_slots += s.item_slots - s.items.size()
+		
+		if total_free_slots > 0:
+			for item in available_items:
+				if item.cost <= remaining:
+					options.append({"type": "item", "def": item, "weight": 2})
+		
+		if options.is_empty():
+			break
+		
+		# Weighted random selection
+		var total_weight = 0
+		for opt in options:
+			total_weight += opt.weight
+		var roll = randi() % total_weight
+		var cumulative = 0
+		var selected = options[0]
+		for opt in options:
+			cumulative += opt.weight
+			if roll < cumulative:
+				selected = opt
+				break
+		
+		if selected.type == "unit":
+			summons.append({"unit_id": selected.def.id, "items": [], "item_slots": selected.def.item_slot_count})
+		else: # item
+			# Find a unit with free slots and assign the item
+			for s in summons:
+				if s.items.size() < s.item_slots:
+					s.items.append(selected.def.id)
+					break
+		spent += selected.def.cost
+	
+	# Clean up the item_slots key before returning (not needed by effect handlers)
+	for s in summons:
+		s.erase("item_slots")
 	
 	return summons

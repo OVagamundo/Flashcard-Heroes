@@ -301,6 +301,51 @@ func generate_boss_encounter(boss_level: int, total_budget: int) -> EncounterDef
 	# Attempt to equip items on boss if there's leftover budget and boss has slots
 	if remaining_budget > 0 and boss_def.item_slot_count > 0:
 		_try_equip_items_to_boss(boss_placement, remaining_budget, boss_def.item_slot_count, support_encounter)
+	return final_encounter
+
+## Generates an elite encounter using a random boss unit.
+## Similar to boss encounters but picks a random boss based on player progress.
+## @param total_budget: int - The total encounter budget (after 1.5x elite multiplier applied)
+## @return EncounterDefinition - An encounter with a boss unit and support units
+func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
+	# Pick a random boss (1-5) that makes sense for the budget
+	# For early game, prefer lower boss levels; for late game, allow higher
+	var max_boss_level: int = mini(5, maxi(1, total_budget / 10))
+	var elite_level: int = randi_range(1, max_boss_level)
+	
+	var boss_id: StringName = &"boss_%d" % elite_level
+	var boss_def = Database.get_definition(boss_id)
+	if not is_instance_valid(boss_def):
+		push_error("Elite boss definition not found: %s" % boss_id)
+		return _create_fallback_encounter()
+	
+	# Calculate remaining budget after boss cost
+	var remaining_budget: int = total_budget - boss_def.cost
+	
+	# Generate supporting units with remaining budget (max 4 units since boss takes one slot)
+	var support_encounter: EncounterDefinition = null
+	if remaining_budget > 0:
+		support_encounter = _generate_support_units(remaining_budget, 4)
+	
+	# Create the final elite encounter
+	var final_encounter = EncounterDefinition.new()
+	final_encounter.id = "elite_encounter_%d_%d" % [elite_level, Time.get_unix_time_from_system()]
+	
+	# Add support units first (they take positions 0-3)
+	if support_encounter != null:
+		for placement in support_encounter.enemy_placements:
+			final_encounter.enemy_placements.append(placement)
+		# Also copy any trinkets from support encounter
+		for trinket_id in support_encounter.enemy_trinket_ids:
+			final_encounter.enemy_trinket_ids.append(trinket_id)
+	
+	# Place boss at position 4 (back of lineup)
+	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
+	final_encounter.enemy_placements.append(boss_placement)
+	
+	# Attempt to equip items on boss if there's leftover budget and boss has slots
+	if remaining_budget > 0 and boss_def.item_slot_count > 0:
+		_try_equip_items_to_boss(boss_placement, remaining_budget, boss_def.item_slot_count, support_encounter)
 	
 	return final_encounter
 
