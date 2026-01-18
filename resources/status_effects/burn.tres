@@ -1,11 +1,14 @@
-[gd_resource type="Resource" script_class="StatusEffectDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="StatusEffectDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/textures/icon_burn_pixel.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1")
 id = &"burn"
 display_name_key = "STATUS_BURN"
+description_key = "STATUS_BURN_DESC"
+icon = ExtResource("2_icon")
 color = Color(1, 0.3, 0, 1)
 turn_phase = "END_OF_TURN"
 turn_effect = "DAMAGE"

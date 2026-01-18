@@ -64,10 +64,10 @@ Animations must use `animator.get_snapshot_position(uuid)`, never query `_visual
 
 ## 5. Z-Order (GachaBallView)
 
-1. Unit Sprite (128x128 centered)
-2. Gachaball Overlay (192x192, glass capsule)
-3. Selection Ring (white outline)
-4. Stats Overlay (HP/PWR labels)
+1. Unit Sprite (128x128 centered, inside `VBoxContainer`)
+2. Equipped Items Wrapper (Left-aligned overlay)
+3. Stats Overlay (HP/PWR labels, Status Effects)
+4. Selection Ring (white outline shader)
 
 ---
 

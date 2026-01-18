@@ -8,6 +8,7 @@ extends Resource
 # --- Identity ---
 @export var id: StringName = &"" # Unique identifier, e.g., &"burn", &"shield"
 @export var display_name_key: String = "" # Localization key
+@export var description_key: String = "" # Localization key for mechanics description
 
 # --- Visuals ---
 @export var icon: Texture2D # Icon shown in unit's status bar
