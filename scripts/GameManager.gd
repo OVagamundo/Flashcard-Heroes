@@ -16,6 +16,8 @@ var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
 var _is_processing_victory: bool = false # Prevents multiple reward processing
+var _reward_reroll_cost: int = 1 # Reward reroll cost (resets per battle)
+var _is_special_reward_pool: bool = false # Persist reward type for rerolls
 
 # Temporary shop state
 var _temporary_shop_master_dict: Dictionary = {}
@@ -41,6 +43,7 @@ func _ready() -> void:
 	SignalBus.node_selected.connect(_on_node_selected)
 	SignalBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
+	SignalBus.reward_reroll_requested.connect(_on_reward_reroll_requested)
 
 # ADD THESE TWO FUNCTIONS
 func register_battle_manager(bm: Node) -> void:
@@ -58,7 +61,8 @@ func unregister_main_node() -> void:
 func get_pending_rewards() -> Dictionary:
 	return {
 		"reward_instances": _temporary_reward_master_dict.values(),
-		"gold_amount": _temporary_gold_reward
+		"gold_amount": _temporary_gold_reward,
+		"reroll_cost": _reward_reroll_cost
 	}
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
@@ -132,6 +136,13 @@ func _on_battle_won_rewards_pending() -> void:
 	var is_elite_victory = run_state.current_elite_level > 0
 	var is_special_victory = is_boss_victory or is_elite_victory
 	
+	# Persist this flag for rerolls (since boss level is reset immediately after)
+	_is_special_reward_pool = is_special_victory
+	print("[RewardDebug] Victory rewards pending. Special Pool: ", _is_special_reward_pool, " BossLvl: ", run_state.current_boss_level, " EliteLvl: ", run_state.current_elite_level)
+	
+	# Reset reward reroll cost for new rewards
+	_reward_reroll_cost = 1
+	
 	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
@@ -151,10 +162,19 @@ func _on_battle_won_rewards_pending() -> void:
 		# Regular rewards: gacha balls from reward pool
 		var reward_pool = load("res://resources/reward_pool.tres")
 		if not is_instance_valid(reward_pool):
+			push_error("[GameManager] Failed to load reward_pool.tres!")
 			return
+			
 		var all_defs = reward_pool.definitions.duplicate()
+		if all_defs.is_empty():
+			push_error("[GameManager] Reward pool definitions are empty!")
+			return
+			
 		all_defs.shuffle()
-		for i in range(3):
+		
+		# ROBUSTNESS: Handle small pools without crashing
+		var count = mini(3, all_defs.size())
+		for i in range(count):
 			var inst = GachaBallInstance.new()
 			inst.initialize(all_defs[i])
 			inst.location_container_tag = &"Rewards"
@@ -432,3 +452,48 @@ func _on_shop_reroll_requested() -> void:
 	# Avoid duplicate run_data_changed; spend_gold already emitted
 	var context: Dictionary = {"shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost}
 	SignalBus.emit_signal("shop_stock_refreshed", context)
+
+func _on_reward_reroll_requested() -> void:
+	if not run_state.spend_gold(_reward_reroll_cost): return
+	_reward_reroll_cost += 1
+	
+	print("[RewardDebug] Reroll requested. Cost paid. Generating new stock...")
+	_generate_reward_stock()
+
+	# Refresh the reward scene with new rewards
+	var context: Dictionary = get_pending_rewards()
+	SignalBus.emit_signal("reward_stock_refreshed", context)
+
+func _generate_reward_stock() -> void:
+	# Regenerate rewards (reroll functionality)
+	# Use persisted flag because current_boss_level is reset after battle end
+	print("[RewardDebug] generate_reward_stock. is_special_pool: ", _is_special_reward_pool)
+	
+	_temporary_reward_master_dict.clear()
+	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
+	
+	if _is_special_reward_pool:
+		# Boss/Elite rewards: 3 random trinkets
+		var all_trinkets = Database.trinkets.values().duplicate()
+		print("[RewardDebug] Trinkets available: ", all_trinkets.size())
+		all_trinkets.shuffle()
+		for i in range(min(3, all_trinkets.size())):
+			var inst = GachaBallInstance.new()
+			inst.initialize_from_trinket(all_trinkets[i])
+			inst.location_container_tag = &"Rewards"
+			inst.location_slot_index = i
+			_temporary_reward_master_dict[inst.ball_uuid] = inst
+			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
+	else:
+		# Regular rewards: gacha balls from reward pool
+		var reward_pool = load("res://resources/reward_pool.tres")
+		if not is_instance_valid(reward_pool): return
+		var all_defs = reward_pool.definitions.duplicate()
+		all_defs.shuffle()
+		for i in range(3):
+			var inst = GachaBallInstance.new()
+			inst.initialize(all_defs[i])
+			inst.location_container_tag = &"Rewards"
+			inst.location_slot_index = i
+			_temporary_reward_master_dict[inst.ball_uuid] = inst
+			_temporary_reward_container.set_uuid(i, inst.ball_uuid)

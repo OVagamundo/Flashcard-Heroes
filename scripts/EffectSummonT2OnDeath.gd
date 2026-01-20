@@ -43,12 +43,16 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var container = battle_manager.get_container(holder_location.container)
 	if is_instance_valid(container):
 		var slot_uuid = container.get_uuid(holder_location.index)
+		print("[EST2OD] Checking slot %d. Holder: %s, Slot Content: %s" % [holder_location.index, holder_uuid, slot_uuid])
+		
 		if not slot_uuid.is_empty() and slot_uuid != holder_uuid:
+			print("[EST2OD] Slot occupied by %s. Finding alternative..." % slot_uuid)
 			# Slot is occupied by another unit - find an empty slot using back-to-front search
 			# Player team: back is index 4, front is index 0 (search 4→0)
 			# Enemy team: back is index 0, front is index 4 (search 0→4)
 			var is_enemy_team = holder_location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var empty_slot = _find_empty_slot_back_to_front(container, is_enemy_team)
+			print("[EST2OD] Found empty slot: %d" % empty_slot)
 			if empty_slot == -1:
 				# No lineup slots available
 				if is_enemy_team:

@@ -611,3 +611,45 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	# Phase 4: Settle to normal
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	# VCR PATTERN: AFTER bounce completes, trigger management phase effects
+	# This uses the same simulation-presentation pattern as combat
+	bounce_tween.tween_callback(func():
+		_trigger_on_draw_effects(draw_result)
+	)
+
+## Trigger management phase effects for a drawn unit/item (e.g., Royal Insignia buff)
+## Uses the VCR pattern: capture snapshot, simulate effects, animate via BattleAnimator
+func _trigger_on_draw_effects(draw_result) -> void:
+	if not is_instance_valid(battle_manager):
+		return
+	
+	# Get the drawn instance to check tags
+	var drawn_instance = battle_manager.get_instance(draw_result.drawn_uuid)
+	if not is_instance_valid(drawn_instance):
+		return
+	
+	# Determine tier from source container
+	var tier := 1
+	if draw_result.source_container.ends_with("T2"):
+		tier = 2
+	elif draw_result.source_container.ends_with("T3"):
+		tier = 3
+	
+	# Build context for on_draw trigger
+	var context := {
+		"drawn_uuid": draw_result.drawn_uuid,
+		"dest_container": draw_result.dest_container,
+		"dest_slot": draw_result.dest_slot,
+		"tier": tier
+	}
+	
+	# VCR Step 1: Capture snapshot BEFORE simulation
+	var snapshot := battle_manager.get_board_snapshot()
+	
+	# VCR Step 2: Trigger effects (populates pending_reactions via AbilityResolver)
+	AbilityResolver.process_trigger(&"on_draw", context)
+	
+	# VCR Step 3: If effects were generated, resolve and animate them
+	if battle_manager._pending_reactions.size() > 0:
+		battle_manager.resolve_management_effects_and_animate(snapshot)
