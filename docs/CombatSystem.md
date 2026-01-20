@@ -310,6 +310,14 @@ When a unit is summoned to an **empty slot** mid-turn, it may participate in com
 - Without queue insertion, resurrected units would miss the current turn entirely
 - This mirrors the "on-death summon" behavior where a new unit replaces a dying unit in the queue
 
+### Summon Slot Conflict Resolution
+When multiple summon effects trigger simultaneously (e.g., Trinket + Item) and target the same slot, the system enforces a "Golden Rule": **Physics over Logic**.
+- **Detection**: Before finalizing a summon, `EffectHandlers` checks if the target slot is effectively occupied by a *living* unit (and not the one being overwritten/replaced).
+- **Resolution**: 
+  1. If occupied, search for the next available empty slot in the lineup.
+  2. If lineup full, target the `BATTLE_DISCARD_PILE`.
+  3. If discard full, cancel the summon to prevent overwriting existing units.
+
 ### Effect Data Flow (No Instance Queries)
 
 Effects receive ALL data via the `context` parameter:
