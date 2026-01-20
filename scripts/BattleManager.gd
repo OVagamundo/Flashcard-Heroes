@@ -57,6 +57,7 @@ var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
 
+
 # -----------------------------------------------------------------------------
 # INITIALIZATION & SETUP
 # -----------------------------------------------------------------------------
@@ -1123,6 +1124,30 @@ func _resolve_pending_reactions_only() -> void:
 	else:
 		_on_turn_animation_finished()
 
+## Resolve pending reactions for management phase triggers (on_draw, on_merge, etc.)
+## Uses the VCR pattern: process pending effects, then animate via BattleAnimator.
+## Called from BattleView after gacha draw animation completes.
+## @param snapshot: Dictionary - Board snapshot captured BEFORE effects were triggered
+func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
+	if _pending_reactions.is_empty():
+		return
+	
+	_resolve_animator()
+	
+	var events: Array[CombatEvent] = []
+	var death_tracking: Dictionary = {}
+	
+	# Resolve all pending reactions (e.g., Royal Insignia buffs)
+	while not _pending_reactions.is_empty():
+		var request: EffectRequest = _pending_reactions.pop_front()
+		var reaction_events: Array[CombatEvent] = []
+		_resolve_single_effect_request(request, reaction_events, death_tracking)
+		events.append_array(reaction_events)
+	
+	# Play via animator (uses existing VCR pattern)
+	if not events.is_empty():
+		_animator.play_turn_sequence(snapshot, events)
+
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
 ## This ensures enemy units and items are still available in _battle_instances while
 ## their on_death abilities are being processed.
@@ -1409,6 +1434,7 @@ func _on_draw_gacha_requested(tier: int) -> void:
 	if _current_battle_phase != Phases.MANAGEMENT:
 		return
 	bm_draw_gacha_instance(tier)
+
 
 # Helper function to equip an item on a unit
 func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:

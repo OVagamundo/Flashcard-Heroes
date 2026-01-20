@@ -71,6 +71,7 @@ const TRIGGER_ON_BATTLE_START = &"on_battle_start" # Battle begins
 const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled passive (Guardian)
 const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summoned
 const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
+const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"

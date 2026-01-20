@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_royal_insignia.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_royal_insignia_summon.tres" id="3_ability_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_royal_insignia_battle_start.tres" id="4_ability_battle_start"]
+[ext_resource type="Texture2D" path="res://assets/sprites/trinkets/Trinket5A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_royal_insignia"
+name_key = "trinket.royal_insignia.name"
+description_key = "trinket.royal_insignia.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_summon"), ExtResource("4_ability_battle_start")])

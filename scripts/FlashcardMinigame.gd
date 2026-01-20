@@ -49,6 +49,9 @@ var _token_group_original_parent: Node = null
 var _token_group_original_index: int = -1
 var _tokens_pending: int = 0 # Tokens that are mid-animation
 
+# Input lock to prevent race conditions with rapid clicking
+var _input_locked: bool = false
+
 func _ready() -> void:
 	# Connect to the FlashcardManager's minigame_finished signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
@@ -282,6 +285,7 @@ func _show_next_question() -> void:
 func _show_next_question_with_data(current_question: Dictionary, set_panel_color: bool = false) -> void:
 	"""Show the next question using pre-fetched question data"""
 	if _session_timer <= 0:
+		_end_minigame()
 		return
 	
 	if current_question.is_empty():
@@ -328,6 +332,9 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 			button.add_theme_constant_override("outline_size", 6)
 			button.pressed.connect(_on_choice_selected.bind(choice_id))
 			choices_grid.add_child(button)
+			
+	# Unlock input now that new buttons are ready
+	_input_locked = false
 
 func _update_panel_to_mastery_color(card_id: StringName) -> void:
 	"""Update the panel color based on the card's current mastery level"""
@@ -403,8 +410,20 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	var flash_color: Color = COLOR_FLASH_CORRECT if was_correct else COLOR_FLASH_INCORRECT
 	_flash_panel_and_transition(flash_color, next_mastery_color)
 	
-	# Show next question (will use the already-fetched question)
-	_show_next_question_with_data(next_question)
+	# Delay showing the next question to allow visual feedback to register
+	# This also holds the _input_locked state, preventing button mash
+	var delay_tween = create_tween()
+	delay_tween.tween_interval(FLASH_DURATION)
+	delay_tween.tween_callback(func():
+		if not is_instance_valid(self): return
+		
+		# Check timer again before proceeding
+		if _session_timer <= 0:
+			_end_minigame()
+			return
+			
+		_show_next_question_with_data(next_question)
+	)
 
 func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> void:
 	"""Flash the panel with feedback color, then transition to target color"""

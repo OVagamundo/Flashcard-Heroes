@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectBuffDrawnUnit.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"hp_amount": 2,
+"pwr_amount": 2,
+"tier_filter": 1
+}
+target_type = &"NONE"

@@ -81,6 +81,10 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Unit must be alive, on the same team, and NOT the summoned unit itself
 			var summoned_uuid = context.get("summoned_uuid", "")
 			return unit.current_hp > 0 and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
+		
+		&"on_draw":
+			# Units don't respond to on_draw - only trinkets do
+			return false
 	
 	# Default: respond (for any new triggers)
 	return true
@@ -120,6 +124,10 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			# Only items equipped on the attacker respond (for lifesteal effects)
 			var attacker_uuid = context.get("attacker_uuid", "")
 			return holder_uuid == attacker_uuid
+		
+		&"on_draw":
+			# Items don't respond to on_draw - only trinkets do
+			return false
 	
 	return true
 
@@ -144,6 +152,11 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 		&"on_turn_start", &"on_turn_end", &"on_battle_start":
 			# All trinkets respond
 			return true
+		
+		&"on_draw":
+			# Only player trinkets respond to player draws
+			# (enemies don't draw, so this is always player team for now)
+			return trinket_team == "PLAYER"
 	
 	# For other triggers, trinkets respond based on team context if available
 	return true

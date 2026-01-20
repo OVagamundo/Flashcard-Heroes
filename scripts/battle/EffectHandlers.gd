@@ -589,38 +589,95 @@ static func handle_summon_unit(
 	new_inst.initialize(unit_def)
 	new_inst.reset_battle_stats_silent()
 	
-	# Add to result for BattleManager to register
+	# 2. Add to result for BattleManager to register
 	result.new_instances.append(new_inst)
 	
-	# Handle cleanup of old unit
-	if not is_resurrection:
+	# COLLISION RESOLUTION:
+	# Verify the target slot is actually available (either empty or occupied by the holder we're replacing).
+	# If occupied by a DIFFERENT unit, we must find an alternative slot or discard.
+	var final_location = holder_location
+	var container = battle_manager.get_container(holder_location.container)
+	if is_instance_valid(container):
+		var slot_uuid = container.get_uuid(holder_location.index)
+		# Checks: Slot not empty AND Slot not occupied by the unit we are replacing/resurrecting
+		if not slot_uuid.is_empty() and slot_uuid != holder_uuid:
+			# Collision detected! Attempt to find an empty slot.
+			var empty_slot = find_empty_slot_in_container(container)
+			# Note: find_empty_slot_in_container searches 0->N (front-to-back? depends on impl)
+			# We might prefer back-to-front for players, checking BattleManager helper if needed.
+			# But for safety, ANY empty slot is better than overwriting.
+			
+			if empty_slot != -1:
+				# Found a new slot in the lineup
+				var new_loc = LocationIdentifier.new(holder_location.container, empty_slot)
+				final_location = new_loc
+			else:
+				# Lineup full. Try Discard Pile.
+				if holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+					var discard = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+					var discard_slot = find_empty_slot_in_container(discard)
+					if discard_slot != -1:
+						var discard_loc = LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, discard_slot)
+						final_location = discard_loc
+					else:
+						# Discard also full? Critical failure.
+						# We must proceed but maybe log error? 
+						# Or just overwrite (worst case) or fail summon?
+						# Let's fail the summon to prevent overwriting a live unit.
+						result.new_instances.clear()
+						return result
+				else:
+					# Enemy has no discard pile. Cancel summon.
+					result.new_instances.clear()
+					return result
+
+	# Handle cleanup of old unit (only if we are still targeting the holder's slot)
+	if not is_resurrection and final_location.container == holder_location.container and final_location.index == holder_location.index:
 		if not holder_uuid.is_empty():
 			result.cleanup_uuids.append(holder_uuid)
-	else:
+	elif is_resurrection:
 		# For resurrection: mark slot for cleanup if dead unit present
-		var rez_container = battle_manager.get_container(holder_location.container)
+		var rez_container = battle_manager.get_container(final_location.container)
 		if is_instance_valid(rez_container):
-			var old_uuid: String = rez_container.get_uuid(holder_location.index)
+			var old_uuid: String = rez_container.get_uuid(final_location.index)
 			if not old_uuid.is_empty():
 				var old_inst: GachaBallInstance = battle_manager.get_instance(old_uuid)
 				if is_instance_valid(old_inst) and old_inst.current_hp <= 0:
 					result.cleanup_uuids.append(old_uuid)
 	
 	# Queue update: replace holder in actor queue
-	result.queue_updates.append({
-		"old_uuid": holder_uuid,
-		"new_instance": new_inst
-	})
-	
+	# Only do this if we are taking the holder's slot
+	if final_location.container == holder_location.container and final_location.index == holder_location.index:
+		result.queue_updates.append({
+			"old_uuid": holder_uuid,
+			"new_instance": new_inst
+		})
+	else:
+		# If we moved to a new slot (or discard), we need to insert into queue naturally?
+		# BattleManager handles insertion of new units via container_updates "insert_into_queue" flag?
+		# No, standard summons aren't always inserted.
+		# If it's a summon, it should probably be added to queue if it's a new unit.
+		# But wait, original logic was "Queue update: replace holder".
+		# If we don't replace holder, we should probably append to queue?
+		# Let's trust BattleManager's _insert_summoned_unit_into_queue logic if we flag it?
+		# result.container_updates has "insert_into_queue".
+		pass
+
 	# Container update
 	result.container_updates.append({
-		"container_tag": holder_location.container,
-		"slot": holder_location.index,
-		"uuid": new_inst.ball_uuid
+		"container_tag": final_location.container,
+		"slot": final_location.index,
+		"uuid": new_inst.ball_uuid,
+		"insert_into_queue": true # Ensure it gets added to queue since we might not be replacing holder
 	})
 	
 	# Create SUMMON event
 	var snapshot := create_unit_snapshot(new_inst, unit_def)
+	var final_old_uuid = holder_uuid
+	# If we are NOT replacing the holder, then the "old unit" at the target slot is effectively empty (or we wouldn't be summoning there)
+	if final_location.container != holder_location.container or final_location.index != holder_location.index:
+		final_old_uuid = ""
+		
 	result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": [new_inst.ball_uuid],
@@ -628,9 +685,9 @@ static func handle_summon_unit(
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
 		"visual_payload": {
-			"old_unit_uuid": holder_uuid,
+			"old_unit_uuid": final_old_uuid,
 			"new_unit_uuid": new_inst.ball_uuid,
-			"old_unit_location": holder_location,
+			"old_unit_location": final_location,
 			"new_unit_snapshot": snapshot
 		}
 	}))

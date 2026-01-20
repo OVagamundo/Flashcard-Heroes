@@ -314,6 +314,13 @@ signal shop_reroll_requested
 ## @param reward_data: Dictionary - Reward data (type, instance_uuid, amount)
 signal reward_chosen(reward_data: Dictionary)
 
+## Emitted when reward stock should be refreshed
+## @param context: Dictionary - Reward context with instances and reroll cost
+signal reward_stock_refreshed(context: Dictionary)
+
+## Emitted when reward reroll is requested
+signal reward_reroll_requested
+
 # -----------------------------------------------------------------------------
 # INTERACTION SYSTEM SIGNALS
 # -----------------------------------------------------------------------------
