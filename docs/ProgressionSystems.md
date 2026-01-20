@@ -39,6 +39,12 @@ After defeating a boss, the reward system differs from regular battles:
 ### Trinket Acquisition
 Trinkets are exclusively obtained from boss victories. They cannot be purchased in shops or found as regular battle rewards.
 
+### Reward Reroll System
+Players may spend gold to refresh the available rewards (excluding the Trinket reward screen).
+- **Cost**: Starts at **1 Gold**. Increases by **+1 Gold** for each subsequent reroll within the same session.
+- **Reset**: The cost resets to 1 Gold at the start of next reward session.
+- **Behavior**: Validates funds, plays `GoldCoinVFX`, clears current choices, and regenerates the reward pool.
+
 3. Meta-Progression: Achievements & The Codex
 Meta-progression provides long-term goals that persist between runs. This system is centered around completing in-game Achievements.
 Achievements

@@ -41,6 +41,7 @@ This section defines the complete set of Triggers, Targets, Conditions, and Effe
 Trigger StringName	When Fired by BattleManager	Context Data Provided (Dictionary)
 on_battle_start	Once for every unit/trinket at the very beginning of combat.	{}
 on_turn_start	At the beginning of each turn cycle, before the first unit acts.	{ "turn_number": int }
+on_draw	When a gachaball is drawn from the machine and lands in the bench.	{ "drawn_uuid": String, "drawn_container": String, "drawn_slot": int }
 on_attack	When a unit initiates its attack action.	{ "attacker_uuid": String, "target_uuid": String, "trigger_cause": StringName, "cause_id": String }
 on_before_damage	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String, "attacker_uuid": String, "trigger_cause": StringName }
 on_hurt	When a unit takes any form of damage.	{ "victim_uuid": String, "attacker_uuid": String, "damage_taken": int, "trigger_cause": StringName }

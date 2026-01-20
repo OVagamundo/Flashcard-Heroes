@@ -62,6 +62,7 @@ When `start_minigame` is called:
    - **Player Answers:**
      - ✓ Correct: Panel flashes **white**, mastery +1, next question instantly.
      - ✗ Incorrect: Panel flashes **red**, mastery −1, next question instantly.
+   - **Input Locking**: Inputs are strictly locked immediately upon selection. The lock is only released after the visual transition completes and the **new** answer buttons are spawned, preventing race conditions.
 
 4. **Session End:** Timer expires → window closes → `minigame_finished` signal emitted.
 

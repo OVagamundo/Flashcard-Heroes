@@ -173,3 +173,15 @@ Description: "At the start of the turn, Heals the frontmost ally unit by 2 HP."
 Trigger: on_turn_start.
 Effect: Heals the allied unit in the front-most position for 2 HP.
 Targeting: "Front-most" is the player's right-most unit (highest slot index) or the enemy's left-most unit (lowest slot index).
+
+Royal Insignia
+ID: trinket_royal_insignia
+Name: Royal Insignia
+Description: "Start with morale."
+Player Exclusive: No
+Ability:
+Description: "Whenever you Draw, Summon, or Start Battle with a Tier 1 unit, grant it +2 HP and +2 PWR."
+Trigger: on_draw, on_ally_summon, on_battle_start
+Target: Self (if Tier 1)
+Effect: Grants +2 HP and +2 PWR.
+Note: Prevents multiple applications via `buff_applied` tag.
