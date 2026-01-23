@@ -137,7 +137,17 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 					continue
 
 		var container: DataContainer = state.get_container(target_container_name)
-		var index = perm_loc.index
+		# Use find_first_empty_slot() for inventory to avoid index mismatches
+		# between RunInventory (can expand) and BattleInventory (fixed capacity)
+		var index: int
+		if String(target_container_name).begins_with("BattleInventoryT"):
+			index = container.find_first_empty_slot()
+			if index == -1:
+				push_error("BattleSetup: No space in %s for instance %s" % [String(target_container_name), battle_copy.ball_uuid])
+				continue
+		else:
+			# For lineup/bench, preserve the exact slot position
+			index = perm_loc.index
 		container.set_uuid(index, battle_copy.ball_uuid)
 		state.update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
