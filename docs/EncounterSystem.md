@@ -1,69 +1,98 @@
 # Encounter System & Generation
 
-**Version:** 1.1
+**Version:** 2.0  
 **Status:** Active
 
 ## Overview
-The Encounter System is responsible for defining, generating, and instantiating enemy teams for battle. It includes the static `EncounterDefinition` resource and the dynamic `EncounterGenerator` service.
 
-## Encounter System (Schema Addendum)
+The Encounter System is responsible for defining, generating, and instantiating enemy teams for battle. It uses a budget-based algorithm that **guarantees 100% budget spending**.
 
-This section documents the EncounterDefinition addition needed for enemy trinkets.
+## Budget Formula
 
-### EncounterDefinition (additions)
+| Day | Daily Budget | Calculation |
+|-----|--------------|-------------|
+| 1 | 5 | Base |
+| 2 | 8 | 5 + 3 |
+| 3 | 11 | 5 + 6 |
+| 5 | 17 | 5 + 12 |
+| 10 | 32 | 5 + 27 |
 
-- `enemy_trinket_ids: Array[StringName] = []`
-  - IDs must exist in `Database.trinkets` (loaded from `res://resources/trinkets/`).
-  - Duplicates by definition should be avoided; the battle setup deduplicates by definition ID.
-  - Player-exclusive trinkets (tags/flags like `is_player_exclusive` or legacy aliases) are ignored on load for enemies.
+**Formula:** `5 + (day - 1) * 3`
 
-### Battle Setup Integration
+## Gachaball Costs
 
-- During battle setup, `BattleSetup.setup_enemy_trinkets(state, encounter_def)` is the authoritative method for creating enemy trinkets.
-- For enemy lineup, `BattleSetup.setup_enemy_lineup(state, encounter_def)` handles unit and equipment initialization, including test-mode fallbacks.
-- `BattleManager` delegates to these helpers during its `_setup_battle` sequence.
-- The `EncounterGenerator` populates `enemy_trinket_ids` using the weighted budget system (see V9.3 algorithm below).
+Tiered units and items have the following budget costs:
 
-### Testing Notes
+| Tier | Cost | Notes |
+|------|------|-------|
+| 1 | 1 | Base tier |
+| 2 | 2 | |
+| 3 | 4 | Merge of 4x Tier 1 |
 
-- For deterministic tests, specify `enemy_trinket_ids` directly on the test `EncounterDefinition` resource to validate enemy trinket behaviors.
+*Note: Bosses have specific costs (Boss 1: 5g, Boss 2: 10g, etc.)*
 
-## Encounter Generation Algorithm (V9.3)
+### Battle Type Modifiers
 
-The `EncounterGenerator` uses a "Constrained Random Build" algorithm with weighted selection and a robust gap-filling step to generate dynamic enemy teams.
+| Type | Budget | Notes |
+|------|--------|-------|
+| Regular | Daily budget | Full budget for units/items/trinkets |
+| Elite | Daily budget × 1.3 | Elite unit is FREE |
+| Boss | Daily budget | Boss unit is FREE |
+| Boss Summons | Daily budget ÷ 2 | No trinkets |
+
+## Encounter Generation Algorithm
+
+The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm that guarantees 100% budget spending.
 
 ### Algorithm Phases
 
-1.  **Setup & Pooling:**
-    *   Loads all non-hero GachaBallDefinitions and TrinketDefinitions.
-    *   Separates them into `available_units`, `available_items`, and `available_trinkets`, sorted by cost.
-    *   Player-exclusive trinkets are filtered out from the enemy pool.
+1. **Greedy Weighted Selection**
+   - Priority weights: Units (3) > Items (2) > Trinkets (1)
+   - Respects slot limits: Max 5 units, max 5 trinkets
+   - Items limited by unit item slots
 
-2.  **Mandatory Spend:**
-    *   Ensures at least 50% of the budget is spent on units to prevent item-heavy, unit-light encounters.
+2. **Gap-Fill Phase**
+   - Searches for exact-cost items/units to fill remaining budget
+   - Tries single items, then combinations
 
-3.  **Flexible Spending with Weighted Selection:**
-    *   Iteratively buys units, items, or trinkets using weighted random selection.
-    *   **Priority Weights:**
-        *   Units: Weight 3 (highest priority, ~50% of purchases)
-        *   Items: Weight 2 (medium priority, ~33% of purchases)
-        *   Trinkets: Weight 1 (lowest priority, ~17% of purchases)
-    *   Respects unit caps (max 5), item slot limits, and trinket limit (max 1 per encounter).
-    *   **Optimization:** The generator runs this process multiple times (up to 10 attempts) and selects the build that utilizes the most budget.
+3. **Swap Optimization**
+   - If gap remains, tries swapping owned items for different costs
+   - Example: Swap cost-3 item for cost-4 to gain 1 gold
 
-4.  **Gap Filling (Robustness):**
-    *   If budget remains, explicitly searches for "filler" units or items that fit the remaining budget exactly or closely.
-    *   Prioritizes expensive fillers first to maximize efficiency.
+4. **Overflow Tracking** *(Future Feature)*
+   - If all slots full and budget remains, track as "overflow"
+   - Future: Convert to stat bonuses (HP/PWR boosts)
 
-5.  **Final Assembly:**
-    *   Places units in random positions.
-    *   Equips items randomly on units.
-    *   Assigns trinkets to `enemy_trinket_ids`.
+### Slot Limits
 
-6.  **Fallback Mechanism:**
-    *   If generation fails or produces an invalid encounter, a `_create_fallback_encounter` method is called.
-    *   This method safely looks up a valid Tier 1 unit (e.g., via Database query) rather than relying on hardcoded IDs, ensuring playability even with data changes.
+- **Units:** 5 max
+- **Items:** Based on unit item slot counts
+- **Trinkets:** 5 max per encounter
 
-### Trinket Budget Cost
+## EncounterDefinition Schema
 
-Trinkets have a default cost of **10 gold** for budget calculations (defined in `TrinketDefinition.cost`).
+```gdscript
+var id: String
+var enemy_placements: Array[Dictionary]  # {id, position, items}
+var enemy_trinket_ids: Array[StringName]
+```
+
+### Battle Setup Integration
+
+- `BattleSetup.setup_enemy_lineup(state, encounter_def)` - Creates units with equipment
+- `BattleSetup.setup_enemy_trinkets(state, encounter_def)` - Activates enemy trinkets
+- For boss encounters, `encounter_def.get_meta("current_day")` provides day for boss summon budget
+
+## Boss Summons
+
+Boss units call `EncounterGenerator.generate_boss_summons(day, max_units)` which:
+- Uses **half the daily budget**
+- Generates units with equipped items
+- **No trinkets** for summoned units
+- Returns Array of `{unit_id: StringName, items: Array[StringName]}`
+
+## Fallback Mechanism
+
+If generation fails or produces invalid encounter:
+- `_create_fallback_encounter()` creates minimal valid encounter
+- Looks up Tier 1 unit via Database query (not hardcoded ID)

@@ -349,26 +349,26 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
 			var encounter_def: EncounterDefinition
+			# New budget formula: base 5 + 3 per day after first
+			var daily_budget: int = 5 + (run_state.day - 1) * 3
 			
 			if node_def.subtype == "BOSS":
-				# Boss encounter - use boss level from difficulty
+				# Boss encounter - boss is free, support units use daily budget
 				var boss_level: int = node_def.difficulty
-				var budget: int = run_state.day * 5
-				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, budget)
+				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, daily_budget, run_state.day)
 				# Track current boss level for victory handling
 				run_state.current_boss_level = boss_level
 				run_state.current_elite_level = 0
 			elif node_def.subtype == "ELITE":
-				# Elite encounter - similar to boss but with random boss unit
-				var budget: int = int(floor(run_state.day * 5 * 1.5))
+				# Elite encounter - 1.3x daily budget
+				var budget: int = int(floor(daily_budget * 1.3))
 				encounter_def = EncounterGenerator.generate_elite_encounter(budget)
 				# Track elite level for victory handling (trinket rewards)
 				run_state.current_elite_level = 1
 				run_state.current_boss_level = 0
 			else:
-				# Regular encounter
-				var budget = run_state.day * 5
-				encounter_def = EncounterGenerator.generate_encounter(budget)
+				# Regular encounter - uses daily budget
+				encounter_def = EncounterGenerator.generate_encounter(daily_budget)
 				run_state.current_boss_level = 0
 				run_state.current_elite_level = 0
 			
