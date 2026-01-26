@@ -3,629 +3,109 @@
     "display_name": "Hiragana",
     "description": "Learn Japanese hiragana characters",
     "cards": [
-        {
-            "id": "HIRA_001",
-            "question": "あ",
-            "answer": "a",
-            "explanation": "The vowel 'a', as in 'father'."
-        },
-        {
-            "id": "HIRA_002",
-            "question": "い",
-            "answer": "i",
-            "explanation": "The vowel 'i', as in 'see'."
-        },
-        {
-            "id": "HIRA_003",
-            "question": "う",
-            "answer": "u",
-            "explanation": "The vowel 'u', as in 'flute'."
-        },
-        {
-            "id": "HIRA_004",
-            "question": "え",
-            "answer": "e",
-            "explanation": "The vowel 'e', as in 'egg'."
-        },
-        {
-            "id": "HIRA_005",
-            "question": "お",
-            "answer": "o",
-            "explanation": "The vowel 'o', as in 'boat'."
-        },
-        {
-            "id": "HIRA_006",
-            "question": "か",
-            "answer": "ka",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_007",
-            "question": "き",
-            "answer": "ki",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_008",
-            "question": "く",
-            "answer": "ku",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_009",
-            "question": "け",
-            "answer": "ke",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_010",
-            "question": "こ",
-            "answer": "ko",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_011",
-            "question": "さ",
-            "answer": "sa",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_012",
-            "question": "し",
-            "answer": "shi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_013",
-            "question": "す",
-            "answer": "su",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_014",
-            "question": "せ",
-            "answer": "se",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_015",
-            "question": "そ",
-            "answer": "so",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_016",
-            "question": "た",
-            "answer": "ta",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_017",
-            "question": "ち",
-            "answer": "chi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_018",
-            "question": "つ",
-            "answer": "tsu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_019",
-            "question": "て",
-            "answer": "te",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_020",
-            "question": "と",
-            "answer": "to",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_021",
-            "question": "な",
-            "answer": "na",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_022",
-            "question": "に",
-            "answer": "ni",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_023",
-            "question": "ぬ",
-            "answer": "nu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_024",
-            "question": "ね",
-            "answer": "ne",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_025",
-            "question": "の",
-            "answer": "no",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_026",
-            "question": "は",
-            "answer": "ha",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_027",
-            "question": "ひ",
-            "answer": "hi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_028",
-            "question": "ふ",
-            "answer": "fu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_029",
-            "question": "へ",
-            "answer": "he",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_030",
-            "question": "ほ",
-            "answer": "ho",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_031",
-            "question": "ま",
-            "answer": "ma",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_032",
-            "question": "み",
-            "answer": "mi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_033",
-            "question": "む",
-            "answer": "mu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_034",
-            "question": "め",
-            "answer": "me",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_035",
-            "question": "も",
-            "answer": "mo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_036",
-            "question": "や",
-            "answer": "ya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_037",
-            "question": "ゆ",
-            "answer": "yu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_038",
-            "question": "よ",
-            "answer": "yo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_039",
-            "question": "ら",
-            "answer": "ra",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_040",
-            "question": "り",
-            "answer": "ri",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_041",
-            "question": "る",
-            "answer": "ru",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_042",
-            "question": "れ",
-            "answer": "re",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_043",
-            "question": "ろ",
-            "answer": "ro",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_044",
-            "question": "わ",
-            "answer": "wa",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_045",
-            "question": "を",
-            "answer": "wo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_046",
-            "question": "ん",
-            "answer": "n",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_047",
-            "question": "が",
-            "answer": "ga",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_048",
-            "question": "ぎ",
-            "answer": "gi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_049",
-            "question": "ぐ",
-            "answer": "gu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_050",
-            "question": "げ",
-            "answer": "ge",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_051",
-            "question": "ご",
-            "answer": "go",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_052",
-            "question": "ざ",
-            "answer": "za",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_053",
-            "question": "じ",
-            "answer": "ji",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_054",
-            "question": "ず",
-            "answer": "zu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_055",
-            "question": "ぜ",
-            "answer": "ze",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_056",
-            "question": "ぞ",
-            "answer": "zo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_057",
-            "question": "だ",
-            "answer": "da",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_058",
-            "question": "ぢ",
-            "answer": "ji",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_059",
-            "question": "づ",
-            "answer": "zu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_060",
-            "question": "で",
-            "answer": "de",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_061",
-            "question": "ど",
-            "answer": "do",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_062",
-            "question": "ば",
-            "answer": "ba",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_063",
-            "question": "び",
-            "answer": "bi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_064",
-            "question": "ぶ",
-            "answer": "bu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_065",
-            "question": "べ",
-            "answer": "be",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_066",
-            "question": "ぼ",
-            "answer": "bo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_067",
-            "question": "ぱ",
-            "answer": "pa",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_068",
-            "question": "ぴ",
-            "answer": "pi",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_069",
-            "question": "ぷ",
-            "answer": "pu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_070",
-            "question": "ぺ",
-            "answer": "pe",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_071",
-            "question": "ぽ",
-            "answer": "po",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_072",
-            "question": "きゃ",
-            "answer": "kya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_073",
-            "question": "きゅ",
-            "answer": "kyu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_074",
-            "question": "きょ",
-            "answer": "kyo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_075",
-            "question": "しゃ",
-            "answer": "sha",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_076",
-            "question": "しゅ",
-            "answer": "shu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_077",
-            "question": "しょ",
-            "answer": "sho",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_078",
-            "question": "ちゃ",
-            "answer": "cha",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_079",
-            "question": "ちゅ",
-            "answer": "chu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_080",
-            "question": "ちょ",
-            "answer": "cho",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_081",
-            "question": "にゃ",
-            "answer": "nya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_082",
-            "question": "にゅ",
-            "answer": "nyu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_083",
-            "question": "にょ",
-            "answer": "nyo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_084",
-            "question": "ひゃ",
-            "answer": "hya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_085",
-            "question": "ひゅ",
-            "answer": "hyu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_086",
-            "question": "ひょ",
-            "answer": "hyo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_087",
-            "question": "みゃ",
-            "answer": "mya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_088",
-            "question": "みゅ",
-            "answer": "myu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_089",
-            "question": "みょ",
-            "answer": "myo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_090",
-            "question": "りゃ",
-            "answer": "rya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_091",
-            "question": "りゅ",
-            "answer": "ryu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_092",
-            "question": "りょ",
-            "answer": "ryo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_093",
-            "question": "ぎゃ",
-            "answer": "gya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_094",
-            "question": "ぎゅ",
-            "answer": "gyu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_095",
-            "question": "ぎょ",
-            "answer": "gyo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_096",
-            "question": "じゃ",
-            "answer": "ja",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_097",
-            "question": "じゅ",
-            "answer": "ju",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_098",
-            "question": "じょ",
-            "answer": "jo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_099",
-            "question": "びゃ",
-            "answer": "bya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_100",
-            "question": "びゅ",
-            "answer": "byu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_101",
-            "question": "びょ",
-            "answer": "byo",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_102",
-            "question": "ぴゃ",
-            "answer": "pya",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_103",
-            "question": "ぴゅ",
-            "answer": "pyu",
-            "explanation": ""
-        },
-        {
-            "id": "HIRA_104",
-            "question": "ぴょ",
-            "answer": "pyo",
-            "explanation": ""
-        }
+        {"id": "HIRA_001", "question": "あ", "answer": "a", "explanation": "Vowel 'a' as in 'father'. Looks like someone saying 'Ahhh' with arms out."},
+        {"id": "HIRA_002", "question": "い", "answer": "i", "explanation": "Vowel 'i' as in 'see'. Two lines like chopsticks - 'ee'ting!"},
+        {"id": "HIRA_003", "question": "う", "answer": "u", "explanation": "Vowel 'u' as in 'flute'. Looks like a face in profile saying 'oo'."},
+        {"id": "HIRA_004", "question": "え", "answer": "e", "explanation": "Vowel 'e' as in 'pet'. Looks like an exotic bird."},
+        {"id": "HIRA_005", "question": "お", "answer": "o", "explanation": "Vowel 'o' as in 'boat'. Looks like a golfer about to swing - 'Oh!'"},
+        {"id": "HIRA_006", "question": "か", "answer": "ka", "explanation": "K-row. Looks like a sword cutting - 'ka-slash!'"},
+        {"id": "HIRA_007", "question": "き", "answer": "ki", "explanation": "K-row. Looks like a key - 'ki' sounds like 'key'."},
+        {"id": "HIRA_008", "question": "く", "answer": "ku", "explanation": "K-row. Looks like a cuckoo bird's beak."},
+        {"id": "HIRA_009", "question": "け", "answer": "ke", "explanation": "K-row. Looks like a crooked keg on its side."},
+        {"id": "HIRA_010", "question": "こ", "answer": "ko", "explanation": "K-row. Two horizontal lines like a comb."},
+        {"id": "HIRA_011", "question": "さ", "answer": "sa", "explanation": "S-row. Looks like a saddle on a horse."},
+        {"id": "HIRA_012", "question": "し", "answer": "shi", "explanation": "S-row. Looks like a fishhook - 'shi' like 'she caught a fish'."},
+        {"id": "HIRA_013", "question": "す", "answer": "su", "explanation": "S-row. Looks like a swing set."},
+        {"id": "HIRA_014", "question": "せ", "answer": "se", "explanation": "S-row. Looks like a mouth saying something."},
+        {"id": "HIRA_015", "question": "そ", "answer": "so", "explanation": "S-row. Looks like a sewing needle with thread."},
+        {"id": "HIRA_016", "question": "た", "answer": "ta", "explanation": "T-row. Looks like 'ta-ta' waving goodbye."},
+        {"id": "HIRA_017", "question": "ち", "answer": "chi", "explanation": "T-row. Looks like a cheerleader doing a split."},
+        {"id": "HIRA_018", "question": "つ", "answer": "tsu", "explanation": "T-row. Looks like a tsunami wave curling."},
+        {"id": "HIRA_019", "question": "て", "answer": "te", "explanation": "T-row. Looks like a telephone pole."},
+        {"id": "HIRA_020", "question": "と", "answer": "to", "explanation": "T-row. Looks like a toe stubbing against something."},
+        {"id": "HIRA_021", "question": "な", "answer": "na", "explanation": "N-row. Looks like a knot tied in rope."},
+        {"id": "HIRA_022", "question": "に", "answer": "ni", "explanation": "N-row. Looks like a knee bending."},
+        {"id": "HIRA_023", "question": "ぬ", "answer": "nu", "explanation": "N-row. Looks like noodles being slurped."},
+        {"id": "HIRA_024", "question": "ね", "answer": "ne", "explanation": "N-row. Looks like a cat sleeping - cats say 'ne' in Japanese."},
+        {"id": "HIRA_025", "question": "の", "answer": "no", "explanation": "N-row. Looks like a 'NO' sign - a circle with a line."},
+        {"id": "HIRA_026", "question": "は", "answer": "ha", "explanation": "H-row. Looks like 'ha ha' laughing person."},
+        {"id": "HIRA_027", "question": "ひ", "answer": "hi", "explanation": "H-row. Looks like a smiling face saying 'hee hee'."},
+        {"id": "HIRA_028", "question": "ふ", "answer": "fu", "explanation": "H-row. Looks like Mt. Fuji. Pronounced between 'fu' and 'hu'."},
+        {"id": "HIRA_029", "question": "へ", "answer": "he", "explanation": "H-row. Looks like a mountain peak - simple diagonal."},
+        {"id": "HIRA_030", "question": "ほ", "answer": "ho", "explanation": "H-row. Looks like a person hopping with arms up."},
+        {"id": "HIRA_031", "question": "ま", "answer": "ma", "explanation": "M-row. Looks like a mama with a baby in arms."},
+        {"id": "HIRA_032", "question": "み", "answer": "mi", "explanation": "M-row. Looks like the number 21 - 'me' in Japanese."},
+        {"id": "HIRA_033", "question": "む", "answer": "mu", "explanation": "M-row. Looks like a cow saying 'moo'."},
+        {"id": "HIRA_034", "question": "め", "answer": "me", "explanation": "M-row. Looks like an eye - 'me' means 'eye'."},
+        {"id": "HIRA_035", "question": "も", "answer": "mo", "explanation": "M-row. Looks like a fishing hook catching more fish."},
+        {"id": "HIRA_036", "question": "や", "answer": "ya", "explanation": "Y-row. Looks like a yak from the side."},
+        {"id": "HIRA_037", "question": "ゆ", "answer": "yu", "explanation": "Y-row. Looks like a U-turn sign - 'you' turn around."},
+        {"id": "HIRA_038", "question": "よ", "answer": "yo", "explanation": "Y-row. Looks like a yo-yo on a string."},
+        {"id": "HIRA_039", "question": "ら", "answer": "ra", "explanation": "R-row. Sounds between 'ra' and 'la'. Looks like a rabbit."},
+        {"id": "HIRA_040", "question": "り", "answer": "ri", "explanation": "R-row. Looks like reeds bending in wind."},
+        {"id": "HIRA_041", "question": "る", "answer": "ru", "explanation": "R-row. Looks like a loop - 'ru' like 'loop'."},
+        {"id": "HIRA_042", "question": "れ", "answer": "re", "explanation": "R-row. Looks like a person reaching out."},
+        {"id": "HIRA_043", "question": "ろ", "answer": "ro", "explanation": "R-row. Looks like a road curving ahead."},
+        {"id": "HIRA_044", "question": "わ", "answer": "wa", "explanation": "W-row. Looks like a person waving."},
+        {"id": "HIRA_045", "question": "を", "answer": "wo", "explanation": "Particle only. Used for object marker. Like 'wa' with extra stroke."},
+        {"id": "HIRA_046", "question": "ん", "answer": "n", "explanation": "Standalone consonant. Looks like letter 'n' cursive."},
+        {"id": "HIRA_047", "question": "が", "answer": "ga", "explanation": "Voiced 'ka'. Add dakuten (゛) to か. Used in 'ga' particle."},
+        {"id": "HIRA_048", "question": "ぎ", "answer": "gi", "explanation": "Voiced 'ki'. Add dakuten to き."},
+        {"id": "HIRA_049", "question": "ぐ", "answer": "gu", "explanation": "Voiced 'ku'. Add dakuten to く."},
+        {"id": "HIRA_050", "question": "げ", "answer": "ge", "explanation": "Voiced 'ke'. Add dakuten to け."},
+        {"id": "HIRA_051", "question": "ご", "answer": "go", "explanation": "Voiced 'ko'. Add dakuten to こ. Example: ご飯 (gohan) = rice."},
+        {"id": "HIRA_052", "question": "ざ", "answer": "za", "explanation": "Voiced 'sa'. Add dakuten to さ."},
+        {"id": "HIRA_053", "question": "じ", "answer": "ji", "explanation": "Voiced 'shi'. Add dakuten to し. Common in 時間 (jikan) = time."},
+        {"id": "HIRA_054", "question": "ず", "answer": "zu", "explanation": "Voiced 'su'. Add dakuten to す."},
+        {"id": "HIRA_055", "question": "ぜ", "answer": "ze", "explanation": "Voiced 'se'. Add dakuten to せ."},
+        {"id": "HIRA_056", "question": "ぞ", "answer": "zo", "explanation": "Voiced 'so'. Add dakuten to そ."},
+        {"id": "HIRA_057", "question": "だ", "answer": "da", "explanation": "Voiced 'ta'. Add dakuten to た. Common in だから (dakara) = therefore."},
+        {"id": "HIRA_058", "question": "ぢ", "answer": "ji", "explanation": "Voiced 'chi'. Rarely used - じ is preferred for 'ji' sound."},
+        {"id": "HIRA_059", "question": "づ", "answer": "zu", "explanation": "Voiced 'tsu'. Rarely used - ず is preferred for 'zu' sound."},
+        {"id": "HIRA_060", "question": "で", "answer": "de", "explanation": "Voiced 'te'. Add dakuten to て. Particle meaning 'at/by'."},
+        {"id": "HIRA_061", "question": "ど", "answer": "do", "explanation": "Voiced 'to'. Add dakuten to と. Example: どこ (doko) = where."},
+        {"id": "HIRA_062", "question": "ば", "answer": "ba", "explanation": "Voiced 'ha'. Add dakuten to は."},
+        {"id": "HIRA_063", "question": "び", "answer": "bi", "explanation": "Voiced 'hi'. Add dakuten to ひ."},
+        {"id": "HIRA_064", "question": "ぶ", "answer": "bu", "explanation": "Voiced 'fu'. Add dakuten to ふ."},
+        {"id": "HIRA_065", "question": "べ", "answer": "be", "explanation": "Voiced 'he'. Add dakuten to へ."},
+        {"id": "HIRA_066", "question": "ぼ", "answer": "bo", "explanation": "Voiced 'ho'. Add dakuten to ほ."},
+        {"id": "HIRA_067", "question": "ぱ", "answer": "pa", "explanation": "Half-voiced 'ha'. Add handakuten (゜) to は."},
+        {"id": "HIRA_068", "question": "ぴ", "answer": "pi", "explanation": "Half-voiced 'hi'. Add handakuten to ひ."},
+        {"id": "HIRA_069", "question": "ぷ", "answer": "pu", "explanation": "Half-voiced 'fu'. Add handakuten to ふ."},
+        {"id": "HIRA_070", "question": "ぺ", "answer": "pe", "explanation": "Half-voiced 'he'. Add handakuten to へ."},
+        {"id": "HIRA_071", "question": "ぽ", "answer": "po", "explanation": "Half-voiced 'ho'. Add handakuten to ほ."},
+        {"id": "HIRA_072", "question": "きゃ", "answer": "kya", "explanation": "Combo: き + small や. Glides into 'ya' sound."},
+        {"id": "HIRA_073", "question": "きゅ", "answer": "kyu", "explanation": "Combo: き + small ゆ. Sounds cute - like 'cute' in Japanese!"},
+        {"id": "HIRA_074", "question": "きょ", "answer": "kyo", "explanation": "Combo: き + small よ. Common in 今日 (kyou) = today."},
+        {"id": "HIRA_075", "question": "しゃ", "answer": "sha", "explanation": "Combo: し + small や. Common in 写真 (shashin) = photo."},
+        {"id": "HIRA_076", "question": "しゅ", "answer": "shu", "explanation": "Combo: し + small ゆ. Common in 主人 (shujin) = husband."},
+        {"id": "HIRA_077", "question": "しょ", "answer": "sho", "explanation": "Combo: し + small よ. Common in 少し (sukoshi) = a little."},
+        {"id": "HIRA_078", "question": "ちゃ", "answer": "cha", "explanation": "Combo: ち + small や. Like 'cha' in 'chai tea'."},
+        {"id": "HIRA_079", "question": "ちゅ", "answer": "chu", "explanation": "Combo: ち + small ゆ. Sound of a kiss in Japanese!"},
+        {"id": "HIRA_080", "question": "ちょ", "answer": "cho", "explanation": "Combo: ち + small よ. Common in ちょっと (chotto) = a little."},
+        {"id": "HIRA_081", "question": "にゃ", "answer": "nya", "explanation": "Combo: に + small や. Cat sound in Japanese - にゃあ!"},
+        {"id": "HIRA_082", "question": "にゅ", "answer": "nyu", "explanation": "Combo: に + small ゆ. Common in ニュース (nyuusu) = news."},
+        {"id": "HIRA_083", "question": "にょ", "answer": "nyo", "explanation": "Combo: に + small よ. Less common combination."},
+        {"id": "HIRA_084", "question": "ひゃ", "answer": "hya", "explanation": "Combo: ひ + small や. Like 'hya' in exclamation."},
+        {"id": "HIRA_085", "question": "ひゅ", "answer": "hyu", "explanation": "Combo: ひ + small ゆ. Sound of wind - 'hyuuu'."},
+        {"id": "HIRA_086", "question": "ひょ", "answer": "hyo", "explanation": "Combo: ひ + small よ. Common in 表 (hyou) = chart."},
+        {"id": "HIRA_087", "question": "みゃ", "answer": "mya", "explanation": "Combo: み + small や. Rare combination."},
+        {"id": "HIRA_088", "question": "みゅ", "answer": "myu", "explanation": "Combo: み + small ゆ. Used in music (ミュージック)."},
+        {"id": "HIRA_089", "question": "みょ", "answer": "myo", "explanation": "Combo: み + small よ. Common in 名字 (myouji) = surname."},
+        {"id": "HIRA_090", "question": "りゃ", "answer": "rya", "explanation": "Combo: り + small や. Less common."},
+        {"id": "HIRA_091", "question": "りゅ", "answer": "ryu", "explanation": "Combo: り + small ゆ. Common in 竜 (ryuu) = dragon!"},
+        {"id": "HIRA_092", "question": "りょ", "answer": "ryo", "explanation": "Combo: り + small よ. Common in 旅行 (ryokou) = travel."},
+        {"id": "HIRA_093", "question": "ぎゃ", "answer": "gya", "explanation": "Voiced combo: ぎ + small や."},
+        {"id": "HIRA_094", "question": "ぎゅ", "answer": "gyu", "explanation": "Voiced combo: ぎ + small ゆ. Common in 牛 (gyuu) = cow."},
+        {"id": "HIRA_095", "question": "ぎょ", "answer": "gyo", "explanation": "Voiced combo: ぎ + small よ. Common in 魚 (gyo) = fish."},
+        {"id": "HIRA_096", "question": "じゃ", "answer": "ja", "explanation": "Voiced combo: じ + small や. Common in じゃあ = well then."},
+        {"id": "HIRA_097", "question": "じゅ", "answer": "ju", "explanation": "Voiced combo: じ + small ゆ. Common in 十 (juu) = ten."},
+        {"id": "HIRA_098", "question": "じょ", "answer": "jo", "explanation": "Voiced combo: じ + small よ. Common in 女性 (josei) = woman."},
+        {"id": "HIRA_099", "question": "びゃ", "answer": "bya", "explanation": "Voiced combo: び + small や. Rare combination."},
+        {"id": "HIRA_100", "question": "びゅ", "answer": "byu", "explanation": "Voiced combo: び + small ゆ. Rare - used in ビュー (view)."},
+        {"id": "HIRA_101", "question": "びょ", "answer": "byo", "explanation": "Voiced combo: び + small よ. Common in 病院 (byouin) = hospital."},
+        {"id": "HIRA_102", "question": "ぴゃ", "answer": "pya", "explanation": "Half-voiced combo: ぴ + small や. Very rare."},
+        {"id": "HIRA_103", "question": "ぴゅ", "answer": "pyu", "explanation": "Half-voiced combo: ぴ + small ゆ. Onomatopoeia for whistling."},
+        {"id": "HIRA_104", "question": "ぴょ", "answer": "pyo", "explanation": "Half-voiced combo: ぴ + small よ. Onomatopoeia for hopping."}
     ]
 }

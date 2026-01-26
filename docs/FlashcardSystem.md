@@ -53,6 +53,10 @@ The FlashcardManager is a persistent singleton that orchestrates the entire mini
 When `start_minigame` is called:
 
 1. **Card Introduction (if applicable):** One new card is introduced per session until all deck cards are active.
+   
+   **Initial 10 Cards:** The first 10 cards are added to the active deck at run start, but are formally introduced one-by-one via the popup. Until all 10 are introduced, the popup shows each card sequentially.
+   
+   **Priority Cards Preview:** The popup displays 10 clickable card buttons at the bottom showing the highest-priority cards from the active deck (sorted by SRS weight without RNG). Each button is colored according to its mastery level. Clicking a button switches the main display to show that card's information. This allows players to preview or study cards before they are formally introduced.
 
 2. **Start Timer:** 5-second session begins. The modal window disables all other interactions.
 
