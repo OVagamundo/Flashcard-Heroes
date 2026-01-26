@@ -7,601 +7,601 @@
             "id": "KANJI_001",
             "question": "日",
             "answer": "day/sun",
-            "explanation": "nichi, hi - day, sun"
+            "explanation": "Readings: にち (nichi), ひ (hi). Like a window with sunlight. Example: 日本 (nihon) = Japan."
         },
         {
             "id": "KANJI_002",
             "question": "一",
             "answer": "one",
-            "explanation": "ichi, hito - one"
+            "explanation": "Readings: いち (ichi), ひと (hito). One horizontal stroke = one. Example: 一人 (hitori) = one person."
         },
         {
             "id": "KANJI_003",
             "question": "国",
             "answer": "country",
-            "explanation": "koku, kuni - country"
+            "explanation": "Readings: こく (koku), くに (kuni). Treasure (玉) inside borders. Example: 外国 (gaikoku) = foreign country."
         },
         {
             "id": "KANJI_004",
             "question": "人",
             "answer": "person",
-            "explanation": "jin, hito - person"
+            "explanation": "Readings: じん (jin), ひと (hito). A person walking. Example: 日本人 (nihonjin) = Japanese person."
         },
         {
             "id": "KANJI_005",
             "question": "年",
             "answer": "year",
-            "explanation": "nen, toshi - year"
+            "explanation": "Readings: ねん (nen), とし (toshi). Grain harvest cycle. Example: 今年 (kotoshi) = this year."
         },
         {
             "id": "KANJI_006",
             "question": "大",
             "answer": "big",
-            "explanation": "dai, oo - big"
+            "explanation": "Readings: だい (dai), おお (oo). Person with arms stretched wide. Example: 大学 (daigaku) = university."
         },
         {
             "id": "KANJI_007",
             "question": "十",
             "answer": "ten",
-            "explanation": "juu, too - ten"
+            "explanation": "Readings: じゅう (juu), とお (too). Cross representing 10. Example: 十分 (juubun) = enough/10 minutes."
         },
         {
             "id": "KANJI_008",
             "question": "二",
             "answer": "two",
-            "explanation": "ni, futa - two"
+            "explanation": "Readings: に (ni), ふた (futa). Two horizontal lines. Example: 二人 (futari) = two people."
         },
         {
             "id": "KANJI_009",
             "question": "本",
             "answer": "book/origin",
-            "explanation": "hon, moto - book, origin"
+            "explanation": "Readings: ほん (hon), もと (moto). Tree with root marked. Example: 日本 (nihon) = Japan, 本 (hon) = book."
         },
         {
             "id": "KANJI_010",
             "question": "中",
             "answer": "middle",
-            "explanation": "chuu, naka - middle, inside"
+            "explanation": "Readings: ちゅう (chuu), なか (naka). Box with line through center. Example: 中国 (chuugoku) = China."
         },
         {
             "id": "KANJI_011",
             "question": "長",
             "answer": "long",
-            "explanation": "chou, naga - long"
+            "explanation": "Readings: ちょう (chou), なが (naga). Long flowing hair. Example: 社長 (shachou) = company president."
         },
         {
             "id": "KANJI_012",
             "question": "出",
             "answer": "exit",
-            "explanation": "shutsu, de - exit, leave"
+            "explanation": "Readings: しゅつ (shutsu), で (de). Mountain peaks emerging. Example: 出口 (deguchi) = exit."
         },
         {
             "id": "KANJI_013",
             "question": "三",
             "answer": "three",
-            "explanation": "san, mi - three"
+            "explanation": "Readings: さん (san), み (mi). Three horizontal lines. Example: 三人 (sannin) = three people."
         },
         {
             "id": "KANJI_014",
             "question": "時",
             "answer": "time",
-            "explanation": "ji, toki - time"
+            "explanation": "Readings: じ (ji), とき (toki). Sun + temple = time told by temples. Example: 時間 (jikan) = time."
         },
         {
             "id": "KANJI_015",
             "question": "行",
             "answer": "go",
-            "explanation": "kou, i - go"
+            "explanation": "Readings: こう (kou), い (i), ゆ (yu). Crossroads. Example: 行く (iku) = to go, 銀行 (ginkou) = bank."
         },
         {
             "id": "KANJI_016",
             "question": "見",
             "answer": "see",
-            "explanation": "ken, mi - see"
+            "explanation": "Readings: けん (ken), み (mi). Eye on legs. Example: 見る (miru) = to see, 意見 (iken) = opinion."
         },
         {
             "id": "KANJI_017",
             "question": "月",
             "answer": "month/moon",
-            "explanation": "getsu, tsuki - month, moon"
+            "explanation": "Readings: げつ (getsu), つき (tsuki). Crescent moon shape. Example: 今月 (kongetsu) = this month."
         },
         {
             "id": "KANJI_018",
             "question": "分",
             "answer": "minute/part",
-            "explanation": "bun, wa - minute, part"
+            "explanation": "Readings: ぶん (bun), わ (wa), ふん (fun). Cutting with a knife. Example: 五分 (gofun) = 5 minutes."
         },
         {
             "id": "KANJI_019",
             "question": "後",
             "answer": "after",
-            "explanation": "go, ato - after"
+            "explanation": "Readings: ご (go), あと (ato), のち (nochi). Walking behind. Example: 午後 (gogo) = afternoon."
         },
         {
             "id": "KANJI_020",
             "question": "前",
             "answer": "before",
-            "explanation": "zen, mae - before"
+            "explanation": "Readings: ぜん (zen), まえ (mae). Walking in front. Example: 午前 (gozen) = morning, 名前 (namae) = name."
         },
         {
             "id": "KANJI_021",
             "question": "生",
             "answer": "life",
-            "explanation": "sei, i - life, birth"
+            "explanation": "Readings: せい (sei), い (i), う (u), は (ha). Plant sprouting from earth. Example: 学生 (gakusei) = student."
         },
         {
             "id": "KANJI_022",
             "question": "五",
             "answer": "five",
-            "explanation": "go, itsu - five"
+            "explanation": "Readings: ご (go), いつ (itsu). Cross with top and bottom. Example: 五人 (gonin) = five people."
         },
         {
             "id": "KANJI_023",
             "question": "間",
             "answer": "interval",
-            "explanation": "kan, aida - interval, between"
+            "explanation": "Readings: かん (kan), あいだ (aida), ま (ma). Sun peeking through gate. Example: 時間 (jikan) = time."
         },
         {
             "id": "KANJI_024",
             "question": "上",
             "answer": "up",
-            "explanation": "jou, ue - up, above"
+            "explanation": "Readings: じょう (jou), うえ (ue), あ (a), のぼ (nobo). Line above base. Example: 上手 (jouzu) = skillful."
         },
         {
             "id": "KANJI_025",
             "question": "東",
             "answer": "east",
-            "explanation": "tou, higashi - east"
+            "explanation": "Readings: とう (tou), ひがし (higashi). Sun rising behind tree. Example: 東京 (toukyou) = Tokyo."
         },
         {
             "id": "KANJI_026",
             "question": "四",
             "answer": "four",
-            "explanation": "shi, yon - four"
+            "explanation": "Readings: し (shi), よん (yon), よ (yo). Mouth breathing four times. Example: 四人 (yonin) = four people."
         },
         {
             "id": "KANJI_027",
             "question": "今",
             "answer": "now",
-            "explanation": "kon, ima - now"
+            "explanation": "Readings: こん (kon), いま (ima). Roof over something. Example: 今日 (kyou) = today."
         },
         {
             "id": "KANJI_028",
             "question": "金",
             "answer": "gold/money",
-            "explanation": "kin, kane - gold, money"
+            "explanation": "Readings: きん (kin), かね (kane). Golden nuggets underground. Example: お金 (okane) = money."
         },
         {
             "id": "KANJI_029",
             "question": "九",
             "answer": "nine",
-            "explanation": "kyuu, kokono - nine"
+            "explanation": "Readings: きゅう (kyuu), く (ku), ここの (kokono). Almost complete circle. Example: 九月 (kugatsu) = September."
         },
         {
             "id": "KANJI_030",
             "question": "入",
             "answer": "enter",
-            "explanation": "nyuu, hai - enter"
+            "explanation": "Readings: にゅう (nyuu), はい (hai), い (i). Arrow entering. Example: 入口 (iriguchi) = entrance."
         },
         {
             "id": "KANJI_031",
             "question": "学",
             "answer": "study",
-            "explanation": "gaku, mana - study"
+            "explanation": "Readings: がく (gaku), まな (mana). Child under a roof learning. Example: 大学 (daigaku) = university."
         },
         {
             "id": "KANJI_032",
             "question": "高",
             "answer": "high",
-            "explanation": "kou, taka - high"
+            "explanation": "Readings: こう (kou), たか (taka). Tall building with roof. Example: 高校 (koukou) = high school."
         },
         {
             "id": "KANJI_033",
             "question": "円",
             "answer": "yen/circle",
-            "explanation": "en, maru - yen, circle"
+            "explanation": "Readings: えん (en), まる (maru). Round coin. Example: 百円 (hyakuen) = 100 yen."
         },
         {
             "id": "KANJI_034",
             "question": "子",
             "answer": "child",
-            "explanation": "shi, ko - child"
+            "explanation": "Readings: し (shi), こ (ko). Baby with arms. Example: 子供 (kodomo) = child."
         },
         {
             "id": "KANJI_035",
             "question": "外",
             "answer": "outside",
-            "explanation": "gai, soto - outside"
+            "explanation": "Readings: がい (gai), そと (soto), ほか (hoka). Evening moon = outside at night. Example: 外国 (gaikoku) = foreign country."
         },
         {
             "id": "KANJI_036",
             "question": "八",
             "answer": "eight",
-            "explanation": "hachi, ya - eight"
+            "explanation": "Readings: はち (hachi), や (ya), よう (you). Two lines spreading apart. Example: 八月 (hachigatsu) = August."
         },
         {
             "id": "KANJI_037",
             "question": "六",
             "answer": "six",
-            "explanation": "roku, mu - six"
+            "explanation": "Readings: ろく (roku), む (mu), むっ (mu). Roof with legs. Example: 六月 (rokugatsu) = June."
         },
         {
             "id": "KANJI_038",
             "question": "下",
             "answer": "down",
-            "explanation": "ka, shita - down, below"
+            "explanation": "Readings: か (ka), した (shita), さ (sa), お (o), くだ (kuda). Line below base. Example: 下手 (heta) = unskillful."
         },
         {
             "id": "KANJI_039",
             "question": "来",
             "answer": "come",
-            "explanation": "rai, ku - come"
+            "explanation": "Readings: らい (rai), く (ku), き (ki). Rice plants coming in harvest. Example: 来年 (rainen) = next year."
         },
         {
             "id": "KANJI_040",
             "question": "気",
             "answer": "spirit",
-            "explanation": "ki - spirit, air"
+            "explanation": "Readings: き (ki), け (ke). Steam rising. Example: 元気 (genki) = energetic, 天気 (tenki) = weather."
         },
         {
             "id": "KANJI_041",
             "question": "小",
             "answer": "small",
-            "explanation": "shou, chii - small"
+            "explanation": "Readings: しょう (shou), ちい (chii), こ (ko), お (o). Small dividing strokes. Example: 小学校 (shougakkou) = elementary school."
         },
         {
             "id": "KANJI_042",
             "question": "七",
             "answer": "seven",
-            "explanation": "shichi, nana - seven"
+            "explanation": "Readings: しち (shichi), なな (nana). Bent line crossing. Example: 七月 (shichigatsu) = July."
         },
         {
             "id": "KANJI_043",
             "question": "山",
             "answer": "mountain",
-            "explanation": "san, yama - mountain"
+            "explanation": "Readings: さん (san), やま (yama). Mountain peaks! Example: 富士山 (fujisan) = Mt. Fuji."
         },
         {
             "id": "KANJI_044",
             "question": "話",
             "answer": "talk",
-            "explanation": "wa, hana - talk"
+            "explanation": "Readings: わ (wa), はな (hana), はなし (hanashi). Words (言) from tongue. Example: 電話 (denwa) = telephone."
         },
         {
             "id": "KANJI_045",
             "question": "女",
             "answer": "woman",
-            "explanation": "jo, onna - woman"
+            "explanation": "Readings: じょ (jo), おんな (onna), め (me). Woman kneeling elegantly. Example: 女性 (josei) = woman/female."
         },
         {
             "id": "KANJI_046",
             "question": "北",
             "answer": "north",
-            "explanation": "hoku, kita - north"
+            "explanation": "Readings: ほく (hoku), きた (kita). Two people back-to-back, fleeing cold. Example: 北海道 (hokkaidou) = Hokkaido."
         },
         {
             "id": "KANJI_047",
             "question": "午",
             "answer": "noon",
-            "explanation": "go - noon"
+            "explanation": "Readings: ご (go). Sundial at noon. Example: 午前 (gozen) = morning, 午後 (gogo) = afternoon."
         },
         {
             "id": "KANJI_048",
             "question": "百",
             "answer": "hundred",
-            "explanation": "hyaku - hundred"
+            "explanation": "Readings: ひゃく (hyaku). One + white = shining 100. Example: 百円 (hyakuen) = 100 yen."
         },
         {
             "id": "KANJI_049",
             "question": "書",
             "answer": "write",
-            "explanation": "sho, ka - write"
+            "explanation": "Readings: しょ (sho), か (ka). Hand holding brush. Example: 辞書 (jisho) = dictionary."
         },
         {
             "id": "KANJI_050",
             "question": "先",
-            "answer": "before",
-            "explanation": "sen, saki - before"
+            "answer": "before/ahead",
+            "explanation": "Readings: せん (sen), さき (saki). Legs walking ahead. Example: 先生 (sensei) = teacher."
         },
         {
             "id": "KANJI_051",
             "question": "名",
             "answer": "name",
-            "explanation": "mei, na - name"
+            "explanation": "Readings: めい (mei), な (na). Mouth under evening = calling name. Example: 名前 (namae) = name."
         },
         {
             "id": "KANJI_052",
             "question": "川",
             "answer": "river",
-            "explanation": "sen, kawa - river"
+            "explanation": "Readings: せん (sen), かわ (kawa). Three flowing streams. Example: 川 (kawa) = river."
         },
         {
             "id": "KANJI_053",
             "question": "千",
             "answer": "thousand",
-            "explanation": "sen, chi - thousand"
+            "explanation": "Readings: せん (sen), ち (chi). Cross with extra stroke. Example: 千円 (senen) = 1000 yen."
         },
         {
             "id": "KANJI_054",
             "question": "水",
             "answer": "water",
-            "explanation": "sui, mizu - water"
+            "explanation": "Readings: すい (sui), みず (mizu). Water drops splashing. Example: 水曜日 (suiyoubi) = Wednesday."
         },
         {
             "id": "KANJI_055",
             "question": "半",
             "answer": "half",
-            "explanation": "han, naka - half"
+            "explanation": "Readings: はん (han), なか (naka). Dividing line through middle. Example: 半分 (hanbun) = half."
         },
         {
             "id": "KANJI_056",
             "question": "男",
             "answer": "man",
-            "explanation": "dan, otoko - man"
+            "explanation": "Readings: だん (dan), おとこ (otoko). Rice field + power = man working. Example: 男性 (dansei) = man/male."
         },
         {
             "id": "KANJI_057",
             "question": "西",
             "answer": "west",
-            "explanation": "sei, nishi - west"
+            "explanation": "Readings: せい (sei), にし (nishi). Bird in nest at sunset. Example: 関西 (kansai) = Kansai region."
         },
         {
             "id": "KANJI_058",
             "question": "電",
             "answer": "electricity",
-            "explanation": "den - electricity"
+            "explanation": "Readings: でん (den). Rain + lightning field. Example: 電話 (denwa) = phone, 電車 (densha) = train."
         },
         {
             "id": "KANJI_059",
             "question": "校",
             "answer": "school",
-            "explanation": "kou - school"
+            "explanation": "Readings: こう (kou). Tree + crossed sticks = learning place. Example: 学校 (gakkou) = school."
         },
         {
             "id": "KANJI_060",
             "question": "語",
             "answer": "language",
-            "explanation": "go, kata - language"
+            "explanation": "Readings: ご (go), かた (kata). Words (言) + self (吾). Example: 日本語 (nihongo) = Japanese language."
         },
         {
             "id": "KANJI_061",
             "question": "土",
             "answer": "soil",
-            "explanation": "do, tsuchi - soil, earth"
+            "explanation": "Readings: ど (do), つち (tsuchi). Mound of earth. Example: 土曜日 (doyoubi) = Saturday."
         },
         {
             "id": "KANJI_062",
             "question": "木",
             "answer": "tree",
-            "explanation": "moku, ki - tree"
+            "explanation": "Readings: もく (moku), き (ki), こ (ko). Tree with branches and roots. Example: 木曜日 (mokuyoubi) = Thursday."
         },
         {
             "id": "KANJI_063",
             "question": "聞",
             "answer": "hear",
-            "explanation": "bun, ki - hear, listen"
+            "explanation": "Readings: ぶん (bun), き (ki), もん (mon). Ear at gate = listening. Example: 新聞 (shinbun) = newspaper."
         },
         {
             "id": "KANJI_064",
             "question": "食",
             "answer": "eat",
-            "explanation": "shoku, ta - eat"
+            "explanation": "Readings: しょく (shoku), た (ta), く (ku). Roof + good = eating well. Example: 食べる (taberu) = to eat."
         },
         {
             "id": "KANJI_065",
             "question": "車",
             "answer": "car",
-            "explanation": "sha, kuruma - car"
+            "explanation": "Readings: しゃ (sha), くるま (kuruma). Wheels on an axle. Example: 電車 (densha) = train, 自動車 (jidousha) = car."
         },
         {
             "id": "KANJI_066",
             "question": "何",
             "answer": "what",
-            "explanation": "ka, nani - what"
+            "explanation": "Readings: か (ka), なに (nani), なん (nan). Person + can = what can they do? Example: 何 (nani) = what."
         },
         {
             "id": "KANJI_067",
             "question": "南",
             "answer": "south",
-            "explanation": "nan, minami - south"
+            "explanation": "Readings: なん (nan), みなみ (minami). Plants growing in warm south. Example: 南 (minami) = south."
         },
         {
             "id": "KANJI_068",
             "question": "万",
             "answer": "ten thousand",
-            "explanation": "man - ten thousand"
+            "explanation": "Readings: まん (man), ばん (ban). Grass spreading = many. Example: 一万円 (ichimanen) = 10,000 yen."
         },
         {
             "id": "KANJI_069",
             "question": "毎",
             "answer": "every",
-            "explanation": "mai - every"
+            "explanation": "Readings: まい (mai). Mother doing something daily. Example: 毎日 (mainichi) = every day."
         },
         {
             "id": "KANJI_070",
             "question": "白",
             "answer": "white",
-            "explanation": "haku, shiro - white"
+            "explanation": "Readings: はく (haku), しろ (shiro). Sun ray creating white light. Example: 白い (shiroi) = white."
         },
         {
             "id": "KANJI_071",
             "question": "天",
             "answer": "heaven",
-            "explanation": "ten, ama - heaven"
+            "explanation": "Readings: てん (ten), あま (ama), あめ (ame). Above a person's head. Example: 天気 (tenki) = weather."
         },
         {
             "id": "KANJI_072",
             "question": "母",
             "answer": "mother",
-            "explanation": "bo, haha - mother"
+            "explanation": "Readings: ぼ (bo), はは (haha). Woman with two dots = nurturing breasts. Example: お母さん (okaasan) = mother."
         },
         {
             "id": "KANJI_073",
             "question": "火",
             "answer": "fire",
-            "explanation": "ka, hi - fire"
+            "explanation": "Readings: か (ka), ひ (hi), ほ (ho). Flames rising. Example: 火曜日 (kayoubi) = Tuesday."
         },
         {
             "id": "KANJI_074",
             "question": "右",
             "answer": "right",
-            "explanation": "u, migi - right"
+            "explanation": "Readings: う (u), みぎ (migi). Hand + mouth = right hand feeds mouth. Example: 右 (migi) = right."
         },
         {
             "id": "KANJI_075",
             "question": "読",
             "answer": "read",
-            "explanation": "doku, yo - read"
+            "explanation": "Readings: どく (doku), よ (yo). Words (言) + sell = reading words. Example: 読む (yomu) = to read."
         },
         {
             "id": "KANJI_076",
             "question": "友",
             "answer": "friend",
-            "explanation": "yuu, tomo - friend"
+            "explanation": "Readings: ゆう (yuu), とも (tomo). Two hands helping each other. Example: 友達 (tomodachi) = friend."
         },
         {
             "id": "KANJI_077",
             "question": "左",
             "answer": "left",
-            "explanation": "sa, hidari - left"
+            "explanation": "Readings: さ (sa), ひだり (hidari). Hand + work = left hand works. Example: 左 (hidari) = left."
         },
         {
             "id": "KANJI_078",
             "question": "休",
             "answer": "rest",
-            "explanation": "kyuu, yasu - rest"
+            "explanation": "Readings: きゅう (kyuu), やす (yasu). Person against tree = resting. Example: 休む (yasumu) = to rest."
         },
         {
             "id": "KANJI_079",
             "question": "父",
             "answer": "father",
-            "explanation": "fu, chichi - father"
+            "explanation": "Readings: ふ (fu), ちち (chichi). Person with authority. Example: お父さん (otousan) = father."
         },
         {
             "id": "KANJI_080",
             "question": "雨",
             "answer": "rain",
-            "explanation": "u, ame - rain"
+            "explanation": "Readings: う (u), あめ (ame), あま (ama). Clouds with raindrops. Example: 雨 (ame) = rain."
         },
         {
             "id": "KANJI_081",
             "question": "道",
             "answer": "way",
-            "explanation": "dou, michi - way, road"
+            "explanation": "Readings: どう (dou), みち (michi). Walking + head = knowing the way. Example: 道 (michi) = road, 柔道 (juudou) = judo."
         },
         {
             "id": "KANJI_082",
             "question": "駅",
             "answer": "station",
-            "explanation": "eki - station"
+            "explanation": "Readings: えき (eki). Horse + stacked = horses at rest stop. Example: 駅 (eki) = train station."
         },
         {
             "id": "KANJI_083",
             "question": "会",
             "answer": "meet",
-            "explanation": "kai, a - meet"
+            "explanation": "Readings: かい (kai), あ (a). Roof + speak = meeting together. Example: 会う (au) = to meet, 会社 (kaisha) = company."
         },
         {
             "id": "KANJI_084",
             "question": "同",
             "answer": "same",
-            "explanation": "dou, ona - same"
+            "explanation": "Readings: どう (dou), おな (ona). Same container for all. Example: 同じ (onaji) = same."
         },
         {
             "id": "KANJI_085",
             "question": "事",
             "answer": "matter",
-            "explanation": "ji, koto - matter"
+            "explanation": "Readings: じ (ji), ず (zu), こと (koto). Hand doing something. Example: 仕事 (shigoto) = work."
         },
         {
             "id": "KANJI_086",
             "question": "自",
             "answer": "self",
-            "explanation": "ji, mizuka - self"
+            "explanation": "Readings: じ (ji), し (shi), みずか (mizuka). Point at nose = self. Example: 自分 (jibun) = oneself."
         },
         {
             "id": "KANJI_087",
             "question": "社",
             "answer": "company",
-            "explanation": "sha, yashiro - company, shrine"
+            "explanation": "Readings: しゃ (sha), やしろ (yashiro). Altar + earth = shrine, company. Example: 会社 (kaisha) = company."
         },
         {
             "id": "KANJI_088",
             "question": "発",
             "answer": "departure",
-            "explanation": "hatsu - departure"
+            "explanation": "Readings: はつ (hatsu), ほつ (hotsu). Feet starting to leave. Example: 出発 (shuppatsu) = departure."
         },
         {
             "id": "KANJI_089",
             "question": "者",
             "answer": "person",
-            "explanation": "sha, mono - person"
+            "explanation": "Readings: しゃ (sha), もの (mono). Old man = wise person. Example: 記者 (kisha) = journalist."
         },
         {
             "id": "KANJI_090",
             "question": "地",
             "answer": "ground",
-            "explanation": "chi, ji - ground"
+            "explanation": "Readings: ち (chi), じ (ji). Earth + foundation. Example: 地下 (chika) = underground."
         },
         {
             "id": "KANJI_091",
             "question": "業",
             "answer": "business",
-            "explanation": "gyou, waza - business"
+            "explanation": "Readings: ぎょう (gyou), ごう (gou), わざ (waza). Complex work activities. Example: 授業 (jugyou) = class."
         },
         {
             "id": "KANJI_092",
             "question": "方",
             "answer": "direction",
-            "explanation": "hou, kata - direction"
+            "explanation": "Readings: ほう (hou), かた (kata). Forked path direction. Example: 方向 (houkou) = direction."
         },
         {
             "id": "KANJI_093",
             "question": "新",
             "answer": "new",
-            "explanation": "shin, atara - new"
+            "explanation": "Readings: しん (shin), あたら (atara), あら (ara), にい (nii). Tree cut for new wood. Example: 新聞 (shinbun) = newspaper."
         },
         {
             "id": "KANJI_094",
             "question": "場",
             "answer": "place",
-            "explanation": "jou, ba - place"
+            "explanation": "Readings: じょう (jou), ば (ba). Earth + ease = comfortable place. Example: 場所 (basho) = place."
         },
         {
             "id": "KANJI_095",
             "question": "員",
             "answer": "member",
-            "explanation": "in - member"
+            "explanation": "Readings: いん (in). Mouth + cowrie shell = counted member. Example: 会員 (kaiin) = member."
         },
         {
             "id": "KANJI_096",
             "question": "立",
             "answer": "stand",
-            "explanation": "ritsu, ta - stand"
+            "explanation": "Readings: りつ (ritsu), た (ta). Person standing on ground. Example: 立つ (tatsu) = to stand."
         },
         {
             "id": "KANJI_097",
             "question": "開",
             "answer": "open",
-            "explanation": "kai, hira - open"
+            "explanation": "Readings: かい (kai), ひら (hira), あ (a). Door with hands opening both sides. Example: 開く (hiraku) = to open."
         },
         {
             "id": "KANJI_098",
             "question": "手",
             "answer": "hand",
-            "explanation": "shu, te - hand"
+            "explanation": "Readings: しゅ (shu), て (te), た (ta). Fingers and palm. Example: 上手 (jouzu) = skillful, 手紙 (tegami) = letter."
         },
         {
             "id": "KANJI_099",
             "question": "力",
             "answer": "power",
-            "explanation": "ryoku, chikara - power"
+            "explanation": "Readings: りょく (ryoku), りき (riki), ちから (chikara). Flexed arm muscle. Example: 力 (chikara) = power."
         },
         {
             "id": "KANJI_100",
             "question": "目",
             "answer": "eye",
-            "explanation": "moku, me - eye"
+            "explanation": "Readings: もく (moku), め (me). Eye shape sideways. Example: 目 (me) = eye, 目標 (mokuhyou) = goal."
         }
     ]
 }

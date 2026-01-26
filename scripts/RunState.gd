@@ -729,6 +729,12 @@ func check_deck_expansion() -> bool:
 	if deck_def_id == &"":
 		return false
 	
+	# CRITICAL: Do not expand deck until all initial 10 cards have been formally introduced
+	# via the new card popup. The minigame uses all 10 cards for questions immediately,
+	# but the popup introduces them one-by-one tracked by cards_presented_count.
+	if cards_presented_count < 10:
+		return false
+	
 	var full_deck = Database.get_cards_for_deck(deck_def_id)
 	if full_deck.is_empty() or active_deck_ids.size() >= full_deck.size():
 		return false

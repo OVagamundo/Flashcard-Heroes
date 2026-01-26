@@ -30,6 +30,7 @@ const BUTTON_FONT = preload("res://assets/fonts/DotGothic16/DotGothic16-Regular.
 @onready var intro_answer_label: Label = %IntroAnswerLabel
 @onready var intro_explanation_label: Label = %IntroExplanationLabel
 @onready var got_it_button: Button = %GotItButton
+@onready var priority_cards_container: HBoxContainer = %PriorityCardsContainer
 
 var _run_state: RunState = null
 var _active_deck: Array[StringName] = []
@@ -38,6 +39,7 @@ var _total_answers: int = 0
 var _session_timer: float = 3.0
 var _is_introducing_new_card: bool = false
 var _new_card_id: StringName = &""
+var _displayed_card_id: StringName = &"" # Currently displayed in intro popup (may differ from _new_card_id)
 var _current_question_id: StringName = &""
 var _current_choices: Array[StringName] = []
 var _current_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
@@ -173,31 +175,23 @@ func _check_for_new_card() -> void:
 		_is_introducing_new_card = false
 		return
 	
-	# PHASE 1: Presentation of Initial Cards
-	# Even though they are already in the active deck (for engine reasons),
-	# we want to "introduce" them one by one via the popup.
-	if _run_state.cards_presented_count < 10 and _run_state.cards_presented_count < _run_state.active_deck_ids.size():
-		# Present the next card in the initial set
+	# Check if there are any cards in active_deck_ids that haven't been formally introduced yet
+	# cards_presented_count tracks how many cards have been shown via the intro popup
+	# active_deck_ids.size() is how many cards are actually in the playable deck
+	# 
+	# Phase 1: Initial 10 cards are added to active_deck_ids at run start
+	# Phase 2: check_deck_expansion() adds 1 card AFTER each minigame session
+	# 
+	# This function introduces the NEXT un-introduced card (if any)
+	
+	if _run_state.cards_presented_count < _run_state.active_deck_ids.size():
+		# There's a card in active_deck_ids that hasn't been introduced yet
 		_new_card_id = _run_state.active_deck_ids[_run_state.cards_presented_count]
 		_run_state.cards_presented_count += 1
-		# Signal that we are introducing a card (Re-uses same UI logic)
 		_is_introducing_new_card = true
 		return
-
-	# PHASE 2: Deck Expansion
-	# Once all 10 initial cards are presented, we look for genuinely new cards from the pool.
-	var all_cards = _run_state.flashcard_progress.keys()
-	for card_id in all_cards:
-		if not _run_state.active_deck_ids.has(card_id):
-			_new_card_id = card_id
-			# Permanently add to RunState's active deck (persists across sessions)
-			_run_state.active_deck_ids.append(card_id)
-			# Also add to our local copy for this session
-			_active_deck.append(card_id)
-			_is_introducing_new_card = true
-			return
 	
-	# No new cards to introduce - all cards are already in the active deck
+	# No new cards to introduce - all active deck cards have been presented
 	_is_introducing_new_card = false
 
 func _show_card_introduction() -> void:
@@ -208,7 +202,19 @@ func _show_card_introduction() -> void:
 	timer_label.hide()
 	score_label.hide()
 	
-	var card_data = Database.get_flashcard_definition(_new_card_id)
+	# Initialize displayed card to the new card being introduced
+	_displayed_card_id = _new_card_id
+	_update_displayed_card_info(_displayed_card_id)
+	
+	# Populate the priority cards at the bottom
+	_populate_priority_cards()
+	
+	# Show new card tutorial (deferred to ensure UI is ready)
+	call_deferred("_show_new_card_tutorial")
+
+func _update_displayed_card_info(card_id: StringName) -> void:
+	"""Update the main display to show info for the given card"""
+	var card_data = Database.get_flashcard_definition(card_id)
 	if not card_data.is_empty():
 		intro_question_label.text = card_data.get("question", "Error: No question")
 		intro_answer_label.text = tr("ui.answer") % card_data.get("answer", "Error")
@@ -217,11 +223,109 @@ func _show_card_introduction() -> void:
 			explanation = tr("ui.no_explanation")
 		intro_explanation_label.text = tr("ui.explanation") % explanation
 	
-	# Set panel to mastery level 1 color for new cards
-	_update_panel_color(FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN])
+	# Get mastery level for this card and update panel color
+	var mastery_color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
+	if is_instance_valid(_run_state) and _run_state.flashcard_progress.has(card_id):
+		var progress: FlashcardProgress = _run_state.flashcard_progress[card_id]
+		mastery_color = progress.get_mastery_color()
+	_update_panel_color(mastery_color)
+
+func _get_priority_sorted_cards() -> Array[Dictionary]:
+	"""Get the active deck cards sorted by SRS priority (without RNG factor)"""
+	if not is_instance_valid(_run_state):
+		return []
 	
-	# Show new card tutorial (deferred to ensure UI is ready)
-	call_deferred("_show_new_card_tutorial")
+	var weighted_cards: Array[Dictionary] = []
+	
+	for i in range(_run_state.active_deck_ids.size()):
+		var card_id: StringName = _run_state.active_deck_ids[i]
+		var mastery_level: int = FlashcardProgress.MASTERY_MIN
+		var last_review_day: int = 0
+		
+		if _run_state.flashcard_progress.has(card_id):
+			var progress: FlashcardProgress = _run_state.flashcard_progress[card_id]
+			mastery_level = progress.mastery_level
+			last_review_day = progress.last_review_day
+		
+		# SRS priority calculation (without RNG)
+		# Priority 1: Mastery Level (lower = higher priority)
+		var mastery_component: float = pow(6 - mastery_level, FlashcardManager.SRS_MASTERY_WEIGHT_POWER)
+		# Priority 2: Recency (longer since review = higher priority)
+		var time_component: float = float(_run_state.day - last_review_day) * FlashcardManager.SRS_RECENCY_WEIGHT
+		# Priority 3: Deck order (lower index = tiebreaker)
+		var order_component: float = float(i) * 0.001 # Small factor to preserve deck order for ties
+		
+		var weight: float = mastery_component + time_component - order_component
+		
+		weighted_cards.append({
+			"id": card_id,
+			"weight": weight,
+			"mastery_level": mastery_level
+		})
+	
+	# Sort descending by weight (higher weight = higher priority)
+	weighted_cards.sort_custom(func(a, b): return a.weight > b.weight)
+	
+	return weighted_cards
+
+func _populate_priority_cards() -> void:
+	"""Create buttons for the top 10 priority cards"""
+	# Clear existing buttons
+	for child in priority_cards_container.get_children():
+		child.queue_free()
+	
+	var priority_cards = _get_priority_sorted_cards()
+	var count = mini(10, priority_cards.size())
+	
+	for i in range(count):
+		var card_info = priority_cards[i]
+		var card_id: StringName = card_info.id
+		var mastery_level: int = card_info.mastery_level
+		
+		var card_data = Database.get_flashcard_definition(card_id)
+		if card_data.is_empty():
+			continue
+		
+		var button := Button.new()
+		button.text = card_data.get("question", "?")
+		button.custom_minimum_size = Vector2(70, 50)
+		
+		# Style with mastery color background
+		var mastery_color = FlashcardProgress.MASTERY_COLORS[clampi(mastery_level, FlashcardProgress.MASTERY_MIN, FlashcardProgress.MASTERY_MAX)]
+		var style = StyleBoxFlat.new()
+		style.bg_color = mastery_color
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 4
+		style.corner_radius_bottom_right = 4
+		button.add_theme_stylebox_override("normal", style)
+		button.add_theme_stylebox_override("hover", style)
+		button.add_theme_stylebox_override("pressed", style)
+		
+		# Font styling
+		button.add_theme_font_override("font", JAPANESE_FONT)
+		button.add_theme_font_size_override("font_size", 28)
+		button.add_theme_color_override("font_color", COLOR_COOL_BLACK)
+		button.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
+		button.add_theme_constant_override("outline_size", 2)
+		
+		# Highlight the currently displayed card
+		if card_id == _displayed_card_id:
+			style.border_width_top = 3
+			style.border_width_bottom = 3
+			style.border_width_left = 3
+			style.border_width_right = 3
+			style.border_color = COLOR_WARM_WHITE
+		
+		button.pressed.connect(_on_priority_card_clicked.bind(card_id))
+		priority_cards_container.add_child(button)
+
+func _on_priority_card_clicked(card_id: StringName) -> void:
+	"""Handle click on a priority card button - switch which card is displayed"""
+	_displayed_card_id = card_id
+	_update_displayed_card_info(card_id)
+	# Refresh the priority cards to update the highlight
+	_populate_priority_cards()
 
 
 func _show_new_card_tutorial() -> void:
