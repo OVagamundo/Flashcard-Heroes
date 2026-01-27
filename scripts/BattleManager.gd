@@ -1081,6 +1081,9 @@ func _trigger_turn_start_abilities() -> void:
 		
 	_turn_start_abilities_triggered = true # Set flag here to prevent multiple calls
 	
+	# Apply Trait Start-of-Turn Effects (e.g., Earth Armor)
+	_apply_trait_start_of_turn_effects()
+	
 	# Trigger turn start abilities for all instances using unified processing
 	var turn_start_context: Dictionary = {"turn": _current_turn}
 	AbilityResolver.process_trigger(&"on_turn_start", turn_start_context)
@@ -1535,6 +1538,79 @@ func _finalize_deaths() -> void:
 	var something_changed = DeathProcessor.finalize_deaths(self)
 	if something_changed:
 		_emit_battle_inventory_changed()
+
+# =============================================================================
+# TRAIT SYSTEM
+# =============================================================================
+
+## Calculate active trait counts for a specific team.
+## @param team: "PLAYER" or "ENEMY"
+## @return Dictionary: { "FIRE": count, "EARTH": count }
+func get_active_traits(team: String) -> Dictionary:
+	var counts: Dictionary = {"FIRE": 0, "EARTH": 0}
+	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+	
+	var units = get_instances_in_container(container_tag)
+	print("DEBUG: get_active_traits for team %s. Found %d units." % [team, units.size()])
+	for unit in units:
+		if not is_instance_valid(unit) or unit.current_hp <= 0:
+			continue
+		
+		# Definition tags are baked-in (e.g., ["SOUL_FIRE", "SOUL_FIRE"])
+		var def = unit.get_definition()
+		if is_instance_valid(def) and "tags" in def:
+			print("DEBUG: Unit %s has tags: %s" % [unit.ball_uuid, def.tags])
+			for tag in def.tags:
+				if tag == &"SOUL_FIRE":
+					counts["FIRE"] += 1
+				elif tag == &"SOUL_EARTH":
+					counts["EARTH"] += 1
+	print("DEBUG: Team %s traits: %s" % [team, counts])
+					
+	return counts
+
+## Check if a unit contributes to a specific Soul trait.
+func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
+	if not is_instance_valid(unit):
+		return false
+	var def = unit.get_definition()
+	if not is_instance_valid(def) or not "tags" in def:
+		return false
+	var target_tag = StringName("SOUL_" + trait_name)
+	return def.tags.has(target_tag)
+
+## Apply start-of-turn effects for active traits (e.g., Earth Armor)
+func _apply_trait_start_of_turn_effects() -> void:
+	# Process for both teams
+	for team in ["PLAYER", "ENEMY"]:
+		var traits = get_active_traits(team)
+		
+		# EARTH TRAIT: 3+ Souls -> Earth units gain 3 Armor
+		if traits.get("EARTH", 0) >= 3:
+			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var units = get_instances_in_container(container_tag)
+			var armor_amount = 3
+			
+			var all_events: Array[CombatEvent] = []
+			
+			for unit in units:
+				if is_instance_valid(unit) and unit.current_hp > 0 and _has_trait_soul(unit, "EARTH"):
+					# Create a request-like structure for the event creation
+					var mock_request = EffectRequest.new(unit.ball_uuid, &"trait_earth_armor", null, [unit.ball_uuid], {}, 0)
+					
+					# Reuse handle_armor_stacks logic or apply manually
+					# Since handle_armor_stacks returns a single event, we can use it
+					var event = handle_armor_stacks(mock_request, [unit.ball_uuid], armor_amount)
+					all_events.append(event)
+			
+			# Animate if any events occurred
+			if not all_events.is_empty():
+				_is_processing_effect = true
+				_resolve_animator()
+				var snapshot = get_board_snapshot() # Capture snapshot before animation (values already applied by handle_armor_stacks/apply_stat_delta)
+				_animator.play_turn_sequence(snapshot, all_events)
+
+# =============================================================================
 
 # =============================================================================
 # TEST MODE HELPERS

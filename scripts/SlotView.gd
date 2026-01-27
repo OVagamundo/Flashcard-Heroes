@@ -216,7 +216,7 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, old_value: 
 		var view = get_child(0)
 		if view is GachaBallView and view.get_instance_uuid() == unit_uuid:
 			# Delegate to view's granular handler
-			if view.has_method("_on_unit_stat_changed"):
+			if is_instance_valid(view) and view.has_method("_on_unit_stat_changed"):
 				view._on_unit_stat_changed(unit_uuid, stat_name, old_value, new_value)
 
 

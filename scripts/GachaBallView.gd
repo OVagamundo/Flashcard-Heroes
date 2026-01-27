@@ -81,12 +81,14 @@ func _ready() -> void:
 		bus.connect("view_deselected", _on_view_deselected)
 		bus.connect("inventory_action_completed", _on_inventory_action_completed)
 		
-		# unit_visual_stat_update is still handled here for puppet mode updates
+		# unit_visual_stat_update is still handled here for puppet mode updates 
 		if bus.has_signal("unit_visual_stat_update"):
-			bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
+			if not bus.is_connected("unit_visual_stat_update", _on_unit_visual_stat_update):
+				bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
 			
 		if bus.has_signal("drag_ended"):
-			bus.drag_ended.connect(_on_drag_ended)
+			if not bus.is_connected("drag_ended", _on_drag_ended):
+				bus.drag_ended.connect(_on_drag_ended)
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
 	
 	# Connect click handlers for status effect icons (burn/armor)

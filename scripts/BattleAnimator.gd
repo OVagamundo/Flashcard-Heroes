@@ -259,7 +259,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							for existing_child in slot_view.get_children():
 								if existing_child is GachaBallView:
 									# Also remove from registry if present
-									var existing_uuid = existing_child.get_instance_uuid() if existing_child.has_method("get_instance_uuid") else ""
+									var existing_uuid = ""
+									if is_instance_valid(existing_child) and existing_child.has_method("get_instance_uuid"):
+										existing_uuid = existing_child.get_instance_uuid()
 									if not existing_uuid.is_empty() and _visual_registry.has(existing_uuid):
 										_visual_registry.erase(existing_uuid)
 									existing_child.queue_free()
@@ -353,14 +355,14 @@ func apply_burn_stack(uuid: String, new_stacks: int) -> void:
 	# Update visual burn stacks on puppet view
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
-		if view.has_method("animate_burn_change"):
+		if is_instance_valid(view) and view.has_method("animate_burn_change"):
 			view.animate_burn_change(new_stacks)
 
 func apply_armor_stack(uuid: String, new_stacks: int) -> void:
 	# Update visual armor stacks on puppet view - same pattern as burn
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
-		if view.has_method("animate_armor_change"):
+		if is_instance_valid(view) and view.has_method("animate_armor_change"):
 			view.animate_armor_change(new_stacks)
 
 func apply_armor_delta(target_uuid: String, armor_consumed: int, new_armor: int) -> void:
@@ -377,7 +379,7 @@ func apply_status_stack(uuid: String, status_id: StringName, new_stacks: int) ->
 	# Update visual status effect stacks on puppet view (for generic status effects like armor)
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
-		if view.has_method("animate_status_change"):
+		if is_instance_valid(view) and view.has_method("animate_status_change"):
 			view.animate_status_change(status_id, new_stacks)
 
 func _emit_bump(_attacker_uuid: String) -> void:
