@@ -22,7 +22,7 @@ class OperationResult:
 	var equip_item_uuid: String = ""
 	var equip_unit_uuid: String = ""
 	var equip_slot_index: int = -1
-	
+	 
 	func add_unit_change(uuid: String) -> void:
 		if not uuid.is_empty() and not changed_unit_uuids.has(uuid):
 			changed_unit_uuids.append(uuid)
@@ -131,6 +131,8 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 		result.pool_emptied = true
 	
 	return result
+
+# ============================================================================
 # EQUIP ITEM
 # ============================================================================
 
@@ -227,6 +229,10 @@ static func move_instance(state: BattleState, source_loc: LocationIdentifier, ta
 	
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return result
+		
+	if source_loc.container.is_empty() or target_loc.container.is_empty():
+		push_warning("move_instance rejected: source or target container tag is empty")
+		return result
 	
 	# Target is equipping onto a unit - delegate to caller via special flag
 	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
@@ -243,33 +249,26 @@ static func move_instance(state: BattleState, source_loc: LocationIdentifier, ta
 			if source_loc.index < 0 or source_loc.index >= src_unit.equipped_item_uuids.size():
 				return result
 			item_uuid = src_unit.equipped_item_uuids[source_loc.index]
-			if not item_uuid.is_empty():
-				var item := state.get_instance(item_uuid)
-				if is_instance_valid(item):
-					src_unit.unequip_item_bonus(item)
-					src_unit.equipped_item_uuids[source_loc.index] = ""
-					item.equipped_on_uuid = ""
-					item.equipped_slot_index = -1
-					state.update_instance_location(item.ball_uuid, &"", -1)
-					result.add_unit_change(src_unit.ball_uuid)
+			# Do not mutate state here; let equip_item handle it atomically
 		else:
 			# From container to equipped slot
 			var src_container := state.get_container(source_loc.container)
 			if not is_instance_valid(src_container):
 				return result
 			var src_inst_uuid := src_container.get_uuid(source_loc.index)
-			if src_inst_uuid.is_empty():
-				return result
-			var src_inst := state.get_instance(src_inst_uuid)
-			if not is_instance_valid(src_inst):
-				return result
-			item_uuid = src_inst.ball_uuid
-			src_container.set_uuid(source_loc.index, "")
-			state.update_instance_location(item_uuid, &"", -1)
+			# Do not mutate state here; let equip_item handle it atomically
+			item_uuid = src_inst_uuid
 		
+		if item_uuid.is_empty():
+			return result
+
+		var item := state.get_instance(item_uuid)
+		if not is_instance_valid(item):
+			return result
+
 		# Return with flag to call equip_item
 		result.success = false # Caller must call equip_item
-		result.inventory_changed = true
+		result.inventory_changed = false # No change yet
 		# Store data for caller
 		result.needs_equip = true
 		result.equip_item_uuid = item_uuid
@@ -337,6 +336,10 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 	var result := OperationResult.new()
 	
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
+		return result
+
+	if source_loc.container.is_empty() or target_loc.container.is_empty():
+		push_warning("swap_instances rejected: source or target container tag is empty")
 		return result
 	
 	# Handle swaps where target is an equipped slot
@@ -454,6 +457,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 	
 	result.set_success()
 	return result
+
 
 # ============================================================================
 # REMOVE INSTANCE

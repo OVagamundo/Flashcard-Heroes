@@ -216,14 +216,27 @@ static func handle_damage_effect(
 		result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, damage_target_name]}))
 	
 	# Check if burn should be applied
+	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
-	var should_apply_burn := false
+	var burn_amount := 0
+	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
-		should_apply_burn = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
 	elif request.trigger_context.has("team"):
 		is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
-		should_apply_burn = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
+	
+	# 1. Trinket: Burn Vial (Team-wide)
+	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
+		burn_amount += 1
+		
+	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
+	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
+	if active_traits.get("FIRE", 0) >= 3:
+		# Check if source is a Fire unit
+		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
+			burn_amount += 1
+			
+	var should_apply_burn = burn_amount > 0
 	
 	# Apply HP delta and capture old/new values
 	var targets_old_hp: Array[int] = []
@@ -309,7 +322,7 @@ static func handle_damage_effect(
 		
 		var burn_val := 0
 		if should_apply_burn:
-			burn_val = battle_manager.apply_stat_delta(tgt, "burn_stacks", 1)
+			burn_val = battle_manager.apply_stat_delta(tgt, "burn_stacks", burn_amount)
 		targets_new_burn.append(burn_val)
 
 	
@@ -398,11 +411,24 @@ static func handle_cascade_damage(
 	var result := CascadeResult.new()
 	
 	# Check if burn should be applied
+	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
-	var should_apply_burn := false
+	var burn_amount := 0
+	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
-		should_apply_burn = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
+	
+	# 1. Trinket: Burn Vial (Team-wide)
+	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
+		burn_amount += 1
+		
+	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
+	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
+	if active_traits.get("FIRE", 0) >= 3:
+		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
+			burn_amount += 1
+			
+	var should_apply_burn = burn_amount > 0
 	
 	# Process each cascade target
 	for cascade_item in cascade_list:
@@ -461,7 +487,7 @@ static func handle_cascade_damage(
 		# Apply burn if needed
 		var burn_val := old_burn
 		if should_apply_burn:
-			burn_val = battle_manager.apply_stat_delta(cascade_tgt, "burn_stacks", 1)
+			burn_val = battle_manager.apply_stat_delta(cascade_tgt, "burn_stacks", burn_amount)
 		
 		# Compute animation source
 		var animation_source_uuid: String = request.source_uuid

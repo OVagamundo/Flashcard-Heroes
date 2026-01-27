@@ -16,7 +16,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var current_day: int = 1
 	if context.has("current_day"):
 		current_day = context.current_day
-	elif battle_manager.has_method("get_current_day"):
+	elif is_instance_valid(battle_manager) and battle_manager.has_method("get_current_day"):
 		current_day = battle_manager.get_current_day()
 	else:
 		# Fallback: try to get from encounter metadata or GameManager

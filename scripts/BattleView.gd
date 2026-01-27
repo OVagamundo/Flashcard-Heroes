@@ -4,6 +4,7 @@ extends Control
 
 const SlotViewScene = preload("res://scenes/SlotView.tscn")
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+const TraitTrackerScene = preload("res://scenes/TraitTracker.tscn")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
@@ -13,6 +14,10 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 @onready var discard_pile_button: Button = %DiscardPileButton
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
+
+# Trait Containers (Created programmatically)
+var player_traits: HBoxContainer
+var enemy_traits: HBoxContainer
 
 # --- Node References ---
 var battle_manager: BattleManager
@@ -35,14 +40,16 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 			slot_view.populate(loc)
 			
 			# Apply battle-specific layout settings (responsive width, fixed height)
+			if not is_instance_valid(slot_view):
+				continue
+				
 			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			# All battle slots use 2x scale
 			slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+			
 			if slot_view.has_method("set_size_scale"):
 				slot_view.set_size_scale(2.0)
-				# slot_view.size_flags_horizontal = 3 # Default is Expand if container set
-				# Dont force Shrink Center (4) as it breaks alignment between split containers
-			
+				
 			# Apply container-specific color scheme
 			if slot_view.has_method("set_slot_color"):
 				slot_view.set_slot_color(container_name)
@@ -53,6 +60,8 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 func _ready() -> void:
 	# --- LAYOUT FIX INJECTION ---
 	# Force Top Alignment and Insert Spacers to guarantee gap below Top Bar
+	# Reverting to 240px spacer (proven safe from bottom clipping)
+	# and raising HUD to 10px (Absolute Top) to clear unit slots.
 	var team_areas = get_node_or_null("TeamAreas")
 	if team_areas:
 		# Player Area Fix
@@ -60,7 +69,7 @@ func _ready() -> void:
 		if player_area_node and player_area_node is BoxContainer:
 			player_area_node.alignment = BoxContainer.ALIGNMENT_BEGIN
 			var spacer = Control.new()
-			spacer.custom_minimum_size = Vector2(0, 80) # 80px Top Gap for centering
+			spacer.custom_minimum_size = Vector2(0, 240) # 240px Top Gap
 			spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			player_area_node.add_child(spacer)
 			player_area_node.move_child(spacer, 0)
@@ -70,10 +79,58 @@ func _ready() -> void:
 		if enemy_area_node and enemy_area_node is BoxContainer:
 			enemy_area_node.alignment = BoxContainer.ALIGNMENT_BEGIN
 			var spacer = Control.new()
-			spacer.custom_minimum_size = Vector2(0, 80) # 80px Top Gap for centering
+			spacer.custom_minimum_size = Vector2(0, 240) # 240px Top Gap
 			spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			enemy_area_node.add_child(spacer)
 			enemy_area_node.move_child(spacer, 0)
+
+	# ----------------------------
+	# TRAIT HUD LAYER
+	# ----------------------------
+	var trait_layer = CanvasLayer.new()
+	trait_layer.name = "TraitHUD"
+	trait_layer.layer = 10 # Ensure it's above mostly everything but below Popups
+	add_child(trait_layer)
+	
+	# Player Traits Container (Floating HUD)
+	player_traits = HBoxContainer.new()
+	player_traits.name = "PlayerTraits"
+	player_traits.alignment = BoxContainer.ALIGNMENT_CENTER
+	player_traits.custom_minimum_size = Vector2(300, 60)
+	player_traits.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	player_traits.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	
+	# Enemy Traits Container (Floating HUD)
+	enemy_traits = HBoxContainer.new()
+	enemy_traits.name = "EnemyTraits"
+	enemy_traits.alignment = BoxContainer.ALIGNMENT_CENTER
+	enemy_traits.custom_minimum_size = Vector2(300, 60)
+	enemy_traits.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	enemy_traits.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	
+	var hud_root = Control.new()
+	hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	trait_layer.add_child(hud_root)
+	
+	# Player Side (Left)
+	var p_anchor = Control.new()
+	p_anchor.layout_mode = 1 # Anchors
+	p_anchor.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	p_anchor.position = Vector2(160, 10) # Moved UP to 10 (Absolute Max Height)
+	hud_root.add_child(p_anchor)
+	p_anchor.add_child(player_traits)
+	
+	# Enemy Side (Right)
+	var e_anchor = Control.new()
+	e_anchor.layout_mode = 1
+	e_anchor.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	e_anchor.position = Vector2(-460, 10) # Moved UP to 10 (Absolute Max Height)
+	hud_root.add_child(e_anchor)
+	e_anchor.add_child(enemy_traits)
+	# ----------------------------
+
+		
 	# ----------------------------
 
 	# Guard against duplicate BattleView instances which would cause multiple
@@ -188,7 +245,7 @@ func _animate_initial_unit_entry() -> void:
 
 
 func _redraw_board() -> void:
-	if not is_instance_valid(battle_manager):
+	if not is_instance_valid(battle_manager) or not is_inside_tree() or is_queued_for_deletion():
 		return
 	
 	# CRITICAL: NEVER redraw the board during animation phases!
@@ -205,6 +262,9 @@ func _redraw_board() -> void:
 	_populate_container(player_bench, "PlayerBench", false)
 	_populate_container(enemy_lineup, "EnemyLineup", true)
 	_populate_enemy_trinkets()
+	
+	_update_traits("PLAYER")
+	_update_traits("ENEMY")
 
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):
@@ -307,15 +367,17 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			slot_view.set_meta("location_identifier", loc)
 			
 			# Apply battle-specific layout settings (responsive width, fixed height)
-			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			slot_view.custom_minimum_size = Vector2(0, 250)
-			
-			# Apply container-specific color scheme
-			if slot_view.has_method("set_slot_color"):
-				slot_view.set_slot_color(container_name)
-			# EnemyLineup must be inspection-only: configure SlotView accordingly
-			if container_name == &"EnemyLineup":
-				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+			# Apply battle-specific layout settings (responsive width, fixed height)
+			if is_instance_valid(slot_view):
+				slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+				slot_view.custom_minimum_size = Vector2(0, 250)
+				
+				# Apply container-specific color scheme
+				if slot_view.has_method("set_slot_color"):
+					slot_view.set_slot_color(container_name)
+				# EnemyLineup must be inspection-only: configure SlotView accordingly
+				if container_name == &"EnemyLineup":
+					slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
@@ -374,6 +436,11 @@ func _populate_enemy_trinkets() -> void:
 		var loc = LocationIdentifier.new()
 		loc.container = &"EnemyTrinkets"
 		loc.index = i
+		
+		# Validate slot_view before method calls
+		if not is_instance_valid(slot_view):
+			continue
+			
 		# Use 2x scale for enemy trinkets (128x128 display, 64x64 native texture)
 		if slot_view.has_method("set_size_scale"):
 			slot_view.set_size_scale(2.0)
@@ -395,6 +462,35 @@ func _populate_enemy_trinkets() -> void:
 							break
 					if is_instance_valid(view) and view.has_method("set_interaction_context"):
 						view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+
+func _update_traits(team: String) -> void:
+	if not is_instance_valid(battle_manager):
+		return
+		
+	var traits = battle_manager.get_active_traits(team)
+	print("DEBUG: BattleView._update_traits(%s) - Traits: %s" % [team, traits])
+	
+	var container = player_traits if team == "PLAYER" else enemy_traits
+	if not is_instance_valid(container):
+		print("DEBUG: BattleView._update_traits - Container for %s is NULL!" % team)
+		return
+		
+	# Clear existing
+	for child in container.get_children():
+		child.queue_free()
+		
+	var active_traits = battle_manager.get_active_traits(team)
+	
+	# Always show Fire and Earth trackers for consistent feedback
+	for trait_name in ["FIRE", "EARTH"]:
+		var count = active_traits.get(trait_name, 0)
+		if count >= 0: # CHANGED: Always show even if 0, for debugging!
+			if TraitTrackerScene:
+				var tracker = TraitTrackerScene.instantiate()
+				container.add_child(tracker)
+				tracker.populate(trait_name, count, count >= 3)
+			else:
+				print("ERROR: TraitTrackerScene is null!")
 
 # --- Gacha Animation Logic ---
 
