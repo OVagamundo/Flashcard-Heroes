@@ -11,13 +11,18 @@ parameters = { "stat": "pwr", "base_value": 1 }
 target_type = &"RANDOM_ALLY"
 
 
+[sub_resource type="Resource" id="EffectModifyStat_Vengeance_HP"]
+script = ExtResource("4_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"RANDOM_ALLY"
+
 [sub_resource type="Resource" id="Ability_Vengeance_1"]
 script = ExtResource("3_ability")
 id = &"ability_trinket_vengeance"
 trigger = &"on_ally_death"
 description_key = "ability.vengeance.desc"
 priority = 0
-effects = Array[Resource]([SubResource("EffectModifyStat_Vengeance_1")])
+effects = Array[Resource]([SubResource("EffectModifyStat_Vengeance_1"), SubResource("EffectModifyStat_Vengeance_HP")])
 
 [resource]
 script = ExtResource("1_def")
