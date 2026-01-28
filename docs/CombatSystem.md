@@ -299,6 +299,39 @@ The validation occurs in:
 
 When a unit is summoned to an **empty slot** mid-turn, it may participate in combat during the turn it's summoned:
 
+---
+
+## 1.7 Trait & Status Mechanics
+
+### Phase-Based Trait Locking
+To ensure consistency during combat (preventing "mid-battle effectiveness drops"), the Trait System uses a **Snapshot Locking** mechanism:
+1.  **Combat Start**: The system takes a snapshot of all active team traits (based on unit composition).
+2.  **During Combat**: All trait logic (e.g., Fire Damage Bonus) uses this **Locked Snapshot**.
+    *   *Result:* If a Fire unit dies, the team's Fire Soul count *remains unchanged* for the rest of that battle.
+3.  **Start/End of Turn**: The system reverts to **Live Calculation**.
+    *   *Result:* Start-of-turn effects (e.g., Earth Armor, Fire 9 Burn) use the *current* surviving units. Deaths and mid-battle summons affect these phases.
+
+### Status Effect: Burn
+*   **Application**: Burn is applied whenever a source triggers it (via Trinket or Fire Trait). It applies **even if the attack deals 0 damage** (e.g., fully blocked by Armor).
+*   **Damage (True Damage)**: Burn DOT occurs at the end of the turn.
+    *   It bypasses **Armor** entirely.
+    *   It reduces **HP** directly (`current_hp -= stacks`).
+    *   It does **not** consume Armor stacks.
+
+### Status Effect: Armor
+*   **Mitigation**: Armor absorbs damage before it touches HP.
+*   **Logic**: `armor_consumed = min(armor_stacks, damage)`. Remaining damage hits HP.
+
+### Unified Turn-Start Sequence
+Traits (like Earth Armor) and Trinkets (like Armor Aura) often trigger at the same time (`START_OF_TURN`).
+To ensure they stack correctly without race conditions:
+1.  **Traits** generate events first (but do not animate immediately).
+2.  **Trinkets** generate events second.
+3.  **Unified Animation**: All events are bundled into a single **Atomic Animation Sequence**.
+    *   *Result:* +3 Armor (Trait) and +3 Armor (Trinket) result in a smooth +6 Armor visualization and correct final state.
+
+---
+
 ### Queue Insertion Logic (`CombatSimulator.insert_summoned_unit`):
 - Player units act right-to-left (slot 4→3→2→1→0)
 - Enemy units act left-to-right (slot 0→1→2→3→4)

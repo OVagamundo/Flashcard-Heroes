@@ -366,6 +366,10 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 				item_a.equipped_slot_index = -1
 				state.update_instance_location(item_a.ball_uuid, &"", -1)
 		else:
+			# Validate target slot BEFORE mutating source state
+			if target_loc.index < 0 or target_loc.index >= unit.equipped_item_uuids.size():
+				return result
+				
 			item_a = state.get_instance_by_location(source_loc)
 			if not is_instance_valid(item_a):
 				return result
@@ -375,8 +379,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 			return result
 		
 		# Resolve existing item B in target equipped slot
-		if target_loc.index < 0 or target_loc.index >= unit.equipped_item_uuids.size():
-			return result
+		# (Index validation was done above)
 		var existing_uuid := unit.equipped_item_uuids[target_loc.index]
 		var item_b: GachaBallInstance = null
 		if not existing_uuid.is_empty():
