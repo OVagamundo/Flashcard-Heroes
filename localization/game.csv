@@ -93,7 +93,7 @@ ability.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit tha
 trinket.vengeance.name,Vengeance Charm,Amuleto de Vingança
 trinket.vengeance.desc,Channel the fury of fallen allies.,Canaliza a fúria dos aliados caídos.
 ability.vengeance.name,Vengeance,Vingança
-ability.vengeance.desc,"When an ally dies, grant +1 PWR to a random ally.","Quando um aliado morre, concede +1 PWR a um aliado aleatório."
+ability.vengeance.desc,"When an ally dies, grant +1 HP and +1 PWR to a random ally.","Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
 trinket.aegis.name,Aegis Charm,Amuleto Égide
 trinket.aegis.desc,A protective charm that shields allies from fatal blows.,Um amuleto protetor que escuda aliados de golpes fatais.
 ability.aegis.name,Last Stand,Último Suspiro

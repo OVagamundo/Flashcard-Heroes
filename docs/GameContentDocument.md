@@ -85,8 +85,8 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
 | `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |
 | `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+2 HP/+2 PWR** to any **Tier 1** unit entering the board. |
-| `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** ally to die each turn (50% stats). |
-| `trinket_vengeance` | Vengeance | `on_ally_death` | Grants +1 PWR to a random ally. |
+| `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** ally to die each turn. |
+| `trinket_vengeance` | Vengeance | `on_ally_death` | Grants **+1 HP** and **+1 PWR** to a random ally. |
 
 ---
 
@@ -99,9 +99,9 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 | Souls | Effect |
 |---|---|
 | **3** | Fire units apply **1 Burn** stack on attack. |
-| **5** | Fire units deal **+20% Damage** (min 1) to targets with Burn stacks. |
-| **7** | Fire units apply **+1 Extra Burn** stack (Total +2 on hit). |
-| **9** | **Traitor's Flame**: Apply **1 Burn** stack to the **entire opposing team** at Start of Turn. |
+| **5** | Fire units apply **+1 Extra Burn** stack (Total 2 on hit). |
+| **7** | Start of Turn: Apply **2 Burn** stacks to the **entire opposing team**. |
+| **9** | **Traitor's Flame**: Attacks deal **bonus damage** equal to the target's current Burn stacks. |
 
 ### Earth Trait (`SOUL_EARTH`)
 *Focus: Defensive Mitigation & Sustain*
