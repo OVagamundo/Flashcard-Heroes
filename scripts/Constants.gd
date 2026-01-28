@@ -109,16 +109,8 @@ const CAUSE_GAME_OVER = &"CAUSE_GAME_OVER" # Cleanup phase
 const CAUSE_SETUP = &"CAUSE_SETUP" # Battle initialization
 const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
 
-# --- Window Types (for WindowManager) ---
-const WINDOW_INVENTORY = &"Inventory"
-const WINDOW_DISCARD_PILE = &"DiscardPile"
-const WINDOW_CHOICE = &"ChoiceWindow"
-const WINDOW_UNIT_INSPECTION = &"UnitInspection"
-const WINDOW_ITEM_INSPECTION = &"ItemInspection"
-const WINDOW_EFFECT_INSPECTION = &"EffectInspection"
-const WINDOW_END_BATTLE = &"EndBattlePopup"
-const WINDOW_FLASHCARD = &"FlashcardMinigame"
-const WINDOW_RESULTS = &"ResultsPopup"
+const PRIORITY_EXTRA_ACTION = -100
+const PRIORITY_TRAIT_BURN = 100 # Trait burn application
 
 # --- UI Sizing ---
 const SLOT_SIZE_BASE: int = 96
@@ -147,4 +139,38 @@ const PRIORITY_TURN_START_HEAL = 0
 const PRIORITY_PASSIVE_HEAL = 0
 const PRIORITY_ALLY_DEATH_BUFF = 0
 const PRIORITY_BOSS_SUMMON = -50
-const PRIORITY_EXTRA_ACTION = -100
+
+
+# --- Window Types (for WindowManager) ---
+const WINDOW_INVENTORY = &"Inventory"
+const WINDOW_DISCARD_PILE = &"DiscardPile"
+const WINDOW_CHOICE = &"ChoiceWindow"
+const WINDOW_UNIT_INSPECTION = &"UnitInspection"
+const WINDOW_ITEM_INSPECTION = &"ItemInspection"
+const WINDOW_TRAIT_INSPECTION = &"TraitInspection" # NEW
+const WINDOW_EFFECT_INSPECTION = &"EffectInspection"
+const WINDOW_END_BATTLE = &"EndBattlePopup"
+const WINDOW_FLASHCARD = &"FlashcardMinigame"
+const WINDOW_RESULTS = &"ResultsPopup"
+
+# --- Trait Definitions ---
+const TRAIT_DEFINITIONS = {
+	"FIRE": {
+		"display_name_key": "trait.fire.name",
+		"levels": [
+			{"min": 3, "desc_key": "trait.fire.3"},
+			{"min": 5, "desc_key": "trait.fire.5"},
+			{"min": 7, "desc_key": "trait.fire.7"},
+			{"min": 9, "desc_key": "trait.fire.9"}
+		]
+	},
+	"EARTH": {
+		"display_name_key": "trait.earth.name",
+		"levels": [
+			{"min": 3, "desc_key": "trait.earth.3"},
+			{"min": 5, "desc_key": "trait.earth.5"},
+			{"min": 7, "desc_key": "trait.earth.7"},
+			{"min": 9, "desc_key": "trait.earth.9"}
+		]
+	}
+}

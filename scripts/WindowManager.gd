@@ -17,6 +17,7 @@ var _window_scenes: Dictionary = {
 	&"ChoiceWindow": load("res://scenes/ChoiceWindow.tscn"),
 	&"UnitInspection": load("res://scenes/UnitInspectionWindow.tscn"),
 	&"ItemInspection": load("res://scenes/ItemInspectionWindow.tscn"),
+	&"TraitInspection": load("res://scenes/TraitInspectionWindow.tscn"), # NEW
 	&"EffectInspection": load("res://scenes/EffectInspectionWindow.tscn"),
 	&"Options": load("res://scenes/OptionsWindow.tscn"),
 }
@@ -38,6 +39,7 @@ func _ready() -> void:
 	SignalBus.inspect_inventory_requested.connect(open_inventory_window)
 	SignalBus.display_discard_pile_requested.connect(open_discard_pile_window)
 	SignalBus.inspection_requested.connect(open_inspection_window)
+	SignalBus.trait_inspection_requested.connect(open_trait_inspection_window) # NEW
 	SignalBus.open_choice_window_requested.connect(open_choice_window)
 	SignalBus.close_modal_requested.connect(_close_top_modal)
 	SignalBus.close_top_contextual_requested.connect(close_top_contextual_window)
@@ -152,6 +154,40 @@ func open_choice_window(populate_ctx: Dictionary, anchor_view: Control = null) -
 	}
 	if is_instance_valid(anchor):
 		context["anchor_view"] = anchor
+	_open_contextual_window(context)
+
+# Public entry point for Trait Inspection.
+func open_trait_inspection_window(trait_id: String, source_view: Control) -> void:
+	if not is_instance_valid(source_view): return
+	
+	# Fetch active count from BattleManager
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if not is_instance_valid(bm): return
+	
+	# TODO: BattleManager.get_active_traits takes a team ("PLAYER" or "ENEMY")
+	# We need to intuit the team. If Traits are only for player for now:
+	# But actually BattleView creates traits for both sides.
+	# We can check parent name? BattleView > TraitHUD > PlayerTraits/EnemyTraits
+	# source_view is the TraitTracker.
+	var team = "PLAYER"
+	var parent_container = source_view.get_parent()
+	if is_instance_valid(parent_container):
+		if parent_container.name == "EnemyTraits":
+			team = "ENEMY"
+	
+	var all_traits: Dictionary = bm.get_active_traits(team)
+	var count = all_traits.get(trait_id, 0)
+	
+	var context: Dictionary = {
+		"window_type": &"TraitInspection",
+		"populate_context": {
+			"trait_id": trait_id,
+			"source_view": source_view,
+			"count": count
+		},
+		"anchor_view": source_view
+	}
+	# Use standard positioning logic (will use _track_inspection_anchor because parent_window is null)
 	_open_contextual_window(context)
 
 # Public entry point for all inspection windows (Unit, Item, Effect).

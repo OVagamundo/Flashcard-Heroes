@@ -64,3 +64,16 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 		modulate = Color(1, 1, 1, 0.9)
 		
 	add_theme_stylebox_override("panel", style)
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		# Get trait name from label logic (reverse engineering populate logic)
+		var trait_name = ""
+		if name_label.text == "Fire": trait_name = "FIRE"
+		elif name_label.text == "Earth": trait_name = "EARTH"
+		
+		if not trait_name.is_empty():
+			# S6/W2: Clicking UI element clears selection
+			SignalBus.emit_signal("selection_clear_requested")
+			SignalBus.emit_signal("trait_inspection_requested", trait_name, self)
+			accept_event()

@@ -270,6 +270,12 @@ func bm_add_instance(instance: GachaBallInstance, container_name: StringName, in
 		slot = container.find_first_empty_slot()
 		if slot == -1:
 			return false
+	else:
+		# If index is specified, ensure it is empty
+		var existing := container.get_uuid(slot)
+		if not existing.is_empty():
+			push_error("bm_add_instance rejected: slot %d in %s is already occupied by %s" % [slot, container_name, existing])
+			return false
 	container.set_uuid(slot, instance.ball_uuid)
 	_battle_instances[instance.ball_uuid] = instance
 	update_instance_location(instance.ball_uuid, container_name, slot)
