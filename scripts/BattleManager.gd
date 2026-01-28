@@ -5,7 +5,7 @@ const C = preload("res://scripts/Constants.gd")
 const RS = preload("res://scripts/RunState.gd")
 const BattleStateClass = preload("res://scripts/battle/BattleState.gd")
 const CombatSimulatorClass = preload("res://scripts/battle/CombatSimulator.gd")
-const TestModeHelpers = preload("res://scripts/battle/TestModeHelpers.gd")
+const _TestModeHelpers = preload("res://scripts/battle/TestModeHelpers.gd")
 enum Phases {START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER}
 var _current_battle_phase: Phases
 
@@ -31,6 +31,9 @@ var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
 var is_test_mode: bool = false
 
+# Locked traits snapshot for COMBAT phase stability
+var _locked_ready_traits: Dictionary = {}
+
 
 # Legacy accessors - forward to _state for backwards compatibility
 var _battle_instances: Dictionary:
@@ -50,9 +53,9 @@ var _gacha_tokens: int:
 	get: return _state._gacha_tokens
 	set(value): _state._gacha_tokens = value
 
-const FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
-const GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
-const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
+const _FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
+const _GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
+const _EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
@@ -586,6 +589,7 @@ func _resolve_combat_phase() -> void:
 	_populate_actor_queue()
 	
 	# 1. Capture State BEFORE Simulation
+	_lock_traits() # Snapshot traits for consistent combat behavior (ignoring mid-battle deaths)
 	var start_snapshot = get_board_snapshot()
 	var death_tracking: Dictionary = {}
 	
@@ -614,6 +618,9 @@ func _on_turn_animation_finished() -> void:
 	if _current_battle_phase == Phases.START_OF_TURN:
 		# Turn start abilities finished animating, transition to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
+		# Force a UI refresh to reflect any silent updates (e.g., traits) that occurred during the animation
+		_emit_battle_inventory_changed()
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	elif _current_battle_phase == Phases.END_OF_TURN:
 		# Check if battle is over after poison/turn-end effects
 		if _battle_over_deferred or _is_battle_over():
@@ -1082,7 +1089,8 @@ func _trigger_turn_start_abilities() -> void:
 	_turn_start_abilities_triggered = true # Set flag here to prevent multiple calls
 	
 	# Apply Trait Start-of-Turn Effects (e.g., Earth Armor)
-	_apply_trait_start_of_turn_effects()
+	# Returns events to be animated together with other turn start abilities
+	var trait_events = _apply_trait_start_of_turn_effects()
 	
 	# Trigger turn start abilities for all instances using unified processing
 	var turn_start_context: Dictionary = {"turn": _current_turn}
@@ -1090,8 +1098,8 @@ func _trigger_turn_start_abilities() -> void:
 	
 	# Process turn start effects (heals, etc.) without starting combat
 	# Don't populate actor queue - we're just processing turn start abilities
-	if not _pending_reactions.is_empty():
-		_resolve_pending_reactions_only()
+	if not _pending_reactions.is_empty() or not trait_events.is_empty():
+		_resolve_pending_reactions_only(trait_events)
 	else:
 		# No turn start abilities to process - transition to MANAGEMENT directly
 		_on_turn_animation_finished()
@@ -1099,13 +1107,16 @@ func _trigger_turn_start_abilities() -> void:
 
 ## Process pending reactions without populating the actor queue
 ## Used for turn start abilities that shouldn't trigger combat
-func _resolve_pending_reactions_only() -> void:
+## Process pending reactions without populating the actor queue
+## Used for turn start abilities that shouldn't trigger combat
+## @param extra_events: Events generated before reaction processing (e.g. traits) to include in animation
+func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> void:
 	if _is_processing_effect: return
 	_is_processing_effect = true
 	_resolve_animator()
 	
 	# Process only pending reactions (turn start abilities), don't populate actor queue
-	var all_events_for_animator: Array[CombatEvent] = []
+	var all_events_for_animator: Array[CombatEvent] = extra_events.duplicate()
 	var death_tracking: Dictionary = {}
 	
 	# Capture board snapshot BEFORE simulation
@@ -1474,7 +1485,7 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	_last_minigame_results = results
 
 	var correct_answers: int = results.get("correct_answers", 0)
-	var gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
+	var _gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
 	
 	# Display ResultsPopup
 	WindowManager.open_modal_window(&"ResultsPopup", {
@@ -1547,11 +1558,20 @@ func _finalize_deaths() -> void:
 ## @param team: "PLAYER" or "ENEMY"
 ## @return Dictionary: { "FIRE": count, "EARTH": count }
 func get_active_traits(team: String) -> Dictionary:
+	# During COMBAT, use the locked snapshot to prevent traits from fluctuating due to deaths
+	if _current_battle_phase == Phases.COMBAT and _locked_ready_traits.has(team):
+		return _locked_ready_traits[team]
+	
+	# Otherwise (Management, Start of Turn), calculate live based on current board state
+	return _calculate_active_traits(team)
+
+## Internal calculation of active traits based on current board state.
+func _calculate_active_traits(team: String) -> Dictionary:
 	var counts: Dictionary = {"FIRE": 0, "EARTH": 0}
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	
 	var units = get_instances_in_container(container_tag)
-	print("DEBUG: get_active_traits for team %s. Found %d units." % [team, units.size()])
+	# Removed debug print during calc to reduce noise
 	for unit in units:
 		if not is_instance_valid(unit) or unit.current_hp <= 0:
 			continue
@@ -1559,15 +1579,18 @@ func get_active_traits(team: String) -> Dictionary:
 		# Definition tags are baked-in (e.g., ["SOUL_FIRE", "SOUL_FIRE"])
 		var def = unit.get_definition()
 		if is_instance_valid(def) and "tags" in def:
-			print("DEBUG: Unit %s has tags: %s" % [unit.ball_uuid, def.tags])
 			for tag in def.tags:
 				if tag == &"SOUL_FIRE":
 					counts["FIRE"] += 1
 				elif tag == &"SOUL_EARTH":
 					counts["EARTH"] += 1
-	print("DEBUG: Team %s traits: %s" % [team, counts])
 					
 	return counts
+
+## Lock current active traits into snapshot.
+func _lock_traits() -> void:
+	_locked_ready_traits["PLAYER"] = _calculate_active_traits("PLAYER")
+	_locked_ready_traits["ENEMY"] = _calculate_active_traits("ENEMY")
 
 ## Check if a unit contributes to a specific Soul trait.
 func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
@@ -1580,35 +1603,79 @@ func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
 	return def.tags.has(target_tag)
 
 ## Apply start-of-turn effects for active traits (e.g., Earth Armor)
-func _apply_trait_start_of_turn_effects() -> void:
+## Apply start-of-turn effects for active traits (e.g., Earth Armor)
+## Returns Array[CombatEvent] to be animated
+func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
+	var total_events: Array[CombatEvent] = []
+	
 	# Process for both teams
 	for team in ["PLAYER", "ENEMY"]:
 		var traits = get_active_traits(team)
 		
-		# EARTH TRAIT: 3+ Souls -> Earth units gain 3 Armor
-		if traits.get("EARTH", 0) >= 3:
+		# EARTH TRAIT: 3/5/7/9 Souls -> Earth units gain 3/5/7/9 Armor. At 9, Non-Earth units gain 3 Armor.
+		var earth_souls = traits.get("EARTH", 0)
+		if earth_souls >= 3:
 			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var units = get_instances_in_container(container_tag)
-			var armor_amount = 3
 			
-			var all_events: Array[CombatEvent] = []
+			var earth_armor_amount = 3
+			var non_earth_bonus_amount = 0
 			
+			if earth_souls >= 9:
+				earth_armor_amount = 9
+				non_earth_bonus_amount = 3
+			elif earth_souls >= 7:
+				earth_armor_amount = 7
+			elif earth_souls >= 5:
+				earth_armor_amount = 5
+				
 			for unit in units:
-				if is_instance_valid(unit) and unit.current_hp > 0 and _has_trait_soul(unit, "EARTH"):
-					# Create a request-like structure for the event creation
-					var mock_request = EffectRequest.new(unit.ball_uuid, &"trait_earth_armor", null, [unit.ball_uuid], {}, 0)
+				if is_instance_valid(unit) and unit.current_hp > 0:
+					var is_earth = _has_trait_soul(unit, "EARTH")
+					var armor_to_apply = 0
 					
-					# Reuse handle_armor_stacks logic or apply manually
-					# Since handle_armor_stacks returns a single event, we can use it
-					var event = handle_armor_stacks(mock_request, [unit.ball_uuid], armor_amount)
-					all_events.append(event)
+					if is_earth:
+						armor_to_apply = earth_armor_amount
+					elif non_earth_bonus_amount > 0:
+						armor_to_apply = non_earth_bonus_amount
+						
+					if armor_to_apply > 0:
+						# Create a request-like structure for the event creation
+						var mock_request = EffectRequest.new(unit.ball_uuid, &"trait_earth_armor", null, [unit.ball_uuid], {}, 0)
+						
+						# Reuse handle_armor_stacks logic or apply manually
+						var event = handle_armor_stacks(mock_request, [unit.ball_uuid], armor_to_apply)
+						total_events.append(event)
+		
+		# FIRE TRAIT: 9+ Souls -> Opposing team gets 1 Burn stack
+		var fire_souls = traits.get("FIRE", 0)
+		if fire_souls >= 9:
+			var opposing_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			var opposing_units = get_instances_in_container(opposing_container_tag)
 			
-			# Animate if any events occurred
-			if not all_events.is_empty():
-				_is_processing_effect = true
-				_resolve_animator()
-				var snapshot = get_board_snapshot() # Capture snapshot before animation (values already applied by handle_armor_stacks/apply_stat_delta)
-				_animator.play_turn_sequence(snapshot, all_events)
+			# Reuse EffectHandlers logic if possible, or implement burn application directly
+			for unit in opposing_units:
+				if is_instance_valid(unit) and unit.current_hp > 0:
+					# Apply 1 burn stack
+					var amount = 1
+					var old_val = unit.get_status_effect_amount(&"burn")
+					# Silent update for simulation state
+					var new_val = apply_stat_delta(unit, "burn_stacks", amount)
+					
+					var event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+						"source_uuid": "", # Trait effect has no single unit source
+						"target_uuids": [unit.ball_uuid],
+						"ability_id": &"trait_fire_burn",
+						"visual_payload": {
+							"amount": amount,
+							"stat": "burn_stacks",
+							"targets_old_val": [old_val],
+							"targets_new_val": [new_val]
+						}
+					})
+					total_events.append(event)
+
+	return total_events
 
 # =============================================================================
 

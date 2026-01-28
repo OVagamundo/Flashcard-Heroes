@@ -41,7 +41,7 @@ static func trigger_turn_start_abilities(current_turn: int) -> bool:
 # ============================================================================
 
 ## Process burn damage for all units. Returns array of CombatEvents.
-static func process_burn_damage(state: BattleState, get_display_name_callback: Callable, apply_stat_delta_callback: Callable) -> Array[CombatEvent]:
+static func process_burn_damage(state: BattleState, get_display_name_callback: Callable, _apply_stat_delta_callback: Callable) -> Array[CombatEvent]:
 	var events: Array[CombatEvent] = []
 	
 	var all_units := state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
@@ -57,13 +57,14 @@ static func process_burn_damage(state: BattleState, get_display_name_callback: C
 			var old_hp := unit.current_hp
 			var old_armor := unit.get_status_effect_amount(&"armor")
 			
-			# Apply damage via callback (apply_stat_delta now returns dictionary for damage)
-			var damage_result = apply_stat_delta_callback.call(unit, "hp", -damage)
+			# Direct HP Damage (Bypasses Armor)
+			# We manually subtract HP instead of using apply_stat_delta("hp") which consumes armor
+			var damage_to_take = min(unit.current_hp, damage)
+			unit.current_hp -= damage_to_take
 			
-			# Extract data from dictionary return
-			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if damage_result is Dictionary else unit.current_hp
-			var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-			var new_armor: int = damage_result.get("new_armor", 0) if damage_result is Dictionary else 0
+			var new_hp: int = unit.current_hp
+			var armor_consumed: int = 0 # No armor consumed for burn (Direct Damage)
+			var new_armor: int = old_armor
 			
 			var max_hp := 0
 			var unit_def := unit.get_definition()
