@@ -208,12 +208,9 @@ static func handle_damage_effect(
 	var result := DamageResult.new()
 	
 	# Log message
-	var dealt: int = abs(amount)
-	var damage_target_name := ""
-	if not target_names.is_empty():
-		damage_target_name = target_names[0]
-	if source_name != "" and damage_target_name != "":
-		result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s deals %d dmg to %s" % [source_name, dealt, damage_target_name]}))
+	# Log message moved inside loop to report actual damage (varying per target)
+	# var dealt: int = abs(amount)
+	# ...
 	
 	# Check if burn should be applied
 	# Check if burn should be applied (Trinket + Fire Trait)
@@ -233,13 +230,13 @@ static func handle_damage_effect(
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
 	
-	# Fire 3: Apply Burn
+		# Fire 3: Apply Burn
 	if fire_level >= 3:
 		# Check if source is a Fire unit
 		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 			burn_amount += 1
-			# Fire 7: Extra Burn Stack
-			if fire_level >= 7:
+			# Fire 5: Extra Burn Stack (Total 2)
+			if fire_level >= 5:
 				burn_amount += 1
 			
 	var should_apply_burn = burn_amount > 0
@@ -263,20 +260,32 @@ static func handle_damage_effect(
 		if not is_instance_valid(tgt) or tgt.current_hp <= 0:
 			continue
 			
-		# Fire 5: +20% Damage vs Burned Targets (min +1)
+		# Fire 9: Bonus Damage = Target's Burn Stacks
 		var damage_to_apply = amount
-		if fire_level >= 5 and damage_to_apply < 0: # Check damage < 0 to be sure it's damage
+		if fire_level >= 9 and damage_to_apply < 0: # Check damage < 0 to be sure it's damage
 			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-				# Fire 5 Strict: Target must ALREADY have burn stacks from a previous source/turn.
 				var burn_count = tgt.get_status_effect_amount(&"burn")
 				if OS.is_debug_build():
-					print("[EffectHandlers] Fire 5 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, damage_to_apply])
+					print("[EffectHandlers] Fire 9 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, damage_to_apply])
 				
 				if burn_count > 0:
-					var bonus_damage = max(1, floor(abs(damage_to_apply) * 0.2))
+					var bonus_damage = burn_count
 					if OS.is_debug_build():
-						print("[EffectHandlers] Applying Bonus: +%d" % bonus_damage)
-					damage_to_apply -= bonus_damage # Make it more negative
+						print("[EffectHandlers] Fire 9 Bonus: +%d" % bonus_damage)
+					damage_to_apply -= bonus_damage # Make it more negative (increase damage)
+		
+		# Log message (Per Target)
+		var target_display_name = ""
+		# Try to find name in target_names corresponding to this index
+		# resolved_targets is aligned with target_names?
+		var tgt_idx = resolved_targets.find(tgt_uuid)
+		if tgt_idx != -1 and tgt_idx < target_names.size():
+			target_display_name = target_names[tgt_idx]
+		
+		if source_name != "" and target_display_name != "":
+			result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"text": "%s deals %d dmg to %s" % [source_name, abs(damage_to_apply), target_display_name]
+			}))
 		
 		var loc_tag: StringName = tgt.location_container_tag
 		var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
@@ -446,14 +455,13 @@ static func handle_cascade_damage(
 		burn_amount += 1
 		
 	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
-	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
 	if fire_level >= 3:
 		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 			burn_amount += 1
-			# Fire 7: Extra Burn Stack
-			if fire_level >= 7:
+			# Fire 5: Extra Burn Stack (Total 2)
+			if fire_level >= 5:
 				burn_amount += 1
 			
 	var should_apply_burn = burn_amount > 0
@@ -471,21 +479,19 @@ static func handle_cascade_damage(
 		if not is_instance_valid(cascade_tgt):
 			continue
 		
-		# Fire 5: +20% Damage vs Burned Targets (min +1)
+		# Fire 9: Bonus Damage = Target's Burn Stacks
 		# Note: Cascade amount is usually positive in request, but negative in application.
-		# The request usually has 'amount': 2 (positive).
-		# We check if target has burn ticks.
-		if fire_level >= 5:
+		if fire_level >= 9:
 			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 				var burn_count = cascade_tgt.get_status_effect_amount(&"burn")
 				if OS.is_debug_build():
-					print("[EffectHandlers] Cascade Fire 5 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, cascade_amount])
+					print("[EffectHandlers] Cascade Fire 9 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, cascade_amount])
 					
 				if burn_count > 0:
-					var bonus_damage = max(1, floor(cascade_amount * 0.2))
+					var bonus_damage = burn_count
 					if OS.is_debug_build():
-						print("[EffectHandlers] Cascade Bonus: +%d" % bonus_damage)
-					cascade_amount += bonus_damage # Increase the positive damage amount
+						print("[EffectHandlers] Cascade Fire 9 Bonus: +%d" % bonus_damage)
+					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
 		var would_be_lethal: bool = cascade_tgt.current_hp - cascade_amount <= 0
