@@ -266,9 +266,9 @@ ability.royal_insignia.name,Royal Blessing,Bênção Real
 ability.royal_insignia.desc,"When a Tier 1 unit is drawn, grant it +2 HP and +2 PWR.","Quando uma unidade Nível 1 é sacada, concede +2 HP e +2 PWR."
 trait.fire.name,Fire,Fogo
 trait.fire.3,"Apply 1 Burn on attack.","Aplica 1 Queimadura ao atacar."
-trait.fire.5,"Deal +20% Damage to targets with Burn.","Causa +20% de Dano a alvos com Queimadura."
-trait.fire.7,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total 2)."
-trait.fire.9,"Traitor's Flame: Apply 1 Burn to ANY enemy at Start of Turn.","Chama do Traidor: Aplica 1 Queimadura a QUALQUER inimigo no Início do Turno."
+trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total 2)."
+trait.fire.7,"Start of Turn: Apply 2 Burn to ALL enemies.","Início do Turno: Aplica 2 Queimadura a TODOS inimigos."
+trait.fire.9,"Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.","Chama do Traidor: Ataques causam dano bônus igual às pilhas de Queimadura do alvo."
 trait.earth.name,Earth,Terra
 trait.earth.3,"All Allies gain 1 Armor. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura."
 trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura."

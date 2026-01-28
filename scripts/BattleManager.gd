@@ -1683,17 +1683,17 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						var event = handle_armor_stacks(mock_request, [unit.ball_uuid], armor_to_apply)
 						total_events.append(event)
 		
-		# FIRE TRAIT: 9+ Souls -> Opposing team gets 1 Burn stack
+		# FIRE TRAIT: 7+ Souls -> Opposing team gets 2 Burn stacks
 		var fire_souls = traits.get("FIRE", 0)
-		if fire_souls >= 9:
+		if fire_souls >= 7:
 			var opposing_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 			var opposing_units = get_instances_in_container(opposing_container_tag)
 			
 			# Reuse EffectHandlers logic if possible, or implement burn application directly
 			for unit in opposing_units:
 				if is_instance_valid(unit) and unit.current_hp > 0:
-					# Apply 1 burn stack
-					var amount = 1
+					# Apply 2 burn stacks
+					var amount = 2
 					var old_val = unit.get_status_effect_amount(&"burn")
 					# Silent update for simulation state
 					var new_val = apply_stat_delta(unit, "burn_stacks", amount)
