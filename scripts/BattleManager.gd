@@ -1592,6 +1592,21 @@ func _calculate_active_traits(team: String) -> Dictionary:
 					counts["FIRE"] += 1
 				elif tag == &"SOUL_EARTH":
 					counts["EARTH"] += 1
+		
+		# Check equipped items for trait tags (Emblems)
+		for item_uuid in unit.equipped_item_uuids:
+			if item_uuid.is_empty():
+				continue
+			var item_inst = get_instance(item_uuid)
+			if not is_instance_valid(item_inst):
+				continue
+			var item_def = item_inst.get_definition()
+			if is_instance_valid(item_def) and "tags" in item_def:
+				for tag in item_def.tags:
+					if tag == &"SOUL_FIRE":
+						counts["FIRE"] += 1
+					elif tag == &"SOUL_EARTH":
+						counts["EARTH"] += 1
 					
 	return counts
 
@@ -1608,7 +1623,22 @@ func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
 	if not is_instance_valid(def) or not "tags" in def:
 		return false
 	var target_tag = StringName("SOUL_" + trait_name)
-	return def.tags.has(target_tag)
+	if def.tags.has(target_tag):
+		return true
+
+	# Check equipped items for trait tags (Emblems)
+	for item_uuid in unit.equipped_item_uuids:
+		if item_uuid.is_empty():
+			continue
+		var item_inst = get_instance(item_uuid)
+		if not is_instance_valid(item_inst):
+			continue
+		var item_def = item_inst.get_definition()
+		if is_instance_valid(item_def) and "tags" in item_def:
+			if item_def.tags.has(target_tag):
+				return true
+	
+	return false
 
 ## Apply start-of-turn effects for active traits (e.g., Earth Armor)
 ## Apply start-of-turn effects for active traits (e.g., Earth Armor)

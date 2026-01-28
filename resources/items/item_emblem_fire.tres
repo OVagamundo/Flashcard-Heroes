@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_fire_001"]
+
+[ext_resource type="Texture2D" uid="uid://bg2j4y4y4y4y4" path="res://assets/sprites/items/FireEmblem.png" id="1_tex"]
+[ext_resource type="Script" uid="uid://c8q7y5y5y5y5y" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_fire"
+display_name_key = "item.emblem_fire.name"
+description_key = "item.emblem_fire.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"SOUL_FIRE"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 2
+ability_definitions = Array[Resource]([])

@@ -274,3 +274,7 @@ trait.earth.3,"Gain 3 Armor at Start of Turn.","Ganha 3 de Armadura no Início d
 trait.earth.5,"Gain 5 Armor at Start of Turn.","Ganha 5 de Armadura no Início do Turno."
 trait.earth.7,"Gain 7 Armor at Start of Turn.","Ganha 7 de Armadura no Início do Turno."
 trait.earth.9,"Fortress: Gain 9 Armor. Allies gain 3 Armor at Start of Turn.","Fortaleza: Ganha 9 de Armadura. Aliados ganham 3 de Armadura no Início do Turno."
+item.emblem_fire.name,Fire Emblem,Emblema de Fogo
+item.emblem_fire.desc,"When equipped, this unit counts as a Fire unit. Grants +2 PWR.","Quando equipado, esta unidade conta como uma unidade de Fogo. Concede +2 PWR."
+item.emblem_earth.name,Earth Emblem,Emblema de Terra
+item.emblem_earth.desc,"When equipped, this unit counts as an Earth unit. Grants +4 HP.","Quando equipado, esta unidade conta como uma unidade de Terra. Concede +4 HP."
