@@ -83,6 +83,12 @@ func grant_extra_action_to(unit: GachaBallInstance) -> void:
 	if unit.current_hp <= 0:
 		return
 	_actor_queue.push_front(unit)
+	
+	# Prevent stacking: If the unit is already at the very front (from a previous trigger in the same chain),
+	# don't add it again. This handles multiple Bloodlust items or multi-kill scenarios
+	# granting excessive turns.
+	if _actor_queue.size() > 1 and _actor_queue[0] == unit and _actor_queue[1] == unit:
+		_actor_queue.pop_front()
 
 ## Insert a newly summoned unit into the actor queue.
 ## @param new_unit: The summoned unit
@@ -158,6 +164,8 @@ func has_pending_reactions() -> bool:
 	return not _pending_reactions.is_empty()
 
 func enqueue_reaction(request: EffectRequest) -> void:
+	if OS.is_debug_build():
+		print("[CS] Enqueue reaction: ", request.ability_id, " Prio:", request.priority)
 	_pending_reactions.append(request)
 
 func sort_reactions_by_priority() -> void:
@@ -731,6 +739,10 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
 	
 	for request in reactions_to_process:
+		# DEBUG: Trace priority execution
+		if OS.is_debug_build():
+			print("[CS] Draining reaction: ", request.ability_id, " Prio:", request.priority, " Src:", request.source_uuid)
+			
 		# Capture events to _inline_events so they can be collected by the outer loop
 		# IMPORTANT: Pass a special death_tracking that disables death checking
 		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)

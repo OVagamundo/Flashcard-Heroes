@@ -270,10 +270,10 @@ trait.fire.5,"Deal +20% Damage to targets with Burn.","Causa +20% de Dano a alvo
 trait.fire.7,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total 2)."
 trait.fire.9,"Traitor's Flame: Apply 1 Burn to ANY enemy at Start of Turn.","Chama do Traidor: Aplica 1 Queimadura a QUALQUER inimigo no Início do Turno."
 trait.earth.name,Earth,Terra
-trait.earth.3,"Gain 3 Armor at Start of Turn.","Ganha 3 de Armadura no Início do Turno."
-trait.earth.5,"Gain 5 Armor at Start of Turn.","Ganha 5 de Armadura no Início do Turno."
-trait.earth.7,"Gain 7 Armor at Start of Turn.","Ganha 7 de Armadura no Início do Turno."
-trait.earth.9,"Fortress: Gain 9 Armor. Allies gain 3 Armor at Start of Turn.","Fortaleza: Ganha 9 de Armadura. Aliados ganham 3 de Armadura no Início do Turno."
+trait.earth.3,"All Allies gain 1 Armor. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura."
+trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura."
+trait.earth.7,"All Allies gain 3 Armor. Earth units gain 6 Armor.","Todos aliados ganham 3 Armadura. Unidades de Terra ganham 6 Armadura."
+trait.earth.9,"Fortress: All Allies gain 4 Armor. Earth units gain 8 Armor.","Fortaleza: Todos aliados ganham 4 Armadura. Unidades de Terra ganham 8 Armadura."
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
 item.emblem_fire.desc,"When equipped, this unit counts as a Fire unit. Grants +2 PWR.","Quando equipado, esta unidade conta como uma unidade de Fogo. Concede +2 PWR."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra

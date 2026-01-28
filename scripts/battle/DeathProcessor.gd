@@ -422,6 +422,13 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			elif not is_simulation:
 				bm._perform_unit_death_cleanup(unit)
 	
+	# -------------------------------------------------------------------------
+	# UNIFIED PRIORITY BATCHING
+	# We must collect ALL triggers (on_death and on_ally_death) BEFORE draining.
+	# If we drain early, lower priority items from Phase 1 might execute before
+	# higher priority trinkets from Phase 2.
+	# -------------------------------------------------------------------------
+
 	# PHASE 1: Fire ALL on_death triggers (queues item summons, priority 200)
 	for data in dying_units_data:
 		var death_ctx := {
@@ -432,6 +439,9 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		}
 		AbilityResolver.process_trigger(&"on_death", death_ctx)
 	
+	if OS.is_debug_build() and is_simulation:
+		print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())
+
 	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
 	# and emit DEATH events
 	for data in dying_units_data:
@@ -451,6 +461,9 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 				"fainting_ally_team": data.team
 			}
 			AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
+
+	if OS.is_debug_build() and is_simulation:
+		print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())
 	
 	# Store deferred deaths for processing after counter-attacks complete
 	if not deferred_deaths.is_empty():
@@ -461,6 +474,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	# PHASE 3: Drain ALL reactions AFTER both trigger types have queued
 	# Priority sorting now correctly orders trinket (210) before item (200)
 	if is_simulation and out_events != null and not bm._pending_reactions.is_empty():
+		if OS.is_debug_build():
+			print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
 		bm.drain_pending_reactions_inline(0)
 		var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
 		for evt in cascade_evts:

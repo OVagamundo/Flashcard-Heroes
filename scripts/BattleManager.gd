@@ -590,6 +590,7 @@ func _resolve_combat_phase() -> void:
 	
 	# 1. Capture State BEFORE Simulation
 	_lock_traits() # Snapshot traits for consistent combat behavior (ignoring mid-battle deaths)
+	_turn_metadata.clear() # Reset per-turn metadata (e.g. first killed unit, resurrection flags)
 	var start_snapshot = get_board_snapshot()
 	var death_tracking: Dictionary = {}
 	
@@ -1650,32 +1651,29 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 	for team in ["PLAYER", "ENEMY"]:
 		var traits = get_active_traits(team)
 		
-		# EARTH TRAIT: 3/5/7/9 Souls -> Earth units gain 3/5/7/9 Armor. At 9, Non-Earth units gain 3 Armor.
+		# EARTH TRAIT: 3/5/7/9 Souls
+		# - All Team Units gain 1/2/3/4 Armor
+		# - Earth Units gain DOUBLE this amount (2/4/6/8)
 		var earth_souls = traits.get("EARTH", 0)
 		if earth_souls >= 3:
 			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var units = get_instances_in_container(container_tag)
 			
-			var earth_armor_amount = 3
-			var non_earth_bonus_amount = 0
-			
+			var base_armor = 1
 			if earth_souls >= 9:
-				earth_armor_amount = 9
-				non_earth_bonus_amount = 3
+				base_armor = 4
 			elif earth_souls >= 7:
-				earth_armor_amount = 7
+				base_armor = 3
 			elif earth_souls >= 5:
-				earth_armor_amount = 5
+				base_armor = 2
 				
 			for unit in units:
 				if is_instance_valid(unit) and unit.current_hp > 0:
 					var is_earth = _has_trait_soul(unit, "EARTH")
-					var armor_to_apply = 0
+					var armor_to_apply = base_armor
 					
 					if is_earth:
-						armor_to_apply = earth_armor_amount
-					elif non_earth_bonus_amount > 0:
-						armor_to_apply = non_earth_bonus_amount
+						armor_to_apply *= 2
 						
 					if armor_to_apply > 0:
 						# Create a request-like structure for the event creation

@@ -70,6 +70,8 @@ Items are equipped on units to provide stats and new abilities.
 | `item_t3_d` | Retaliation Shield | **Large Potion + Large Potion** | +2 HP / +2 PWR | **Retaliate Random** (`on_hurt`): Counter-attack a random enemy. |
 | `item_t3_e` | Deathbomb | **Summon Scroll + Large Potion** | +3 HP / +1 PWR | **Explode** (`on_death`): Deal damage to highest HP enemy. |
 | `item_t3_f` | Soul Siphon | **Bloodlust Blade + Large Potion** | +1 HP / +3 PWR | **Power Drain** (`on_damage_dealt`): Steal PWR from target. |
+| `item_emblem_fire` | Fire Emblem | (Defined in tres) | +2 PWR | **Fire Soul** (`passive`): Counts as a Fire unit. |
+| `item_emblem_earth` | Earth Emblem | (Defined in tres) | +4 HP | **Earth Soul** (`passive`): Counts as an Earth unit. |
 
 ---
 
@@ -83,13 +85,13 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
 | `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |
 | `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+2 HP/+2 PWR** to any **Tier 1** unit entering the board. |
-| `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** ally to die each battle (50% stats). |
+| `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** ally to die each turn (50% stats). |
 | `trinket_vengeance` | Vengeance | `on_ally_death` | Grants +1 PWR to a random ally. |
 
 ---
 
 ## 4. Traits
-Traits are active bonuses based on the composition of your team. Each unit contributes 1 Soul to its corresponding Trait.
+Traits are active bonuses based on the composition of your team. Each unit contributes 1 Soul to its corresponding Trait. Equipped **Emblem** items also contribute 1 Soul and allow the equipped unit to benefit from Trait effects.
 
 ### Fire Trait (`SOUL_FIRE`)
 *Focus: Offensive Pressure & Damage Over Time*
@@ -106,7 +108,7 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 
 | Souls | Effect |
 |---|---|
-| **3** | Earth units gain **3 Armor** at Start of Turn. |
-| **5** | Earth units gain **5 Armor** at Start of Turn. |
-| **7** | Earth units gain **7 Armor** at Start of Turn. |
-| **9** | **Fortress**: Earth units gain **9 Armor**; Non-Earth allies gain **3 Armor** at Start of Turn. |
+| **3** | All Allies gain **1 Armor**; Earth units gain **2 Armor**. |
+| **5** | All Allies gain **2 Armor**; Earth units gain **4 Armor**. |
+| **7** | All Allies gain **3 Armor**; Earth units gain **6 Armor**. |
+| **9** | **Fortress**: All Allies gain **4 Armor**; Earth units gain **8 Armor**. |
