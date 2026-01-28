@@ -307,10 +307,16 @@ static func move_instance(state: BattleState, source_loc: LocationIdentifier, ta
 		result.set_success()
 		return result
 	
-	# Default container-to-container move
 	var from_container := state.get_container(source_loc.container)
 	var to_container := state.get_container(target_loc.container)
 	if not is_instance_valid(from_container) or not is_instance_valid(to_container):
+		return result
+	
+	# Prevent overwriting an existing unit (Golden Rule)
+	# swap_instances should be used if the target is occupied
+	var existing_target_uuid := to_container.get_uuid(target_loc.index)
+	if not existing_target_uuid.is_empty():
+		push_error("move_instance rejected: target slot %s:%d is occupied by %s" % [target_loc.container, target_loc.index, existing_target_uuid])
 		return result
 	
 	var inst_uuid := from_container.get_uuid(source_loc.index)

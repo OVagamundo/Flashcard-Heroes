@@ -1,0 +1,65 @@
+[gd_scene load_steps=5 format=3 uid="uid://cyk2d4e7x8p1"]
+
+[ext_resource type="Script" path="res://scripts/TraitInspectionWindow.gd" id="1_4j8lq"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_g7n8m"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator.ttf" id="3_h6n7j"]
+
+[ext_resource type="Script" path="res://scripts/TraitInspectionWindow.gd" id="1_4j8lq"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_g7n8m"]
+[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator.ttf" id="3_h6n7j"]
+
+[node name="TraitInspectionWindow" type="PanelContainer"]
+mouse_filter = 1
+script = ExtResource("1_4j8lq")
+
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.8, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("2_g7n8m")
+theme_override_font_sizes/font_size = 20
+text = "TRAIT NAME"
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/normal_font = ExtResource("3_h6n7j")
+theme_override_fonts/bold_font = ExtResource("3_h6n7j")
+theme_override_font_sizes/normal_font_size = 24
+theme_override_font_sizes/bold_font_size = 24
+bbcode_enabled = true
+text = "Level 1: Effect
+Level 2: Effect"
+fit_content = true
+scroll_active = false

@@ -78,7 +78,7 @@ Team-wide passive artifacts obtained from bosses.
 
 | ID | Name | Trigger | Effect |
 |---|---|---|---|
-| `trinket_healing_amulet` | Healing Amulet | `on_turn_start` | Heals frontmost ally for 2 HP. |
+| `trinket_polished_plate` | Polished Plate | `passive` | Armor does not decay at the end of the turn. |
 | `trinket_aegis` | Aegis | `on_hurt` | Prevents lethal damage once per battle (leaves unit at 1 HP). |
 | `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
 | `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |

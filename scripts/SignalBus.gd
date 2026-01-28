@@ -341,6 +341,12 @@ signal choice_made(choice_id: StringName, source_loc: LocationIdentifier, target
 ## @param source_view: Control - The source view
 signal inspection_requested(loc: LocationIdentifier, source_view: Control)
 
+## Emitted when trait inspection is requested
+## @param trait_id: String - The trait ID ("FIRE", "EARTH")
+## @param source_view: Control - The source view (TraitTracker)
+signal trait_inspection_requested(trait_id: String, source_view: Control)
+
+
 ## Emitted when a view is selected
 ## @param view: Control - The selected view
 ## @param location: LocationIdentifier - The location

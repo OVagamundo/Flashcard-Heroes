@@ -8,8 +8,8 @@ extends "res://scripts/InspectionWindow.gd"
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
-var _window_group_id: int = 1  # Inspection window group
-var _stable_anchor: Control = null  # Stable anchor for positioning
+var _window_group_id: int = 1 # Inspection window group
+var _stable_anchor: Control = null # Stable anchor for positioning
 
 func _ready() -> void:
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
@@ -31,9 +31,6 @@ func _gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-
-
-
 func populate(context: Dictionary) -> void:
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
@@ -51,13 +48,16 @@ func populate(context: Dictionary) -> void:
 	# Set up stable anchor pattern
 	_setup_stable_anchor()
 
-	# Handle both TrinketDefinition and GachaBallDefinition (items)
 	var name_key: String
+	var trinket_desc: String = ""
 	if item_def is GachaBallDefinition:
 		name_key = item_def.display_name_key
 	else:
 		# TrinketDefinition uses name_key instead of display_name_key
 		name_key = item_def.name_key
+		# For trinkets, we want to show the main description
+		if "description_key" in item_def:
+			trinket_desc = tr(item_def.description_key)
 	
 	name_label.text = tr(name_key)
 	# Omit base flavor description for items; we will show only stats and abilities.
@@ -87,7 +87,11 @@ func populate(context: Dictionary) -> void:
 		abilities_block = "\n".join(abilities_lines)
 
 	var full_text: String = ""
+	if not trinket_desc.is_empty():
+		full_text += trinket_desc
 	if not effect_desc.is_empty():
+		if not full_text.is_empty():
+			full_text += "\n\n"
 		full_text += effect_desc
 	if not abilities_block.is_empty():
 		if not full_text.is_empty():

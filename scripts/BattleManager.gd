@@ -1308,7 +1308,15 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			"DECREMENT":
 				new_stacks = stacks - status_def.decay_amount
 			"CLEAR":
-				new_stacks = 0
+				# Armor Decay Exception: Polished Plate Trinket
+				if status_def.id == &"armor":
+					var is_player_unit = _is_player_unit(unit)
+					if _has_team_trinket(is_player_unit, &"trinket_polished_plate"):
+						new_stacks = stacks
+					else:
+						new_stacks = 0
+				else:
+					new_stacks = 0
 		
 		if new_stacks != old_stacks:
 			if new_stacks <= 0:
