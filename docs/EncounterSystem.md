@@ -11,13 +11,13 @@ The Encounter System is responsible for defining, generating, and instantiating 
 
 | Day | Daily Budget | Calculation |
 |-----|--------------|-------------|
-| 1 | 5 | Base |
-| 2 | 8 | 5 + 3 |
-| 3 | 11 | 5 + 6 |
-| 5 | 17 | 5 + 12 |
-| 10 | 32 | 5 + 27 |
+| 1 | 3 | Base |
+| 2 | 4 | 3 + 1 |
+| 3 | 5 | 3 + 2 |
+| 5 | 7 | 3 + 4 |
+| 10 | 12 | 3 + 9 |
 
-**Formula:** `5 + (day - 1) * 3`
+**Formula:** `3 + (day - 1) * 1`
 
 ## Gachaball Costs
 
@@ -29,15 +29,15 @@ Tiered units and items have the following budget costs:
 | 2 | 2 | |
 | 3 | 4 | Merge of 4x Tier 1 |
 
-*Note: Bosses have specific costs (Boss 1: 5g, Boss 2: 10g, etc.)*
+Bosses don't have a cost, they are free.
 
 ### Battle Type Modifiers
 
 | Type | Budget | Notes |
 |------|--------|-------|
 | Regular | Daily budget | Full budget for units/items/trinkets |
-| Elite | Daily budget × 1.3 | Elite unit is FREE |
-| Boss | Daily budget | Boss unit is FREE |
+| Elite | Daily budget × 1.3 | Elite unit is FREE | Full budget for units/items/trinkets |
+| Boss | Daily budget | Boss unit is FREE | Full budget for units/items/trinkets |
 | Boss Summons | Daily budget ÷ 2 | No trinkets |
 
 ## Encounter Generation Algorithm

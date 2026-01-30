@@ -24,6 +24,7 @@ const BUTTON_FONT = preload("res://assets/fonts/DotGothic16/DotGothic16-Regular.
 @onready var question_label: Label = %QuestionLabel
 @onready var choices_grid: GridContainer = %ChoicesGrid
 @onready var timer_label: Label = %TimerLabel
+@onready var timer_bar: ProgressBar = %TimerBar
 @onready var score_label: Label = %ScoreLabel
 @onready var card_intro_container: VBoxContainer = %CardIntroContainer
 @onready var intro_question_label: Label = %IntroQuestionLabel
@@ -61,6 +62,7 @@ func _ready() -> void:
 	
 	# Setup panel style for dynamic mastery colors
 	_setup_panel_style()
+	_setup_timer_bar()
 	
 	# Setup question label font styling
 	_setup_question_label_style()
@@ -128,6 +130,29 @@ func _restore_token_group_deferred() -> void:
 		_token_group_original_parent.move_child(_token_group, _token_group_original_index)
 	
 	_token_group.global_position = global_pos
+
+func _setup_timer_bar() -> void:
+	"""Configure the timer bar style"""
+	if not is_instance_valid(timer_bar):
+		return
+		
+	# Create custom stylebox for fill
+	var style_fill = StyleBoxFlat.new()
+	style_fill.bg_color = Color(0.2, 0.8, 0.2) # Base Green
+	style_fill.corner_radius_top_left = 4
+	style_fill.corner_radius_top_right = 4
+	style_fill.corner_radius_bottom_left = 4
+	style_fill.corner_radius_bottom_right = 4
+	timer_bar.add_theme_stylebox_override("fill", style_fill)
+	
+	# Create custom stylebox for background
+	var style_bg = StyleBoxFlat.new()
+	style_bg.bg_color = COLOR_COOL_BLACK.lightened(0.1)
+	style_bg.corner_radius_top_left = 4
+	style_bg.corner_radius_top_right = 4
+	style_bg.corner_radius_bottom_left = 4
+	style_bg.corner_radius_bottom_right = 4
+	timer_bar.add_theme_stylebox_override("background", style_bg)
 
 func _setup_question_label_style() -> void:
 	"""Configure the question label with NotoSansJP font and proper styling"""
@@ -199,6 +224,8 @@ func _show_card_introduction() -> void:
 	card_intro_container.show()
 	choices_grid.hide()
 	question_label.hide()
+	if is_instance_valid(timer_bar):
+		timer_bar.hide()
 	timer_label.hide()
 	score_label.hide()
 	
@@ -349,6 +376,10 @@ func _start_minigame_session() -> void:
 	
 	# TDD: 5-second session timer for the entire session
 	_session_timer = 5.0
+	if is_instance_valid(timer_bar):
+		timer_bar.max_value = _session_timer
+		timer_bar.value = _session_timer
+		
 	_is_introducing_new_card = false
 	_correct_answers = 0
 	_total_answers = 0
@@ -357,6 +388,7 @@ func _start_minigame_session() -> void:
 	# Show the game UI
 	question_label.show()
 	choices_grid.show()
+	timer_bar.show() # Parents the label, so showing bar shows label too
 	timer_label.show()
 	score_label.show()
 	
@@ -376,6 +408,8 @@ func _process(delta: float) -> void:
 func _update_timer_display() -> void:
 	"""Update the timer display"""
 	timer_label.text = "%.1f" % max(0, _session_timer)
+	if is_instance_valid(timer_bar):
+		timer_bar.value = _session_timer
 	score_label.text = tr("ui.score") % _correct_answers
 
 func _show_next_question() -> void:
@@ -482,21 +516,28 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	if was_correct:
 		_correct_answers += 1
 		# Check for hero-specific timer passives
-		if _has_hero_timer_bonus():
-			# Timekeeper: +0.5s on correct
-			_session_timer += 0.5
-		elif _has_hero_timer_extend():
-			# Generic hero: +1s on correct
+		if _is_timekeeper():
+			# Timekeeper: +1.0s on correct (High Risk / High Reward)
 			_session_timer += 1.0
+		elif _is_bounty_hunter():
+			# Bounty Hunter: +0.8s on correct
+			_session_timer += 0.8
+			
 		_flash_button_correct(selected_answer_id)
+		_flash_timer_bar_correct()
 		# AUDIO HOOK: Correct
 		Audio.play_sfx("minigame_correct")
 	else:
-		# Check for generic hero penalty on wrong answer
-		if _has_hero_timer_extend():
-			# Generic hero: -0.5s on wrong
+		# Check for hero-specific timer penalties
+		if _is_timekeeper():
+			# Timekeeper: -0.5s on wrong
 			_session_timer -= 0.5
+		elif _is_bounty_hunter():
+			# Bounty Hunter: -0.2s on wrong
+			_session_timer -= 0.2
+			
 		_flash_button_incorrect(selected_answer_id)
+		_flash_timer_bar_incorrect()
 		# AUDIO HOOK: Incorrect
 		Audio.play_sfx("minigame_incorrect")
 	
@@ -541,9 +582,34 @@ func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> voi
 	var tween: Tween = create_tween()
 	tween.tween_property(_panel_style, "bg_color", target_color, FLASH_FADE_DURATION).set_delay(FLASH_DURATION)
 
+func _flash_timer_bar_correct() -> void:
+	"""Flash the timer bar white"""
+	_flash_timer_bar(COLOR_FLASH_CORRECT)
+
+func _flash_timer_bar_incorrect() -> void:
+	"""Flash the timer bar red"""
+	_flash_timer_bar(COLOR_FLASH_INCORRECT)
+
+func _flash_timer_bar(color: Color) -> void:
+	if not is_instance_valid(timer_bar):
+		return
+	
+	var style: StyleBoxFlat = timer_bar.get_theme_stylebox("fill")
+	if not is_instance_valid(style):
+		return
+		
+	# Tween color: Flash Color -> Return to Base Green
+	var base_color = Color(0.2, 0.8, 0.2)
+	style.bg_color = color
+	
+	var tween = create_tween()
+	tween.tween_property(style, "bg_color", base_color, FLASH_FADE_DURATION).set_delay(0.05)
+
 
 ## Check if the current hero has the Bounty Hunter timer bonus passive (+0.5s on correct)
-func _has_hero_timer_bonus() -> bool:
+## Check if the current hero is the Bounty Hunter (Regular Hero)
+## Passive: +0.5s on correct, -0.2s on wrong
+func _is_bounty_hunter() -> bool:
 	if not is_instance_valid(GameManager.run_state):
 		return false
 	var hero: GachaBallInstance = GameManager.run_state.hero_instance
@@ -552,11 +618,11 @@ func _has_hero_timer_bonus() -> bool:
 	var def: GachaBallDefinition = hero.get_definition()
 	if not is_instance_valid(def):
 		return false
-	# Bounty Hunter (basic hero) has the standard timer bonus passive
-	return def.id == &"hero"
+	return def.id == &"hero_bounty_hunter"
 
-## Check if the current hero has the Timekeeper timer extend passive (+1s correct, -0.5s wrong)
-func _has_hero_timer_extend() -> bool:
+## Check if the current hero is the Timekeeper
+## Passive: +1.0s on correct, -0.5s on wrong
+func _is_timekeeper() -> bool:
 	if not is_instance_valid(GameManager.run_state):
 		return false
 	var hero: GachaBallInstance = GameManager.run_state.hero_instance
@@ -565,7 +631,6 @@ func _has_hero_timer_extend() -> bool:
 	var def: GachaBallDefinition = hero.get_definition()
 	if not is_instance_valid(def):
 		return false
-	# Timekeeper hero has the timer extend passive
 	return def.id == &"hero_timekeeper"
 
 

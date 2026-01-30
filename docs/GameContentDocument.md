@@ -7,8 +7,8 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 ### Player Heroes
 | ID | Name | Tier | Stats | Slots | Abilities |
 |---|---|---|---|---|---|
-| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill. |
-| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 5 tokens at start of battle (Passive). |
+| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill.<br>**Quick Wits** (Minigame): +0.8s on correct answer, -0.2s on incorrect. |
+| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 5 tokens at start of battle (Passive).<br>**Time Dilation** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
 
 ### Tier 1 Units (Cost: 1)
 | ID | Name | Stats | Slots | Abilities |

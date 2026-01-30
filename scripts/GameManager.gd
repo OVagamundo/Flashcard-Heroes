@@ -349,8 +349,8 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
 			var encounter_def: EncounterDefinition
-			# New budget formula: base 5 + 3 per day after first
-			var daily_budget: int = 5 + (run_state.day - 1) * 3
+			# New budget formula: base 3 + 1 per day after first
+			var daily_budget: int = 3 + (run_state.day - 1) * 1
 			
 			if node_def.subtype == "BOSS":
 				# Boss encounter - boss is free, support units use daily budget

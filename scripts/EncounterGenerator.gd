@@ -75,11 +75,8 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 ## @param total_budget: int - The total encounter budget (after 1.3x elite multiplier applied)
 ## @return EncounterDefinition - An encounter with a boss unit and support units
 func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
-	# Pick a random boss that makes sense for the budget
-	var max_boss_level: int = mini(5, maxi(1, total_budget / 10))
-	var elite_level: int = randi_range(1, max_boss_level)
-	
-	var boss_id: StringName = &"boss_%d" % elite_level
+	# Elite encounters always use the weakest boss (Boss 1) as a "Mini Boss"
+	var boss_id: StringName = &"boss_1"
 	var boss_def = Database.get_definition(boss_id)
 	if not is_instance_valid(boss_def):
 		push_error("Elite boss definition not found: %s" % boss_id)
@@ -90,11 +87,15 @@ func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
 	var build := _build_encounter_with_full_spend(total_budget, pools, MAX_UNITS - 1, MAX_TRINKETS)
 	
 	# Assemble encounter - reserve position 4 for elite unit
-	var encounter := _assemble_encounter(build, "elite_encounter_%d" % elite_level, true)
+	var encounter := _assemble_encounter(build, "elite_encounter_boss_1", true)
 	
 	# Place elite boss at position 4 (back of lineup)
 	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
 	encounter.enemy_placements.append(boss_placement)
+	
+	# Mark this as an elite encounter with stat scaling for the boss
+	# 1/3 stats for the "Mini Boss"
+	encounter.set_meta("elite_stat_scale", 0.33)
 	
 	return encounter
 

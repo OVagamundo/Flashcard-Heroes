@@ -166,6 +166,14 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: EncounterDefin
 			
 		var enemy_inst = GachaBallInstance.new()
 		enemy_inst.initialize(unit_def)
+		
+		# Check for elite stat scaling (Mini Boss logic)
+		if encounter_def.has_meta("elite_stat_scale") and placement.position == 4:
+			var scale: float = encounter_def.get_meta("elite_stat_scale")
+			# Apply scaling to base stats, ensuring at least 1
+			enemy_inst.current_hp = maxi(1, int(floor(enemy_inst.current_hp * scale)))
+			enemy_inst.current_pwr = maxi(1, int(floor(enemy_inst.current_pwr * scale)))
+			
 		state.register_instance(enemy_inst)
 		
 		# Equip items
