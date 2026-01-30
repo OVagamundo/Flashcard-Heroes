@@ -210,7 +210,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="DaysLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats"]
+[node name="CenterContent" type="VBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DaysLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -219,6 +224,14 @@ theme_override_font_sizes/font_size = 48
 text = "Day 1"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="FlashcardProgressBar" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 10)
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
 
 [node name="RightStats" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
 layout_mode = 2

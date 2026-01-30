@@ -20,6 +20,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
 @onready var tokens_label: Label = %TokensLabel
+@onready var flashcard_progress_bar: HBoxContainer = %FlashcardProgressBar
 
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
 
@@ -29,6 +30,16 @@ const REWARD_SCENE = preload("res://scenes/Reward.tscn")
 
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
 const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
+
+# Mastery level colors (matching FlashcardSystem.md)
+const MASTERY_COLORS = {
+	1: Color(0.9, 0.2, 0.2), # Very Hard - Red
+	2: Color(0.95, 0.5, 0.1), # Hard - Orange
+	3: Color(0.95, 0.8, 0.1), # Medium - Yellow
+	4: Color(0.2, 0.8, 0.2), # Easy - Green
+	5: Color(0.2, 0.4, 0.9) # Very Easy - Blue
+}
+const LOCKED_COLOR = Color(0.4, 0.4, 0.4) # Grey for locked cards
 
 var _current_content_node: Node = null
 
@@ -77,6 +88,7 @@ func _ready() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_update_day_label(GameManager.run_state.day)
 		_populate_player_trinkets()
+		_populate_flashcard_progress()
 
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
@@ -477,6 +489,7 @@ func _on_run_data_changed() -> void:
 		_update_day_label(GameManager.run_state.day)
 		_on_gold_changed(GameManager.run_state.gold)
 		_populate_player_trinkets()
+		_populate_flashcard_progress()
 
 func _populate_player_trinkets() -> void:
 	if not is_instance_valid(GameManager.run_state):
@@ -513,6 +526,54 @@ func _populate_player_trinkets() -> void:
 				var view = slot_view.get_child(0)
 				if view is GachaBallView and view.has_method("set_interaction_context"):
 					view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+
+func _populate_flashcard_progress() -> void:
+	"""Populate the flashcard progress bar with colored rectangles for each card in main deck."""
+	if not is_instance_valid(flashcard_progress_bar):
+		return
+	if not is_instance_valid(GameManager.run_state):
+		return
+	
+	# Clear existing indicators
+	for child in flashcard_progress_bar.get_children():
+		child.queue_free()
+	
+	# Get main deck cards from Database
+	var deck_id = GameManager.run_state.deck_def_id
+	if deck_id == &"":
+		return
+	
+	var main_deck_cards = Database.get_cards_for_deck(deck_id)
+	if main_deck_cards.is_empty():
+		return
+	
+	# Calculate individual card width
+	var total_width = 480.0
+	var gap = 2.0
+	var total_gaps = (main_deck_cards.size() - 1) * gap
+	var card_width = (total_width - total_gaps) / main_deck_cards.size()
+	
+	# Create a rectangle for each card in main deck order
+	for card_id in main_deck_cards:
+		var rect = ColorRect.new()
+		rect.custom_minimum_size = Vector2(card_width, 10)
+		
+		# Check if card is in active deck
+		var is_active = GameManager.run_state.active_deck_ids.has(card_id)
+		
+		if is_active:
+			# Get mastery level and apply corresponding color
+			var progress = GameManager.run_state.flashcard_progress.get(card_id)
+			if is_instance_valid(progress):
+				var mastery = progress.mastery_level
+				rect.color = MASTERY_COLORS.get(mastery, LOCKED_COLOR)
+			else:
+				rect.color = MASTERY_COLORS[1] # Default to level 1 if no progress
+		else:
+			# Card not yet unlocked - grey
+			rect.color = LOCKED_COLOR
+		
+		flashcard_progress_bar.add_child(rect)
 
 func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	# Find the BattleManager in the loaded scene and start the battle
