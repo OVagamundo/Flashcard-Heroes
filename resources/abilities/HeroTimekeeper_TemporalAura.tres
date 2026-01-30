@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_TemporalAura_HP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"ALLIES_IN_FRONT"
+
+[sub_resource type="Resource" id="EffectModifyStat_TemporalAura_PWR_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 2 }
+target_type = &"ALLIES_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_timekeeper_temporal_aura"
+name_key = "ability.hero_timekeeper_temporal_aura.name"
+description_key = "ability.hero_timekeeper_temporal_aura.desc"
+trigger = &"on_turn_start"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyStat_TemporalAura_HP_1"), SubResource("EffectModifyStat_TemporalAura_PWR_2")])

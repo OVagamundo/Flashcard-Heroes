@@ -7,31 +7,31 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 ### Player Heroes
 | ID | Name | Tier | Stats | Slots | Abilities |
 |---|---|---|---|---|---|
-| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill.<br>**Quick Wits** (Minigame): +0.8s on correct answer, -0.2s on incorrect. |
-| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 5 tokens at start of battle (Passive).<br>**Time Dilation** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
+| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill.<br>**Scavenger's Resolve** (`on_ally_death`): Gain +1 HP and +1 PWR when an ally dies.<br>**Quick Wits** (Minigame): +0.8s on correct answer, -0.2s on incorrect. |
+| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 5 tokens at start of battle and Rest Sites (Passive).<br>**Temporal Aura**: At start of each turn, grants +2 HP to units in front and +2 PWR to units behind (Passive).<br>**Time Dilation** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
 
 ### Tier 1 Units (Cost: 1)
-| ID | Name | Stats | Slots | Abilities |
-|---|---|---|---|---|
-| `unit_t1_a` | Apprentice | 1 HP / 2 PWR | 1 | **Resilience** (`on_hurt`): Heal self by (PWR). |
-| `unit_t1_b` | Squire | 2 HP / 1 PWR | 1 | **Retaliation** (`on_hurt`): Counter-attack for (PWR) damage. |
+| ID | Name | Stats | Slots | Souls | Abilities |
+|---|---|---|---|---|---|
+| `unit_t1_a` | Apprentice | 2 HP / 1 PWR | 1 | 1 Earth | **Resilience** (`on_hurt`): Heal self by (PWR). |
+| `unit_t1_b` | Squire | 1 HP / 2 PWR | 1 | 1 Fire | **Retaliation** (`on_hurt`): Counter-attack for (PWR) damage. |
 
 ### Tier 2 Units (Cost: 2)
-| ID | Name | Merge Recipe | Stats | Slots | Abilities |
-|---|---|---|---|---|---|
-| `unit_t2_a` | Paladin | **Apprentice + Apprentice** | 4 HP / 2 PWR | 2 | **Defensive Stance** (`on_before_damage`): Gain +2 HP before taking damage. |
-| `unit_t2_b` | Berserker | **Squire + Squire** | 2 HP / 4 PWR | 2 | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind. |
-| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 2 | **Morale Boost** (`on_ally_death`): Gain +1 HP / +1 PWR. |
+| ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
+|---|---|---|---|---|---|---|
+| `unit_t2_a` | Paladin | **Apprentice + Apprentice** | 4 HP / 2 PWR | 2 | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain +2 HP before taking damage. |
+| `unit_t2_b` | Berserker | **Squire + Squire** | 2 HP / 4 PWR | 2 | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind. |
+| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 2 | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain +2 HP / +2 PWR. |
 
 ### Tier 3 Units (Cost: 3)
-| ID | Name | Merge Recipe | Stats | Slots | Abilities |
-|---|---|---|---|---|---|
-| `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 | **Mirror Strike** (`on_attack`): Attacks the enemy in the equivalent slot index. |
-| `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 | **Guardian Sacrifice** (`passive_intercept`): Leaps to intercept lethal damage on allies. |
-| `unit_t3_c` | Necromancer | **Paladin + Berserker** | 5 HP / 5 PWR | 4 | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death. |
-| `unit_t3_d` | Warden | **Knight + Knight** | 6 HP / 6 PWR | 4 | **Resilient Aura** (`on_hurt`): Grants +1 HP/+1 PWR to adjacent allies. |
-| `unit_t3_e` | Assassin | **Berserker + Knight** | 5 HP / 7 PWR | 4 | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies when they are summoned. |
-| `unit_t3_f` | Summoner | **Paladin + Knight** | 7 HP / 5 PWR | 4 | **Summon Blessing** (`on_ally_summon`): Heals allies when they are summoned. |
+| ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
+|---|---|---|---|---|---|---|
+| `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 | 4 Fire | **Mirror Strike** (`on_attack`): Attacks the enemy in the equivalent slot index. |
+| `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 | 4 Earth | **Guardian Sacrifice** (`passive_intercept`): Leaps to intercept lethal damage on allies. |
+| `unit_t3_c` | Necromancer | **Paladin + Berserker** | 5 HP / 5 PWR | 4 | 2 Fire, 2 Earth | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death. |
+| `unit_t3_d` | Warden | **Knight + Knight** | 6 HP / 6 PWR | 4 | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): Grants +1 HP/+1 PWR to adjacent allies. |
+| `unit_t3_e` | Assassin | **Berserker + Knight** | 5 HP / 7 PWR | 4 | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies when they are summoned. |
+| `unit_t3_f` | Summoner | **Paladin + Knight** | 7 HP / 5 PWR | 4 | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies when they are summoned. |
 
 ### Enemies
 | ID | Name | Stats | Type | Abilities |
@@ -112,3 +112,20 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 | **5** | All Allies gain **2 Armor**; Earth units gain **4 Armor**. |
 | **7** | All Allies gain **3 Armor**; Earth units gain **6 Armor**. |
 | **9** | **Fortress**: All Allies gain **4 Armor**; Earth units gain **8 Armor**. |
+
+---
+
+## 5. Encounter & Budget Systems
+
+### Daily Budget Formula
+The game allocates a precise amount of gold for enemy recruitment every day. The system ensures the entire budget is spent, prioritizing units, then items, and finally trinkets.
+
+- **Regular Battle**: `5 + 3 * (Day - 1)` (e.g., Day 1: 5, Day 2: 8, Day 3: 11).
+- **Elite Battle**: `Daily Budget * 1.3`. Elite nodes contain boss-tier units and grant **Trinket Rewards**.
+- **Boss Battle**: `Daily Budget`.
+    - **Boss Unit**: Free (does not consume budget).
+    - **Boss Summons**: Use half of the daily budget. Summons can spawn with randomly equipped items.
+
+### Progression Scaling
+- **Elite battles** occur randomly on the path.
+- **Boss battles** occur every **10 days**.

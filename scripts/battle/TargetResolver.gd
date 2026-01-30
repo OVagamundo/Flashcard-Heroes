@@ -123,6 +123,50 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			for ally in allies:
 				uuids.append(ally.ball_uuid)
 			return uuids
+		C.TARGET_ALLIES_IN_FRONT:
+			# Units with higher slot index (closer to front for player, further for enemy)
+			if not is_instance_valid(source_instance):
+				return []
+			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
+			if not is_instance_valid(source_loc):
+				return []
+			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			var uuids: Array[String] = []
+			for ally in allies:
+				if ally.ball_uuid == source_uuid:
+					continue # Exclude self
+				var ally_loc = battle_manager.get_location_for_uuid(ally.ball_uuid)
+				if is_instance_valid(ally_loc) and ally_loc.container == source_loc.container:
+					# For player: front = higher index. For enemy: front = lower index
+					if is_player_team:
+						if ally_loc.index > source_loc.index:
+							uuids.append(ally.ball_uuid)
+					else:
+						if ally_loc.index < source_loc.index:
+							uuids.append(ally.ball_uuid)
+			return uuids
+		C.TARGET_ALLIES_BEHIND:
+			# Units with lower slot index (further from front for player, closer for enemy)
+			if not is_instance_valid(source_instance):
+				return []
+			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
+			if not is_instance_valid(source_loc):
+				return []
+			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			var uuids: Array[String] = []
+			for ally in allies:
+				if ally.ball_uuid == source_uuid:
+					continue # Exclude self
+				var ally_loc = battle_manager.get_location_for_uuid(ally.ball_uuid)
+				if is_instance_valid(ally_loc) and ally_loc.container == source_loc.container:
+					# For player: behind = lower index. For enemy: behind = higher index
+					if is_player_team:
+						if ally_loc.index < source_loc.index:
+							uuids.append(ally.ball_uuid)
+					else:
+						if ally_loc.index > source_loc.index:
+							uuids.append(ally.ball_uuid)
+			return uuids
 		C.TARGET_HIGHEST_HP_ENEMY:
 			var enemies = battle_manager.get_instances_in_container(
 				C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP

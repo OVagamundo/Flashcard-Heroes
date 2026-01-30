@@ -13,8 +13,8 @@ The Day value is the primary input for the Encounter Budget System, which dynami
 Encounter Budget System
 This system ensures that the challenge of COMMON and ELITE battle nodes scales directly with the player's progress through a run.
 Budget Calculation: The GameManager calculates the gold budget for an encounter before invoking the EncounterGenerator.
-Base Budget: Day * 5 Gold
-Elite Multiplier: For ELITE nodes, the total budget is multiplied by 1.5.
+Base Budget: 5 + 3 * (Day - 1) Gold
+Elite Multiplier: For ELITE nodes, the total budget is multiplied by 1.3.
 Generator's Role: The EncounterGenerator uses this budget to "purchase" a team of units and items from the pool of all available GachaBallDefinition resources. For more details, see docs/EncounterSystem.md.
 Effect of Scaling: As the Day counter increases, the budget grows, resulting in enemy teams that are progressively more powerful. In later days, players will face enemies that have:
 More numerous or higher-tier units.
