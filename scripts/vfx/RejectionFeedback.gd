@@ -31,15 +31,16 @@ static func play_rejection(target: Control, tree: SceneTree) -> void:
 	var tween := tree.create_tween()
 	tween.set_parallel(true)
 	
-	# Shake animation - rapid left-right oscillation
-	_add_shake_keyframes(tween, target, original_pos)
+	# Shake animation - rapid rotation oscillation (works in containers)
+	_add_shake_keyframes(tween, target, target.rotation)
 	
 	# Red flash on modulate
 	tween.tween_property(target, "modulate", FLASH_COLOR, 0.05)
 	tween.tween_property(target, "modulate", Color.WHITE, SHAKE_DURATION - 0.05).set_delay(0.05)
 	
-	# Ensure position resets at the end
+	# Ensure transform resets at the end
 	tween.chain().tween_callback(func():
+		target.rotation = 0
 		target.position = original_pos
 	)
 
@@ -49,23 +50,25 @@ static func play_rejection(target: Control, tree: SceneTree) -> void:
 ## @param counter_group: The counter group to also flash (TokenGroup or GoldGroup)
 ## @param tree: SceneTree reference for creating tweens
 static func play_rejection_with_counter(target: Control, counter_group: Control, tree: SceneTree) -> void:
+	print("[RejectionFeedback] Playing rejection for %s" % target.name)
 	play_rejection(target, tree)
 	if is_instance_valid(counter_group):
 		play_rejection(counter_group, tree)
 
 
 ## Internal helper to add shake keyframes
-static func _add_shake_keyframes(tween: Tween, target: Control, original_pos: Vector2) -> void:
+static func _add_shake_keyframes(tween: Tween, target: Control, original_rotation: float) -> void:
 	var shake_count := 6
 	var shake_time := SHAKE_DURATION / shake_count
+	var intensity_rad := deg_to_rad(5.0) # 5 degrees shake
 	
 	for i in range(shake_count):
-		var offset := SHAKE_INTENSITY if i % 2 == 0 else -SHAKE_INTENSITY
+		var offset := intensity_rad if i % 2 == 0 else -intensity_rad
 		# Dampen shake over time
 		var dampen := 1.0 - (float(i) / shake_count)
 		offset *= dampen
 		
-		tween.tween_property(target, "position:x", original_pos.x + offset, shake_time).set_delay(i * shake_time)
+		tween.tween_property(target, "rotation", original_rotation + offset, shake_time).set_delay(i * shake_time)
 	
 	# Final reset to original
-	tween.tween_property(target, "position:x", original_pos.x, shake_time * 0.5).set_delay(SHAKE_DURATION)
+	tween.tween_property(target, "rotation", original_rotation, shake_time * 0.5).set_delay(SHAKE_DURATION)

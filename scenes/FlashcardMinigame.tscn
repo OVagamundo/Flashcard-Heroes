@@ -57,9 +57,20 @@ theme_override_font_sizes/font_size = 48
 text = "Flashcard Training"
 horizontal_alignment = 1
 
-[node name="TimerLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+[node name="TimerBar" type="ProgressBar" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
+show_percentage = false
+
+[node name="TimerLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/TimerBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
@@ -67,6 +78,7 @@ theme_override_fonts/font = ExtResource("5_stat_font")
 theme_override_font_sizes/font_size = 36
 text = "3.0"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="ScoreLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
