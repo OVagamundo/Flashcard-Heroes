@@ -24,6 +24,11 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
 
+# Machine inventory count labels
+@onready var machine_1_count_label: Label = %GachaMachine1.get_node("CountLabel")
+@onready var machine_2_count_label: Label = %GachaMachine2.get_node("CountLabel")
+@onready var machine_3_count_label: Label = %GachaMachine3.get_node("CountLabel")
+
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
@@ -89,6 +94,9 @@ func _ready() -> void:
 		_update_day_label(GameManager.run_state.day)
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
+	
+	# Update machine counts after battle manager is ready
+	call_deferred("_update_machine_counts")
 
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
@@ -356,6 +364,9 @@ func _on_battle_inventory_changed() -> void:
 
 	# Refresh player trinkets as they might have changed (e.g. in Test Mode)
 	_populate_player_trinkets()
+	
+	# Update machine inventory counts
+	_update_machine_counts()
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	# The gacha machines are always visible in the permanent HUD.
@@ -368,6 +379,9 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	if not is_in_battle:
 		if is_instance_valid(tokens_label):
 			tokens_label.text = "0"
+	else:
+		# Entering battle - update machine counts
+		_update_machine_counts()
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
@@ -582,3 +596,25 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 		battle_manager.start_battle(encounter_def)
 	else:
 		pass
+
+## Update the inventory count labels on all three gacha machines
+func _update_machine_counts() -> void:
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if not is_instance_valid(bm):
+		return
+	
+	if not bm.has_method("get_inventory_tier_instances"):
+		return
+	
+	# Update each machine's count label
+	if is_instance_valid(machine_1_count_label):
+		var tier_1_instances = bm.get_inventory_tier_instances(1)
+		machine_1_count_label.text = "x%d" % tier_1_instances.size()
+	
+	if is_instance_valid(machine_2_count_label):
+		var tier_2_instances = bm.get_inventory_tier_instances(2)
+		machine_2_count_label.text = "x%d" % tier_2_instances.size()
+	
+	if is_instance_valid(machine_3_count_label):
+		var tier_3_instances = bm.get_inventory_tier_instances(3)
+		machine_3_count_label.text = "x%d" % tier_3_instances.size()

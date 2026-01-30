@@ -244,6 +244,10 @@ func _on_reward_chosen(payload) -> void:
 			# Atomic add handles index/registry/truth updates and signals
 			run_state.add_instance(selected_instance, container_name, -1)
 			
+			# Unlock recipes for this acquired gachaball
+			if is_instance_valid(def):
+				run_state.unlock_recipe_for_result(def.id)
+			
 	elif payload.type == "gold":
 		run_state.add_gold(payload.get("amount", 0))
 
@@ -349,8 +353,8 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
 			var encounter_def: EncounterDefinition
-			# New budget formula: base 3 + 1 per day after first
-			var daily_budget: int = 3 + (run_state.day - 1) * 1
+			# Standardized budget formula: base 5 + 3 per day after first
+			var daily_budget: int = 5 + (run_state.day - 1) * 3
 			
 			if node_def.subtype == "BOSS":
 				# Boss encounter - boss is free, support units use daily budget
@@ -431,6 +435,10 @@ func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
 		container_name = &"RunInventoryT%d" % tier_val
 	# Atomic add handles container slot selection and registry updates
 	run_state.add_instance(purchased_instance, container_name, -1)
+	
+	# Unlock recipes for this acquired gachaball
+	if is_instance_valid(def):
+		run_state.unlock_recipe_for_result(def.id)
 
 	_temporary_shop_master_dict.erase(instance_uuid)
 	var temp_slot = _temporary_shop_container.get_all_uuids().find(instance_uuid)

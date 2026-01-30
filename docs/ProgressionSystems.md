@@ -11,10 +11,10 @@ Core Mechanic:
 The Day counter advances by one each time the player resolves a node on the path (Battle, Shop, Event, etc.).
 The Day value is the primary input for the Encounter Budget System, which dynamically generates enemy teams for non-boss battles.
 Encounter Budget System
-This system ensures that the challenge of COMMON and ELITE battle nodes scales directly with the player's progress through a run.
-Budget Calculation: The GameManager calculates the gold budget for an encounter before invoking the EncounterGenerator.
-Base Budget: 5 + 3 * (Day - 1) Gold
-Elite Multiplier: For ELITE nodes, the total budget is multiplied by 1.3.
+This system ensures that the challenge of battle nodes scales directly with the player's progress through a run.
+Budget Formula: `5 + 3 * (Day - 1)` Gold
+Elite/Boss Multipliers: For ELITE or BOSS support units, the total budget is calculated similarly but may use multipliers (Standard: 1.3x for Elite).
+Scheduling: Bosses appear every 10 days (Day 10, 20, 30, 40, 50).
 Generator's Role: The EncounterGenerator uses this budget to "purchase" a team of units and items from the pool of all available GachaBallDefinition resources. For more details, see docs/EncounterSystem.md.
 Effect of Scaling: As the Day counter increases, the budget grows, resulting in enemy teams that are progressively more powerful. In later days, players will face enemies that have:
 More numerous or higher-tier units.
@@ -23,27 +23,23 @@ More or better-equipped items.
 (Potentially) Powerful enemy leaders with team-wide passive abilities.
 (Potentially) Enemy trinkets providing team-wide passive effects.
 
-## Boss Rewards
+## Trait Scaling Details
 
-After defeating a boss, the reward system differs from regular battles:
+### Earth Trait (EARTH)
+- **Levels**: Thresholds at 3, 5, 7, and 9 souls.
+- **Effect**: Grants team-wide Armor at start of turn.
+- **Scaling**: 1 / 2 / 3 / 4 Armor based on soul level.
+- **Bonus**: Units with the Earth tag receive **double** the armor amount.
 
-### Trinket Rewards
-- Upon boss victory, the player is offered **3 random trinkets** instead of regular gacha balls.
-- The player must choose **one trinket** to add to their trinket inventory for the rest of the run.
-- Trinkets provide powerful team-wide passive abilities.
+### Fire Trait (FIRE)
+- **Threshold**: Activates at 7+ souls.
+- **Effect**: Applies 2 Burn stacks to the entire opposing team at the start of each turn.
 
-### Gold Alternative
-- Instead of choosing a trinket, the player may opt for **10 gold**.
-- This is higher than the typical gold reward due to the value of trinkets.
-
-### Trinket Acquisition
-Trinkets are exclusively obtained from boss victories. They cannot be purchased in shops or found as regular battle rewards.
-
-### Reward Reroll System
+## Reward Reroll System
 Players may spend gold to refresh the available rewards (excluding the Trinket reward screen).
 - **Cost**: Starts at **1 Gold**. Increases by **+1 Gold** for each subsequent reroll within the same session.
 - **Reset**: The cost resets to 1 Gold at the start of next reward session.
-- **Behavior**: Validates funds, plays `GoldCoinVFX`, clears current choices, and regenerates the reward pool.
+- **Behavior**: Validates funds, plays `GoldCoinVFX`, clears current choices, and regenerates the pool.
 
 3. Meta-Progression: Achievements & The Codex
 Meta-progression provides long-term goals that persist between runs. This system is centered around completing in-game Achievements.

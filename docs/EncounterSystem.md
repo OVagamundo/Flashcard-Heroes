@@ -25,7 +25,7 @@ Tiered units and items have the following budget costs:
 |------|------|-------|
 | 1 | 1 | Base tier |
 | 2 | 2 | |
-| 3 | 4 | Merge of 4x Tier 1 |
+| 3 | 3 | High tier |
 
 Bosses don't have a cost, they are free.
 

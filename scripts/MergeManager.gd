@@ -85,13 +85,27 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 
 		if recipe.is_self_merge:
 			if instance_a.definition_id == recipe.ingredient_a_id and instance_a.definition_id == instance_b.definition_id:
+				# Check if recipe is unlocked before returning
+				if not _is_recipe_unlocked(recipe.id):
+					continue
 				return recipe
 		else: # Check for A+B or B+A
 			if (instance_a.definition_id == recipe.ingredient_a_id and instance_b.definition_id == recipe.ingredient_b_id) or \
 			   (instance_a.definition_id == recipe.ingredient_b_id and instance_b.definition_id == recipe.ingredient_a_id):
+				# Check if recipe is unlocked before returning
+				if not _is_recipe_unlocked(recipe.id):
+					continue
 				return recipe
 				
 	return null
+
+# Helper to check if a recipe is unlocked in the current run
+func _is_recipe_unlocked(recipe_id: StringName) -> bool:
+	# Access RunState via GameManager (standard pattern in codebase)
+	var run_state = GameManager.run_state
+	if not is_instance_valid(run_state):
+		return false # No run state means no unlocks
+	return run_state.is_recipe_unlocked(recipe_id)
 
 # The function now accepts the master instance database directly, removing the ambiguous context dictionary.
 func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instances_db: Dictionary) -> Array[GachaBallInstance]:

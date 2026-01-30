@@ -15,6 +15,9 @@ const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
 @export var total_gold_earned: int = 0
 @export var hero_instance: GachaBallInstance
 
+# Recipe unlock tracking (per-run) - key: recipe_id (StringName), value: bool (unlocked)
+@export var unlocked_recipes: Dictionary = {}
+
 # Master registry of all permanent instances in this run.
 @export var run_instances: Dictionary = {} # key = uuid (String), value = GachaBallInstance
 
@@ -91,6 +94,27 @@ func get_location_for_uuid(uuid: String) -> LocationIdentifier:
 	if is_instance_valid(instance):
 		return instance.get_location()
 	return null
+
+# ------------------------------------------------------------------
+# Recipe unlock system
+# ------------------------------------------------------------------
+
+func unlock_recipe_for_result(result_definition_id: StringName) -> void:
+	"""Unlocks all recipes that produce the given result definition.
+	Called when a player acquires a new gachaball (shop, reward, etc.)."""
+	if result_definition_id.is_empty():
+		return
+	
+	for recipe_key in Database.recipes:
+		var recipe: MergeRecipe = Database.recipes[recipe_key]
+		if is_instance_valid(recipe) and recipe.result_id == result_definition_id:
+			if not unlocked_recipes.get(recipe.id, false):
+				unlocked_recipes[recipe.id] = true
+				SignalBus.emit_signal("run_data_changed")
+
+func is_recipe_unlocked(recipe_id: StringName) -> bool:
+	"""Returns true if the given recipe is unlocked for the current run."""
+	return unlocked_recipes.get(recipe_id, false)
 
 func get_container(container_name: StringName) -> DataContainer:
 	# Check if container exists
@@ -612,6 +636,7 @@ func start_new_run() -> void:
 	flashcard_progress.clear()
 	active_deck_ids.clear()
 	cards_presented_count = 0
+	unlocked_recipes.clear() # All recipes start locked
 
 func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	start_new_run()
@@ -677,6 +702,9 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 			container_name = &"RunInventoryT%d" % tier_val
 		# Use atomic add to register and place instance
 		add_instance(inst, container_name, -1)
+		
+		# Unlock recipes for this acquired gachaball
+		unlock_recipe_for_result(def.id)
 
 func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	match hero_id:
@@ -791,6 +819,8 @@ func to_save_dict() -> Dictionary:
 		# Flashcard progress and active deck
 		"flashcard_progress": _serialize_flashcard_progress(),
 		"active_deck_ids": _serialize_active_deck_ids(),
+		# Recipe unlocks
+		"unlocked_recipes": _serialize_unlocked_recipes(),
 	}
 	# Serialize instances
 	for uuid in run_instances.keys():
@@ -855,6 +885,9 @@ func from_save_dict(data: Dictionary) -> void:
 	# Restore flashcard progress
 	_deserialize_flashcard_progress(data.get("flashcard_progress", {}))
 	_deserialize_active_deck_ids(data.get("active_deck_ids", []))
+	
+	# Restore unlocked recipes
+	_deserialize_unlocked_recipes(data.get("unlocked_recipes", {}))
 
 func _serialize_flashcard_progress() -> Dictionary:
 	var result: Dictionary = {}
@@ -888,3 +921,14 @@ func _deserialize_active_deck_ids(data: Array) -> void:
 	active_deck_ids.clear()
 	for id_str in data:
 		active_deck_ids.append(StringName(str(id_str)))
+
+func _serialize_unlocked_recipes() -> Dictionary:
+	var result: Dictionary = {}
+	for recipe_id in unlocked_recipes.keys():
+		result[String(recipe_id)] = unlocked_recipes[recipe_id]
+	return result
+
+func _deserialize_unlocked_recipes(data: Dictionary) -> void:
+	unlocked_recipes.clear()
+	for key_str in data.keys():
+		unlocked_recipes[StringName(key_str)] = data[key_str]
