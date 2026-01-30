@@ -83,7 +83,7 @@ boss_1.desc,"A powerful guardian that summons allies and grows stronger as you d
 boss_2.name,The Shadow Warden,O Guardião das Sombras
 boss_2.desc,"Drains power from every token you spend. Calls upon shadow creatures to fight alongside it.","Drena poder de cada ficha que você gasta. Convoca criaturas das sombras para lutar ao seu lado."
 boss_3.name,The Storm Herald,O Arauto da Tempestade
-boss_3.desc,Commands the very elements to join its ranks.,Comanda os próprios elementos para suas fileiras.
+boss_3.desc,"Grows stronger as allies fall around it. Commands reinforcements to join its ranks.","Fica mais forte conforme aliados caem ao seu redor. Comanda reforços para suas fileiras."
 boss_4.name,The Ancient Titan,O Titã Ancestral
 boss_4.desc,An ancient being that summons warriors from ages past.,Um ser ancestral que invoca guerreiros de eras passadas.
 boss_5.name,The Final Arbiter,O Árbitro Final
@@ -94,6 +94,8 @@ ability.boss_1_draw_drain.name,Draining Presence,Presença Drenante
 ability.boss_1_draw_drain.desc,"Every time you draw a gachaball, this boss gains +1 HP.","Toda vez que você saca um gachaball, este chefe ganha +1 HP."
 ability.boss_2_token_drain.name,Token Hunger,Fome de Fichas
 ability.boss_2_token_drain.desc,"Every time you spend a token, this boss gains +1 HP.","Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
+ability.boss_3_ally_growth.name,Vengeance Growth,Crescimento Vingativo
+ability.boss_3_ally_growth.desc,"When an ally is defeated, this boss gains +3 HP and +2 PWR.","Quando um aliado é derrotado, este chefe ganha +3 HP e +2 PWR."
 trinket.soul_echo.name,Soul Echo,Eco da Alma
 trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.,Uma gema mística que ecoa as almas dos caídos.
 ability.soul_echo.name,Soul Echo,Eco da Alma
