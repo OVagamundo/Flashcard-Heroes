@@ -47,7 +47,7 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `enemy_hero` | Enemy Hero | 10 HP / 2 PWR | Boss | (None by default) |
 | `boss_1` | The Awakened Guardian | 10 HP / 10 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Draining Presence** (`on_draw`): Gains +1 HP when player draws from gacha. |
 | `boss_2` | The Shadow Warden | 15 HP / 15 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Token Hunger** (`on_token_spent`): Gains +1 HP for each token the player spends. |
-| `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
+| `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Vengeance Growth** (`on_ally_death`): Gains +3 HP and +2 PWR when an ally is defeated. |
 | `boss_4` | The Ancient Titan | 25 HP / 25 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
 | `boss_5` | The Final Arbiter | 30 HP / 30 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
 

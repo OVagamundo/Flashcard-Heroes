@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossAllyDeathGrowth.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossAllyDeathGrowth"]
+script = ExtResource("2_effect_script")
+parameters = { "hp_amount": 3, "pwr_amount": 2 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_3_ally_growth"
+name_key = "ability.boss_3_ally_growth.name"
+description_key = "ability.boss_3_ally_growth.desc"
+trigger = &"on_ally_death"
+priority = 0
+effects = Array[Resource]([SubResource("EffectBossAllyDeathGrowth")])

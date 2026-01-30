@@ -75,8 +75,8 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 ## @param total_budget: int - The total encounter budget (after 1.3x elite multiplier applied)
 ## @return EncounterDefinition - An encounter with a boss unit and support units
 func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
-	# Elite encounters randomly select between Boss 1 and Boss 2 as a "Mini Boss"
-	var boss_options: Array[StringName] = [&"boss_1", &"boss_2"]
+	# Elite encounters randomly select between Boss 1, Boss 2, and Boss 3 as a "Mini Boss"
+	var boss_options: Array[StringName] = [&"boss_1", &"boss_2", &"boss_3"]
 	var boss_id: StringName = boss_options.pick_random()
 	var boss_def = Database.get_definition(boss_id)
 	if not is_instance_valid(boss_def):
