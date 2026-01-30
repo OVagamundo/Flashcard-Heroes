@@ -37,11 +37,11 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | ID | Name | Stats | Type | Abilities |
 |---|---|---|---|---|
 | `enemy_hero` | Enemy Hero | 10 HP / 2 PWR | Boss | (None by default) |
-| `boss_1` | Boss 1 | 10 HP / 10 PWR | Boss | **Summon**: Summons reinforcement minions. |
-| `boss_2` | Boss 2 | 15 HP / 15 PWR | Boss | **Summon**: Medium summons. |
-| `boss_3` | Boss 3 | (Defined in tres) | Boss | (Summon variants) |
-| `boss_4` | Boss 4 | (Defined in tres) | Boss | (Summon variants) |
-| `boss_5` | Boss 5 | (Defined in tres) | Boss | (Summon variants) |
+| `boss_1` | The Awakened Guardian | 10 HP / 10 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Draining Presence** (`on_draw`): Gains +1 HP when player draws from gacha. |
+| `boss_2` | The Shadow Warden | 15 HP / 15 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
+| `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
+| `boss_4` | The Ancient Titan | 25 HP / 25 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
+| `boss_5` | The Final Arbiter | 30 HP / 30 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
 
 ---
 

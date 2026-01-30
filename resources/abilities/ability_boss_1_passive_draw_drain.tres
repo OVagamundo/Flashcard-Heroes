@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossDrawDrain.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossDrawDrain"]
+script = ExtResource("2_effect_script")
+parameters = { "hp_amount": 1 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_1_draw_drain"
+name_key = "ability.boss_1_draw_drain.name"
+description_key = "ability.boss_1_draw_drain.desc"
+trigger = &"on_draw"
+priority = 0
+effects = Array[Resource]([SubResource("EffectBossDrawDrain")])

@@ -206,6 +206,22 @@ const ABILITIES: Dictionary = {
 		"effect": "Grant +1 PWR to a random ally when an ally dies",
 	},
 	
+	# ==================== BOSS ABILITIES ====================
+	
+	"ability_boss_summon": {
+		"owner": "All Bosses",
+		"trigger": "on_turn_end",
+		"condition": null,
+		"effect": "Summon units to fill empty team slots using boss budget",
+	},
+	
+	"ability_boss_1_draw_drain": {
+		"owner": "The Awakened Guardian (Boss 1)",
+		"trigger": "on_draw",
+		"condition": null,
+		"effect": "Gain +1 HP when the player draws from any gacha machine",
+	},
+	
 }
 
 ## Get information about an ability

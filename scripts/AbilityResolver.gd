@@ -83,8 +83,9 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			return unit.current_hp > 0 and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
 		
 		&"on_draw":
-			# Units don't respond to on_draw - only trinkets do
-			return false
+			# Only enemy units respond to player draws (draws benefit enemies)
+			var unit_team = _get_instance_team(unit, battle_manager)
+			return unit.current_hp > 0 and unit_team == "ENEMY"
 	
 	# Default: respond (for any new triggers)
 	return true

@@ -79,7 +79,7 @@ unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.,Um espírito pode
 item_t1_a.desc,Restores 5 HP.,Restaura 5 HP.
 item_t1_b.desc,Increases PWR by 1.,Aumenta PWR em 1.
 boss_1.name,The Awakened Guardian,O Guardião Desperto
-boss_1.desc,A powerful guardian awakening from ancient slumber.,Um guardião poderoso despertando de um sono ancestral.
+boss_1.desc,"A powerful guardian that summons allies and grows stronger as you draw from the gacha machines.","Um guardião poderoso que invoca aliados e fica mais forte conforme você saca das máquinas gacha."
 boss_2.name,The Shadow Warden,O Guardião das Sombras
 boss_2.desc,Calls upon shadow creatures to fight alongside it.,Convoca criaturas das sombras para lutar ao seu lado.
 boss_3.name,The Storm Herald,O Arauto da Tempestade
@@ -90,6 +90,8 @@ boss_5.name,The Final Arbiter,O Árbitro Final
 boss_5.desc,The ultimate challenge. Defeat it to complete your run.,O desafio final. Derrote-o para completar sua jogatina.
 ability.boss_summon.name,Call Reinforcements,Chamar Reforços
 ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots.","No final do turno, invoca unidades para preencher espaços vazios."
+ability.boss_1_draw_drain.name,Draining Presence,Presença Drenante
+ability.boss_1_draw_drain.desc,"Every time you draw a gachaball, this boss gains +1 HP.","Toda vez que você saca um gachaball, este chefe ganha +1 HP."
 trinket.soul_echo.name,Soul Echo,Eco da Alma
 trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.,Uma gema mística que ecoa as almas dos caídos.
 ability.soul_echo.name,Soul Echo,Eco da Alma
