@@ -725,7 +725,7 @@ func _trigger_on_draw_effects(draw_result) -> void:
 	if not is_instance_valid(drawn_instance):
 		return
 	
-	# Determine tier from source container
+	# Determine tier from source container (also equals token cost)
 	var tier := 1
 	if draw_result.source_container.ends_with("T2"):
 		tier = 2
@@ -737,14 +737,18 @@ func _trigger_on_draw_effects(draw_result) -> void:
 		"drawn_uuid": draw_result.drawn_uuid,
 		"dest_container": draw_result.dest_container,
 		"dest_slot": draw_result.dest_slot,
-		"tier": tier
+		"tier": tier,
+		"tokens_spent": tier # Tier equals tokens spent
 	}
 	
 	# VCR Step 1: Capture snapshot BEFORE simulation
 	var snapshot := battle_manager.get_board_snapshot()
 	
-	# VCR Step 2: Trigger effects (populates pending_reactions via AbilityResolver)
+	# VCR Step 2a: Trigger on_draw (once per draw)
 	AbilityResolver.process_trigger(&"on_draw", context)
+	
+	# VCR Step 2b: Trigger on_token_spent (once per draw, with token amount in context)
+	AbilityResolver.process_trigger(&"on_token_spent", context)
 	
 	# VCR Step 3: If effects were generated, resolve and animate them
 	if battle_manager._pending_reactions.size() > 0:

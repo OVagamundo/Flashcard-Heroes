@@ -72,6 +72,7 @@ const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled p
 const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summoned
 const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
 const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
+const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"

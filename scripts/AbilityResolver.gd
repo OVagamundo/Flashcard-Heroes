@@ -86,6 +86,11 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only enemy units respond to player draws (draws benefit enemies)
 			var unit_team = _get_instance_team(unit, battle_manager)
 			return unit.current_hp > 0 and unit_team == "ENEMY"
+		
+		&"on_token_spent":
+			# Only enemy units respond to player token spending
+			var unit_team = _get_instance_team(unit, battle_manager)
+			return unit.current_hp > 0 and unit_team == "ENEMY"
 	
 	# Default: respond (for any new triggers)
 	return true
