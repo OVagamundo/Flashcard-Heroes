@@ -1,6 +1,14 @@
 # Game Content Document: Flashcard Heroes
 **(Synced with Codebase)**
 
+## Recipe Unlock System
+
+**Important**: Merge recipes are LOCKED by default at the start of each run. Recipes only unlock when you acquire the resulting gachaball (via shop purchase, battle reward, etc.). These unlocks are per-run only and reset when starting a new run.
+
+- **Tier 1 units** (Apprentice, Squire) are base units with NO recipes
+- **Tier 2+ units** have recipes that unlock upon acquisition
+- Example: Buying a Knight from the shop unlocks its recipe (Apprentice + Squire → Knight)
+
 ## 1. Units
 Units are the primary actors in battle. They have Health (HP) and Power (PWR) stats, can equip items, and possess abilities.
 

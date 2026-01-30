@@ -329,6 +329,28 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "1 Token"
 
+[node name="CountLabel" type="Label" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine1"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 42
+text = "x0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
 [node name="GachaMachine2" type="Control" parent="VBoxContainer/BottomArea/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(640, 260)
@@ -366,6 +388,28 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "2 Tokens"
 
+[node name="CountLabel" type="Label" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine2"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 42
+text = "x0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
 [node name="GachaMachine3" type="Control" parent="VBoxContainer/BottomArea/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(640, 260)
@@ -402,6 +446,28 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "3 Tokens"
+
+[node name="CountLabel" type="Label" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine3"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 42
+text = "x0"
+horizontal_alignment = 2
+vertical_alignment = 2
 
 [node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
 layer = 90

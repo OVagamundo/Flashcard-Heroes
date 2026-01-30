@@ -8,6 +8,7 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
+@onready var trait_icons_container: HBoxContainer = %TraitIconsContainer
 @onready var internal_background: ColorRect = $InternalBackground
 
 var _inspected_unit_uuid: String
@@ -85,6 +86,7 @@ func populate(context: Dictionary) -> void:
 
 	# --- Core UI Population Logic ---
 	_rebuild_item_grid()
+	_update_trait_display()
 
 ## Set up stable anchor pattern for robust positioning
 func _setup_stable_anchor() -> void:
@@ -309,6 +311,7 @@ func _on_inventory_changed() -> void:
 	_instance = current_instance # Ensure we have the latest data
 	_update_description()
 	_rebuild_item_grid()
+	_update_trait_display()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	if not is_instance_valid(self):
@@ -329,6 +332,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	_instance = current_instance # Ensure we have the latest data
 	_update_description()
 	_rebuild_item_grid()
+	_update_trait_display()
 
 func _get_all_instances_db() -> Dictionary:
 	var result: Dictionary
@@ -398,3 +402,97 @@ func _on_description_meta_hover_ended(_meta) -> void:
 
 func get_location() -> LocationIdentifier:
 	return _location
+
+## Calculate trait counts for the inspected unit (including emblems)
+func _calculate_unit_trait_counts() -> Dictionary:
+	var counts: Dictionary = {"FIRE": 0, "EARTH": 0}
+	
+	if not is_instance_valid(_instance):
+		return counts
+	
+	# Count traits from unit's definition tags
+	var unit_def = _instance.get_definition()
+	if is_instance_valid(unit_def) and "tags" in unit_def:
+		for tag in unit_def.tags:
+			if tag == &"SOUL_FIRE":
+				counts["FIRE"] += 1
+			elif tag == &"SOUL_EARTH":
+				counts["EARTH"] += 1
+	
+	# Count traits from equipped items (emblems)
+	var all_instances_db = _get_all_instances_db()
+	if all_instances_db.is_empty():
+		return counts
+	
+	for item_uuid in _instance.equipped_item_uuids:
+		if item_uuid.is_empty():
+			continue
+		
+		var item_instance = all_instances_db.get(item_uuid)
+		if not is_instance_valid(item_instance):
+			continue
+		
+		var item_def = item_instance.get_definition()
+		if not is_instance_valid(item_def) or not "tags" in item_def:
+			continue
+		
+		for tag in item_def.tags:
+			if tag == &"SOUL_FIRE":
+				counts["FIRE"] += 1
+			elif tag == &"SOUL_EARTH":
+				counts["EARTH"] += 1
+	
+	return counts
+
+## Update the trait icons display
+func _update_trait_display() -> void:
+	if not is_instance_valid(trait_icons_container):
+		return
+	
+	# Clear existing trait icons
+	for child in trait_icons_container.get_children():
+		child.queue_free()
+	
+	var trait_counts = _calculate_unit_trait_counts()
+	
+	# Display Fire trait if count > 0
+	if trait_counts["FIRE"] > 0:
+		var fire_container = HBoxContainer.new()
+		fire_container.add_theme_constant_override("separation", 4)
+		
+		var fire_icon = TextureRect.new()
+		fire_icon.texture = preload("res://assets/sprites/items/FireEmblem.png")
+		fire_icon.custom_minimum_size = Vector2(32, 32)
+		fire_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		fire_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		var fire_label = Label.new()
+		fire_label.text = "x%d" % trait_counts["FIRE"]
+		fire_label.add_theme_font_size_override("font_size", 20)
+		fire_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		fire_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		
+		fire_container.add_child(fire_icon)
+		fire_container.add_child(fire_label)
+		trait_icons_container.add_child(fire_container)
+	
+	# Display Earth trait if count > 0
+	if trait_counts["EARTH"] > 0:
+		var earth_container = HBoxContainer.new()
+		earth_container.add_theme_constant_override("separation", 4)
+		
+		var earth_icon = TextureRect.new()
+		earth_icon.texture = preload("res://assets/sprites/items/EarthEmblem.png")
+		earth_icon.custom_minimum_size = Vector2(32, 32)
+		earth_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		earth_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		var earth_label = Label.new()
+		earth_label.text = "x%d" % trait_counts["EARTH"]
+		earth_label.add_theme_font_size_override("font_size", 20)
+		earth_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		earth_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		
+		earth_container.add_child(earth_icon)
+		earth_container.add_child(earth_label)
+		trait_icons_container.add_child(earth_container)

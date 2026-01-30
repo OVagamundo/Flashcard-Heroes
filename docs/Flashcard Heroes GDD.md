@@ -9,7 +9,7 @@ Loadout: The player selects a Hero and a Flashcard Deck. The Run Inventory is in
 Path Selection: The player is presented with a choice of three nodes, each representing a potential encounter.
 Node Resolution: The player selects and resolves one node (e.g., Battle, Shop, Event, Rest Site).
 Progression & Iteration: After resolving a node, the game's "Day" counter advances, increasing difficulty. The player returns to Path Selection.
-Boss Encounters: At specific progression milestones, mandatory boss battle nodes appear.
+Boss Encounters: Mandatory boss battles appear at regular milestones throughout the run.
 Run Conclusion: The run ends in Victory (defeating the Final Boss) or Failure (Hero HP reaches zero).
 2.2. Save & Continue
 The game features a checkpoint-based save system. A run is automatically saved at the start of each "Day" (when entering the Path Selection screen). Players can quit the game and resume their run from the Title Screen via a "Continue" button. However, to maintain the high stakes, the save file is deleted immediately upon Victory or Defeat.
@@ -33,13 +33,13 @@ This system is the core mechanic for generating Gacha Tokens and driving player 
 *   **UI:** The mini-game appears as a large modal pop-up window, disabling all other game interactions until it is complete.
 *   **Gameplay Flow:**
     1.  If a new card is being introduced, it is shown first.
-    2.  When the player clicks "Got It!" (or immediately, if no new card is shown), a session timer of **3 seconds** begins. This timer is for the entire session, not per question. The duration can be increased by Trinkets or other bonuses.
-    3.  A question is displayed with 9 multiple-choice answers. These answers are the correct answers from 9 other random cards in the Active Deck.
+    2.  When the player clicks "Got It!" (or immediately, if no new card is shown), a short session timer begins. This timer is for the entire session, not per question. The duration can be modified by Hero abilities, Trinkets, or other bonuses.
+    3.  A question is displayed with multiple choice answers drawn from the Active Deck.
     4.  The player clicks an answer.
-        *   **Correct:** The answer flashes white, mastery level for that card increases by 1 (clamped at 5), and the next question appears instantly.
-        *   **Incorrect:** The answer flashes red, mastery level for that card decreases by 1 (clamped at 1), and the next question appears instantly. There is no other penalty.
-    5.  This continues until the 3-second timer expires, at which point the mini-game window closes and reports the results.
-*   **Goal:** The primary goal is to answer as many questions correctly as possible within the short time limit, averaging about one correct answer per second for a proficient player.
+        *   **Correct:** Mastery level for that card increases (clamped at a maximum), and the next question appears instantly.
+        *   **Incorrect:** Mastery level for that card decreases (clamped at a minimum), and the next question appears instantly.
+    5.  This continues until the session timer expires, at which point the mini-game window closes and reports the results.
+*   **Goal:** The primary goal is to answer as many questions correctly as possible within the time limit to maximize resource generation.
 
 **4.3. Spaced Repetition System (SRS) & Card Selection**
 To optimize learning, the card chosen for each question is not completely random. The system uses a weighted random selection algorithm designed to be effective but not predictable.
@@ -51,8 +51,8 @@ To optimize learning, the card chosen for each question is not completely random
 
 **4.4. Reward Context**
 The rewards from the mini-game are **context-sensitive and do not carry over between scenes.**
-*   **In Battle:** Each correct answer awards 1 Gacha Token. These tokens are added to the player's pool for the current battle and persist between turns, but are reset to zero after the battle encounter is resolved.
-*   **At Rest Sites:** When "Training," the mini-game does **not** award Gacha Tokens. Instead, every two correct answers permanently increases the Hero's chosen stat (HP or PWR) by 1 for the rest of the run.
+*   **In Battle:** Correct answers award Gacha Tokens, used to draw new GachaBalls. These tokens reset to zero after the encounter.
+*   **At Rest Sites:** Correct answers contribute toward permanent stat increases for the Hero for the remainder of the run.
 5. GachaBall System: Units & Items
 "GachaBalls" are the collectible entities that form the player's team and arsenal.
 GachaBall Definition: The immutable template or blueprint for a GachaBall type (e.g., "Warrior Type A"), defining its base stats, abilities, and tags.
@@ -103,6 +103,7 @@ Unequipping and Restrictions:
 Merge Recipes: All valid merge combinations are defined by recipes.
 
 Temporary Merge (In-Battle): Consumes two temporary GachaBalls and creates a new temporary GachaBall for the current battle only.
+- **Recipe Unlocking**: Merge recipes are **locked by default** at the start of each run. A recipe only becomes available once the player acquires the resulting GachaBall (e.g., via shop purchase or reward selection) for the first time in that run. This cycle of acquisition and unlocking is a core part of the run's progression loop.
 - Placement: If merged on the board, the result replaces the target. If two items are merged on a unit, the result replaces the target item. If merged in the Battle Inventory, the result is placed in the first available slot of the appropriate tier.
 - Item Inheritance: All items equipped on the two ingredient units are automatically transferred to the newly merged unit, filling its available slots.
 
@@ -113,17 +114,16 @@ Merge Choice: If a player attempts an action that could be either a Merge or a S
 9.1. Hero Unit
 The player's central character. Its health is the run's health. It participates in every battle. The Hero unit is restricted and may only be placed in the main PlayerLineup; it cannot be moved to the bench or any inventory.
 9.2. Trinkets
-Special non-GachaBall items that provide powerful, run-wide passive bonuses. Players can have up to 5 active Trinkets. They are typically awarded for defeating Mini-Bosses.
+Special non-GachaBall items that provide powerful, run-wide passive bonuses. Players can have a limited number of active Trinkets. They are typically awarded for defeating Elite or Boss encounters.
 9.3. Node Types & Logic
 
 **Battle Node:** Standard combat encounters. Includes Common, Elite, and Boss variants.
 
 **Encounter Budget System:**
-To ensure varied and scaling challenges, COMMON and ELITE battle nodes do not use pre-defined enemy formations. Instead, they dynamically generate an enemy team using a budget-based system.
-- **Daily Budget:** At the start of each new "Day," the encounter budget increases. The base budget is calculated as Day * 5 Gold.
-- **Budget Allocation:** The system uses its gold budget to "purchase" a team of up to 6 units and a corresponding set of items from a pool of all available GachaBalls. The algorithm is designed to spend at least half of its budget on units first, ensuring a solid team composition, before spending the remainder on additional units or items.
-- **Optimization:** The generation algorithm is optimized to spend its entire budget, ensuring that the challenge level is as close as possible to the day's intended difficulty. It will attempt to construct a full team that uses every last point of gold.
-- **Elite Encounters:** ELITE battle nodes use the same dynamic generation system but with a significant advantage: their total gold budget is multiplied by 1.5, resulting in much tougher opponents with higher-tier units and more items.
+To ensure varied and scaling challenges, most battle nodes do not use pre-defined formations. Instead, they dynamically generate enemy teams using a budget-based system.
+- **Scaling Budget:** The system's resource budget for generating an encounter increases as the player progresses through the run.
+- **Budget Allocation:** The system uses its budget to "purchase" units, items, and trinkets from the available pool. The generator prioritizes a solid unit foundation before augmenting with additional gear or passives.
+- **Challenge Levels**: Elite nodes and Boss encounters use significantly increased budgets and may feature unique unit scaling or free "Mini Boss" units to differentiate the challenge from standard nodes.
 
 **Shop Node:** An economic hub where players can spend Gold to acquire new GachaBalls.
 - **Stock:** Presents 3 randomly generated GachaBalls for purchase when the node is entered
@@ -140,7 +140,7 @@ To ensure varied and scaling challenges, COMMON and ELITE battle nodes do not us
 - **Leaving:** Players can exit the shop at any time to return to Path Selection
 Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
-Rest Site Node: A recovery node where the player chooses one action: Rest and eat (permanent HP gain for Hero), Train (permanent PWR gain for Hero), or gamble (adds gold to the player's gold count). Choosing to "Train" (either for a permanent HP or PWR gain for the Hero) triggers the flashcard mini-game. At the Rest Site, every two correct answers in this mini-game will permanently increase the chosen stat by 1 for the remainder of the run.
+Rest Site Node: A recovery node where the player chooses one action: Rest for HP, Train for PWR, or Gamble for Gold. Training triggers the flashcard mini-game, where performance determines the magnitude of the permanent stat gain.
 9.4. Event-Driven Ability System
 Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
 

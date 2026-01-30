@@ -15,20 +15,18 @@ WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid U
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
+'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
+'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 [SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
-[EncounterGen] Budget: 3, Spent: 3, Units: 2, Items: 0, Trinkets: 0
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze"]
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0 }
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -41,16 +39,6 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[BattleLog] [1:1] ═══ TURN 1 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 1 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -63,8 +51,6 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -77,8 +63,6 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -91,9 +75,7 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: battle_management_intro
+[TutorialManager] Requesting tutorial: gacha_inspect_run
 [TutorialManager] Blocked: Tutorials disabled
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
@@ -107,51 +89,360 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Blocked: Tutorials disabled
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Requesting tutorial: shop_intro
 [TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:3] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 3→4)
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -167,103 +458,263 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[TutorialManager] Requesting tutorial: gacha_inspect_run
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[ItemInspection] Ability: ability_item_t2_c_summon | Key: item_t2_a.desc | Desc: Summons a random Tier 1 unit upon death.
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Blocked: Tutorials disabled
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Requesting tutorial: shop_intro
 [TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:4] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 4→5)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -285,14 +736,38 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[TutorialManager] Requesting tutorial: gacha_inspect_run
 [TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:6] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 5→6)
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -311,8 +786,6 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -331,65 +804,6 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -408,620 +822,195 @@ WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOv
 WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
 'StatsOverlay' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
+'StatsOverlay' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+[TutorialManager] Requesting tutorial: gacha_inspect_run
 [TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:8] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:10] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:11] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:12] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 1 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier1b_extra_attack Prio:-100 Src:item_t1_b_1769744502_58_41645
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1769744502_53_14259
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: ability_item_t2_c_summon Prio:200 Src:item_t2_a_1769744502_65_25602
-[ESOD] Checking slot 4. Holder: unit_t1_b_1769744502_53_14259, Slot Content: unit_t1_b_1769744502_53_14259
-[BattleLog] [1:14] Squire deals 2 dmg to Apprentice 
-[BattleLog] [1:15] Squire attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1769744502_100_45002"] source: unit_t1_b_1769744502_53_14259 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1769744502 type 5
-[BattleLog] [1:16] └─ unit_t1_... is defeated! 
-[BattleLog] [1:17] Squire deals 3 dmg to Berserker 
-[BattleLog] [1:18] Squire attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 2→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1769744502_99_54899"] source: unit_t1_b_1769744502_54_11700 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1769744502 type 5
-[BattleLog] [1:19] └─ unit_t2_... is defeated! 
-[BattleLog] [1:20] Timekeeper deals 2 dmg to The Awakened Guardian 
-[BattleLog] [1:21] Timekeeper attacks The Awakened Guardian for 2 damage (basic_attack, on_attack) (HP: 9→7)
-[DamageAnimation] Executing for targets: ["boss_1_1769744502_101_39732"] source: hero_timekeeper_1769744502_50_98246 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1769 type 5
-[BattleLog] [1:22] The Awakened Guardian deals 3 dmg to Squire 
-[BattleLog] [1:23] The Awakened Guardian attacks Squire for 3 damage (basic_attack, on_attack) (HP: 3→0)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1769744502_53_14259"] source: boss_1_1769744502_101_39732 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1769744502_10 type 5
-[BattleLog] [1:24] Squire deals 2 dmg to The Awakened Guardian 
-[BattleLog] [1:25] Squire attacks The Awakened Guardian for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["boss_1_1769744502_101_39732"] source: unit_t1_b_1769744502_53_14259 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1769744502 type 5
-[BattleLog] [1:26] └─ Summoning Scroll summons New Unit! 
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[BattleLog] [1:27] └─ Squire is defeated! 
-[AnimationCompletionTracker] Timeout for unit_t1_b_1769744502 type 2
-[EncounterGen] Budget: 2, Spent: 2, Units: 2, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:28] └─ The Awakened Guardian summons New Unit! 
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[BattleLog] [1:29] └─ The Awakened Guardian summons New Unit! 
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[BattleLog] [2:1] ═══ TURN 2 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:2] Timekeeper heals Squire and Squire for 2 HP 
-[BattleLog] [2:3] Timekeeper heals Squire for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 1→3)
-[BattleLog] [2:4] Koi's Blessing heals Timekeeper for 2 HP 
-[BattleLog] [2:5] Koi's Blessing heals Timekeeper for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 55→57)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:6] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 5→6)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:8] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-WARNING: Setting node name 'StatsOverlay' to be unique within scene for 'StatsOverlay', but it's already claimed by 'StatsOverlay'.
-'StatsOverlay' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:10] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:11] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
+WARNING: 317 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2679)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)
