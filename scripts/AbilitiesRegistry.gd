@@ -222,6 +222,13 @@ const ABILITIES: Dictionary = {
 		"effect": "Gain +1 HP when the player draws from any gacha machine",
 	},
 	
+	"ability_boss_2_token_drain": {
+		"owner": "The Shadow Warden (Boss 2)",
+		"trigger": "on_token_spent",
+		"condition": null,
+		"effect": "Gain +1 HP for each token the player spends on gacha draws",
+	},
+	
 }
 
 ## Get information about an ability

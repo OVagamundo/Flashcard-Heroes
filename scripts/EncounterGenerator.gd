@@ -75,8 +75,9 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 ## @param total_budget: int - The total encounter budget (after 1.3x elite multiplier applied)
 ## @return EncounterDefinition - An encounter with a boss unit and support units
 func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
-	# Elite encounters always use the weakest boss (Boss 1) as a "Mini Boss"
-	var boss_id: StringName = &"boss_1"
+	# Elite encounters randomly select between Boss 1 and Boss 2 as a "Mini Boss"
+	var boss_options: Array[StringName] = [&"boss_1", &"boss_2"]
+	var boss_id: StringName = boss_options.pick_random()
 	var boss_def = Database.get_definition(boss_id)
 	if not is_instance_valid(boss_def):
 		push_error("Elite boss definition not found: %s" % boss_id)
@@ -87,7 +88,7 @@ func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
 	var build := _build_encounter_with_full_spend(total_budget, pools, MAX_UNITS - 1, MAX_TRINKETS)
 	
 	# Assemble encounter - reserve position 4 for elite unit
-	var encounter := _assemble_encounter(build, "elite_encounter_boss_1", true)
+	var encounter := _assemble_encounter(build, "elite_encounter_%s" % String(boss_id), true)
 	
 	# Place elite boss at position 4 (back of lineup)
 	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
