@@ -373,6 +373,9 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 	# ------------------------------------------------------------------
 	# HERO RESTRICTION: Heroes may only reside in PlayerLineup.
 	var is_hero := String(def.id).to_lower() == "hero"
+	if "is_hero" in def and def.is_hero:
+		is_hero = true
+
 	if not is_hero and "tags" in def:
 		for tag in def.tags:
 			if String(tag).to_lower() == "hero":

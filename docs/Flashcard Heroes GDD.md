@@ -9,7 +9,7 @@ Loadout: The player selects a Hero and a Flashcard Deck. The Run Inventory is in
 Path Selection: The player is presented with a choice of three nodes, each representing a potential encounter.
 Node Resolution: The player selects and resolves one node (e.g., Battle, Shop, Event, Rest Site).
 Progression & Iteration: After resolving a node, the game's "Day" counter advances, increasing difficulty. The player returns to Path Selection.
-Boss Encounters: Mandatory boss battles appear at regular milestones throughout the run.
+Boss Encounters: At specific progression milestones, mandatory boss battle nodes appear.
 Run Conclusion: The run ends in Victory (defeating the Final Boss) or Failure (Hero HP reaches zero).
 2.2. Save & Continue
 The game features a checkpoint-based save system. A run is automatically saved at the start of each "Day" (when entering the Path Selection screen). Players can quit the game and resume their run from the Title Screen via a "Continue" button. However, to maintain the high stakes, the save file is deleted immediately upon Victory or Defeat.
@@ -201,7 +201,7 @@ The system for inspecting units, items, and their effects follows a strict set o
 
 **Contextual Opening:** The method for opening an inspection window depends on the interaction model of its container:
 - **Double-Click:** Required in interactive contexts where single-clicking is for selection and dragging (e.g., the battle board, the main inventory window). This prevents accidental openings.
-- **Single-Click:** Used in contexts that are primarily for viewing (e.g., inspecting an item that is already equipped on a unit inside its inspection window, or viewing the discard pile).
+- **Single-Click:** Used in contexts that are primarily for viewing (e.g., inspecting an item that is already equipped on a unit inside its inspection window, viewing the discard pile, or inspecting units in the **Enemy Lineup**).
 
 **Hierarchical Behavior:**
 - **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on screen at a time. Opening a new root-level window (e.g., inspecting a different unit on the board) closes the entire previous group.
