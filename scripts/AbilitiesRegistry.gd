@@ -65,7 +65,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Knight (T2C)",
 		"trigger": "on_ally_death",
 		"condition": null,
-		"effect": "Gain +1 HP and +1 PWR when an ally dies",
+		"effect": "Gain +2 HP and +2 PWR when an ally dies",
 	},
 	
 	"unit_tier3a_mirror_strike": {
@@ -104,6 +104,13 @@ const ABILITIES: Dictionary = {
 		"trigger": "on_kill",
 		"condition": null,
 		"effect": "Gain gold when killing an enemy",
+	},
+	
+	"hero_bounty_hunter_ally_death_buff": {
+		"owner": "Bounty Hunter (Hero)",
+		"trigger": "on_ally_death",
+		"condition": null,
+		"effect": "Gain +1 HP and +1 PWR when an ally dies",
 	},
 	
 	# ==================== ITEM ABILITIES ====================

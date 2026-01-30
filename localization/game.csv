@@ -1,6 +1,6 @@
 keys,en,pt_BR
 hero.name,Bounty Hunter,Caçador de Recompensas
-hero.desc,A skilled hunter who profits from every kill. Earns gold for each enemy slain.,Um caçador habilidoso que lucra com cada morte. Ganha ouro por cada inimigo morto.
+hero.desc,"A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.","Um caçador habilidoso que lucra com cada morte e fica mais forte com perdas. Ganha ouro por cada inimigo morto, e ganha +1 HP e +1 PWR quando aliados morrem."
 enemy_hero.name,Enemy Hero,Herói Inimigo
 enemy_hero.desc,The enemy's champion.,O campeão do inimigo.
 unit_t1_a.name,Apprentice,Aprendiz
@@ -35,7 +35,9 @@ ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker
 ability.item_tier1a_turn_start_heal.name,Restoration,Restauração
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No início do turno, cura o portador em 2 HP."
 ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
-ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
+ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +2 HP and +2 PWR.","Quando um aliado é derrotado, ganha +2 HP e +2 PWR."
+ability.hero_bounty_hunter_ally_death_buff.name,Scavenger's Resolve,Determinação do Saqueador
+ability.hero_bounty_hunter_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 ability.item_tier3d_retaliate.name,Retaliation,Retaliação
 ability.item_tier3d_retaliate.desc,"When hurt, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido, causa metade do PWR do portador como dano a um inimigo aleatório."
 ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
@@ -65,11 +67,13 @@ item_t2_b.desc,Grants an extra action on kill.,Concede uma ação extra ao matar
 ability.item_tier2b_bloodlust.name,Bloodlust,Sede de Sangue
 ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately.","Quando o portador derrota um inimigo, ele age novamente imediatamente."
 hero_timekeeper.name,Timekeeper,Guardião do Tempo
-hero_timekeeper.desc,A scholarly mage who has mastered the flow of time itself.,Um mago estudioso que dominou o fluxo do próprio tempo.
+hero_timekeeper.desc,"A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer.","Um mago estudioso que concede +2 HP às unidades da frente e +2 PWR às unidades de trás no início do turno. Domina o tempo para estender o cronômetro do minigame."
 ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter,Caçador de Recompensas
 ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.,Ganha 1 ouro quando este herói mata um inimigo.
 ability.hero_timekeeper_time_warp.name,Time Warp,Distorção Temporal
 ability.hero_timekeeper_time_warp.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.","Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
+ability.hero_timekeeper_temporal_aura.name,Temporal Aura,Aura Temporal
+ability.hero_timekeeper_temporal_aura.desc,"At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.","No início de cada turno, concede +2 HP às unidades na frente e +2 PWR às unidades atrás."
 unit_t3_d.name,Sakura Spirit,Espírito Sakura
 unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.,Um espírito poderoso guardando as cerejeiras.
 item_t1_a.desc,Restores 5 HP.,Restaura 5 HP.

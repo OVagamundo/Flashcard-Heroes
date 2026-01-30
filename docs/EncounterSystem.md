@@ -9,15 +9,13 @@ The Encounter System is responsible for defining, generating, and instantiating 
 
 ## Budget Formula
 
-| Day | Daily Budget | Calculation |
-|-----|--------------|-------------|
-| 1 | 3 | Base |
-| 2 | 4 | 3 + 1 |
-| 3 | 5 | 3 + 2 |
-| 5 | 7 | 3 + 4 |
-| 10 | 12 | 3 + 9 |
+| 1 | 5 | Base |
+| 2 | 8 | 5 + 3 |
+| 3 | 11 | 5 + 6 |
+| 5 | 17 | 5 + 12 |
+| 10 | 32 | 5 + 27 |
 
-**Formula:** `3 + (day - 1) * 1`
+**Formula:** `5 + 3 * (day - 1)`
 
 ## Gachaball Costs
 
