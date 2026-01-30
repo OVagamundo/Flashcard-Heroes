@@ -195,16 +195,21 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	var def_id: StringName = visual_data.get("definition_id", &"")
 	view.set_is_enemy(is_enemy, def_id)
 	
-	# Configure interaction context based on data/context
-	if is_enemy:
-		# Enemy logic (inspection only usually)
-		pass
+	# Propagate interaction context from SlotView to child GachaBallView
+	# Entity type is derived from the visual data category
+	var category: StringName = visual_data.get("category", &"UNIT")
+	var entity_type: StringName = category # UNIT, ITEM, or TRINKET
+	var effective_mode = _interaction_mode
+	
+	# Force inspection only for enemies unless in specific contexts (handled by slot mode usually)
+	# But trusting _interaction_mode from the slot is the correct architectural approach.
+	view.set_interaction_context(effective_mode, entity_type, _window_group_id)
+	
+	# If inspection only, disable dragging functionality (interactive flag controls drag in GachaBallView)
+	if effective_mode == &"INSPECTION_ONLY":
+		view.set_is_interactive(false)
 	else:
-		# Propagate interaction context from SlotView to child GachaBallView
-		# Entity type is derived from the visual data category
-		var category: StringName = visual_data.get("category", &"UNIT")
-		var entity_type: StringName = category # UNIT, ITEM, or TRINKET
-		view.set_interaction_context(_interaction_mode, entity_type, _window_group_id)
+		view.set_is_interactive(true)
 	
 	view.set_meta("location_identifier", _location)
 
