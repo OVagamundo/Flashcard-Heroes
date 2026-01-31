@@ -15,13 +15,19 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 			"EARTH":
 				icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket6A.png")
 				if is_instance_valid(name_label): name_label.text = "Earth"
+			"WATER":
+				icon_rect.texture = preload("res://assets/sprites/items/WaterEmblem.png")
+				if is_instance_valid(name_label): name_label.text = "Water"
+			"WIND":
+				icon_rect.texture = preload("res://assets/sprites/items/AirEmblem.png")
+				if is_instance_valid(name_label): name_label.text = "Wind"
 			_:
 				if is_instance_valid(name_label): name_label.text = trait_name
 	
-	# Set Count text
-	# Assuming 3 is the activation threshold for now
+	# Set Count text with dynamic threshold (3 for Fire/Earth, 2 for Water/Wind)
+	var threshold = 2 if trait_name in ["WATER", "WIND"] else 3
 	if is_instance_valid(count_label):
-		count_label.text = "%d / 3" % count
+		count_label.text = "%d / %d" % [count, threshold]
 	
 	# Style based on activation
 	var style = StyleBoxFlat.new()
@@ -67,10 +73,13 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		# Get trait name from label logic (reverse engineering populate logic)
+		# Get trait name from label (reverse from display name to ID)
 		var trait_name = ""
-		if name_label.text == "Fire": trait_name = "FIRE"
-		elif name_label.text == "Earth": trait_name = "EARTH"
+		match name_label.text:
+			"Fire": trait_name = "FIRE"
+			"Earth": trait_name = "EARTH"
+			"Water": trait_name = "WATER"
+			"Wind": trait_name = "WIND"
 		
 		if not trait_name.is_empty():
 			# S6/W2: Clicking UI element clears selection

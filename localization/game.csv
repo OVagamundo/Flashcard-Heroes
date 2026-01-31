@@ -7,6 +7,14 @@ unit_t1_a.name,Apprentice,Aprendiz
 unit_t1_a.desc,A novice unit.,Uma unidade novata.
 unit_t1_b.name,Squire,Escudeiro
 unit_t1_b.desc,A loyal squire.,Um escudeiro leal.
+unit_t1_c.name,Protector,Protetor
+unit_t1_c.desc,A steadfast guardian who heals the ally ahead when they take damage.,Um guardião firme que cura o aliado à frente quando ele recebe dano.
+ability.unit_t1_c_ally_shield.name,Guardian's Grace,Graça do Guardião
+ability.unit_t1_c_ally_shield.desc,"When the ally directly in front takes damage, heal them for this unit's current PWR.","Quando o aliado diretamente à frente recebe dano, cura-o pelo PWR atual desta unidade."
+unit_t1_d.name,Empath,Empata
+unit_t1_d.desc,A sensitive soul who empowers allies when healed.,Uma alma sensível que fortalece aliados quando curada.
+ability.unit_t1_d_empathic_link.name,Empathic Link,Vínculo Empático
+ability.unit_t1_d_empathic_link.desc,"When healed, grant +1 PWR to the ally behind.","Quando curada, concede +1 PWR ao aliado atrás."
 unit_t2_c.name,Knight,Cavaleiro
 unit_t2_c.desc,A valiant knight.,Um cavaleiro valente.
 item_t1_a.name,Koi's Blessing,Bênção da Carpa
@@ -288,3 +296,12 @@ item.emblem_fire.name,Fire Emblem,Emblema de Fogo
 item.emblem_fire.desc,"When equipped, this unit counts as a Fire unit. Grants +2 PWR.","Quando equipado, esta unidade conta como uma unidade de Fogo. Concede +2 PWR."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
 item.emblem_earth.desc,"When equipped, this unit counts as an Earth unit. Grants +4 HP.","Quando equipado, esta unidade conta como uma unidade de Terra. Concede +4 HP."
+trait.water.name,Water,Água
+trait.water.2,"Water units heal adjacent allies 1 HP at start of turn.","Unidades de Água curam aliados adjacentes em 1 HP no início do turno."
+trait.wind.name,Wind,Vento
+trait.wind.2,"Wind units steal 1 PWR from the opposite enemy at start of turn.","Unidades de Vento roubam 1 PWR do inimigo oposto no início do turno."
+item.emblem_water.name,Water Emblem,Emblema de Água
+item.emblem_water.desc,"When equipped, this unit counts as a Water unit. Grants +2 HP and +1 PWR.","Quando equipado, esta unidade conta como uma unidade de Água. Concede +2 HP e +1 PWR."
+item.emblem_wind.name,Wind Emblem,Emblema de Vento
+item.emblem_wind.desc,"When equipped, this unit counts as a Wind unit. Grants +1 PWR and +2 HP.","Quando equipado, esta unidade conta como uma unidade de Vento. Concede +1 PWR e +2 HP."
+

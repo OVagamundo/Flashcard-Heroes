@@ -110,7 +110,30 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				return [ally_behind.ball_uuid]
 			return []
 		C.TARGET_ALLY_SLOT_AHEAD:
-			return [] # Not implemented
+			# Return the victim if they are in the slot directly in front of source
+			# This enforces "directly in front" = exactly source_index + 1 (for player)
+			# or source_index - 1 (for enemy), with NO empty slots in between
+			var victim_uuid = context.get("victim_uuid", "")
+			if victim_uuid.is_empty():
+				return []
+			if not is_instance_valid(source_instance):
+				return []
+			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
+			var victim_loc = battle_manager.get_location_for_uuid(victim_uuid)
+			if not is_instance_valid(source_loc) or not is_instance_valid(victim_loc):
+				return []
+			# Must be in the same container (same lineup)
+			if source_loc.container != victim_loc.container:
+				return []
+			# For player: ahead = higher index (slot index + 1)
+			# For enemy: ahead = lower index (slot index - 1)
+			if is_player_team:
+				if victim_loc.index == source_loc.index + 1:
+					return [victim_uuid]
+			else:
+				if victim_loc.index == source_loc.index - 1:
+					return [victim_uuid]
+			return []
 		C.TARGET_ADJACENT_ALLIES:
 			var adjacent = battle_manager._get_adjacent_allies(source_instance)
 			var uuids: Array[String] = []

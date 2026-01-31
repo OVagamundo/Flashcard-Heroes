@@ -91,6 +91,19 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only enemy units respond to player token spending
 			var unit_team = _get_instance_team(unit, battle_manager)
 			return unit.current_hp > 0 and unit_team == "ENEMY"
+		
+		&"on_ally_hurt":
+			# Teammates of the hurt unit respond (not the hurt unit itself)
+			var victim_uuid = context.get("victim_uuid", "")
+			var victim_team = context.get("victim_team", "")
+			var unit_team = _get_instance_team(unit, battle_manager)
+			# Must be alive, same team as victim, not the victim itself
+			return unit.current_hp > 0 and unit_team == victim_team and unit_uuid != victim_uuid
+		
+		&"on_healed":
+			# Only the healed unit itself responds to its own healing
+			var healed_uuid = context.get("healed_uuid", "")
+			return unit.current_hp > 0 and unit_uuid == healed_uuid
 	
 	# Default: respond (for any new triggers)
 	return true

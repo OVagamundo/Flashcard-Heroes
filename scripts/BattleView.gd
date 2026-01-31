@@ -481,14 +481,16 @@ func _update_traits(team: String) -> void:
 		
 	var active_traits = battle_manager.get_active_traits(team)
 	
-	# Always show Fire and Earth trackers for consistent feedback
-	for trait_name in ["FIRE", "EARTH"]:
+	# Always show Fire, Earth, Water, and Wind trackers for consistent feedback
+	for trait_name in ["FIRE", "EARTH", "WATER", "WIND"]:
 		var count = active_traits.get(trait_name, 0)
 		if count >= 0: # CHANGED: Always show even if 0, for debugging!
 			if TraitTrackerScene:
 				var tracker = TraitTrackerScene.instantiate()
 				container.add_child(tracker)
-				tracker.populate(trait_name, count, count >= 3)
+				# Use min threshold of 3 for Fire/Earth, 2 for Water/Wind
+				var min_active = 3 if trait_name in ["FIRE", "EARTH"] else 2
+				tracker.populate(trait_name, count, count >= min_active)
 			else:
 				print("ERROR: TraitTrackerScene is null!")
 

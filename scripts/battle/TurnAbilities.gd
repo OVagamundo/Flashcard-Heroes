@@ -173,3 +173,33 @@ static func trigger_on_ally_summon(summoned_uuid: String, summoned_team: String,
 		"summoned_location": summoned_location
 	}
 	AbilityResolver.process_trigger(&"on_ally_summon", summon_context)
+
+## Trigger on_ally_hurt for all allies on the same team as the victim
+## This enables reactive abilities that watch for teammates getting hurt
+## @param victim_uuid: String - The UUID of the unit that got hurt
+## @param damage_amount: int - The amount of damage taken
+## @param attacker_uuid: String - The UUID of the attacker
+## @param victim_team: String - "PLAYER" or "ENEMY"
+## @param victim_slot_index: int - The slot index of the victim (for position-based abilities)
+static func trigger_on_ally_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_slot_index: int) -> void:
+	var ally_hurt_context: Dictionary = {
+		"victim_uuid": victim_uuid,
+		"damage_taken": damage_amount,
+		"attacker_uuid": attacker_uuid,
+		"victim_team": victim_team,
+		"victim_slot_index": victim_slot_index
+	}
+	AbilityResolver.process_trigger(&"on_ally_hurt", ally_hurt_context)
+
+## Trigger on_healed when a unit's HP increases (healed by any means)
+## This enables abilities that react when the unit itself is healed
+## @param healed_uuid: String - The UUID of the unit that was healed
+## @param heal_amount: int - The amount of HP restored
+## @param healer_uuid: String - The UUID of the healer (may be empty for passive healing)
+static func trigger_on_healed(healed_uuid: String, heal_amount: int, healer_uuid: String) -> void:
+	var healed_context: Dictionary = {
+		"healed_uuid": healed_uuid,
+		"heal_amount": heal_amount,
+		"healer_uuid": healer_uuid
+	}
+	AbilityResolver.process_trigger(&"on_healed", healed_context)

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_water_001"]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/items/WaterEmblem.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_water"
+display_name_key = "item.emblem_water.name"
+description_key = "item.emblem_water.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"SOUL_WATER"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 1
+ability_definitions = Array[Resource]([])
