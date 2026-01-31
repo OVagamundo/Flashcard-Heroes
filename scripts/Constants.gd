@@ -73,6 +73,8 @@ const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summo
 const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
 const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
 const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
+const TRIGGER_ON_ALLY_HURT = &"on_ally_hurt" # Another ally on the same team receives damage (reactive trigger)
+const TRIGGER_ON_HEALED = &"on_healed" # This unit's HP increased (healed by any means)
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"
@@ -174,6 +176,18 @@ const TRAIT_DEFINITIONS = {
 			{"min": 5, "desc_key": "trait.earth.5"},
 			{"min": 7, "desc_key": "trait.earth.7"},
 			{"min": 9, "desc_key": "trait.earth.9"}
+		]
+	},
+	"WATER": {
+		"display_name_key": "trait.water.name",
+		"levels": [
+			{"min": 2, "desc_key": "trait.water.2"}
+		]
+	},
+	"WIND": {
+		"display_name_key": "trait.wind.name",
+		"levels": [
+			{"min": 2, "desc_key": "trait.wind.2"}
 		]
 	}
 }

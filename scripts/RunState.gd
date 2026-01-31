@@ -712,7 +712,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 			# 2 of ALL units and items across all 3 tiers (for testing)
 			return [
 				# Tier 1
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b", &"unit_t1_c", &"unit_t1_c", &"unit_t1_d", &"unit_t1_d",
 				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
 				# Tier 2
 				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c",
@@ -722,13 +722,16 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f",
 				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c",
 				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f",
-				&"item_emblem_fire", &"item_emblem_fire", &"item_emblem_earth", &"item_emblem_earth"
+				&"item_emblem_fire", &"item_emblem_fire", &"item_emblem_earth", &"item_emblem_earth",
+				&"item_emblem_water", &"item_emblem_water", &"item_emblem_wind", &"item_emblem_wind"
 			]
 		&"hero_bounty_hunter":
-			# Bounty Hunter: 4 of each Tier 1 gachaball (16 total)
+			# Bounty Hunter: 4 of each Tier 1 gachaball (32 total)
 			return [
 				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
 				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
+				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
+				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
 				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
 				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
 			]

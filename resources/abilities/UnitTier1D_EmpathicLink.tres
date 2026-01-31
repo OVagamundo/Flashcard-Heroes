@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectBuffAllyBehindPWR.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectBuffAllyBehindPWR_1"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_d_empathic_link"
+name_key = "ability.unit_t1_d_empathic_link.name"
+trigger = &"on_healed"
+effects = Array[Resource]([SubResource("EffectBuffAllyBehindPWR_1")])
+description_key = "ability.unit_t1_d_empathic_link.desc"
+priority = 100

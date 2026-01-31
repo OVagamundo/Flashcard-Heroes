@@ -332,17 +332,15 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_update_stats()
 
-func set_is_enemy(is_enemy: bool, definition_id: StringName = &"") -> void:
+func set_is_enemy(is_enemy: bool, _definition_id: StringName = &"") -> void:
 	if is_instance_valid(icon_rect):
-		# Boss sprites are already facing the player direction, so don't flip them
-		var is_boss: bool = String(definition_id).begins_with("boss_")
-		var should_flip = is_enemy and not is_boss
-		icon_rect.flip_h = should_flip
+		# All textures face right by default, so flip horizontally for enemy team
+		icon_rect.flip_h = is_enemy
 		
 		# Also flip the UnitSprite child if it exists (Battle Mode scaling)
 		var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
 		if unit_sprite:
-			unit_sprite.flip_h = should_flip
+			unit_sprite.flip_h = is_enemy
 
 func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive

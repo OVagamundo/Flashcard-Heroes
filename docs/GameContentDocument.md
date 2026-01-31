@@ -23,6 +23,8 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 |---|---|---|---|---|---|
 | `unit_t1_a` | Apprentice | 2 HP / 1 PWR | 1 | 1 Earth | **Resilience** (`on_hurt`): Heal self by (PWR). |
 | `unit_t1_b` | Squire | 1 HP / 2 PWR | 1 | 1 Fire | **Retaliation** (`on_hurt`): Counter-attack for (PWR) damage. |
+| `unit_t1_c` | Protector | 1 HP / 1 PWR | 1 | 1 Water | **Guardian's Grace** (`on_ally_hurt`): When ally directly in front takes damage, heal them for (PWR). |
+| `unit_t1_d` | Empath | 1 HP / 1 PWR | 1 | 1 Wind | **Empathic Link** (`on_healed`): When healed, grant +1 PWR to ally behind. |
 
 ### Tier 2 Units (Cost: 2)
 | ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |

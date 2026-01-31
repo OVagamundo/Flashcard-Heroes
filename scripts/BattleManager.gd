@@ -1070,6 +1070,11 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 	
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
 	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause)
+	
+	# NEW: Also fire on_ally_hurt for reactive abilities that watch teammates
+	var victim_loc = get_location_for_uuid(target_uuid)
+	var victim_slot_index: int = victim_loc.index if is_instance_valid(victim_loc) else -1
+	TurnAbilities.trigger_on_ally_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_slot_index)
 
 
 ## Trigger on_kill event for a unit that killed another unit.
@@ -1576,7 +1581,7 @@ func get_active_traits(team: String) -> Dictionary:
 
 ## Internal calculation of active traits based on current board state.
 func _calculate_active_traits(team: String) -> Dictionary:
-	var counts: Dictionary = {"FIRE": 0, "EARTH": 0}
+	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0}
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	
 	var units = get_instances_in_container(container_tag)
@@ -1593,6 +1598,10 @@ func _calculate_active_traits(team: String) -> Dictionary:
 					counts["FIRE"] += 1
 				elif tag == &"SOUL_EARTH":
 					counts["EARTH"] += 1
+				elif tag == &"SOUL_WATER":
+					counts["WATER"] += 1
+				elif tag == &"SOUL_WIND":
+					counts["WIND"] += 1
 		
 		# Check equipped items for trait tags (Emblems)
 		for item_uuid in unit.equipped_item_uuids:
@@ -1608,6 +1617,10 @@ func _calculate_active_traits(team: String) -> Dictionary:
 						counts["FIRE"] += 1
 					elif tag == &"SOUL_EARTH":
 						counts["EARTH"] += 1
+					elif tag == &"SOUL_WATER":
+						counts["WATER"] += 1
+					elif tag == &"SOUL_WIND":
+						counts["WIND"] += 1
 					
 	return counts
 
@@ -1710,6 +1723,157 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						}
 					})
 					total_events.append(event)
+		
+		# WATER TRAIT: 2+ Souls -> Water units heal adjacent allies 1 HP at start of turn
+		var water_souls = traits.get("WATER", 0)
+		if water_souls >= 2:
+			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var units = get_instances_in_container(container_tag)
+			
+			for unit in units:
+				if not is_instance_valid(unit) or unit.current_hp <= 0:
+					continue
+				# Only Water units trigger this
+				if not _has_trait_soul(unit, "WATER"):
+					continue
+				
+				# Get adjacent allies (using existing helper)
+				var adjacent_allies = _get_adjacent_allies(unit)
+				for ally in adjacent_allies:
+					if not is_instance_valid(ally) or ally.current_hp <= 0:
+						continue
+					
+					var old_hp = ally.current_hp
+					var new_hp = apply_stat_delta(ally, "hp", 1)
+					
+					if new_hp > old_hp:
+						var ally_def = ally.get_definition()
+						var max_hp = ally_def.base_hp if is_instance_valid(ally_def) else 0
+						
+						var event = CombatEvent.new(CombatEvent.Type.HEAL, {
+							"source_uuid": unit.ball_uuid,
+							"target_uuids": [ally.ball_uuid],
+							"ability_id": &"trait_water_heal",
+							"visual_payload": {
+								"source_uuid": unit.ball_uuid,
+								"amount": 1,
+								"stat": "hp",
+								"skip_bump": false,
+								"targets_old_hp": [old_hp],
+								"targets_new_hp": [new_hp],
+								"targets_max_hp": [max_hp]
+							}
+						})
+						total_events.append(event)
+		
+		# WIND TRAIT: 2+ Souls -> Wind units steal 1 PWR from the opposite enemy
+		var wind_souls = traits.get("WIND", 0)
+		if wind_souls >= 2:
+			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var enemy_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			var is_player_team = (team == "PLAYER")
+			var units = get_instances_in_container(container_tag)
+			var enemy_container = get_container(enemy_container_tag)
+			var source_container = get_container(container_tag)
+			
+			for unit in units:
+				if not is_instance_valid(unit) or unit.current_hp <= 0:
+					continue
+				# Only Wind units trigger this
+				if not _has_trait_soul(unit, "WIND"):
+					continue
+				
+				# Get unit's slot index
+				var source_slot = source_container.get_index_of_uuid(unit.ball_uuid)
+				if source_slot == -1:
+					continue
+				
+				# Calculate mirror slot (opposite position)
+				var source_uuids = source_container.get_all_uuids()
+				var source_lineup_size = source_uuids.size()
+				var mirror_slot = (source_lineup_size - 1) - source_slot
+				
+				# Find enemy at mirror slot
+				var enemy_uuids = enemy_container.get_all_uuids()
+				var enemy: GachaBallInstance = null
+				
+				# Try mirror slot first
+				if mirror_slot >= 0 and mirror_slot < enemy_uuids.size():
+					var enemy_uuid = enemy_uuids[mirror_slot]
+					if not enemy_uuid.is_empty():
+						var potential = get_instance_by_uuid(enemy_uuid)
+						if is_instance_valid(potential) and potential.current_hp > 0:
+							enemy = potential
+				
+				# Fallback: target the backmost enemy if mirror slot is empty
+				if enemy == null:
+					if is_player_team:
+						# Backmost enemy for player = HIGHEST slot index
+						for slot_index in range(enemy_uuids.size() - 1, -1, -1):
+							var uuid = enemy_uuids[slot_index]
+							if uuid.is_empty():
+								continue
+							var potential = get_instance_by_uuid(uuid)
+							if is_instance_valid(potential) and potential.current_hp > 0:
+								enemy = potential
+								break
+					else:
+						# Backmost enemy for enemy team = LOWEST slot index
+						for slot_index in range(enemy_uuids.size()):
+							var uuid = enemy_uuids[slot_index]
+							if uuid.is_empty():
+								continue
+							var potential = get_instance_by_uuid(uuid)
+							if is_instance_valid(potential) and potential.current_hp > 0:
+								enemy = potential
+								break
+				
+				if enemy == null:
+					continue
+				
+				# Steal 1 PWR from enemy (but can't reduce below 1)
+				var enemy_old_pwr = enemy.current_pwr
+				var can_steal = enemy_old_pwr > 1 # Only steal if enemy has more than 1 PWR
+				
+				# Always gain 1 PWR regardless of whether we can steal
+				var unit_old_pwr = unit.current_pwr
+				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1)
+				
+				# Only reduce enemy PWR if they have more than 1
+				var enemy_new_pwr = enemy_old_pwr
+				if can_steal:
+					enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
+				
+				# Create debuff event for enemy (only if we could steal)
+				if can_steal:
+					var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
+						"target_uuids": [enemy.ball_uuid],
+						"ability_id": &"trait_wind_steal",
+						"visual_payload": {
+							"source_uuid": enemy.ball_uuid,
+							"stat": "pwr",
+							"amount": - 1,
+							"targets_old_pwr": [enemy_old_pwr],
+							"targets_new_pwr": [enemy_new_pwr]
+						}
+					})
+					total_events.append(debuff_event)
+				
+				# Create buff event for unit - projectile FROM enemy TO Wind unit
+				var buff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": enemy.ball_uuid, # Projectile originates FROM enemy
+					"target_uuids": [unit.ball_uuid], # Travels TO Wind unit
+					"ability_id": &"trait_wind_steal",
+					"visual_payload": {
+						"source_uuid": enemy.ball_uuid, # From enemy
+						"stat": "pwr",
+						"amount": 1,
+						"targets_old_pwr": [unit_old_pwr],
+						"targets_new_pwr": [unit_new_pwr]
+					}
+				})
+				total_events.append(buff_event)
 
 	return total_events
 

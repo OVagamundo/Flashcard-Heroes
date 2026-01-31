@@ -59,6 +59,8 @@ func populate(context: Dictionary) -> void:
 		match _trait_id:
 			"FIRE": icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket7A.png")
 			"EARTH": icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket6A.png")
+			"WATER": icon_rect.texture = preload("res://assets/sprites/items/WaterEmblem.png")
+			"WIND": icon_rect.texture = preload("res://assets/sprites/items/AirEmblem.png")
 	
 	# Build description text with highlighting
 	var text = ""

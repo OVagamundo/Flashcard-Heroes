@@ -565,7 +565,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			
 			# Fire triggers based on result data
 			for damaged_uuid in effect_result.damaged_uuids:
-				var damage_amount: int = effect_result.events[0].data.get("visual_payload", {}).get("amount", 0) if not effect_result.events.is_empty() else 0
+				var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
 				bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
 			
 			# Drain on_hurt reactions
@@ -577,6 +577,17 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			# Fire on_kill triggers
 			for killed_uuid in effect_result.killed_uuids:
 				bm.trigger_on_kill(request.source_uuid, killed_uuid)
+			
+			# Fire on_healed triggers for healed units
+			for healed_uuid in effect_result.healed_uuids:
+				var heal_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
+				TurnAbilities.trigger_on_healed(healed_uuid, heal_amount, request.source_uuid)
+			
+			# Drain on_healed reactions
+			if not effect_result.healed_uuids.is_empty():
+				drain_reactions_inline(0, bm)
+				var healed_inline_evts = collect_and_clear_inline_events()
+				out_events.append_array(healed_inline_evts)
 			
 			# Death check (unless skipped by effect)
 			if not effect_result.skip_death_check:

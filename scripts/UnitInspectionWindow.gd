@@ -405,7 +405,7 @@ func get_location() -> LocationIdentifier:
 
 ## Calculate trait counts for the inspected unit (including emblems)
 func _calculate_unit_trait_counts() -> Dictionary:
-	var counts: Dictionary = {"FIRE": 0, "EARTH": 0}
+	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0}
 	
 	if not is_instance_valid(_instance):
 		return counts
@@ -418,6 +418,10 @@ func _calculate_unit_trait_counts() -> Dictionary:
 				counts["FIRE"] += 1
 			elif tag == &"SOUL_EARTH":
 				counts["EARTH"] += 1
+			elif tag == &"SOUL_WATER":
+				counts["WATER"] += 1
+			elif tag == &"SOUL_WIND":
+				counts["WIND"] += 1
 	
 	# Count traits from equipped items (emblems)
 	var all_instances_db = _get_all_instances_db()
@@ -441,6 +445,10 @@ func _calculate_unit_trait_counts() -> Dictionary:
 				counts["FIRE"] += 1
 			elif tag == &"SOUL_EARTH":
 				counts["EARTH"] += 1
+			elif tag == &"SOUL_WATER":
+				counts["WATER"] += 1
+			elif tag == &"SOUL_WIND":
+				counts["WIND"] += 1
 	
 	return counts
 
@@ -496,3 +504,45 @@ func _update_trait_display() -> void:
 		earth_container.add_child(earth_icon)
 		earth_container.add_child(earth_label)
 		trait_icons_container.add_child(earth_container)
+	
+	# Display Water trait if count > 0
+	if trait_counts["WATER"] > 0:
+		var water_container = HBoxContainer.new()
+		water_container.add_theme_constant_override("separation", 4)
+		
+		var water_icon = TextureRect.new()
+		water_icon.texture = preload("res://assets/sprites/items/WaterEmblem.png")
+		water_icon.custom_minimum_size = Vector2(32, 32)
+		water_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		water_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		var water_label = Label.new()
+		water_label.text = "x%d" % trait_counts["WATER"]
+		water_label.add_theme_font_size_override("font_size", 20)
+		water_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		water_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		
+		water_container.add_child(water_icon)
+		water_container.add_child(water_label)
+		trait_icons_container.add_child(water_container)
+	
+	# Display Wind trait if count > 0
+	if trait_counts["WIND"] > 0:
+		var wind_container = HBoxContainer.new()
+		wind_container.add_theme_constant_override("separation", 4)
+		
+		var wind_icon = TextureRect.new()
+		wind_icon.texture = preload("res://assets/sprites/items/AirEmblem.png")
+		wind_icon.custom_minimum_size = Vector2(32, 32)
+		wind_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		wind_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		
+		var wind_label = Label.new()
+		wind_label.text = "x%d" % trait_counts["WIND"]
+		wind_label.add_theme_font_size_override("font_size", 20)
+		wind_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		wind_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		
+		wind_container.add_child(wind_icon)
+		wind_container.add_child(wind_label)
+		trait_icons_container.add_child(wind_container)
