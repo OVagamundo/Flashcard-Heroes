@@ -217,6 +217,7 @@ static func get_combat_board_snapshot(battle_instances: Dictionary) -> Dictionar
 			"pwr": inst.current_pwr,
 			"burn_stacks": inst.get_status_effect_amount(&"burn"), # Backward compat
 			"armor_stacks": inst.get_status_effect_amount(&"armor"), # Added for armor - same pattern as burn
+			"spikes_stacks": inst.get_status_effect_amount(&"spikes"), # Spikes status effect
 			"status_effects": inst.status_effects.duplicate(), # Generic
 			# Definition data for view creation
 			"def_id": def.id if is_instance_valid(def) else "",

@@ -89,7 +89,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			}
 		}))
 		
-		result.mark_healed(victim_uuid)
+		result.mark_healed(victim_uuid, heal_amount)
 		result.state_applied = true
 		return result
 	else:

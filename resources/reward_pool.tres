@@ -14,6 +14,8 @@
 [ext_resource type="Resource" path="res://resources/items/ItemTier2A.tres" id="12"]
 [ext_resource type="Resource" path="res://resources/items/ItemTier3D.tres" id="13"]
 
+[ext_resource type="Resource" path="res://resources/items/item_potion_t1.tres" id="14"]
+
 [resource]
 script = ExtResource("1_script")
-definitions = [ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13")]
+definitions = [ExtResource("2"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6"), ExtResource("7"), ExtResource("8"), ExtResource("9"), ExtResource("10"), ExtResource("11"), ExtResource("12"), ExtResource("13"), ExtResource("14")]

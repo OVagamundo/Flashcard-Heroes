@@ -1,11 +1,26 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
-[ext_resource type="Script" path="res://scripts/EffectBossAllyDeathGrowth.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
 
-[sub_resource type="Resource" id="EffectBossAllyDeathGrowth"]
+[sub_resource type="Resource" id="EffectModifyHP"]
 script = ExtResource("2_effect_script")
-parameters = { "hp_amount": 3, "pwr_amount": 2 }
+parameters = {
+"ability_id": "ability_boss_3_ally_growth",
+"base_value": 3,
+"log_format": "%s absorbs the soul of a fallen ally (+%d HP)",
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyPWR"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "ability_boss_3_ally_growth",
+"base_value": 2,
+"log_format": "%s grows stronger from death (+%d PWR)",
+"stat": "pwr"
+}
 target_type = &"SELF"
 
 [resource]
@@ -15,4 +30,4 @@ name_key = "ability.boss_3_ally_growth.name"
 description_key = "ability.boss_3_ally_growth.desc"
 trigger = &"on_ally_death"
 priority = 0
-effects = Array[Resource]([SubResource("EffectBossAllyDeathGrowth")])
+effects = Array[Resource]([SubResource("EffectModifyHP"), SubResource("EffectModifyPWR")])

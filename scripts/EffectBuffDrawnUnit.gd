@@ -146,8 +146,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 		else:
 			# Non-simulation: apply immediately
-			target_instance.set_current_hp(target_instance.current_hp + hp_amount)
-			target_instance.current_pwr = target_instance.current_pwr + pwr_amount
+			battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
+			battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
 			state_applied_any = true
 
 	if is_simulation:

@@ -1,11 +1,16 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
-[ext_resource type="Script" path="res://scripts/EffectGrantPWRAsHP.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
 
-[sub_resource type="Resource" id="EffectGrantPWRAsHP_1"]
-script = ExtResource("2_effect")
-parameters = {}
+[sub_resource type="Resource" id="EffectAllyShield"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t1_c_ally_shield",
+"log_format": "%s shields their ally (+%d HP)",
+"stat": "hp",
+"use_source_pwr": true
+}
 target_type = &"ALLY_SLOT_AHEAD"
 
 [resource]
@@ -13,6 +18,6 @@ script = ExtResource("1_ability")
 id = &"unit_t1_c_ally_shield"
 name_key = "ability.unit_t1_c_ally_shield.name"
 trigger = &"on_ally_hurt"
-effects = Array[Resource]([SubResource("EffectGrantPWRAsHP_1")])
+effects = Array[Resource]([SubResource("EffectAllyShield")])
 description_key = "ability.unit_t1_c_ally_shield.desc"
 priority = 100

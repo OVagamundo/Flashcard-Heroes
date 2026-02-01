@@ -420,6 +420,9 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					
 					# CRITICAL: Trigger on_before_damage for each target BEFORE damage
 					# This allows defensive abilities like Guardian's Defensive Stance to proc
+					# Capture queue size BEFORE triggering reactions to avoid draining unrelated events
+					var on_before_damage_start_index = _pending_reactions.size()
+					
 					for tgt_uuid in resolved_targets:
 						var tgt = bm.get_instance_by_uuid(tgt_uuid)
 						if is_instance_valid(tgt) and tgt.current_hp > 0:
@@ -433,7 +436,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 							AbilityResolver.process_trigger(&"on_before_damage", before_ctx)
 					
 					# Drain on_before_damage reactions before damage is applied
-					drain_reactions_inline(0, bm)
+					drain_reactions_inline(on_before_damage_start_index, bm)
 					var before_damage_evts = collect_and_clear_inline_events()
 					out_events.append_array(before_damage_evts)
 					
@@ -446,11 +449,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						return
 					
 					# Trigger on_hurt for damaged units
+					var on_hurt_start_index = _pending_reactions.size()
 					for tgt_uuid in damage_result.damaged_uuids:
 						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
 					
 					# Drain on_hurt reactions
-					drain_reactions_inline(0, bm)
+					drain_reactions_inline(on_hurt_start_index, bm)
 					var hurt_inline_evts = collect_and_clear_inline_events()
 					out_events.append_array(hurt_inline_evts)
 					
@@ -502,10 +506,11 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					var was_killed: bool = hit_data.was_killed
 					
 					# Trigger on_hurt for counter-attacks
+					var cascade_hurt_start = _pending_reactions.size()
 					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
 					
 					# Drain on_hurt reactions for THIS target
-					drain_reactions_inline(0, bm)
+					drain_reactions_inline(cascade_hurt_start, bm)
 					var cascade_hurt_inline_evts = collect_and_clear_inline_events()
 					out_events.append_array(cascade_hurt_inline_evts)
 					
@@ -528,9 +533,32 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				if not target_uuid.is_empty() and damage > 0:
 					var target_inst = bm.get_instance_by_uuid(target_uuid)
 					if is_instance_valid(target_inst) and target_inst.current_hp > 0:
-						var _old_hp = target_inst.current_hp
-						target_inst.current_hp = max(0, target_inst.current_hp - damage)
-						var new_hp = target_inst.current_hp
+						var old_hp = target_inst.current_hp
+						var old_armor = target_inst.get_status_effect_amount(&"armor")
+						var _old_spikes = target_inst.get_status_effect_amount(&"spikes")
+						
+						# Use apply_stat_delta to trigger Spikes (even though attacker is dead)
+						# The Spikes damage won't affect dead attacker, but stacks will decay properly
+						var damage_result = bm.apply_stat_delta(target_inst, "hp", -damage, false, source_uuid)
+						
+						var new_hp: int = damage_result.get("new_hp", target_inst.current_hp) if damage_result is Dictionary else target_inst.current_hp
+						var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
+						var new_armor: int = damage_result.get("new_armor", old_armor) if damage_result is Dictionary else old_armor
+						
+						# Extract Spikes data for animation (will be shown at impact)
+						var spikes_data_list: Array[Dictionary] = []
+						if damage_result is Dictionary and damage_result.has("spikes_data"):
+							var spikes = damage_result["spikes_data"]
+							spikes_data_list.append({
+								"attacker_uuid": spikes["attacker_uuid"],
+								"defender_uuid": spikes["defender_uuid"],
+								"spikes_damage": spikes["spikes_damage"],
+								"attacker_old_hp": spikes["attacker_old_hp"],
+								"attacker_new_hp": spikes["attacker_new_hp"],
+								"attacker_max_hp": 0, # Attacker is dead anyway
+								"old_spikes": spikes["old_spikes"],
+								"new_spikes": spikes["new_spikes"]
+							})
 						
 						# CRITICAL: Remove the DEATH event for the source since KAMIKAZE_ATTACK
 						# handles the death animation at the target position
@@ -547,7 +575,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 							"visual_payload": {
 								"source_uuid": source_uuid,
 								"amount": damage,
-								"targets_new_hp": [new_hp]
+								"targets_old_hp": [old_hp],
+								"targets_new_hp": [new_hp],
+								"targets_old_armor": [old_armor],
+								"targets_new_armor": [new_armor],
+								"armor_consumed": [armor_consumed],
+								"spikes_data_list": spikes_data_list
 							}
 						}))
 						
@@ -563,14 +596,14 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			
 			out_events.append_array(effect_result.events)
 			
-			# Fire triggers based on result data
-			for damaged_uuid in effect_result.damaged_uuids:
-				var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
-				bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
-			
-			# Drain on_hurt reactions
+			# Fire triggers based on result data and drain reactions
 			if not effect_result.damaged_uuids.is_empty():
-				drain_reactions_inline(0, bm)
+				var result_hurt_start = _pending_reactions.size()
+				for damaged_uuid in effect_result.damaged_uuids:
+					var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
+					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
+				
+				drain_reactions_inline(result_hurt_start, bm)
 				var hurt_inline_evts = collect_and_clear_inline_events()
 				out_events.append_array(hurt_inline_evts)
 			
@@ -578,14 +611,17 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			for killed_uuid in effect_result.killed_uuids:
 				bm.trigger_on_kill(request.source_uuid, killed_uuid)
 			
-			# Fire on_healed triggers for healed units
-			for healed_uuid in effect_result.healed_uuids:
-				var heal_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
-				TurnAbilities.trigger_on_healed(healed_uuid, heal_amount, request.source_uuid)
-			
-			# Drain on_healed reactions
-			if not effect_result.healed_uuids.is_empty():
-				drain_reactions_inline(0, bm)
+			# Fire on_healed triggers for healed units - each heal fires individually
+			if not effect_result.healed_events.is_empty():
+				var result_heal_start = _pending_reactions.size()
+				for heal_event in effect_result.healed_events:
+					var healed_uuid: String = String(heal_event.get("uuid", ""))
+					var heal_amount: int = int(heal_event.get("amount", 0))
+					if not healed_uuid.is_empty():
+						TurnAbilities.trigger_on_healed(healed_uuid, heal_amount, request.source_uuid)
+				
+				# Drain on_healed reactions
+				drain_reactions_inline(result_heal_start, bm)
 				var healed_inline_evts = collect_and_clear_inline_events()
 				out_events.append_array(healed_inline_evts)
 			
@@ -628,10 +664,11 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					var was_killed: bool = hit_data.was_killed
 					
 					# Trigger on_hurt for counter-attacks
+					var cascade_hurt_start = _pending_reactions.size()
 					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
 					
 					# Drain on_hurt reactions for THIS target
-					drain_reactions_inline(0, bm)
+					drain_reactions_inline(cascade_hurt_start, bm)
 					var cascade_hurt_inline_evts = collect_and_clear_inline_events()
 					out_events.append_array(cascade_hurt_inline_evts)
 					
@@ -688,11 +725,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						return
 					
 					# CRITICAL: Trigger on_hurt AFTER apply_stat_delta so condition checks see post-damage HP
+					var single_hurt_start = _pending_reactions.size()
 					for tgt_uuid in damage_result.damaged_uuids:
 						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
 					
 					# AEGIS FIX: Drain on_hurt effects BEFORE death check
-					drain_reactions_inline(0, bm)
+					drain_reactions_inline(single_hurt_start, bm)
 					
 					# CRITICAL: Collect inline events (like LETHAL_SAVE) immediately
 					var hurt_inline_evts = collect_and_clear_inline_events()
@@ -760,7 +798,10 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 		
 		# RECURSIVE PROCESSING: If this effect triggered new reactions, process them immediately
 		if not _pending_reactions.is_empty():
-			drain_reactions_inline(0, bm)
+			# Recursively drain reactions starting from the CURRENT local start_index
+			# This is correct because we resized the global queue to start_index, so any newly
+			# appended reactions start at start_index.
+			drain_reactions_inline(start_index, bm)
 
 ## Drain ONLY execute_on_lethal reactions WITHOUT recursive cascade processing.
 ## @param start_index: Only process reactions at index >= start_index

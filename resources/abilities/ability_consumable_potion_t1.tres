@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_consumable_potion_t1.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_consumable_potion_t1"
+name_key = "ability.potion_t1.name"
+description_key = "ability.potion_t1.desc"
+trigger = &"manual_activation"
+condition = null
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+replaces_basic_attack = false
+execute_on_lethal = false

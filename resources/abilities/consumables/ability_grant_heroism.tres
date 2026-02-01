@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_heroism_hp.tres" id="2_hp"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_heroism_pwr.tres" id="3_pwr"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_heroism_armor.tres" id="4_armor"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_grant_heroism"
+name_key = "ability.grant_heroism.name"
+description_key = "ability.grant_heroism.desc"
+trigger = &"manual_activation"
+effects = Array[Resource]([ExtResource("2_hp"), ExtResource("3_pwr"), ExtResource("4_armor")])
+priority = 0
+replaces_basic_attack = false
+execute_on_lethal = false

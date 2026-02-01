@@ -58,7 +58,8 @@ The rewards from the mini-game are **context-sensitive and do not carry over bet
 GachaBall Definition: The immutable template or blueprint for a GachaBall type (e.g., "Warrior Type A"), defining its base stats, abilities, and tags.
 GachaBall Instance: A live, unique, individual GachaBall existing within the game. Players collect and manage these instances, which track their own current stats and status.
 Units: The characters that fight in battles. They have Health (HP) and Power (PWR) stats and can equip Items in a set number of slots.
-Items: Equipment that provides stat bonuses or special effects when equipped on a Unit, or single-use consumables.
+Items: Equipment that provides stat bonuses or special effects when equipped on a Unit.
+Consumables: Single-use items that provide an immediate effect when used on a target and are then removed from the Battle Inventory.
 Tiers (0-3): A measure of a GachaBall's power level and draw cost. Tier 0 is reserved for Heroes.
 Rarity: A measure of a GachaBall's uniqueness and power within its tier (e.g., Common, Uncommon, Rare, Legendary).
 Tags: Descriptive labels on a GachaBall's definition (e.g., "Warrior," "Mage," "Beast") used for synergy calculations and ability targeting.
@@ -194,7 +195,8 @@ ContentArea: The large central portion of the screen that changes to show the ba
 **Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping one entity onto another. The logic is resolved in the following priority:
 1. **Merge:** If a valid MergeRecipe exists for the two entities, a Choice Window appears (Merge/Swap). This applies to units on the board, items in inventory, and items equipped on the same unit.
 2. **Equip:** If an Item from the ItemInventory is dropped on a Unit with an empty slot, it will Equip.
-3. **Move/Swap:** If none of the above conditions are met, the game will attempt to Swap the positions of the two entities. This is only valid if both entities can legally occupy the other's starting position (e.g., a Hero cannot be swapped into the bench).
+3. **Use Consumable:** If a Consumable from the Inventory is dropped on a Unit (Ally or Enemy), it is instantly consumed, applying its effect.
+4. **Move/Swap:** If none of the above conditions are met, the game will attempt to Swap the positions of the two entities. This is only valid if both entities can legally occupy the other's starting position (e.g., a Hero cannot be swapped into the bench).
 
 **Inspection Window System:**
 The system for inspecting units, items, and their effects follows a strict set of hierarchical rules to ensure clarity and prevent UI clutter. These rules apply globally.

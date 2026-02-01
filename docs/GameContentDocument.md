@@ -82,6 +82,15 @@ Items are equipped on units to provide stats and new abilities.
 | `item_t3_f` | Soul Siphon | **Bloodlust Blade + Large Potion** | +1 HP / +3 PWR | **Power Drain** (`on_damage_dealt`): Steal PWR from target. |
 | `item_emblem_fire` | Fire Emblem | (Defined in tres) | +2 PWR | **Fire Soul** (`passive`): Counts as a Fire unit. |
 | `item_emblem_earth` | Earth Emblem | (Defined in tres) | +4 HP | **Earth Soul** (`passive`): Counts as an Earth unit. |
+| `item_emblem_water` | Water Emblem | (Defined in tres) | +2 HP / +1 PWR | **Water Soul** (`passive`): Counts as a Water unit. |
+| `item_emblem_wind` | Wind Emblem | (Defined in tres) | +1 PWR / +2 HP | **Wind Soul** (`passive`): Counts as a Wind unit. |
+
+---
+### Consumables (Cost: 1)
+| ID | Name | Stats | Effect |
+|---|---|---|---|
+| `consumable_potion_healing_minor` | Minor Healing Potion | (None) | **Heal**: Restores 5 HP to the target unit (Ally or Enemy). Consumed on use. |
+| `item_potion_spikes` | Thorn Potion | (None) | **Status**: Grants **4 Spikes** stacks to the target unit. |
 
 ---
 
@@ -114,14 +123,28 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 | **9** | **Traitor's Flame**: Attacks deal **bonus damage** equal to the target's current Burn stacks. |
 
 ### Earth Trait (`SOUL_EARTH`)
-*Focus: Defensive Mitigation & Sustain*
+*Focus: Defensive Mitigation, Sustain & Damage Reflection*
 
 | Souls | Effect |
 |---|---|
-| **3** | All Allies gain **1 Armor**; Earth units gain **2 Armor**. |
-| **5** | All Allies gain **2 Armor**; Earth units gain **4 Armor**. |
-| **7** | All Allies gain **3 Armor**; Earth units gain **6 Armor**. |
-| **9** | **Fortress**: All Allies gain **4 Armor**; Earth units gain **8 Armor**. |
+| **3** | All Allies gain **1 Armor + 1 Spikes**; Earth units gain **2 Armor**. |
+| **5** | All Allies gain **2 Armor + 2 Spikes**; Earth units gain **4 Armor**. |
+| **7** | All Allies gain **3 Armor + 3 Spikes**; Earth units gain **6 Armor**. |
+| **9** | **Fortress**: All Allies gain **4 Armor + 4 Spikes**; Earth units gain **8 Armor**. |
+
+### Water Trait (`SOUL_WATER`)
+*Focus: Adjacent Healing & Resilience*
+
+| Souls | Effect |
+|---|---|
+| **2** | At Turn Start: Water units **heal adjacent allies** for 1 HP. |
+
+### Wind Trait (`SOUL_WIND`)
+*Focus: Power Theft & Disruption*
+
+| Souls | Effect |
+|---|---|
+| **2** | At Turn Start: Wind units **steal 1 PWR** from the opposite enemy (Mirror slot or backmost enemy; floor: 1 PWR). |
 
 ---
 

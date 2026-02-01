@@ -93,10 +93,13 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | `on_attack` | `attacker_uuid`, `target_uuid`, `target_initial_hp`, `is_simulation` |
 | `on_before_damage` | `source_uuid`, `defender_uuid`, `attacker_uuid`, `target_initial_hp`, `is_simulation` |
 | `on_hurt` | `victim_uuid`, `attacker_uuid`, `damage_taken`, `victim_team`, `victim_current_hp`, `is_simulation` |
+| `on_healed` | `healed_uuid`, `heal_amount`, `healer_uuid`, `is_simulation` |
 | `on_kill` | `attacker_uuid`, `killed_uuid`, `is_simulation` |
 | `on_death` | `dying_uuid`, `dying_team`, `dying_location`, `equipped_items` |
 | `on_ally_death` | `fainting_ally_uuid`, `fainting_ally_location`, `fainting_ally_team` |
 | `on_turn_start/end` | `turn_number` |
+| `on_draw` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
+| `on_token_spent` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
 
 ### Attack Types and Defensive Triggers
 
@@ -370,11 +373,13 @@ The `BattleAnimator` is dumb. It only knows what you tell it in `CombatEvent.vis
 |--------|----------|----------|
 | **Burn** | Deals stacks as damage at turn end, then reduces by 1 | Additive |
 | **Armor** | Absorbs damage before HP, consumed on hit | Additive |
+| **Spikes** | Deals stacks as damage to attacker when hit, then loses 1 stack | Additive |
 
 ### Implementation Pattern
 Status effects are defined in `StatusEffectRegistry.gd` and visualized on `GachaBallView` via dedicated containers:
 - `burn_container` / `burn_label`
 - `armor_container` / `armor_label`
+- Spikes uses the dynamic `_update_dynamic_status_icons()` system
 
 ### Adding a New Status Effect
 1. Create `StatusEffectDefinition` resource in `resources/status_effects/`
@@ -537,6 +542,9 @@ Before creating a new effect script, check if these existing ones handle your ca
 | `EffectSummonT2OnDeath.gd` | Spawn random T2 unit | `summon_request` |
 | `EffectResurrectFirstKilledUnit.gd` | Soul Echo resurrection | `summon_request` |
 | `EffectBossSummon.gd` | Boss wave reinforcements | `summon_units_request` |
+| `EffectBossDrawDrain.gd` | Boss 1 HP gain on draw | `events` (HEAL/BUFF) |
+| `EffectBossTokenDrain.gd` | Boss 2 HP gain on token spend | `events` (HEAL/BUFF) |
+| `EffectApplyStatus.gd` | Apply status effects (Spikes, Burn, etc.) | `events` (STATUS_EFFECT) |
 
 **Example: Adding a \"Grant +2 HP on ally death\" trinket**
 ```tres
@@ -723,12 +731,25 @@ Controls whether an ability can execute after the source unit has taken lethal d
 | Self-Heals | `false` | Can't heal yourself out of death |
 
 ### Example in `.tres` File
-```tres
-[resource]
-script = preload("res://scripts/AbilityDefinition.gd")
-id = &"item_t3d_retaliate_random"
-trigger = &"on_hurt"
-priority = 50
-effects = Array[Resource]([SubResource("BasicAttackEffect_Retaliate_1")])
-execute_on_lethal = true  # ← Allows execution after lethal damage
-```
+---
+
+## 14. Technical Distinction: Stats vs. Status Effects
+
+To prevent implementation errors and "silent failures," understand the architectural difference between a **Stat** and a **Status Effect**.
+
+### 14.1 Stats (HP and PWR)
+*   **Properties**: `current_hp`, `current_pwr`.
+*   **Storage**: Direct member variables on `GachaBallInstance`.
+*   **Implementation**: Use `EffectModifyStat.gd`.
+*   **Signals**: `unit_stat_changed` with keys `&"hp"` or `&"pwr"`.
+*   **Rule**: Stats define the core existence of a unit.
+
+### 14.2 Status Effects (Stacks)
+*   **Examples**: Burn, Armor, Spikes, Shield.
+*   **Storage**: Stored in the `status_effects` Dictionary on `GachaBallInstance`.
+*   **Implementation**: Use `EffectApplyStatus.gd`.
+*   **Signals**: `unit_stat_changed` with keys suffixed by `_stacks` (e.g., `&"burn_stacks"`, `&"spikes_stacks"`).
+*   **Rule**: If it has a numeric label in the UI (stacks), it is a Status Effect.
+
+> [!CAUTION]
+> **NEVER** use `EffectModifyStat.gd` for status effects like Spikes or Burn. It only contains logic for HP and PWR. Using it for status effects will result in a silent failure (no stacks added).

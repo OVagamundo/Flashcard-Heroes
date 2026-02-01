@@ -70,8 +70,23 @@ static func _calculate_scaled(param_dict: Dictionary, context: Dictionary, scrip
 	final_value += source_pwr * pwr_multiplier
 	final_value += source_hp * hp_multiplier
 	
-	# Note: base_hp_multiplier intentionally not supported
-	if param_dict.has("base_hp_multiplier") and param_dict["base_hp_multiplier"] != 0.0:
-		push_warning("[%s] base_hp_multiplier not supported - add source_base_hp to context" % script_name)
+	# Complex: Dynamic multiplier from context (e.g., "tokens_spent")
+	var multiplier_key: String = param_dict.get("context_multiplier_key", "")
+	if not multiplier_key.is_empty():
+		var context_val = context.get(multiplier_key, 1)
+		if context_val is int or context_val is float:
+			final_value *= float(context_val)
 	
-	return int(floor(final_value))
+	# Complex: Scaling by any context key (e.g., "damage_dealt" for lifesteal)
+	var scaling_key: String = param_dict.get("scaling_context_key", "")
+	var scaling_multiplier: float = param_dict.get("scaling_context_multiplier", 1.0)
+	if not scaling_key.is_empty():
+		var context_val = context.get(scaling_key, 0)
+		if context_val is int or context_val is float:
+			final_value += float(context_val) * scaling_multiplier
+			
+	# Optional: Clamping
+	var min_val: int = param_dict.get("min_value", -999999)
+	var max_val: int = param_dict.get("max_value", 999999)
+	
+	return clampi(int(floor(final_value)), min_val, max_val)

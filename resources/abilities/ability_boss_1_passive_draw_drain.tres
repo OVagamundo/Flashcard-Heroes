@@ -1,11 +1,16 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
-[ext_resource type="Script" path="res://scripts/EffectBossDrawDrain.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
 
-[sub_resource type="Resource" id="EffectBossDrawDrain"]
+[sub_resource type="Resource" id="EffectModifyStat"]
 script = ExtResource("2_effect_script")
-parameters = { "hp_amount": 1 }
+parameters = {
+"ability_id": "ability_boss_1_draw_drain",
+"base_value": 1,
+"log_format": "%s drains energy from your draw (+%d HP)",
+"stat": "hp"
+}
 target_type = &"SELF"
 
 [resource]
@@ -15,4 +20,4 @@ name_key = "ability.boss_1_draw_drain.name"
 description_key = "ability.boss_1_draw_drain.desc"
 trigger = &"on_draw"
 priority = 0
-effects = Array[Resource]([SubResource("EffectBossDrawDrain")])
+effects = Array[Resource]([SubResource("EffectModifyStat")])

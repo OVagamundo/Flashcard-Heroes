@@ -77,7 +77,7 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 	var target_container_tag: StringName
 	var target_capacity: int
 	match def.category:
-		&"UNIT", &"ITEM":
+		&"UNIT", &"ITEM", &"CONSUMABLE":
 			# Both units and items go to the unified bench
 			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
 			target_capacity = player_bench_capacity

@@ -1,6 +1,9 @@
 # res://scripts/InventoryManager.gd
 extends Node
 
+const C = preload("res://scripts/Constants.gd")
+const AC = preload("res://scripts/animations/AnimationConstants.gd")
+
 func _ready() -> void:
 	SignalBus.try_inventory_action.connect(_on_try_inventory_action)
 	SignalBus.choice_made.connect(_on_choice_made)
@@ -14,6 +17,15 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 	if is_instance_valid(early_source_instance) and is_instance_valid(early_target_instance):
 		var sdef = early_source_instance.get_definition()
 		var tdef = early_target_instance.get_definition()
+		
+		# Early-case: Consumable usage on a specific unit
+		if sdef.category == C.CATEGORY_CONSUMABLE and tdef.category == C.CATEGORY_UNIT:
+			# Allow consumables on both Player and Enemy units (regardless of test mode)
+			var allowed_consumable_containers = [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]
+			if target_loc.container in allowed_consumable_containers:
+				_use_consumable(early_source_instance, early_target_instance)
+				return
+		
 		# Rule I3: Allow equipping from InventoryGrid or BattleBoard (PlayerBench) onto a UNIT on the board
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 		var allowed_containers = [&"PlayerLineup", &"PlayerBench"]
@@ -163,6 +175,68 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 			_merge(source_loc, target_loc, recipe_id)
 		&"SWAP":
 			_swap(source_loc, target_loc)
+
+func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
+	var def = consumable_instance.get_definition()
+	if not def or def.ability_definitions.is_empty():
+		GlobalInteractionRouter.end_drag(false)
+		return
+	
+	var ability = def.ability_definitions[0]
+	# ARCHITECTURE: In Battle, runs are SILENT. The Animator acts as the visual puppet.
+	# We prevent the "Index" (UI) from reacting to "Truth" updates until the "VCR" sequence is done.
+	var is_battle = GameManager.is_in_battle
+	# Always run as simulation to get EffectResult with events
+	var context = {"is_simulation": true, "silent": is_battle}
+	var owner = _get_data_owner()
+	
+	var events: Array[CombatEvent] = []
+	var snapshot: Dictionary = {}
+	var any_success = false
+	
+	# Initial snapshot of target unit
+	# CRITICAL: Snapshot MUST contain location data for the animator to find the view
+	var target_loc = target_unit.get_location()
+	var target_snap = VisualDataAdapter.create_visual_data(target_unit, owner.get_all_instances())
+	target_snap["container_tag"] = target_loc.container
+	target_snap["slot_index"] = target_loc.index
+	snapshot[target_unit.ball_uuid] = target_snap
+	
+	for effect in ability.effects:
+		if not is_instance_valid(effect): continue
+		
+		# Execute effect in Execution Mode (is_simulation=false)
+		var targets: Array[String] = [target_unit.ball_uuid]
+		var res = effect.execute(consumable_instance.ball_uuid, targets, owner, context)
+		
+		if res != null:
+			any_success = true
+			# Use the fully-formed events from the EffectResult (includes logs, visual payloads, etc.)
+			if not res.events.is_empty():
+				events.append_array(res.events)
+	
+	if any_success:
+		# AUDIO HOOK: Consumable usage sound
+		Audio.play_sfx("ui_heal")
+		
+		# Orchestration: Block UI refreshes during the animation sequence
+		if is_battle:
+			var bm = get_tree().get_first_node_in_group("battle_manager")
+			if is_instance_valid(bm) and bm.has_method("set_processing_effect"):
+				bm.set_processing_effect(true)
+		
+		# Consumable is consumed (This triggers inventory signals, which will be deferred by BM)
+		owner.remove_instance(consumable_instance.ball_uuid)
+		GlobalInteractionRouter.end_drag(true)
+		SignalBus.emit_signal("inventory_action_completed", [target_unit.ball_uuid])
+		
+		# Play all collected animations in sequence
+		var animator = get_tree().get_first_node_in_group("battle_animator")
+		if is_instance_valid(animator) and not events.is_empty():
+			await animator.play_turn_sequence(snapshot, events)
+	else:
+		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
+		GlobalInteractionRouter.end_drag(false)
 
 # --- Core Logic Functions ---
 

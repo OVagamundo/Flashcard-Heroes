@@ -1,11 +1,17 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
-[ext_resource type="Script" path="res://scripts/EffectBossTokenDrain.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
 
-[sub_resource type="Resource" id="EffectBossTokenDrain"]
+[sub_resource type="Resource" id="EffectModifyStat"]
 script = ExtResource("2_effect_script")
-parameters = { "hp_amount": 1 }
+parameters = {
+"ability_id": "ability_boss_2_token_drain",
+"base_value": 1,
+"context_multiplier_key": "tokens_spent",
+"log_format": "%s feeds on your spent tokens (+%d HP)",
+"stat": "hp"
+}
 target_type = &"SELF"
 
 [resource]
@@ -15,4 +21,4 @@ name_key = "ability.boss_2_token_drain.name"
 description_key = "ability.boss_2_token_drain.desc"
 trigger = &"on_token_spent"
 priority = 0
-effects = Array[Resource]([SubResource("EffectBossTokenDrain")])
+effects = Array[Resource]([SubResource("EffectModifyStat")])

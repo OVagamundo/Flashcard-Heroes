@@ -23,8 +23,8 @@ var damaged_uuids: Array[String] = []
 ## UUIDs of units that were killed. Used to trigger on_kill.
 var killed_uuids: Array[String] = []
 
-## UUIDs of units that were healed.
-var healed_uuids: Array[String] = []
+## Heal events - each element is {uuid, amount} dict so same unit can trigger multiple times
+var healed_events: Array[Dictionary] = []
 
 # ============================================================================
 # STATE FLAGS
@@ -83,10 +83,10 @@ func mark_killed(uuid: String) -> void:
 	if not uuid.is_empty() and not killed_uuids.has(uuid):
 		killed_uuids.append(uuid)
 
-## Mark a unit as healed.
-func mark_healed(uuid: String) -> void:
-	if not uuid.is_empty() and not healed_uuids.has(uuid):
-		healed_uuids.append(uuid)
+## Mark a heal event. Unlike damage/kill, heals should trigger for EACH event (not deduplicated).
+func mark_healed(uuid: String, amount: int = 0) -> void:
+	if not uuid.is_empty():
+		healed_events.append({"uuid": uuid, "amount": amount})
 
 ## Create a simple result with a single event.
 static func from_event(event: CombatEvent) -> EffectResult:
