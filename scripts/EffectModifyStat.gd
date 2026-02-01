@@ -66,9 +66,17 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		
 		# Get source name once
 		var source_name: String = ""
+		# Resolve visual source (items shoot from their holder)
+		var visual_source_uuid = _source_uuid
+		
 		if not _source_uuid.is_empty():
 			var src = battle_manager.get_instance_by_uuid(_source_uuid)
-			source_name = BattleHelpers.get_instance_display_name(src)
+			if is_instance_valid(src):
+				source_name = BattleHelpers.get_instance_display_name(src)
+				# If source is an equipped item, use the holder's UUID for visual origin
+				if not src.equipped_on_uuid.is_empty():
+					visual_source_uuid = src.equipped_on_uuid
+					
 		if source_name == "":
 			source_name = String(context.get("ability_id", "effect"))
 		
@@ -120,7 +128,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": {
-						"source_uuid": _source_uuid,
+						"source_uuid": visual_source_uuid,
 						"amount": amount,
 						"stat": stat,
 						"skip_bump": parameters.get("skip_bump", false),
@@ -152,7 +160,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": {
-						"source_uuid": _source_uuid,
+						"source_uuid": visual_source_uuid,
 						"amount": amount,
 						"stat": stat,
 						"targets_old_pwr": all_old_vals,
@@ -182,7 +190,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": {
-						"source_uuid": _source_uuid,
+						"source_uuid": visual_source_uuid,
 						"amount": amount,
 						"stat": stat,
 						"targets_old_val": all_old_vals,

@@ -36,7 +36,7 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 ### Tier 3 Units (Cost: 3)
 | ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
 |---|---|---|---|---|---|---|
-| `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 | 4 Fire | **Mirror Strike** (`on_attack`): Attacks the enemy in the equivalent slot index. |
+| `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in the opposite mirror slot. If empty, targets the backmost enemy. |
 | `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 | 4 Earth | **Guardian Sacrifice** (`passive_intercept`): Leaps to intercept lethal damage on allies. |
 | `unit_t3_c` | Necromancer | **Paladin + Berserker** | 5 HP / 5 PWR | 4 | 2 Fire, 2 Earth | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death. |
 | `unit_t3_d` | Warden | **Knight + Knight** | 6 HP / 6 PWR | 4 | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): Grants +1 HP/+1 PWR to adjacent allies. |
@@ -91,6 +91,8 @@ Items are equipped on units to provide stats and new abilities.
 |---|---|---|---|
 | `consumable_potion_healing_minor` | Minor Healing Potion | (None) | **Heal**: Restores 5 HP to the target unit (Ally or Enemy). Consumed on use. |
 | `item_potion_spikes` | Thorn Potion | (None) | **Status**: Grants **4 Spikes** stacks to the target unit. |
+| `item_potion_heroism` | Heroism Potion | (None) | **Buff**: Grants **+3 HP**, **+3 PWR**, and **3 Armor** stacks to the target unit. |
+| `consumable_potion_plunder` | Potion of Plunder | (None) | **Steal**: Steals a random equipped item from the target. Returns if invalid. |
 
 ---
 

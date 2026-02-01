@@ -255,8 +255,6 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 
 		for ability in definition.ability_definitions:
 			if ability.trigger == trigger:
-				if ability.get("replaces_basic_attack") and trigger == &"on_attack":
-					context["attack_replaced"] = true
 				_process_ability(ability, instance_uuid, battle_manager, context)
 
 
@@ -316,6 +314,8 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		if not condition_result:
 			return # Condition failed, skip this ability
 	
+	var ability_activated := false
+	
 	# Process each effect in the ability
 	for effect in ability.effects:
 		if not is_instance_valid(effect):
@@ -323,6 +323,10 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		
 		# Resolve targets for this effect
 		var resolved_targets: Array[String] = battle_manager.resolve_target(source_uuid, effect.target_type, context)
+		
+		# If we found valid targets, mark ability as activated
+		if not resolved_targets.is_empty():
+			ability_activated = true
 		
 		# Create EffectRequest
 		# For counter-attack abilities, mark the context to identify counter-attack effects
@@ -341,3 +345,8 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		
 		# Enqueue the request
 		battle_manager.enqueue_effect_request(effect_request)
+
+	# If ability successfully activated (found targets) AND it replaces basic attack, set flag
+	# This ensures we fallback to basic attack if the special ability fails to find a target (e.g. empty mirror slot)
+	if ability_activated and ability.get("replaces_basic_attack") and context.get("trigger_type") == &"on_attack":
+		context["attack_replaced"] = true

@@ -57,7 +57,7 @@ The rewards from the mini-game are **context-sensitive and do not carry over bet
 "GachaBalls" are the collectible entities that form the player's team and arsenal.
 GachaBall Definition: The immutable template or blueprint for a GachaBall type (e.g., "Warrior Type A"), defining its base stats, abilities, and tags.
 GachaBall Instance: A live, unique, individual GachaBall existing within the game. Players collect and manage these instances, which track their own current stats and status.
-Units: The characters that fight in battles. They have Health (HP) and Power (PWR) stats and can equip Items in a set number of slots.
+Units: The characters that fight in battles. They have Health (HP) and Power (PWR) stats and can equip Items in a set number of slots. NOTE: Units do not have a "Max HP" cap. Health can scale infinitely. Healing adds to current HP.
 Items: Equipment that provides stat bonuses or special effects when equipped on a Unit.
 Consumables: Single-use items that provide an immediate effect when used on a target and are then removed from the Battle Inventory.
 Tiers (0-3): A measure of a GachaBall's power level and draw cost. Tier 0 is reserved for Heroes.
@@ -68,7 +68,7 @@ Tags: Descriptive labels on a GachaBall's definition (e.g., "Warrior," "Mage," "
 The player's persistent collection of unique GachaBall Instances for the current run. It functions as the player's "deck" and is managed between encounters via the Run Inventory Window.
 6.2. Battle Inventory & Gacha Machines
 During the management phase of a battle, the player has access to three Gacha Machines, corresponding to Tiers 1, 2, and 3.
-Battle Inventory: At the start of each battle, a temporary copy of the entire Run Inventory is created. This is the Battle Inventory, and it serves as the drawable pool for the Gacha Machines for that battle only.
+Battle Inventory: At the start of each battle, a temporary copy of the entire Run Inventory is created. This is the "Gacha Pool" inside the machines. It is NOT a "Hand" that the player holds. It serves as the drawable pool for the Gacha Machines for that battle only.
 Drawing: The player spends Gacha Tokens to draw a random GachaBall from the machine of the corresponding tier. The cost scales with the tier (Tier 1 costs 1 token, Tier 2 costs 2, etc.).
 Inspection: The player can inspect a Gacha Machine to view the current contents of its corresponding section of the Battle Inventory. This shows a summary of the types of GachaBalls and their counts (e.g., "Warrior x2, Archer x1").
 Discard Pile: A single Battle Discard Pile exists for the current battle. Defeated units, their salvaged items, and GachaBalls drawn when the bench/inventory is full are sent here.
@@ -195,7 +195,7 @@ ContentArea: The large central portion of the screen that changes to show the ba
 **Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping one entity onto another. The logic is resolved in the following priority:
 1. **Merge:** If a valid MergeRecipe exists for the two entities, a Choice Window appears (Merge/Swap). This applies to units on the board, items in inventory, and items equipped on the same unit.
 2. **Equip:** If an Item from the ItemInventory is dropped on a Unit with an empty slot, it will Equip.
-3. **Use Consumable:** If a Consumable from the Inventory is dropped on a Unit (Ally or Enemy), it is instantly consumed, applying its effect.
+3. **Use Consumable:** If a Consumable from the Bench is dropped on a Unit (Ally or Enemy), it is instantly consumed, applying its effect.
 4. **Move/Swap:** If none of the above conditions are met, the game will attempt to Swap the positions of the two entities. This is only valid if both entities can legally occupy the other's starting position (e.g., a Hero cannot be swapped into the bench).
 
 **Inspection Window System:**

@@ -27,7 +27,7 @@ func _ready() -> void:
 	_load_resources_from_path("res://resources/recipes/", recipes)
 	_load_resources_from_path("res://resources/abilities/", abilities)
 	_load_resources_from_path("res://resources/abilities/consumables/", abilities)
-	_load_reward_pool_definitions()
+
 	
 	# Load flashcard definitions from JSON
 	_load_flashcard_definitions()
@@ -172,23 +172,30 @@ func get_cards_for_deck(deck_id: StringName) -> Array[StringName]:
 		return deck_definitions[deck_id].card_ids
 	return []
 
-## Loads all GachaBallDefinitions from the reward pool and adds them to the units/items dictionaries
-## This ensures all possible reward definitions are properly registered with the database
-func _load_reward_pool_definitions() -> void:
-	var reward_pool = load("res://resources/reward_pool.tres")
-	if not is_instance_valid(reward_pool):
-		return
+## Returns all definitions valid for the reward/shop pool (Tier > 0, non-Hero, non-Boss, non-Token)
+func get_all_pool_definitions() -> Array[GachaBallDefinition]:
+	var pool: Array[GachaBallDefinition] = []
+	
+	# Collect from units
+	for unit in units.values():
+		if _is_valid_for_pool(unit):
+			pool.append(unit)
+			
+	# Collect from items
+	for item in items.values():
+		if _is_valid_for_pool(item):
+			pool.append(item)
+			
+	return pool
 
-	for definition in reward_pool.definitions:
-		if not is_instance_valid(definition):
-			continue
-		
-		if definition.category == &"UNIT":
-			if not units.has(definition.id):
-				units[definition.id] = definition
-		elif definition.category == &"ITEM":
-			if not items.has(definition.id):
-				items[definition.id] = definition
+func _is_valid_for_pool(def: GachaBallDefinition) -> bool:
+	if not is_instance_valid(def): return false
+	if def.is_hero: return false
+	if def.tier < 1: return false
+	if def.tags.has(&"BOSS"): return false
+	if def.tags.has(&"TOKEN"): return false
+	if def.tags.has(&"HIDDEN"): return false
+	return true
 
 ## Loads flashcard definitions from JSON files in the decks directory
 func _load_flashcard_definitions() -> void:

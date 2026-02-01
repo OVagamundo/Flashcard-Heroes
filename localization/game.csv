@@ -319,3 +319,7 @@ item.potion_heroism.name,Heroism Potion,Poção de Heroísmo
 item.potion_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor to target unit.","Concede +3 HP, +3 PWR e 3 de Armadura à unidade alvo."
 ability.grant_heroism.name,Heroism,Heroísmo
 ability.grant_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor stacks.","Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
+item.potion_plunder.name,Potion of Plunder,Poção do Saqueador
+item.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatório do alvo.
+ability.potion_plunder.name,Plunder,Saquear
+ability.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatório do alvo.
