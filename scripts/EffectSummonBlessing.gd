@@ -72,6 +72,6 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 		}
 	}))
 	
-	result.mark_healed(summoned_uuid)
+	result.mark_healed(summoned_uuid, hp_amount)
 	result.state_applied = true
 	return result

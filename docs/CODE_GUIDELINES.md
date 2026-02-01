@@ -9,7 +9,9 @@
 Flashcard Heroes uses a **Hybrid Architecture** that strictly separates "Truth" from "Indexing".
 
 ### 1.1 The Single Source of Truth
-*   **The Instance (`GachaBallInstance`) is King.** It owns the data (HP, PWR, Status).
+*   **The Instance (`GachaBallInstance`) is King.** It owns the data.
+    *   **Stats** (HP, PWR) are direct member variables.
+    *   **Status Effects** (Burn, Spikes, Armor) are stored in the `status_effects` dictionary.
 *   **The Container (`Inventory`, `Lineup`) is just a List.** It only holds UUIDs. It *never* owns data.
 *   **No Caching:** Never cache properties like `current_hp` in localized variables for longer than a single function scope. Always query the instance.
 
@@ -30,6 +32,7 @@ The Simulation Layer is **BLIND**.
 *   ❌ **NEVER** emit signals (except for debug/logging).
 *   ❌ **NEVER** instantiate `.tscn` files or visual nodes.
 *   ✅ **ALWAYS** return data (`CombatEvent`, `EffectResult`) for the UI to consume later.
+*   ✅ **ALWAYS** use `is_simulation: true` when you need detailed events (even in Battle). Legacy `int` returns are banned.
 
 ### 2.2 The Zero-Mutation Rule (`is_simulation`)
 Every ability/effect receives an `is_simulation` flag.
@@ -60,6 +63,13 @@ During the `COMBAT` phase, the UI must **NEVER** query the live `GachaBallInstan
 *   ❌ **Banned in UI:** `BattleManager.get_instance(id)`
 *   ✅ **Allowed:** `_visual_snapshot[id]`
 
+### 3.3 The Puppet Mode (Orchestration)
+During complex animation sequences (like a potion usage with multiple effects), the Data Model ("Truth") updates instantly, but visuals must play sequentially.
+*   **Silence the Index:** The Manager actively blocks global UI refreshes (`set_processing_effect(true)`) during the sequence.
+*   **Guard the Puppet:** The View actively ignores "loud" signals (`unit_stat_changed`) if the Manager is in Puppet Mode.
+*   **Tween, Don't Snap:** Visual updates must *always* tween from the current visual value, not snap to the new data value.
+*   **Static vs. Dynamic:** `populate()` and `update_visuals()` are **STATIC** operations and must explicit disable animation (`animate=false`). Events are **DYNAMIC** and explicit enable animation.
+
 ---
 
 ## 4. Ability & Trinket Standards
@@ -79,6 +89,8 @@ Trinkets are not "held" by units in the simulation sense (even if the UI shows t
 ## 5. The "Never" List (Critical Anti-Patterns)
 
 1.  **Never `await` in Simulation:** The simulation must be synchronous and instant. `await` breaks the VCR generation.
+2.  **Never Return Primitives from Effects:** Effects must return `EffectResult` objects. Returning raw `int` or `bool` causes crashes in the animation loop.
+3.  **Never Defensive Code:** Do not use `if is_instance_valid(x): return`. Use `assert(is_instance_valid(x))` and crash. We fail fast to find bugs, we don't hide them.
 2.  **Never Defensive Code:** Do not use `if is_instance_valid(x): return`. Use `assert(is_instance_valid(x))` and crash. We fail fast to find bugs, we don't hide them.
 3.  **Never Modify Core for One Ability:** If you need to change `BattleManager.gd` for a specific trinket, your design is wrong. Use the existing Event/Trigger system.
 4.  **Never Mix Logic and Visuals:** If your script imports `Control` or `Sprite2D`, it CANNOT contain combat logic. If your script imports `GachaBallInstance`, it CANNOT contain visual code.

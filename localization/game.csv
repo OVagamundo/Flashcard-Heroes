@@ -278,6 +278,8 @@ STATUS_BURN,Burn,Queimadura
 STATUS_BURN_DESC,"Deals damage equal to burn stacks at end of turn, then halves.","Causa dano igual às pilhas de queimadura no fim do turno, depois divide pela metade."
 STATUS_ARMOR,Armor,Armadura
 STATUS_ARMOR_DESC,"Absorbs damage before HP. Clears at end of turn.","Absorve dano antes do HP. Limpa no fim do turno."
+STATUS_SPIKES,Spikes,Espinhos
+STATUS_SPIKES_DESC,"Deals stacks as damage to attacker when hit, then loses 1 stack.","Causa pilhas como dano ao atacante quando atingido, então perde 1 pilha."
 trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,"Grants +2 HP and +2 PWR to Tier 1 units when drawn.","Concede +2 HP e +2 PWR a unidades Nível 1 ao serem sacadas."
 ability.royal_insignia.name,Royal Blessing,Bênção Real
@@ -288,10 +290,10 @@ trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total
 trait.fire.7,"Start of Turn: Apply 2 Burn to ALL enemies.","Início do Turno: Aplica 2 Queimadura a TODOS inimigos."
 trait.fire.9,"Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.","Chama do Traidor: Ataques causam dano bônus igual às pilhas de Queimadura do alvo."
 trait.earth.name,Earth,Terra
-trait.earth.3,"All Allies gain 1 Armor. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura."
-trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura."
-trait.earth.7,"All Allies gain 3 Armor. Earth units gain 6 Armor.","Todos aliados ganham 3 Armadura. Unidades de Terra ganham 6 Armadura."
-trait.earth.9,"Fortress: All Allies gain 4 Armor. Earth units gain 8 Armor.","Fortaleza: Todos aliados ganham 4 Armadura. Unidades de Terra ganham 8 Armadura."
+trait.earth.3,"All Allies gain 1 Armor + 1 Spikes. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura + 1 Espinhos. Unidades de Terra ganham 2 Armadura."
+trait.earth.5,"All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura."
+trait.earth.7,"All Allies gain 3 Armor + 3 Spikes. Earth units gain 6 Armor.","Todos aliados ganham 3 Armadura + 3 Espinhos. Unidades de Terra ganham 6 Armadura."
+trait.earth.9,"Fortress: All Allies gain 4 Armor + 4 Spikes. Earth units gain 8 Armor.","Fortaleza: Todos aliados ganham 4 Armadura + 4 Espinhos. Unidades de Terra ganham 8 Armadura."
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
 item.emblem_fire.desc,"When equipped, this unit counts as a Fire unit. Grants +2 PWR.","Quando equipado, esta unidade conta como uma unidade de Fogo. Concede +2 PWR."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
@@ -305,3 +307,15 @@ item.emblem_water.desc,"When equipped, this unit counts as a Water unit. Grants 
 item.emblem_wind.name,Wind Emblem,Emblema de Vento
 item.emblem_wind.desc,"When equipped, this unit counts as a Wind unit. Grants +1 PWR and +2 HP.","Quando equipado, esta unidade conta como uma unidade de Vento. Concede +1 PWR e +2 HP."
 
+item.potion_t1.name,Minor Healing Potion,Poção de Cura Menor
+item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.
+ability.potion_t1.name,Drink,Beber
+ability.potion_t1.desc,Restores 4 HP.,Restaura 4 HP.
+item.potion_spikes.name,Thorn Potion,Poção de Espinhos
+item.potion_spikes.desc,"Grants 4 Spikes to target. Spikes damage attackers then lose a stack.","Concede 4 Espinhos ao alvo. Espinhos causam dano a atacantes e perdem uma pilha."
+ability.grant_spikes.name,Thorn Skin,Pele de Espinhos
+ability.grant_spikes.desc,Grants 4 Spikes stacks,Concede 4 pilhas de Espinhos
+item.potion_heroism.name,Heroism Potion,Poção de Heroísmo
+item.potion_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor to target unit.","Concede +3 HP, +3 PWR e 3 de Armadura à unidade alvo."
+ability.grant_heroism.name,Heroism,Heroísmo
+ability.grant_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor stacks.","Concede +3 HP, +3 PWR e 3 pilhas de Armadura."

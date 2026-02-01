@@ -57,6 +57,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		"pwr": instance.current_pwr,
 		"burn_stacks": instance.get_status_effect_amount(&"burn"), # Backward compat
 		"armor_stacks": instance.get_status_effect_amount(&"armor"), # Same pattern as burn
+		"spikes_stacks": instance.get_status_effect_amount(&"spikes"), # Spikes status effect
 		"status_effects": instance.status_effects.duplicate(), # Generic status effects
 		
 		# Equipped items (for units only)

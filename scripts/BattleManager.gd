@@ -59,6 +59,7 @@ const _EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
+var _pending_inventory_refresh: bool = false
 
 
 # -----------------------------------------------------------------------------
@@ -102,6 +103,12 @@ func _ready() -> void:
 func get_current_phase() -> Phases:
 	return _current_battle_phase
 
+func is_processing_effect() -> bool:
+	return _is_processing_effect
+
+func set_processing_effect(active: bool) -> void:
+	_is_processing_effect = active
+
 func _exit_tree() -> void:
 	GameManager.unregister_battle_manager() # ADD THIS LINE
 	GameManager.is_in_battle = false
@@ -129,7 +136,11 @@ func _connect_signals() -> void:
 	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 func _emit_battle_inventory_changed() -> void:
-	SignalBus.emit_signal("battle_inventory_changed")
+	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
+		SignalBus.emit_signal("battle_inventory_changed")
+		_pending_inventory_refresh = false
+	else:
+		_pending_inventory_refresh = true
 
 
 func start_battle(encounter_def: EncounterDefinition) -> void:
@@ -616,6 +627,9 @@ func _on_turn_animation_finished() -> void:
 	# Finalize any remaining deaths (removes zombies)
 	_finalize_deaths()
 	
+	if _pending_inventory_refresh:
+		_emit_battle_inventory_changed()
+	
 	if _current_battle_phase == Phases.START_OF_TURN:
 		# Turn start abilities finished animating, transition to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
@@ -978,7 +992,7 @@ func _get_ability_definition(ability_id: StringName, source: GachaBallInstance) 
 ## @param stat_type: The stat to modify ("hp", "pwr", "burn_stacks", etc.)
 ## @param delta: The amount to add (negative for damage)
 ## @param bypass_armor: If true, damage bypasses armor (for future armor-piercing abilities)
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, bypass_armor: bool = false) -> Variant:
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, bypass_armor: bool = false, attacker_uuid: String = "") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
 	# CRITICAL: Reject damage to already-dead units
@@ -1013,16 +1027,49 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 			var new_hp = instance.current_hp + actual_delta
 			instance.set_current_hp_silent(new_hp)
 			
+			# SPIKES REFLECTION: Handle Spikes status effect for HP damage
+			# Spikes deals current stacks as damage to attacker, then decays by 1
+			var spikes_data: Dictionary = {}
+			if delta < 0 and not attacker_uuid.is_empty():
+				var old_spikes = instance.get_status_effect_amount(&"spikes")
+				if old_spikes > 0:
+					var attacker = get_instance_by_uuid(attacker_uuid)
+					if is_instance_valid(attacker) and attacker.current_hp > 0:
+						# Deal spikes damage to attacker (bypasses armor, direct HP damage)
+						var spikes_damage = old_spikes
+						var attacker_old_hp = attacker.current_hp
+						var attacker_new_hp = max(0, attacker_old_hp - spikes_damage)
+						attacker.set_current_hp_silent(attacker_new_hp)
+						
+						# Decay spikes by 1 stack
+						instance.add_status_effect_silent(&"spikes", -1)
+						var new_spikes = instance.get_status_effect_amount(&"spikes")
+						
+						# Collect spikes data for presentation layer (does NOT emit events here!)
+						spikes_data = {
+							"spikes_triggered": true,
+							"spikes_damage": spikes_damage,
+							"attacker_uuid": attacker_uuid,
+							"attacker_old_hp": attacker_old_hp,
+							"attacker_new_hp": attacker_new_hp,
+							"defender_uuid": instance.ball_uuid,
+							"old_spikes": old_spikes,
+							"new_spikes": new_spikes
+						}
+			
 			# For damage, return full mitigation data for animations
 			# For heals, just return new_hp for backwards compatibility
 			if delta < 0:
-				return {
+				var result = {
 					"new_hp": new_hp,
 					"armor_consumed": armor_consumed,
 					"old_armor": old_armor,
 					"new_armor": new_armor,
 					"hp_damage": abs(actual_delta)
 				}
+				if not spikes_data.is_empty():
+					result["spikes_data"] = spikes_data
+				return result
 			else:
 				return new_hp
 		"pwr":
@@ -1166,6 +1213,7 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	
 	# Play via animator (uses existing VCR pattern)
 	if not events.is_empty():
+		_is_processing_effect = true # Block UI redraws while animating management effects
 		_animator.play_turn_sequence(snapshot, events)
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
@@ -1666,24 +1714,25 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 		
 		# EARTH TRAIT: 3/5/7/9 Souls
 		# - All Team Units gain 1/2/3/4 Armor
-		# - Earth Units gain DOUBLE this amount (2/4/6/8)
+		# - Earth Units gain DOUBLE Armor (2/4/6/8)
+		# - All Team Units gain 1/2/3/4 Spikes (not doubled)
 		var earth_souls = traits.get("EARTH", 0)
 		if earth_souls >= 3:
 			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var units = get_instances_in_container(container_tag)
 			
-			var base_armor = 1
+			var base_value = 1
 			if earth_souls >= 9:
-				base_armor = 4
+				base_value = 4
 			elif earth_souls >= 7:
-				base_armor = 3
+				base_value = 3
 			elif earth_souls >= 5:
-				base_armor = 2
+				base_value = 2
 				
 			for unit in units:
 				if is_instance_valid(unit) and unit.current_hp > 0:
 					var is_earth = _has_trait_soul(unit, "EARTH")
-					var armor_to_apply = base_armor
+					var armor_to_apply = base_value
 					
 					if is_earth:
 						armor_to_apply *= 2
@@ -1695,6 +1744,25 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						# Reuse handle_armor_stacks logic or apply manually
 						var event = handle_armor_stacks(mock_request, [unit.ball_uuid], armor_to_apply)
 						total_events.append(event)
+					
+					# Apply Spikes to ALL team units (not doubled for Earth units)
+					# Uses same base_value as armor but always applies to everyone equally
+					if base_value > 0:
+						var old_spikes = unit.get_status_effect_amount(&"spikes")
+						var new_spikes = apply_stat_delta(unit, "spikes_stacks", base_value)
+						
+						var spikes_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+							"source_uuid": "",
+							"target_uuids": [unit.ball_uuid],
+							"ability_id": &"trait_earth_spikes",
+							"visual_payload": {
+								"amount": base_value,
+								"stat": "spikes_stacks",
+								"targets_old_val": [old_spikes],
+								"targets_new_val": [new_spikes]
+							}
+						})
+						total_events.append(spikes_event)
 		
 		# FIRE TRAIT: 7+ Souls -> Opposing team gets 2 Burn stacks
 		var fire_souls = traits.get("FIRE", 0)
@@ -1765,6 +1833,9 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 							}
 						})
 						total_events.append(event)
+						
+						# Trigger on_healed for reactions (e.g. Tier 1 Air units)
+						TurnAbilities.trigger_on_healed(ally.ball_uuid, 1, unit.ball_uuid)
 		
 		# WIND TRAIT: 2+ Souls -> Wind units steal 1 PWR from the opposite enemy
 		var wind_souls = traits.get("WIND", 0)

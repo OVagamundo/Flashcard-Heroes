@@ -254,6 +254,9 @@ static func handle_damage_effect(
 	var targets_new_armor: Array[int] = []
 	var armor_consumed_list: Array[int] = []
 	
+	# Collect Spikes data for all targets (applied during damage animation at impact moment)
+	var spikes_data_list: Array[Dictionary] = []
+	
 	for tgt_uuid in resolved_targets:
 		var tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(tgt_uuid)
 		# Skip already-dead or removed targets
@@ -323,9 +326,20 @@ static func handle_damage_effect(
 		var old_armor = tgt.get_status_effect_amount(&"armor")
 		targets_old_armor.append(old_armor)
 		
+		# Determine attacker UUID for Spikes reflection
+		var attacker_uuid_for_spikes: String = ""
+		if is_instance_valid(source):
+			var source_def := source.get_definition()
+			if is_instance_valid(source_def) and source_def.category == &"ITEM":
+				# For items, the attacker is the holder
+				attacker_uuid_for_spikes = source.equipped_on_uuid
+			else:
+				attacker_uuid_for_spikes = source.ball_uuid
+		
 		# CENTRALIZED ARMOR: apply_stat_delta now handles armor mitigation automatically
 		# It returns a dictionary with armor data for animations
-		var damage_result = battle_manager.apply_stat_delta(tgt, "hp", damage_to_apply) # amount is negative
+		# Also handles Spikes reflection if attacker_uuid is provided
+		var damage_result = battle_manager.apply_stat_delta(tgt, "hp", damage_to_apply, false, attacker_uuid_for_spikes)
 		
 		# Skip if target was already dead
 		if damage_result == null:
@@ -340,6 +354,36 @@ static func handle_damage_effect(
 		armor_consumed_list.append(armor_consumed)
 		targets_new_armor.append(new_armor)
 		targets_new_hp.append(new_hp)
+		
+		# Collect Spikes data for animation (will be applied at damage impact moment)
+		if damage_result.has("spikes_data"):
+			var spikes = damage_result["spikes_data"]
+			var attacker_inst = battle_manager.get_instance_by_uuid(spikes["attacker_uuid"])
+			var attacker_max_hp := 0
+			if is_instance_valid(attacker_inst):
+				var attacker_def = attacker_inst.get_definition()
+				if is_instance_valid(attacker_def):
+					attacker_max_hp = attacker_def.base_hp
+			
+			# Log message for Spikes (still a separate event since it's UI only)
+			var defender_name = BattleHelpers.get_instance_display_name(tgt)
+			var attacker_name = BattleHelpers.get_instance_display_name(attacker_inst) if is_instance_valid(attacker_inst) else ""
+			if defender_name != "" and attacker_name != "":
+				result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+					"text": "%s's Spikes deals %d to %s" % [defender_name, spikes["spikes_damage"], attacker_name]
+				}))
+			
+			# Add to collected spikes data for animation (NOT a separate event)
+			spikes_data_list.append({
+				"attacker_uuid": spikes["attacker_uuid"],
+				"defender_uuid": spikes["defender_uuid"],
+				"spikes_damage": spikes["spikes_damage"],
+				"attacker_old_hp": spikes["attacker_old_hp"],
+				"attacker_new_hp": spikes["attacker_new_hp"],
+				"attacker_max_hp": attacker_max_hp,
+				"old_spikes": spikes["old_spikes"],
+				"new_spikes": spikes["new_spikes"]
+			})
 		
 		# Add to damaged_uuids if HP or armor was affected OR if Burn is applied
 		# This ensures that attacks that do 0 damage (due to armor) but apply burn still trigger visual feedback
@@ -405,6 +449,7 @@ static func handle_damage_effect(
 			"armor_consumed": armor_consumed_list,
 			"attack_type": "melee",
 			"original_target_uuids": original_target_uuids,
+			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
 			"projectile_data": {
 				"stat": "hp",
 				"amount": amount,
@@ -516,8 +561,18 @@ static func handle_cascade_damage(
 		var old_hp := cascade_tgt.current_hp
 		var old_burn := cascade_tgt.get_status_effect_amount(&"burn")
 		
+		# Determine attacker UUID for Spikes reflection
+		var attacker_uuid_for_spikes: String = ""
+		if is_instance_valid(source):
+			var source_def := source.get_definition()
+			if is_instance_valid(source_def) and source_def.category == &"ITEM":
+				attacker_uuid_for_spikes = source.equipped_on_uuid
+			else:
+				attacker_uuid_for_spikes = source.ball_uuid
+		
 		# apply_stat_delta now returns a dictionary with armor mitigation data
-		var damage_result = battle_manager.apply_stat_delta(cascade_tgt, "hp", -cascade_amount)
+		# Also handles Spikes reflection if attacker_uuid is provided
+		var damage_result = battle_manager.apply_stat_delta(cascade_tgt, "hp", -cascade_amount, false, attacker_uuid_for_spikes)
 		
 		# Skip if target was already dead (apply_stat_delta returns null)
 		if damage_result == null:
@@ -533,6 +588,37 @@ static func handle_cascade_damage(
 		var tgt_def := cascade_tgt.get_definition()
 		if is_instance_valid(tgt_def):
 			max_hp = tgt_def.base_hp
+		
+		# Collect Spikes data for animation (will be applied at damage impact moment)
+		var spikes_data_list: Array[Dictionary] = []
+		if damage_result.has("spikes_data"):
+			var spikes = damage_result["spikes_data"]
+			var attacker_inst = battle_manager.get_instance_by_uuid(spikes["attacker_uuid"])
+			var attacker_max_hp := 0
+			if is_instance_valid(attacker_inst):
+				var attacker_def = attacker_inst.get_definition()
+				if is_instance_valid(attacker_def):
+					attacker_max_hp = attacker_def.base_hp
+			
+			# Log message for Spikes (still a separate event since it's UI only)
+			var defender_name = BattleHelpers.get_instance_display_name(cascade_tgt)
+			var attacker_name = BattleHelpers.get_instance_display_name(attacker_inst) if is_instance_valid(attacker_inst) else ""
+			if defender_name != "" and attacker_name != "":
+				result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+					"text": "%s's Spikes deals %d to %s" % [defender_name, spikes["spikes_damage"], attacker_name]
+				}))
+			
+			# Add to collected spikes data for animation (NOT a separate event)
+			spikes_data_list.append({
+				"attacker_uuid": spikes["attacker_uuid"],
+				"defender_uuid": spikes["defender_uuid"],
+				"spikes_damage": spikes["spikes_damage"],
+				"attacker_old_hp": spikes["attacker_old_hp"],
+				"attacker_new_hp": spikes["attacker_new_hp"],
+				"attacker_max_hp": attacker_max_hp,
+				"old_spikes": spikes["old_spikes"],
+				"new_spikes": spikes["new_spikes"]
+			})
 		
 		# Apply burn if needed
 		var burn_val := old_burn
@@ -577,6 +663,7 @@ static func handle_cascade_damage(
 				"armor_consumed": [armor_consumed],
 				"attack_type": "melee",
 				"original_target_uuid": original_target_uuid,
+				"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
 				"projectile_data": {
 					"stat": "hp",
 					"amount": - cascade_amount,

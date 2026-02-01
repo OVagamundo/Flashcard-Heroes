@@ -16,9 +16,33 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
-	# Get stack values from payload
-	var stack_values = payload.get("targets_new_val", [])
+	# 1. Launch Projectiles (if source is provided)
+	var projectiles = []
+	var source_uuid = String(payload.get("source_uuid", ""))
 	
+	# Only use projectiles for positive "buff" style effects when a source exists
+	var use_projectiles = not source_uuid.is_empty() and amount > 0
+	
+	if use_projectiles:
+		var color_hint = "white"
+		if stat == "armor_stacks": color_hint = "white"
+		elif stat == "burn_stacks": color_hint = "orange"
+		
+		for target_uuid in targets:
+			var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), stat, color_hint)
+			if proj: projectiles.append(proj)
+			
+	# Wait for impact if using projectiles
+	if use_projectiles and not projectiles.is_empty():
+		for proj in projectiles:
+			if is_instance_valid(proj):
+				await proj.impact
+	elif use_projectiles:
+		# Fallback for missing snapshots
+		await animator.get_tree().create_timer(0.4).timeout
+
+	# 2. Apply Stat Buff / Status Effect
+	var stack_values = payload.get("targets_new_val", [])
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
 		
@@ -38,29 +62,36 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		if stat == "burn_stacks":
 			flash_color = Color(1.0, 0.4, 0.0) # Orange
-			var _number_color = Color(1.0, 0.5, 0.1) # Bright orange (unused, kept for reference)
 			animator.apply_burn_stack(target_uuid, new_val)
 		elif stat == "armor_stacks":
-			flash_color = Color(0.5, 0.5, 0.5) # Pure Grey (Opaque)
-			var _number_color_armor = Color(0.6, 0.6, 0.6) # Grey (unused, kept for reference)
+			flash_color = Color(0.5, 0.5, 0.5) # Pure Grey
 			animator.apply_armor_stack(target_uuid, new_val)
+		elif stat == "spikes_stacks" or stat == "spikes":
+			flash_color = Color(0.8, 0.1, 0.1) # Reddish for spikes
+			animator.apply_spikes_stack(target_uuid, new_val)
 		else:
 			# Generic status effect
 			flash_color = Color(0.7, 0.7, 0.7)
-			# Note: Floating stack numbers removed, values display in container labels
 			var status_id = stat.trim_suffix("_stacks")
 			animator.apply_status_stack(target_uuid, StringName(status_id), new_val)
 		
-		# 1. Color flash (immediate)
+		# Feedback: Color flash
 		if SignalBus.has_signal("unit_color_flash"):
 			SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 		
-		# 2. Small squish deformation (subtle feedback)
+		# Feedback: Small squish deformation
 		if SignalBus.has_signal("unit_deform"):
 			SignalBus.emit_signal("unit_deform", target_uuid, &"SQUISH_BOUNCE")
-		
-		# NOTE: Stack numbers now display in the container labels with pop animation
-		# (handled by GachaBallView.animate_burn_change / animate_armor_change)
 
-	# Brief wait for visual effect completion
-	await animator.get_tree().create_timer(0.3).timeout
+	# Wait for visual effect completion
+	await animator.get_tree().create_timer(0.2).timeout
+
+func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
+	# Use "buff" style projectiles for status effects
+	# Determine projectile type from stat name
+	var projectile_stat = "hp" # Fallback
+	if stat == "armor_stacks": projectile_stat = "armor"
+	elif stat == "burn_stacks": projectile_stat = "burn"
+	elif stat == "spikes_stacks" or stat == "spikes": projectile_stat = "spikes"
+	
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, projectile_stat)

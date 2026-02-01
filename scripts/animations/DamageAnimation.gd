@@ -128,6 +128,7 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	var targets_new_armor = payload.get("targets_new_armor", [])
 	var targets_new_pwr = payload.get("targets_new_pwr", []) # Support for PWR damage
 	var stat = String(payload.get("stat", "hp")) # Identify stat type
+	var spikes_data_list = payload.get("spikes_data_list", []) # Spikes reflection data
 	
 	# Trigger screen shake based on total damage dealt
 	# Intensity scales from 0.0 to 1.0, where 5+ damage = max shake
@@ -208,9 +209,44 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		# Movement (recoil back)
 		if SignalBus.has_signal("unit_move"):
 			SignalBus.emit_signal("unit_move", target_uuid, &"RECOIL", recoil_direction)
+	
+	# SPIKES DAMAGE: Apply reflection damage to attacker(s) at the same moment
+	# This happens while the attacker is at the lunge peak (touching the target)
+	for spikes_data in spikes_data_list:
+		var attacker_uuid = String(spikes_data.get("attacker_uuid", ""))
+		var spikes_damage = int(spikes_data.get("spikes_damage", 0))
+		var attacker_new_hp = int(spikes_data.get("attacker_new_hp", 0))
+		var _old_spikes = int(spikes_data.get("old_spikes", 0))
+		var new_spikes = int(spikes_data.get("new_spikes", 0))
+		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
 		
-		# Wait for movement completion (longest animation)
-		await animator.wait_for_animation_completion("move", target_uuid)
+		if attacker_uuid.is_empty() or spikes_damage <= 0:
+			continue
+		
+		# Play spike damage sound
+		Audio.play_sfx("combat_hit")
+		
+		# Spawn floating damage number at attacker (white/spikes color)
+		_spawn_floating_spikes_damage(animator, attacker_uuid, spikes_damage)
+		
+		# Update attacker HP
+		animator.apply_hp_delta(attacker_uuid, -spikes_damage, attacker_new_hp)
+		
+		# Update defender's Spikes stacks
+		if not defender_uuid.is_empty():
+			animator.apply_spikes_stack(defender_uuid, new_spikes)
+		
+		# Flash the attacker white (spikes hit feedback)
+		if SignalBus.has_signal("unit_color_flash"):
+			SignalBus.emit_signal("unit_color_flash", attacker_uuid, Color.WHITE, AnimationConstants.FLASH_FADE_DURATION)
+		
+		# Slight recoil on the attacker
+		if SignalBus.has_signal("unit_deform"):
+			SignalBus.emit_signal("unit_deform", attacker_uuid, &"HIT_IMPACT")
+	
+	# Wait for movement completion (longest animation) - only once for all targets/spikes
+	if not targets.is_empty():
+		await animator.wait_for_animation_completion("move", targets[0])
 
 func _spawn_floating_damage(_animator: Node, target_uuid: String, damage: int) -> void:
 	# GUARDIAN FIX: Try to use live position first, as the unit might have moved (intercept)
@@ -323,6 +359,11 @@ func _spawn_floating_burn_stacks(_animator: Node, target_uuid: String, amount: i
 				damage_number.queue_free()
 		else:
 			damage_number.queue_free()
+
+## Helper to spawn floating Spikes damage number (same style as regular damage)
+func _spawn_floating_spikes_damage(_animator: Node, target_uuid: String, amount: int) -> void:
+	# Use the same style as regular damage (red floating number)
+	_spawn_floating_damage(_animator, target_uuid, amount)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
 	VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)

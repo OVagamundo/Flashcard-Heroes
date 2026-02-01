@@ -9,10 +9,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if targets.is_empty():
 		return null
 
-	# Target must still be queried since targets are dynamically resolved
-	var target_instance = battle_manager.get_instance_by_uuid(targets[0])
-	if not is_instance_valid(target_instance):
-		return null
+	# Get the target unit UUID from context
+	var target_instance: GachaBallInstance = battle_manager.get_instance_by_uuid(targets[0])
+	assert(is_instance_valid(target_instance), "BasicAttackEffect: target_instance is null")
 
 	# Zero-Instance-Query Compliant: Use context data for source stats
 	# Context is pre-populated by BattleManager with: source_pwr, source_hp, source_category, source_holder_uuid
@@ -24,9 +23,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Determine the actual attacker (for items, this is the holder)
 	# Use context data instead of querying the source instance
 	var attacker_uuid: String = source_uuid
-	var source_category = _context.get("source_category", &"")
+	var source_category: StringName = _context.get("source_category", &"")
 	if source_category == &"ITEM":
-		var holder_uuid = _context.get("source_holder_uuid", "")
+		var holder_uuid: String = _context.get("source_holder_uuid", "")
 		if not holder_uuid.is_empty():
 			attacker_uuid = holder_uuid
 	
@@ -85,8 +84,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# BattleManager handles the application via apply_stat_delta().
 	# Modifying it here would cause double damage (once here, once in BattleManager).
 	if not is_simulation:
-		var new_hp = max(0, target_instance.current_hp - damage)
-		target_instance.set_current_hp(new_hp)
+		battle_manager.apply_stat_delta(target_instance, "hp", -damage)
 
 	# NOTE: on_hurt is triggered by BattleManager AFTER apply_stat_delta, not here.
 	# This ensures condition checks like DAMAGE_WAS_NON_LETHAL see post-damage HP.
@@ -98,6 +96,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Inform UI and log systems (suppressed when simulating)
 	if not is_simulation:
 		SignalBus.battle_inventory_changed.emit()
-		# NOTE: set_current_hp() already emits granular unit_stat_changed signal, no need for additional emission
+		# NOTE: apply_stat_delta() already handles silent/loud logic per context
 
 	return damage

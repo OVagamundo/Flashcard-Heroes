@@ -22,9 +22,11 @@ func _ready() -> void:
 	# Populate all data dictionaries at startup.
 	_load_resources_from_path("res://resources/units/", units)
 	_load_resources_from_path("res://resources/items/", items)
+	_load_resources_from_path("res://resources/items/consumables/", items)
 	_load_resources_from_path("res://resources/trinkets/", trinkets)
 	_load_resources_from_path("res://resources/recipes/", recipes)
 	_load_resources_from_path("res://resources/abilities/", abilities)
+	_load_resources_from_path("res://resources/abilities/consumables/", abilities)
 	_load_reward_pool_definitions()
 	
 	# Load flashcard definitions from JSON

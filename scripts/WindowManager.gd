@@ -543,6 +543,9 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 		elif def.category == &"TRINKET":
 			window_type = &"ItemInspection" # Reuse ItemInspection for trinkets
 			context = {"source_view": source_view, "instance": instance, "location": loc}
+		elif def.category == &"CONSUMABLE":
+			window_type = &"ItemInspection" # Reuse ItemInspection for consumables
+			context = {"source_view": source_view, "instance": instance, "location": loc}
 		else: return {}
 	elif source_view.has_meta("effect_definition"):
 		var effect_def: Variant = source_view.get_meta("effect_definition")

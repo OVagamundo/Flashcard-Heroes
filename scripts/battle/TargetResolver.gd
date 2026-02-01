@@ -201,6 +201,18 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				if enemy.current_hp > highest.current_hp:
 					highest = enemy
 			return [highest.ball_uuid]
+		&"MIRROR_SLOT_ENEMY":
+			if not is_instance_valid(source_instance): return []
+			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
+			if not is_instance_valid(source_loc): return []
+			
+			var enemy_container = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			var target_uuid = battle_manager.get_container(enemy_container).get_uuid(source_loc.index)
+			if not target_uuid.is_empty():
+				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
+				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
+					return [target_uuid]
+			return []
 		_:
 			return []
 

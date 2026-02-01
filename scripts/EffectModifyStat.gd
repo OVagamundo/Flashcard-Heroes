@@ -16,8 +16,16 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	if stat == "":
 		return EffectResult.empty() if is_simulation else null
 	
+	# Mapping: Normalize stat names
+	if stat == "hp" or stat == "health" or stat == "current_hp":
+		stat = "hp"
+	elif stat == "pwr" or stat == "power" or stat == "current_pwr":
+		stat = "pwr"
+	elif stat == "burn" or stat == "spikes" or stat == "armor":
+		stat = stat + "_stacks"
+	
 	# Use centralized stat-scaling utility
-	# Supports: base_value, pwr_multiplier, hp_multiplier, use_source_pwr
+	# Supports: base_value, pwr_multiplier, hp_multiplier, use_source_pwr, context_multiplier_key
 	var amount: int = StatScaling.calculate(parameters, context, "EffectModifyStat")
 	if amount == 0:
 		return EffectResult.empty() if is_simulation else null
@@ -85,31 +93,37 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			target_names.append(BattleHelpers.get_instance_display_name(tgt))
 			
 			if stat == "hp":
-				result.mark_healed(target_uuid)
+				result.mark_healed(target_uuid, amount)
 		
 		# Create batched event for all targets at once (enables simultaneous projectiles)
 		if not all_target_uuids.is_empty():
 			if stat == "hp":
 				# Log message with all target names
 				var log_text: String
-				if target_names.size() == 1:
+				var custom_fmt: String = parameters.get("log_format", "")
+				if not custom_fmt.is_empty():
+					log_text = custom_fmt % [source_name, abs(amount)]
+				elif target_names.size() == 1:
 					log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
 				else:
 					log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
 				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 				
+				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
+				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+
 				# Single HEAL event with all targets batched
 				result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
-					"ability_id": context.get("ability_id", &"modify_stat"),
+					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": {
 						"source_uuid": _source_uuid,
 						"amount": amount,
 						"stat": stat,
-						"skip_bump": false,
+						"skip_bump": parameters.get("skip_bump", false),
 						"targets_old_hp": all_old_vals,
 						"targets_new_hp": all_new_vals,
 						"targets_max_hp": all_max_hp
@@ -118,17 +132,23 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			elif stat == "pwr":
 				# Log message with all target names
 				var log_text: String
-				if target_names.size() == 1:
+				var custom_fmt: String = parameters.get("log_format", "")
+				if not custom_fmt.is_empty():
+					log_text = custom_fmt % [source_name, abs(amount)]
+				elif target_names.size() == 1:
 					log_text = "%s grants %s +%d PWR" % [source_name, target_names[0], amount]
 				else:
 					log_text = "%s grants %s +%d PWR" % [source_name, " and ".join(target_names), amount]
 				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 				
+				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
+				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+
 				# Single BUFF event with all targets batched
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
-					"ability_id": context.get("ability_id", &"modify_stat"),
+					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": {
@@ -142,17 +162,23 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			else:
 				# Generic Stat / Status Effect (e.g. armor_stacks)
 				var log_text: String
-				if target_names.size() == 1:
+				var custom_fmt: String = parameters.get("log_format", "")
+				if not custom_fmt.is_empty():
+					log_text = custom_fmt % [source_name, abs(amount)]
+				elif target_names.size() == 1:
 					log_text = "%s grants %s +%d %s" % [source_name, target_names[0], amount, stat]
 				else:
 					log_text = "%s grants %s +%d %s" % [source_name, " and ".join(target_names), amount, stat]
 				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 				
+				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
+				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+
 				# STATUS_EFFECT event
 				result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
-					"ability_id": context.get("ability_id", &"modify_stat"),
+					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": {
@@ -167,22 +193,12 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		
 		result.state_applied = true
 		return result
-	# Non-simulation: apply stat changes immediately
+	# Non-simulation: apply stat changes silenty in battle, loudly in shop
 	else:
 		for t in targets:
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
-			match stat:
-				"hp":
-					var new_hp = max(0, inst.current_hp + amount)
-					inst.set_current_hp(new_hp)
-					# NOTE: set_current_hp() emits granular unit_stat_changed signal
-				"pwr":
-					var old_pwr = inst.current_pwr
-					inst.current_pwr = max(0, inst.current_pwr + amount)
-					SignalBus.emit_signal("unit_stat_changed", inst.ball_uuid, &"pwr", old_pwr, inst.current_pwr)
-				_:
-					pass
+			battle_manager.apply_stat_delta(inst, stat, amount)
 	# Non-simulation return (legacy compatibility)
 	return amount

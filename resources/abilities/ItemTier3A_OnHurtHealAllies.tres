@@ -1,12 +1,23 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
-[ext_resource type="Script" path="res://scripts/EffectHealTwoRandomAllies.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
 
-[sub_resource type="Resource" id="EffectHealTwoRandomAllies_1"]
+[sub_resource type="Resource" id="EffectHealRandom1"]
 script = ExtResource("2_effect")
-parameters = { "base_value": 2, "heal_count": 2 }
-target_type = &"NONE"
+parameters = {
+"base_value": 2,
+"stat": "hp"
+}
+target_type = &"RANDOM_ALLY"
+
+[sub_resource type="Resource" id="EffectHealRandom2"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 2,
+"stat": "hp"
+}
+target_type = &"RANDOM_ALLY"
 
 [resource]
 script = ExtResource("1_ability")
@@ -15,4 +26,4 @@ name_key = "ability.item_t3a_on_hurt_heal.name"
 description_key = "ability.item_t3a_on_hurt_heal.desc"
 trigger = &"on_hurt"
 priority = 100
-effects = Array[Resource]([SubResource("EffectHealTwoRandomAllies_1")])
+effects = Array[Resource]([SubResource("EffectHealRandom1"), SubResource("EffectHealRandom2")])

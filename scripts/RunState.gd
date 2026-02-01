@@ -96,8 +96,35 @@ func get_location_for_uuid(uuid: String) -> LocationIdentifier:
 	return null
 
 # ------------------------------------------------------------------
-# Recipe unlock system
+# Stat Modification API (Mirror of BattleManager for decoupling)
 # ------------------------------------------------------------------
+
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int) -> Variant:
+	if not is_instance_valid(instance):
+		return null
+		
+	match stat_type:
+		"hp":
+			var old_hp = instance.current_hp
+			instance.current_hp = max(0, instance.current_hp + delta)
+			if old_hp != instance.current_hp:
+				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"hp", old_hp, instance.current_hp)
+			return instance.current_hp
+		"pwr":
+			var old_pwr = instance.current_pwr
+			instance.current_pwr = max(0, instance.current_pwr + delta)
+			if old_pwr != instance.current_pwr:
+				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"pwr", old_pwr, instance.current_pwr)
+			return instance.current_pwr
+		_:
+			# Status effects pattern: "burn_stacks", "armor_stacks", etc.
+			var effect_id = stat_type
+			if stat_type.ends_with("_stacks"):
+				effect_id = stat_type.trim_suffix("_stacks")
+			
+			var _old_val = instance.get_status_effect_amount(StringName(effect_id))
+			instance.add_status_effect(StringName(effect_id), delta) # add_status_effect is already loud
+			return instance.get_status_effect_amount(StringName(effect_id))
 
 func unlock_recipe_for_result(result_definition_id: StringName) -> void:
 	"""Unlocks all recipes that produce the given result definition.
@@ -713,10 +740,11 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 			return [
 				# Tier 1
 				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b", &"unit_t1_c", &"unit_t1_c", &"unit_t1_d", &"unit_t1_d",
-				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
+				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b", &"item_potion_t1", &"item_potion_t1",
 				# Tier 2
 				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c",
 				&"item_t2_a", &"item_t2_a", &"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c",
+				&"item_potion_spikes", &"item_potion_spikes", &"item_potion_heroism", &"item_potion_heroism",
 				# Tier 3
 				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c",
 				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f",

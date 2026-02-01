@@ -45,6 +45,7 @@ on_draw	When a gachaball is drawn from the machine and lands in the bench.	{ "dr
 on_attack	When a unit initiates its attack action.	{ "attacker_uuid": String, "target_uuid": String, "trigger_cause": StringName, "cause_id": String }
 on_before_damage	When a unit is about to be attacked, before damage is dealt.	{ "defender_uuid": String, "attacker_uuid": String, "trigger_cause": StringName }
 on_hurt	When a unit takes any form of damage.	{ "victim_uuid": String, "attacker_uuid": String, "damage_taken": int, "trigger_cause": StringName }
+on_healed	When a unit's HP increased (healed by any means).	{ "healed_uuid": String, "heal_amount": int, "healer_uuid": String }
 on_kill	Immediately when damage causes target HP ≤ 0.	{ "attacker_uuid": String, "killed_uuid": String, "trigger_cause": StringName }
 on_death	When a unit's HP is reduced to 0 or less.	{ "dying_uuid": String, "dying_team": String, "dying_location": Loc, "equipped_items": Array }
 on_ally_death	For all allies when an allied unit dies.	{ "fainting_ally_uuid": String, "fainting_ally_team": String, "fainting_ally_location": Loc }

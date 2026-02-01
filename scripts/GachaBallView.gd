@@ -44,6 +44,7 @@ var _visual_hp: int = 0
 var _visual_pwr: int = 0
 var _visual_burn_stacks: int = 0 # Legacy - kept for backward compat
 var _visual_armor_stacks: int = 0 # Armor stacks - same pattern as burn
+var _visual_spikes_stacks: int = 0 # Spikes stacks - deals damage back to attacker
 var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
 var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
 var _visual_equipped_items: Array = [] # Equipped item data: [{uuid, icon, definition_id}]
@@ -187,6 +188,10 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_visual_pwr = visual_data.get("pwr", 0)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
+	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
+	# Sync spikes to dynamic status effects for icon display
+	if _visual_spikes_stacks > 0:
+		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	_visual_equipped_items = visual_data.get("equipped_items", []) # Array of {uuid, icon, definition_id}
 	
 	if icon_rect:
@@ -307,6 +312,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 			if unit_sprite: unit_sprite.queue_free()
 	
 	_update_stats()
+	_update_dynamic_status_icons(false) # explicit: do not animate on populate
 	visible = true
 
 	# Add gachaball overlay for inventory windows
@@ -330,7 +336,11 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_pwr = visual_data.get("pwr", 0)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
+	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
+	# Sync spikes to dynamic status effects for icon display
+	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	_update_stats()
+	_update_dynamic_status_icons(false) # explicit: do not animate on hard refresh
 
 func set_is_enemy(is_enemy: bool, _definition_id: StringName = &"") -> void:
 	if is_instance_valid(icon_rect):
@@ -463,6 +473,10 @@ func set_visual_state(snapshot: Dictionary) -> void:
 		_visual_burn_stacks = int(snapshot["burn_stacks"]) # Renamed from poison_stacks
 	if snapshot.has("armor_stacks"): # Added for armor - same pattern as burn
 		_visual_armor_stacks = int(snapshot["armor_stacks"])
+	if snapshot.has("spikes_stacks"): # Added for spikes
+		_visual_spikes_stacks = int(snapshot["spikes_stacks"])
+		# Sync to _visual_status_effects for dynamic icon display
+		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	
 	# Restore generic status effects (armor, etc.)
 	if snapshot.has("status_effects"):
@@ -473,6 +487,10 @@ func set_visual_state(snapshot: Dictionary) -> void:
 				continue
 			_visual_status_effects[status_id] = int(effects[status_id])
 			# Restored generic status effects
+		_update_dynamic_status_icons()
+	
+	# Also update dynamic icons if spikes was set but status_effects wasn't in snapshot
+	if _visual_spikes_stacks > 0:
 		_update_dynamic_status_icons()
 	
 	_update_stats()
@@ -527,6 +545,9 @@ func animate_armor_change(target_stacks: int) -> void:
 		
 		# Always flash label on change
 		_flash_label(armor_label)
+		
+		# Tween the number (Counting up/down)
+		_animate_number(armor_label, old_stacks, target_stacks)
 			
 	else:
 		# Fade out - need animation
@@ -559,7 +580,7 @@ func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
 
 ## Update dynamic status icons for any status effect tracked in _visual_status_effects.
 ## Creates icons on-the-fly using StatusEffectRegistry if they don't exist.
-func _update_dynamic_status_icons() -> void:
+func _update_dynamic_status_icons(animate: bool = true) -> void:
 	# Get the bottom stats container to add icons to (below the unit)
 	var stats_container = get_node_or_null("StatsOverlay/BottomStatsContainer")
 	if %StatsUnderlay.visible and %Row2:
@@ -579,7 +600,7 @@ func _update_dynamic_status_icons() -> void:
 		if stacks > 0:
 			# Create icon if doesn't exist
 			if not _status_icon_nodes.has(status_id):
-				_create_status_icon(status_id, stats_container)
+				_create_status_icon(status_id, stats_container, animate)
 			
 			# Update label and ensure visible
 			var icon_node = _status_icon_nodes.get(status_id)
@@ -587,7 +608,22 @@ func _update_dynamic_status_icons() -> void:
 				icon_node.visible = true
 				var label = icon_node.get_node_or_null("Label")
 				if is_instance_valid(label):
-					label.text = str(stacks)
+					# Tween the status number (counting up)
+					# CRITICAL: We just updated _visual_status_effects[status_id] to the NEW value
+					# So querying it gets the NEW value. We must use the current label text as the visual "old" value.
+					var visual_current = label.text.to_int()
+					
+					if animate and visual_current != stacks:
+						_animate_number(label, visual_current, stacks)
+						# Add visual feedback
+						if stacks > visual_current:
+							_pop_container(icon_node)
+						_flash_label(label)
+					else:
+						label.text = str(stacks)
+						# Ensure visibility if setting immediately
+						if _status_icon_nodes.has(status_id):
+							_status_icon_nodes[status_id].visible = true
 		else:
 			# Hide icon (don't destroy - prevents flickering from async queue_free)
 			if _status_icon_nodes.has(status_id):
@@ -596,7 +632,7 @@ func _update_dynamic_status_icons() -> void:
 					icon_node.visible = false
 
 ## Create a dynamic status icon for a status effect
-func _create_status_icon(status_id: StringName, parent: Node) -> void:
+func _create_status_icon(status_id: StringName, parent: Node, animate: bool = true) -> void:
 	# Get definition from registry
 	var status_def = StatusEffectRegistry.get_definition(status_id)
 	if not is_instance_valid(status_def):
@@ -608,7 +644,6 @@ func _create_status_icon(status_id: StringName, parent: Node) -> void:
 	status_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon_rect.texture = status_def.icon
-	status_icon_rect.scale = Vector2.ZERO # Start scaled down for animation
 	
 	# Create label for stack count
 	var label = Label.new()
@@ -629,13 +664,22 @@ func _create_status_icon(status_id: StringName, parent: Node) -> void:
 	_status_icon_nodes[status_id] = status_icon_rect
 	
 	# Animate in
-	var tween = create_tween()
-	tween.tween_property(status_icon_rect, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	status_icon_rect.scale = Vector2.ONE # default
+	if animate:
+		status_icon_rect.scale = Vector2.ZERO # Start scaled down for animation
+		var tween = create_tween()
+		tween.tween_property(status_icon_rect, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 ## Animate a status effect change (for non-burn effects)
 func animate_status_change(status_id: StringName, new_stacks: int) -> void:
+	var old_stacks = _visual_status_effects.get(status_id, 0)
 	_visual_status_effects[status_id] = new_stacks
 	_update_dynamic_status_icons()
+	
+	if new_stacks > old_stacks:
+		var icon_node = _status_icon_nodes.get(status_id)
+		if is_instance_valid(icon_node):
+			_pop_container(icon_node)
 
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	# type: "hp" or "pwr"
@@ -926,20 +970,18 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 	if _instance_uuid != unit_uuid:
 		return
 	
+	# ARCHITECTURE: Puppet Mode Guard
+	# If BattleManager is playing a VCR sequence, we MUST ignore "Truth" signals.
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.has_method("is_processing_effect") and bm.is_processing_effect():
+		return
+	
 	# Update ONLY the specific stat that changed
 	match stat_name:
 		&"hp":
-			_visual_hp = new_value
-			if is_instance_valid(hp_label):
-				hp_label.text = str(max(0, new_value))
-			if is_instance_valid(hp_container):
-				hp_container.visible = true
+			animate_stat_change(new_value, new_value - _visual_hp, "hp")
 		&"pwr":
-			_visual_pwr = new_value
-			if is_instance_valid(pwr_label):
-				pwr_label.text = str(new_value)
-			if is_instance_valid(pwr_container):
-				pwr_container.visible = true
+			animate_stat_change(new_value, new_value - _visual_pwr, "pwr")
 		&"burn_stacks":
 			animate_burn_change(new_value)
 		&"armor_stacks":
@@ -1107,7 +1149,17 @@ func _can_drop_data(_at_position, data) -> bool:
 	if is_instance_valid(_location):
 		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 		if context_group == &"InspectionOnly":
-			return false
+			# EXCEPTION: Allow Consumables to be used on InspectionOnly targets (e.g. Enemies)
+			var allowed = false
+			if data is Dictionary and data.has("source_loc"):
+				var source_instance = GameManager.get_instance_from_location(data.source_loc)
+				if is_instance_valid(source_instance):
+					var def = source_instance.get_definition()
+					if def and def.category == &"CONSUMABLE":
+						allowed = true
+			
+			if not allowed:
+				return false
 		
 	return data is Dictionary and data.has("source_loc")
 
@@ -1138,12 +1190,19 @@ func _on_view_deselected(view: Control) -> void:
 # are now handled by UnitAnimationController child node
 
 func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void:
-	if uuid == _instance_uuid:
-		if stat == "hp":
-			_visual_hp = value
-		elif stat == "pwr":
-			_visual_pwr = value
-		_update_stats()
+	if uuid != _instance_uuid:
+		return
+
+	# ARCHITECTURE: Puppet Mode Guard
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.has_method("is_processing_effect") and bm.is_processing_effect():
+		return
+		
+	if stat == "hp":
+		_visual_hp = value
+	elif stat == "pwr":
+		_visual_pwr = value
+	_update_stats()
 
 # NOTE: Animation methods (bump, death, summon, melee, lethal_save, guardian leap)
 # moved to UnitAnimationController child node

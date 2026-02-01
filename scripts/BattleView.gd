@@ -504,10 +504,6 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	if draw_result.drawn_uuid:
 		_pending_animated_uuids.append(draw_result.drawn_uuid)
 	
-	# Force an immediate redraw. This ensures that if the item was already snapped
-	# into the slot by a race condition, it is now hidden/cleared.
-	_redraw_board()
-	
 	# Attempt to find the Gacha Machine (Start Position)
 	var main_node = get_tree().get_root().find_child("Main", true, false)
 	if not is_instance_valid(main_node):

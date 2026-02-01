@@ -207,7 +207,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 				"parent_window_id": context.source_view_instance_id
 			}))
 			
-		&"UNIT", &"ITEM", &"TRINKET":
+		&"UNIT", &"ITEM", &"TRINKET", &"CONSUMABLE":
 			commands.append_array(_handle_gachaball_interaction(context))
 			
 		&"EMPTY_SLOT":
@@ -428,6 +428,12 @@ func _is_valid_action_target(selection: InteractionContext, target: InteractionC
 	# Allow equipping onto units: Inventory -> BattleBoard (click item then click unit)
 	if selection_group == &"InventoryGrid" and target_group == &"BattleBoard":
 		return true
+
+	# Allow consumables: Inventory -> InspectionOnly (e.g. EnemyLineup)
+	# This enables using consumables on enemy units despite them being InspectionOnly
+	if selection_group == &"InventoryGrid" and target_group == &"InspectionOnly":
+		if selection.entity_type == &"CONSUMABLE":
+			return true
 	
 	# Special case: Inventory tier changes should be handled as selection changes, not actions
 	if _is_inventory_tier_change(selection, target):

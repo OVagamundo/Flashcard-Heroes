@@ -382,6 +382,14 @@ func apply_status_stack(uuid: String, status_id: StringName, new_stacks: int) ->
 		if is_instance_valid(view) and view.has_method("animate_status_change"):
 			view.animate_status_change(status_id, new_stacks)
 
+func apply_spikes_stack(uuid: String, new_stacks: int) -> void:
+	# Update visual spikes stacks on puppet view - same pattern as armor/burn
+	# Falls back to generic status change animation
+	if _visual_registry.has(uuid):
+		var view = _visual_registry[uuid]
+		if is_instance_valid(view) and view.has_method("animate_status_change"):
+			view.animate_status_change(&"spikes", new_stacks)
+
 func _emit_bump(_attacker_uuid: String) -> void:
 	# LEGACY FALLBACK: This is no longer called since all DAMAGE events
 	# now have bump_direction precomputed in their payload (handled at line 121-123).

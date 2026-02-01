@@ -99,10 +99,5 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		for target_uuid in buff_targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
-				if buff_stat == "pwr":
-					var new_pwr = max(0, tgt.current_pwr + buff_amount)
-					tgt.set_current_pwr(new_pwr)
-				elif buff_stat == "hp":
-					var new_hp = max(0, tgt.current_hp + buff_amount)
-					tgt.set_current_hp(new_hp)
+				battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount)
 		return buff_amount

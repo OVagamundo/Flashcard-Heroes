@@ -1,7 +1,27 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
-[ext_resource type="Resource" path="res://resources/effects/effect_steal_power.tres" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectReduceEnemyPWR"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "item_t3f_power_drain",
+"base_value": -1,
+"log_format": "%s drains the target's power (-%d PWR)",
+"stat": "pwr"
+}
+target_type = &"DEFENDER"
+
+[sub_resource type="Resource" id="EffectIncreaseSourcePWR"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "item_t3f_power_drain",
+"base_value": 1,
+"log_format": "%s absorbs the stolen power (+%d PWR)",
+"stat": "pwr"
+}
+target_type = &"HOLDER"
 
 [resource]
 script = ExtResource("1_ability")
@@ -10,5 +30,5 @@ name_key = "ability.item_t3f_power_drain.name"
 description_key = "ability.item_t3f_power_drain.desc"
 trigger = &"on_damage_dealt"
 priority = 0
-effects = Array[Resource]([ExtResource("2_effect")])
+effects = Array[Resource]([SubResource("EffectReduceEnemyPWR"), SubResource("EffectIncreaseSourcePWR")])
 execute_on_lethal = true
