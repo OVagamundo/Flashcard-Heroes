@@ -206,13 +206,45 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
 			if not is_instance_valid(source_loc): return []
 			
-			var enemy_container = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			var target_uuid = battle_manager.get_container(enemy_container).get_uuid(source_loc.index)
+			var enemy_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			var enemy_container = battle_manager.get_container(enemy_container_tag)
+			
+			# Calculate Spatially Mirrored Index (Front<->Front, Back<->Back)
+			# Player (0..4) vs Enemy (4..0 visually, but 0..4 in memory)
+			# "True Mirror" means Index i targets Index (Size-1-i)
+			# Example: Player Back (0) targets Enemy Back (4)
+			var container_size = enemy_container.get_size()
+			var mirror_index = (container_size - 1) - source_loc.index
+			var target_uuid = enemy_container.get_uuid(mirror_index)
+			
+			# Primary Target: Mirror Slot
 			if not target_uuid.is_empty():
 				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
 				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
 					return [target_uuid]
-			return []
+			
+			# Fallback: Last Unit in Lineup (Backmost)
+			# "Duelist Flavor": If the mirror opponent isn't there, the assassin seeks the
+			# next high-value target (Backline) rather than just hitting the tank in front.
+			# Player attacking Enemy (Front=0, Back=4): "Last" is Highest Index (4)
+			# Enemy attacking Player (Back=0, Front=4): "Last" is Lowest Index (0)
+			var all_enemies = battle_manager.get_instances_in_container(enemy_container_tag).filter(func(u): return u.current_hp > 0)
+			if all_enemies.is_empty():
+				return []
+				
+			# Sort by index
+			all_enemies.sort_custom(func(a, b):
+				var loc_a = battle_manager.get_location_for_uuid(a.ball_uuid)
+				var loc_b = battle_manager.get_location_for_uuid(b.ball_uuid)
+				return loc_a.index < loc_b.index
+			)
+			
+			if is_player_team:
+				# Player targets Enemy Back (Highest Index)
+				return [all_enemies[-1].ball_uuid]
+			else:
+				# Enemy targets Player Back (Lowest Index)
+				return [all_enemies[0].ball_uuid]
 		_:
 			return []
 

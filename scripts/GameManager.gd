@@ -159,13 +159,8 @@ func _on_battle_won_rewards_pending() -> void:
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 	else:
-		# Regular rewards: gacha balls from reward pool
-		var reward_pool = load("res://resources/reward_pool.tres")
-		if not is_instance_valid(reward_pool):
-			push_error("[GameManager] Failed to load reward_pool.tres!")
-			return
-			
-		var all_defs = reward_pool.definitions.duplicate()
+		# Regular rewards: gacha balls from dynamic pool
+		var all_defs = Database.get_all_pool_definitions()
 		if all_defs.is_empty():
 			push_error("[GameManager] Reward pool definitions are empty!")
 			return
@@ -403,10 +398,9 @@ func _generate_shop_stock() -> void:
 	_temporary_shop_master_dict.clear()
 	_temporary_shop_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
-	var reward_pool = load("res://resources/reward_pool.tres")
-	if not is_instance_valid(reward_pool): return
-
-	var all_defs = reward_pool.definitions.duplicate()
+	var all_defs = Database.get_all_pool_definitions()
+	if all_defs.is_empty(): return
+	
 	all_defs.shuffle()
 	
 	for i in range(3):
@@ -493,10 +487,10 @@ func _generate_reward_stock() -> void:
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 	else:
-		# Regular rewards: gacha balls from reward pool
-		var reward_pool = load("res://resources/reward_pool.tres")
-		if not is_instance_valid(reward_pool): return
-		var all_defs = reward_pool.definitions.duplicate()
+		# Regular rewards: gacha balls from dynamic pool
+		var all_defs = Database.get_all_pool_definitions()
+		if all_defs.is_empty(): return
+		
 		all_defs.shuffle()
 		for i in range(3):
 			var inst = GachaBallInstance.new()

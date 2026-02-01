@@ -418,6 +418,9 @@ func _create_resource_pools(include_trinkets: bool) -> Dictionary:
 		available_units.append(d)
 	
 	for d in Database.items.values():
+		# Filter out consumables
+		if d.category == &"CONSUMABLE":
+			continue
 		available_items.append(d)
 	
 	if include_trinkets:
