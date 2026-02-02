@@ -100,6 +100,7 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | `on_turn_start/end` | `turn_number` |
 | `on_draw` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
 | `on_token_spent` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
+| `on_gacha_tokens_changed` | `(none)` |
 
 ### Attack Types and Defensive Triggers
 

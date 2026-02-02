@@ -32,6 +32,8 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `unit_t2_a` | Paladin | **Apprentice + Apprentice** | 4 HP / 2 PWR | 2 | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain +2 HP before taking damage. |
 | `unit_t2_b` | Berserker | **Squire + Squire** | 2 HP / 4 PWR | 2 | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind. |
 | `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 2 | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain +2 HP / +2 PWR. |
+| `unit_t2_d` | Templar | **Protector + Empath** | 2 HP / X PWR | 2 | 1 Water, 1 Wind | **Gacha Power** (`passive`): PWR is equal to Gacha Tokens (Min 1). PWR buffs convert to HP. |
+| `unit_t2_f` | Merchant | **Apprentice + Empath** | X HP / 2 PWR | 2 | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`): Sets HP equal to your current Gold when drawn. |
 
 ### Tier 3 Units (Cost: 3)
 | ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |

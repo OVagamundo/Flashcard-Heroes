@@ -192,6 +192,10 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	BattleSetup.setup_player_trinkets(_state)
 	
 	# Trigger on_battle_start for all units
+	# 5. Connect to token changes for dynamic abilities (e.g., Templar)
+	if not SignalBus.gacha_tokens_changed.is_connected(_on_gacha_tokens_changed):
+		SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
+
 	_trigger_battle_start_abilities()
 
 
@@ -828,6 +832,18 @@ func _restore_hero_location_to_run_state() -> void:
 		# Restore hero to its original run state location (PlayerLineup:0)
 		hero_instance.location_container_tag = GameManager.run_state.RUN_CONTAINER_TAGS.PLAYER_LINEUP
 		hero_instance.location_slot_index = 0
+
+func _on_gacha_tokens_changed(_new_amount: int) -> void:
+	# Trigger "on_gacha_tokens_changed" abilities
+	# This allows units like Templar to update their stats immediately when tokens change.
+	# We don't need to pass the amount in context because the effect will query the current amount.
+	if _current_battle_phase == Phases.COMBAT: # Only relevant in combat? Or always?
+		# Let's allow it in all phases for now, as stats should reflect reality.
+		pass
+		
+	# Optimization: Only broadcast if we have units that care? 
+	# For now, just broadcast. AbilityResolver filters efficiently.
+	AbilityResolver.process_trigger(&"on_gacha_tokens_changed", {})
 
 func _on_battle_victory() -> void:
 	# Only restore the hero's location in the run state.

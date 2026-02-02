@@ -7,6 +7,14 @@ unit_t1_a.name,Apprentice,Aprendiz
 unit_t1_a.desc,A novice unit.,Uma unidade novata.
 unit_t1_b.name,Squire,Escudeiro
 unit_t1_b.desc,A loyal squire.,Um escudeiro leal.
+unit_t2_d.name,Templar,Templar
+unit_t2_d.desc,PWR = Tokens (Min 1). Buffs to PWR grant HP.,PWR = Tokens (Min 1). Buffs to PWR grant HP.
+ability.unit_t2_d_power.name,Token Power,Token Power
+ability.unit_t2_d_power.desc,PWR equals Tokens (Min 1). PWR buffs become HP.,PWR equals Tokens (Min 1). PWR buffs become HP.
+unit_t2_f.name,Merchant,Merchant
+unit_t2_f.desc,Initial HP equals Gold when drawn.,Initial HP equals Gold when drawn.
+ability.unit_t2_f_gold_hp.name,Gold Investments,Gold Investments
+ability.unit_t2_f_gold_hp.desc,Sets HP equal to your current Gold when drawn.,Sets HP equal to your current Gold when drawn.
 unit_t1_c.name,Protector,Protetor
 unit_t1_c.desc,A steadfast guardian who heals the ally ahead when they take damage.,Um guardião firme que cura o aliado à frente quando ele recebe dano.
 ability.unit_t1_c_ally_shield.name,Guardian's Grace,Graça do Guardião
