@@ -85,13 +85,50 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			if not is_instance_valid(tgt):
 				continue
 			
-			# Capture old stat
-			var old_val: int = tgt.current_hp if stat == "hp" else tgt.current_pwr
+			var tgt_stat = stat
+			var tgt_amount = amount
+			
+			# SPECIAL: PWR->HP Conversion (e.g., Templar)
+			# Redirect positive PWR buffs to HP if unit has specific tag
 			var tgt_def = tgt.get_definition()
+			if stat == "pwr" and amount > 0 and is_instance_valid(tgt_def) and "tags" in tgt_def:
+				if tgt_def.tags.has(&"CONVERT_PWR_TO_HP"):
+					tgt_stat = "hp"
+					# Amount remains the same (1:1 conversion)
+					
+					# Process this target individually to ensure correct visuals (HP Heal event instead of PWR Buff)
+					var old_hp = tgt.current_hp
+					var max_hp = tgt_def.base_hp
+					var new_hp = battle_manager.apply_stat_delta(tgt, "hp", tgt_amount)
+					
+					# Log message for conversion
+					var conv_log = "%s converts PWR buff to +%d HP" % [BattleHelpers.get_instance_display_name(tgt), tgt_amount]
+					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": conv_log}))
+					
+					# HEAL Event
+					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+						"source_uuid": _source_uuid,
+						"target_uuids": [target_uuid],
+						"ability_id": context.get("ability_id", &"modify_stat"),
+						"trigger_type": context.get("trigger_type", ""),
+						"visual_payload": {
+							"source_uuid": visual_source_uuid,
+							"amount": tgt_amount,
+							"stat": "hp",
+							"targets_old_hp": [old_hp],
+							"targets_new_hp": [new_hp],
+							"targets_max_hp": [max_hp]
+						}
+					}))
+					result.mark_healed(target_uuid, tgt_amount)
+					continue # Skip adding to batched list
+			
+			# Capture old stat
+			var old_val: int = tgt.current_hp if tgt_stat == "hp" else tgt.current_pwr
 			var max_hp: int = tgt_def.base_hp if is_instance_valid(tgt_def) else 0
 			
 			# Apply stat change
-			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount)
+			var new_val = battle_manager.apply_stat_delta(tgt, tgt_stat, tgt_amount)
 			
 			# Collect data
 			all_target_uuids.append(target_uuid)
@@ -100,8 +137,8 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			all_max_hp.append(max_hp)
 			target_names.append(BattleHelpers.get_instance_display_name(tgt))
 			
-			if stat == "hp":
-				result.mark_healed(target_uuid, amount)
+			if tgt_stat == "hp":
+				result.mark_healed(target_uuid, tgt_amount)
 		
 		# Create batched event for all targets at once (enables simultaneous projectiles)
 		if not all_target_uuids.is_empty():

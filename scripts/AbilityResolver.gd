@@ -83,8 +83,14 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			return unit.current_hp > 0 and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
 		
 		&"on_draw":
-			# Only enemy units respond to player draws (draws benefit enemies)
+			# Enemy units respond to player draws (draws benefit enemies)
+			# AND the drawn unit itself responds (for initialization effects like Merchant)
 			var unit_team = _get_instance_team(unit, battle_manager)
+			var drawn_uuid = context.get("drawn_uuid", "")
+			
+			if unit_uuid == drawn_uuid:
+				return true # Self-trigger
+				
 			return unit.current_hp > 0 and unit_team == "ENEMY"
 		
 		&"on_token_spent":
@@ -104,6 +110,10 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only the healed unit itself responds to its own healing
 			var healed_uuid = context.get("healed_uuid", "")
 			return unit.current_hp > 0 and unit_uuid == healed_uuid
+		
+		&"on_gacha_tokens_changed":
+			# All living units respond to token changes
+			return unit.current_hp > 0
 	
 	# Default: respond (for any new triggers)
 	return true
