@@ -50,7 +50,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var result := EffectResult.new()
 	result.summon_request = {
 		"summon_unit_id": def_id,
-		"holder_uuid": "", # No holder - this is a resurrection
+		"holder_uuid": first_killed_data.get("uuid", ""), # Pass original UUID to allow overwriting the corpse
 		"holder_location": death_location,
 		"is_resurrection": true # Flag for special handling
 	}

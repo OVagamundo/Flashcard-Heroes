@@ -76,6 +76,7 @@ Existing event types supported by `BattleAnimator`:
 | `LETHAL_SAVE` | Turn gold, float up, return to 1 HP | `saved_uuid` |
 | `GUARDIAN_INTERCEPT` | Leap in front of ally, take damage | `guardian_uuid`, `protected_uuid` |
 | `LOG_MESSAGE` | Floating text above unit | `text` |
+| `TRANSFORM` | Levitate -> Yellow Flash -> Queue Free | `style="yellow_flash"` |
 | `PROJECTILE` | Visual-only projectile flight | `source_uuid`, `target_uuid`, `vfx_id` |
 | `VFX_POPUP` | Floating text with color | `target_uuid`, `text`, `color` |
 

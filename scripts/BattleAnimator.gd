@@ -320,6 +320,16 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				else:
 					push_error("[BattleAnimator] Kamikaze animation not found in registry!")
 
+			CombatEvent.Type.TRANSFORM:
+				# Mimic Transform: use dedicated TransformAnimation
+				var anim = AnimationRegistry.get_animation("transform")
+				if anim:
+					# AUDIO HOOK: Hop sound? Or maybe a special transform sound if available.
+					# For now, using unit_hop signal in the animation handles the hop sound.
+					await anim.execute(self, event.target_uuids, event.visual_payload)
+				else:
+					push_error("[BattleAnimator] Transform animation not found in registry!")
+
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker

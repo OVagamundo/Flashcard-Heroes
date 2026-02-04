@@ -323,11 +323,17 @@ To ensure consistency during combat (preventing "mid-battle effectiveness drops"
 *   **Logic**: `armor_consumed = min(armor_stacks, damage)`. Remaining damage hits HP.
 
 ### Unified Turn-Start Sequence
-Traits (like Earth Armor) and Trinkets (like Armor Aura) often trigger at the same time (`START_OF_TURN`).
-To ensure they stack correctly without race conditions:
-1.  **Traits** generate events first (but do not animate immediately).
-2.  **Trinkets** generate events second.
-3.  **Unified Animation**: All events are bundled into a single **Atomic Animation Sequence**.
+
+To ensure correct interaction between Unit Abilities (like Mimic) and Team Traits (like Earth Armor), `START_OF_TURN` effects are processed via the **Reaction Queue**.
+
+1.  **Unit Abilities (Priority > 100)**: Trigger first.
+    *   *Example:* Mimic Transformation (Priority 500). The unit transforms *before* traits calculate.
+2.  **Trait Effects (Priority 100)**: Trigger second.
+    *   `BattleManager` queues a special `_trait_start_effects` reaction with **Priority 100**.
+    *   This ensures that Trait logic (e.g., counting active Earth units) sees the board state *after* Mimics have transformed.
+3.  **Trinkets/Other (Priority < 100)**: Trigger last.
+
+This unified queue ensures that state mutations (Transformations) happen *before* state-dependent calculations (Buffs), preventing "missed buffs" on transformed units.
     *   *Result:* +3 Armor (Trait) and +3 Armor (Trinket) result in a smooth +6 Armor visualization and correct final state.
 
 ---
@@ -357,24 +363,56 @@ When a unit dies, triggers are processed in strict phases to ensuring correct pr
 
 This ensures that a resurrection trinket (210) always takes precedence over a self-summon ability (205), preventing "ghosts" from blocking resurrections.
 
-### Queue Insertion Logic (`CombatSimulator.insert_summoned_unit`):
-- Player units act right-to-left (slot 4→3→2→1→0)
-- Enemy units act left-to-right (slot 0→1→2→3→4)
-- Summoned unit is inserted at the correct queue position based on its slot
-- If the slot's "turn" has already passed (all higher-priority same-team slots acted), the unit is **not** added
+### Summoning Rules & Board Geometry
+To ensure consistent behavior, all summoning effects (Trinkets, Items, Units, Reinforcements) follow a unified set of rules.
 
-**Why This Matters:**
-- Soul Echo trinket resurrects units to empty slots on ally death
-- Without queue insertion, resurrected units would miss the current turn entirely
-- This mirrors the "on-death summon" behavior where a new unit replaces a dying unit in the queue
+#### 1. Board Geometry
+The battlefield is mirrored, meeting in the center.
+- **Player Team (Left Side):**
+  - **Slot 0:** Backmost (Left). Acts LAST.
+  - **Slot 4:** Frontmost (Right). Acts FIRST.
+  - **Action Order:** 4 → 3 → 2 → 1 → 0. (Front-to-Back)
+- **Enemy Team (Right Side):**
+  - **Slot 0:** Frontmost (Left). Acts FIRST.
+  - **Slot 4:** Backmost (Right). Acts LAST.
+  - **Action Order:** 0 → 1 → 2 → 3 → 4. (Front-to-Back)
 
-### Summon Slot Conflict Resolution
-When multiple summon effects trigger simultaneously (e.g., Trinket + Item) and target the same slot, the system enforces a "Golden Rule": **Physics over Logic**.
+> [!NOTE]
+> "First Available Slot" always refers to the **Backmost** empty slot (safest position).
+> - **Player Search:** 0 → 4 (Back → Front)
+> - **Enemy Search:** 4 → 0 (Back → Front)
+
+#### 2. Slot Priority Logic
+When a unit is summoned, the system determines its target slot in this strict order:
+1.  **Holder's Slot:** If the summon source is replacing a unit (e.g., resurrection, on-death summon), it **must** take that unit's slot.
+    *   **Collision Check:** If the slot is occupied by a *different* LIVING unit, it is considered blocked. (Dead units or the summoner itself do not block).
+2.  **Backmost Available Slot:** If the primary slot is blocked (or if there is no specific holder, like Boss Reinforcements), search for the first empty slot starting from the **Back** of the formation.
+    *   Player: Search Index 0 → 4.
+    *   Enemy: Search Index 4 → 0.
+3.  **Discard Pile:** (Player Only) If lineup is full, summon to the Discard Pile.
+4.  **Cancel:** If all options fail, the summon is cancelled.
+
+#### 3. Mid-Turn Action Rule
+Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.
+- **Rule:** "One Action Per Slot Per Turn".
+- **Condition:** A summoned unit joins the action queue **only if** its slot index is "ahead" of the current battle cursor.
+    - If a unit summons a replacement into its *own* slot (replacing the currently acting unit), the new unit **does not act** this turn.
+    - If a unit summons into a slot that has *already acted*, the new unit **does not act**.
+    - If a unit summons into a pending slot (one that hasn't acted yet), the new unit **will act**.
 - **Detection**: Before finalizing a summon, `EffectHandlers` checks if the target slot is effectively occupied by a *living* unit (and not the one being overwritten/replaced).
 - **Resolution**: 
-  1. If occupied, search for the next available empty slot in the lineup.
-  2. If lineup full, target the `BATTLE_DISCARD_PILE`.
-  3. If discard full, cancel the summon to prevent overwriting existing units.
+  1. If occupied, search for the **First Empty Slot** in the lineup.
+     - **Player Team**: Searches **Back-to-Front** (Index N → 0). This prioritizes slots that act earlier in the turn sequence.
+     - **Enemy Team**: Searches **Back-to-Front** (Index N → 0).
+  2. If lineup full, target the `BATTLE_DISCARD_PILE` (Player only).
+
+### Mid-Turn Summon Actions
+Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.
+- **Rule**: "One Action Per Slot Per Turn".
+- **Condition**: A summoned unit joins the action queue **only if** its slot index is "ahead" of the current battle cursor.
+    - If a unit summons a replacement into its *own* slot (replacing the currently acting unit), the new unit **does not act** this turn.
+    - If a unit summons into a slot that has *already acted*, the new unit **does not act**.
+    - If a unit summons into a pending slot, the new unit **will act**.
 
 ### Effect Data Flow (No Instance Queries)
 

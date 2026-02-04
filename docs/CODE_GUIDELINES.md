@@ -106,4 +106,22 @@ Trinkets are not "held" by units in the simulation sense (even if the UI shows t
 *   **Typing:** Static typing is **MANDATORY** for all new code.
     *   `var x: int = 5` (Good)
     *   `var x = 5` (Bad)
-    *   `func foo() -> void:` (Good)
+
+---
+
+## 7. Verification & Audit (The Process)
+
+Errors often arise from assuming APIs or schemas instead of verifying them. To prevent "death by a thousand cuts":
+
+### 7.1 Verify BEFORE You Write
+*   **Check File Paths**: Do not guess where scripts live. Use `ls` or `find`. (e.g., `Scripts/` vs `Scripts/Resources/`).
+*   **Check Property Names**: Do not assume variable names in Resources. Open the script (`.gd`) defining the Resource and check the `@export` variables. (e.g., `icon` vs `icon_path`, `display_name_key` vs `display_name`).
+*   **Check API Signatures**: Open the file defining the class functions you are calling. Do not guess parameters or return types. (e.g., `bm_add_instance` vs `run_instances`).
+
+### 7.2 Result Object Integrity
+*   **Respect Return Types**: If a function returns a Helper Class (e.g., `SummonResult`), **OPEN THAT CLASS** to see what fields it actually has. Do not invent fields like `target_container_tag` if they don't exist.
+*   **No Magic Fields**: If you need data passed back, check if the existing structure supports it. If not, modify the structure definitions *first*, then the logic.
+
+### 7.3 Encapsulation Check
+*   **Respect Private Members**: If a variable starts with `_` (e.g., `_battle_instances`), do not access it from outside. Look for a public API (e.g., `bm_add_instance`, `get_instance`).
+*   **Atomic Operations**: Prefer atomic APIs (`add`, `remove`, `move`) over manual dictionary manipulation.

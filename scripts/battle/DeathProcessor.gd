@@ -516,6 +516,7 @@ static func _track_first_killed(bm, unit: GachaBallInstance, team: String) -> vo
 		var loc_snapshot = bm.get_location_for_uuid(unit.ball_uuid)
 		if is_instance_valid(loc_snapshot):
 			bm._turn_metadata[key] = {
+				"uuid": unit.ball_uuid,
 				"def_id": unit.definition_id,
 				"team": team,
 				"location_snapshot": loc_snapshot

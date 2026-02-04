@@ -110,6 +110,40 @@ static func create_summon_event(unit_uuid: String, slot_index: int, is_player: b
 		}
 	})
 
+## UNIFIED SLOT FINDER
+## Finds the "First Available Slot" according to game rules.
+## Rule: "First Available" = "Backmost Available".
+##
+## GEOMETRY DEFINITION:
+## Player (Left Side): Slot 0 (Left/Back) ... Slot 4 (Right/Front). Acts 4 -> 0.
+## Enemy (Right Side): Slot 0 (Left/Front) ... Slot 4 (Right/Back). Acts 0 -> 4.
+##
+## DIRECTION:
+## Player: Search 0 -> 4 (Back -> Front).
+## Enemy: Search 4 -> 0 (Back -> Front).
+static func find_best_summon_slot(container: DataContainer, is_player_team: bool, exclude_slots: Array[int] = []) -> int:
+	if not is_instance_valid(container):
+		return -1
+		
+	var size = container.get_size()
+	
+	if is_player_team:
+		# Player: 0 (Back) -> N (Front)
+		for i in range(size):
+			if i in exclude_slots:
+				continue
+			if container.get_uuid(i) == "":
+				return i
+	else:
+		# Enemy: N (Back) -> 0 (Front)
+		for i in range(size - 1, -1, -1):
+			if i in exclude_slots:
+				continue
+			if container.get_uuid(i) == "":
+				return i
+	
+	return -1
+
 # ============================================================================
 # STAT CHANGE HELPERS
 # ============================================================================
@@ -757,42 +791,48 @@ static func handle_summon_unit(
 	
 	# COLLISION RESOLUTION:
 	# Verify the target slot is actually available (either empty or occupied by the holder we're replacing).
-	# If occupied by a DIFFERENT unit, we must find an alternative slot or discard.
+	# If occupied by a DIFFERENT unit, we must find an alternative slot.
 	var final_location = holder_location
 	var container = battle_manager.get_container(holder_location.container)
+	var collision_detected := false
+	
 	if is_instance_valid(container):
 		var slot_uuid = container.get_uuid(holder_location.index)
-		# Checks: Slot not empty AND Slot not occupied by the unit we are replacing/resurrecting
-		if not slot_uuid.is_empty() and slot_uuid != holder_uuid:
-			# Collision detected! Attempt to find an empty slot.
-			var empty_slot = find_empty_slot_in_container(container)
-			# Note: find_empty_slot_in_container searches 0->N (front-to-back? depends on impl)
-			# We might prefer back-to-front for players, checking BattleManager helper if needed.
-			# But for safety, ANY empty slot is better than overwriting.
-			
-			if empty_slot != -1:
-				# Found a new slot in the lineup
-				var new_loc = LocationIdentifier.new(holder_location.container, empty_slot)
-				final_location = new_loc
+		# Checks: Slot occupied?
+		if not slot_uuid.is_empty():
+			# If occupied by a DIFFERENT unit, it's a collision.
+			if slot_uuid != holder_uuid:
+				collision_detected = true
 			else:
-				# Lineup full. Try Discard Pile.
-				if holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
-					var discard = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-					var discard_slot = find_empty_slot_in_container(discard)
-					if discard_slot != -1:
-						var discard_loc = LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, discard_slot)
-						final_location = discard_loc
-					else:
-						# Discard also full? Critical failure.
-						# We must proceed but maybe log error? 
-						# Or just overwrite (worst case) or fail summon?
-						# Let's fail the summon to prevent overwriting a live unit.
-						result.new_instances.clear()
-						return result
+				# If occupied by SAME unit (holder), check if they are ALIVE.
+				# If alive (e.g. just resurrected), we cannot overwrite them.
+				var slot_unit = battle_manager.get_instance_by_uuid(slot_uuid)
+				if is_instance_valid(slot_unit) and slot_unit.current_hp > 0:
+					collision_detected = true
+	
+	if collision_detected:
+		# Collision detected! Attempt to find an empty slot.
+		# Priority 1: First empty slot in same container (Using Unified Finder)
+		var is_player_container = (holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+		var empty_slot = find_best_summon_slot(container, is_player_container)
+			
+		if empty_slot != -1:
+			final_location = LocationIdentifier.new(holder_location.container, empty_slot)
+		else:
+			# Priority 2: Discard Pile (Player only)
+			if is_player_container:
+				var discard = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+				var discard_slot = find_empty_slot_in_container(discard)
+				if discard_slot != -1:
+					final_location = LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, discard_slot)
 				else:
-					# Enemy has no discard pile. Cancel summon.
+					# Discard full. Cancel summon.
 					result.new_instances.clear()
 					return result
+			else:
+				# Enemy has no discard pile. Cancel summon.
+				result.new_instances.clear()
+				return result
 
 	# Handle cleanup of old unit (only if we are still targeting the holder's slot)
 	if not is_resurrection and final_location.container == holder_location.container and final_location.index == holder_location.index:
@@ -888,12 +928,11 @@ static func handle_summon_units(
 		if not is_instance_valid(unit_def):
 			continue
 		
-		# Find empty slot (accounting for slots we've already claimed)
-		var empty_slot: int = -1
-		for i in range(5):
-			if lineup_container.get_uuid(i).is_empty() and not filled_slots.has(i):
-				empty_slot = i
-				break
+		# Find empty slot using Unified Finder
+		var empty_slot: int = find_best_summon_slot(lineup_container, team == "PLAYER", filled_slots)
+		
+		if empty_slot == -1:
+			break # No more slots
 		
 		if empty_slot == -1:
 			break # No more slots
@@ -956,4 +995,98 @@ static func handle_summon_units(
 			}
 		}))
 	
+	return result
+
+# ============================================================================
+# TRANSFORM HANDLER
+# ============================================================================
+
+## Handle Mirror Transform (Mimic)
+## Discards equipped items, removes self, and prepares summon of target unit.
+static func handle_mirror_transform(
+	_request: EffectRequest,
+	transform_data: Dictionary,
+	battle_manager: Node
+) -> SummonResult:
+	var self_uuid: String = transform_data.get("self_uuid", "")
+	var target_unit_id: StringName = transform_data.get("target_unit_id", &"")
+	var target_name: String = transform_data.get("target_name", "")
+	
+	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(self_uuid)
+	if not is_instance_valid(source):
+		return SummonResult.new() # Failed
+	
+	var result := SummonResult.new()
+	
+	# 1. Log Event
+	var source_display_name = BattleHelpers.get_instance_display_name(source)
+	if source_display_name == "": source_display_name = "Mimic"
+	
+	result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+		"text": "%s transforms into %s!" % [source_display_name, target_name]
+	}))
+	
+	# 2. Visual Event (Vanish)
+	# 2. Visual Event (Transform: Hop & Vanish)
+	# 2. Visual Event (Transform: Hop & Vanish)
+	result.events.append(CombatEvent.new(CombatEvent.Type.TRANSFORM, {
+		"target_uuids": [self_uuid],
+		"visual_payload": {
+			"style": "yellow_flash"
+		}
+	}))
+	
+	# 3. State Mutation: Discard Items
+	var items_to_discard = source.equipped_item_uuids.duplicate()
+	for item_uuid in items_to_discard:
+		if not item_uuid.is_empty():
+			var item_inst = battle_manager.get_instance_by_uuid(item_uuid)
+			if is_instance_valid(item_inst):
+				InventoryOperations.move_instance_to_discard(battle_manager._state, item_inst)
+	# Clear on source
+	source.equipped_item_uuids.fill("")
+	
+	# 4. State Mutation: Remove Self (Vanish)
+	var my_loc = source.get_location()
+	InventoryOperations.remove_instance_from_container(battle_manager._state, source)
+	
+	# 5. Determine Summon Location
+	# We want to summon EXACTLY where we were.
+	
+	# Create the new instance
+	var new_def = Database.get_definition(target_unit_id)
+	if is_instance_valid(new_def):
+		var new_unit = GachaBallInstance.new()
+		new_unit.initialize(new_def)
+		new_unit.reset_battle_stats_silent()
+		
+		# Place it in the container
+		# Use atomic API to register and place
+		battle_manager._state.bm_add_instance(new_unit, my_loc.container, my_loc.index)
+		
+		# Populate result
+		result.new_instances.append(new_unit)
+		# NOTE: We do not use container_updates here because we already used atomic bm_add_instance
+		# which handles the placement immediately.
+		
+		# Events
+		# Events
+		var is_player = battle_manager._is_player_unit(new_unit)
+		
+		# Construct robust SUMMON event with visual style
+		var summon_payload = {
+			"visual_style": "yellow_flash",
+			"new_unit_uuid": new_unit.ball_uuid,
+			"old_unit_location": my_loc, # Used by Animator to find the slot
+			"new_unit_snapshot": VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances())
+		}
+		
+		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
+			"target_uuids": [new_unit.ball_uuid],
+			"visual_payload": summon_payload
+		}))
+		result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+			"text": "%s appeared!" % [BattleHelpers.get_definition_display_name(new_def)]
+		}))
+			
 	return result

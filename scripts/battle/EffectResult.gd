@@ -61,6 +61,10 @@ var cascade_request: Array = []
 ## Format: {source_uuid: String, target_uuid: String, damage: int, dying_max_hp: int}
 var kamikaze_request: Dictionary = {}
 
+## Transform request for Mimic effect.
+## Format: {self_uuid: String, target_unit_id: StringName}
+var transform_request: Dictionary = {}
+
 # ============================================================================
 # HELPERS
 # ============================================================================

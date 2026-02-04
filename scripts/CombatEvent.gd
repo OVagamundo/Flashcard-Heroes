@@ -17,7 +17,8 @@ enum Type {
 	LOG_MESSAGE, # Legacy support for text logs
 	LETHAL_SAVE, # Aegis Charm: unit saved from lethal damage, floats up gold then lands
 	GUARDIAN_INTERCEPT, # Guardian Sentinel: leaps to ally's position to intercept lethal damage
-	KAMIKAZE_ATTACK # Death's Bargain: dying unit lunges to target, attacks, dies at target
+	KAMIKAZE_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
+	TRANSFORM # Mimic: hop and vanish
 }
 
 var type: Type
