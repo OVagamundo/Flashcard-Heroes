@@ -1092,10 +1092,30 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					result["spikes_data"] = spikes_data
 				return result
 			else:
+				if delta > 0:
+					# Trigger on_stat_increased for healing
+					AbilityResolver.process_trigger(&"on_stat_increased", {
+						"unit_uuid": instance.ball_uuid,
+						"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
+						"stat": "hp",
+						"amount": delta,
+						"source_uuid": attacker_uuid
+					})
 				return new_hp
 		"pwr":
 			var new_pwr = instance.current_pwr + delta
 			instance.set_current_pwr_silent(new_pwr) # Silent during simulation
+			
+			if delta > 0:
+				# Trigger on_stat_increased for PWR buff
+				AbilityResolver.process_trigger(&"on_stat_increased", {
+					"unit_uuid": instance.ball_uuid,
+					"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
+					"stat": "pwr",
+					"amount": delta,
+					"source_uuid": attacker_uuid
+				})
+			
 			return new_pwr
 		"burn_stacks":
 			# Status effects use add_status_effect_silent internally
@@ -1227,8 +1247,20 @@ func _resolve_pending_reactions_only(_extra_events: Array[CombatEvent] = []) -> 
 
 ## Resolve pending reactions for management phase triggers (on_draw, on_merge, etc.)
 ## Uses the VCR pattern: process pending effects, then animate via BattleAnimator.
+## Block UI updates (for manual effect orchestration)
+func block_ui_updates() -> void:
+	_is_processing_effect = true
+
+## Unblock UI updates and flush pending refreshes
+func unblock_ui_updates() -> void:
+	_is_processing_effect = false
+	if _pending_inventory_refresh:
+		_emit_battle_inventory_changed()
+
 ## Called from BattleView after gacha draw animation completes.
 ## @param snapshot: Dictionary - Board snapshot captured BEFORE effects were triggered
+
+
 func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	if _pending_reactions.is_empty():
 		return

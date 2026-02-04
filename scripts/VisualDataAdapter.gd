@@ -4,6 +4,18 @@ extends RefCounted
 ## Static helper to convert Simulation Objects into Presentation Data.
 ## This ensures Views remain "dumb" and decoupled from the Simulation layer.
 
+static func create_board_snapshot(all_instances: Dictionary) -> Dictionary:
+	var snapshot = {}
+	for uuid in all_instances:
+		var instance = all_instances[uuid]
+		if is_instance_valid(instance):
+			var loc = instance.get_location()
+			var vis_data = create_visual_data(instance, all_instances)
+			vis_data["container_tag"] = loc.container
+			vis_data["slot_index"] = loc.index
+			snapshot[uuid] = vis_data
+	return snapshot
+
 static func create_visual_data(instance: GachaBallInstance, all_instances: Dictionary = {}) -> Dictionary:
 	if not is_instance_valid(instance):
 		return {}

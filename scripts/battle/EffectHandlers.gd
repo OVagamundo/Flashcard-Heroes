@@ -1048,7 +1048,11 @@ static func handle_mirror_transform(
 	
 	# 4. State Mutation: Remove Self (Vanish)
 	var my_loc = source.get_location()
-	InventoryOperations.remove_instance_from_container(battle_manager._state, source)
+	
+	# CRITICAL FIX: Use bm_remove_instance (atomic) to fully unregister the unit from state and containers.
+	# InventoryOperations.remove_instance_from_container only clears the container slot but leaves
+	# the instance in _battle_instances with an empty location, causing Golden Rule violations.
+	battle_manager._state.bm_remove_instance(self_uuid)
 	
 	# 5. Determine Summon Location
 	# We want to summon EXACTLY where we were.

@@ -102,6 +102,7 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | `on_draw` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
 | `on_token_spent` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
 | `on_gacha_tokens_changed` | `(none)` |
+| `on_stat_increased` | `unit_uuid`, `stat`, `amount`, `source_uuid` |
 
 ### Attack Types and Defensive Triggers
 
@@ -692,20 +693,50 @@ Before committing, ask:
 
 ---
 
-## 12. Architectural Checklist for New Units
+## 12. Content Integration Checklist (Read Before "Done")
+> [!IMPORTANT]
+> A unit/item is not "implemented" until it is **registered**, **accessible**, and **documented**.
 
-When adding `Unit_New`:
-1. [ ] **Define Abilities:** Create `.tres` files
-2. [ ] **Verify Triggers:** Check Section 2 for available context keys
-3. [ ] **Check Existing Effects:** Can you reuse `EffectModifyStat` or `BasicAttackEffect`?
-4. [ ] **Visuals:**
-    - Does `BattleAnimator` have a case for this event type?
-    - If new visual needed (e.g., "Portal Open"): Add `CombatEvent.Type.PORTAL`, handler in `BattleAnimator`, and `PortalAnimation` class
-5. [ ] **Determinism Check:**
-    - Does it query `get_tree()`? **STOP.** State must be derived from context only.
-6. [ ] **Test:**
-    - New ability works as expected
-    - ALL existing abilities still work
+### A. Core Implementation
+1. [ ] **Resource Creation**:
+    - Created `.tres` file in `resources/units/` or `resources/items/`?
+    - Is `tier` set correctly?
+    - Are stats (HP/PWR) set correctly?
+    - Is `id` unique?
+2. [ ] **Ability Definition**:
+    - Created `.tres` in `resources/abilities/`?
+    - Does `trigger` match a valid game event?
+    - Is `priority` set if needed?
+3. [ ] **Effect Scripts**:
+    - Used existing script (e.g. `EffectModifyStat.gd`)?
+    - If new script needed: Created in `scripts/effects/`?
+    - **CRITICAL**: Does new script only use `context` (no `get_instance`)?
+
+### B. Registration & Access (The "Missing Link")
+4. [ ] **Recipes (Tier 2+)**:
+    - Created recipe in `resources/recipes/`?
+    - **CRITICAL**: Used `MergeRecipe` script (NOT RecipeDefinition)?
+    - Added to `Database` (if manual registration needed) or verified auto-load?
+5. [ ] **Inventory / Pools**:
+    - **Initial Loadout**: Added to `RunState.gd` (`_get_starters_for_hero`) logic if it's a starter/test unit?
+    - **Boss/Elite Pools**: Added to `EncounterGenerator.gd` if it's an enemy?
+    - **Reward Pools**: Ensure tier-based loot tables will pick it up (usually automatic by directory/resource scan, but verify).
+
+### C. Visuals & Polish
+6. [ ] **Animations**:
+    - Does `BattleAnimator` support the events generated?
+    - If new event type: Added handler in `BattleAnimator.gd`?
+7. [ ] **Icon/Assets**:
+    - Is the `icon` property set in the `.tres` file?
+
+### D. Final Compliance Check
+8. [ ] **Documentation**:
+    - Updated `GameContentDocument.md`?
+    - Updated `walkthrough.md` with verification steps?
+9. [ ] **Rule Verification**:
+    - Did I modify `BattleManager.gd` or `AbilityResolver.gd`? **(STOP if yes - Check Rule #1)**
+    - Did I import new globals?
+    - Did I use `RecipeDefinition.gd` (illegal) instead of `MergeRecipe.gd`?
 
 ---
 
@@ -755,3 +786,36 @@ To prevent implementation errors and "silent failures," understand the architect
 
 > [!CAUTION]
 > **NEVER** use `EffectModifyStat.gd` for status effects like Spikes or Burn. It only contains logic for HP and PWR. Using it for status effects will result in a silent failure (no stacks added).
+
+---
+
+## 15. Executing Effects from UI/Inventory (Manual Triggering)
+
+When executing an ability manually (e.g., using a Potion from the Inventory, or a button click in a Shop), you are operating **outside** the standard Combat Loop. You must manually orchestrate the **Simulation -> Execution -> Animation** pipeline.
+
+### The "Single Pass + Flush" Pattern
+
+Because some legacy scripts (like `EffectModifyStat.gd`) apply stats even in `is_simulation: true` mode, use the **Single Pass** pattern to avoid double-application.
+
+```gdscript
+# 1. Capture Board Snapshot
+var snapshot = VisualDataAdapter.create_board_snapshot(...)
+
+# 2. Run Simulation Pass (This applies stats AND returns visuals)
+var context = { "is_simulation": true }
+var result = effect.execute(source_uuid, targets, battle_manager, context)
+
+# 3. Play Direct Animations (The Potion itself)
+if result and not result.events.is_empty():
+    await animator.play_turn_sequence(snapshot, result.events)
+
+# 4. FLUSH THE TRIGGER QUEUE (Critical!)
+# Applying stats (even in sim) triggers 'on_stat_increased', which queues reactions (like Echo)
+# into BattleManager._pending_reactions. You MUST flush this queue to play the side-effects.
+if is_battle:
+    battle_manager.resolve_management_effects_and_animate(snapshot)
+```
+
+> [!CRITICAL]
+> **Why Flush?**
+> If you don't call `resolve_management_effects_and_animate()`, the immediate effect (Heal) will happen, but consequential effects (Echo, On-Heal Triggers) will stay stuck in the queue indefinitely. The player will see the Potion work, but the Echo will be missing.

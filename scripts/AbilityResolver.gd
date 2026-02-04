@@ -114,6 +114,47 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 		&"on_gacha_tokens_changed":
 			# All living units respond to token changes
 			return unit.current_hp > 0
+			
+		&"on_stat_increased":
+			# Units respond if they are adjacent to the unit that received the stat increase
+			# AND they are NOT the source of the stat increase (Loop Prevention)
+			var target_uuid = context.get("unit_uuid", "")
+			var source_uuid = context.get("source_uuid", "")
+			
+			# Loop Prevention: Do not respond if this unit caused the buff
+			if unit_uuid == source_uuid:
+				return false
+			
+			# Ping-Pong Prevention: Do not respond if the source is the SAME TYPE of unit
+			# This prevents two Shadow Cloners from echoing each other infinitely
+			if not source_uuid.is_empty():
+				var source_inst = battle_manager.get_instance_by_uuid(source_uuid)
+				if is_instance_valid(source_inst):
+					var source_def = source_inst.get_definition()
+					var unit_def = unit.get_definition()
+					if is_instance_valid(source_def) and is_instance_valid(unit_def):
+						if source_def.id == unit_def.id:
+							return false
+
+			# Must be alive
+			if unit.current_hp <= 0:
+				return false
+				
+			# Check adjacency
+			# We use the BattleManager helper indirectly by checking raw locations
+			# Or we can just let process_trigger handle it? 
+			# Optimization: Filter here.
+			var target_inst = battle_manager.get_instance_by_uuid(target_uuid)
+			if not is_instance_valid(target_inst):
+				return false
+			
+			# Check if unit is adjacent to target
+			var adjacent_allies = battle_manager._get_adjacent_allies(target_inst)
+			for ally in adjacent_allies:
+				if ally.ball_uuid == unit_uuid:
+					return true
+					
+			return false
 	
 	# Default: respond (for any new triggers)
 	return true

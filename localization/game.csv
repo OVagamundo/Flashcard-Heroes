@@ -335,3 +335,7 @@ unit_t2_e.name,Mimic,Mímico
 unit_t2_e.desc,A mysterious entity that transforms into the reflection of its enemy.,Uma entidade misteriosa que se transforma no reflexo de seu inimigo.
 ability.unit_t2_e_mimic.name,Mirror Image,Imagem Espelhada
 ability.unit_t2_e_mimic.desc,"At start of turn, transforms into the base unit of the enemy in the mirror slot.","No início do turno, transforma-se na unidade base do inimigo na posição oposta."
+unit_t2_g.name,Shadow Cloner,Clone das Sombras
+unit_t2_g.desc,An ethereal unit that echoes buffs received by adjacent allies.,Uma unidade etérea que ecoa buffs recebidos por aliados adjacentes.
+ability.unit_t2_g_buff_echo.name,Buff Echo,Eco de Buff
+ability.unit_t2_g_buff_echo.desc,"When an adjacent ally receives a HP or PWR buff, this unit repeats that buff on them.","Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete esse buff nele."
