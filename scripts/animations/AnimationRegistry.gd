@@ -47,5 +47,8 @@ static func load_standard_animations() -> void:
 	var kamikaze_anim_script = load("res://scripts/animations/KamikazeAnimation.gd")
 	register("kamikaze", kamikaze_anim_script.new())
 	
+	var transform_anim_script = load("res://scripts/animations/TransformAnimation.gd")
+	register("transform", transform_anim_script.new())
+	
 	if OS.is_debug_build():
 		print("[AnimationRegistry] Loaded animations: ", _animations.keys())

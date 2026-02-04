@@ -331,3 +331,7 @@ item.potion_plunder.name,Potion of Plunder,Poção do Saqueador
 item.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatório do alvo.
 ability.potion_plunder.name,Plunder,Saquear
 ability.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatório do alvo.
+unit_t2_e.name,Mimic,Mímico
+unit_t2_e.desc,A mysterious entity that transforms into the reflection of its enemy.,Uma entidade misteriosa que se transforma no reflexo de seu inimigo.
+ability.unit_t2_e_mimic.name,Mirror Image,Imagem Espelhada
+ability.unit_t2_e_mimic.desc,"At start of turn, transforms into the base unit of the enemy in the mirror slot.","No início do turno, transforma-se na unidade base do inimigo na posição oposta."

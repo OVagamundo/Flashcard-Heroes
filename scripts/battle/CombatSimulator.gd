@@ -29,6 +29,14 @@ var _inline_events: Array[CombatEvent] = []
 ## Flag to prevent re-entrant effect processing
 var _is_processing_effect: bool = false
 
+## Track the currently acting unit to prevent re-insertion complications
+var _current_acting_unit: GachaBallInstance = null
+
+## Robust Turn Tracking (Integer-based)
+## Persists even if the acting unit dies and moves to discard
+var _current_turn_slot_index: int = -1
+var _current_turn_is_player: bool = false
+
 # ============================================================================
 # ACTOR QUEUE MANAGEMENT
 # ============================================================================
@@ -64,6 +72,7 @@ func actor_queue_size() -> int:
 func populate_actor_queue(state: BattleState) -> void:
 	_actor_queue.clear()
 	state.clear_turn_data() # Reset turn-scoped tracking
+	_current_turn_slot_index = -1 # Reset turn slot tracker
 	
 	var player_lineup := state.get_instances_in_container(&"PlayerLineup")
 	var enemy_lineup := state.get_instances_in_container(&"EnemyLineup")
@@ -99,6 +108,24 @@ func insert_summoned_unit(new_unit: GachaBallInstance, is_player: bool, is_playe
 		return
 	
 	var slot_idx := new_unit.location_slot_index
+	
+	# CRITICAL CHECK: Prevent re-insertion if the slot has already acted or is currently acting
+	# Uses persisted turn data because _current_acting_unit might be dead/moved to discard
+	if _current_turn_slot_index != -1: # Actively processing a turn
+		# Only block if we are inserting into the SAME team that is currently acting
+		if _current_turn_is_player == is_player:
+			if is_player:
+				# Player acts 4 -> 0 (Descending)
+				# If new_slot >= current_slot, it means we are replacing the current actor
+				# or inserting into a slot that already finished acting.
+				if slot_idx >= _current_turn_slot_index:
+					return
+			else:
+				# Enemy acts 0 -> 4 (Ascending)
+				# If new_slot <= current_slot, it means we are replacing the current actor
+				# or inserting into a slot that already finished acting.
+				if slot_idx <= _current_turn_slot_index:
+					return
 	
 	# Find alive same-team units still in queue to determine insertion position
 	var found_alive_same_team := false
@@ -214,12 +241,17 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 	
 	while not _actor_queue.is_empty():
 		var current_actor: GachaBallInstance = _actor_queue.pop_front()
+		_current_acting_unit = current_actor
 		
 		if not is_instance_valid(current_actor):
 			continue
 		
 		if current_actor.current_hp <= 0:
 			continue
+		
+		# Robust Turn Tracking: Snapshot slot/team BEFORE execution (in case unit dies/moves)
+		_current_turn_slot_index = current_actor.location_slot_index
+		_current_turn_is_player = battle_manager._is_player_unit(current_actor)
 		
 		# Enqueue attack for this actor
 		battle_manager._enqueue_attack_for(current_actor)
@@ -475,6 +507,15 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				out_events.append_array(summon_result.events)
 				# Trigger on_enemy_summon for each new unit
 				_trigger_summon_reactions_for_result(summon_result, out_events, bm)
+			
+			# Handle transform request (Mimic)
+			if not effect_result.transform_request.is_empty():
+				var transform_result := EffectHandlers.handle_mirror_transform(request, effect_result.transform_request, bm)
+				bm._apply_summon_result(transform_result) # Contains the new unit summoning
+				out_events.append_array(transform_result.events)
+				# Trigger on_enemy_summon for the new unit (it counts as summon?)
+				# Yes, a new unit appeared.
+				_trigger_summon_reactions_for_result(transform_result, out_events, bm)
 			
 			# Handle multiple summon request for boss effects (from EffectBossSummon)
 			if not effect_result.summon_units_request.is_empty():

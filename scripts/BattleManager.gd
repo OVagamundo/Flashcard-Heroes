@@ -590,6 +590,11 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 
 
 func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary = {}) -> void:
+	# SYSTEM TRAP: Handle delayed trait effects
+	if request.ability_id == "trait_start_effects":
+		out_events.append_array(_apply_trait_start_of_turn_effects())
+		return
+
 	# THIN WRAPPER: Delegates to CombatSimulator
 	_combat.resolve_effect_request(request, out_events, death_tracking, self)
 
@@ -1157,18 +1162,31 @@ func _trigger_turn_start_abilities() -> void:
 		
 	_turn_start_abilities_triggered = true # Set flag here to prevent multiple calls
 	
-	# Apply Trait Start-of-Turn Effects (e.g., Earth Armor)
-	# Returns events to be animated together with other turn start abilities
-	var trait_events = _apply_trait_start_of_turn_effects()
-	
 	# Trigger turn start abilities for all instances using unified processing
+	# This queues ability requests into _pending_reactions
 	var turn_start_context: Dictionary = {"turn": _current_turn}
 	AbilityResolver.process_trigger(&"on_turn_start", turn_start_context)
 	
+	# QUEUE Trait Start-of-Turn Effects (e.g., Earth Armor)
+	# We queue this as a reaction with specific priority so it interleaves correctly
+	# with other turn start abilities (e.g. Mimic Transform should happen BEFORE traits).
+	var trait_request = EffectRequest.new(
+		"SYSTEM",
+		"trait_start_effects",
+		null,
+		[],
+		{},
+		C.PRIORITY_TRAIT_BURN # 100
+	)
+	_pending_reactions.append(trait_request)
+	
+	# Sort reactions by priority descending (Higher priority executes first)
+	_pending_reactions.sort_custom(func(a, b): return b.priority < a.priority)
+	
 	# Process turn start effects (heals, etc.) without starting combat
 	# Don't populate actor queue - we're just processing turn start abilities
-	if not _pending_reactions.is_empty() or not trait_events.is_empty():
-		_resolve_pending_reactions_only(trait_events)
+	if not _pending_reactions.is_empty():
+		_resolve_pending_reactions_only()
 	else:
 		# No turn start abilities to process - transition to MANAGEMENT directly
 		_on_turn_animation_finished()
@@ -1178,14 +1196,14 @@ func _trigger_turn_start_abilities() -> void:
 ## Used for turn start abilities that shouldn't trigger combat
 ## Process pending reactions without populating the actor queue
 ## Used for turn start abilities that shouldn't trigger combat
-## @param extra_events: Events generated before reaction processing (e.g. traits) to include in animation
-func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> void:
+## @param extra_events: DEPRECATED - Events are now generated via queued reactions
+func _resolve_pending_reactions_only(_extra_events: Array[CombatEvent] = []) -> void:
 	if _is_processing_effect: return
 	_is_processing_effect = true
 	_resolve_animator()
 	
 	# Process only pending reactions (turn start abilities), don't populate actor queue
-	var all_events_for_animator: Array[CombatEvent] = extra_events.duplicate()
+	var all_events_for_animator: Array[CombatEvent] = []
 	var death_tracking: Dictionary = {}
 	
 	# Capture board snapshot BEFORE simulation

@@ -42,6 +42,7 @@ The `BattleManager` processes reactions using a priority queue.
 
 | Priority | Constant | Description | Examples |
 |----------|----------|-------------|----------|
+| 500 | `PRIORITY_TRANSFORM` | Mimic Transformation | Mimic |
 | 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
 | 210 | `PRIORITY_TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
 | 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
