@@ -57,6 +57,7 @@ const TRIGGER_ON_ATTACK = &"on_attack" # Unit performs any attack (use condition
 const TRIGGER_ON_BEFORE_DAMAGE = &"on_before_damage" # Before receiving attack damage (Defensive Stance)
 const TRIGGER_ON_HURT = &"on_hurt" # After receiving attack damage
 const TRIGGER_ON_DAMAGE_DEALT = &"on_damage_dealt" # After dealing attack damage (Lifesteal)
+const TRIGGER_ON_PRE_COMBAT = &"on_pre_combat" # Before combat snapshot (Tier 2 Unit)
 
 # Death-related triggers
 const TRIGGER_ON_DEATH = &"on_death" # This unit dies

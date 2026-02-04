@@ -10,7 +10,8 @@ WARNING: res://resources/items/item_emblem_fire.tres:3 - ext_resource, invalid U
 WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
    at: load (scene/resources/resource_format_text.cpp:447)
 [Title] Ready. TutorialManager.tutorials_enabled: false
-[SaveManager] Run loaded successfully (Day 3)
+[TutorialManager] Requesting tutorial: loadout_intro
+[TutorialManager] Blocked: Tutorials disabled
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -23,19 +24,24 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[PathChoice] Loading from save, skipping day advance. Current Day: 3
+[SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
 [TutorialManager] Requesting tutorial: gacha_inspect_run
 [TutorialManager] Blocked: Tutorials disabled
 Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
 [TutorialManager] Requesting tutorial: shop_intro
 [TutorialManager] Blocked: Tutorials disabled
-[SaveManager] Run saved successfully (Day 4)
+Warning: Instance has invalid stats, resetting from definition
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Blocked: Tutorials disabled
+[SaveManager] Run saved successfully (Day 2)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
-[EncounterGen] Budget: 18, Spent: 18, Units: 4, Items: 1, Trinkets: 1
+[EncounterGen] Budget: 10, Spent: 10, Units: 3, Items: 1, Trinkets: 0
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
@@ -44,1210 +50,703 @@ DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATE
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 8
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 11
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 11, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: battle_management_intro
 [TutorialManager] Blocked: Tutorials disabled
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:3] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 3→4)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:4] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 4→5)
+[BattleLog] [1:2] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:3] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 4→6)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
+[AnimationCompletionTracker] Timeout for boss_2_1770241117_15 type 7
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+WARNING: Target object freed before starting, aborting Tweener.
+   at: start (scene/animation/tween.cpp:594)
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:6] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 5→6)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:8] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
+[BattleLog] [1:4] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:5] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 6→8)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:10] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:11] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+[BattleLog] [1:6] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:7] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 8→10)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:12] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [1:14] Guardian heals Guardian for 3 HP 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-[BattleLog] [1:15] Guardian heals Guardian for 3 HP (ability_grant_heroism) (HP: 5→8)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [1:16] Guardian grants Guardian +3 PWR 
-[BattleLog] [1:17] Guardian grants Guardian +3 PWR (ability_grant_heroism) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [1:18] Guardian grants Guardian +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
-[BattleLog] [1:19] Shadow Cloner echoes buff! Grants +3 HP to adjacent ally. 
-[BattleLog] [1:20] Shadow Cloner heals Guardian for 3 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 8→11)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [1:21] Shadow Cloner echoes buff! Grants +3 PWR to adjacent ally. 
-[BattleLog] [1:22] Shadow Cloner grants Guardian +3 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:23] Stole item_t3_b.name! 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Tutorials disabled
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238273_72_91388
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238273_72_91388
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t1_d_empathic_link Prio:100 Src:unit_t1_d_1770238273_71_31030
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770238273_11_23250
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238273_21_06790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238273_21_06790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:24] Guardian deals 9 dmg to Protector 
-[BattleLog] [1:25] Guardian attacks unit_t1_... for 9 damage (basic_attack, on_attack) (HP: 1→-8)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1770238273_68_04815"] source: unit_t2_a_1770238273_11_23250 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770238273 type 5
-[BattleLog] [1:26] └─ unit_t1_... is defeated! 
-[BattleLog] [1:27] Vengeance Charm grants Apprentice +1 PWR 
-[BattleLog] [1:28] trinket_vengeance grants unit_t1_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:29] Vengeance Charm heals Apprentice for 1 HP 
-[BattleLog] [1:30] trinket_vengeance heals unit_t1_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 2→3)
-[BattleLog] [1:31] Shadow Cloner deals 3 dmg to Apprentice 
-[BattleLog] [1:32] Shadow Cloner attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 3→0)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1770238273_70_33880"] source: unit_t2_g_1770238273_63_11398 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238273 type 5
-[BattleLog] [1:33] └─ unit_t1_... is defeated! 
-[BattleLog] [1:34] Vengeance Charm grants Empath +1 PWR 
-[BattleLog] [1:35] trinket_vengeance grants unit_t1_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:36] Vengeance Charm heals Empath for 1 HP 
-[BattleLog] [1:37] trinket_vengeance heals unit_t1_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 1→2)
-[BattleLog] [1:38] unit_t1_... grants The Awakened Guardian +1 PWR (unit_t1_d_empathic_link) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:39] Mimic deals 2 dmg to Protector 
-[BattleLog] [1:40] Mimic attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1770238273_72_91388"] source: unit_t2_e_1770238273_15_63329 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_e_1770238273 type 5
-[BattleLog] [1:41] └─ unit_t1_... is defeated! 
-[BattleLog] [1:42] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [1:43] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:44] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [1:45] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 9→10)
-[BattleLog] [1:46] Timekeeper deals 2 dmg to Empath 
-[BattleLog] [1:47] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t1_d_1770238273_71_31030"] source: hero_timekeeper_1770238273_4_91510 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [1:48] └─ unit_t1_... is defeated! 
-[BattleLog] [1:49] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [1:50] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:51] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [1:52] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 10→11)
-[BattleLog] [1:53] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:54] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 11→13)
-[BattleLog] [1:55] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [1:56] Shadow Cloner heals Guardian for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 13→15)
-[BattleLog] [1:57] The Awakened Guardian deals 6 dmg to Guardian 
-[BattleLog] [1:58] The Awakened Guardian attacks Guardian for 6 damage (basic_attack, on_attack) (HP: 15→12)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770238273_11_23250"] source: boss_1_1770238273_73_44204 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770238273_73 type 5
-[BattleLog] [1:59] Phoenix Elixir heals Guardian for 1 HP 
-[BattleLog] [1:60] Phoenix Elixir heals Guardian for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 12→13)
-[BattleLog] [1:61] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [1:62] Shadow Cloner heals Guardian for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 13→14)
-[BattleLog] [1:63] Phoenix Elixir grants Guardian +1 PWR 
-[BattleLog] [1:64] Phoenix Elixir grants Guardian +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:65] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [1:66] Shadow Cloner grants Guardian +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 7, Spent: 7, Units: 3, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:67] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [1:68] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [1:69] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [2:1] ═══ TURN 2 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 9
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 9, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 3
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
-[DeathProcessor] Draining batch of 3
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238370_78_59731
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238391_80_24476
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [2:2] Mimic transforms into Shadow Cloner! 
-[BattleLog] [2:3] └─ System summons New Unit! 
-[BattleLog] [2:4] Shadow Cloner appeared! 
-[BattleLog] [2:5] Templar grants Templar +14 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=14 targets=1
-[BattleLog] [2:6] Timekeeper heals Shadow Cloner and Guardian for 2 HP 
-[BattleLog] [2:7] Timekeeper heals Shadow Cloner for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 3→5)
-[BattleLog] [2:8] Shadow Cloner echoes buff! Grants +14 PWR to adjacent ally. 
-[BattleLog] [2:9] Shadow Cloner grants Templar +14 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=14 targets=1
-[BattleLog] [2:10] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [2:11] Shadow Cloner heals Shadow Cloner for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 5→7)
-[BattleLog] [2:12] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [2:13] Shadow Cloner heals Guardian for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 16→18)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
+[BattleLog] [1:8] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:9] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 10→12)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:14] Templar grants Templar -16 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-16 targets=1
+[BattleLog] [1:10] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:11] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 12→14)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-[BattleLog] [2:15] Merchant heals Merchant for 3 HP (ability_unit_t2_f_gold_hp) (HP: 1→4)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:16] Templar grants Templar -2 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-2 targets=1
-[BattleLog] [2:17] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:18] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 11→12)
-[BattleLog] [2:19] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:20] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 12→13)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-WARNING: [BattleAnimator] HP delta target not in visual registry: boss_1_1770238273_73_44204
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
+[BattleLog] [1:12] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:13] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 14→16)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:21] Templar grants Templar -1 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-1 targets=1
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[BattleLog] [2:22] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:23] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 13→14)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:24] Templar grants Templar -1 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-1 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_d_1770238370_79_20321
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [2:25] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:26] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 14→15)
-WARNING: [BattleAnimator] HP delta target not in visual registry: boss_1_1770238273_73_44204
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:27] Guardian heals Guardian for 4 HP 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-[BattleLog] [2:28] Guardian heals Guardian for 4 HP (ability_consumable_potion_t1) (HP: 18→22)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [2:29] Shadow Cloner echoes buff! Grants +4 HP to adjacent ally. 
-[BattleLog] [2:30] Shadow Cloner heals Guardian for 4 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 22→26)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:31] Templar grants Templar -1 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-1 targets=1
-[BattleLog] [2:32] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:33] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 15→16)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:34] Templar grants Templar -3 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-3 targets=1
-[BattleLog] [2:35] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:36] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 16→17)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: [BattleAnimator] HP delta target not in visual registry: boss_1_1770238273_73_44204
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:37] Templar grants Templar -3 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-3 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_d_1770238370_79_20321
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [2:38] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:39] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 17→18)
-WARNING: [BattleAnimator] HP delta target not in visual registry: boss_1_1770238273_73_44204
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 2 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:40] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:41] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 18→19)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238370_78_59731
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770238370_77_69209
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770238273_11_23250
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238273_21_06790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238273_21_06790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:42] Guardian deals 11 dmg to Templar 
-[BattleLog] [2:43] Guardian attacks unit_t2_... for 11 damage (basic_attack, on_attack) (HP: 2→-9)
-[DamageAnimation] Executing for targets: ["unit_t2_d_1770238370_79_20321"] source: unit_t2_a_1770238273_11_23250 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770238273 type 5
-[BattleLog] [2:44] └─ unit_t2_... is defeated! 
-[BattleLog] [2:45] Vengeance Charm grants Squire +1 PWR 
-[BattleLog] [2:46] trinket_vengeance grants unit_t1_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:47] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [2:48] unit_t2_... grants unit_t1_... +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:49] Vengeance Charm heals Shadow Cloner for 1 HP 
-[BattleLog] [2:50] trinket_vengeance heals unit_t2_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 3→4)
-[BattleLog] [2:51] Shadow Cloner deals 3 dmg to Shadow Cloner 
-[BattleLog] [2:52] Shadow Cloner attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 4→1)
-[DamageAnimation] Executing for targets: ["unit_t2_g_1770238370_78_59731"] source: unit_t2_g_1770238273_63_11398 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238273 type 5
-[BattleLog] [2:53] Mimic deals 2 dmg to Shadow Cloner 
-[BattleLog] [2:54] Mimic attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_g_1770238370_78_59731"] source: unit_t2_e_1770238273_62_72375 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_e_1770238273 type 5
-[BattleLog] [2:55] └─ unit_t2_... is defeated! 
-[BattleLog] [2:56] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [2:57] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:58] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [2:59] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 19→20)
-[BattleLog] [2:60] Shadow Cloner deals 3 dmg to Squire 
-[BattleLog] [2:61] Shadow Cloner attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 1→-2)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1770238370_77_69209"] source: unit_t2_g_1770238391_80_24476 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238391 type 5
-[BattleLog] [2:62] Squire deals 4 dmg to Shadow Cloner 
-[BattleLog] [2:63] unit_t1_... attacks Shadow Cloner for 4 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 3→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_g_1770238391_80_24476"] source: unit_t1_b_1770238370_77_69209 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1770238370 type 5
-[BattleLog] [2:64] └─ Shadow Cloner is defeated! 
-[TutorialManager] Requesting blocking tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [2:65] └─ unit_t1_... is defeated! 
-[BattleLog] [2:66] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [2:67] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:68] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [2:69] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 20→21)
-[BattleLog] [2:70] Timekeeper deals 2 dmg to The Awakened Guardian 
-[BattleLog] [2:71] Timekeeper attacks The Awakened Guardian for 2 damage (basic_attack, on_attack) (HP: 21→19)
-[DamageAnimation] Executing for targets: ["boss_1_1770238273_73_44204"] source: hero_timekeeper_1770238273_4_91510 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [2:72] Guardian heals Guardian for 2 HP 
-[BattleLog] [2:73] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 26→28)
-[BattleLog] [2:74] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [2:75] Shadow Cloner heals Guardian for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 28→30)
-[BattleLog] [2:76] The Awakened Guardian deals 8 dmg to Guardian 
-[BattleLog] [2:77] The Awakened Guardian attacks Guardian for 8 damage (basic_attack, on_attack) (HP: 30→22)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770238273_11_23250"] source: boss_1_1770238273_73_44204 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770238273_73 type 5
-[BattleLog] [2:78] Phoenix Elixir heals Guardian for 1 HP 
-[BattleLog] [2:79] Phoenix Elixir heals Guardian for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 22→23)
-[BattleLog] [2:80] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [2:81] Shadow Cloner heals Guardian for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 23→24)
-[BattleLog] [2:82] Phoenix Elixir grants Guardian +1 PWR 
-[BattleLog] [2:83] Phoenix Elixir grants Guardian +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:84] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [2:85] Shadow Cloner grants Guardian +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 7, Spent: 7, Units: 3, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:86] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [2:87] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [2:88] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [3:1] ═══ TURN 3 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 8
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [3:2] Mimic transforms into Shadow Cloner! 
-[BattleLog] [3:3] └─ System summons New Unit! 
-[BattleLog] [3:4] Shadow Cloner appeared! 
-[BattleLog] [3:5] Mimic transforms into Sakura Spirit! 
-[BattleLog] [3:6] └─ System summons New Unit! 
-[BattleLog] [3:7] Sakura Spirit appeared! 
-[BattleLog] [3:8] Timekeeper heals Shadow Cloner and Guardian for 2 HP 
-[BattleLog] [3:9] Timekeeper heals Shadow Cloner for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 7→9)
-[BattleLog] [3:10] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [3:11] Shadow Cloner heals Guardian for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 26→28)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:12] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [3:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 19→20)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [3:14] Guardian heals Guardian for 3 HP 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-[BattleLog] [3:15] Guardian heals Guardian for 3 HP (ability_grant_heroism) (HP: 29→32)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [3:16] Guardian grants Guardian +3 PWR 
-[BattleLog] [3:17] Guardian grants Guardian +3 PWR (ability_grant_heroism) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [3:18] Guardian grants Guardian +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
-[BattleLog] [3:19] Shadow Cloner echoes buff! Grants +3 HP to adjacent ally. 
-[BattleLog] [3:20] Shadow Cloner heals Guardian for 3 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 32→35)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [3:21] Shadow Cloner echoes buff! Grants +3 PWR to adjacent ally. 
-[BattleLog] [3:22] Shadow Cloner grants Guardian +3 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_a_1770238273_11_23250
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 2, "WATER": 1, "WIND": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:23] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [3:24] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 20→21)
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238468_82_32964
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770238468_83_58374
-[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770238468_83_58374
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238468_82_32964
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770238468_83_58374
-[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770238468_83_58374
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238468_82_32964
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770238273_11_23250
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238273_21_06790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238273_21_06790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238425_81_18540
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770238425_81_18540
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:25] Guardian deals 20 dmg to Shadow Cloner 
-[BattleLog] [3:26] Guardian attacks unit_t2_... for 20 damage (basic_attack, on_attack) (HP: 3→-17)
-[DamageAnimation] Executing for targets: ["unit_t2_g_1770238488_85_92920"] source: unit_t2_a_1770238273_11_23250 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770238273 type 5
-[BattleLog] [3:27] └─ unit_t2_... is defeated! 
-[BattleLog] [3:28] Vengeance Charm grants Sakura Spirit +1 PWR 
-[BattleLog] [3:29] trinket_vengeance grants unit_t3_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:30] Vengeance Charm heals Sakura Spirit for 1 HP 
-[BattleLog] [3:31] trinket_vengeance heals unit_t3_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 6→7)
-[BattleLog] [3:32] Shadow Cloner deals 3 dmg to Sakura Spirit 
-[BattleLog] [3:33] Shadow Cloner attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 7→4)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1770238468_83_58374"] source: unit_t2_g_1770238273_63_11398 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238273 type 5
-[BattleLog] [3:34] Sakura Spirit heals Protector for 1 HP 
-[BattleLog] [3:35] unit_t3_... heals unit_t1_... for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 1→2)
-[BattleLog] [3:36] Sakura Spirit grants Protector +1 PWR 
-[BattleLog] [3:37] unit_t3_... grants unit_t1_... +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:38] Protector shields their ally (+2 HP) 
-[BattleLog] [3:39] unit_t1_... heals unit_t3_... for 2 HP (unit_t1_c_ally_shield, on_ally_hurt) (HP: 4→6)
-[BattleLog] [3:40] Sakura Spirit deals 6 dmg to Sakura Spirit 
-[BattleLog] [3:41] Sakura Spirit attacks unit_t3_... for 6 damage (basic_attack, on_attack) (HP: 6→0)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1770238468_83_58374"] source: unit_t3_d_1770238488_86_50667 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1770238488 type 5
-[BattleLog] [3:42] Sakura Spirit heals Protector for 1 HP 
-[BattleLog] [3:43] unit_t3_... heals unit_t1_... for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 2→3)
-[BattleLog] [3:44] Sakura Spirit grants Protector +1 PWR 
-[BattleLog] [3:45] unit_t3_... grants unit_t1_... +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:46] └─ unit_t3_... is defeated! 
-[BattleLog] [3:47] Vengeance Charm grants Protector +1 PWR 
-[BattleLog] [3:48] trinket_vengeance grants unit_t1_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:49] Vengeance Charm heals Protector for 1 HP 
-[BattleLog] [3:50] trinket_vengeance heals unit_t1_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 3→4)
-[BattleLog] [3:51] Guardian Sentinel deals 4 dmg to Protector 
-[BattleLog] [3:52] Guardian Sentinel attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 4→0)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1770238468_82_32964"] source: unit_t3_b_1770238273_31_52007 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_b_1770238273 type 5
-[BattleLog] [3:53] └─ unit_t1_... is defeated! 
-[BattleLog] [3:54] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [3:55] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:56] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [3:57] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 21→22)
-[BattleLog] [3:58] Timekeeper deals 2 dmg to The Awakened Guardian 
-[BattleLog] [3:59] Timekeeper attacks The Awakened Guardian for 2 damage (basic_attack, on_attack) (HP: 22→20)
-[DamageAnimation] Executing for targets: ["boss_1_1770238273_73_44204"] source: hero_timekeeper_1770238273_4_91510 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [3:60] Guardian heals Guardian for 2 HP 
-[BattleLog] [3:61] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 35→37)
-[BattleLog] [3:62] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [3:63] Shadow Cloner heals Guardian for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 37→39)
-[BattleLog] [3:64] The Awakened Guardian deals 9 dmg to Guardian 
-[BattleLog] [3:65] The Awakened Guardian attacks Guardian for 9 damage (basic_attack, on_attack) (HP: 39→33)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770238273_11_23250"] source: boss_1_1770238273_73_44204 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770238273_73 type 5
-[BattleLog] [3:66] Phoenix Elixir heals Guardian for 1 HP 
-[BattleLog] [3:67] Phoenix Elixir heals Guardian for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 33→34)
-[BattleLog] [3:68] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [3:69] Shadow Cloner heals Guardian for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 34→35)
-[BattleLog] [3:70] Phoenix Elixir grants Guardian +1 PWR 
-[BattleLog] [3:71] Phoenix Elixir grants Guardian +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:72] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [3:73] Shadow Cloner grants Guardian +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:74] Phoenix Elixir heals Guardian for 1 HP 
-[BattleLog] [3:75] Phoenix Elixir heals Guardian for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 35→36)
-[BattleLog] [3:76] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [3:77] Shadow Cloner heals Guardian for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 36→37)
-[BattleLog] [3:78] Phoenix Elixir grants Guardian +1 PWR 
-[BattleLog] [3:79] Phoenix Elixir grants Guardian +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:80] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [3:81] Shadow Cloner grants Guardian +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 7, Spent: 7, Units: 4, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:82] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [3:83] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [3:84] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [3:85] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [4:1] ═══ TURN 4 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 10
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 10, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
+[BattleLog] [1:14] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:15] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 16→18)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [DeathProcessor] Phase 1 (on_death) done. Pending: 2
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
 [DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [4:2] Timekeeper heals Guardian Sentinel and Sakura Spirit and Shadow Cloner and Guardian for 2 HP 
-[BattleLog] [4:3] Timekeeper heals Guardian Sentinel for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 6→8)
-[BattleLog] [4:4] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [4:5] Shadow Cloner heals Sakura Spirit for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 8→10)
-[BattleLog] [4:6] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [4:7] Shadow Cloner heals Guardian for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 39→41)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_102_39502
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_103_80834
+[BattleLog] [1:16] Hermit heals Hermit for 3 HP 
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+[BattleLog] [1:17] Hermit heals Hermit for 3 HP (ability_grant_heroism) (HP: 4→7)
+WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_h_1770241117_145_91570
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[BattleLog] [1:18] Hermit grants Hermit +3 PWR 
+[BattleLog] [1:19] Hermit grants Hermit +3 PWR (ability_grant_heroism) 
+[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
+WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_h_1770241117_145_91570
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[BattleLog] [1:20] Hermit grants Hermit +3 armor_stacks 
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
+[BattleLog] [1:21] Shadow Cloner echoes buff! Grants +3 HP to adjacent ally. 
+[BattleLog] [1:22] Shadow Cloner heals Hermit for 3 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 7→10)
+WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_h_1770241117_145_91570
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[BattleLog] [1:23] Shadow Cloner echoes buff! Grants +3 HP to adjacent ally. 
+[BattleLog] [1:24] Shadow Cloner heals Hermit for 3 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 10→13)
+WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_h_1770241117_145_91570
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[BattleLog] [1:25] Shadow Cloner echoes buff! Grants +3 PWR to adjacent ally. 
+[BattleLog] [1:26] Shadow Cloner grants Hermit +3 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
+WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_h_1770241117_145_91570
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[BattleLog] [1:27] Shadow Cloner echoes buff! Grants +3 PWR to adjacent ally. 
+[BattleLog] [1:28] Shadow Cloner grants Hermit +3 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
+WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_h_1770241117_145_91570
+   at: push_warning (core/variant/variant_utility.cpp:1118)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:29] Hermit grants Hermit +4 spikes_stacks 
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=4 targets=1
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 5, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [4:8] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [4:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 20→21)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 3, "WATER": 1, "WIND": 1 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [1:30] Merchant heals Merchant for 2 HP (ability_unit_t2_f_gold_hp) (HP: 1→3)
+[BattleLog] [1:31] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:32] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 18→20)
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [4:10] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [4:11] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 21→22)
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
+[BattleLog] [1:33] Hermit gains +11 HP/PWR (1 empty slots) 
+[BattleLog] [1:34] Hermit heals Hermit for 11 HP (unit_t2_h_ability, on_pre_combat) (HP: 13→24)
+[BattleLog] [1:35] Hermit grants Hermit +11 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=11 targets=1
+[BattleLog] [1:36] Shadow Cloner echoes buff! Grants +11 HP to adjacent ally. 
+[BattleLog] [1:37] Shadow Cloner heals Hermit for 11 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 24→35)
+[BattleLog] [1:38] Shadow Cloner echoes buff! Grants +11 PWR to adjacent ally. 
+[BattleLog] [1:39] Shadow Cloner grants Hermit +11 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[BuffAnimation] execute() called - stat='pwr' amount=11 targets=1
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770241117_154_94350
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770241117_154_94350
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
-[DeathProcessor] Draining batch of 3
-[CS] Draining reaction: unit_tier3c_soul_summon Prio:205 Src:unit_t3_c_1770238555_88_00516
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770241117_154_94350
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770241117_154_94350
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770241117_153_49399
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770241117_155_93619
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [4:12] Timekeeper deals 2 dmg to Apprentice 
-[BattleLog] [4:13] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1770238555_90_01226"] source: hero_timekeeper_1770238273_4_91510 attack_type: melee
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:40] Shadow Cloner deals 3 dmg to Sakura Spirit 
+[BattleLog] [1:41] Shadow Cloner attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 6→3)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1770241117_154_94350"] source: unit_t2_g_1770241117_102_39502 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770241117 type 5
+[BattleLog] [1:42] Shadow Cloner deals 3 dmg to Sakura Spirit 
+[BattleLog] [1:43] Shadow Cloner attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 3→0)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1770241117_154_94350"] source: unit_t2_g_1770241117_103_80834 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770241117 type 5
+[BattleLog] [1:44] └─ unit_t3_... is defeated! 
+[BattleLog] [1:45] Hermit deals 33 dmg to Squire 
+[BattleLog] [1:46] Hermit attacks unit_t1_... for 33 damage (basic_attack, on_attack) (HP: 1→-32)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1770241117_153_49399"] source: unit_t2_h_1770241117_145_91570 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [1:47] Squire deals 2 dmg to Hermit 
+[BattleLog] [1:48] unit_t1_... attacks Hermit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 35→35)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_145_91570"] source: unit_t1_b_1770241117_153_49399 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1770241117 type 5
+[BattleLog] [1:49] └─ unit_t1_... is defeated! 
+[BattleLog] [1:50] Guardian heals Guardian for 2 HP 
+[BattleLog] [1:51] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 8→10)
+[BattleLog] [1:52] Timekeeper deals 2 dmg to Guardian 
+[BattleLog] [1:53] Timekeeper attacks Guardian for 2 damage (basic_attack, on_attack) (HP: 10→8)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1770241117_155_93619"] source: hero_timekeeper_1770241117_86_46754 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
 [AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [4:14] └─ unit_t1_... is defeated! 
-[BattleLog] [4:15] Vengeance Charm grants Empath +1 PWR 
-[BattleLog] [4:16] trinket_vengeance grants unit_t1_... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:17] Vengeance Charm heals Protector for 1 HP 
-[BattleLog] [4:18] trinket_vengeance heals Protector for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 1→2)
-[BattleLog] [4:19] Guardian deals 24 dmg to Empath 
-[BattleLog] [4:20] Guardian attacks unit_t1_... for 24 damage (basic_attack, on_attack) (HP: 1→-23)
-[DamageAnimation] Executing for targets: ["unit_t1_d_1770238555_89_83305"] source: unit_t2_a_1770238273_11_23250 attack_type: melee
+[BattleLog] [1:54] Guardian deals 2 dmg to Shadow Cloner 
+[BattleLog] [1:55] Guardian attacks Shadow Cloner for 2 damage (basic_attack, on_attack) (HP: 3→1)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770241117_102_39502"] source: unit_t2_a_1770241117_155_93619 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770238273 type 5
-[BattleLog] [4:21] └─ unit_t1_... is defeated! 
-[BattleLog] [4:22] Vengeance Charm grants Protector +1 PWR 
-[BattleLog] [4:23] trinket_vengeance grants Protector +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:24] Vengeance Charm heals Protector for 1 HP 
-[BattleLog] [4:25] trinket_vengeance heals Protector for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 2→3)
-[BattleLog] [4:26] Shadow Cloner deals 3 dmg to Soul Caller 
-[BattleLog] [4:27] Shadow Cloner attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 5→2)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1770238555_88_00516"] source: unit_t2_g_1770238273_63_11398 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_a_1770241117 type 5
+[BattleLog] [1:56] The Shadow Warden deals 4 dmg to Shadow Cloner 
+[BattleLog] [1:57] The Shadow Warden attacks Shadow Cloner for 4 damage (basic_attack, on_attack) (HP: 1→-3)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770241117_102_39502"] source: boss_2_1770241117_157_47434 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238273 type 5
-[BattleLog] [4:28] Protector shields their ally (+2 HP) 
-[BattleLog] [4:29] Protector heals unit_t3_... for 2 HP (unit_t1_c_ally_shield, on_ally_hurt) (HP: 2→4)
-[BattleLog] [4:30] Sakura Spirit deals 6 dmg to Soul Caller 
-[BattleLog] [4:31] Sakura Spirit attacks unit_t3_... for 6 damage (basic_attack, on_attack) (HP: 4→-2)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1770238555_88_00516"] source: unit_t3_d_1770238488_86_50667 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1770238488 type 5
-[BattleLog] [4:32] └─ unit_t3_... is defeated! 
-[BattleLog] [4:33] └─ unit_t3_... summons New Unit! 
-[BattleLog] [4:34] Vengeance Charm grants Protector +1 PWR 
-[BattleLog] [4:35] trinket_vengeance grants Protector +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:36] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [4:37] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 22→23)
-[BattleLog] [4:38] Guardian Sentinel deals 4 dmg to Knight 
-[BattleLog] [4:39] Guardian Sentinel attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 3→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770238611_91_40709"] source: unit_t3_b_1770238273_31_52007 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_b_1770238273 type 5
-[BattleLog] [4:40] └─ unit_t2_... is defeated! 
-[BattleLog] [4:41] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [4:42] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:43] Vengeance Charm heals Protector for 1 HP 
-[BattleLog] [4:44] trinket_vengeance heals Protector for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 3→4)
-[BattleLog] [4:45] Protector deals 3 dmg to Timekeeper 
-[BattleLog] [4:46] Protector attacks Timekeeper for 3 damage (basic_attack, on_attack) (HP: 50→47)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1770238273_4_91510"] source: unit_t1_c_1770238555_87_91593 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_c_1770238555 type 5
-[BattleLog] [4:47] The Awakened Guardian deals 10 dmg to Timekeeper 
-[BattleLog] [4:48] The Awakened Guardian attacks Timekeeper for 10 damage (basic_attack, on_attack) (HP: 47→37)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1770238273_4_91510"] source: boss_1_1770238273_73_44204 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770238273_73 type 5
-[EncounterGen] Budget: 7, Spent: 7, Units: 3, Items: 1, Trinkets: 0
+[AnimationCompletionTracker] Timeout for boss_2_1770241117_15 type 5
+[BattleLog] [1:58] └─ Shadow Cloner is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[EncounterGen] Budget: 4, Spent: 4, Units: 2, Items: 0, Trinkets: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [4:49] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [4:50] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [4:51] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [5:1] ═══ TURN 5 ═══ 
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-1 targets=1
+[BattleLog] [1:59] Hermit takes 1 Burn dmg 
+[BattleLog] [1:60] System attacks Hermit for 1 damage (HP: 35→34)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_145_91570"] source:  attack_type: melee
+[StatusEffectAnimation] execute() called - stat='burn_stacks' amount=-1 targets=1
+[BattleLog] [1:61] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [1:62] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [2:1] ═══ TURN 2 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
 [FlashcardManager] _on_minigame_complete called. Correct: 7
 [FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_103_80834
+[BattleLog] [2:2] Timekeeper heals Hermit and Shadow Cloner for 2 HP 
+[BattleLog] [2:3] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 34→36)
+[BattleLog] [2:4] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
+[BattleLog] [2:5] Shadow Cloner heals Hermit for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 36→38)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [2:6] Merchant heals Merchant for 2 HP (ability_unit_t2_f_gold_hp) (HP: 1→3)
+[BattleLog] [2:7] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [2:8] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 20→22)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 5, "WATER": 0, "WIND": 1 }
 [DeathProcessor] Phase 1 (on_death) done. Pending: 2
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
 [DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [5:2] Mimic transforms into Shadow Cloner! 
-[BattleLog] [5:3] └─ System summons New Unit! 
-[BattleLog] [5:4] Shadow Cloner appeared! 
-[BattleLog] [5:5] Timekeeper grants Guardian Sentinel and Sakura Spirit and Shadow Cloner and Guardian +2 PWR 
-[BattleLog] [5:6] Timekeeper grants Guardian Sentinel +2 PWR (hero_timekeeper_temporal_aura, on_turn_start) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=4
-[BattleLog] [5:7] Shadow Cloner echoes buff! Grants +2 PWR to adjacent ally. 
-[BattleLog] [5:8] Shadow Cloner grants Sakura Spirit +2 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_103_80834
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_103_80834
+[BattleLog] [2:9] Hermit gains +2 HP/PWR (1 empty slots) 
+[BattleLog] [2:10] Hermit heals Hermit for 2 HP (unit_t2_h_ability, on_pre_combat) (HP: 4→6)
+[BattleLog] [2:11] Hermit grants Hermit +2 PWR (unit_t2_h_ability, on_pre_combat) 
 [BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [5:9] Shadow Cloner echoes buff! Grants +2 PWR to adjacent ally. 
-[BattleLog] [5:10] Shadow Cloner grants Guardian +2 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[BattleLog] [2:12] Hermit gains +33 HP/PWR (1 empty slots) 
+[BattleLog] [2:13] Hermit heals Hermit for 33 HP (unit_t2_h_ability, on_pre_combat) (HP: 38→71)
+[BattleLog] [2:14] Hermit grants Hermit +33 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=33 targets=1
+[BattleLog] [2:15] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
+[BattleLog] [2:16] Shadow Cloner heals Hermit for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 6→8)
+[BattleLog] [2:17] Shadow Cloner echoes buff! Grants +2 PWR to adjacent ally. 
+[BattleLog] [2:18] Shadow Cloner grants Hermit +2 PWR (unit_t2_g_buff_echo, on_stat_increased) 
 [BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 2, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 2, "WATER": 1, "WIND": 1 }
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 4
-[DeathProcessor] Draining batch of 4
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770238635_94_75045
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238654_96_37678
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770238635_94_75045
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238654_96_37678
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238654_96_37678
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770238555_87_91593
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
+[BattleLog] [2:19] Shadow Cloner echoes buff! Grants +33 HP to adjacent ally. 
+[BattleLog] [2:20] Shadow Cloner heals Hermit for 33 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 71→104)
+[BattleLog] [2:21] Shadow Cloner echoes buff! Grants +33 PWR to adjacent ally. 
+[BattleLog] [2:22] Shadow Cloner grants Hermit +33 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[BuffAnimation] execute() called - stat='pwr' amount=33 targets=1
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [5:11] Timekeeper deals 2 dmg to Apprentice 
-[BattleLog] [5:12] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1770238635_95_01095"] source: hero_timekeeper_1770238273_4_91510 attack_type: melee
+[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770241117_155_93619
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770241117_155_93619
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [2:23] Hermit deals 99 dmg to Apprentice 
+[BattleLog] [2:24] Hermit attacks unit_t1_... for 99 damage (basic_attack, on_attack) (HP: 2→-97)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1770241199_159_46380"] source: unit_t2_h_1770241117_145_91570 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [2:25] └─ unit_t1_... is defeated! 
+[BattleLog] [2:26] Shadow Cloner deals 3 dmg to Merchant 
+[BattleLog] [2:27] Shadow Cloner attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 3→0)
+[DamageAnimation] Executing for targets: ["unit_t2_f_1770241199_158_98995"] source: unit_t2_g_1770241117_103_80834 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770241117 type 5
+[BattleLog] [2:28] └─ unit_t2_... is defeated! 
+[BattleLog] [2:29] Guardian heals Guardian for 2 HP 
+[BattleLog] [2:30] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 8→10)
+[BattleLog] [2:31] Hermit deals 6 dmg to Guardian 
+[BattleLog] [2:32] Hermit attacks unit_t2_... for 6 damage (basic_attack, on_attack) (HP: 10→4)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1770241117_155_93619"] source: unit_t2_h_1770241117_144_40959 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [2:33] Guardian heals Guardian for 2 HP 
+[BattleLog] [2:34] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
+[BattleLog] [2:35] Timekeeper deals 2 dmg to Guardian 
+[BattleLog] [2:36] Timekeeper attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 6→4)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1770241117_155_93619"] source: hero_timekeeper_1770241117_86_46754 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
 [AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [5:13] └─ unit_t1_... is defeated! 
-[BattleLog] [5:14] Knight heals Knight for 2 HP 
-[BattleLog] [5:15] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→5)
-[BattleLog] [5:16] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [5:17] unit_t2_... heals unit_t2_... for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 5→7)
-[BattleLog] [5:18] Knight grants Knight +2 PWR 
-[BattleLog] [5:19] unit_t2_... grants unit_t2_... +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [5:20] Shadow Cloner echoes buff! Grants +2 PWR to adjacent ally. 
-[BattleLog] [5:21] unit_t2_... grants unit_t2_... +2 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [5:22] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [5:23] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [5:24] Vengeance Charm heals Protector for 1 HP 
-[BattleLog] [5:25] trinket_vengeance heals unit_t1_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 4→5)
-[BattleLog] [5:26] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [5:27] unit_t2_... heals unit_t1_... for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 5→6)
-[BattleLog] [5:28] Guardian deals 28 dmg to Knight 
-[BattleLog] [5:29] Guardian attacks unit_t2_... for 28 damage (basic_attack, on_attack) (HP: 7→-21)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770238635_94_75045"] source: unit_t2_a_1770238273_11_23250 attack_type: melee
+[BattleLog] [2:37] Guardian deals 2 dmg to Hermit 
+[BattleLog] [2:38] Hermit's Spikes deals 4 to Guardian 
+[BattleLog] [2:39] unit_t2_... attacks Hermit for 2 damage (basic_attack, on_attack) (HP: 104→102)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_145_91570"] source: unit_t2_a_1770241117_155_93619 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770238273 type 5
-[BattleLog] [5:30] └─ unit_t2_... is defeated! 
-[BattleLog] [5:31] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [5:32] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [5:33] Vengeance Charm heals Shadow Cloner for 1 HP 
-[BattleLog] [5:34] trinket_vengeance heals unit_t2_... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 3→4)
-[BattleLog] [5:35] Shadow Cloner deals 5 dmg to Shadow Cloner 
-[BattleLog] [5:36] Shadow Cloner attacks unit_t2_... for 5 damage (basic_attack, on_attack) (HP: 4→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_g_1770238654_96_37678"] source: unit_t2_g_1770238273_63_11398 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_a_1770241117 type 5
+[BattleLog] [2:40] └─ unit_t2_... is defeated! 
+[BattleLog] [2:41] The Shadow Warden deals 4 dmg to Hermit 
+[BattleLog] [2:42] Hermit's Spikes deals 3 to The Shadow Warden 
+[BattleLog] [2:43] The Shadow Warden attacks Hermit for 4 damage (basic_attack, on_attack) (HP: 102→98)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_145_91570"] source: boss_2_1770241117_157_47434 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238273 type 5
-[BattleLog] [5:37] └─ unit_t2_... is defeated! 
-[BattleLog] [5:38] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [5:39] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [5:40] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [5:41] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 23→24)
-[BattleLog] [5:42] Sakura Spirit deals 10 dmg to Protector 
-[BattleLog] [5:43] Sakura Spirit attacks unit_t1_... for 10 damage (basic_attack, on_attack) (HP: 6→-4)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1770238555_87_91593"] source: unit_t3_d_1770238488_86_50667 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1770238488 type 5
-[BattleLog] [5:44] └─ unit_t1_... is defeated! 
-[BattleLog] [5:45] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [5:46] trinket_vengeance grants The Awakened Guardian +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [5:47] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [5:48] trinket_vengeance heals The Awakened Guardian for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 24→25)
-[BattleLog] [5:49] Guardian Sentinel deals 6 dmg to The Awakened Guardian 
-[BattleLog] [5:50] Guardian Sentinel attacks The Awakened Guardian for 6 damage (basic_attack, on_attack) (HP: 25→19)
-[DamageAnimation] Executing for targets: ["boss_1_1770238273_73_44204"] source: unit_t3_b_1770238273_31_52007 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_b_1770238273 type 5
-[BattleLog] [5:51] The Awakened Guardian deals 14 dmg to Timekeeper 
-[BattleLog] [5:52] The Awakened Guardian attacks Timekeeper for 14 damage (basic_attack, on_attack) (HP: 37→23)
-[DamageAnimation] Executing for targets: ["hero_timekeeper_1770238273_4_91510"] source: boss_1_1770238273_73_44204 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770238273_73 type 5
-[EncounterGen] Budget: 7, Spent: 7, Units: 3, Items: 0, Trinkets: 0
+[AnimationCompletionTracker] Timeout for boss_2_1770241117_15 type 5
+[EncounterGen] Budget: 4, Spent: 4, Units: 3, Items: 0, Trinkets: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [5:53] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [5:54] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [5:55] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [6:1] ═══ TURN 6 ═══ 
+[BattleLog] [2:44] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [2:45] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [2:46] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [3:1] ═══ TURN 3 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
 [FlashcardManager] _on_minigame_complete called. Correct: 2
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 9 }
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 8 }
 [FlashcardManager] Signal emitted successfully
 [DeathProcessor] Phase 1 (on_death) done. Pending: 2
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
 [DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770238273_63_11398
-[BattleLog] [6:2] Timekeeper grants Guardian Sentinel and Sakura Spirit and Shadow Cloner and Guardian +2 PWR 
-[BattleLog] [6:3] Timekeeper grants Guardian Sentinel +2 PWR (hero_timekeeper_temporal_aura, on_turn_start) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=4
-[BattleLog] [6:4] Shadow Cloner echoes buff! Grants +2 PWR to adjacent ally. 
-[BattleLog] [6:5] Shadow Cloner grants Sakura Spirit +2 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [6:6] Shadow Cloner echoes buff! Grants +2 PWR to adjacent ally. 
-[BattleLog] [6:7] Shadow Cloner grants Guardian +2 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 3, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 3, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 3, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 3, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 8, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 3, "WATER": 1, "WIND": 0 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 4
-[DeathProcessor] Draining batch of 4
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770238689_98_45159
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770238689_98_45159
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
-[DeathProcessor] Draining batch of 3
-[CS] Draining reaction: unit_tier3c_soul_summon Prio:205 Src:unit_t3_c_1770238689_97_34050
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_103_80834
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770241117_103_80834
+[BattleLog] [3:2] Timekeeper heals Hermit and Shadow Cloner and Hermit for 2 HP 
+[BattleLog] [3:3] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 8→10)
+[BattleLog] [3:4] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
+[BattleLog] [3:5] Shadow Cloner heals Hermit for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 10→12)
+[BattleLog] [3:6] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
+[BattleLog] [3:7] Shadow Cloner heals Hermit for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 100→102)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 1, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 1, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 1, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 1, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 1, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 1, "WATER": 0, "WIND": 0 }
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
+[BattleLog] [3:8] Hermit gains +6 HP/PWR (1 empty slots) 
+[BattleLog] [3:9] Hermit heals Hermit for 6 HP (unit_t2_h_ability, on_pre_combat) (HP: 12→18)
+[BattleLog] [3:10] Hermit grants Hermit +6 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=6 targets=1
+[BattleLog] [3:11] Hermit gains +99 HP/PWR (1 empty slots) 
+[BattleLog] [3:12] Hermit heals Hermit for 99 HP (unit_t2_h_ability, on_pre_combat) (HP: 102→201)
+[BattleLog] [3:13] Hermit grants Hermit +99 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=99 targets=1
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770241249_162_75676
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770238273_74_60790
-[BattleLog] [6:8] Timekeeper deals 2 dmg to Protector 
-[BattleLog] [6:9] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1770238689_99_57164"] source: hero_timekeeper_1770238273_4_91510 attack_type: melee
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [3:14] Shadow Cloner deals 3 dmg to Squire 
+[BattleLog] [3:15] Shadow Cloner attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 1→-2)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1770241249_162_75676"] source: unit_t2_g_1770241117_103_80834 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770241117 type 5
+[BattleLog] [3:16] Squire deals 2 dmg to Shadow Cloner 
+[BattleLog] [3:17] unit_t1_... attacks Shadow Cloner for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770241117_103_80834"] source: unit_t1_b_1770241249_162_75676 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1770241249 type 5
+[BattleLog] [3:18] └─ unit_t1_... is defeated! 
+[BattleLog] [3:19] Hermit deals 12 dmg to Berserker 
+[BattleLog] [3:20] Hermit attacks unit_t2_... for 12 damage (basic_attack, on_attack) (HP: 2→-10)
+[DamageAnimation] Executing for targets: ["unit_t2_b_1770241249_161_88679"] source: unit_t2_h_1770241117_144_40959 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [3:21] └─ unit_t2_... is defeated! 
+[BattleLog] [3:22] Hermit deals 198 dmg to Apprentice 
+[BattleLog] [3:23] Hermit attacks unit_t1_... for 198 damage (basic_attack, on_attack) (HP: 2→-196)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1770241249_160_60469"] source: unit_t2_h_1770241117_145_91570 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [3:24] └─ unit_t1_... is defeated! 
+[BattleLog] [3:25] Timekeeper deals 2 dmg to The Shadow Warden 
+[BattleLog] [3:26] Timekeeper attacks The Shadow Warden for 2 damage (basic_attack, on_attack) (HP: 19→17)
+[DamageAnimation] Executing for targets: ["boss_2_1770241117_157_47434"] source: hero_timekeeper_1770241117_86_46754 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
 [AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [6:10] └─ unit_t1_... is defeated! 
-[BattleLog] [6:11] Knight heals Knight for 2 HP 
-[BattleLog] [6:12] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→5)
-[BattleLog] [6:13] Knight grants Knight +2 PWR 
-[BattleLog] [6:14] unit_t2_... grants unit_t2_... +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [6:15] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [6:16] trinket_vengeance grants boss_1_1... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [6:17] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [6:18] trinket_vengeance heals boss_1_1... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 19→20)
-[BattleLog] [6:19] Guardian Sentinel deals 8 dmg to Knight 
-[BattleLog] [6:20] Guardian Sentinel attacks unit_t2_... for 8 damage (basic_attack, on_attack) (HP: 5→-3)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770238689_98_45159"] source: unit_t3_b_1770238273_31_52007 attack_type: melee
+[BattleLog] [3:27] The Shadow Warden deals 4 dmg to Shadow Cloner 
+[BattleLog] [3:28] The Shadow Warden attacks Shadow Cloner for 4 damage (basic_attack, on_attack) (HP: 5→1)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770241117_103_80834"] source: boss_2_1770241117_157_47434 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_b_1770238273 type 5
-[BattleLog] [6:21] └─ unit_t2_... is defeated! 
-[BattleLog] [6:22] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [6:23] trinket_vengeance grants boss_1_1... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [6:24] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [6:25] trinket_vengeance heals boss_1_1... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 20→21)
-[BattleLog] [6:26] Sakura Spirit deals 14 dmg to Soul Caller 
-[BattleLog] [6:27] Sakura Spirit attacks unit_t3_... for 14 damage (basic_attack, on_attack) (HP: 5→-9)
-[DamageAnimation] Executing for targets: ["unit_t3_c_1770238689_97_34050"] source: unit_t3_d_1770238488_86_50667 attack_type: melee
+[AnimationCompletionTracker] Timeout for boss_2_1770241117_15 type 5
+[EncounterGen] Budget: 4, Spent: 4, Units: 2, Items: 0, Trinkets: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [3:29] Shadow Cloner takes 1 Burn dmg 
+[BattleLog] [3:30] System attacks Shadow Cloner for 1 damage (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770241117_103_80834"] source:  attack_type: melee
+[StatusEffectAnimation] execute() called - stat='burn_stacks' amount=-1 targets=1
+[BattleLog] [3:31] └─ Shadow Cloner is defeated! 
+[BattleLog] [3:32] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [3:33] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [4:1] ═══ TURN 4 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Tutorials disabled
+[FlashcardManager] _on_minigame_complete called. Correct: 1
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 1, "incorrect_answers": 8 }
+[FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:2] Mimic transforms into Hermit! 
+[BattleLog] [4:3] └─ System summons New Unit! 
+[BattleLog] [4:4] Hermit appeared! 
+[BattleLog] [4:5] Timekeeper heals Hermit and Hermit for 2 HP 
+[BattleLog] [4:6] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 201→203)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 1, "WIND": 1 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:7] Hermit gains +24 HP/PWR (2 empty slots) 
+[BattleLog] [4:8] Hermit heals Hermit for 24 HP (unit_t2_h_ability, on_pre_combat) (HP: 20→44)
+[BattleLog] [4:9] Hermit grants Hermit +24 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=24 targets=1
+[BattleLog] [4:10] Hermit gains +396 HP/PWR (2 empty slots) 
+[BattleLog] [4:11] Hermit heals Hermit for 396 HP (unit_t2_h_ability, on_pre_combat) (HP: 203→599)
+[BattleLog] [4:12] Hermit grants Hermit +396 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=396 targets=1
+[BattleLog] [4:13] Hermit gains +4 HP/PWR (2 empty slots) 
+[BattleLog] [4:14] Hermit heals Hermit for 4 HP (unit_t2_h_ability, on_pre_combat) (HP: 4→8)
+[BattleLog] [4:15] Hermit grants Hermit +4 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=4 targets=1
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770241293_163_12168
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:16] Hermit deals 36 dmg to Hermit 
+[BattleLog] [4:17] Hermit attacks unit_t2_... for 36 damage (basic_attack, on_attack) (HP: 8→-28)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241303_165_03131"] source: unit_t2_h_1770241117_144_40959 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_d_1770238488 type 5
-[BattleLog] [6:28] └─ unit_t3_... is defeated! 
-[BattleLog] [6:29] └─ unit_t3_... summons New Unit! 
-[BattleLog] [6:30] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [6:31] trinket_vengeance grants boss_1_1... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [6:32] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [6:33] trinket_vengeance heals boss_1_1... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 21→22)
-[BattleLog] [6:34] Shadow Cloner deals 7 dmg to Knight 
-[BattleLog] [6:35] Shadow Cloner attacks unit_t2_... for 7 damage (basic_attack, on_attack) (HP: 3→-4)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770238709_100_64474"] source: unit_t2_g_1770238273_63_11398 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [4:18] └─ unit_t2_... is defeated! 
+[BattleLog] [4:19] └─ Shadow Cloner is defeated! 
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770241117 type 2
+[BattleLog] [4:20] Guardian heals Guardian for 2 HP 
+[BattleLog] [4:21] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
+[BattleLog] [4:22] Hermit deals 594 dmg to Guardian 
+[BattleLog] [4:23] Hermit attacks unit_t2_... for 594 damage (basic_attack, on_attack) (HP: 6→-588)
+[DamageAnimation] Executing for targets: ["unit_t2_a_1770241293_163_12168"] source: unit_t2_h_1770241117_145_91570 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770238273 type 5
-[BattleLog] [6:36] └─ unit_t2_... is defeated! 
-[BattleLog] [6:37] Vengeance Charm grants The Awakened Guardian +1 PWR 
-[BattleLog] [6:38] trinket_vengeance grants boss_1_1... +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [6:39] Vengeance Charm heals The Awakened Guardian for 1 HP 
-[BattleLog] [6:40] trinket_vengeance heals boss_1_1... for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 22→23)
-[BattleLog] [6:41] Guardian deals 32 dmg to The Awakened Guardian 
-[BattleLog] [6:42] Guardian attacks boss_1_1... for 32 damage (basic_attack, on_attack) (HP: 23→-9)
-[DamageAnimation] Executing for targets: ["boss_1_1770238273_73_44204"] source: unit_t2_a_1770238273_11_23250 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [4:24] └─ unit_t2_... is defeated! 
+[BattleLog] [4:25] Timekeeper deals 2 dmg to The Shadow Warden 
+[BattleLog] [4:26] Timekeeper attacks The Shadow Warden for 2 damage (basic_attack, on_attack) (HP: 17→15)
+[DamageAnimation] Executing for targets: ["boss_2_1770241117_157_47434"] source: hero_timekeeper_1770241117_86_46754 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770238273 type 5
-[BattleLog] [6:43] └─ boss_1_1... is defeated! 
-[BattleLog] [6:44] Battle ended 
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
+[BattleLog] [4:27] The Shadow Warden deals 4 dmg to Hermit 
+[BattleLog] [4:28] The Shadow Warden attacks Hermit for 4 damage (basic_attack, on_attack) (HP: 44→40)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_144_40959"] source: boss_2_1770241117_157_47434 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for boss_2_1770241117_15 type 5
+[EncounterGen] Budget: 4, Spent: 4, Units: 2, Items: 0, Trinkets: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:29] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [4:30] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [5:1] ═══ TURN 5 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Tutorials disabled
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:2] Timekeeper heals Hermit and Hermit for 2 HP 
+[BattleLog] [5:3] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 599→601)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 1 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:4] Hermit gains +72 HP/PWR (2 empty slots) 
+[BattleLog] [5:5] Hermit heals Hermit for 72 HP (unit_t2_h_ability, on_pre_combat) (HP: 42→114)
+[BattleLog] [5:6] Hermit grants Hermit +72 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=72 targets=1
+[BattleLog] [5:7] Hermit gains +1188 HP/PWR (2 empty slots) 
+[BattleLog] [5:8] Hermit heals Hermit for 1188 HP (unit_t2_h_ability, on_pre_combat) (HP: 601→1789)
+[BattleLog] [5:9] Hermit grants Hermit +1188 PWR (unit_t2_h_ability, on_pre_combat) 
+[BuffAnimation] execute() called - stat='pwr' amount=1188 targets=1
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770241328_167_15080
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:10] Hermit deals 108 dmg to Squire 
+[BattleLog] [5:11] Hermit attacks unit_t1_... for 108 damage (basic_attack, on_attack) (HP: 1→-107)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1770241328_167_15080"] source: unit_t2_h_1770241117_144_40959 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [5:12] Squire deals 2 dmg to Hermit 
+[BattleLog] [5:13] unit_t1_... attacks Hermit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 114→112)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_144_40959"] source: unit_t1_b_1770241328_167_15080 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1770241328 type 5
+[BattleLog] [5:14] └─ unit_t1_... is defeated! 
+[BattleLog] [5:15] Hermit deals 1782 dmg to Shadow Cloner 
+[BattleLog] [5:16] Hermit attacks unit_t2_... for 1782 damage (basic_attack, on_attack) (HP: 3→-1779)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770241328_166_03026"] source: unit_t2_h_1770241117_145_91570 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [5:17] └─ unit_t2_... is defeated! 
+[BattleLog] [5:18] Timekeeper deals 2 dmg to The Shadow Warden 
+[BattleLog] [5:19] Timekeeper attacks The Shadow Warden for 2 damage (basic_attack, on_attack) (HP: 15→13)
+[DamageAnimation] Executing for targets: ["boss_2_1770241117_157_47434"] source: hero_timekeeper_1770241117_86_46754 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
+[BattleLog] [5:20] The Shadow Warden deals 4 dmg to Hermit 
+[BattleLog] [5:21] The Shadow Warden attacks Hermit for 4 damage (basic_attack, on_attack) (HP: 112→108)
+[DamageAnimation] Executing for targets: ["unit_t2_h_1770241117_144_40959"] source: boss_2_1770241117_157_47434 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for boss_2_1770241117_15 type 5
+[EncounterGen] Budget: 4, Spent: 4, Units: 3, Items: 1, Trinkets: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:22] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [5:23] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [5:24] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [6:1] ═══ TURN 6 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Tutorials disabled
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 3 }
+[FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:2] Timekeeper heals Hermit and Hermit for 2 HP 
+[BattleLog] [6:3] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 1789→1791)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:4] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [6:5] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 13→15)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 3, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 4 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 3, "WIND": 3 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1770241380_170_26515
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:6] Hermit deals 108 dmg to Apprentice 
+[BattleLog] [6:7] Hermit attacks unit_t1_... for 108 damage (basic_attack, on_attack) (HP: 2→-106)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1770241380_171_44527"] source: unit_t2_h_1770241117_144_40959 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [6:8] └─ unit_t1_... is defeated! 
+[BattleLog] [6:9] Mimic deals 2 dmg to Protector 
+[BattleLog] [6:10] Mimic attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_c_1770241380_170_26515"] source: unit_t2_e_1770241117_100_01283 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_e_1770241117 type 5
+[BattleLog] [6:11] └─ unit_t1_... is defeated! 
+[BattleLog] [6:12] Hermit deals 2 dmg to Empath 
+[BattleLog] [6:13] Hermit attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1770241380_168_04064"] source: unit_t2_h_1770241117_152_58445 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [6:14] └─ unit_t1_... is defeated! 
+[BattleLog] [6:15] Timekeeper deals 2 dmg to The Shadow Warden 
+[BattleLog] [6:16] Timekeeper attacks boss_2_1... for 2 damage (basic_attack, on_attack) (HP: 15→13)
+[DamageAnimation] Executing for targets: ["boss_2_1770241117_157_47434"] source: hero_timekeeper_1770241117_86_46754 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
+[BattleLog] [6:17] Hermit deals 1782 dmg to The Shadow Warden 
+[BattleLog] [6:18] Hermit attacks boss_2_1... for 1782 damage (basic_attack, on_attack) (HP: 13→-1769)
+[DamageAnimation] Executing for targets: ["boss_2_1770241117_157_47434"] source: unit_t2_h_1770241117_145_91570 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770241117 type 5
+[BattleLog] [6:19] └─ boss_2_1... is defeated! 
+[BattleLog] [6:20] Battle ended 
 [RewardDebug] Victory rewards pending. Special Pool: true BossLvl: 0 EliteLvl: 1
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-[SaveManager] Run saved successfully (Day 5)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Tutorials disabled
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2378)

@@ -6,7 +6,7 @@ const RS = preload("res://scripts/RunState.gd")
 const BattleStateClass = preload("res://scripts/battle/BattleState.gd")
 const CombatSimulatorClass = preload("res://scripts/battle/CombatSimulator.gd")
 const _TestModeHelpers = preload("res://scripts/battle/TestModeHelpers.gd")
-enum Phases {START_OF_TURN, MANAGEMENT, COMBAT, END_OF_TURN, BATTLE_OVER}
+enum Phases {START_OF_TURN, MANAGEMENT, PRE_COMBAT, COMBAT, END_OF_TURN, BATTLE_OVER}
 var _current_battle_phase: Phases
 
 # Internal delegates - encapsulate battle data and combat simulation
@@ -427,6 +427,7 @@ func get_current_phase_name() -> StringName:
 	match _current_battle_phase:
 		Phases.START_OF_TURN: phase_name = &"START_OF_TURN"
 		Phases.MANAGEMENT: phase_name = &"MANAGEMENT"
+		Phases.PRE_COMBAT: phase_name = &"PRE_COMBAT"
 		Phases.COMBAT: phase_name = &"COMBAT"
 		Phases.END_OF_TURN: phase_name = &"END_OF_TURN"
 		Phases.BATTLE_OVER: phase_name = &"BATTLE_OVER"
@@ -479,6 +480,8 @@ func _change_phase(new_phase: Phases) -> void:
 		Phases.MANAGEMENT:
 			# Re-enable draw buttons when entering management phase
 			_emit_battle_inventory_changed()
+		Phases.PRE_COMBAT:
+			pass
 		Phases.COMBAT:
 			pass
 		Phases.END_OF_TURN:
@@ -628,6 +631,16 @@ func _resolve_combat_phase() -> void:
 	else:
 		_on_turn_animation_finished()
 
+func _trigger_pre_combat_abilities() -> void:
+	# Trigger "on_pre_combat" abilities (e.g. Tier 2 Unit H)
+	# This happens after End Turn is pressed but before the Combat snapshot is taken.
+	var context: Dictionary = {"turn": _current_turn}
+	AbilityResolver.process_trigger(C.TRIGGER_ON_PRE_COMBAT, context)
+	
+	# Consume the effect queue immediately to generate events
+	# Events will be sent to the animator, which triggers _on_turn_animation_finished when done
+	call_deferred("_resolve_pending_reactions_only")
+
 func _on_turn_animation_finished() -> void:
 	# This signal is the single source of truth for when animations are complete.
 	# It is safe to proceed to the next phase.
@@ -639,6 +652,13 @@ func _on_turn_animation_finished() -> void:
 	if _pending_inventory_refresh:
 		_emit_battle_inventory_changed()
 	
+	if _current_battle_phase == Phases.PRE_COMBAT:
+		# Transition from Pre-Combat (Start of Combat effects) to Combat
+		_change_phase(Phases.COMBAT)
+		# Start the main combat simulation
+		call_deferred("_resolve_combat_phase")
+		return
+		
 	if _current_battle_phase == Phases.START_OF_TURN:
 		# Turn start abilities finished animating, transition to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
@@ -1554,8 +1574,10 @@ func _get_frontmost_target(attacker_is_player: bool) -> GachaBallInstance:
 
 func _on_end_turn_requested() -> void:
 	if _current_battle_phase == Phases.MANAGEMENT:
-		_change_phase(Phases.COMBAT)
-		call_deferred("_resolve_combat_phase")
+		_change_phase(Phases.PRE_COMBAT)
+		# Trigger pre-combat abilities (Start of Combat)
+		# These will run, animate, and then transition to COMBAT in _on_turn_animation_finished
+		_trigger_pre_combat_abilities()
 	else:
 		pass
 
