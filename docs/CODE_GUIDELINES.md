@@ -125,3 +125,29 @@ Errors often arise from assuming APIs or schemas instead of verifying them. To p
 ### 7.3 Encapsulation Check
 *   **Respect Private Members**: If a variable starts with `_` (e.g., `_battle_instances`), do not access it from outside. Look for a public API (e.g., `bm_add_instance`, `get_instance`).
 *   **Atomic Operations**: Prefer atomic APIs (`add`, `remove`, `move`) over manual dictionary manipulation.
+
+---
+
+## 8. Agent Verification Protocol (MANDATORY FOR AI)
+
+As an autonomous agent, you are prone to hallucinations regarding file paths and class structures. You MUST strictly adhere to this protocol to prevent errors.
+
+### 8.1 The "Verify Before Creation" Rule
+Before creating ANY new resource (`.tres`) or script (`.gd`):
+1.  **Check the Reference**: Find an *existing* file of the same type and read it.
+    *   *Example*: Before creating `Recipe_Tier2_G.tres`, read `Recipe_Tier1_A.tres`.
+    *   *Goal*: Copy the `script_class` and property names exactly.
+2.  **Verify Dependencies**: If your new file references a script (e.g., `res://scripts/MergeRecipe.gd`), you **MUST** run `find_by_name` or `ls` to confirm that script exists at that exact path.
+3.  **No Assumptions**: Never assume a class name matches a filename. Read the file to see `class_name`.
+
+### 8.2 The "Copy First" Workflow
+When implementing content (Units, Items, Recipes, Abilities):
+1.  **USE THE WORKFLOW**: Check `.agent/workflows/implement_new_content.md` for the mandatory checklist.
+2.  **Search**: Find a similar existing item.
+3.  **Read**: `view_file` the existing item.
+4.  **Replicate**: Create your new item using the *exact same structure* as the existing one, changing only the values.
+
+> [!CRITICAL]
+> **Violation of this protocol allows you to be fired (or reset).**
+> If you create a resource pointing to a non-existent script, you have failed.
+> If you use property names that don't match the script's `@export` variables, you have failed.

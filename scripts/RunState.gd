@@ -742,7 +742,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b", &"unit_t1_c", &"unit_t1_c", &"unit_t1_d", &"unit_t1_d",
 				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b", &"item_potion_t1", &"item_potion_t1",
 				# Tier 2
-				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c", &"unit_t2_d", &"unit_t2_d", &"unit_t2_e", &"unit_t2_e", &"unit_t2_f",
+				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c", &"unit_t2_d", &"unit_t2_d", &"unit_t2_e", &"unit_t2_e", &"unit_t2_f", &"unit_t2_g", &"unit_t2_g",
 				&"item_t2_a", &"item_t2_a", &"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c",
 				&"item_potion_spikes", &"item_potion_spikes", &"item_potion_heroism", &"item_potion_heroism", &"consumable_potion_plunder", &"consumable_potion_plunder",
 				# Tier 3

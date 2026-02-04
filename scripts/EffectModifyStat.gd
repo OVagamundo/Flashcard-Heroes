@@ -244,6 +244,6 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
-			battle_manager.apply_stat_delta(inst, stat, amount)
+			battle_manager.apply_stat_delta(inst, stat, amount, false, _source_uuid)
 	# Non-simulation return (legacy compatibility)
 	return amount

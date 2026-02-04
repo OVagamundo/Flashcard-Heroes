@@ -183,60 +183,88 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		return
 	
 	var ability = def.ability_definitions[0]
-	# ARCHITECTURE: In Battle, runs are SILENT. The Animator acts as the visual puppet.
-	# We prevent the "Index" (UI) from reacting to "Truth" updates until the "VCR" sequence is done.
+	# ARCHITECTURE: Unified Queue System
+	# Instead of manually executing effects, we enqueue an EffectRequest and let BattleManager
+	# process it through the standard pipeline (Simulation -> Truth -> Animation).
+	# This ensures Priority, Triggers (Echo), and State Consistency are handled identically to combat.
+	
 	var is_battle = GameManager.is_in_battle
-	# Always run as simulation to get EffectResult with events
-	var context = {"is_simulation": true, "silent": is_battle}
+	var bm = null
+	if is_battle:
+		bm = get_tree().get_first_node_in_group("battle_manager")
+	
+	if not is_battle or not is_instance_valid(bm):
+		# Fallback for Run State (outside battle) - simplistic execution
+		# (RunState logic dictates this, but usually consumables are used in Battle/Shop)
+		_use_consumable_simple(consumable_instance, target_unit)
+		return
+
+	# 1. Block UI Updates (Prevent Scene Tree thrashing during logic)
+	if bm.has_method("block_ui_updates"):
+		bm.block_ui_updates()
+	
+	# 2. Capture Snapshot (Includes Consumable + Target)
+	var snapshot = VisualDataAdapter.create_board_snapshot(bm.get_all_instances())
+	
+	# 3. Enqueue EffectRequests (Truth Pending)
+	# The consumable instance MUST remain valid during enqueue_effect_request and subsequent resolution
+	# because CombatSimulator checks is_instance_valid(source).
+	# We will consume (remove) the item only AFTER logic is processed.
+	
+	var consumable_uuid = consumable_instance.ball_uuid
 	var owner = _get_data_owner()
 	
-	var events: Array[CombatEvent] = []
-	var snapshot: Dictionary = {}
+	var targets: Array[String] = [target_unit.ball_uuid]
 	var any_success = false
-	
-	# Initial snapshot of target unit
-	# CRITICAL: Snapshot MUST contain location data for the animator to find the view
-	var target_loc = target_unit.get_location()
-	var target_snap = VisualDataAdapter.create_visual_data(target_unit, owner.get_all_instances())
-	target_snap["container_tag"] = target_loc.container
-	target_snap["slot_index"] = target_loc.index
-	snapshot[target_unit.ball_uuid] = target_snap
 	
 	for effect in ability.effects:
 		if not is_instance_valid(effect): continue
 		
-		# Execute effect in Execution Mode (is_simulation=false)
-		var targets: Array[String] = [target_unit.ball_uuid]
-		var res = effect.execute(consumable_instance.ball_uuid, targets, owner, context)
+		# Create minimal context for the request
+		var trig_context = {
+			"source_category": &"ITEM",
+			"source_holder_uuid": target_unit.ball_uuid,
+		}
 		
-		if res != null:
-			any_success = true
-			# Use the fully-formed events from the EffectResult (includes logs, visual payloads, etc.)
-			if not res.events.is_empty():
-				events.append_array(res.events)
-	
+		# Construct Request
+		var req = EffectRequest.new(
+			target_unit.ball_uuid, # Source is the UNIT (Visual Preference: Self-Cast)
+			ability.id,
+			effect,
+			targets,
+			trig_context,
+			0 # Priority 0 for manual action
+		)
+		
+		bm.enqueue_effect_request(req)
+		any_success = true
+		
 	if any_success:
 		# AUDIO HOOK: Consumable usage sound
 		Audio.play_sfx("ui_heal")
 		
-		# Orchestration: Block UI refreshes during the animation sequence
-		if is_battle:
-			var bm = get_tree().get_first_node_in_group("battle_manager")
-			if is_instance_valid(bm) and bm.has_method("set_processing_effect"):
-				bm.set_processing_effect(true)
+		# 4. Resolve & Animate (Standard Pipeline)
+		# This async call processes the effect (using the VALID source instance)
+		await bm.resolve_management_effects_and_animate(snapshot)
 		
-		# Consumable is consumed (This triggers inventory signals, which will be deferred by BM)
-		owner.remove_instance(consumable_instance.ball_uuid)
+		# 5. Consume the Item (Truth)
+		# Now that logic is done, we remove the item.
+		owner.remove_instance(consumable_uuid)
+		
 		GlobalInteractionRouter.end_drag(true)
 		SignalBus.emit_signal("inventory_action_completed", [target_unit.ball_uuid])
-		
-		# Play all collected animations in sequence
-		var animator = get_tree().get_first_node_in_group("battle_animator")
-		if is_instance_valid(animator) and not events.is_empty():
-			await animator.play_turn_sequence(snapshot, events)
 	else:
 		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
 		GlobalInteractionRouter.end_drag(false)
+
+		
+	# 6. Unblock UI (Refreshes Inventory Grid)
+	if bm.has_method("unblock_ui_updates"):
+		bm.unblock_ui_updates()
+
+func _use_consumable_simple(_consumable_instance: GachaBallInstance, _target_unit: GachaBallInstance) -> void:
+	# Fallback for non-battle state (rare)
+	pass
 
 # --- Core Logic Functions ---
 

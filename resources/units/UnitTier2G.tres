@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier2unitG.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2G_BuffEcho.tres" id="4_buff_echo"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t2_g"
+display_name_key = "unit_t2_g.name"
+description_key = "unit_t2_g.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_WIND"])
+tier = 2
+cost = 3
+category = &"UNIT"
+item_slot_count = 2
+base_hp = 3
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_buff_echo")])

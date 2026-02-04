@@ -44,6 +44,7 @@ const SOUNDS: Dictionary = {
 	"ui_window_open": UI_DROP,
 	"ui_window_close": UI_CLICK,
 	"ui_rejection": UI_ERROR,
+	"ui_heal": ACTION_BUFF,
 	
 	# Drag & Drop
 	"ui_drag_start": ACTION_WHOOSH,
