@@ -45,3 +45,23 @@ Create or update `task.md` with the following **MANDATORY** sections. Do not gro
 1.  **Run Tests**: Execute the walkthrough steps.
 2.  **Check Logs**: Look for "Stack Overflow" or "Recursion" errors.
 3.  **Check UI**: Verify Name/Description appear correctly (Localization check).
+
+## Step 5: Safety Audit (Prevent Recurring Issues)
+> [!CRITICAL]
+> **Must Pass ALL Checks Before Commit**
+
+1.  **Infinite Recursion Check**:
+    *   "Does this ability trigger `on_stat_increased` or similar? If so, does it filter out its own effect source?"
+    *   *Fix*: Add source check loops.
+2.  **Zombie Instance Check**:
+    *   "Does this ability remove or transform a unit? If so, am I using `bm_remove_instance` (Atomic)?"
+    *   *Fix*: Do NOT use `InventoryOperations.remove...` for death/transform.
+3.  **Consumable Pipeline Check**:
+    *   "Does this Item execute logic? If so, does it generate an `EffectRequest`?"
+    *   *Fix*: Never execute logic directly in `InventoryManager`. Enqueue requests.
+4.  **Asset Check**:
+    *   "Do all `icon` and `audio` paths exist? Are Sound IDs in `SoundRegistry.gd`?"
+    *   *Fix*: Verify existence.
+5.  **API Check**:
+    *   "Did I invent a function name? (e.g., `enqueue_reaction` vs `enqueue_effect_request`)"
+    *   *Fix*: `grep` the function definition to confirm.

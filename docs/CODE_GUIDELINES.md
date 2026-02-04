@@ -95,6 +95,9 @@ Trinkets are not "held" by units in the simulation sense (even if the UI shows t
 3.  **Never Modify Core for One Ability:** If you need to change `BattleManager.gd` for a specific trinket, your design is wrong. Use the existing Event/Trigger system.
 4.  **Never Mix Logic and Visuals:** If your script imports `Control` or `Sprite2D`, it CANNOT contain combat logic. If your script imports `GachaBallInstance`, it CANNOT contain visual code.
 
+6.  **Never Assume Existence:** Do not call a function (e.g. `enqueue_reaction`) unless you have verified it exists in the definition file.
+7.  **Never Leave Zombies:** When removing a unit, ALWAYS use `bm_remove_instance`. Never use `container.set_uuid(i, "")` directly.
+
 ---
 
 ## 6. Naming & Style

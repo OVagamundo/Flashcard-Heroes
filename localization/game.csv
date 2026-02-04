@@ -339,3 +339,7 @@ unit_t2_g.name,Shadow Cloner,Clone das Sombras
 unit_t2_g.desc,An ethereal unit that echoes buffs received by adjacent allies.,Uma unidade etérea que ecoa buffs recebidos por aliados adjacentes.
 ability.unit_t2_g_buff_echo.name,Buff Echo,Eco de Buff
 ability.unit_t2_g_buff_echo.desc,"When an adjacent ally receives a HP or PWR buff, this unit repeats that buff on them.","Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete esse buff nele."
+unit_t2_h.name,Hermit,Eremita
+unit_t2_h.desc,A solitary warrior who grows stronger when fighting with fewer allies.,Um guerreiro solitário que fica mais forte quando luta com menos aliados.
+ability.unit_t2_h.name,Solitary Strength,Força Solitária
+ability.unit_t2_h.desc,"At start of combat, gain +HP and +PWR equal to current PWR for each empty slot in your team.","No início do combate, ganha +HP e +PWR igual ao PWR atual para cada espaço vazio no seu time."

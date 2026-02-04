@@ -819,3 +819,45 @@ if is_battle:
 > [!CRITICAL]
 > **Why Flush?**
 > If you don't call `resolve_management_effects_and_animate()`, the immediate effect (Heal) will happen, but consequential effects (Echo, On-Heal Triggers) will stay stuck in the queue indefinitely. The player will see the Potion work, but the Echo will be missing.
+
+---
+
+## 16. Recursion Prevention (The Infinite Loop Check)
+**Problem:** Unit A buffs Unit B → B's stats change → on_stat_increased triggers → Unit A reacts again → Loop.
+
+**The Fix:** You MUST break the chain by checking the source.
+```gdscript
+# In EffectScript:
+func execute(context: Dictionary) -> EffectResult:
+    # 1. Identify the source of the triggering event
+    var trigger_source = context.get("source_uuid", "")
+    
+    # 2. Identify ME (the owner of this ability)
+    var my_uuid = context.get("ability_holder_uuid", "")
+    
+    # 3. Check for Self-Recursion
+    if trigger_source == my_uuid:
+        return EffectResult.empty() # Stop! I caused this myself.
+```
+
+## 17. Transformation & Removal (The Golden Rule of Death)
+**Problem:** Removing a unit manually (`containers.remove(...)`) leaves a "ghost" instance in the registry, causing "Golden Rule Violations" and visual registry panics.
+
+**The Fix:** ALWAYS use `bm_remove_instance`. It is Atomic.
+```gdscript
+# ❌ BAD:
+InventoryOperations.remove_instance_from_container(bm._state, unit) # Leaves zombie instance in _battle_instances
+
+# ✅ GOOD:
+bm._state.bm_remove_instance(unit.ball_uuid) # Full clean-up
+```
+
+## 18. The Consumable Pipeline (No Rogue Logic)
+**Problem:** Executing item logic directly in `InventoryManager` bypasses the BattleManager, breaking Echo effects, visual syncing, and causality.
+
+**The Fix:** All Consumables must be `EffectRequests`.
+1.  **InventoryManager**: Enqueues `EffectRequest` (via `bm.enqueue_effect_request`).
+2.  **BattleManager**: Processes it in the main loop.
+3.  **Echo Units**: Can see the request in `on_ability_executed` and copy it.
+
+**Rule:** `InventoryManager` is for **Inventory Management** (Moving, Sorting). Calls to logic must be delegated to `BattleManager`.
