@@ -55,7 +55,8 @@ static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstan
 	
 	if state.is_player_owned(unit):
 		# Player unit: move equipped items to discard then move unit to discard
-		for item_uuid in unit.equipped_item_uuids:
+		# CRITICAL: Iterate over a COPY because move_instance_to_discard modifies the original array
+		for item_uuid in unit.equipped_item_uuids.duplicate():
 			if not item_uuid.is_empty():
 				var item_instance := state.get_instance(item_uuid)
 				if is_instance_valid(item_instance):
@@ -68,7 +69,8 @@ static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstan
 		InventoryOperations.move_instance_to_discard(state, unit)
 	else:
 		# Enemy unit: clear equipped linkage and defer erasure
-		for item_uuid in unit.equipped_item_uuids:
+		# CRITICAL: Iterate over a COPY because update_instance_location might indirectly affect iteration (though less likely here, safe is better)
+		for item_uuid in unit.equipped_item_uuids.duplicate():
 			if not item_uuid.is_empty():
 				var item_instance := state.get_instance(item_uuid)
 				if is_instance_valid(item_instance):

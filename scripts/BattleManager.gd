@@ -1253,19 +1253,22 @@ func _resolve_pending_reactions_only(_extra_events: Array[CombatEvent] = []) -> 
 	var start_snapshot = get_board_snapshot()
 	
 	# Process all pending reactions (turn start abilities)
-	while not _pending_reactions.is_empty():
-		var request: EffectRequest = _pending_reactions.pop_front()
-		var reaction_events: Array[CombatEvent] = []
-		_resolve_single_effect_request(request, reaction_events, death_tracking)
-		all_events_for_animator.append_array(reaction_events)
+	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
+	all_events_for_animator.append_array(_combat.process_reaction_queue(self, death_tracking))
+	
+	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
+	# and any deferred deaths (waiting for empty queue) are released immediately.
+	_check_for_deaths_with_counter_delay(true, all_events_for_animator, death_tracking)
+	_process_completed_counter_deaths(all_events_for_animator, death_tracking)
 	
 	# Clean up deferred enemy instances AFTER all reactions have resolved
 	_flush_deferred_enemy_erasures()
 	
-	_is_processing_effect = false
 	if not all_events_for_animator.is_empty():
+		_is_processing_effect = false # Wait, let animator emit finished
 		_animator.play_turn_sequence(start_snapshot, all_events_for_animator)
 	else:
+		_is_processing_effect = false
 		_on_turn_animation_finished()
 
 ## Resolve pending reactions for management phase triggers (on_draw, on_merge, etc.)
@@ -1279,6 +1282,7 @@ func unblock_ui_updates() -> void:
 	_is_processing_effect = false
 	if _pending_inventory_refresh:
 		_emit_battle_inventory_changed()
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
 
 ## Called from BattleView after gacha draw animation completes.
 ## @param snapshot: Dictionary - Board snapshot captured BEFORE effects were triggered
@@ -1294,16 +1298,23 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	var death_tracking: Dictionary = {}
 	
 	# Resolve all pending reactions (e.g., Royal Insignia buffs)
-	while not _pending_reactions.is_empty():
-		var request: EffectRequest = _pending_reactions.pop_front()
-		var reaction_events: Array[CombatEvent] = []
-		_resolve_single_effect_request(request, reaction_events, death_tracking)
-		events.append_array(reaction_events)
+	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
+	events.append_array(_combat.process_reaction_queue(self, death_tracking))
+	
+	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
+	# and any deferred deaths (waiting for empty queue) are released immediately.
+	_check_for_deaths_with_counter_delay(true, events, death_tracking)
+	_process_completed_counter_deaths(events, death_tracking)
 	
 	# Play via animator (uses existing VCR pattern)
 	if not events.is_empty():
 		_is_processing_effect = true # Block UI redraws while animating management effects
-		_animator.play_turn_sequence(snapshot, events)
+		await _animator.play_turn_sequence(snapshot, events)
+	
+	# Clean up any deaths that occurred during effect resolution
+	# Since is_simulation=true for VCR, cleanup is deferred until now
+	_finalize_deaths()
+	_is_processing_effect = false
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
 ## This ensures enemy units and items are still available in _battle_instances while
@@ -1341,17 +1352,20 @@ func _trigger_turn_end_abilities() -> void:
 	
 	# 3. Resolve pending reactions from on_turn_end
 	# print("DEBUG: Resolving ", _pending_reactions.size(), " pending reactions")
-	while not _pending_reactions.is_empty():
-		var request: EffectRequest = _pending_reactions.pop_front()
-		var reaction_events: Array[CombatEvent] = []
-		_resolve_single_effect_request(request, reaction_events, death_tracking)
-		all_events.append_array(reaction_events)
+	# 3. Resolve pending reactions from on_turn_end
+	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
+	all_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+	
+	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
+	# and any deferred deaths (waiting for empty queue) are released immediately.
+	_check_for_deaths_with_counter_delay(true, all_events, death_tracking)
+	_process_completed_counter_deaths(all_events, death_tracking)
 	
 	# 4. Play animations or finish immediately
 	if not all_events.is_empty():
 		_is_processing_effect = true
 		_resolve_animator()
-		_animator.play_turn_sequence(start_snapshot, all_events)
+		await _animator.play_turn_sequence(start_snapshot, all_events)
 	else:
 		# No events to animate, proceed immediately
 		_on_turn_animation_finished()

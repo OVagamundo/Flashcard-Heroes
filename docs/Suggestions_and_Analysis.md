@@ -71,10 +71,9 @@
 | Unit Name | Tags | Stats | Ability |
 |---|---|---|---|
 | **Rust Moth** | Beast | 2/4 | **Enemy Only**: `on_attack`: Add 1 **Rust** (-1 PWR Item) to Player's Battle Inventory. |
-| **Mirror Golem** | Construct | 2/2 | `on_hurt`: Transform into a base copy of the attacker. |
 | **Scrap Walker** | Construct | 2/5 | `on_durability_break`: When ANY item breaks, gain **+2/+2**. |
 | **Scholar Owl** | Beast | 2/3 | `on_minigame_result`: Heal lowest HP ally for **(Correct Answers x 2)** HP. |
-| **Mud Wretch** | Elemental | 2/2 | `on_healed`: When healed, gain **+2 Armor**. |
+
 
 
 ### 3.4 Tier 3 Units (Build Enablers)

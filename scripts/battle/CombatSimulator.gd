@@ -256,32 +256,8 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		# Enqueue attack for this actor
 		battle_manager._enqueue_attack_for(current_actor)
 		
-		# Process reaction loop - ALL reactions before checking battle-over
-		while not _pending_reactions.is_empty():
-			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-			var current_reaction = _pending_reactions.pop_front()
-			
-			var reaction_events: Array[CombatEvent] = []
-			resolve_effect_request(current_reaction, reaction_events, death_tracking, battle_manager)
-			
-			# Collect inline events (on_before_attack heals etc.)
-			var inline_evts = collect_and_clear_inline_events()
-			turn_log.append_array(inline_evts)
-			
-			turn_log.append_array(reaction_events)
-			
-			# Process deferred deaths
-			var deferred_death_events: Array[CombatEvent] = []
-			battle_manager._process_completed_counter_deaths(deferred_death_events, death_tracking)
-			turn_log.append_array(deferred_death_events)
-		
-		# Process on_kill reactions (like Bloodlust granting extra action)
-		while not _pending_reactions.is_empty():
-			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-			var kill_reaction = _pending_reactions.pop_front()
-			var kill_reaction_events: Array[CombatEvent] = []
-			resolve_effect_request(kill_reaction, kill_reaction_events, death_tracking, battle_manager)
-			turn_log.append_array(kill_reaction_events)
+		# Process all reactions (including on_kill triggers from the attack)
+		turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
 		
 		# Check battle-over AFTER all reactions for this actor
 		if battle_manager._is_battle_over():
@@ -290,23 +266,41 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 			break
 	
 	# Final reaction drain - process remaining reactions after all actors
-	while not _pending_reactions.is_empty():
-		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-		var final_reaction = _pending_reactions.pop_front()
-		
-		var final_reaction_events: Array[CombatEvent] = []
-		resolve_effect_request(final_reaction, final_reaction_events, death_tracking, battle_manager)
-		
-		var final_inline_evts = collect_and_clear_inline_events()
-		turn_log.append_array(final_inline_evts)
-		
-		turn_log.append_array(final_reaction_events)
-		
-		var final_death_events: Array[CombatEvent] = []
-		battle_manager._process_completed_counter_deaths(final_death_events, death_tracking)
-		turn_log.append_array(final_death_events)
+	turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
+	
+	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns on last action)
+	# are caught and released immediately.
+	battle_manager._check_for_deaths_with_counter_delay(true, turn_log, death_tracking)
+	battle_manager._process_completed_counter_deaths(turn_log, death_tracking)
 	
 	return turn_log
+
+## Process the pending reaction queue until empty.
+## Handles priority sorting, effect resolution, inline events, and deferred deaths.
+## This ensures consistent behavior across all battle phases (Combat, Management, Start of Turn).
+func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array[CombatEvent]:
+	var events: Array[CombatEvent] = []
+	
+	while not _pending_reactions.is_empty():
+		# Always re-sort as new reactions might have been added (e.g. on_death triggers)
+		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+		var current_reaction = _pending_reactions.pop_front()
+		
+		var reaction_events: Array[CombatEvent] = []
+		resolve_effect_request(current_reaction, reaction_events, death_tracking, battle_manager)
+		
+		# Collect inline events (e.g. self-damage, heals, lethal saves triggered during resolution)
+		var inline_evts = collect_and_clear_inline_events()
+		events.append_array(inline_evts)
+		
+		events.append_array(reaction_events)
+		
+		# Process deferred deaths immediately to ensure correct ordering (e.g. before next reaction)
+		var deferred_death_events: Array[CombatEvent] = []
+		battle_manager._process_completed_counter_deaths(deferred_death_events, death_tracking)
+		events.append_array(deferred_death_events)
+		
+	return events
 
 # ============================================================================
 # EFFECT RESOLUTION (Moved from BattleManager)
@@ -368,7 +362,23 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	# They will provide their own targets in the return data
 	# Only abort if we EXPECTED targets but they're all invalid
 	if valid_targets.is_empty() and not exec_targets.is_empty():
-		return
+		# LAZY RETARGETING: If all targets died/vanished, try to find new ones
+		# This fixes chains where multiple reactions targeting the same unit fail after the first kills it
+		if is_instance_valid(request.effect_definition):
+			var new_targets = bm.resolve_target(request.source_uuid, request.effect_definition.target_type, request.trigger_context)
+			# Validate the new targets
+			for nt in new_targets:
+				var nt_inst = bm.get_instance_by_uuid(nt)
+				if is_instance_valid(nt_inst) and nt_inst.current_hp > 0:
+					var loc_tag = nt_inst.location_container_tag
+					var is_in_battle = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
+										loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+					if is_in_battle:
+						valid_targets.append(nt)
+
+		# If STILL empty after retargeting attempts, then we abort
+		if valid_targets.is_empty():
+			return
 	
 	exec_targets = valid_targets
 	
@@ -673,7 +683,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 		# LEGACY: Normalize integer returns to dictionary format
 		# This must happen before the TYPE_DICTIONARY check so the normalized value gets processed
 		if typeof(res) == TYPE_INT:
-			var legacy_damage_amount = int(res)
+			var legacy_damage_amount = res
 			res = {
 				"stat": "hp",
 				"amount": - legacy_damage_amount,
