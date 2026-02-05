@@ -76,12 +76,15 @@
 | **Scholar Owl** | Beast | 2/3 | `on_minigame_result`: Heal lowest HP ally for **(Correct Answers x 2)** HP. |
 | **Mud Wretch** | Elemental | 2/2 | `on_healed`: When healed, gain **+2 Armor**. |
 
-### 3.3 Tier 3 Units (Build Enablers)
+
+### 3.4 Tier 3 Units (Build Enablers)
 | Unit Name | Tags | Stats | Ability |
 |---|---|---|---|
 | **Doppelganger** | Monster | 1/1 | `on_battle_start`: Become a copy of the **Strongest Enemy**. |
 | **Void Cat** | Spirit | 3/3 | **Trait**: Active only at **Exact 1 Void Cat**. Effect: "Dodge the first attack." |
 | **Forge Spirit** | Elemental | 4/5 | `on_turn_start`: Grant **Infinite Durability** to adjacent allies' items this turn. |
+| **Meditating Monk** | Human/Spirit | 2/2 | `on_turn_start_bench`: Gain **+3/+3**. (Bench Scaler). |
+
 
 ---
 
