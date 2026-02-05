@@ -1121,6 +1121,9 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						"amount": delta,
 						"source_uuid": attacker_uuid
 					})
+					
+					# Trigger on_healed event
+					TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, attacker_uuid)
 				return new_hp
 		"pwr":
 			var new_pwr = instance.current_pwr + delta

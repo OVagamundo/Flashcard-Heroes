@@ -652,19 +652,18 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			for killed_uuid in effect_result.killed_uuids:
 				bm.trigger_on_kill(request.source_uuid, killed_uuid)
 			
-			# Fire on_healed triggers for healed units - each heal fires individually
+			# Fire on_kill triggers
+			for killed_uuid in effect_result.killed_uuids:
+				bm.trigger_on_kill(request.source_uuid, killed_uuid)
+			
+			# DEPRECATED: on_healed is now triggered systemically in BattleManager.apply_stat_delta
+			# So we don't need to trigger it from EffectResult.healed_events anymore.
+			# Keeping drained reactions logic if needed for other reasons, but for healed_events it's redundant.
 			if not effect_result.healed_events.is_empty():
-				var result_heal_start = _pending_reactions.size()
-				for heal_event in effect_result.healed_events:
-					var healed_uuid: String = String(heal_event.get("uuid", ""))
-					var heal_amount: int = int(heal_event.get("amount", 0))
-					if not healed_uuid.is_empty():
-						TurnAbilities.trigger_on_healed(healed_uuid, heal_amount, request.source_uuid)
-				
-				# Drain on_healed reactions
-				drain_reactions_inline(result_heal_start, bm)
-				var healed_inline_evts = collect_and_clear_inline_events()
-				out_events.append_array(healed_inline_evts)
+				# We still need to drain reactions if any were pending? 
+				# No, only reactions FROM on_healed would be pending here.
+				# Since we don't trigger it, no reactions to drain.
+				pass
 			
 			# Death check (unless skipped by effect)
 			if not effect_result.skip_death_check:
