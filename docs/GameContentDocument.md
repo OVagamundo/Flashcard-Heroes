@@ -38,6 +38,7 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `unit_t2_g` | Shadow Cloner | **Empath + Empath** | 3 HP / 3 PWR | 2 | 1 Wind | **Buff Echo** (`on_stat_increased`): Repeats any buff (HP/PWR) received by an adjacent ally. |
 | `unit_t2_h` | Hermit | **Protector + Empath** | 4 HP / 2 PWR | 2 | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only): Gains +HP/+PWR equal to `Current PWR * Empty Slots`. |
 | `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 2 HP / 2 PWR | 2 | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain **+2 Armor**. |
+| `unit_t2_j` | Steam Wisp | **Squire + Protector** | 1 HP / 3 PWR | 2 | 1 Fire, 1 Water | **Scald** (`on_healed`): When healed, deal equal damage to the front enemy. |
 
 ### Tier 3 Units (Cost: 3)
 | ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |

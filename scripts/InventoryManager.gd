@@ -243,16 +243,15 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		# AUDIO HOOK: Consumable usage sound
 		Audio.play_sfx("ui_heal")
 		
-		# 4. Resolve & Animate (Standard Pipeline)
-		# This async call processes the effect (using the VALID source instance)
-		await bm.resolve_management_effects_and_animate(snapshot)
-		
-		# 5. Consume the Item (Truth)
-		# Now that logic is done, we remove the item.
+		# 4. Consume the Item (Truth) - IMMEDIATELY (Before Animation)
 		owner.remove_instance(consumable_uuid)
-		
 		GlobalInteractionRouter.end_drag(true)
 		SignalBus.emit_signal("inventory_action_completed", [target_unit.ball_uuid])
+
+		# 5. Resolve & Animate (Standard Pipeline)
+		# This async call processes the effect
+		await bm.resolve_management_effects_and_animate(snapshot)
+		
 	else:
 		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
 		GlobalInteractionRouter.end_drag(false)

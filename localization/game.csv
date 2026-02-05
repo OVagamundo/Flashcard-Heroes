@@ -346,3 +346,7 @@ ability.unit_t2_h.desc,"At start of combat, gain +HP and +PWR equal to current P
 unit_t2_i.name,Mud Wretch,Miserável de Lama
 ability.mud_coating.name,Mud Coating,Camada de Lama
 ability.mud_coating.desc,"When healed, gain **+2 Armor**.","Quando curado, ganha **+2 Armadura**."
+unit_t2_j.name,Steam Wisp,Fogo Fátuo
+unit_t2_j.desc,An elemental spirit that retaliates with boiling steam when healed. Deals damage equal to heal amount.,Um espírito elemental que retalia com vapor fervente quando curado. Causa dano igual à quantidade de cura.
+ability.scald.name,Scald,Escaldar
+ability.scald.desc,"When this unit is healed, deal damage equal to the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual à quantidade de cura ao inimigo da frente."
