@@ -10,7 +10,7 @@ WARNING: res://resources/items/item_emblem_fire.tres:3 - ext_resource, invalid U
 WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
    at: load (scene/resources/resource_format_text.cpp:447)
 [Title] Ready. TutorialManager.tutorials_enabled: false
-[SaveManager] Run loaded successfully (Day 2)
+[SaveManager] Run loaded successfully (Day 3)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -23,10 +23,10 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[PathChoice] Loading from save, skipping day advance. Current Day: 2
+[PathChoice] Loading from save, skipping day advance. Current Day: 3
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
-[EncounterGen] Budget: 10, Spent: 10, Units: 3, Items: 2, Trinkets: 0
+[EncounterGen] Budget: 14, Spent: 14, Units: 3, Items: 2, Trinkets: 0
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
@@ -35,1287 +35,438 @@ DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATE
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 10
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 10, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 8
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [BattleLog] [1:2] Armor Aura grants Timekeeper +3 armor_stacks 
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
+[BattleLog] [1:3] Koi's Blessing heals Sakura Spirit for 2 HP 
+[BattleLog] [1:4] Koi's Blessing heals Sakura Spirit for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 7→9)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:3] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:4] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 3→4)
+[BattleLog] [1:5] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:6] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 4→6)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
+[AnimationCompletionTracker] Timeout for boss_2_1770254923_75 type 7
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:5] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:6] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 4→5)
+[BattleLog] [1:7] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:8] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 6→8)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:7] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:8] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 5→6)
+[BattleLog] [1:9] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:10] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 8→10)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:9] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:10] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:11] Templar grants Templar +5 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=5 targets=1
-[BattleLog] [1:12] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
+[BattleLog] [1:11] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:12] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 10→12)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:14] Templar grants Templar -2 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-2 targets=1
-[BattleLog] [1:15] Templar grants Templar +3 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-[BattleLog] [1:16] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:17] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+[BattleLog] [1:13] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:14] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 12→14)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 1, "EARTH": 0, "WATER": 0, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:18] Templar grants Templar -2 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-2 targets=1
-[BattleLog] [1:19] Templar grants Templar -2 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-2 targets=1
-[BattleLog] [1:20] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [1:21] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 9→10)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 2, "EARTH": 0, "WATER": 0, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 5, "WATER": 0, "WIND": 0 }
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[BattleLog] [1:15] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [1:16] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 14→16)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 2, "WIND": 2 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 3, "WATER": 0, "WIND": 0 }
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[BattleLog] [1:17] The Shadow Warden feeds on your spent tokens (+1 HP) 
+[BattleLog] [1:18] The Shadow Warden heals The Shadow Warden for 1 HP (ability_boss_2_token_drain, on_token_spent) (HP: 16→17)
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770254923_73_72431
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770254923_77_22672
+[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770254923_77_22672
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770254923_73_72431
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: item_t3e_death_damage Prio:215 Src:item_t3_e_1770254923_74_77796
+[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770254923_77_22672
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770254923_18_00242
+[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770254923_77_22672
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770254923_18_00242
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770254923_70_88042
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770254923_70_88042
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
 [DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770253656_77_45711
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770253656_77_45711
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770253656_77_45711
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770253656_77_45711
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
+[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770254923_77_22672
+[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770254923_77_22672
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770253656_77_45711
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1770253656_77_45711
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[BattleLog] [1:22] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:23] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [1:24] Templar deals 1 dmg to Guardian 
-[BattleLog] [1:25] Templar attacks Guardian for 1 damage (basic_attack, on_attack) (HP: 6→5)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_d_1770253656_13_87024 attack_type: melee
+[BattleLog] [1:19] Shadow Cloner deals 3 dmg to Dreadnought 
+[BattleLog] [1:20] Shadow Cloner attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 5→2)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1770254923_72_15138"] source: unit_t2_g_1770254923_18_00242 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_d_1770253656 type 5
-[BattleLog] [1:26] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:27] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 5→7)
-[BattleLog] [1:28] Mimic deals 2 dmg to Guardian 
-[BattleLog] [1:29] Mimic attacks Guardian for 2 damage (basic_attack, on_attack) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_e_1770253656_15_54050 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770254923 type 5
+[BattleLog] [1:21] Mud Wretch deals 2 dmg to Dreadnought 
+[BattleLog] [1:22] Mud Wretch attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1770254923_72_15138"] source: unit_t2_i_1770254923_67_41213 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_e_1770253656 type 5
-[BattleLog] [1:30] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:31] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 5→7)
-[BattleLog] [1:32] Templar deals 1 dmg to Guardian 
-[BattleLog] [1:33] Templar attacks Guardian for 1 damage (basic_attack, on_attack) (HP: 7→6)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_d_1770253656_12_20193 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_i_1770254923 type 5
+[BattleLog] [1:23] └─ unit_t3_... is defeated! 
+[BattleLog] [1:24] Shadow Cloner deals 3 dmg to Squire 
+[BattleLog] [1:25] Shadow Cloner attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 4→1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1770254923_73_72431"] source: unit_t2_g_1770254923_17_27920 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_d_1770253656 type 5
-[BattleLog] [1:34] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:35] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 6→8)
-[BattleLog] [1:36] Shadow Cloner deals 3 dmg to Guardian 
-[BattleLog] [1:37] Shadow Cloner attacks Guardian for 3 damage (basic_attack, on_attack) (HP: 8→5)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_g_1770253656_18_30264 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_g_1770254923 type 5
+[BattleLog] [1:26] Squire deals 3 dmg to Shadow Cloner 
+[BattleLog] [1:27] unit_t1_... attacks Shadow Cloner for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 3→0)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770254923_17_27920"] source: unit_t1_b_1770254923_73_72431 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [1:38] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:39] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 5→7)
-[BattleLog] [1:40] Timekeeper deals 2 dmg to Guardian 
-[BattleLog] [1:41] Timekeeper attacks Guardian for 2 damage (basic_attack, on_attack) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: hero_timekeeper_1770253656_1_37877 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [1:42] Guardian deals 2 dmg to Templar 
-[BattleLog] [1:43] Guardian attacks Templar for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t2_d_1770253656_13_87024"] source: unit_t2_a_1770253656_70_90893 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770253656 type 5
-[BattleLog] [1:44] └─ Templar is defeated! 
+[AnimationCompletionTracker] Timeout for unit_t1_b_1770254923 type 5
+[BattleLog] [1:28] └─ Shadow Cloner is defeated! 
 [TutorialManager] Requesting blocking tutorial: unit_death_intro
 [TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [1:45] Vengeance Charm grants Mimic +1 PWR 
-[BattleLog] [1:46] trinket_vengeance grants Mimic +1 PWR (ability_trinket_vengeance, on_ally_death) 
+[BattleLog] [1:29] Vengeance Charm grants Timekeeper +1 PWR 
+[BattleLog] [1:30] trinket_vengeance grants Timekeeper +1 PWR (ability_trinket_vengeance, on_ally_death) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:47] Vengeance Charm heals Shadow Cloner for 1 HP 
-[BattleLog] [1:48] trinket_vengeance heals Shadow Cloner for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 3→4)
-[BattleLog] [1:49] Knight deals 3 dmg to Mimic 
-[BattleLog] [1:50] Knight attacks Mimic for 3 damage (basic_attack, on_attack) (HP: 2→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_e_1770253656_15_54050"] source: unit_t2_c_1770253656_71_85769 attack_type: melee
+[BattleLog] [1:31] Vengeance Charm heals Timekeeper for 1 HP 
+[BattleLog] [1:32] trinket_vengeance heals Timekeeper for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 50→51)
+[BattleLog] [1:33] Mud Wretch deals 2 dmg to Squire 
+[BattleLog] [1:34] Mud Wretch attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1770254923_73_72431"] source: unit_t2_i_1770254923_66_01930 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1770253656 type 5
-[BattleLog] [1:51] └─ Mimic is defeated! 
+[AnimationCompletionTracker] Timeout for unit_t2_i_1770254923 type 5
+[BattleLog] [1:35] Squire deals 3 dmg to Mud Wretch 
+[BattleLog] [1:36] unit_t1_... attacks Mud Wretch for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 2→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770254923_66_01930"] source: unit_t1_b_1770254923_73_72431 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1770254923 type 5
+[BattleLog] [1:37] └─ Mud Wretch is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [1:38] Vengeance Charm grants Mud Wretch +1 PWR 
+[BattleLog] [1:39] trinket_vengeance grants Mud Wretch +1 PWR (ability_trinket_vengeance, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:40] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
+[BattleLog] [1:41] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:42] Vengeance Charm heals Mud Wretch for 1 HP 
+[BattleLog] [1:43] trinket_vengeance heals Mud Wretch for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 2→3)
+[BattleLog] [1:44] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
+[BattleLog] [1:45] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 3→4)
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
+[BattleLog] [1:46] └─ unit_t1_... is defeated! 
+[BattleLog] [1:47] Timekeeper deals 3 dmg to Sakura Spirit 
+[BattleLog] [1:48] Timekeeper attacks Sakura Spirit for 3 damage (basic_attack, on_attack) (HP: 9→6)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1770254923_70_88042"] source: hero_timekeeper_1770254923_1_45586 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
+[BattleLog] [1:49] Sakura Spirit deals 6 dmg to Shadow Cloner 
+[BattleLog] [1:50] Sakura Spirit attacks Shadow Cloner for 6 damage (basic_attack, on_attack) (HP: 3→-3)
+[DamageAnimation] Executing for targets: ["unit_t2_g_1770254923_18_00242"] source: unit_t3_d_1770254923_70_88042 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_d_1770254923 type 5
+[BattleLog] [1:51] └─ Shadow Cloner is defeated! 
 [TutorialManager] Requesting blocking tutorial: unit_death_intro
 [TutorialManager] Blocked: Tutorials disabled
 [BattleLog] [1:52] Vengeance Charm grants Timekeeper +1 PWR 
 [BattleLog] [1:53] trinket_vengeance grants Timekeeper +1 PWR (ability_trinket_vengeance, on_ally_death) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:54] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [1:55] Shadow Cloner grants Timekeeper +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:56] Vengeance Charm heals Timekeeper for 1 HP 
-[BattleLog] [1:57] trinket_vengeance heals Timekeeper for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 50→51)
-[BattleLog] [1:58] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [1:59] Shadow Cloner heals Timekeeper for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 51→52)
-[BattleLog] [1:60] Apprentice deals 1 dmg to Templar 
-[BattleLog] [1:61] Apprentice attacks Templar for 1 damage (basic_attack, on_attack) (HP: 2→1)
-[DamageAnimation] Executing for targets: ["unit_t2_d_1770253656_12_20193"] source: unit_t1_a_1770253656_73_67803 attack_type: melee
+[BattleLog] [1:54] Vengeance Charm heals Mud Wretch for 1 HP 
+[BattleLog] [1:55] trinket_vengeance heals Mud Wretch for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 4→5)
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
+[BattleLog] [1:56] The Shadow Warden deals 4 dmg to Mud Wretch 
+[BattleLog] [1:57] The Shadow Warden attacks Mud Wretch for 4 damage (basic_attack, on_attack) (HP: 5→5)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770254923_67_41213"] source: boss_2_1770254923_75_84163 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1770253656 type 5
-[BattleLog] [1:62] The Awakened Guardian deals 3 dmg to Templar 
-[BattleLog] [1:63] The Awakened Guardian attacks Templar for 3 damage (basic_attack, on_attack) (HP: 1→-2)
-[DamageAnimation] Executing for targets: ["unit_t2_d_1770253656_12_20193"] source: boss_1_1770253656_75_40098 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770253656_75 type 5
-[BattleLog] [1:64] └─ Templar is defeated! 
-[TutorialManager] Requesting blocking tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[BattleLog] [1:65] Vengeance Charm grants Shadow Cloner +1 PWR 
-[BattleLog] [1:66] trinket_vengeance grants Shadow Cloner +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:67] Vengeance Charm heals Timekeeper for 1 HP 
-[BattleLog] [1:68] trinket_vengeance heals Timekeeper for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 52→53)
-[BattleLog] [1:69] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [1:70] Shadow Cloner heals Timekeeper for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 53→54)
-[EncounterGen] Budget: 4, Spent: 4, Units: 1, Items: 0, Trinkets: 0
+[AnimationCompletionTracker] Timeout for boss_2_1770254923_75 type 5
+[EncounterGen] Budget: 5, Spent: 5, Units: 3, Items: 1, Trinkets: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[BattleLog] [1:71] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [1:58] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [1:59] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [1:60] └─ The Shadow Warden summons New Unit! 
 [BattleLog] [2:1] ═══ TURN 2 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 9
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 9, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 7
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 18 }
 [FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:2] Armor Aura grants Timekeeper and Shadow Cloner +3 armor_stacks 
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[BattleLog] [2:2] Armor Aura grants Timekeeper and Mud Wretch +3 armor_stacks 
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=2
-[BattleLog] [2:3] Timekeeper heals Shadow Cloner for 2 HP 
-[BattleLog] [2:4] Timekeeper heals Shadow Cloner for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 4→6)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
+[BattleLog] [2:3] Timekeeper heals Mud Wretch for 2 HP 
+[BattleLog] [2:4] Timekeeper heals Mud Wretch for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 5→7)
+[BattleLog] [2:5] Koi's Blessing heals Sakura Spirit for 2 HP 
+[BattleLog] [2:6] Koi's Blessing heals Sakura Spirit for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 6→8)
+[BattleLog] [2:7] Koi's Blessing heals Berserker for 2 HP 
+[BattleLog] [2:8] Koi's Blessing heals Berserker for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 3→5)
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:5] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:6] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 10→11)
+[BattleLog] [2:9] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [2:10] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 17→19)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 1 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:7] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:8] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 11→12)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
+[BattleLog] [2:11] The Shadow Warden feeds on your spent tokens (+2 HP) 
+[BattleLog] [2:12] The Shadow Warden heals The Shadow Warden for 2 HP (ability_boss_2_token_drain, on_token_spent) (HP: 19→21)
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:9] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:10] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 12→13)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 2, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:11] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:12] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 13→14)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 2
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
 [BattleLog] [2:13] Mud Wretch heals Mud Wretch for 3 HP 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[BattleLog] [2:14] Mud Wretch heals Mud Wretch for 3 HP (ability_grant_heroism) (HP: 2→5)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_i_1770253656_21_56425
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+[BattleLog] [2:14] Mud Wretch heals Mud Wretch for 3 HP (ability_grant_heroism) (HP: 7→10)
+WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_i_1770254923_67_41213
    at: push_warning (core/variant/variant_utility.cpp:1118)
 [BattleLog] [2:15] Mud Wretch grants Mud Wretch +3 PWR 
 [BattleLog] [2:16] Mud Wretch grants Mud Wretch +3 PWR (ability_grant_heroism) 
 [BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_i_1770253656_21_56425
+WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_i_1770254923_67_41213
    at: push_warning (core/variant/variant_utility.cpp:1118)
 [BattleLog] [2:17] Mud Wretch grants Mud Wretch +3 armor_stacks 
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
-[BattleLog] [2:18] Shadow Cloner echoes buff! Grants +3 HP to adjacent ally. 
-[BattleLog] [2:19] Shadow Cloner heals Mud Wretch for 3 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 5→8)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_i_1770253656_21_56425
-   at: push_warning (core/variant/variant_utility.cpp:1118)
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [2:20] Shadow Cloner echoes buff! Grants +3 PWR to adjacent ally. 
-[BattleLog] [2:21] Shadow Cloner grants Mud Wretch +3 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_i_1770253656_21_56425
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[DeathProcessor] Phase 1 (on_death) done. Pending: 2
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[BattleLog] [2:22] Mud Wretch heals Mud Wretch for 3 HP 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[BattleLog] [2:23] Mud Wretch heals Mud Wretch for 3 HP (ability_grant_heroism) (HP: 8→11)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_i_1770253656_21_56425
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [2:24] Mud Wretch grants Mud Wretch +3 PWR 
-[BattleLog] [2:25] Mud Wretch grants Mud Wretch +3 PWR (ability_grant_heroism) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_i_1770253656_21_56425
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[BattleLog] [2:26] Mud Wretch grants Mud Wretch +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
-[BattleLog] [2:27] Shadow Cloner echoes buff! Grants +3 HP to adjacent ally. 
-[BattleLog] [2:28] Shadow Cloner heals Mud Wretch for 3 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 11→14)
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_t2_i_1770253656_21_56425
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [2:29] Shadow Cloner echoes buff! Grants +3 PWR to adjacent ally. 
-[BattleLog] [2:30] Shadow Cloner grants Mud Wretch +3 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_i_1770253656_21_56425
-   at: push_warning (core/variant/variant_utility.cpp:1118)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 4, "EARTH": 4, "WATER": 1, "WIND": 0 }
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:31] Mud Wretch grants Mud Wretch +4 spikes_stacks 
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=4 targets=1
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:32] Merchant heals Merchant for 1 HP (ability_unit_t2_f_gold_hp) (HP: 1→2)
-[BattleLog] [2:33] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:34] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 14→15)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:35] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:36] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 15→16)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:37] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [2:38] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 16→17)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 7, "WATER": 0, "WIND": 0 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 2
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_17_37372
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_17_37372
-[BattleLog] [2:39] Hermit gains +4 HP/PWR (2 empty slots) 
-[BattleLog] [2:40] Hermit heals Hermit for 4 HP (unit_t2_h_ability, on_pre_combat) (HP: 4→8)
-[BattleLog] [2:41] Hermit grants Hermit +4 PWR (unit_t2_h_ability, on_pre_combat) 
+[BattleLog] [2:18] Hermit gains +4 HP/PWR (2 empty slots) 
+[BattleLog] [2:19] Hermit heals Hermit for 4 HP (unit_t2_h_ability, on_pre_combat) (HP: 4→8)
+[BattleLog] [2:20] Hermit grants Hermit +4 PWR (unit_t2_h_ability, on_pre_combat) 
 [BuffAnimation] execute() called - stat='pwr' amount=4 targets=1
-[BattleLog] [2:42] Hermit gains +4 HP/PWR (2 empty slots) 
-[BattleLog] [2:43] Hermit heals Hermit for 4 HP (unit_t2_h_ability, on_pre_combat) (HP: 4→8)
-[BattleLog] [2:44] Hermit grants Hermit +4 PWR (unit_t2_h_ability, on_pre_combat) 
-[BuffAnimation] execute() called - stat='pwr' amount=4 targets=1
-[BattleLog] [2:45] Shadow Cloner echoes buff! Grants +4 HP to adjacent ally. 
-[BattleLog] [2:46] Shadow Cloner heals Hermit for 4 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 8→12)
-[BattleLog] [2:47] Shadow Cloner echoes buff! Grants +4 PWR to adjacent ally. 
-[BattleLog] [2:48] Shadow Cloner grants Hermit +4 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=4 targets=1
-[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770253733_78_07181
-[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770253733_78_07181
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770254923_70_88042
+[CS] Draining reaction: unit_tier3d_resilient_aura Prio:100 Src:unit_t3_d_1770254923_70_88042
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770254923_23_15006
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770254923_23_15006
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770254923_23_15006
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770254923_23_15006
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1770253656_70_90893
+[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770254923_23_15006
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770254923_23_15006
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:49] Mud Wretch deals 15 dmg to Sakura Spirit 
-[BattleLog] [2:50] Mud Wretch attacks unit_t3_... for 15 damage (basic_attack, on_attack) (HP: 6→-9)
-[DamageAnimation] Executing for targets: ["unit_t3_d_1770253733_78_07181"] source: unit_t2_i_1770253656_21_56425 attack_type: melee
+[BattleLog] [2:21] Mud Wretch deals 8 dmg to Mud Wretch 
+[BattleLog] [2:22] Mud Wretch attacks unit_t2_... for 8 damage (basic_attack, on_attack) (HP: 2→-6)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770255002_82_22779"] source: unit_t2_i_1770254923_67_41213 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [2:51] Sakura Spirit heals Guardian for 1 HP 
-[BattleLog] [2:52] unit_t3_... heals unit_t2_... for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 5→6)
-[BattleLog] [2:53] Sakura Spirit grants Guardian +1 PWR 
-[BattleLog] [2:54] unit_t3_... grants unit_t2_... +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:55] └─ unit_t3_... is defeated! 
-[BattleLog] [2:56] Knight heals Knight for 2 HP 
-[BattleLog] [2:57] Knight heals Knight for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 7→9)
-[BattleLog] [2:58] Knight grants Knight +2 PWR 
-[BattleLog] [2:59] Knight grants Knight +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [2:60] Guardian heals Guardian for 2 HP 
-[BattleLog] [2:61] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 6→8)
-[BattleLog] [2:62] Shadow Cloner deals 4 dmg to Guardian 
-[BattleLog] [2:63] Shadow Cloner attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 8→4)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_g_1770253656_18_30264 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_i_1770254923 type 5
+[BattleLog] [2:23] └─ unit_t2_... is defeated! 
+[BattleLog] [2:24] Hermit deals 6 dmg to Apprentice 
+[BattleLog] [2:25] Hermit attacks unit_t1_... for 6 damage (basic_attack, on_attack) (HP: 2→-4)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1770255002_81_05284"] source: unit_t2_h_1770254923_20_47079 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [2:64] Guardian heals Guardian for 2 HP 
-[BattleLog] [2:65] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [2:66] Mud Wretch deals 2 dmg to Guardian 
-[BattleLog] [2:67] Mud Wretch attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 6→4)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_i_1770253656_66_56944 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [2:68] Guardian heals Guardian for 2 HP 
-[BattleLog] [2:69] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [2:70] Merchant deals 2 dmg to Guardian 
-[BattleLog] [2:71] Merchant attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 6→4)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: unit_t2_f_1770253656_16_88828 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_f_1770253656 type 5
-[BattleLog] [2:72] Guardian heals Guardian for 2 HP 
-[BattleLog] [2:73] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 4→6)
-[BattleLog] [2:74] Timekeeper deals 4 dmg to Guardian 
-[BattleLog] [2:75] Timekeeper attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 6→2)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1770253656_70_90893"] source: hero_timekeeper_1770253656_1_37877 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t2_h_1770254923 type 5
+[BattleLog] [2:26] └─ unit_t1_... is defeated! 
+[BattleLog] [2:27] Timekeeper deals 4 dmg to Sakura Spirit 
+[BattleLog] [2:28] Timekeeper attacks Sakura Spirit for 4 damage (basic_attack, on_attack) (HP: 8→4)
+[DamageAnimation] Executing for targets: ["unit_t3_d_1770254923_70_88042"] source: hero_timekeeper_1770254923_1_45586 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
 [AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [2:76] Guardian deals 3 dmg to Mud Wretch 
-[BattleLog] [2:77] Mud Wretch's Spikes deals 4 to Guardian 
-[BattleLog] [2:78] unit_t2_... attacks Mud Wretch for 3 damage (basic_attack, on_attack) (HP: 15→15)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: unit_t2_a_1770253656_70_90893 attack_type: melee
+[BattleLog] [2:29] Sakura Spirit heals Berserker for 1 HP 
+[BattleLog] [2:30] Sakura Spirit heals Berserker for 1 HP (unit_tier3d_resilient_aura, on_hurt) (HP: 5→6)
+[BattleLog] [2:31] Sakura Spirit grants Berserker +1 PWR 
+[BattleLog] [2:32] Sakura Spirit grants Berserker +1 PWR (unit_tier3d_resilient_aura, on_hurt) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [2:33] Sakura Spirit deals 6 dmg to Mud Wretch 
+[BattleLog] [2:34] Sakura Spirit attacks Mud Wretch for 6 damage (basic_attack, on_attack) (HP: 11→11)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770254923_67_41213"] source: unit_t3_d_1770254923_70_88042 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1770253656 type 5
-[BattleLog] [2:79] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [2:80] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 15→16)
-[BattleLog] [2:81] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [2:82] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 16→17)
+[AnimationCompletionTracker] Timeout for unit_t3_d_1770254923 type 5
+[BattleLog] [2:35] Phoenix Elixir heals Mud Wretch for 1 HP 
+[BattleLog] [2:36] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 11→12)
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [2:83] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [2:84] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
+[BattleLog] [2:37] Phoenix Elixir grants Mud Wretch +1 PWR 
+[BattleLog] [2:38] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:85] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [2:86] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:87] └─ unit_t2_... is defeated! 
-[BattleLog] [2:88] Knight heals Knight for 2 HP 
-[BattleLog] [2:89] Knight heals Knight for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 9→11)
-[BattleLog] [2:90] Knight grants Knight +2 PWR 
-[BattleLog] [2:91] Knight grants Knight +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [2:92] Knight deals 7 dmg to Mud Wretch 
-[BattleLog] [2:93] Mud Wretch's Spikes deals 3 to Knight 
-[BattleLog] [2:94] Knight attacks Mud Wretch for 7 damage (basic_attack, on_attack) (HP: 17→17)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: unit_t2_c_1770253656_71_85769 attack_type: melee
+[BattleLog] [2:39] Berserker attacks Mud Wretch for 5 damage (HP: 12→12)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770254923_67_41213"] source: unit_t2_b_1770255002_79_78283 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1770253656 type 5
-[BattleLog] [2:95] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [2:96] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 17→18)
-[BattleLog] [2:97] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [2:98] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 18→19)
+[AnimationCompletionTracker] Timeout for unit_t2_b_1770255002 type 5
+[BattleLog] [2:40] Phoenix Elixir heals Mud Wretch for 1 HP 
+[BattleLog] [2:41] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 12→13)
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [2:99] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [2:100] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
+[BattleLog] [2:42] Phoenix Elixir grants Mud Wretch +1 PWR 
+[BattleLog] [2:43] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:101] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [2:102] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:103] Apprentice deals 1 dmg to Mud Wretch 
-[BattleLog] [2:104] Mud Wretch's Spikes deals 2 to Apprentice 
-[BattleLog] [2:105] Apprentice attacks Mud Wretch for 1 damage (basic_attack, on_attack) (HP: 19→19)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: unit_t1_a_1770253656_73_67803 attack_type: melee
+[BattleLog] [2:44] The Shadow Warden deals 4 dmg to Mud Wretch 
+[BattleLog] [2:45] The Shadow Warden attacks Mud Wretch for 4 damage (basic_attack, on_attack) (HP: 13→13)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770254923_67_41213"] source: boss_2_1770254923_75_84163 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1770253656 type 5
-[BattleLog] [2:106] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [2:107] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 19→20)
-[BattleLog] [2:108] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [2:109] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 20→21)
+[AnimationCompletionTracker] Timeout for boss_2_1770254923_75 type 5
+[BattleLog] [2:46] Phoenix Elixir heals Mud Wretch for 1 HP 
+[BattleLog] [2:47] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 13→14)
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [2:110] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [2:111] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
+[BattleLog] [2:48] Phoenix Elixir grants Mud Wretch +1 PWR 
+[BattleLog] [2:49] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:112] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [2:113] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:114] The Awakened Guardian deals 3 dmg to Mud Wretch 
-[BattleLog] [2:115] Mud Wretch's Spikes deals 1 to The Awakened Guardian 
-[BattleLog] [2:116] The Awakened Guardian attacks Mud Wretch for 3 damage (basic_attack, on_attack) (HP: 21→21)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: boss_1_1770253656_75_40098 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770253656_75 type 5
-[BattleLog] [2:117] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [2:118] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 21→22)
-[BattleLog] [2:119] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [2:120] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 22→23)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [2:121] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [2:122] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:123] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [2:124] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 4, Spent: 4, Units: 2, Items: 1, Trinkets: 0
+[EncounterGen] Budget: 5, Spent: 5, Units: 2, Items: 0, Trinkets: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-16 targets=1
-[BattleLog] [2:125] Mud Wretch takes 1 Burn dmg 
-[BattleLog] [2:126] System attacks Mud Wretch for 1 damage (HP: 23→22)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source:  attack_type: melee
+[BattleLog] [2:50] Mud Wretch takes 2 Burn dmg 
+[BattleLog] [2:51] System attacks Mud Wretch for 2 damage (HP: 14→14)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1770254923_67_41213"] source:  attack_type: melee
 [StatusEffectAnimation] execute() called - stat='burn_stacks' amount=-1 targets=1
-[BattleLog] [2:127] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [2:128] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [2:52] └─ The Shadow Warden summons New Unit! 
+[BattleLog] [2:53] └─ The Shadow Warden summons New Unit! 
 [BattleLog] [3:1] ═══ TURN 3 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
 [FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 10 }
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 13 }
 [FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 4
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 4
-[DeathProcessor] Draining batch of 4
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[BattleLog] [3:2] Mimic transforms into Mud Wretch! 
-[BattleLog] [3:3] └─ System summons New Unit! 
-[BattleLog] [3:4] Mud Wretch appeared! 
-[BattleLog] [3:5] Armor Aura grants Timekeeper and Merchant and Mud Wretch and Shadow Cloner and Mud Wretch +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=5
-[BattleLog] [3:6] Timekeeper heals Merchant and Mud Wretch and Shadow Cloner and Mud Wretch for 2 HP 
-[BattleLog] [3:7] Timekeeper heals Merchant for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 2→4)
-[BattleLog] [3:8] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [3:9] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 4→6)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [3:10] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [3:11] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 24→26)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:12] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [3:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 16→17)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:14] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [3:15] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 17→18)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:16] The Awakened Guardian drains energy from your draw (+1 HP) 
-[BattleLog] [3:17] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 18→19)
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 2, "EARTH": 4, "WATER": 1, "WIND": 0 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 2
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_17_37372
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_17_37372
-[BattleLog] [3:18] Hermit gains +6 HP/PWR (1 empty slots) 
-[BattleLog] [3:19] Hermit heals Hermit for 6 HP (unit_t2_h_ability, on_pre_combat) (HP: 8→14)
-[BattleLog] [3:20] Hermit grants Hermit +6 PWR (unit_t2_h_ability, on_pre_combat) 
-[BuffAnimation] execute() called - stat='pwr' amount=6 targets=1
-[BattleLog] [3:21] Hermit gains +10 HP/PWR (1 empty slots) 
-[BattleLog] [3:22] Hermit heals Hermit for 10 HP (unit_t2_h_ability, on_pre_combat) (HP: 12→22)
-[BattleLog] [3:23] Hermit grants Hermit +10 PWR (unit_t2_h_ability, on_pre_combat) 
-[BuffAnimation] execute() called - stat='pwr' amount=10 targets=1
-[BattleLog] [3:24] Shadow Cloner echoes buff! Grants +10 HP to adjacent ally. 
-[BattleLog] [3:25] Shadow Cloner heals Hermit for 10 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 22→32)
-[BattleLog] [3:26] Shadow Cloner echoes buff! Grants +10 PWR to adjacent ally. 
-[BattleLog] [3:27] Shadow Cloner grants Hermit +10 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=10 targets=1
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770253873_79_75761
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier3c_on_attack_lifesteal Prio:0 Src:item_t3_c_1770253656_69_21906
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [3:28] Mud Wretch deals 23 dmg to Mud Wretch 
-[BattleLog] [3:29] Mud Wretch attacks unit_t2_... for 23 damage (basic_attack, on_attack) (HP: 2→-21)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253891_82_94697"] source: unit_t2_i_1770253656_21_56425 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [3:30] └─ unit_t2_... is defeated! 
-[BattleLog] [3:31] Knight heals Knight for 2 HP 
-[BattleLog] [3:32] Knight heals Knight for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 8→10)
-[BattleLog] [3:33] Knight grants Knight +2 PWR 
-[BattleLog] [3:34] Knight grants Knight +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:35] Shadow Cloner deals 4 dmg to Squire 
-[BattleLog] [3:36] Shadow Cloner attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 1→-3)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1770253873_79_75761"] source: unit_t2_g_1770253656_18_30264 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [3:37] Squire deals 3 dmg to Shadow Cloner 
-[BattleLog] [3:38] unit_t1_... attacks Shadow Cloner for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 12→12)
-[DamageAnimation] Executing for targets: ["unit_t2_g_1770253656_18_30264"] source: unit_t1_b_1770253873_79_75761 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1770253873 type 5
-[BattleLog] [3:39] └─ unit_t1_... is defeated! 
-[BattleLog] [3:40] Knight heals Knight for 2 HP 
-[BattleLog] [3:41] Knight heals Knight for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 10→12)
-[BattleLog] [3:42] Knight grants Knight +2 PWR 
-[BattleLog] [3:43] Knight grants Knight +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [3:44] Mud Wretch deals 4 dmg to Knight 
-[BattleLog] [3:45] Mud Wretch attacks Knight for 4 damage (basic_attack, on_attack) (HP: 12→8)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770253656_71_85769"] source: unit_t2_i_1770253656_66_56944 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [3:46] Lifesteal Ring heals Mud Wretch for 1 HP 
-[BattleLog] [3:47] Lifesteal Ring heals Mud Wretch for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 8→9)
-[BattleLog] [3:48] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [3:49] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 9→10)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [3:50] Merchant deals 2 dmg to Knight 
-[BattleLog] [3:51] Merchant attacks Knight for 2 damage (basic_attack, on_attack) (HP: 8→6)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770253656_71_85769"] source: unit_t2_f_1770253656_16_88828 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_f_1770253656 type 5
-[BattleLog] [3:52] Timekeeper deals 4 dmg to Knight 
-[BattleLog] [3:53] Timekeeper attacks Knight for 4 damage (basic_attack, on_attack) (HP: 6→2)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770253656_71_85769"] source: hero_timekeeper_1770253656_1_37877 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [3:54] Knight deals 11 dmg to Mud Wretch 
-[BattleLog] [3:55] Knight attacks Mud Wretch for 11 damage (basic_attack, on_attack) (HP: 26→22)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: unit_t2_c_1770253656_71_85769 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1770253656 type 5
-[BattleLog] [3:56] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [3:57] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 22→23)
-[BattleLog] [3:58] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [3:59] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 23→24)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [3:60] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [3:61] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:62] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [3:63] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:64] Apprentice deals 1 dmg to Mud Wretch 
-[BattleLog] [3:65] Apprentice attacks Mud Wretch for 1 damage (basic_attack, on_attack) (HP: 24→24)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: unit_t1_a_1770253656_73_67803 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1770253656 type 5
-[BattleLog] [3:66] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [3:67] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 24→25)
-[BattleLog] [3:68] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [3:69] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 25→26)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [3:70] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [3:71] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:72] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [3:73] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:74] The Awakened Guardian deals 3 dmg to Mud Wretch 
-[BattleLog] [3:75] The Awakened Guardian attacks Mud Wretch for 3 damage (basic_attack, on_attack) (HP: 26→26)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: boss_1_1770253656_75_40098 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770253656_75 type 5
-[BattleLog] [3:76] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [3:77] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 26→27)
-[BattleLog] [3:78] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [3:79] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 27→28)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [3:80] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [3:81] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [3:82] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [3:83] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 4, Spent: 4, Units: 2, Items: 1, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-11 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-8 targets=1
-[BattleLog] [3:84] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [3:85] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [4:1] ═══ TURN 4 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 2
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 9 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 5
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 5
-[DeathProcessor] Draining batch of 5
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253967_83_98888
-[BattleLog] [4:2] Armor Aura grants Timekeeper and Merchant and Mud Wretch and Shadow Cloner and Mud Wretch +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=5
-[BattleLog] [4:3] Timekeeper heals Merchant and Mud Wretch and Shadow Cloner and Mud Wretch for 2 HP 
-[BattleLog] [4:4] Timekeeper heals Merchant for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 4→6)
-[BattleLog] [4:5] Koi's Blessing heals Mud Wretch for 2 HP 
-[BattleLog] [4:6] Koi's Blessing heals Mud Wretch for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 3→5)
-[BattleLog] [4:7] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [4:8] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 12→14)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [4:9] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [4:10] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 30→32)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 4, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 4, "WATER": 1, "WIND": 0 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 3, "EARTH": 4, "WATER": 1, "WIND": 0 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [4:11] Hermit gains +12 HP/PWR (1 empty slots) 
-[BattleLog] [4:12] Hermit heals Hermit for 12 HP (unit_t2_h_ability, on_pre_combat) (HP: 14→26)
-[BattleLog] [4:13] Hermit grants Hermit +12 PWR (unit_t2_h_ability, on_pre_combat) 
-[BuffAnimation] execute() called - stat='pwr' amount=12 targets=1
-[BattleLog] [4:14] Hermit gains +30 HP/PWR (1 empty slots) 
-[BattleLog] [4:15] Hermit heals Hermit for 30 HP (unit_t2_h_ability, on_pre_combat) (HP: 32→62)
-[BattleLog] [4:16] Hermit grants Hermit +30 PWR (unit_t2_h_ability, on_pre_combat) 
-[BuffAnimation] execute() called - stat='pwr' amount=30 targets=1
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier3c_on_attack_lifesteal Prio:0 Src:item_t3_c_1770253656_69_21906
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_17_37372
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1770253656_71_85769
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [4:17] Mud Wretch deals 29 dmg to Berserker 
-[BattleLog] [4:18] Mud Wretch attacks unit_t2_... for 29 damage (basic_attack, on_attack) (HP: 2→-27)
-[DamageAnimation] Executing for targets: ["unit_t2_b_1770253967_85_77810"] source: unit_t2_i_1770253656_21_56425 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [4:19] └─ unit_t2_... is defeated! 
-[BattleLog] [4:20] Knight heals Knight for 2 HP 
-[BattleLog] [4:21] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 2→4)
-[BattleLog] [4:22] Knight grants Knight +2 PWR 
-[BattleLog] [4:23] unit_t2_... grants unit_t2_... +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [4:24] Shadow Cloner deals 4 dmg to Mud Wretch 
-[BattleLog] [4:25] Shadow Cloner attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 5→3)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253967_83_98888"] source: unit_t2_g_1770253656_18_30264 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [4:26] Mud Wretch deals 4 dmg to Mud Wretch 
-[BattleLog] [4:27] Mud Wretch attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 3→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253967_83_98888"] source: unit_t2_i_1770253656_66_56944 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [4:28] Lifesteal Ring heals Mud Wretch for 1 HP 
-[BattleLog] [4:29] Lifesteal Ring heals Mud Wretch for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 14→15)
-[BattleLog] [4:30] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [4:31] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 15→16)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [4:32] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [4:33] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 16→17)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [4:34] └─ unit_t2_... is defeated! 
-[BattleLog] [4:35] Knight heals Knight for 2 HP 
-[BattleLog] [4:36] unit_t2_... heals unit_t2_... for 2 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 4→6)
-[BattleLog] [4:37] Knight grants Knight +2 PWR 
-[BattleLog] [4:38] unit_t2_... grants unit_t2_... +2 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [4:39] Shadow Cloner deals 3 dmg to Knight 
-[BattleLog] [4:40] Shadow Cloner attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 6→3)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770253656_71_85769"] source: unit_t2_g_1770253656_17_37372 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [4:41] Timekeeper deals 4 dmg to Knight 
-[BattleLog] [4:42] Timekeeper attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 3→-1)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1770253656_71_85769"] source: hero_timekeeper_1770253656_1_37877 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [4:43] └─ unit_t2_... is defeated! 
-[BattleLog] [4:44] Apprentice deals 1 dmg to Mud Wretch 
-[BattleLog] [4:45] Apprentice attacks Mud Wretch for 1 damage (basic_attack, on_attack) (HP: 32→32)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: unit_t1_a_1770253656_73_67803 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1770253656 type 5
-[BattleLog] [4:46] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [4:47] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 32→33)
-[BattleLog] [4:48] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [4:49] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 33→34)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [4:50] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [4:51] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:52] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [4:53] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:54] The Awakened Guardian deals 3 dmg to Mud Wretch 
-[BattleLog] [4:55] The Awakened Guardian attacks Mud Wretch for 3 damage (basic_attack, on_attack) (HP: 34→34)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: boss_1_1770253656_75_40098 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770253656_75 type 5
-[BattleLog] [4:56] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [4:57] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 34→35)
-[BattleLog] [4:58] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [4:59] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 35→36)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [4:60] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [4:61] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [4:62] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [4:63] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 4, Spent: 4, Units: 2, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-13 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-11 targets=1
-[BattleLog] [4:64] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [4:65] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [5:1] ═══ TURN 5 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 6
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 3 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 5
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 5
-[DeathProcessor] Draining batch of 5
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_17_37372
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_66_56944
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[BattleLog] [5:2] Templar grants Templar +19 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=19 targets=1
-[BattleLog] [5:3] Armor Aura grants Timekeeper and Shadow Cloner and Mud Wretch and Shadow Cloner and Mud Wretch +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=5
-[BattleLog] [5:4] Timekeeper heals Shadow Cloner and Mud Wretch and Shadow Cloner and Mud Wretch for 2 HP 
-[BattleLog] [5:5] Timekeeper heals Shadow Cloner for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 3→5)
-[BattleLog] [5:6] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [5:7] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 19→21)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [5:8] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [5:9] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 21→23)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [5:10] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [5:11] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 38→40)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 3, "WATER": 2, "WIND": 2 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 2, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1, "WATER": 1, "WIND": 1 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 1, "EARTH": 1, "WATER": 1, "WIND": 1 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 1
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
 [DeathProcessor] Draining batch of 1
-[CS] Draining reaction: ability_item_t2_c_summon Prio:200 Src:item_t2_a_1770253656_74_10032
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1770254143_88_83936
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: item_tier2c_passive_heal Prio:0 Src:item_t2_c_1770253656_23_98210
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [5:12] Mud Wretch deals 33 dmg to Protector 
-[BattleLog] [5:13] Mud Wretch attacks unit_t1_... for 33 damage (basic_attack, on_attack) (HP: 1→-32)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1770254109_87_32358"] source: unit_t2_i_1770253656_21_56425 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [5:14] └─ unit_t1_... is defeated! 
-[BattleLog] [5:15] Shadow Cloner deals 4 dmg to Templar 
-[BattleLog] [5:16] Shadow Cloner attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 2→-2)
-[DamageAnimation] Executing for targets: ["unit_t2_d_1770254109_86_89075"] source: unit_t2_g_1770253656_18_30264 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [5:17] └─ unit_t2_... is defeated! 
-[BattleLog] [5:18] Hermit deals 60 dmg to Apprentice 
-[BattleLog] [5:19] Hermit attacks unit_t1_... for 60 damage (basic_attack, on_attack) (HP: 2→-58)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1770253656_73_67803"] source: unit_t2_h_1770253656_20_03303 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_h_1770253656 type 5
-[BattleLog] [5:20] └─ unit_t1_... is defeated! 
-[BattleLog] [5:21] └─ item_t2_... summons New Unit! 
-[BattleLog] [5:22] Hermit deals 24 dmg to Squire 
-[BattleLog] [5:23] Hermit attacks unit_t1_... for 24 damage (basic_attack, on_attack) (HP: 1→-23)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1770254143_88_83936"] source: unit_t2_h_1770253656_19_61602 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_h_1770253656 type 5
-[BattleLog] [5:24] Squire deals 2 dmg to Hermit 
-[BattleLog] [5:25] unit_t1_... attacks Hermit for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 26→24)
-[DamageAnimation] Executing for targets: ["unit_t2_h_1770253656_19_61602"] source: unit_t1_b_1770254143_88_83936 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1770254143 type 5
-[BattleLog] [5:26] └─ unit_t1_... is defeated! 
-[BattleLog] [5:27] Timekeeper deals 4 dmg to The Awakened Guardian 
-[BattleLog] [5:28] Timekeeper attacks The Awakened Guardian for 4 damage (basic_attack, on_attack) (HP: 19→15)
-[DamageAnimation] Executing for targets: ["boss_1_1770253656_75_40098"] source: hero_timekeeper_1770253656_1_37877 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [5:29] The Awakened Guardian deals 3 dmg to Mud Wretch 
-[BattleLog] [5:30] The Awakened Guardian attacks Mud Wretch for 3 damage (basic_attack, on_attack) (HP: 40→40)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1770253656_21_56425"] source: boss_1_1770253656_75_40098 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_1_1770253656_75 type 5
-[BattleLog] [5:31] Phoenix Elixir heals Mud Wretch for 1 HP 
-[BattleLog] [5:32] Phoenix Elixir heals Mud Wretch for 1 HP (item_tier2c_passive_heal, on_hurt) (HP: 40→41)
-[BattleLog] [5:33] Shadow Cloner echoes buff! Grants +1 HP to adjacent ally. 
-[BattleLog] [5:34] Shadow Cloner heals Mud Wretch for 1 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 41→42)
+[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770254923_67_41213
+[BattleLog] [3:2] Armor Aura grants Timekeeper and Hermit and Mud Wretch +3 armor_stacks 
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=3
+[BattleLog] [3:3] Timekeeper heals Hermit and Mud Wretch for 2 HP 
+[BattleLog] [3:4] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 8→10)
+[BattleLog] [3:5] Koi's Blessing heals Sakura Spirit for 2 HP 
+[BattleLog] [3:6] Koi's Blessing heals Sakura Spirit for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 4→6)
+[BattleLog] [3:7] Koi's Blessing heals Berserker for 2 HP 
+[BattleLog] [3:8] Koi's Blessing heals Berserker for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 6→8)
 [StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[BattleLog] [5:35] Phoenix Elixir grants Mud Wretch +1 PWR 
-[BattleLog] [5:36] Phoenix Elixir grants Mud Wretch +1 PWR (item_tier2c_passive_heal, on_hurt) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [5:37] Shadow Cloner echoes buff! Grants +1 PWR to adjacent ally. 
-[BattleLog] [5:38] Shadow Cloner grants Mud Wretch +1 PWR (unit_t2_g_buff_echo, on_stat_increased) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[EncounterGen] Budget: 4, Spent: 4, Units: 3, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-3 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=-8 targets=1
-[BattleLog] [5:39] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [5:40] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [5:41] └─ The Awakened Guardian summons New Unit! 
-[BattleLog] [6:1] ═══ TURN 6 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 3
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 11 }
-[FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 3
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
-[DeathProcessor] Draining batch of 3
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1770253656_18_30264
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[CS] Draining reaction: unit_mud_coating Prio:0 Src:unit_t2_i_1770253656_21_56425
-[BattleLog] [6:2] Armor Aura grants Timekeeper and Hermit and Hermit and Shadow Cloner and Mud Wretch +3 armor_stacks 
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=5
-[BattleLog] [6:3] Timekeeper heals Hermit and Hermit and Shadow Cloner and Mud Wretch for 2 HP 
-[BattleLog] [6:4] Timekeeper heals Hermit for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 24→26)
-[BattleLog] [6:5] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [6:6] Shadow Cloner heals Hermit for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 64→66)
-[BattleLog] [6:7] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
-[BattleLog] [6:8] Shadow Cloner heals Mud Wretch for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 44→46)
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
-DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 2, "WATER": 3, "WIND": 3 }
-DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 0, "EARTH": 0, "WATER": 1, "WIND": 3 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [6:9] Hermit gains +2 HP/PWR (1 empty slots) 
-[BattleLog] [6:10] Hermit heals Hermit for 2 HP (unit_t2_h_ability, on_pre_combat) (HP: 4→6)
-[BattleLog] [6:11] Hermit grants Hermit +2 PWR (unit_t2_h_ability, on_pre_combat) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [6:12] Timekeeper deals 4 dmg to Empath 
-[BattleLog] [6:13] Timekeeper attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 1→-3)
-[DamageAnimation] Executing for targets: ["unit_t1_d_1770254165_91_03656"] source: hero_timekeeper_1770253656_1_37877 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1770 type 5
-[BattleLog] [6:14] └─ unit_t1_... is defeated! 
-[BattleLog] [6:15] Mud Wretch deals 35 dmg to Hermit 
-[BattleLog] [6:16] Mud Wretch attacks unit_t2_... for 35 damage (basic_attack, on_attack) (HP: 6→-29)
-[DamageAnimation] Executing for targets: ["unit_t2_h_1770254165_90_14490"] source: unit_t2_i_1770253656_21_56425 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1770253656 type 5
-[BattleLog] [6:17] └─ unit_t2_... is defeated! 
-[BattleLog] [6:18] Shadow Cloner deals 4 dmg to Empath 
-[BattleLog] [6:19] Shadow Cloner attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 1→-3)
-[DamageAnimation] Executing for targets: ["unit_t1_d_1770254165_89_18936"] source: unit_t2_g_1770253656_18_30264 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_g_1770253656 type 5
-[BattleLog] [6:20] └─ unit_t1_... is defeated! 
-[BattleLog] [6:21] Hermit deals 24 dmg to The Awakened Guardian 
-[BattleLog] [6:22] Hermit attacks boss_1_1... for 24 damage (basic_attack, on_attack) (HP: 15→-9)
-[DamageAnimation] Executing for targets: ["boss_1_1770253656_75_40098"] source: unit_t2_h_1770253656_19_61602 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_h_1770253656 type 5
-[BattleLog] [6:23] └─ boss_1_1... is defeated! 
-[BattleLog] [6:24] Battle ended 
-[RewardDebug] Victory rewards pending. Special Pool: true BossLvl: 0 EliteLvl: 1
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[SaveManager] Run saved successfully (Day 3)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2378)
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 4, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 4, "WATER": 0, "WIND": 1 }
+DEBUG: BattleView._update_traits(PLAYER) - Traits: { "FIRE": 0, "EARTH": 1, "WATER": 2, "WIND": 1 }
+DEBUG: BattleView._update_traits(ENEMY) - Traits: { "FIRE": 6, "EARTH": 4, "WATER": 0, "WIND": 1 }
+ERROR: Parameter "data.tree" is null.
+   at: get_tree (scene/main/node.h:485)

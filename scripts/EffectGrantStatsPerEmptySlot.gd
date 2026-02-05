@@ -19,6 +19,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		
 	# Determine container (must be in lineup)
 	var container_tag = source_unit.location_container_tag
+	
+	# FIX: Only trigger if the unit is in the lineup (Player or Enemy)
+	# This prevents the ability from triggering when the unit is on the bench.
+	if container_tag != "PlayerLineup" and container_tag != "EnemyLineup":
+		return EffectResult.empty()
+
 	var container = battle_manager.get_container(container_tag)
 	if not is_instance_valid(container):
 		return EffectResult.empty()
