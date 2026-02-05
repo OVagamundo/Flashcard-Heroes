@@ -6,7 +6,7 @@
 *   **Pollution Direction:** Strictly **Enemy -> Player** (Enemies have no "Deck" to pollute).
 *   **Durability:** Implemented as a **new field** (`durability`) on Items, distinct from Stats, to allow "High Power / Low Use" designs.
 *   **Mini-game Integration:** Triggered at **Turn Start/End** to modify Boss "Action Budget" (avoids mid-combat flow interruption).
-*   **Lore:** All units are Gachamythi (Elementals, Spirits, Constructs) or Animals. No Humans.
+*   **Lore:** All units are Gachamon (Elementals, Spirits, Constructs or warrior creatures) or anthropomorphic Animal Heroes. No Humans.
 
 ---
 
@@ -74,6 +74,7 @@
 | **Mirror Golem** | Construct | 2/2 | `on_hurt`: Transform into a base copy of the attacker. |
 | **Scrap Walker** | Construct | 2/5 | `on_durability_break`: When ANY item breaks, gain **+2/+2**. |
 | **Scholar Owl** | Beast | 2/3 | `on_minigame_result`: Heal lowest HP ally for **(Correct Answers x 2)** HP. |
+| **Mud Wretch** | Elemental | 2/2 | `on_healed`: When healed, gain **+2 Armor**. |
 
 ### 3.3 Tier 3 Units (Build Enablers)
 | Unit Name | Tags | Stats | Ability |
@@ -112,3 +113,21 @@
 | **Trophy Case** | `on_minigame_result`: If Accuracy is 100%, gain **1 Gold**. |
 | **Recycling Bin** | `on_durability_break`: When an item breaks, gain **1 Token**. |
 | **Stopwatch** | **Boss Only**: Reduces Player's Flashcard Timer by 50%. |
+
+---
+
+### 3.7 Proposed Recipe Expansions (Brainstorming)
+*Filling the elemental gaps and creating High-Tier synergies.*
+
+#### Missing Tier 2 Combinations
+| Unit Name | Tags | Recipe | Stats | Ability |
+|---|---|---|---|---|
+| **Steam Wisp** | Spirit | **Squire (Fire) + Protector (Water)** | 1 HP / 3 PWR | **Scald** (`on_healed`): Deal damage to the front enemy equal to **Heal Amount**. (Offensive Support). |
+
+#### Tier 3 Evolutions
+| Unit Name | Tags | Recipe | Stats | Ability |
+|---|---|---|---|---|
+| **Doppelganger** | Monster | **Mimic + Mimic** | 1 HP / 1 PWR | **Perfect Copy** (`on_battle_start`): Permanently transforms into a copy of the **Strongest Enemy Unit** (Stats + Ability). |
+| **Tempest** | Elemental | **Shadow Cloner + Shadow Cloner** | 4 HP / 4 PWR | **Eye of the Storm** (`on_turn_start`): Steal **1 PWR** from **ALL** enemies. |
+| **Phoenix** | Beast | **Berserker + Shadow Cloner** | 5 HP / 5 PWR | **Rebirth** (`on_death`): Resurrects once per battle with **50% HP**. |
+| **Avalanche** | Construct | **Paladin + Mud Wretch** | 6 HP / 2 PWR | **Permafrost** (`on_hurt`): When damaged, reduce attacker's PWR by **1** (Min 1). |

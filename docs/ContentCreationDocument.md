@@ -349,6 +349,10 @@ Use these checklists **BEFORE** marking any implementation as complete.
     -  matches filename ().
     -  equals  (Cost 1/2/3).
 - [ ] **Category**: Set to `&"UNIT"`.
+- [ ] **Soul Tags**: 
+    - MUST include elemental souls corresponding to ingredients.
+    - **Rule**: Use `SOUL_` prefix (e.g., `&"SOUL_FIRE"`, `&"SOUL_EARTH"`).
+    - *Common Mistake*: Using just `&"FIRE"` is invalid and will break Trait calculations.
 - [ ] **Resources Created**:
     - Unit Resource (`.tres`)
     - Ability Resource (`.tres`)
