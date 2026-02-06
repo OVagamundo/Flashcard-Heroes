@@ -413,6 +413,8 @@ func _create_resource_pools(include_trinkets: bool) -> Dictionary:
 			continue
 		if d.is_hero:
 			continue
+		if d.get("is_player_exclusive") == true:
+			continue
 		if String(d.id).begins_with("boss_"):
 			continue
 		available_units.append(d)

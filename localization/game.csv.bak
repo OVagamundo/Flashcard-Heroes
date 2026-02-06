@@ -350,7 +350,3 @@ unit_t2_j.name,Steam Wisp,Fogo Fátuo
 unit_t2_j.desc,An elemental spirit that retaliates with boiling steam when healed. Deals damage equal to heal amount.,Um espírito elemental que retalia com vapor fervente quando curado. Causa dano igual à quantidade de cura.
 ability.scald.name,Scald,Escaldar
 ability.scald.desc,"When this unit is healed, deal damage equal to the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual à quantidade de cura ao inimigo da frente."
-unit_t3_g.name,Phantom Wayfarer,Viajante Fantasma
-unit_t3_g.desc,A mysterious traveler who gathers strength from the sidelines.,Um viajante misterioso que acumula força nas linhas de trás.
-ability.unit_t3_g.name,Quiet Meditation,Meditação Silenciosa
-ability.unit_t3_g.desc,"If on the player bench at start of turn, gain **+3 HP** and **+3 PWR**.","Se estiver no banco do jogador no início do turno, ganhe **+3 HP** e **+3 PWR**."
