@@ -22,6 +22,9 @@ extends Resource
 ## Whether this GachaBall is the special hero unit controlled by the player.
 @export var is_hero: bool = false
 
+## If true, this unit/item/trinket will NEVER appear in enemy encounters (shops/rewards only).
+@export var is_player_exclusive: bool = false
+
 ## The power level or tier of this GachaBall (0-3).
 @export_range(0, 3) var tier: int
 
@@ -48,5 +51,3 @@ extends Resource
 
 ## The abilities this unit possesses.
 @export var ability_definitions: Array[AbilityDefinition]
-
-

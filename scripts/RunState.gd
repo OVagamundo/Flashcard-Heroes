@@ -747,7 +747,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_potion_spikes", &"item_potion_spikes", &"item_potion_heroism", &"item_potion_heroism", &"consumable_potion_plunder", &"consumable_potion_plunder",
 				# Tier 3
 				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c",
-				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f",
+				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f", &"unit_t3_g", &"unit_t3_g",
 				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c",
 				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f",
 				&"item_emblem_fire", &"item_emblem_fire", &"item_emblem_earth", &"item_emblem_earth",

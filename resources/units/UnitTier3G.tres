@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier3unitG.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3G_BenchGrowth.tres" id="4_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_g"
+display_name_key = "unit_t3_g.name"
+description_key = "unit_t3_g.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_WIND", &"SOUL_WIND", &"SOUL_WIND", &"SOUL_WIND"])
+is_hero = false
+is_player_exclusive = true
+tier = 3
+cost = 4
+category = &"UNIT"
+item_slot_count = 4
+base_hp = 6
+base_pwr = 6
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic"), ExtResource("4_ability")])
