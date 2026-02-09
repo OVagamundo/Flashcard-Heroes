@@ -69,10 +69,12 @@ The player's persistent collection of unique GachaBall Instances for the current
 6.2. Battle Inventory & Gacha Machines
 During the management phase of a battle, the player has access to three Gacha Machines, corresponding to Tiers 1, 2, and 3.
 Battle Inventory: At the start of each battle, a temporary copy of the entire Run Inventory is created. This is the "Gacha Pool" inside the machines. It is NOT a "Hand" that the player holds. It serves as the drawable pool for the Gacha Machines for that battle only.
-Drawing: The player spends Gacha Tokens to draw a random GachaBall from the machine of the corresponding tier. The cost scales with the tier (Tier 1 costs 1 token, Tier 2 costs 2, etc.).
+Drawing: The player spends Gacha Tokens to draw a random GachaBall from the machine of the corresponding tier.
+*   **Tier Gold Cost (Shop & Encounter Budget):** 1 / 2 / 4
+*   **Tier Draw Cost (Tokens):** 1 / 2 / 3
 Inspection: The player can inspect a Gacha Machine to view the current contents of its corresponding section of the Battle Inventory. This shows a summary of the types of GachaBalls and their counts (e.g., "Warrior x2, Archer x1").
 Discard Pile: A single Battle Discard Pile exists for the current battle. Defeated units, their salvaged items, and GachaBalls drawn when the bench/inventory is full are sent here.
-Reshuffling: If a tier's section of the Battle Inventory becomes empty, all GachaBalls of that same tier currently in the Discard Pile are moved back into the Battle Inventory, making them available to be drawn again. When a GachaBall is reshuffled, its stats (HP and Power) are fully restored to their base values, ensuring it is drawn in a fresh state.
+Reshuffling: Reshuffling occurs only during the Management Phase when a Tier pool becomes empty. All GachaBalls of that same tier currently in the Discard Pile are moved back into the Battle Inventory, making them available to be drawn again. When a GachaBall is reshuffled, its stats (HP and Power) are fully restored to their base values, ensuring it is drawn in a fresh state.
 End of Battle Cleanup: All temporary instances created for the battle are destroyed at its conclusion. The Run Inventory remains untouched.
 7. Battle System
 7.1. Battle Phases & Turn Structure
@@ -83,8 +85,8 @@ Combat Phase: All actions resolve automatically without player input.
 End of Turn Phase: End-of-turn abilities resolve. If no victory/defeat condition is met, the next turn begins.
 7.2. Combat & Positional Logic
 Board Structure: The player has 5 slots for their active lineup and 5 for their reserve bench. The bench can hold both units and items. If the bench is full when a GachaBall is acquired, it is sent to the Discard Pile.
-Action Order: Units act one by one, from back-to-front.
-Player Team (Left Side): The action order is from right to left (slot 6 acts before slot 5).
+Action Order: Units act one by one, from **front-to-back**.
+Player Team (Left Side): The action order is from right to left (slot 4 acts before slot 0 - **Front-to-Back**).
 Enemy Team (Right Side): The action order is also from their back to their front, which visually is right to left.
 Default Attack: A unit's basic attack deals physical damage equal to its current Power to the single frontmost enemy unit.
 7.3. Item Interactions
@@ -141,7 +143,7 @@ To ensure varied and scaling challenges, most battle nodes do not use pre-define
 - **Leaving:** Players can exit the shop at any time to return to Path Selection
 Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
 Event Node: Narrative scenarios with choices that have risk/reward outcomes.
-Rest Site Node: A recovery node where the player chooses one action: Rest for HP, Train for PWR, or Gamble for Gold. Training triggers the flashcard mini-game, where performance determines the magnitude of the permanent stat gain.
+Rest Site Node: A training node where the player plays the Flashcard Mini-Game to earn tokens, which are then used to permanently increase the Hero's **Base Stats** (HP and PWR). There is no healing; the hero starts every battle fresh.
 9.4. Event-Driven Ability System
 Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
 

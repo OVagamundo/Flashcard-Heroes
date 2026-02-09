@@ -106,6 +106,7 @@
 | **Repair Kit** | Fully restore the **Durability** of target item. |
 | **Purify Scroll** | Remove all **Junk** (Rocks/Rust) from your Battle Inventory. |
 | **Midas Touch** | Destroy ally unit. Gain Gold equal to **Tier x 3**. |
+| **Separation Potion** | **Unmerge**: Splits a merged unit back into its component parts (if space allows). Retains learned traits. |
 
 ---
 

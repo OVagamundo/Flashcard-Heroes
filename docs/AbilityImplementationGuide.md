@@ -432,7 +432,7 @@ When multiple summon effects trigger from the same death (e.g., item summon + tr
 
 **Slot Resolution Order (per summon):**
 1. **Original slot** (dying unit's position) - first summon to execute claims this
-2. **Alternative slots** (back-to-front search: player 4→0, enemy 0→4)
+2. **Alternative slots** (**front-to-back** search: player 4→0, enemy 0→4)
 3. **No slots available:**
    - **Player team:** Send summoned unit to battle discard pile
    - **Enemy team:** Cancel summon entirely (enemies have no discard pile)

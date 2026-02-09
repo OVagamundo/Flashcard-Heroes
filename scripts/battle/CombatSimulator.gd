@@ -312,6 +312,11 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 ## @param death_tracking: Dictionary for death deduplication
 ## @param bm: BattleManager reference for state access
 func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary, bm) -> void:
+	# SYSTEM TRAP: Handle delayed trait effects
+	if request.ability_id == "trait_start_effects":
+		out_events.append_array(bm._apply_trait_start_of_turn_effects())
+		return
+	
 	# Validate source is still alive (allow empty source UUID for trinket effects)
 	var source = null
 	if not request.source_uuid.is_empty():
