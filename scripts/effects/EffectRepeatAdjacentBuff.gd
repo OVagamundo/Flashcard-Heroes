@@ -50,6 +50,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			# Apply the echo buff
 			# Pass source_uuid to prevent infinite loops (though AbilityResolver should filter it too)
 			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, false, source_uuid)
+			# Handle case where apply_stat_delta returns null (e.g. target already dead)
+			if new_val == null:
+				new_val = old_val
 			
 			all_target_uuids.append(target_uuid)
 			all_old_vals.append(old_val)

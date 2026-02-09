@@ -353,6 +353,8 @@ Use these checklists **BEFORE** marking any implementation as complete.
     - MUST include elemental souls corresponding to ingredients.
     - **Rule**: Use `SOUL_` prefix (e.g., `&"SOUL_FIRE"`, `&"SOUL_EARTH"`).
     - *Common Mistake*: Using just `&"FIRE"` is invalid and will break Trait calculations.
+- [ ] **Exclusivity**:
+    - Set `is_player_exclusive` to `true` if this content should NOT appear in enemy encounters.
 - [ ] **Resources Created**:
     - Unit Resource (`.tres`)
     - Ability Resource (`.tres`)
@@ -365,6 +367,7 @@ Use these checklists **BEFORE** marking any implementation as complete.
 ### 2. New Item Checklist
 - [ ] **Category**: Set to `&"ITEM"`.
 - [ ] **Tier & Cost**: Matches filename.
+- [ ] **Exclusivity**: Set `is_player_exclusive` to `true` if player-only.
 - [ ] **Ability**:
     - `trigger_type` appropriate? (Items usually `on_hurt`, `on_attack`, `on_damage_dealt`).
     - **Targeting**: Items usually target `HOLDER` or `ATTACK_TARGET`.
@@ -373,6 +376,7 @@ Use these checklists **BEFORE** marking any implementation as complete.
 
 ### 3. New Trinket Checklist
 - [ ] **Source UUID**: Must be `""` (Global/Passive).
+- [ ] **Exclusivity**: Set `is_player_exclusive` to `true` if player-only.
 - [ ] **Trigger**: usually `on_battle_start` or specific events (`on_ally_death`).
 - [ ] **Targeting**: usually `RANDOM_ALLY` or `ALL_ALLIES`.
 - [ ] **Team Context**: Ensure effects use `team` from context if needed.

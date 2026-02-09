@@ -44,6 +44,10 @@ The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm th
 
 ### Algorithm Phases
 
+0. **Pool Filtering**
+   - The generator pools all available Units, Items, and Trinkets.
+   - **Exclusivity Rule**: Content with `is_player_exclusive = true` is filtered out and will NOT appear in the enemy team pool.
+   
 1. **Greedy Weighted Selection**
    - Priority weights: Units (3) > Items (2) > Trinkets (1)
    - Respects slot limits: Max 5 units, max 5 trinkets

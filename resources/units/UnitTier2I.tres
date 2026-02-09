@@ -17,5 +17,5 @@ ability_definitions = Array[Resource]([ExtResource("2_ability")])
 icon = ExtResource("3_icon")
 display_name_key = "unit_t2_i.name"
 description_key = "ability.mud_coating.desc"
-tags = Array[StringName]([&"UNIT", &"SOUL_EARTH", &"SOUL_WATER"])
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WATER"])
 category = &"UNIT"

@@ -26,6 +26,9 @@ The elegance of the Gold Standard lies in its rejection of fractional balancing.
 
 This table serves as the immutable law of the game's economy. When designing a new unit, the first question is not "What does it do?" but "Which bucket does it fill?". The strict adherence to these integers creates a "solvability" that players find rewarding; they can calculate the exact opportunity cost of every action without hidden variables. A Tier 3 unit represents a significant commitment—not just in gold, but in the opportunity cost of the four Tier 1 units that were sacrificed or forgone to create it.
 
+> [!NOTE]
+> **Economy Disclaimer**: The 1–2–4 hierarchy applies strictly to the Gold economy (Shop and Encounter Generation). Battle draw costs follow a separate 1–2–3 Token hierarchy (Tier 1: 1, Tier 2: 2, Tier 3: 3) for battle-pacing reasons.
+
 The **removal cost scaling (1x/2x/4x)** is particularly critical for content pacing. In many deck-builders, deck thinning is a dominant strategy, allowing players to strip their deck down to a few infinite loops. By scaling removal costs exponentially alongside unit value, we create a "soft cap" on deck manipulation. Removing a Tier 3 "curse" or a high-value card that no longer fits the build costs 4 Gold—a massive investment equivalent to purchasing a new Tier 3 Hero. This forces players to adapt to "deck bloat" rather than simply erasing it, necessitating the design of cards that function well in large, diluted decks.
 
 ### 1.2 The Cost-Power Divergence
@@ -108,8 +111,8 @@ The defining unique selling point (USP) of Flashcard Heroes is the Cultivation m
 To ensure the game remains a solvable puzzle rather than a black box of RNG, the inheritance logic must be strictly additive and deterministic.
 
 **The Formula for Merging (Child Unit $C$ from Parents $A$ and $B$):**
-$$HP_C = (HP_A + HP_B) \times TierModifier$$
-$$ATK_C = (ATK_A + ATK_B) \times TierModifier$$
+$$HP_C = HP_A + HP_B$$
+$$ATK_C = ATK_A + ATK_B$$
 
 However, the "Cultivation" rule implies that $HP_A$ and $HP_B$ are not the base stats of the unit type, but the **current stats of the specific unit instance**, including permanent buffs consumed during their lifecycle.
 
@@ -191,9 +194,9 @@ A critical tension exists between the T3 Unit (needs 4 items) and the Deck Size.
 
 ### 4.4 The Banking Economy
 
-"Tokens bank between rounds." This is a massive deviation from standard Roguelikes where energy resets. It introduces Macro-Pacing.
+"Tokens bank between turns." This is a key tactical lever. It introduces Micro-Pacing within a battle.
 
-*   **The Saving Throw:** Players can play "skinny" (spending few tokens) during easy fights to bank a massive reservoir of Tokens.
+*   **The Saving Throw:** Players can play "skinny" (spending few tokens) during easy turns to bank a massive reservoir of Tokens for a future turn.
 *   **The Nova Turn:** On a Boss fight, the player spends 50 Tokens to dig through their deck 10 times, assembling the perfect "Exodia" T3 unit with 4 specific items.
 
 **Content Design:** Enemies must be designed to punish both extremes.

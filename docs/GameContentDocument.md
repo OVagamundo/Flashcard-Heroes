@@ -9,6 +9,9 @@
 - **Tier 2+ units** have recipes that unlock upon acquisition
 - Example: Buying a Knight from the shop unlocks its recipe (Apprentice + Squire → Knight)
 
+### Ability Stacking Logic
+When merging units, all abilities from both parent units are retained in the resulting unit. If identical abilities exist, their effects stack (e.g., two "Resilience" triggers result in two separate heals) unless otherwise specified in the unit's unique script.
+
 ## 1. Units
 Units are the primary actors in battle. They have Health (HP) and Power (PWR) stats, can equip items, and possess abilities.
 
@@ -40,11 +43,11 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 2 HP / 2 PWR | 2 | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain **+2 Armor**. |
 | `unit_t2_j` | Steam Wisp | **Squire + Protector** | 1 HP / 3 PWR | 2 | 1 Fire, 1 Water | **Scald** (`on_healed`): When healed, deal equal damage to the front enemy. |
 
-### Tier 3 Units (Cost: 3)
+### Tier 3 Units (Gold Cost: 4 | Draw Cost: 3 Tokens)
 | ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
 |---|---|---|---|---|---|---|
 | `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in the opposite mirror slot. If empty, targets the backmost enemy. |
-| `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 | 4 Earth | **Guardian Sacrifice** (`passive_intercept`): Leaps to intercept lethal damage on allies. |
+| `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 | 4 Earth | **Guardian Sacrifice** (`on_before_damage`): Leaps to intercept lethal damage on allies. |
 | `unit_t3_c` | Necromancer | **Paladin + Berserker** | 5 HP / 5 PWR | 4 | 2 Fire, 2 Earth | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death. |
 | `unit_t3_d` | Warden | **Knight + Knight** | 6 HP / 6 PWR | 4 | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): Grants +1 HP/+1 PWR to adjacent allies. |
 | `unit_t3_e` | Assassin | **Berserker + Knight** | 5 HP / 7 PWR | 4 | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies when they are summoned. |
@@ -79,7 +82,7 @@ Items are equipped on units to provide stats and new abilities.
 | `item_t2_b` | Bloodlust Blade | **Small PWR + Small PWR** | +2 PWR | **Bloodlust** (`on_kill`): Grant extra action. |
 | `item_t2_c` | Large HP Potion | **Small HP + Small PWR** | +1 HP / +1 PWR | **Regeneration** (`on_hurt`): Heal self 1 HP. |
 
-### Tier 3 Items (Cost: 3)
+### Tier 3 Items (Gold Cost: 4 | Draw Cost: 3 Tokens)
 | ID | Name | Merge Recipe | Stats | Ability |
 |---|---|---|---|---|
 | `item_t3_a` | Healing Totem | **Summon Scroll + Summon Scroll** | +4 HP | **Area Heal** (`on_hurt`): Heal 2 random allies. |
