@@ -20,4 +20,4 @@ bonus_pwr = 0
 ability_definitions = Array[Resource]([ExtResource("3_ability")])
 tags = Array[StringName]([&"TIER_2", &"POTION"])
 is_hero = false
-cost = 5
+cost = 2

@@ -198,17 +198,13 @@ func _on_battle_victory_acknowledged() -> void:
 		# Boss rewards: fixed 10 gold alternative
 		_temporary_gold_reward = 10
 	else:
-		# Regular rewards: calculate from tier
-		var sum_tiers = 0
+		# Regular rewards: calculate from cost (average cost of the 3 rewards)
+		var sum_costs = 0
 		for inst in _temporary_reward_master_dict.values():
 			var def = inst.get_definition()
 			if is_instance_valid(def):
-				# Some definitions (e.g., TrinketDefinition) may not have 'tier'.
-				var add_tier: int = 0
-				if def is GachaBallDefinition:
-					add_tier = int(def.tier)
-				sum_tiers += add_tier
-		_temporary_gold_reward = max(1, int(floor(sum_tiers / 3.0)))
+				sum_costs += get_item_cost(def)
+		_temporary_gold_reward = max(1, int(round(float(sum_costs) / 3.0)))
 
 	# Signal the UI to display the pre-generated rewards.
 	var context: Dictionary = get_pending_rewards()
@@ -262,6 +258,19 @@ func _on_reward_chosen(payload) -> void:
 ## Retrieves a GachaBallInstance from any location, whether in battle or not.
 ## This is the central, authoritative function for resolving a LocationIdentifier to an instance.
 ## Returns null if the location is invalid or the instance cannot be found.
+## Central helper to calculate the gold cost of a definition based on the 1/2/4 economy model.
+func get_item_cost(def: Resource) -> int:
+	if not is_instance_valid(def): return 1
+	var tier: int = 1
+	if "tier" in def:
+		tier = int(def.tier)
+	if "category" in def and def.category == &"TRINKET":
+		tier = 3
+	
+	if tier >= 3: return 4
+	elif tier == 2: return 2
+	return 1
+
 ## Central authoritative function to find any instance by its UUID.
 ## This should be used instead of direct lookups in BattleManager or RunState.
 func get_instance_by_uuid(uuid: String) -> GachaBallInstance:

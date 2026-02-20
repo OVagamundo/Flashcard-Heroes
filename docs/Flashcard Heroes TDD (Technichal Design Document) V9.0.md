@@ -31,7 +31,7 @@ The game follows a mandatory hybrid architecture that separates data truth from 
 
 ### 2.2 Location Registry
 Logical locations are categorized by their lifecycle:
--   **Run State:** `RunInventoryT*`, `PlayerLineup`, `PlayerBench`, `ItemInventory`.
+-   **Run State:** `RunInventoryT*`, `PlayerLineup`, `PlayerBench`.
 -   **Battle State:** `BattleInventoryT*`, `EnemyLineup`, `DiscardPile`, `EnemyTrinkets`.
 -   **Equipped:** `equipped_item` (conceptual slot on a unit).
 
@@ -50,7 +50,7 @@ Core logic is partitioned to ensure Single Responsibility:
         - `BattleState`: Atomic mutations and container persistence.
     -   **Snapshotting:** Before playback, a value-based snapshot is captured. Views query this snapshot to ensure visual consistency regardless of underlying state mutations.
 -   **Ability System:** A broadcast-based system where `AbilityResolver` converts triggers into effects using an O(N) single-pass bucketing algorithm for efficiency.
-    -   (See `docs/AbilitySystem.md`)
+    -   (See `docs/AbilityExecutionPipeline.md`)
 -   **Encounter System:** A budget-based generator (`5 + 3*(Day-1)`) that guarantees 100% budget spend using a greedy fill algorithm.
     -   (See `docs/EncounterSystem.md`)
 

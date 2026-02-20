@@ -281,16 +281,18 @@ func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int
 	var old_hp = inst.current_hp
 	var old_pwr = inst.current_pwr
 
-	# Modify base stats in the definition (these persist across the entire run)
+	# Modify progression base stats in the instance itself (these persist across the entire run)
 	if hp_delta != 0:
-		unit_def.base_hp += hp_delta
+		inst.base_hp_modifier += hp_delta
 	if pwr_delta != 0:
-		unit_def.base_pwr += pwr_delta
+		inst.base_pwr_modifier += pwr_delta
 
 	# Update current stats to reflect the new base stats
 	# Preserve current HP if it's higher than the new base (e.g., from temporary healing)
-	var new_hp = max(inst.current_hp, unit_def.base_hp)
-	var new_pwr = unit_def.base_pwr
+	var new_base_hp = unit_def.base_hp + inst.base_hp_modifier
+	var new_base_pwr = unit_def.base_pwr + inst.base_pwr_modifier
+	var new_hp = max(inst.current_hp, new_base_hp)
+	var new_pwr = new_base_pwr
 	inst.current_hp = new_hp
 	inst.current_pwr = new_pwr
 
@@ -785,7 +787,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 
 func check_deck_expansion() -> bool:
 	"""Checks if the active deck should be expanded based on mastery/progress.
-	Adds 1 new card if all currently active cards have been seen aka 'taught'."""
+	Adds 1 new card if all currently active cards have reached at least mastery level 3."""
 	if deck_def_id == &"":
 		return false
 	
@@ -799,22 +801,21 @@ func check_deck_expansion() -> bool:
 	if full_deck.is_empty() or active_deck_ids.size() >= full_deck.size():
 		return false
 	
-	# Check if current active deck is 'taught' (all cards seen/reviewed at least once)
-	var all_taught = true
+	# Check if current active deck is 'mastered' (all cards at least level 3)
+	var all_mastered = true
 	for id in active_deck_ids:
 		# If progress missing, we haven't seen it
 		if not flashcard_progress.has(id):
-			all_taught = false
+			all_mastered = false
 			break
 		
-		# If last_review_day is 0, we haven't answered it in a valid run yet
-		# This effectively gates adding new cards until all current ones are 'introduced'
+		# Gate adding new cards until all current ones are at least level 3 mastery
 		var progress = flashcard_progress[id]
-		if progress.last_review_day <= 0:
-			all_taught = false
+		if progress.mastery_level < 3:
+			all_mastered = false
 			break
 	
-	if all_taught:
+	if all_mastered:
 		# Add EXACTLY ONE new card (the next available one from full_deck)
 		# This ensures cards are introduced one by one as the user learns.
 		for i in range(full_deck.size()):

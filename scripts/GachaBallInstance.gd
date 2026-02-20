@@ -14,6 +14,10 @@ var origin_uuid: String = "" # UUID of the permanent instance this battle copy w
 var current_hp: int
 var current_pwr: int
 
+# --- Permanent Progression Properties ---
+var base_hp_modifier: int = 0
+var base_pwr_modifier: int = 0
+
 # --- Location Properties (for temporary battle state) ---
 var location_container_tag: StringName = &""
 var location_slot_index: int = -1
@@ -62,6 +66,10 @@ func create_battle_copy() -> GachaBallInstance:
 	copy.dynamic_tags = self.dynamic_tags.duplicate(true)
 	copy.status_effects = self.status_effects.duplicate(true)
 	
+	# Copy progression modifiers
+	copy.base_hp_modifier = self.base_hp_modifier
+	copy.base_pwr_modifier = self.base_pwr_modifier
+	
 	# Assign new unique ID for the battle context
 	copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
 	copy.origin_uuid = self.ball_uuid # Link back to the original
@@ -73,11 +81,11 @@ func create_battle_copy() -> GachaBallInstance:
 	var def = get_definition()
 	if is_instance_valid(def):
 		if def is GachaBallDefinition:
-			copy.current_hp = def.base_hp
-			copy.current_pwr = def.base_pwr
+			copy.current_hp = def.base_hp + copy.base_hp_modifier
+			copy.current_pwr = def.base_pwr + copy.base_pwr_modifier
 		elif "base_hp" in def and "base_pwr" in def:
-			copy.current_hp = def.base_hp
-			copy.current_pwr = def.base_pwr
+			copy.current_hp = def.base_hp + copy.base_hp_modifier
+			copy.current_pwr = def.base_pwr + copy.base_pwr_modifier
 		else:
 			copy.current_hp = 0
 			copy.current_pwr = 0
@@ -168,12 +176,12 @@ func reset_battle_stats() -> void:
 	var definition = get_definition()
 	if is_instance_valid(definition):
 		if definition is GachaBallDefinition:
-			current_hp = definition.base_hp
-			current_pwr = definition.base_pwr
+			current_hp = definition.base_hp + base_hp_modifier
+			current_pwr = definition.base_pwr + base_pwr_modifier
 		elif "base_hp" in definition and "base_pwr" in definition:
 			# Non-unit definitions (items, trinkets) may have 0 HP/PWR
-			current_hp = definition.base_hp
-			current_pwr = definition.base_pwr
+			current_hp = definition.base_hp + base_hp_modifier
+			current_pwr = definition.base_pwr + base_pwr_modifier
 		else:
 			current_hp = 0
 			current_pwr = 0
@@ -195,12 +203,12 @@ func reset_battle_stats_silent() -> void:
 	var definition = get_definition()
 	if is_instance_valid(definition):
 		if definition is GachaBallDefinition:
-			current_hp = definition.base_hp
-			current_pwr = definition.base_pwr
+			current_hp = definition.base_hp + base_hp_modifier
+			current_pwr = definition.base_pwr + base_pwr_modifier
 		elif "base_hp" in definition and "base_pwr" in definition:
 			# Non-unit definitions (items, trinkets) may have 0 HP/PWR
-			current_hp = definition.base_hp
-			current_pwr = definition.base_pwr
+			current_hp = definition.base_hp + base_hp_modifier
+			current_pwr = definition.base_pwr + base_pwr_modifier
 		else:
 			current_hp = 0
 			current_pwr = 0
@@ -225,11 +233,11 @@ func recalculate_stats(all_instances_db: Dictionary) -> void:
 	var effective_max_pwr = 0
 	
 	if definition is GachaBallDefinition:
-		_effective_max_hp = definition.base_hp
-		effective_max_pwr = definition.base_pwr
+		_effective_max_hp = definition.base_hp + base_hp_modifier
+		effective_max_pwr = definition.base_pwr + base_pwr_modifier
 	elif "base_hp" in definition and "base_pwr" in definition:
-		_effective_max_hp = definition.base_hp
-		effective_max_pwr = definition.base_pwr
+		_effective_max_hp = definition.base_hp + base_hp_modifier
+		effective_max_pwr = definition.base_pwr + base_pwr_modifier
 
 
 	# Add bonuses from each equipped item by looking up its UUID in the provided database.
@@ -357,6 +365,8 @@ func to_save_dict() -> Dictionary:
 		"origin_uuid": origin_uuid,
 		"current_hp": current_hp,
 		"current_pwr": current_pwr,
+		"base_hp_modifier": base_hp_modifier,
+		"base_pwr_modifier": base_pwr_modifier,
 		"location_container_tag": String(location_container_tag),
 		"location_slot_index": location_slot_index,
 		"equipped_on_uuid": equipped_on_uuid,
@@ -373,6 +383,8 @@ func from_save_dict(data: Dictionary) -> void:
 	origin_uuid = data.get("origin_uuid", "")
 	current_hp = data.get("current_hp", 0)
 	current_pwr = data.get("current_pwr", 0)
+	base_hp_modifier = data.get("base_hp_modifier", 0)
+	base_pwr_modifier = data.get("base_pwr_modifier", 0)
 	location_container_tag = StringName(data.get("location_container_tag", ""))
 	location_slot_index = data.get("location_slot_index", -1)
 	equipped_on_uuid = data.get("equipped_on_uuid", "")

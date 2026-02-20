@@ -92,9 +92,3 @@ Boss units call `EncounterGenerator.generate_boss_summons(day, max_units)` which
 - Generates units with equipped items
 - **No trinkets** for summoned units
 - Returns Array of `{unit_id: StringName, items: Array[StringName]}`
-
-## Fallback Mechanism
-
-If generation fails or produces invalid encounter:
-- `_create_fallback_encounter()` creates minimal valid encounter
-- Looks up Tier 1 unit via Database query (not hardcoded ID)

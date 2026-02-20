@@ -92,7 +92,7 @@ func populate(context: Dictionary) -> void:
 		var price_label = Label.new()
 		if is_instance_valid(inst_for_slot):
 			var shop_def = inst_for_slot.get_definition()
-			var price = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
+			var price = GameManager.get_item_cost(shop_def)
 			price_label.text = tr("ui.gold_price") % price
 		else:
 			price_label.text = "" # Empty text for slots without items
@@ -133,7 +133,7 @@ func _animate_staggered_entry() -> void:
 			get_tree().create_timer(delay).timeout.connect(func():
 				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 					ball_view.icon_rect.scale = Vector2.ONE
-					ball_view._play_landing_bounce()
+					ball_view.play_landing_bounce()
 			)
 			ball_index += 1
 
@@ -150,7 +150,7 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 		var instance = _find_instance_for_slot(new_location.index)
 		if is_instance_valid(instance):
 			var shop_def = instance.get_definition()
-			_selected_cost = (shop_def.tier if (shop_def is GachaBallDefinition) else 1)
+			_selected_cost = GameManager.get_item_cost(shop_def)
 			buy_button.text = tr("ui.buy_gold") % _selected_cost
 			buy_button.disabled = false
 			return
@@ -188,7 +188,9 @@ func _on_buy_pressed() -> void:
 			# Capture visual data and tier before purchase clears the instance
 			var visual_data = VisualDataAdapter.create_visual_data(instance)
 			var def = instance.get_definition()
-			var tier: int = (int(def.tier) if (def is GachaBallDefinition) else 1)
+			var tier: int = 1
+			if "tier" in def:
+				tier = int(def.tier)
 			# Trinkets go to machine 3
 			if is_instance_valid(def) and def.category == &"TRINKET":
 				tier = 3

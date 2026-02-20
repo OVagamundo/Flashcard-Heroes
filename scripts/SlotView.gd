@@ -67,10 +67,17 @@ func _exit_tree() -> void:
 	if SignalBus.hide_slot_indicators.is_connected(_on_hide_slot_indicators):
 		SignalBus.hide_slot_indicators.disconnect(_on_hide_slot_indicators)
 
-	# If a drag is active while this slot is being freed, end it to prevent leaks
+	# If a drag is active while this slot is being freed, end it ONLY if we are the source.
+	# This prevents closing windows (which frees their slots) from killing unrelated drags.
 	if GlobalInteractionRouter.is_drag_active():
-		GlobalInteractionRouter.end_drag(false)
-		GlobalInteractionRouter.end_drag_visuals(false)
+		var context = GlobalInteractionRouter.get_drag_origin_context()
+		if context and context.source_view_instance_id:
+			# Check if the drag source is one of our children
+			for child in get_children():
+				if child.get_instance_id() == context.source_view_instance_id:
+					GlobalInteractionRouter.end_drag(false)
+					GlobalInteractionRouter.end_drag_visuals(false)
+					break
 	
 	# Stop any running indicator tween
 	if is_instance_valid(_indicator_tween):
@@ -212,6 +219,18 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 		view.set_is_interactive(true)
 	
 	view.set_meta("location_identifier", _location)
+	
+	# If this slot has no location (e.g. Rest Site visual balls), 
+	# it shouldn't consume clicks at all. Pass them to the parent.
+	if not is_instance_valid(_location):
+		_recursively_set_mouse_filter_ignore(view)
+
+## Helper to recursively set mouse filter to ignore
+func _recursively_set_mouse_filter_ignore(node: Node) -> void:
+	if node is Control:
+		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_recursively_set_mouse_filter_ignore(child)
 
 
 ## Granular stat change handler - updates only the specific stat that changed
@@ -243,16 +262,32 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	return context
 
 func _gui_input(event: InputEvent) -> void:
-	if not is_instance_valid(_location): return
+	# Ignore input entirely if we don't have a location (e.g. visual-only slots in RestSite)
+	if not is_instance_valid(_location):
+		return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		# Do NOT consume the event here; allow child views to initiate drag
-		# Create and emit InteractionContext
-		var context = _create_interaction_context(&"SINGLE_CLICK")
-		SignalBus.emit_signal("interaction_context_received", context)
-		# If this is an empty slot (no child view), stop propagation so Main/Battle don't emit GLOBAL_BACKGROUND
-		if get_child_count() == 0:
-			get_viewport().set_input_as_handled()
+		# Check for actual content (GachaBallView), ignoring the indicator
+		var has_content = false
+		for child in get_children():
+			if child is GachaBallView:
+				has_content = true
+				break
+		
+		# If this is an empty slot (no content), handle the click as EMPTY_SLOT interaction
+		if not has_content:
+			print("DEBUG_INPUT: SlotView Pressed (Empty).")
+			var context = _create_interaction_context(&"SINGLE_CLICK")
+			SignalBus.emit_signal("interaction_context_received", context)
+			get_viewport().set_input_as_handled() # Stop propagation to Main/Battle
+			accept_event() # Explicitly stop control bubbling
+		else:
+			print("DEBUG_INPUT: SlotView Bubbled (Has Content). Ignoring.")
+		
+		# If we have a child (Unit), we do NOTHING. 
+		# The child (GachaBallView) will handle the input itself (emit UNIT context).
+		# We must ensure GachaBallView consumes the event (BLOCK/STOP) so it doesn't bubble here.
 
 func _can_drop_data(_at_position, data) -> bool:
 	# Check if this is an inspection-only context

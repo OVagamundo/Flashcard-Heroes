@@ -77,6 +77,22 @@ func _ready() -> void:
 	# TDD Safeguard: Re-enable draw buttons after the UI has redrawn.
 	SignalBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	content_area.gui_input.connect(_on_content_area_gui_input)
+	
+	# Connect Top Bar elements to background handler (Blind Spot Fix)
+	if is_instance_valid(days_label):
+		days_label.mouse_filter = Control.MOUSE_FILTER_STOP
+		days_label.gui_input.connect(_on_ui_overlay_gui_input)
+	if is_instance_valid(flashcard_progress_bar):
+		flashcard_progress_bar.mouse_filter = Control.MOUSE_FILTER_STOP
+		flashcard_progress_bar.gui_input.connect(_on_ui_overlay_gui_input)
+	# Also connect the Gold and Token labels/groups if possible
+	if is_instance_valid(gold_label):
+		# Gold label is usually inside a container, let's try to connect the label itself
+		gold_label.mouse_filter = Control.MOUSE_FILTER_STOP
+		gold_label.gui_input.connect(_on_ui_overlay_gui_input)
+	if is_instance_valid(tokens_label):
+		tokens_label.mouse_filter = Control.MOUSE_FILTER_STOP
+		tokens_label.gui_input.connect(_on_ui_overlay_gui_input)
 
 	SignalBus.gold_changed.connect(_on_gold_changed)
 	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
@@ -114,11 +130,26 @@ func _on_content_area_gui_input(event: InputEvent) -> void:
 			context.entity_type = &"GLOBAL_BACKGROUND"
 			context.interaction_mode = &"FULLY_INTERACTIVE"
 			context.window_group_id = 0 # Main game area
-			SignalBus.emit_signal("interaction_context_received", context)
+			# FIXME: This interferes with SubViewport interaction handling (bubbling from SubViewportContainer)
+			# effectively overriding all clicks in BattleView with a DESELECT.
+			# Since BattleView has its own background handler that correctly respects STOP filters,
+			# we can disable this catch-all.
+			# SignalBus.emit_signal("interaction_context_received", context)
 		elif GlobalInteractionRouter.is_drag_active() and not event.is_pressed():
 			# Do NOT forcibly end drag on background release here; drop targets manage drag end.
 			# This was canceling drag before GIR processed battle board drop targets.
 			pass
+
+## Explicit handler for UI overlays (Top Bar, etc.) that should act as "Background"
+## Clicking these should close inspection windows/deselect.
+func _on_ui_overlay_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.entity_type = &"GLOBAL_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		SignalBus.emit_signal("interaction_context_received", context)
 
 func _on_machine_gui_input(event: InputEvent) -> void:
 	# Handle clicks on machine image area (outside the knob button)

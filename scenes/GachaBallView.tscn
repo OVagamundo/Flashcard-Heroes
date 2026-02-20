@@ -29,7 +29,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 1
+mouse_filter = 0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_unit")
 script = ExtResource("1_cm7jq")
 

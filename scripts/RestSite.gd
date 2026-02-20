@@ -112,7 +112,7 @@ func _animate_hero_entry() -> void:
 		get_tree().create_timer(0.05).timeout.connect(func():
 			if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 				ball_view.icon_rect.scale = Vector2.ONE
-				ball_view._play_landing_bounce()
+				ball_view.play_landing_bounce()
 		)
 
 func _setup_prize_slot_clicks() -> void:

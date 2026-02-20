@@ -139,9 +139,23 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
 		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
+		
+		# VISUAL FIX: Hide the source view so it doesn't snap back while the prompt is open.
+		# CRITICAL: Use GIR's known source view, NOT WindowManager lookup (which might find placeholders/wrong views).
+		var source_view = GlobalInteractionRouter.get_drag_source_view()
+		if is_instance_valid(source_view):
+			source_view.visible = false
+			context["source_view_id"] = source_view.get_instance_id()
+			
+		# ORDER FIX: End drag FIRST to clear old state/locks.
+		# Pass true (handled) so GIR doesn't restore visibility or play sounds yet.
+		GlobalInteractionRouter.end_drag(true)
+		
+		# LOCK FIX: Open window SECOND. Its _ready() will request a NEW lock.
+		# If we opened first, end_drag would clear the lock we just requested.
 		WindowManager.open_choice_window(context)
-		GlobalInteractionRouter.end_drag(false)
 		return
+
 
 	# Case 5: Possible Swap
 	if is_valid_placement(source_instance, target_loc) and is_valid_placement(target_instance, source_loc):
@@ -513,8 +527,8 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		if not ("tier" in def) or def.tier != container_tier_b:
 			return false
 
-	# Items cannot be placed in PlayerLineup (only bench and equipped slots)
-	if target_container_name == &"PlayerLineup" and def.category == &"ITEM":
+	# Items and Consumables cannot be placed in PlayerLineup (only bench and equipped slots)
+	if target_container_name == &"PlayerLineup" and (def.category == &"ITEM" or def.category == &"CONSUMABLE"):
 		return false
 
 	return true

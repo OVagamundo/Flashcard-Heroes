@@ -364,6 +364,10 @@ signal invalid_action_triggered(view: Control)
 ## @param node_def: PathNodeDefinition - The selected node definition
 signal node_selected(node_def: PathNodeDefinition)
 
+## Emitted when an interaction lock is requested (e.g., by a modal prompt)
+## @param locked: bool - Whether to lock inspection/hover interactions
+signal interaction_lock_requested(locked: bool)
+
 # -----------------------------------------------------------------------------
 # WINDOW MANAGEMENT SIGNALS
 # -----------------------------------------------------------------------------
