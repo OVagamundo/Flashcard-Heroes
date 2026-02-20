@@ -21,7 +21,7 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 		# Early-case: Consumable usage on a specific unit
 		if sdef.category == C.CATEGORY_CONSUMABLE and tdef.category == C.CATEGORY_UNIT:
 			# Allow consumables on both Player and Enemy units (regardless of test mode)
-			var allowed_consumable_containers = [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]
+			var allowed_consumable_containers = [&"PlayerLineup", &"PlayerBench", &"EnemyLineup"]
 			if target_loc.container in allowed_consumable_containers:
 				_use_consumable(early_source_instance, early_target_instance)
 				return
@@ -32,7 +32,6 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 		# In test mode, also allow equipping on enemy units
 		if GameManager.is_test_mode:
 			allowed_containers.append(&"EnemyLineup")
-			allowed_containers.append(&"EnemyBench")
 		
 		# Items can be equipped from InventoryGrid OR BattleBoard (unified bench holds both units and items)
 		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard"
@@ -376,7 +375,6 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		return
 
 	var new_instance: GachaBallInstance = merge_result["merged_instance"]
-	var parents_to_remove: Array = merge_result["parents_to_remove"]
 	
 	# Collect items equipped on parents (if any) to equip onto a UNIT result later
 	# MergeManager returns the list of items that should be equipped.
@@ -441,9 +439,50 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	# AUDIO HOOK: Merge/upgrade sound
 	Audio.play_sfx("ui_merge")
 
+	# Trigger management-phase on_merge abilities for battle-board merges only.
+	# This covers lineup/bench merges and same-unit equipped item merges on board.
+	var should_trigger_on_merge: bool = false
+	var merge_container_tag: StringName = &""
+	if GameManager.is_in_battle:
+		if is_same_unit_item_merge:
+			var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
+			if is_instance_valid(parent_unit) and _is_battle_board_container(parent_unit.location_container_tag):
+				should_trigger_on_merge = true
+				merge_container_tag = parent_unit.location_container_tag
+		elif _is_battle_board_container(target_loc.container):
+			should_trigger_on_merge = true
+			merge_container_tag = target_loc.container
+
+	var merge_team: String = _get_team_for_board_container(merge_container_tag)
+
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal("inventory_action_completed", [new_instance.ball_uuid])
+
+	if should_trigger_on_merge:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			# Let queue_free/redraw settle so animator registers the latest merged views.
+			await get_tree().process_frame
+			var snapshot: Dictionary = bm.get_board_snapshot()
+			if bm.has_method("block_ui_updates"):
+				bm.block_ui_updates()
+			var merge_context: Dictionary = {
+				"merged_uuid": new_instance.ball_uuid,
+				"merged_team": merge_team,
+				"merge_container": merge_container_tag,
+				"merge_category": result_def.category
+			}
+			AbilityResolver.process_trigger(&"on_merge", merge_context)
+			var pending_count: int = 0
+			if bm.has_method("get_pending_reactions_size"):
+				pending_count = int(bm.get_pending_reactions_size())
+			else:
+				pending_count = int(bm._pending_reactions.size())
+			if pending_count > 0:
+				await bm.resolve_management_effects_and_animate(snapshot)
+			if bm.has_method("unblock_ui_updates"):
+				bm.unblock_ui_updates()
 
 # --- Single-Responsibility Helpers ---
 
@@ -476,6 +515,21 @@ func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallIn
 	SignalBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
 
 # --- Other Helpers ---
+
+func _is_battle_board_container(container_tag: StringName) -> bool:
+	return (
+		container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+	)
+
+func _get_team_for_board_container(container_tag: StringName) -> String:
+	if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+		return "PLAYER"
+	if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+		return "ENEMY"
+	return ""
 
 ## Check if placing an instance into a target location is valid
 ## Made public for SlotIndicatorController to reuse this validation logic
@@ -527,8 +581,9 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		if not ("tier" in def) or def.tier != container_tier_b:
 			return false
 
-	# Items and Consumables cannot be placed in PlayerLineup (only bench and equipped slots)
-	if target_container_name == &"PlayerLineup" and (def.category == &"ITEM" or def.category == &"CONSUMABLE"):
+	# Items and Consumables cannot be placed in lineup containers (only bench and equipped slots)
+	if (target_container_name == &"PlayerLineup" or target_container_name == &"EnemyLineup") and \
+		(def.category == &"ITEM" or def.category == &"CONSUMABLE"):
 		return false
 
 	return true

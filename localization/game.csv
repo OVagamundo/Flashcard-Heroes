@@ -354,3 +354,7 @@ unit_t3_g.name,Phantom Wayfarer,Viajante Fantasma
 unit_t3_g.desc,A mysterious traveler who gathers strength from the sidelines.,Um viajante misterioso que acumula força nas linhas de trás.
 ability.unit_t3_g.name,Quiet Meditation,Meditação Silenciosa
 ability.unit_t3_g.desc,"If on the player bench at start of turn, gain **+3 HP** and **+3 PWR**.","Se estiver no banco do jogador no início do turno, ganhe **+3 HP** e **+3 PWR**."
+unit_t3_h.name,Fusion Warden,Guardião da Fusão
+unit_t3_h.desc,A volatile hybrid that grows stronger whenever any battle-board merge occurs.,Um híbrido volátil que fica mais forte sempre que qualquer fusão ocorre no tabuleiro de batalha.
+ability.unit_t3_h.name,Convergence Surge,Surto de Convergência
+ability.unit_t3_h.desc,"Whenever a merge happens on the battle board (bench or lineup, unit or item), if this unit is on the battle board, gain **+2 HP** and **+2 PWR**.","Sempre que uma fusão acontece no tabuleiro de batalha (banco ou formação, unidade ou item), se esta unidade estiver no tabuleiro de batalha, ganha **+2 HP** e **+2 PWR**."

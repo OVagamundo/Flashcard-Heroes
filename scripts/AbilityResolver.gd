@@ -81,6 +81,33 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Unit must be alive, on the same team, and NOT the summoned unit itself
 			var summoned_uuid = context.get("summoned_uuid", "")
 			return unit.current_hp > 0 and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
+
+		&"on_merge":
+			# Only living units already on battle board (lineup/bench) can respond.
+			if unit.current_hp <= 0:
+				return false
+
+			var unit_container: StringName = unit.location_container_tag
+			var on_battle_board := (
+				unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+				or unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+				or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+				or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+			)
+			if not on_battle_board:
+				return false
+
+			# If merge context has a team, only that side responds (Knight-style team scoping).
+			var merged_team: String = context.get("merged_team", "")
+			if merged_team.is_empty():
+				return true
+
+			var unit_team_on_board: String = ""
+			if unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+				unit_team_on_board = "PLAYER"
+			elif unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+				unit_team_on_board = "ENEMY"
+			return unit_team_on_board == merged_team
 		
 		&"on_draw":
 			# Enemy units respond to player draws (draws benefit enemies)

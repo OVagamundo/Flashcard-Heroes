@@ -17,6 +17,7 @@ extends RefCounted
 ## - on_turn_start: Turn begins
 ## - on_turn_end: Turn ends
 ## - on_battle_start: Battle begins
+## - on_merge: A merge is completed on the battle board (lineup/bench/equipped item)
 ## - passive_intercept: Special BattleManager-handled passive (e.g., Guardian)
 
 const ABILITIES: Dictionary = {
@@ -97,6 +98,14 @@ const ABILITIES: Dictionary = {
 		"condition": null,
 		"effect": "Grant +1 HP and +1 PWR to all allies when damaged",
 		"execute_on_lethal": true,
+	},
+
+	"unit_tier3h_merge_growth": {
+		"owner": "Fusion Warden (T3H)",
+		"trigger": "on_merge",
+		"condition": null,
+		"effect": "Gain +2 HP and +2 PWR when any merge occurs on the battle board",
+		"notes": "Only triggers while this unit is on the battle board; all copies trigger independently",
 	},
 	
 	"hero_timekeeper_gold_on_kill": {

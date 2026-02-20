@@ -139,6 +139,20 @@ func unlock_recipe_for_result(result_definition_id: StringName) -> void:
 				unlocked_recipes[recipe.id] = true
 				SignalBus.emit_signal("run_data_changed")
 
+func unlock_all_recipes_for_testing() -> void:
+	"""Test mode utility: unlock all recipes so spawned content can be merged."""
+	var changed: bool = false
+	for recipe_key in Database.recipes:
+		var recipe: MergeRecipe = Database.recipes[recipe_key]
+		if not is_instance_valid(recipe):
+			continue
+		if unlocked_recipes.get(recipe.id, false):
+			continue
+		unlocked_recipes[recipe.id] = true
+		changed = true
+	if changed:
+		SignalBus.emit_signal("run_data_changed")
+
 func is_recipe_unlocked(recipe_id: StringName) -> bool:
 	"""Returns true if the given recipe is unlocked for the current run."""
 	return unlocked_recipes.get(recipe_id, false)
@@ -705,10 +719,6 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(5)
 
-	# In Test Mode, skip adding starter items and trinkets (except Hero)
-	if GameManager.is_test_mode:
-		return
-
 	# NOTE: Player trinkets are now obtained exclusively through boss victories.
 	# No starter trinkets are given - the player earns them by progressing.
 
@@ -734,6 +744,10 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		
 		# Unlock recipes for this acquired gachaball
 		unlock_recipe_for_result(def.id)
+	
+	# Test mode can spawn arbitrary units/items; unlock all recipes for parity testing.
+	if GameManager.is_test_mode:
+		unlock_all_recipes_for_testing()
 
 func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	match hero_id:
@@ -749,7 +763,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_potion_spikes", &"item_potion_spikes", &"item_potion_heroism", &"item_potion_heroism", &"consumable_potion_plunder", &"consumable_potion_plunder",
 				# Tier 3
 				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c",
-				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f", &"unit_t3_g", &"unit_t3_g",
+				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f", &"unit_t3_g", &"unit_t3_g", &"unit_t3_h", &"unit_t3_h",
 				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c",
 				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f",
 				&"item_emblem_fire", &"item_emblem_fire", &"item_emblem_earth", &"item_emblem_earth",

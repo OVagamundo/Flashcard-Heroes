@@ -513,6 +513,14 @@ func _insert_summoned_unit_into_queue(new_unit: GachaBallInstance) -> void:
 	var is_player := _is_player_unit(new_unit)
 	_combat.insert_summoned_unit(new_unit, is_player, _is_player_unit)
 
+func _actor_queue_contains_uuid(uuid: String) -> bool:
+	if uuid.is_empty():
+		return false
+	for queued_unit in _actor_queue:
+		if is_instance_valid(queued_unit) and queued_unit.ball_uuid == uuid:
+			return true
+	return false
+
 ## Apply results from EffectHandlers summon handlers
 ## Registers new instances, updates containers, handles queue and cleanup
 func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
@@ -539,14 +547,9 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 		
 		# Update instance location
 		_update_instance_location(uuid, container_tag, slot)
-		
-		# Insert into queue if flagged (boss summons)
-		if update.get("insert_into_queue", false):
-			var inst = get_instance_by_uuid(uuid)
-			if is_instance_valid(inst):
-				_insert_summoned_unit_into_queue(inst)
 	
 	# 4. Handle queue replacements (single unit summons replace holder in queue)
+	var replaced_new_uuids: Dictionary = {}
 	for update in result.queue_updates:
 		var old_uuid: String = update.old_uuid
 		var new_inst: GachaBallInstance = update.new_instance
@@ -554,7 +557,23 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 		for i in range(_actor_queue.size()):
 			if _actor_queue[i].ball_uuid == old_uuid:
 				_actor_queue[i] = new_inst
+				replaced_new_uuids[new_inst.ball_uuid] = true
 				break
+	
+	# 5. Insert summons into queue when requested (and not already represented via replacement)
+	for update in result.container_updates:
+		if not update.get("insert_into_queue", false):
+			continue
+		
+		var uuid: String = update.uuid
+		if replaced_new_uuids.has(uuid):
+			continue
+		if _actor_queue_contains_uuid(uuid):
+			continue
+		
+		var inst = get_instance_by_uuid(uuid)
+		if is_instance_valid(inst):
+			_insert_summoned_unit_into_queue(inst)
 
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
@@ -2062,6 +2081,9 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 
 func register_test_unit(unit_def_id: StringName, is_enemy: bool, position: int = -1) -> GachaBallInstance:
 	return TestModeHelpers.register_test_unit(self, unit_def_id, is_enemy, position)
+
+func register_test_item(item_def_id: StringName, is_enemy: bool) -> GachaBallInstance:
+	return TestModeHelpers.register_test_item(self, item_def_id, is_enemy)
 
 func register_test_item_on_unit(item_def_id: StringName, unit_uuid: String) -> GachaBallInstance:
 	return TestModeHelpers.register_test_item_on_unit(self, item_def_id, unit_uuid)
