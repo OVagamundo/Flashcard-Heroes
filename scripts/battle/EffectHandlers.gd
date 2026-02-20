@@ -848,30 +848,25 @@ static func handle_summon_unit(
 				if is_instance_valid(old_inst) and old_inst.current_hp <= 0:
 					result.cleanup_uuids.append(old_uuid)
 	
-	# Queue update: replace holder in actor queue
-	# Only do this if we are taking the holder's slot
-	if final_location.container == holder_location.container and final_location.index == holder_location.index:
+	# Queue behavior:
+	# - If we replace the holder's slot, we should replace that holder's queue entry (at most one action).
+	# - If we summon into a different slot, we should use normal mid-turn insertion rules.
+	var is_replacing_holder_slot: bool = (
+		final_location.container == holder_location.container and
+		final_location.index == holder_location.index
+	)
+	if is_replacing_holder_slot and not holder_uuid.is_empty():
 		result.queue_updates.append({
 			"old_uuid": holder_uuid,
 			"new_instance": new_inst
 		})
-	else:
-		# If we moved to a new slot (or discard), we need to insert into queue naturally?
-		# BattleManager handles insertion of new units via container_updates "insert_into_queue" flag?
-		# No, standard summons aren't always inserted.
-		# If it's a summon, it should probably be added to queue if it's a new unit.
-		# But wait, original logic was "Queue update: replace holder".
-		# If we don't replace holder, we should probably append to queue?
-		# Let's trust BattleManager's _insert_summoned_unit_into_queue logic if we flag it?
-		# result.container_updates has "insert_into_queue".
-		pass
 
 	# Container update
 	result.container_updates.append({
 		"container_tag": final_location.container,
 		"slot": final_location.index,
 		"uuid": new_inst.ball_uuid,
-		"insert_into_queue": true # Ensure it gets added to queue since we might not be replacing holder
+		"insert_into_queue": not is_replacing_holder_slot
 	})
 	
 	# Create SUMMON event

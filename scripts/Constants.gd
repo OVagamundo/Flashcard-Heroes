@@ -75,6 +75,7 @@ const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summo
 const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
 const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
 const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
+const TRIGGER_ON_MERGE = &"on_merge" # Any merge completed on the battle board (lineup/bench, unit/item)
 const TRIGGER_ON_ALLY_HURT = &"on_ally_hurt" # Another ally on the same team receives damage (reactive trigger)
 const TRIGGER_ON_HEALED = &"on_healed" # This unit's HP increased (healed by any means)
 

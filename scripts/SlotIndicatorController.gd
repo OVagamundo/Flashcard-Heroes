@@ -170,6 +170,8 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, is_consumable: bool
 			# Units can move to PlayerLineup, PlayerBench
 			containers.append(&"PlayerLineup")
 			containers.append(&"PlayerBench")
+			if GameManager.is_test_mode:
+				containers.append(&"EnemyLineup")
 		elif is_item or is_consumable:
 			# Items and consumables can move to PlayerBench
 			containers.append(&"PlayerBench")
@@ -182,7 +184,6 @@ func _get_consumable_targets(data_owner: Object) -> Array:
 	
 	if GameManager.is_test_mode:
 		allowed_containers.append(&"EnemyLineup")
-		allowed_containers.append(&"EnemyBench")
 	
 	for container_name in allowed_containers:
 		var container = data_owner.get_container(container_name)

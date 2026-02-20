@@ -53,6 +53,7 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `unit_t3_e` | Assassin | **Berserker + Knight** | 5 HP / 7 PWR | 4 | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies when they are summoned. |
 | `unit_t3_f` | Summoner | **Paladin + Knight** | 7 HP / 5 PWR | 4 | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies when they are summoned. |
 | `unit_t3_g` | Phantom Wayfarer | **Shadow Cloner + Shadow Cloner** | 6 HP / 6 PWR | 4 | 4 Wind | **Quiet Meditation** (`on_turn_start`): If on bench, gain +3 HP/+3 PWR. **[Player Exclusive]** |
+| `unit_t3_h` | Fusion Warden | **Steam Wisp + Shadow Cloner** | 4 HP / 6 PWR | 4 | 1 Fire, 1 Water, 2 Wind | **Convergence Surge** (`on_merge`): Whenever a merge happens on the battle board (bench or lineup, unit or item), if on the battle board, gain +2 HP/+2 PWR. |
 
 ### Enemies
 | ID | Name | Stats | Type | Abilities |

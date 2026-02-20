@@ -1,10 +1,8 @@
 class_name TestEnvironmentManager
 extends Node
 
-const C = preload("res://scripts/Constants.gd")
-
 # This manager handles the "God Mode" UI and logic for the Test Environment.
-# It is instantiated into the TestBattle scene.
+# It is instantiated in Battle.tscn and self-disables outside test mode/debug builds.
 
 var battle_manager: BattleManager
 
@@ -195,11 +193,8 @@ func _on_spawn_unit_pressed() -> void:
 	
 	# Use BattleManager's test mode helper for proper initialization parity
 	var instance = battle_manager.register_test_unit(id, _spawn_target_is_enemy)
-	if is_instance_valid(instance):
-		SignalBus.emit_signal("battle_inventory_changed")
-		# Emit granular signals for HP and PWR
-		SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"hp", 0, instance.current_hp)
-		SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"pwr", 0, instance.current_pwr)
+	if not is_instance_valid(instance):
+		push_warning("[TestMode] Failed to spawn unit %s" % id)
 
 func _on_spawn_item_pressed() -> void:
 	var selection = item_list.get_selected_items()
@@ -208,14 +203,10 @@ func _on_spawn_item_pressed() -> void:
 	var index = selection[0]
 	var id = item_list.get_item_metadata(index)
 	
-	# Spawn items to inventory for BOTH player and enemy targets
-	# User can then manually equip them onto any unit (player or enemy)
-	var def = Database.get_definition(id)
-	if not def: return
-	var instance = GachaBallInstance.new()
-	instance.initialize(def)
-	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-	SignalBus.emit_signal("battle_inventory_changed")
+	# Use BattleManager helper so item spawn/equip uses atomic battle APIs.
+	var instance = battle_manager.register_test_item(id, _spawn_target_is_enemy)
+	if not is_instance_valid(instance):
+		push_warning("[TestMode] Failed to spawn item %s" % id)
 
 
 func _on_spawn_trinket_pressed() -> void:
@@ -228,8 +219,8 @@ func _on_spawn_trinket_pressed() -> void:
 	
 	# Use BattleManager's test mode helper for proper initialization parity
 	var instance = battle_manager.register_test_trinket(id, _spawn_target_is_enemy)
-	if is_instance_valid(instance):
-		SignalBus.emit_signal("battle_inventory_changed")
+	if not is_instance_valid(instance):
+		push_warning("[TestMode] Failed to spawn trinket %s" % id)
 
 
 func _on_unit_list_item_selected(index: int) -> void:
