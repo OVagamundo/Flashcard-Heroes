@@ -141,9 +141,8 @@ To ensure varied and scaling challenges, most battle nodes do not use pre-define
   - Cost increases by 1 Gold per reroll during the same shop visit
   - Reroll cost resets when entering a new Shop Node
 - **Leaving:** Players can exit the shop at any time to return to Path Selection
-Shop Node: An economic hub for spending Gold to purchase new GachaBalls for the Run Inventory or pay for services like rerolling the shop stock, removing a GachaBall, or transforming one.
-Event Node: Narrative scenarios with choices that have risk/reward outcomes.
-Rest Site Node: A training node where the player plays the Flashcard Mini-Game to earn tokens, which are then used to permanently increase the Hero's **Base Stats** (HP and PWR). There is no healing; the hero starts every battle fresh.
+
+**Rest Site Node:** A training node where the player plays the Flashcard Mini-Game to earn tokens, which are then used to permanently increase the Hero's **Base Stats** (HP and PWR). There is no healing; the hero starts every battle fresh.
 9.4. Event-Driven Ability System
 Abilities are the core of tactical combat, defining how units behave beyond their basic stats. The system is designed to be event-driven, meaning abilities activate in response to specific moments in battle. Each ability is defined by a combination of components:
 
@@ -167,10 +166,12 @@ Temporary conditions applied to units during battle that have positive or negati
 > **Note:** Status effect visuals (stack counters, damage ticks) are completely decoupled from the logic. The UI updates strictly based on the event log generated during the end-of-turn simulation.
 
 **Effect Types (Planned & Implemented):**
-- **Poison (Implemented):** Deals damage equal to stacks at end of turn, then halves stacks.
+- **Burn (Implemented):** Deals damage equal to stacks at end of turn, reduces by 1.
+- **Armor (Implemented):** Blocks damage.
+- **Spikes (Implemented):** Deals damage back to attackers.
+- **Poison (Planned):** Deals damage equal to stacks at end of turn, then halves stacks.
 - **Weaken (Planned):** Reduces damage dealt by X%.
 - **Vulnerable (Planned):** Increases damage taken by X%.
-- **Burn (Planned):** Deals flat damage at end of turn, reduces by 1.
 - **Regen (Planned):** Heals HP at end of turn.
 - **Stun (Planned):** Prevents action for one turn.
 9.6. Synergy System
@@ -204,8 +205,8 @@ ContentArea: The large central portion of the screen that changes to show the ba
 The system for inspecting units, items, and their effects follows a strict set of hierarchical rules to ensure clarity and prevent UI clutter. These rules apply globally.
 
 **Contextual Opening:** The method for opening an inspection window depends on the interaction model of its container:
-- **Double-Click:** Required in interactive contexts where single-clicking is for selection and dragging (e.g., the battle board, the main inventory window). This prevents accidental openings.
-- **Single-Click:** Used in contexts that are primarily for viewing (e.g., inspecting an item that is already equipped on a unit inside its inspection window, viewing the discard pile, or inspecting units in the **Enemy Lineup**).
+- **Hover-to-Inspect:** Used in contexts that are primarily for viewing (e.g., Enemy Lineup) or when a unit is fully interactive but not currently selected.
+- **Single-Click Lock:** Clicking an entity that is currently being hover-inspected will "lock" the inspection window open. Single-clicking is also used for selection and dragging (e.g., the battle board, the main inventory window). Single clicks on an already-selected entity will also lock its inspection window.
 
 **Hierarchical Behavior:**
 - **Single Active Group:** There can only be one active inspection window "group" (a chain of parent-child windows) on screen at a time. Opening a new root-level window (e.g., inspecting a different unit on the board) closes the entire previous group.

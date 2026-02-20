@@ -40,9 +40,11 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 
 	merged_instance.current_hp = total_hp
 	merged_instance.current_pwr = total_pwr
-
-	merged_instance.current_hp = total_hp
-	merged_instance.current_pwr = total_pwr
+	
+	# Set permanent progression modifiers so that creating a battle copy retains the summed stats
+	# The definition provides base stats; any surplus goes into the modifier.
+	merged_instance.base_hp_modifier = total_hp - result_definition.base_hp
+	merged_instance.base_pwr_modifier = total_pwr - result_definition.base_pwr
 
 	# Return the items so the caller can equip them properly using the data owner's API.
 	# We do NOT equip them here to avoid state conflicts (e.g. "slot occupied" logic in equip_item).

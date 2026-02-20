@@ -64,7 +64,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			continue
 		
 		# Check tier filter
-		var tier_filter: int = int(parameters.get("tier_filter", 1))
+		var raw_tier = parameters.get("tier_filter", 1)
+		var tier_filter: int = int(raw_tier) if raw_tier != null else 1
 		if tier_filter > 0 and target_def.tier != tier_filter:
 			continue
 		
@@ -77,8 +78,11 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		target_instance.add_tag(buff_tag)
 		
 		# Get buff amounts from parameters
-		var hp_amount: int = int(parameters.get("hp_amount", 2))
-		var pwr_amount: int = int(parameters.get("pwr_amount", 2))
+		var raw_hp = parameters.get("hp_amount", 2)
+		var hp_amount: int = int(raw_hp) if raw_hp != null else 2
+		
+		var raw_pwr = parameters.get("pwr_amount", 2)
+		var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 2
 		
 		if is_simulation:
 			# Capture old stats
@@ -88,11 +92,19 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 			# Apply HP buff
 			var hp_result = battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
-			var new_hp: int = hp_result.get("new_hp", target_instance.current_hp) if hp_result is Dictionary else int(hp_result)
+			var new_hp: int = target_instance.current_hp
+			if hp_result is Dictionary:
+				new_hp = hp_result.get("new_hp", target_instance.current_hp)
+			elif hp_result != null:
+				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
 			var pwr_result = battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
-			var new_pwr: int = pwr_result.get("new_pwr", target_instance.current_pwr) if pwr_result is Dictionary else int(pwr_result)
+			var new_pwr: int = target_instance.current_pwr
+			if pwr_result is Dictionary:
+				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
+			elif pwr_result != null:
+				new_pwr = int(pwr_result)
 			
 			# Get display names for log
 			var trinket_name: String = ""

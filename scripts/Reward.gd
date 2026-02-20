@@ -141,7 +141,7 @@ func _animate_staggered_entry() -> void:
 				tween.tween_callback(func():
 					if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 						ball_view.icon_rect.scale = Vector2.ONE
-						ball_view._play_landing_bounce()
+						ball_view.play_landing_bounce()
 				)
 			ball_index += 1
 

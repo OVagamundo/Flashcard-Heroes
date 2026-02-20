@@ -97,13 +97,12 @@ Items are equipped on units to provide stats and new abilities.
 | `item_emblem_wind` | Wind Emblem | (Defined in tres) | +1 PWR / +2 HP | **Wind Soul** (`passive`): Counts as a Wind unit. |
 
 ---
-### Consumables (Cost: 1)
-| ID | Name | Stats | Effect |
+### Consumables
+Consumables are one-time use items during the Management Phase. Their Gold cost is equal to their Tier.
+| ID | Name | Tier | Effect |
 |---|---|---|---|
-| `consumable_potion_healing_minor` | Minor Healing Potion | (None) | **Heal**: Restores 5 HP to the target unit (Ally or Enemy). Consumed on use. |
-| `item_potion_spikes` | Thorn Potion | (None) | **Status**: Grants **4 Spikes** stacks to the target unit. |
-| `item_potion_heroism` | Heroism Potion | (None) | **Buff**: Grants **+3 HP**, **+3 PWR**, and **3 Armor** stacks to the target unit. |
-| `consumable_potion_plunder` | Potion of Plunder | (None) | **Steal**: Steals a random equipped item from the target. Returns if invalid. |
+| `item_potion_spikes` | Thorn Potion | 2 | **Status**: Grants **4 Spikes** stacks to the target unit. |
+| `item_potion_heroism` | Heroism Potion | 2 | **Buff**: Grants **+3 HP**, **+3 PWR**, and **3 Armor** stacks to the target unit. |
 
 ---
 

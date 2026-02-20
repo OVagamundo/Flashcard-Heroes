@@ -28,6 +28,8 @@ var _active_inspection_group: Array[Control] = []
 var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
 
+signal window_closed(window: Control)
+
 
 func _ready() -> void:
 	# FINAL FIX: Input processing is REMOVED. The WindowManager is now a pure service.
@@ -325,6 +327,8 @@ func _open_contextual_window(context: Dictionary) -> void:
 	_get_modal_layer().add_child(window_instance)
 	# Prevent flashing before we compute final position
 	window_instance.hide()
+	window_instance.set_meta("window_type", window_type) # Tag for identification
+	
 	_register_window(window_instance, false) # Register as NON-modal.
 	_active_inspection_group.push_back(window_instance)
 	
@@ -566,15 +570,22 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: LocationIdentifier) -> void:
 	if not is_instance_valid(window_instance) or not is_instance_valid(anchor): return
 	var window_id = window_instance.get_instance_id()
-	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_instance, anchor)
+	var anchor_id = anchor.get_instance_id()
+	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_id, anchor_id)
 	if not anchor.is_connected("item_rect_changed", geom_callable):
 		anchor.item_rect_changed.connect(geom_callable, CONNECT_DEFERRED)
-	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_id, anchor.get_instance_id(), loc, geom_callable)
+	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_id, anchor_id, loc, geom_callable)
 	if not anchor.is_connected("tree_exited", freed_callable):
 		anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 	_tracked_windows[window_id] = {"anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable}
 
 func stop_tracking_window(window_id: int) -> void:
+	# Emit signal that window is closing/stopping tracking
+	# We try to get the instance to pass it.
+	var window = instance_from_id(window_id)
+	if is_instance_valid(window) and window is Control:
+		window_closed.emit(window)
+
 	if not _tracked_windows.has(window_id): return
 	var tracking_info = _tracked_windows[window_id]
 	var anchor = tracking_info["anchor"]
@@ -585,7 +596,9 @@ func stop_tracking_window(window_id: int) -> void:
 			anchor.tree_exited.disconnect(tracking_info["freed_callable"])
 	_tracked_windows.erase(window_id)
 
-func _on_inspection_anchor_moved(window_instance: Control, anchor: Control) -> void:
+func _on_inspection_anchor_moved(window_id: int, anchor_id: int) -> void:
+	var window_instance = instance_from_id(window_id) as Control
+	var anchor = instance_from_id(anchor_id) as Control
 	if is_instance_valid(anchor) and is_instance_valid(window_instance):
 		var pos: Vector2 = _calculate_window_position(anchor, window_instance)
 		_set_window_screen_position(window_instance, pos)
@@ -630,6 +643,14 @@ func close_top_contextual_window() -> void:
 	if not _active_inspection_group.is_empty():
 		var top_window = _active_inspection_group.back()
 		if is_instance_valid(top_window):
+			# PROTECT BASE WINDOWS:
+			# Inventory and DiscardPile are "Base" contextual windows.
+			# They should never be popped by a generic "Back" or "Toggle" command (CLOSE_TOP).
+			# They should only be closed by explicit navigation commands (CLOSE_ALL).
+			if top_window.has_meta("window_type"):
+				var type = top_window.get_meta("window_type")
+				if type == &"Inventory" or type == &"DiscardPile":
+					return
 			top_window.queue_free()
 
 func _close_all_windows() -> void:

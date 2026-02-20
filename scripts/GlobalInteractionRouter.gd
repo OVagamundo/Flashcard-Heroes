@@ -10,6 +10,7 @@ enum CommandType {
 	OPEN_INSPECTION_WINDOW,
 	CLOSE_ALL_INSPECTION_WINDOWS,
 	CLOSE_CHILD_WINDOWS,
+	CLOSE_TOP_CONTEXTUAL_WINDOW,
 	REQUEST_ACTION,
 	INVALID_ACTION
 }
@@ -40,6 +41,11 @@ var _drag_placeholder: Control = null
 var _suppress_close_parent_window_id: int = -1
 var _suppress_close_until_msec: int = 0
 
+## Hover/Lock inspection state (SEPARATE from _current_selection)
+var _locked_entity_view_id: int = -1 # instance_id of view with locked inspection
+var _hover_entity_view_id: int = -1 # instance_id of view currently being hovered
+var _is_inspection_locked: bool = false # true = sticky window, hover cannot replace
+
 func _ready() -> void:
 	# Register as singleton
 	add_to_group("global_interaction_router")
@@ -55,12 +61,23 @@ func _ready() -> void:
 	# Track battle phase to gate interactions during COMBAT
 	if SignalBus.has_signal("battle_phase_changed"):
 		SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
+	if SignalBus.has_signal("interaction_lock_requested"):
+		SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
+	
+	# Connect to WindowManager closing signal to clear stale selections
+	if _window_manager.has_signal("window_closed"):
+		_window_manager.window_closed.connect(_on_window_closed)
+
 
 func _exit_tree() -> void:
 	# Scene cleanup per spec: clear drag and selection
 	_end_drag_visuals(false)
 	_is_drag_active = false
 	_drag_origin_context = null
+	# Clear hover/lock state
+	_is_inspection_locked = false
+	_locked_entity_view_id = -1
+	_hover_entity_view_id = -1
 	# Emit deselect if needed
 	if _current_selection != null:
 		_emit_view_deselected(_current_selection)
@@ -70,10 +87,17 @@ func _exit_tree() -> void:
 	# Disconnect SignalBus hooks connected in _ready()
 	if SignalBus.interaction_context_received.is_connected(_on_interaction_context_received):
 		SignalBus.interaction_context_received.disconnect(_on_interaction_context_received)
+	if SignalBus.has_signal("interaction_lock_requested") and SignalBus.interaction_lock_requested.is_connected(_on_interaction_lock_requested):
+		SignalBus.interaction_lock_requested.disconnect(_on_interaction_lock_requested)
+	if SignalBus.has_signal("node_selected") and SignalBus.node_selected.is_connected(_on_node_selected):
+		SignalBus.node_selected.disconnect(_on_node_selected)
 	if SignalBus.has_signal("selection_clear_requested") and SignalBus.selection_clear_requested.is_connected(_on_selection_clear_requested):
 		SignalBus.selection_clear_requested.disconnect(_on_selection_clear_requested)
 	if SignalBus.has_signal("battle_phase_changed") and SignalBus.battle_phase_changed.is_connected(_on_battle_phase_changed):
 		SignalBus.battle_phase_changed.disconnect(_on_battle_phase_changed)
+	if _window_manager and _window_manager.has_signal("window_closed"):
+		if _window_manager.is_connected("window_closed", _on_window_closed):
+			_window_manager.disconnect("window_closed", _on_window_closed)
 
 ## Main entry point for processing interactions
 func _on_interaction_context_received(context: InteractionContext) -> void:
@@ -83,8 +107,41 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	if _is_combat_phase:
 		return
 
+	# Hover events: handled separately, never enter the click-based command queue
+	if context.event_type == &"HOVER_ENTER":
+		_handle_hover_enter(context)
+		return
+	if context.event_type == &"HOVER_EXIT":
+		_handle_hover_exit(context)
+		return
+		
+	# Drag Start: handled separately to initialize drag state
+	# ROBUSTNESS: Check both StringName and string to avoid type issues
+	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
+		print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
+		start_drag(context)
+		return
+
+	# Hover-to-Lock Promotion: if clicking the entity whose hover window is already
+	# showing, promote the hover to a lock RIGHT NOW so the rest of the flow sees it
+	# as "already locked" and skips close→reopen (brief L271-273: no churn).
+	if _hover_entity_view_id != -1 and _hover_entity_view_id == context.source_view_instance_id:
+		_is_inspection_locked = true
+		_locked_entity_view_id = _hover_entity_view_id
+
+	# Clear hover state on any click (hover is replaced by lock or selection)
+	_hover_entity_view_id = -1
+
 	# Generate commands based on the interaction context and current state
 	command_queue = _generate_command_queue(context)
+	
+	if context.event_type != &"HOVER_ENTER" and context.event_type != &"HOVER_EXIT":
+		print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
+		print("DEBUG_GIR: Locked: ", _is_inspection_locked, " | LockedID: ", _locked_entity_view_id)
+		print("DEBUG_GIR: Selection: ", _current_selection != null)
+		print("DEBUG_GIR: Commands: ", command_queue.size())
+		for cmd in command_queue:
+			print("DEBUG_GIR: + CMD: ", cmd.cmd)
 
 	# Execute the command queue
 	_execute_command_queue(command_queue)
@@ -105,7 +162,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		if SignalBus.has_signal("close_modal_requested"):
 			SignalBus.emit_signal("close_modal_requested")
 			return
-		# 3) Close contextual windows (guarded by suppression) and clear selection
+		# 3) Clear lock/hover state
+		_is_inspection_locked = false
+		_locked_entity_view_id = -1
+		_hover_entity_view_id = -1
+		# 4) Close contextual windows (guarded by suppression) and clear selection
 		if not _is_close_suppressed_now():
 			_execute_close_all_inspection_windows()
 		_execute_deselect()
@@ -113,6 +174,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	# True background click: left mouse press not handled by any Control
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		# Clear lock/hover state
+		_is_inspection_locked = false
+		_locked_entity_view_id = -1
+		_hover_entity_view_id = -1
 		# Close contextual windows and clear selection (guarded by suppression)
 		if not _is_close_suppressed_now():
 			_execute_close_all_inspection_windows()
@@ -120,6 +185,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## External signal handler: proactively clear selection when requested (e.g., scene transitions)
 func _on_selection_clear_requested() -> void:
+	# Clear lock/hover state
+	_is_inspection_locked = false
+	_locked_entity_view_id = -1
+	_hover_entity_view_id = -1
 	# Always clear selection if present
 	if _current_selection != null:
 		_execute_deselect()
@@ -130,17 +199,43 @@ func _on_selection_clear_requested() -> void:
 	_suppress_close_parent_window_id = 0
 	_suppress_close_until_msec = until_ts
 
+func _on_node_selected(_node_def: PathNodeDefinition) -> void:
+	pass
+
+# Handler for external lock requests
+func _on_interaction_lock_requested(locked: bool) -> void:
+	_is_inspection_locked = locked
+
 ## Track battle phase to enforce COMBAT gating
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	_is_combat_phase = phase_name == &"COMBAT"
 	# If entering COMBAT, ensure any drag state and engine preview are cleared
 	if _is_combat_phase:
+		# Clear lock/hover state
+		_is_inspection_locked = false
+		_locked_entity_view_id = -1
+		_hover_entity_view_id = -1
 		if _is_drag_active:
 			end_drag(false)
 		# Also cancel engine-managed drag preview to avoid lingering visuals
 		var vp := get_viewport()
 		if vp and vp.has_method("gui_cancel_drag"):
 			vp.gui_cancel_drag()
+
+## Handler for WindowManager.window_closed signal
+## Clears selection if the selected item was inside the closed window.
+func _on_window_closed(window: Control) -> void:
+	if _current_selection == null: return
+	
+	# Resolve the view for the current selection
+	var sel_view_id = _current_selection.source_view_instance_id
+	var sel_view = _find_view_by_instance_id(sel_view_id)
+	
+	if is_instance_valid(sel_view) and is_instance_valid(window):
+		# check if selection is inside the closed window
+		if window == sel_view or window.is_ancestor_of(sel_view):
+			print("DEBUG_GIR: Selection invalidated by window close. Window=", window.get_class(), " Name=", window.name)
+			_execute_deselect()
 
 ## Generate command queue based on interaction context and current state
 func _generate_command_queue(context: InteractionContext) -> Array[Command]:
@@ -179,15 +274,26 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 			if src_view and context.entity_type != &"WINDOW_BACKGROUND":
 				var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
 				if is_instance_valid(parent_window):
-					commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
-						"parent_window_id": parent_window.get_instance_id()
-					}))
+					# Guard: do NOT prune children when clicking the anchor of a locked
+					# inspection window. The locked child IS one of those children, and
+					# pruning it would destroy it while lock state says "still open".
+					# This divergence only matters in the Inventory context where
+					# anchors live inside a tracked InventoryWindow (not on the battle board).
+					var skip_prune := _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id
+					if not skip_prune:
+						commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
+							"parent_window_id": parent_window.get_instance_id()
+						}))
 			# Next, if the click is outside all windows, close the entire group
 			if not _is_click_inside_inspection_group(context):
 				# Suppress global close if an in-window action just occurred. Prefer context-aware suppression,
 				# but fall back to contextless suppression for true background contexts.
 				var suppressed := _is_close_suppressed_for_context(context)
 				if not suppressed and _is_close_suppressed_now():
+					suppressed = true
+				# Don't close the window if it's locked on the entity being clicked
+				# (hover-to-lock promotion or re-click on locked entity)
+				if not suppressed and _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
 					suppressed = true
 				if not suppressed:
 					commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
@@ -199,6 +305,8 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 			# Guard with suppression to avoid closing immediately after an in-window action
 			if not _is_close_suppressed_now():
 				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+				# User Feedback: Clicking outside should also deselect (not just close)
+				commands.append(Command.new(CommandType.DESELECT))
 			
 		&"WINDOW_BACKGROUND":
 			# GR-6: Child Window Closure - prune that branch
@@ -206,6 +314,8 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 				"window_group_id": context.window_group_id,
 				"parent_window_id": context.source_view_instance_id
 			}))
+			# User Feedback: Clicking window background should also deselect (not just close children)
+			commands.append(Command.new(CommandType.DESELECT))
 			
 		&"UNIT", &"ITEM", &"TRINKET", &"CONSUMABLE":
 			commands.append_array(_handle_gachaball_interaction(context))
@@ -218,19 +328,54 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	
 	return commands
 
+# ---------------------------------------------------------------------------
+# Hover-to-Inspect Handlers (PC Only)
+# ---------------------------------------------------------------------------
+
+## PC hover-to-inspect: open temporary inspection if conditions allow
+func _handle_hover_enter(context: InteractionContext) -> void:
+	# Guard: don't hover if dragging, locked, or suppressed
+	if _is_drag_active: return
+	if _is_inspection_locked: return
+	if _is_close_suppressed_now(): return
+	# Guard: duplicate hover (same entity)
+	if context.source_view_instance_id == _hover_entity_view_id: return
+
+	_hover_entity_view_id = context.source_view_instance_id
+
+	# Open inspection via command queue
+	var commands: Array[Command] = []
+	commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+		"context": context,
+		"anchor_view_id": context.source_view_instance_id
+	}))
+	_execute_command_queue(commands)
+
+## PC hover-exit: close temporary inspection if not locked
+func _handle_hover_exit(context: InteractionContext) -> void:
+	# Only close if this exit matches the current hover
+	if context.source_view_instance_id != _hover_entity_view_id: return
+	_hover_entity_view_id = -1
+
+	# Don't close if locked (the window is now sticky)
+	if _is_inspection_locked: return
+	# Don't close during drag (drag cleared hover already)
+	if _is_drag_active: return
+	# Respect suppression (brief L147, L329: do not close outside suppression guard)
+	if _is_close_suppressed_now(): return
+
+	# Close ONLY the topmost window — NOT all windows.
+	# The hover-opened inspection is always the top of _active_inspection_group.
+	# Using CLOSE_ALL would destroy parent windows (e.g., InventoryWindow) — brief L179.
+	if _window_manager:
+		_window_manager.close_top_contextual_window()
+
 ## Handle interactions with GachaBall instances
 func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
 	
-	# Check for inspection events
-	if _is_inspection_event(context):
-		# Parent remains selected when its inspection window opens
-		# GR-1: Open on Request
-		commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
-			"context": context,
-			"anchor_view_id": context.source_view_instance_id
-		}))
-		return commands
+	# Legacy: _is_inspection_event() now always returns false;
+	# hover replaces double-click, and lock replaces single-click inspection.
 	
 	# Handle selection and action logic
 	match context.interaction_mode:
@@ -239,11 +384,17 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 		&"SELECTION_ONLY":
 			commands.append_array(_handle_selection_only(context))
 		&"INSPECTION_ONLY":
-			# Single-click inspection - parent remains selected
-			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
-				"context": context,
-				"anchor_view_id": context.source_view_instance_id
-			}))
+			# Single-click locks inspection (no selection in InspectionOnly)
+			if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
+				# BATTLE BOARD FIX: Already locked on this entity -> Toggle Off (Close)
+				commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
+				commands.append(Command.new(CommandType.DESELECT))
+			else:
+				commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+					"context": context,
+					"anchor_view_id": context.source_view_instance_id,
+					"lock": true
+				}))
 	
 	return commands
 
@@ -253,12 +404,20 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 	
 	# Check if we have a current selection
 	if _current_selection != null:
-		# Re-Selection Inspects (S4): single-click on already-selected opens inspection
+		# S4: Re-selection on already-locked entity -> Toggle Off (Close Top & Deselect)
+		if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
+			# Use CLOSE_TOP to pop just the inspection, not the parent Inventory
+			commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
+			commands.append(Command.new(CommandType.DESELECT))
+			return commands
+		
+		# Re-Selection Inspects (S4): single-click on already-selected opens inspection + locks
 		# Keep parent selected when opening its inspection window
 		if _current_selection.source_view_instance_id == context.source_view_instance_id:
 			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 				"context": context,
-				"anchor_view_id": context.source_view_instance_id
+				"anchor_view_id": context.source_view_instance_id,
+				"lock": true
 			}))
 			return commands
 		
@@ -266,6 +425,12 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 		if _is_inventory_tier_change(_current_selection, context):
 			commands.append(Command.new(CommandType.DESELECT))
 			commands.append(Command.new(CommandType.SELECT, {"context": context}))
+			# Lock inspection on new entity
+			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+				"context": context,
+				"anchor_view_id": context.source_view_instance_id,
+				"lock": true
+			}))
 			return commands
 		
 		# Check if this is a valid action target
@@ -291,9 +456,22 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 			commands.append(Command.new(CommandType.DESELECT))
 			commands.append(Command.new(CommandType.SELECT, {"context": context}))
+			# Replace lock to new entity
+			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+				"context": context,
+				"anchor_view_id": context.source_view_instance_id,
+				"lock": true
+			}))
 	else:
-		# No current selection, just select this item
+		# No current selection -> select + lock inspection
 		commands.append(Command.new(CommandType.SELECT, {"context": context}))
+		# If already locked on this entity (hover promoted to lock), don't reopen
+		if not (_is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id):
+			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+				"context": context,
+				"anchor_view_id": context.source_view_instance_id,
+				"lock": true
+			}))
 	
 	return commands
 
@@ -308,10 +486,14 @@ func _handle_selection_only(context: InteractionContext) -> Array[Command]:
 			and _current_selection.location.container == context.location.container \
 			and _current_selection.location.index == context.location.index
 		if same_view or same_loc:
-			# Keep parent selected when opening its inspection window
+			# No-churn: already locked on this entity
+			if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
+				return commands
+			# Keep parent selected when opening its inspection window + lock
 			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 				"context": context,
-				"anchor_view_id": context.source_view_instance_id
+				"anchor_view_id": context.source_view_instance_id,
+				"lock": true
 			}))
 			return commands
 	
@@ -383,12 +565,8 @@ func _handle_ui_link_interaction(context: InteractionContext) -> Array[Command]:
 	
 	return commands
 
-## Check if this is an inspection event (double-click in drag-enabled, single-click in drag-disabled)
-func _is_inspection_event(context: InteractionContext) -> bool:
-	if context.event_type == &"DOUBLE_CLICK":
-		return context.interaction_mode == &"FULLY_INTERACTIVE" or context.interaction_mode == &"SELECTION_ONLY"
-	elif context.event_type == &"SINGLE_CLICK":
-		return context.interaction_mode == &"INSPECTION_ONLY"
+## Legacy: inspection is now handled by hover + lock. This always returns false.
+func _is_inspection_event(_context: InteractionContext) -> bool:
 	return false
 
 ## Check if this is an inventory tier change (special rule for inventory windows)
@@ -561,6 +739,9 @@ func _execute_command(command: Command) -> void:
 			_execute_close_all_inspection_windows()
 		CommandType.CLOSE_CHILD_WINDOWS:
 			_execute_close_child_windows(command.context.get("window_group_id", 0), command.context.get("parent_window_id", -1))
+		CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW:
+			if _window_manager:
+				_window_manager.close_top_contextual_window()
 		CommandType.REQUEST_ACTION:
 			_execute_request_action(command.context)
 			# AUDIO HOOK: Action requested (usually a valid click)
@@ -570,6 +751,13 @@ func _execute_command(command: Command) -> void:
 
 ## Execute deselect command
 func _execute_deselect() -> void:
+	# Only clear lock state if it is an INSPECTION lock (tied to a specific entity).
+	# If _locked_entity_view_id is -1 but _is_inspection_locked is true, it is a SYSTEM/MODAL lock 
+	# (e.g., ChoiceWindow) that must be preserved.
+	if _locked_entity_view_id != -1:
+		_is_inspection_locked = false
+		_locked_entity_view_id = -1
+	
 	if _current_selection != null:
 		_emit_view_deselected(_current_selection)
 		_emit_selection_changed(null)
@@ -588,6 +776,7 @@ func _execute_select(context: InteractionContext) -> void:
 func _execute_open_inspection_window(command_context: Dictionary) -> void:
 	var context: InteractionContext = command_context.get("context")
 	var anchor_view_id: int = command_context.get("anchor_view_id", 0)
+	var should_lock: bool = command_context.get("lock", false)
 	
 	if _window_manager and context:
 		# Find the anchor view by instance ID
@@ -595,6 +784,9 @@ func _execute_open_inspection_window(command_context: Dictionary) -> void:
 		if anchor_view:
 			# Use the public WindowManager API
 			_window_manager.open_inspection_window(context.location, anchor_view)
+			if should_lock:
+				_is_inspection_locked = true
+				_locked_entity_view_id = anchor_view_id
 
 ## Execute close all inspection windows command
 func _execute_close_all_inspection_windows() -> void:
@@ -720,19 +912,35 @@ func start_drag(origin_context: InteractionContext) -> void:
 	if _current_selection != null:
 		_execute_deselect()
 	
-	# Select the dragged item so user sees visual feedback
-	_execute_select(origin_context)
+	# 1. Clear lock/hover state
+	_is_inspection_locked = false
+	_locked_entity_view_id = -1
+	_hover_entity_view_id = -1
 	
 	_is_drag_active = true
 	_drag_origin_context = origin_context
-	# Prune only child windows of the source's parent inspection window on drag start.
-	# Do NOT close the parent window itself to avoid freeing the drag preview/source view.
+
+	# Context-Aware Window Management:
+	# - If dragging from an active window (e.g., Inventory), keep it open to preserve the source.
+	# - If dragging from the main view (BattleBoard), close all windows to prevent floating inspections.
 	if _window_manager and origin_context != null:
 		var src_view: Control = _find_view_by_instance_id(origin_context.source_view_instance_id)
 		if src_view:
 			var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
 			if is_instance_valid(parent_window):
+				# Dragging from inside a window -> Close only its children
 				_window_manager.close_children_of(parent_window)
+			else:
+				# Dragging from main view -> Close everything to avoid floating windows
+				if _window_manager.has_method("close_all_inspection_windows"):
+					_window_manager.close_all_inspection_windows()
+
+	# Select the dragged item so user sees visual feedback
+	# CRITICAL: Do this AFTER closing windows. Window closure logic might trigger side-effects
+	# (like focus changes or context updates) that could inadvertently deselect the item.
+	# By selecting LAST, we ensure the drag selection "wins".
+	_execute_select(origin_context)
+	
 	# Inform listeners that a drag has started (optional hook for visuals)
 	if SignalBus.has_signal("drag_started"):
 		SignalBus.emit_signal("drag_started", origin_context)
@@ -744,6 +952,16 @@ func start_drag(origin_context: InteractionContext) -> void:
 func end_drag(_was_handled: bool) -> void:
 	_is_drag_active = false
 	_drag_origin_context = null
+	# Clear the drag-selection set by start_drag._execute_select.
+	# On handled drops, ACTION → DESELECT already cleared this; on failed drops it's stuck.
+	_execute_deselect()
+	# Clear lock/hover state to prevent stale state after drag
+	_hover_entity_view_id = -1
+	
+	# Only clear if we aren't in a persistent lock state (though usually drag overrides all)
+	# For safety, we clear it, assuming the drag end will re-establish context if needed.
+	_is_inspection_locked = false
+
 	# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background
 	# close so that the ensuing REQUEST_ACTION can set precise window-tied suppression.
 	if _was_handled:
@@ -777,7 +995,11 @@ func start_drag_visuals(source_view: Control, placeholder: Control) -> void:
 	_drag_source_view = source_view
 	_drag_placeholder = placeholder
 	if is_instance_valid(_drag_source_view):
+		# Force invisibility via alpha as well as visible property.
+		# This is a fail-safe against top_level nodes (like hopping animations)
+		# that might bypass parent visibility or render unexpectedly.
 		_drag_source_view.visible = false
+		_drag_source_view.modulate.a = 0.0
 
 func end_drag_visuals(was_handled: bool) -> void:
 	_end_drag_visuals(was_handled)
@@ -785,6 +1007,12 @@ func end_drag_visuals(was_handled: bool) -> void:
 func _end_drag_visuals(was_handled: bool) -> void:
 	if is_instance_valid(_drag_source_view) and not was_handled:
 		_drag_source_view.visible = true
+		_drag_source_view.modulate.a = 1.0 # Restore visibility
+	# If handled (consumed), let the game logic destroy/move it, but if it remains, ensure it's visible
+	elif is_instance_valid(_drag_source_view):
+		# Even if handled, we should restore alpha in case the view is reused/pooled
+		_drag_source_view.modulate.a = 1.0
+		
 	if is_instance_valid(_drag_placeholder):
 		_drag_placeholder.queue_free()
 	_drag_source_view = null
@@ -793,6 +1021,10 @@ func _end_drag_visuals(was_handled: bool) -> void:
 ## Public API: query drag active state
 func is_drag_active() -> bool:
 	return _is_drag_active
+
+## Public API: get the current drag source view (for transferring ownership/visibility)
+func get_drag_source_view() -> Control:
+	return _drag_source_view
 
 ## Public API: expose COMBAT lock state for views
 func is_combat_locked() -> bool:
@@ -812,3 +1044,8 @@ func is_close_suppressed_for_window_id(window_id: int) -> bool:
 func is_close_suppressed_now() -> bool:
 	# Contextless suppression: time-window only
 	return Time.get_ticks_msec() <= _suppress_close_until_msec
+
+# --- Drag & Drop Accessors ---
+
+func get_drag_origin_context() -> InteractionContext:
+	return _drag_origin_context

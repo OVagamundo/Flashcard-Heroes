@@ -47,10 +47,13 @@ func _exit_tree() -> void:
 		tier_2_grid.gui_input.disconnect(_on_grid_gui_input)
 	if is_instance_valid(tier_3_grid) and tier_3_grid.gui_input.is_connected(_on_grid_gui_input):
 		tier_3_grid.gui_input.disconnect(_on_grid_gui_input)
-	# Ensure any active drag is ended before this window and its children are freed
+	# Ensure any active drag is ended before this window and its children are freed,
+	# BUT ONLY if the drag originated from within this window to prevent canceling unrelated drags.
 	if GlobalInteractionRouter.is_drag_active():
-		GlobalInteractionRouter.end_drag(false)
-		GlobalInteractionRouter.end_drag_visuals(false)
+		var source_view = GlobalInteractionRouter.get_drag_source_view()
+		if is_instance_valid(source_view) and (source_view == self or self.is_ancestor_of(source_view)):
+			GlobalInteractionRouter.end_drag(false)
+			GlobalInteractionRouter.end_drag_visuals(false)
 
 func populate(context: Dictionary) -> void:
 	title_label.text = context.get("title", "Inventory")

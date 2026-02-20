@@ -27,6 +27,7 @@ func _ready() -> void:
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
+	
 	# Allow non-link clicks on the description to bubble to the window root
 	# Hover handlers below will set STOP only while over UI links
 	description_label.mouse_filter = MOUSE_FILTER_PASS

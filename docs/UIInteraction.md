@@ -1,24 +1,51 @@
-# UI Interaction System
+# UI Architecture & Interaction System
 
 > [!IMPORTANT]
-> **GIR (Global Interaction Router)** interprets all input. **WindowManager** executes commands. Views only emit `InteractionContext`.
+> **Core Principle:** Simulation and Presentation are completely independent. The TurnLog is their ONLY connection. **GIR (Global Interaction Router)** interprets all input. **WindowManager** executes commands. Views only emit `InteractionContext`.
 
 ---
 
-## 1. Selection Rules
+## 1. Scene Hierarchy & Layout Rules
+
+```
+Main.tscn (Shell)
+├── VBoxContainer
+│   ├── TopArea (Gold, Tokens, Day, PlayerTrinketBar)
+│   ├── ContentArea → SubViewport → Battle.tscn (Board)
+│   │   ├── PlayerArea (Lineup, Bench)
+│   │   └── EnemyArea (Lineup, Traits)
+│   └── BottomArea (Gacha Machines 1-3)
+├── EffectsLayer (VFX)
+└── ModalLayer (Managed by WindowManager)
+```
+
+| Element | Size | Notes |
+|---------|------|-------|
+| Battle slot | 192x192px | 2x scale, units 128x128 centered |
+| Inventory slot | 192x192px | Glass overlay, unit 128x128 centered |
+| TopArea trinket slot | 128x128px | Standard icon size |
+| Gacha machines | 260px height | Fixed bottom bar |
+| Top gap spacer | 80px | Injected at runtime by BattleView |
+
+**Critical:** `BattleView._initialize_slots()` overrides scene placeholders with SlotViews. Always set `custom_minimum_size` on slots, not `set_size_scale()`.
+
+---
+
+## 2. Interaction & Selection Rules
 
 | Rule | Description |
 |------|-------------|
 | **S1** Singleton | Only one entity selected at a time |
 | **S2** Change of Focus | Click on non-target = move selection |
 | **S3** Selection-Only | Shop/Rewards: any click = change focus |
-| **S4** Re-Selection | Click selected item = inspect it |
-| **S5** Double-Click | Opens inspection window |
-| **S6** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
+| **S4** Re-Selection | Click selected item = lock inspection window |
+| **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) |
+| **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
+| **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
 
 ---
 
-## 2. Window Rules
+## 3. Window Management Rules
 
 | Rule | Description |
 |------|-------------|
@@ -29,9 +56,7 @@
 | **W5** Escape | 1) Cancel drag → 2) Close windows → 3) Deselect |
 | **W6** Selection Persist | Parent entity stays selected when opening child windows |
 
----
-
-## 3. Window Categories
+### Window Categories
 
 | Type | Examples | Blocker | Behavior |
 |------|----------|---------|----------|
@@ -41,44 +66,69 @@
 
 ---
 
-## 4. Combat Phase Lock
+## 4. Combat Presentation (VCR)
 
-During `COMBAT` phase:
-- All interaction contexts ignored
-- No drags can start
-- No commands generated
-- Background/Escape ignored
+### Flow
+1. End Turn → Simulation runs instantly → TurnLog generated
+2. BattleAnimator plays TurnLog sequentially
+3. Views operate in **Puppet Mode** - only react to Animator signals
+
+### Blocking Phases
+| Phase | UI Status |
+|-------|-----------|
+| `MANAGEMENT` | ✅ Interactive |
+| `COMBAT`, `START_OF_TURN`, `END_OF_TURN` | ❌ Blocked |
+
+> [!CAUTION]
+> During blocked phases, `_redraw_board()` returns immediately to prevent destroying the `_visual_registry`. All interaction contexts are ignored, drags cannot start, and Escape actions are blocked.
+
+### Position Data Rule
+Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visual_registry` for positions.**
 
 ---
 
-## 5. Functional Groups (GIR)
+## 5. View Internals & Rendering
+
+### SlotView
+- **Background:** `StyleBoxTexture` with `slot.png` (not a child node) to prevent cleanup scripts from destroying it.
+- **Tinting:** `StyleBoxTexture.modulate_color` based on container type.
+
+### GachaBallView Z-Order
+1. Unit Sprite (128x128 centered, inside `VBoxContainer`)
+2. Equipped Items Wrapper (Left-aligned overlay)
+3. Stats Overlay (HP/PWR labels, Status Effects)
+4. Selection Ring (white outline shader)
+
+### Selection Feedback
+- **Animation:** Physics-based hop (bounce + squash/stretch)
+- **Highlight:** White outline shader (`outline_width=3.0`)
+- **Source:** All views subscribe to `SignalBus.view_selected`
+
+---
+
+## 6. Functional Groups & APIs
 
 ```gdscript
 # Container → Group mapping (GlobalInteractionRouter.get_context_group)
 PlayerLineup, PlayerBench → BattleBoard
-RunInventoryT*, BattleInventoryT*, ItemInventory → InventoryGrid
+RunInventoryT*, BattleInventoryT* → InventoryGrid
 equipped_item → EquippedGrid
 Rewards, Shop → SelectionOnly
 EnemyLineup, DiscardPile, PlayerTrinkets → InspectionOnly
 ```
 
----
-
-## 6. Suppression Windows
-
+### Suppression Windows
 For Swap/Merge via ChoiceWindow:
 1. Resolve anchor view from target location
 2. Find ancestor window via `find_ancestor_window_for_view()`
 3. Call `GIR.activate_close_suppression_for_window_id(id, duration)`
 4. Duration: 420ms for unit-context, 320ms otherwise
 
----
-
-## 7. Key APIs
-
+### Key APIs
 | API | Purpose |
 |-----|---------|
 | `WindowManager.open_child_contextual_window()` | Open anchored child window |
 | `WindowManager.handle_inspection_background_click()` | Local prune (W3) |
 | `WindowManager.find_ancestor_window_for_view()` | Resolve owning window |
 | `GIR.get_context_group()` | Get functional group for container |
+

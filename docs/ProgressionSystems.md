@@ -36,7 +36,7 @@ More or better-equipped items.
 - **Effect**: Applies 2 Burn stacks to the entire opposing team at the start of each turn.
 
 ## Reward Reroll System
-Players may spend gold to refresh the available rewards (excluding the Trinket reward screen).
+Players may spend gold to refresh the available rewards. Note: Rerolling reward screens is intended to be a feature unlocked by acquiring the **Reroll Trinket** (Future Content). It is currently enabled by default for testing purposes.
 - **Cost**: Starts at **1 Gold**. Increases by **+1 Gold** for each subsequent reroll within the same session.
 - **Reset**: The cost resets to 1 Gold at the start of next reward session.
 - **Behavior**: Validates funds, plays `GoldCoinVFX`, clears current choices, and regenerates the pool.

@@ -33,7 +33,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.new()
 		
 	# Apply change via BattleManager
-	var new_hp = battle_manager.apply_stat_delta(source, "hp", delta)
+	var hp_result = battle_manager.apply_stat_delta(source, "hp", delta)
+	var new_hp: int = current_hp
+	if hp_result is Dictionary:
+		new_hp = hp_result.get("new_hp", current_hp)
+	elif hp_result != null:
+		new_hp = int(hp_result)
 	
 	# Create visual event
 	var event = CombatEvent.new(CombatEvent.Type.HEAL if delta > 0 else CombatEvent.Type.DAMAGE, {

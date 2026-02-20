@@ -240,7 +240,7 @@ func _animate_initial_unit_entry() -> void:
 				if is_instance_valid(target_node):
 					target_node.scale = Vector2.ONE
 				if is_instance_valid(ball_view):
-					ball_view._play_landing_bounce()
+					ball_view.play_landing_bounce()
 			)
 
 
@@ -410,6 +410,7 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 
 func _gui_input(event) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		print("DEBUG_INPUT: BattleView Background Clicked.")
 		# Create and emit InteractionContext for battle background
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()

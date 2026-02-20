@@ -52,9 +52,11 @@ The FlashcardManager is a persistent singleton that orchestrates the entire mini
 
 When `start_minigame` is called:
 
-1. **Card Introduction (if applicable):** One new card is introduced per session until all deck cards are active.
+1. **Card Introduction (if applicable):** 
    
-   **Initial 10 Cards:** The first 10 cards are added to the active deck at run start, but are formally introduced one-by-one via the popup. Until all 10 are introduced, the popup shows each card sequentially.
+   **Initial 10 Cards:** The first 10 cards form the active deck at run start. They are formally introduced via the new card popup **one by one, in order**, each time a minigame is started until all 10 have been introduced. This initial sequential introduction happens **even if the player does not have the mastery levels required** for deck expansion.
+   
+   **Deck Expansion (Cards 11+):** New cards beyond the initial 10 are added to the active deck one at a time whenever the player has leveled *all* currently active cards to at least **Mastery Level 3**. When a new card is added, the new card popup shows it.
    
    **Priority Cards Preview:** The popup displays 10 clickable card buttons at the bottom showing the highest-priority cards from the active deck (sorted by SRS weight without RNG). Each button is colored according to its mastery level. Clicking a button switches the main display to show that card's information. This allows players to preview or study cards before they are formally introduced.
 
@@ -113,4 +115,4 @@ Rewards are handled by the calling system, not the FlashcardManager:
 - Each correct answer = 1 Gacha Token (temporary, resets after battle).
 
 **At Rest Sites (RestSite.gd):**
-- Every 2 correct answers = +1 to Hero's chosen stat (HP or PWR).
+- Each correct answer provides tokens. These tokens are used as currency to activate Gacha Machines at the Rest Site which roll for permanent stat increases to the Hero's HP or PWR.

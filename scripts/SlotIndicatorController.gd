@@ -96,12 +96,13 @@ func _compute_valid_targets(source_instance: GachaBallInstance, source_loc: Loca
 	# Determine category of source
 	var is_unit = source_def.category == &"UNIT"
 	var is_item = source_def.category == &"ITEM"
+	var is_consumable = source_def.category == &"CONSUMABLE"
 	
 	# Determine if source is from inventory context
 	var is_inventory_context = _is_inventory_container(source_loc.container)
 	
 	# Get all visible containers based on current context
-	var containers_to_check: Array[StringName] = _get_checkable_containers(is_unit, is_item, source_loc.container)
+	var containers_to_check: Array[StringName] = _get_checkable_containers(is_unit, is_item, is_consumable, source_loc.container)
 	
 	for container_name in containers_to_check:
 		var container = data_owner.get_container(container_name)
@@ -124,6 +125,11 @@ func _compute_valid_targets(source_instance: GachaBallInstance, source_loc: Loca
 	if is_item and not is_inventory_context:
 		var equip_targets = _get_equip_targets(source_instance, source_loc, data_owner)
 		valid_locations.append_array(equip_targets)
+		
+	# For CONSUMABLES in battle context (not inventory): also check unit targets
+	if is_consumable and not is_inventory_context:
+		var unit_targets = _get_consumable_targets(data_owner)
+		valid_locations.append_array(unit_targets)
 	
 	return valid_locations
 
@@ -141,7 +147,7 @@ func _get_inventory_tier(container_name: StringName) -> int:
 		return 3
 	return 0
 
-func _get_checkable_containers(is_unit: bool, is_item: bool, source_container: StringName) -> Array[StringName]:
+func _get_checkable_containers(is_unit: bool, is_item: bool, is_consumable: bool, source_container: StringName) -> Array[StringName]:
 	var containers: Array[StringName] = []
 	
 	# Check if source is from inventory
@@ -164,11 +170,41 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, source_container: S
 			# Units can move to PlayerLineup, PlayerBench
 			containers.append(&"PlayerLineup")
 			containers.append(&"PlayerBench")
-		elif is_item:
-			# Items can move to PlayerBench
+		elif is_item or is_consumable:
+			# Items and consumables can move to PlayerBench
 			containers.append(&"PlayerBench")
 	
 	return containers
+
+func _get_consumable_targets(data_owner: Object) -> Array:
+	var targets: Array = []
+	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	
+	if GameManager.is_test_mode:
+		allowed_containers.append(&"EnemyLineup")
+		allowed_containers.append(&"EnemyBench")
+	
+	for container_name in allowed_containers:
+		var container = data_owner.get_container(container_name)
+		if not is_instance_valid(container):
+			continue
+		
+		var slot_count = container.get_size()
+		for i in range(slot_count):
+			var uuid = container.get_uuid(i)
+			if uuid.is_empty():
+				continue
+			var unit_instance = data_owner.get_all_instances().get(uuid)
+			if not is_instance_valid(unit_instance):
+				continue
+			var unit_def = unit_instance.get_definition()
+			if is_instance_valid(unit_def) and unit_def.category == &"UNIT":
+				var target_loc = LocationIdentifier.new()
+				target_loc.container = container_name
+				target_loc.index = i
+				targets.append(target_loc)
+				
+	return targets
 
 func _is_valid_target(source_instance: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, all_instances: Dictionary) -> bool:
 	var data_owner = _get_data_owner()
@@ -221,8 +257,10 @@ func _is_valid_target(source_instance: GachaBallInstance, source_loc: LocationId
 	# CASE 2: Occupied slot - check for merge or swap
 	var target_def = target_instance.get_definition()
 	
-	# Categories must match for merge/swap
+	# Categories must match for merge, but check swap validity for cross-category
 	if source_def.category != target_def.category:
+		if InventoryManager.is_valid_placement(source_instance, target_loc) and InventoryManager.is_valid_placement(target_instance, source_loc):
+			return true
 		return false
 	
 	# Check for merge recipe

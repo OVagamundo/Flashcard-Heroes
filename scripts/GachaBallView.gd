@@ -80,6 +80,9 @@ func _ready() -> void:
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
+		# Safety fallback: ensure visual state matches global selection truth
+		if bus.has_signal("selection_changed"):
+			bus.connect("selection_changed", _on_selection_changed)
 		bus.connect("inventory_action_completed", _on_inventory_action_completed)
 		
 		# unit_visual_stat_update is still handled here for puppet mode updates 
@@ -95,6 +98,10 @@ func _ready() -> void:
 	# Connect click handlers for status effect icons (burn/armor)
 	_setup_status_effect_click_handlers()
 		# are now handled by UnitAnimationController child node
+
+	# Hover-to-Inspect (PC only): emit HOVER events for GIR
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
 
 func _process(delta: float) -> void:
 	# Drag deformation: Apply rubber-toy physics to drag preview based on velocity
@@ -146,12 +153,22 @@ func _exit_tree() -> void:
 			bus.disconnect("view_selected", _on_view_selected)
 		if bus.is_connected("view_deselected", _on_view_deselected):
 			bus.disconnect("view_deselected", _on_view_deselected)
-		# NOTE: Animation signals are handled by UnitAnimationController child node
+		if bus.is_connected("selection_changed", _on_selection_changed):
+			bus.disconnect("selection_changed", _on_selection_changed)
+	# NOTE: Animation signals are handled by UnitAnimationController child node
 
-	# If this view is being freed during a drag, centrally end the drag and visuals
+	# Disconnect hover signals
+	if mouse_entered.is_connected(_on_mouse_entered):
+		mouse_entered.disconnect(_on_mouse_entered)
+	if mouse_exited.is_connected(_on_mouse_exited):
+		mouse_exited.disconnect(_on_mouse_exited)
+
+	# If this view is being freed during a drag, centrally end the drag ONLY if it is the source
 	if GlobalInteractionRouter.is_drag_active():
-		GlobalInteractionRouter.end_drag(false)
-		GlobalInteractionRouter.end_drag_visuals(false)
+		var source_view = GlobalInteractionRouter.get_drag_source_view()
+		if is_instance_valid(source_view) and source_view == self:
+			GlobalInteractionRouter.end_drag(false)
+			GlobalInteractionRouter.end_drag_visuals(false)
 
 var _logical_drag_success: bool = false
 
@@ -465,15 +482,15 @@ func set_visual_state(snapshot: Dictionary) -> void:
 		_bound_uuid = _instance_uuid
 	
 	# Snapshot keys: "hp", "pwr", "def_id"
-	if snapshot.has("hp"):
+	if snapshot.has("hp") and snapshot["hp"] != null:
 		_visual_hp = int(snapshot["hp"])
-	if snapshot.has("pwr"):
+	if snapshot.has("pwr") and snapshot["pwr"] != null:
 		_visual_pwr = int(snapshot["pwr"])
-	if snapshot.has("burn_stacks"): # Renamed from poison_stacks
+	if snapshot.has("burn_stacks") and snapshot["burn_stacks"] != null: # Renamed from poison_stacks
 		_visual_burn_stacks = int(snapshot["burn_stacks"]) # Renamed from poison_stacks
-	if snapshot.has("armor_stacks"): # Added for armor - same pattern as burn
+	if snapshot.has("armor_stacks") and snapshot["armor_stacks"] != null: # Added for armor - same pattern as burn
 		_visual_armor_stacks = int(snapshot["armor_stacks"])
-	if snapshot.has("spikes_stacks"): # Added for spikes
+	if snapshot.has("spikes_stacks") and snapshot["spikes_stacks"] != null: # Added for spikes
 		_visual_spikes_stacks = int(snapshot["spikes_stacks"])
 		# Sync to _visual_status_effects for dynamic icon display
 		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
@@ -993,19 +1010,40 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 				_visual_status_effects[status_id] = new_value
 				_update_dynamic_status_icons()
 
-func _gui_input(event: InputEvent) -> void:
+# ---------------------------------------------------------------------------
+# Hover-to-Inspect (PC Only)
+# ---------------------------------------------------------------------------
+
+func _on_mouse_entered() -> void:
+	if not _is_inspectable: return
 	if not is_instance_valid(_location): return
+	# Touch guard: only emit on desktop
+	if DisplayServer.is_touchscreen_available(): return
+	# Drag guard: never emit hover during ANY drag (self or global)
+	if _is_dragging: return
+	if GlobalInteractionRouter.is_drag_active(): return
+	var ctx = _create_interaction_context(&"HOVER_ENTER")
+	SignalBus.emit_signal("interaction_context_received", ctx)
+
+func _on_mouse_exited() -> void:
+	if not is_instance_valid(_location): return
+	if DisplayServer.is_touchscreen_available(): return
+	# Drag guard: never emit hover during ANY drag (self or global)
+	if _is_dragging: return
+	if GlobalInteractionRouter.is_drag_active(): return
+	var ctx = _create_interaction_context(&"HOVER_EXIT")
+	SignalBus.emit_signal("interaction_context_received", ctx)
+
+func _gui_input(event: InputEvent) -> void:
+	# Ignore input entirely if we don't have a location (e.g. visual-only balls in RestSite)
+	# This allows the click to bubble up to the Rest Site's prize slot gui_input handler
+	if not is_instance_valid(_location):
+		return
 
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		# Handle double-click immediately on press for fast inspection
-		if event.is_pressed() and event.double_click:
-			get_viewport().set_input_as_handled()
-			var dc_ctx = _create_interaction_context(&"DOUBLE_CLICK")
-			SignalBus.emit_signal("interaction_context_received", dc_ctx)
-			_pressed_pending_click = false
-			return
-
+		# DOUBLE_CLICK is no longer needed — hover replaces inspect, click locks
 		if event.is_pressed():
+			print("DEBUG_INPUT: GachaBallView Pressed. UUID: ", _instance_uuid)
 			# Defer single-click to release; may become a drag
 			get_viewport().set_input_as_handled()
 			_pressed_pending_click = true
@@ -1017,6 +1055,7 @@ func _gui_input(event: InputEvent) -> void:
 			# Reset flags regardless
 			_pressed_pending_click = false
 			_drag_initiated_for_click = false
+
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	# Use the new flag to control drag-and-drop.
@@ -1186,6 +1225,23 @@ func _on_view_deselected(view: Control) -> void:
 		_is_selected = false
 		_apply_selection_feedback()
 
+## Fail-safe handler for global selection changes
+## Ensures this view deselects even if the instance ID lookup failed in GIR
+func _on_selection_changed(new_loc: LocationIdentifier) -> void:
+	if not _is_selected:
+		return
+		
+	# If selection cleared (null) or changed to a different location, deselect self
+	if not is_instance_valid(new_loc) or not _locations_match(new_loc, _location):
+		_is_selected = false
+		_apply_selection_feedback()
+
+## Helper to compare location identifiers by value
+func _locations_match(a: LocationIdentifier, b: LocationIdentifier) -> bool:
+	if a == b: return true
+	if not is_instance_valid(a) or not is_instance_valid(b): return false
+	return a.container == b.container and a.index == b.index and a.unit_uuid == b.unit_uuid
+
 # NOTE: Animation handlers (_on_unit_flash_effect, _on_unit_bump_attack, etc.)
 # are now handled by UnitAnimationController child node
 
@@ -1253,6 +1309,19 @@ func _apply_selection_feedback() -> void:
 			mat.set_shader_parameter("outline_enabled", _is_selected)
 
 func _notification(what: int) -> void:
+	# Signal Drag Start to GIR (Critical for State Management)
+	if what == NOTIFICATION_DRAG_BEGIN:
+		if _drag_initiated_for_click:
+			print("DEBUG_INPUT: Emitting DRAG_START. Entity: ", _entity_type, " | UUID: ", _instance_uuid)
+			var context = _create_interaction_context(&"DRAG_START")
+			SignalBus.emit_signal("interaction_context_received", context)
+			
+			# Visuals: Hide self during drag (standard drag behavior)
+			# We use modulate instead of visible to keep layout size if needed,
+			# but for GridContainers, visible=false is usually better to collapse hole?
+			# No, we want the hole to stay. Modulate is safer for layout stability.
+			modulate.a = 0.0
+
 	# Fallback: if a drag ends without any drop target handling it, restore visuals
 	if what == NOTIFICATION_DRAG_END:
 		var godot_successful = is_drag_successful()
@@ -1266,12 +1335,15 @@ func _notification(what: int) -> void:
 		# Reset deformation first so we start animation from a clean state (scale 1.0)
 		_reset_drag_deformation()
 		
+		# Restore visibility
+		modulate.a = 1.0
+		
 		# If drag was NOT successful (dropped on nothing OR rejected by logic), bounce back
 		if was_dragging_me and not combined_success:
 			if GlobalInteractionRouter.is_drag_active():
 				GlobalInteractionRouter.end_drag(false)
 			
-			_play_landing_bounce()
+			play_landing_bounce()
 		
 		# Reset local drag flag
 		_drag_initiated_for_click = false
@@ -1327,7 +1399,7 @@ func _on_inventory_action_completed(target_uuids: Array) -> void:
 			
 		# Wait one frame for UI layout and redraw to complete
 		await get_tree().process_frame
-		_play_landing_bounce()
+		play_landing_bounce()
 
 func _reset_drag_deformation() -> void:
 	if not _is_dragging: return
@@ -1338,7 +1410,7 @@ func _reset_drag_deformation() -> void:
 		icon_rect.scale = _original_icon_scale
 		icon_rect.rotation = _original_icon_rotation
 
-func _play_landing_bounce() -> void:
+func play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return
 	
 	# AUDIO HOOK: Play hop sound for all landing bounces
