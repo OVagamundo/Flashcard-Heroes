@@ -16,8 +16,16 @@ const TraitTrackerScene = preload("res://scenes/TraitTracker.tscn")
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
 
 # Trait Containers (Created programmatically)
-var player_traits: HBoxContainer
-var enemy_traits: HBoxContainer
+var player_traits: Control
+var enemy_traits: Control
+var _player_trait_anchor: Control
+var _enemy_trait_anchor: Control
+var _trait_hud_root: Control
+
+const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "WIND"]
+const TRAIT_HUD_Y: float = 10.0
+const TRAIT_TRACKER_SPACING: float = 8.0
+const TRAIT_SCREEN_MARGIN: float = 24.0
 
 # --- Node References ---
 var battle_manager: BattleManager
@@ -87,47 +95,45 @@ func _ready() -> void:
 	# ----------------------------
 	# TRAIT HUD LAYER
 	# ----------------------------
-	var trait_layer = CanvasLayer.new()
+	var trait_layer = Control.new()
 	trait_layer.name = "TraitHUD"
-	trait_layer.layer = 10 # Ensure it's above mostly everything but below Popups
+	trait_layer.layout_mode = 1
+	trait_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	trait_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	trait_layer.z_index = 100
 	add_child(trait_layer)
 	
 	# Player Traits Container (Floating HUD)
-	player_traits = HBoxContainer.new()
+	player_traits = Control.new()
 	player_traits.name = "PlayerTraits"
-	player_traits.alignment = BoxContainer.ALIGNMENT_CENTER
-	player_traits.custom_minimum_size = Vector2(300, 60)
-	player_traits.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	player_traits.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	player_traits.layout_mode = 1
+	player_traits.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	player_traits.position = Vector2.ZERO
 	
 	# Enemy Traits Container (Floating HUD)
-	enemy_traits = HBoxContainer.new()
+	enemy_traits = Control.new()
 	enemy_traits.name = "EnemyTraits"
-	enemy_traits.alignment = BoxContainer.ALIGNMENT_CENTER
-	enemy_traits.custom_minimum_size = Vector2(300, 60)
-	enemy_traits.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	enemy_traits.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	enemy_traits.layout_mode = 1
+	enemy_traits.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	enemy_traits.position = Vector2.ZERO
 	
-	var hud_root = Control.new()
-	hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	trait_layer.add_child(hud_root)
+	_trait_hud_root = trait_layer
 	
 	# Player Side (Left)
-	var p_anchor = Control.new()
-	p_anchor.layout_mode = 1 # Anchors
-	p_anchor.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	p_anchor.position = Vector2(160, 10) # Moved UP to 10 (Absolute Max Height)
-	hud_root.add_child(p_anchor)
-	p_anchor.add_child(player_traits)
+	_player_trait_anchor = Control.new()
+	_player_trait_anchor.layout_mode = 1 # Anchors
+	_player_trait_anchor.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_player_trait_anchor.position = Vector2(160, TRAIT_HUD_Y)
+	_trait_hud_root.add_child(_player_trait_anchor)
+	_player_trait_anchor.add_child(player_traits)
 	
 	# Enemy Side (Right)
-	var e_anchor = Control.new()
-	e_anchor.layout_mode = 1
-	e_anchor.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	e_anchor.position = Vector2(-460, 10) # Moved UP to 10 (Absolute Max Height)
-	hud_root.add_child(e_anchor)
-	e_anchor.add_child(enemy_traits)
+	_enemy_trait_anchor = Control.new()
+	_enemy_trait_anchor.layout_mode = 1
+	_enemy_trait_anchor.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_enemy_trait_anchor.position = Vector2(0, TRAIT_HUD_Y)
+	_trait_hud_root.add_child(_enemy_trait_anchor)
+	_enemy_trait_anchor.add_child(enemy_traits)
 	# ----------------------------
 
 		
@@ -174,6 +180,13 @@ func _ready() -> void:
 	_redraw_board()
 	_redraw_board()
 	_on_battle_phase_changed(battle_manager.get_current_phase_name())
+	if is_instance_valid(player_lineup) and not player_lineup.resized.is_connected(_on_lineup_resized):
+		player_lineup.resized.connect(_on_lineup_resized)
+	if is_instance_valid(enemy_lineup) and not enemy_lineup.resized.is_connected(_on_lineup_resized):
+		enemy_lineup.resized.connect(_on_lineup_resized)
+	var viewport = get_viewport()
+	if is_instance_valid(viewport) and not viewport.size_changed.is_connected(_on_viewport_size_changed):
+		viewport.size_changed.connect(_on_viewport_size_changed)
 	
 	# Animate initial unit entry (first battle only - subsequent battles via signal)
 	await get_tree().process_frame
@@ -265,6 +278,7 @@ func _redraw_board() -> void:
 	
 	_update_traits("PLAYER")
 	_update_traits("ENEMY")
+	call_deferred("_refresh_trait_hud_positions")
 
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):
@@ -467,33 +481,205 @@ func _populate_enemy_trinkets() -> void:
 func _update_traits(team: String) -> void:
 	if not is_instance_valid(battle_manager):
 		return
-		
-	var traits = battle_manager.get_active_traits(team)
-	print("DEBUG: BattleView._update_traits(%s) - Traits: %s" % [team, traits])
 	
 	var container = player_traits if team == "PLAYER" else enemy_traits
 	if not is_instance_valid(container):
-		print("DEBUG: BattleView._update_traits - Container for %s is NULL!" % team)
 		return
-		
+			
 	# Clear existing
 	for child in container.get_children():
+		container.remove_child(child)
 		child.queue_free()
-		
-	var active_traits = battle_manager.get_active_traits(team)
+
+	var ordered_active_traits = _get_ordered_active_traits(team)
+	for trait_entry in ordered_active_traits:
+		if not TraitTrackerScene:
+			break
+		var tracker = TraitTrackerScene.instantiate()
+		container.add_child(tracker)
+		tracker.populate(trait_entry["trait"], trait_entry["count"], true)
+	_layout_trait_trackers(container, team == "ENEMY")
+
+func _get_ordered_active_traits(team: String) -> Array[Dictionary]:
+	var ordered_active_traits: Array[Dictionary] = []
+	var all_traits: Dictionary = battle_manager.get_active_traits(team)
+
+	for i in range(TRAIT_SORT_ORDER.size()):
+		var trait_name: String = TRAIT_SORT_ORDER[i]
+		var count: int = all_traits.get(trait_name, 0)
+		if count < _get_trait_activation_threshold(trait_name):
+			continue
+
+		ordered_active_traits.append({
+			"trait": trait_name,
+			"count": count,
+			"level": _get_trait_active_level(trait_name, count),
+			"order": i
+		})
+
+	ordered_active_traits.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if a["level"] != b["level"]:
+			return a["level"] > b["level"]
+		if a["count"] != b["count"]:
+			return a["count"] > b["count"]
+		return a["order"] < b["order"]
+	)
+
+	return ordered_active_traits
+
+func _get_trait_activation_threshold(trait_name: String) -> int:
+	var trait_definition: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
+	var levels: Array = trait_definition.get("levels", [])
+	if levels.is_empty():
+		return 999
+	return int(levels[0].get("min", 999))
+
+func _get_trait_active_level(trait_name: String, count: int) -> int:
+	var trait_definition: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
+	var levels: Array = trait_definition.get("levels", [])
+	var level: int = 0
+	for entry in levels:
+		var min_required: int = int(entry.get("min", 0))
+		if count >= min_required:
+			level += 1
+	return level
+
+func _update_trait_hud_positions() -> void:
+	if not is_instance_valid(_trait_hud_root) or not is_instance_valid(_player_trait_anchor) or not is_instance_valid(_enemy_trait_anchor):
+		return
+	var hud_width := _trait_hud_root.size.x
+	if hud_width <= 0.0:
+		hud_width = get_viewport_rect().size.x
+
+	var player_slot = _get_lineup_edge_slot(player_lineup, false)
+	if is_instance_valid(player_slot):
+		var player_left = player_slot.get_global_rect().position
+		var to_hud_local: Transform2D = _trait_hud_root.get_global_transform().affine_inverse()
+		var player_left_local = to_hud_local * player_left
+		var clamped_player_x = clampf(player_left_local.x, TRAIT_SCREEN_MARGIN, maxf(TRAIT_SCREEN_MARGIN, hud_width - TRAIT_SCREEN_MARGIN))
+		_player_trait_anchor.position = Vector2(clamped_player_x, TRAIT_HUD_Y)
+
+	var enemy_slot = _get_lineup_edge_slot(enemy_lineup, true)
+	if is_instance_valid(enemy_slot):
+		var enemy_rect = enemy_slot.get_global_rect()
+		var enemy_right = enemy_rect.position + Vector2(enemy_rect.size.x, 0)
+		var to_hud_local: Transform2D = _trait_hud_root.get_global_transform().affine_inverse()
+		var enemy_right_local = to_hud_local * enemy_right
+		var clamped_enemy_x = clampf(enemy_right_local.x, TRAIT_SCREEN_MARGIN, maxf(TRAIT_SCREEN_MARGIN, hud_width - TRAIT_SCREEN_MARGIN))
+		_enemy_trait_anchor.position = Vector2(clamped_enemy_x, TRAIT_HUD_Y)
+
+	if is_instance_valid(player_traits):
+		player_traits.position = Vector2.ZERO
+	if is_instance_valid(enemy_traits):
+		enemy_traits.position = Vector2.ZERO
 	
-	# Always show Fire, Earth, Water, and Wind trackers for consistent feedback
-	for trait_name in ["FIRE", "EARTH", "WATER", "WIND"]:
-		var count = active_traits.get(trait_name, 0)
-		if count >= 0: # CHANGED: Always show even if 0, for debugging!
-			if TraitTrackerScene:
-				var tracker = TraitTrackerScene.instantiate()
-				container.add_child(tracker)
-				# Use min threshold of 3 for Fire/Earth, 2 for Water/Wind
-				var min_active = 3 if trait_name in ["FIRE", "EARTH"] else 2
-				tracker.populate(trait_name, count, count >= min_active)
-			else:
-				print("ERROR: TraitTrackerScene is null!")
+	_clamp_trait_trackers_to_viewport(player_traits)
+	_clamp_trait_trackers_to_viewport(enemy_traits)
+
+func _get_lineup_edge_slot(lineup: HBoxContainer, use_rightmost: bool) -> PanelContainer:
+	if not is_instance_valid(lineup):
+		return null
+
+	var slots: Array[PanelContainer] = []
+	for child in lineup.get_children():
+		if child is PanelContainer:
+			slots.append(child)
+
+	if slots.is_empty():
+		return null
+
+	# Prefer an occupied + visible edge slot so labels stay tied to active formation,
+	# not to off-screen overflow slots when the lineup is wider than its area.
+	if use_rightmost:
+		for i in range(slots.size() - 1, -1, -1):
+			var slot = slots[i]
+			if _slot_has_unit(slot) and _slot_is_visible(slot):
+				return slot
+		for i in range(slots.size() - 1, -1, -1):
+			var slot = slots[i]
+			if _slot_has_unit(slot):
+				return slot
+		return slots[slots.size() - 1]
+
+	for slot in slots:
+		if _slot_has_unit(slot) and _slot_is_visible(slot):
+			return slot
+	for slot in slots:
+		if _slot_has_unit(slot):
+			return slot
+	return slots[0]
+
+func _slot_has_unit(slot: PanelContainer) -> bool:
+	if not is_instance_valid(slot):
+		return false
+	for child in slot.get_children():
+		if child is GachaBallView:
+			return true
+	return false
+
+func _slot_is_visible(slot: PanelContainer) -> bool:
+	if not is_instance_valid(slot):
+		return false
+	var slot_rect = slot.get_global_rect()
+	var viewport_width = get_viewport_rect().size.x
+	return slot_rect.position.x < viewport_width and (slot_rect.position.x + slot_rect.size.x) > 0.0
+
+func _layout_trait_trackers(container: Control, align_right: bool) -> void:
+	if not is_instance_valid(container):
+		return
+	
+	var cursor: float = 0.0
+	for child in container.get_children():
+		if not (child is Control):
+			continue
+		var tracker := child as Control
+		var tracker_size = tracker.get_combined_minimum_size()
+		tracker.size = tracker_size
+		if align_right:
+			cursor += tracker_size.x
+			tracker.position = Vector2(-cursor, 0.0)
+			cursor += TRAIT_TRACKER_SPACING
+		else:
+			tracker.position = Vector2(cursor, 0.0)
+			cursor += tracker_size.x + TRAIT_TRACKER_SPACING
+
+func _clamp_trait_trackers_to_viewport(container: Control) -> void:
+	if not is_instance_valid(container):
+		return
+	
+	var viewport_width = get_viewport_rect().size.x
+	var min_x: float = INF
+	var max_x: float = -INF
+	
+	for child in container.get_children():
+		if not (child is Control):
+			continue
+		var ctrl := child as Control
+		var rect = ctrl.get_global_rect()
+		min_x = minf(min_x, rect.position.x)
+		max_x = maxf(max_x, rect.position.x + rect.size.x)
+	
+	if min_x == INF or max_x == -INF:
+		return
+	
+	var delta_x: float = 0.0
+	if min_x < TRAIT_SCREEN_MARGIN:
+		delta_x += (TRAIT_SCREEN_MARGIN - min_x)
+	if max_x + delta_x > viewport_width - TRAIT_SCREEN_MARGIN:
+		delta_x -= (max_x + delta_x - (viewport_width - TRAIT_SCREEN_MARGIN))
+	
+	if absf(delta_x) > 0.1:
+		container.position.x += delta_x
+
+func _on_viewport_size_changed() -> void:
+	call_deferred("_refresh_trait_hud_positions")
+
+func _on_lineup_resized() -> void:
+	call_deferred("_refresh_trait_hud_positions")
+
+func _refresh_trait_hud_positions() -> void:
+	await get_tree().process_frame
+	_update_trait_hud_positions()
 
 # --- Gacha Animation Logic ---
 
