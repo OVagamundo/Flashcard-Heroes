@@ -9,9 +9,9 @@ extends Node2D
 const TOKEN_TEXTURE = preload("res://assets/ui/textures/token_100yen.png")
 
 # Animation parameters - tuned for satisfying "juice"
-const INITIAL_SCALE := 0.08 # Start small for dramatic pop
-const MAX_SCALE := 0.25 # Overshoot scale at peak
-const FINAL_SCALE := 0.17 # Normal coin size
+const INITIAL_SCALE := 1.5 # Start small for dramatic pop
+const MAX_SCALE := 4.5 # Overshoot scale at peak
+const FINAL_SCALE := 3.0 # Normal coin size
 const POP_HEIGHT := 180.0 # Height of initial pop
 const POP_UP_DURATION := 0.18 # Time to reach peak (slower = more satisfying)
 const HANG_TIME := 0.05 # Brief pause at peak

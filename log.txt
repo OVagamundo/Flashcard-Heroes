@@ -10,7 +10,14 @@ WARNING: res://resources/items/item_emblem_fire.tres:3 - ext_resource, invalid U
 WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
    at: load (scene/resources/resource_format_text.cpp:447)
 [Title] Ready. TutorialManager.tutorials_enabled: false
-[SaveManager] Run loaded successfully (Day 4)
+[TutorialManager] Requesting tutorial: loadout_intro
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: res://scenes/Main.tscn:3 - ext_resource, invalid UID: uid://djq1j0l812uof - using text path instead: res://assets/shaders/color_glow_post_process.gdshader
+   at: load (scene/resources/resource_format_text.cpp:447)
+WARNING: res://scenes/Main.tscn:5 - ext_resource, invalid UID: uid://djq1j0l812uof - using text path instead: res://assets/shaders/color_glow_post_process.gdshader
+   at: load (scene/resources/resource_format_text.cpp:447)
+WARNING: res://scenes/Main.tscn:15 - ext_resource, invalid UID: uid://djq1j0l812uof - using text path instead: res://assets/shaders/color_glow_post_process.gdshader
+   at: load (scene/resources/resource_format_text.cpp:447)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
@@ -23,37 +30,38 @@ WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxConta
 WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
-[PathChoice] Loading from save, skipping day advance. Current Day: 4
+[SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Requesting tutorial: gacha_inspect_run
 [TutorialManager] Blocked: Tutorials disabled
-[SaveManager] Run saved successfully (Day 5)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
-[EncounterGen] Budget: 22, Spent: 22, Units: 4, Items: 2, Trinkets: 0
+[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1771721028_4_10412
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1771721028_4_10412
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1771721028_4_10412
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1771721028_4_10412
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1771721028_4_10412
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1771721028_4_10412
+DEBUG_GIR: DRAG_START intercepted for UNIT
+[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+[EncounterGen] Budget: 6, Spent: 6, Units: 2, Items: 0, Trinkets: 0
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 9
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 9, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 7
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=4 targets=1
-[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=4 targets=1
-[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=4 targets=1
-[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=2 targets=1
-[StatusEffectAnimation] execute() called - stat='burn_stacks' amount=2 targets=1
+[BattleLog] [1:2] Timekeeper grants Timekeeper -1 PWR (trait_wind_steal) 
+[BuffAnimation] execute() called - stat='pwr' amount=-1 targets=1
+[BattleLog] [1:3] Timekeeper grants Shadow Cloner +1 PWR (trait_wind_steal) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
@@ -67,6 +75,10 @@ If you want to set size, change the anchors or consider using set_deferred().
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:4] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 3→4)
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
@@ -80,9 +92,63 @@ If you want to set size, change the anchors or consider using set_deferred().
 [TutorialManager] Blocked: Tutorials disabled
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[ItemInspection] Ability: item_tier3b_on_attack_buff | Key: ability.item_t3b_on_attack_buff.desc | Desc: When the holder attacks, grant +2 PWR to two random allies.
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_b_1771640948_53_30381
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_b_1771640948_53_30381
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:6] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 4→5)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:8] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 5→6)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:10] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:11] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:12] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_c_1771721105_103_00956
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_c_1771721105_103_00956
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -90,22 +156,8 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[ItemInspection] Ability: item_tier3b_on_attack_buff | Key: ability.item_t3b_on_attack_buff.desc | Desc: When the holder attacks, grant +2 PWR to two random allies.
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_h_1771640948_65_36481
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_h_1771640948_65_36481
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_c_1771721105_89_55111
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1771721105_89_55111
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -113,58 +165,40 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[ItemInspection] Ability: item_tier3b_on_attack_buff | Key: ability.item_t3b_on_attack_buff.desc | Desc: When the holder attacks, grant +2 PWR to two random allies.
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_d_1771640948_56_14645
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_d_1771640948_56_14645
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1443)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[ItemInspection] Ability: item_tier3b_on_attack_buff | Key: ability.item_t3b_on_attack_buff.desc | Desc: When the holder attacks, grant +2 PWR to two random allies.
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_g_1771640948_30_76644
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_g_1771640948_30_76644
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_g_1771640948_30_76644
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_g_1771640948_30_76644
-DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_potion_heroism_1771721105_126_42726
+DEBUG_INPUT: Emitting DRAG_START. Entity: CONSUMABLE | UUID: item_potion_heroism_1771721105_126_42726
+DEBUG_GIR: DRAG_START intercepted for CONSUMABLE
 DEBUG_GIR: Processing UNIT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:14] Protector heals Protector for 3 HP 
+[BattleLog] [1:15] Protector heals Protector for 3 HP (ability_grant_heroism) (HP: 1→4)
+[BattleLog] [1:16] Protector grants Protector +3 PWR 
+[BattleLog] [1:17] Protector grants Protector +3 PWR (ability_grant_heroism) 
+[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
+[BattleLog] [1:18] Protector grants Protector +3 armor_stacks 
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1443)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:19] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:20] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
