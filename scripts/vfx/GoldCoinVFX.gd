@@ -6,10 +6,10 @@ extends Node2D
 ## Natural parabolic arc like tossing a coin
 
 # Animation parameters
-const COIN_SCALE := 2.5 # Scaled to match the new 32x32 token texture size (slightly smaller than TokenSpend)
-const TOSS_DURATION := 0.40
-const SPIN_COUNT := 2
-const WOBBLE_DEGREES := 15.0
+const COIN_SCALE := 1.5 # 1.5 * 64px = 96px, perfectly matching the top bar GoldIcon
+const TOSS_DURATION := 0.45
+const SPIN_COUNT := 3
+const WOBBLE_DEGREES := 20.0
 
 signal animation_finished
 signal coin_landed(target_pos: Vector2)
@@ -28,13 +28,11 @@ func _ready() -> void:
 	_coin_sprite.name = "GoldCoinSprite"
 	add_child(_coin_sprite)
 	
-	# Use a gold-tinted version of the token or simple gold circle
-	# For now, we'll use the token texture with gold tint
-	var texture = load("res://assets/ui/textures/token_100yen.png")
+	# Use the gold coin texture
+	var texture = load("res://assets/ui/textures/gold_coin.png")
 	if texture:
 		_coin_sprite.texture = texture
 	_coin_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
-	_coin_sprite.modulate = Color(1.0, 0.85, 0.3, 1.0) # Gold tint
 
 func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	"""Toss a gold coin from start to target with a natural parabolic arc"""
@@ -42,7 +40,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	_target_pos = target_pos
 	global_position = start_pos
 	
-	_coin_sprite.modulate = Color(1.0, 0.85, 0.3, 1.0)
+	_coin_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0) # Ensure it has no tint
 	_coin_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
 	_coin_sprite.rotation = 0
 	
@@ -78,7 +76,7 @@ func _process(delta: float) -> void:
 	var linear_y = lerp(_start_pos.y, _target_pos.y, t)
 	
 	# Reduced arc height for screen constraints
-	var arc_height = min(60.0, (_target_pos - _start_pos).length() * 0.12)
+	var arc_height = min(80.0, (_target_pos - _start_pos).length() * 0.15)
 	var arc_offset = -4.0 * t * (t - 1.0) * arc_height
 	
 	var y = linear_y - arc_offset
@@ -116,8 +114,8 @@ func _start_spin() -> void:
 
 func _start_wobble() -> void:
 	_wobble_tween = create_tween()
-	_wobble_tween.set_loops(int(TOSS_DURATION / 0.1))
+	_wobble_tween.set_loops(int(TOSS_DURATION / 0.12))
 	
-	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", WOBBLE_DEGREES, 0.05).set_trans(Tween.TRANS_SINE)
-	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", -WOBBLE_DEGREES, 0.1).set_trans(Tween.TRANS_SINE)
-	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", 0.0, 0.05).set_trans(Tween.TRANS_SINE)
+	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", WOBBLE_DEGREES, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", -WOBBLE_DEGREES, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", 0.0, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

@@ -3,8 +3,11 @@ extends Control
 
 const PathNodeDefinition = preload("res://scripts/PathNodeDefinition.gd")
 const NodeViewScene = preload("res://scenes/NodeView.tscn")
+const SELECTION_TRANSITION_DELAY: float = 0.12
 
 @onready var node_container: HBoxContainer = $CenterContainer/HBoxContainer
+var _selection_locked: bool = false
+var _node_views: Array[NodeView] = []
 
 func _ready() -> void:
 	# AUDIO HOOK: Path Choice BGM
@@ -51,8 +54,7 @@ func _setup_boss_node(boss_level: int) -> void:
 	
 	var node_view = NodeViewScene.instantiate()
 	node_view.populate(node_def)
-	node_view.node_selected.connect(_on_node_selected)
-	node_container.add_child(node_view)
+	_register_node_view(node_view)
 
 ## Sets up the normal 3-option path choice for non-boss days.
 ## Uses equal chances for BATTLE, ELITE, SHOP, REST with no duplicates.
@@ -85,8 +87,19 @@ func _setup_normal_nodes() -> void:
 
 		var node_view = NodeViewScene.instantiate()
 		node_view.populate(node_def)
-		node_view.node_selected.connect(_on_node_selected)
-		node_container.add_child(node_view)
+		_register_node_view(node_view)
+
+func _register_node_view(node_view: NodeView) -> void:
+	node_view.node_selected.connect(_on_node_selected)
+	node_container.add_child(node_view)
+	_node_views.append(node_view)
 
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
+	if _selection_locked:
+		return
+	_selection_locked = true
+	for node_view in _node_views:
+		if is_instance_valid(node_view):
+			node_view.disabled = true
+	await get_tree().create_timer(SELECTION_TRANSITION_DELAY).timeout
 	SignalBus.emit_signal("node_selected", node_def)

@@ -13,7 +13,6 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 
 var _current_shop_instances: Array = []
 var _selected_cost: int = 0
-var _price_labels_container: HBoxContainer
 var _current_reroll_cost: int = 1
 
 func _ready() -> void:
@@ -24,13 +23,7 @@ func _ready() -> void:
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	leave_button.pressed.connect(_on_leave_pressed)
 	
-	# Create price labels container
-	_price_labels_container = HBoxContainer.new()
-	_price_labels_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	_price_labels_container.add_theme_constant_override("separation", 20)
-	add_child(_price_labels_container)
-	move_child(_price_labels_container, 2) # Place after slots container
-	
+
 	# Add background input handling for the new InteractionContext system
 	gui_input.connect(_on_gui_input)
 	
@@ -51,10 +44,6 @@ func populate(context: Dictionary) -> void:
 	_current_shop_instances = context.get("shop_instances", [])
 	_current_reroll_cost = context.get("reroll_cost", 1)
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
-
-	# Clear existing price labels
-	for child in _price_labels_container.get_children():
-		child.queue_free()
 
 	var slot_nodes = slots_container.get_children()
 
@@ -88,18 +77,46 @@ func populate(context: Dictionary) -> void:
 			slot_view.set_content(visual_data, true, false, false)
 			# Note: SlotView.set_content now propagates interaction context automatically
 		
-		# Always create a price label for each slot to maintain positioning
-		var price_label = Label.new()
+		# Always create a price tag for each slot
 		if is_instance_valid(inst_for_slot):
+			var price_panel = PanelContainer.new()
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color("#f1d533") # Bright yellow background
+			style.border_color = Color("#000000") # Black border
+			style.border_width_left = 2
+			style.border_width_right = 2
+			style.border_width_top = 2
+			style.border_width_bottom = 2
+			style.corner_radius_top_left = 6
+			style.corner_radius_top_right = 6
+			style.corner_radius_bottom_right = 6
+			style.corner_radius_bottom_left = 6
+			style.content_margin_left = 12
+			style.content_margin_right = 12
+			style.content_margin_top = 6
+			style.content_margin_bottom = 6
+			price_panel.add_theme_stylebox_override("panel", style)
+			
+			# Align to bottom center
+			price_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+			price_panel.size_flags_vertical = Control.SIZE_SHRINK_END
+			# Offset slightly downward to hang off the gachaball graphic
+			price_panel.position.y += 20
+			price_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			price_panel.z_index = 5 # Ensure it renders above the gachaball
+			
+			var price_label = Label.new()
 			var shop_def = inst_for_slot.get_definition()
 			var price = GameManager.get_item_cost(shop_def)
 			price_label.text = tr("ui.gold_price") % price
-		else:
-			price_label.text = "" # Empty text for slots without items
-		price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		price_label.add_theme_font_size_override("font_size", 12)
-		price_label.custom_minimum_size = Vector2(120, 30)
-		_price_labels_container.add_child(price_label)
+			
+			price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			price_label.add_theme_color_override("font_color", Color("#262b44")) # Dark blue/black text
+			price_label.add_theme_constant_override("outline_size", 0) # Remove outline
+			price_label.add_theme_font_size_override("font_size", 18)
+			
+			price_panel.add_child(price_label)
+			slot_view.add_child(price_panel)
 	
 	# Wait one frame for layout to complete, then animate entry
 	await get_tree().process_frame
@@ -243,7 +260,12 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 		on_complete.call()
 		return
 	
-	var gold_rect = gold_group.get_global_rect()
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon):
+		# Fallback to group if icon is missing
+		gold_icon = gold_group
+		
+	var gold_rect = gold_icon.get_global_rect()
 	var start_pos = Vector2(
 		gold_rect.position.x + gold_rect.size.x / 2,
 		gold_rect.position.y + gold_rect.size.y / 2
@@ -261,7 +283,11 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 	
 	for i in range(coins_to_spawn):
 		var coin_vfx = GoldCoinVFXScene.new()
-		add_child(coin_vfx)
+		var effects_layer = main_node.get_node_or_null("EffectsLayer")
+		if is_instance_valid(effects_layer):
+			effects_layer.add_child(coin_vfx)
+		else:
+			add_child(coin_vfx)
 		
 		# Connect to trigger button reaction
 		coin_vfx.coin_landed.connect(_on_gold_landed_on_button.bind(target_button))
