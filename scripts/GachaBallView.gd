@@ -955,6 +955,11 @@ func _create_gachaball_overlay() -> void:
 	# 0: Anim, 1: VBox(Unit), 2: Overlay(Ball), 3: Stats(Labels)
 	add_child(overlay)
 	move_child(overlay, 2)
+	
+	# Ensure clipping is disabled so glow can spill outside the bounding box
+	clip_contents = false
+	if get_parent() is Control:
+		get_parent().clip_contents = false
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)

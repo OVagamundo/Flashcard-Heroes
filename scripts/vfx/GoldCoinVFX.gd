@@ -6,7 +6,7 @@ extends Node2D
 ## Natural parabolic arc like tossing a coin
 
 # Animation parameters
-const COIN_SCALE := 0.12 # Slightly smaller than token
+const COIN_SCALE := 2.5 # Scaled to match the new 32x32 token texture size (slightly smaller than TokenSpend)
 const TOSS_DURATION := 0.40
 const SPIN_COUNT := 2
 const WOBBLE_DEGREES := 15.0
