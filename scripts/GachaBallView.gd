@@ -10,6 +10,24 @@ const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
 const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaball.png"
 const GACHABALL_SELECTION_PATH = "res://assets/ui/textures/gachaballselected.png"
 
+# Path-choice-style hover motion for selectable gachaballs.
+const HOVER_SCALE: float = 0.12
+const PRESS_SQUASH: float = 0.10
+const MAX_TILT_DEGREES: float = 2.4
+const MAX_PITCH_DEGREES: float = 1.2
+const POINTER_BLEND_SPEED: float = 12.0
+const INVENTORY_BRIGHTNESS_BOOST: float = 0.18
+const INVENTORY_TRANSFORM_FACTOR: float = 0.92
+const INVENTORY_OVERLAY_INSET_PX: float = 0.0
+const HOVER_RAISED_Z_INDEX: int = 40
+const HOVER_RAISED_SLOT_Z_INDEX: int = 20
+
+enum HoverFxMode {
+	OFF,
+	INVENTORY_SPHERE,
+	BATTLE_NO_SHEEN,
+}
+
 @onready var icon_rect: TextureRect = %Icon
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var hp_container: Control = %HPContainer
@@ -64,8 +82,26 @@ var _drag_preview: Control = null # Reference to the drag preview for deformatio
 # are now managed by UnitAnimationController child node
 var _anim_controller: UnitAnimationController = null
 
+# Hover animation state
+var _hover_tween: Tween = null
+var _press_tween: Tween = null
+var _hover_amount: float = 0.0
+var _press_amount: float = 0.0
+var _pointer_uv: Vector2 = Vector2(0.5, 0.5)
+var _is_hovered: bool = false
+var _tilt_degrees: float = 0.0
+var _pitch_degrees: float = 0.0
+var _base_z_index: int = 0
+var _slot_view_ref: Control = null
+var _slot_base_z_index: int = 0
+
 
 func _ready() -> void:
+	_base_z_index = z_index
+	_slot_view_ref = get_parent() as Control
+	if is_instance_valid(_slot_view_ref):
+		_slot_base_z_index = _slot_view_ref.z_index
+		_slot_view_ref.clip_contents = false
 	# StatsContainer (Top) is already correctly positioned in the scene file
 	# BottomStatsContainer is likewise correctly positioned below the icon
 	# IMPORTANT: Duplicate the shader material so each instance has its own
@@ -104,6 +140,10 @@ func _ready() -> void:
 	mouse_exited.connect(_on_mouse_exited)
 
 func _process(delta: float) -> void:
+	_update_hover_animation(delta)
+	_update_drag_deformation(delta)
+
+func _update_drag_deformation(delta: float) -> void:
 	# Drag deformation: Apply rubber-toy physics to drag preview based on velocity
 	if not _is_dragging: return
 	if not is_instance_valid(_drag_preview): return
@@ -143,6 +183,20 @@ func _process(delta: float) -> void:
 	_drag_preview.scale = _drag_preview.scale.lerp(target_scale, lerp_speed)
 
 func _exit_tree() -> void:
+	_is_hovered = false
+	if is_instance_valid(_hover_tween):
+		_hover_tween.kill()
+	if is_instance_valid(_press_tween):
+		_press_tween.kill()
+	_set_hover_amount(0.0)
+	_set_press_amount(0.0)
+	z_index = _base_z_index
+	if is_instance_valid(_slot_view_ref):
+		_slot_view_ref.z_index = _slot_base_z_index
+	scale = Vector2.ONE
+	rotation = 0.0
+	_apply_inventory_brightness(HoverFxMode.OFF)
+
 	# Reset drag deformation state if still dragging
 	_reset_drag_deformation()
 	
@@ -190,6 +244,21 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	self._bound_uuid = visual_data.get("uuid", "")
 	self._is_inspectable = is_inspectable
 	self._single_click_inspect = single_click_inspect
+	if is_instance_valid(_hover_tween):
+		_hover_tween.kill()
+	if is_instance_valid(_press_tween):
+		_press_tween.kill()
+	_is_hovered = false
+	_set_hover_amount(0.0)
+	_set_press_amount(0.0)
+	z_index = _base_z_index
+	if is_instance_valid(_slot_view_ref):
+		_slot_view_ref.z_index = _slot_base_z_index
+	_pointer_uv = Vector2(0.5, 0.5)
+	_tilt_degrees = 0.0
+	_pitch_degrees = 0.0
+	scale = Vector2.ONE
+	rotation = 0.0
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 	if visual_data.is_empty():
@@ -389,6 +458,135 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	context.interaction_mode = _interaction_mode
 	context.window_group_id = _window_group_id
 	return context
+
+func _get_hover_fx_mode() -> int:
+	if not _is_inspectable:
+		return HoverFxMode.OFF
+	if not is_instance_valid(_location):
+		return HoverFxMode.OFF
+	if DisplayServer.is_touchscreen_available():
+		return HoverFxMode.OFF
+
+	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
+	if context_group == &"InventoryGrid":
+		return HoverFxMode.INVENTORY_SPHERE
+	if context_group == &"BattleBoard":
+		return HoverFxMode.BATTLE_NO_SHEEN
+	return HoverFxMode.OFF
+
+func _set_hover_state(active: bool, play_sound: bool = false) -> void:
+	if active and _get_hover_fx_mode() == HoverFxMode.OFF:
+		active = false
+	if _is_hovered == active:
+		return
+	_is_hovered = active
+	_update_hover_draw_priority()
+
+	if active and play_sound:
+		Audio.play_sfx("ui_hover", randf_range(1.05, 1.12))
+
+	_animate_hover_to(1.0 if active else 0.0, 0.16 if active else 0.12)
+	if not active:
+		_animate_press_to(0.0, 0.08)
+
+func _animate_hover_to(target: float, duration: float) -> void:
+	if is_instance_valid(_hover_tween):
+		_hover_tween.kill()
+	_hover_tween = create_tween()
+	_hover_tween.tween_method(_set_hover_amount, _hover_amount, target, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _animate_press_to(target: float, duration: float) -> void:
+	if is_instance_valid(_press_tween):
+		_press_tween.kill()
+	_press_tween = create_tween()
+	_press_tween.tween_method(_set_press_amount, _press_amount, target, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func _set_hover_amount(value: float) -> void:
+	_hover_amount = clampf(value, 0.0, 1.0)
+
+func _set_press_amount(value: float) -> void:
+	_press_amount = clampf(value, 0.0, 1.0)
+
+func _update_pointer_uv(local_pos: Vector2) -> void:
+	var safe_size = Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
+	_pointer_uv = Vector2(
+		clampf(local_pos.x / safe_size.x, 0.0, 1.0),
+		clampf(local_pos.y / safe_size.y, 0.0, 1.0)
+	)
+
+func _update_hover_animation(delta: float) -> void:
+	var mode: int = _get_hover_fx_mode()
+	if _is_dragging or GlobalInteractionRouter.is_drag_active():
+		mode = HoverFxMode.OFF
+
+	if mode == HoverFxMode.OFF and _is_hovered:
+		_set_hover_state(false, false)
+
+	var blend: float = minf(1.0, delta * POINTER_BLEND_SPEED)
+	var target_pointer := Vector2(0.5, 0.5)
+	if mode != HoverFxMode.OFF and _is_hovered:
+		var safe_size = Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
+		var local_pos = get_local_mouse_position()
+		target_pointer = Vector2(
+			clampf(local_pos.x / safe_size.x, 0.0, 1.0),
+			clampf(local_pos.y / safe_size.y, 0.0, 1.0)
+		)
+	_pointer_uv = _pointer_uv.lerp(target_pointer, blend)
+
+	_apply_hover_visuals(mode, blend)
+
+func _apply_hover_visuals(mode: int, blend: float) -> void:
+	pivot_offset = size / 2.0
+	var transform_factor: float = INVENTORY_TRANSFORM_FACTOR if mode == HoverFxMode.INVENTORY_SPHERE else 1.0
+
+	var pointer_x = (_pointer_uv.x - 0.5) * 2.0
+	var pointer_y = (_pointer_uv.y - 0.5) * 2.0
+	var target_tilt = pointer_x * MAX_TILT_DEGREES * _hover_amount * transform_factor
+	var target_pitch = -pointer_y * MAX_PITCH_DEGREES * _hover_amount * transform_factor
+
+	_tilt_degrees = lerpf(_tilt_degrees, target_tilt, blend)
+	_pitch_degrees = lerpf(_pitch_degrees, target_pitch, blend)
+	var z_rotation = _tilt_degrees + (_pitch_degrees * 0.22)
+	rotation = lerp_angle(rotation, deg_to_rad(z_rotation), blend)
+
+	var hover_scale = 1.0 + (HOVER_SCALE * _hover_amount * transform_factor)
+	var press_scale = 1.0 - (PRESS_SQUASH * _press_amount * transform_factor)
+	var stretch_x = 1.0 + (_press_amount * 0.04 * transform_factor)
+	var stretch_y = 1.0 - (_press_amount * 0.06 * transform_factor)
+	var final_scale = hover_scale * press_scale
+	scale = Vector2(final_scale * stretch_x, final_scale * stretch_y)
+
+	_apply_inventory_brightness(mode)
+
+func _apply_inventory_brightness(mode: int) -> void:
+	var sprite = _get_active_visual_sprite()
+	if not is_instance_valid(sprite):
+		return
+
+	if mode == HoverFxMode.INVENTORY_SPHERE:
+		var brightness = 1.0 + (INVENTORY_BRIGHTNESS_BOOST * _hover_amount)
+		sprite.modulate = Color(brightness, brightness, brightness, 1.0)
+	else:
+		sprite.modulate = Color.WHITE
+
+func _get_active_visual_sprite() -> TextureRect:
+	if not is_instance_valid(icon_rect):
+		return null
+
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	if is_instance_valid(unit_sprite) and unit_sprite.visible:
+		return unit_sprite
+
+	return icon_rect
+
+func _update_hover_draw_priority() -> void:
+	var raise_priority: bool = _is_hovered and _get_hover_fx_mode() != HoverFxMode.OFF
+	# Keep selected inventory balls above neighbors too, so the selection ring is not occluded.
+	if _is_selected and _has_overlay_heuristic():
+		raise_priority = true
+	z_index = HOVER_RAISED_Z_INDEX if raise_priority else _base_z_index
+	if is_instance_valid(_slot_view_ref):
+		_slot_view_ref.z_index = HOVER_RAISED_SLOT_Z_INDEX if raise_priority else _slot_base_z_index
 
 func _update_stats(animate: bool = false, visual_data: Dictionary = {}) -> void:
 	# Always hide by default
@@ -948,8 +1146,10 @@ func _create_gachaball_overlay() -> void:
 	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	overlay.stretch_mode = TextureRect.STRETCH_SCALE # Scale to fill 192px
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
-	overlay.size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+	var overlay_size: float = float(C.SLOT_SIZE_2X) - (INVENTORY_OVERLAY_INSET_PX * 2.0)
+	overlay.custom_minimum_size = Vector2(overlay_size, overlay_size)
+	overlay.size = Vector2(overlay_size, overlay_size)
+	overlay.position = Vector2(INVENTORY_OVERLAY_INSET_PX, INVENTORY_OVERLAY_INSET_PX)
 	
 	# Add as sibling to VBox (Icon) but before StatsOverlay to ensure correct Z-order:
 	# 0: Anim, 1: VBox(Unit), 2: Overlay(Ball), 3: Stats(Labels)
@@ -1020,17 +1220,19 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 # ---------------------------------------------------------------------------
 
 func _on_mouse_entered() -> void:
+	# Drag guard: never emit hover during ANY drag (self or global)
+	if _is_dragging: return
+	if GlobalInteractionRouter.is_drag_active(): return
+	_set_hover_state(true, true)
 	if not _is_inspectable: return
 	if not is_instance_valid(_location): return
 	# Touch guard: only emit on desktop
 	if DisplayServer.is_touchscreen_available(): return
-	# Drag guard: never emit hover during ANY drag (self or global)
-	if _is_dragging: return
-	if GlobalInteractionRouter.is_drag_active(): return
 	var ctx = _create_interaction_context(&"HOVER_ENTER")
 	SignalBus.emit_signal("interaction_context_received", ctx)
 
 func _on_mouse_exited() -> void:
+	_set_hover_state(false, false)
 	if not is_instance_valid(_location): return
 	if DisplayServer.is_touchscreen_available(): return
 	# Drag guard: never emit hover during ANY drag (self or global)
@@ -1040,6 +1242,9 @@ func _on_mouse_exited() -> void:
 	SignalBus.emit_signal("interaction_context_received", ctx)
 
 func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		_update_pointer_uv(event.position)
+
 	# Ignore input entirely if we don't have a location (e.g. visual-only balls in RestSite)
 	# This allows the click to bubble up to the Rest Site's prize slot gui_input handler
 	if not is_instance_valid(_location):
@@ -1049,14 +1254,20 @@ func _gui_input(event: InputEvent) -> void:
 		# DOUBLE_CLICK is no longer needed — hover replaces inspect, click locks
 		if event.is_pressed():
 			print("DEBUG_INPUT: GachaBallView Pressed. UUID: ", _instance_uuid)
+			_animate_press_to(1.0, 0.05)
+			if not _is_hovered:
+				_set_hover_state(true, false)
 			# Defer single-click to release; may become a drag
 			get_viewport().set_input_as_handled()
 			_pressed_pending_click = true
 		else:
+			_animate_press_to(0.0, 0.14)
 			# On release: only emit SINGLE_CLICK if no drag was initiated
 			if _pressed_pending_click and not _drag_initiated_for_click:
 				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK")
 				SignalBus.emit_signal("interaction_context_received", sc_ctx)
+			if not get_global_rect().has_point(get_global_mouse_position()):
+				_set_hover_state(false, false)
 			# Reset flags regardless
 			_pressed_pending_click = false
 			_drag_initiated_for_click = false
@@ -1271,6 +1482,7 @@ func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void
 func _apply_selection_feedback() -> void:
 	if not is_inside_tree(): return
 	if not is_instance_valid(icon_rect): return
+	_update_hover_draw_priority()
 	
 	# Apply outline shader (universal feedback)
 	if is_instance_valid(_anim_controller):
@@ -1290,8 +1502,10 @@ func _apply_selection_feedback() -> void:
 					selection_ring.texture = selection_texture
 					selection_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					selection_ring.stretch_mode = TextureRect.STRETCH_SCALE
-					selection_ring.custom_minimum_size = Vector2(192, 192)
-					selection_ring.size = Vector2(192, 192)
+					var ring_size: float = float(C.SLOT_SIZE_2X) - (INVENTORY_OVERLAY_INSET_PX * 2.0)
+					selection_ring.custom_minimum_size = Vector2(ring_size, ring_size)
+					selection_ring.size = Vector2(ring_size, ring_size)
+					selection_ring.position = Vector2(INVENTORY_OVERLAY_INSET_PX, INVENTORY_OVERLAY_INSET_PX)
 					selection_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
 					# Add after overlay (on top)
 					add_child(selection_ring)
@@ -1318,6 +1532,8 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_BEGIN:
 		if _drag_initiated_for_click:
 			print("DEBUG_INPUT: Emitting DRAG_START. Entity: ", _entity_type, " | UUID: ", _instance_uuid)
+			_set_hover_state(false, false)
+			_animate_press_to(0.0, 0.05)
 			var context = _create_interaction_context(&"DRAG_START")
 			SignalBus.emit_signal("interaction_context_received", context)
 			
@@ -1352,6 +1568,7 @@ func _notification(what: int) -> void:
 		
 		# Reset local drag flag
 		_drag_initiated_for_click = false
+		_animate_press_to(0.0, 0.08)
 		_logical_drag_success = false # Reset for next time
 		
 		# Ensure drag signals are cleared if they haven't been already
