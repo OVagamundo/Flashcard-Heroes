@@ -23,12 +23,12 @@ var _perspective_tilt: Vector2 = Vector2.ZERO
 var _is_hovered: bool = false
 var _tilt_degrees: float = 0.0
 
-const HOVER_SCALE: float = 0.08
-const PRESS_SQUASH: float = 0.10
-const POP_SCALE: float = 0.10
-const MAX_TILT_DEGREES: float = 0.55
-const MAX_PERSPECTIVE_X: float = 0.14
-const MAX_PERSPECTIVE_Y: float = 0.08
+const HOVER_SCALE: float = 0.16
+const PRESS_SQUASH: float = 0.13
+const POP_SCALE: float = 0.15
+const MAX_TILT_DEGREES: float = 1.45
+const MAX_PERSPECTIVE_X: float = 0.24
+const MAX_PERSPECTIVE_Y: float = 0.15
 
 # Texture paths
 const CARD_TEXTURES = {

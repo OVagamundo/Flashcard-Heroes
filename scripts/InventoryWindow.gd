@@ -9,10 +9,18 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 @onready var tier_1_grid: GridContainer = %Tier1Grid
 @onready var tier_2_grid: GridContainer = %Tier2Grid
 @onready var tier_3_grid: GridContainer = %Tier3Grid
+@onready var tier_1_panel: PanelContainer = $"PanelContainer/VBoxContainer/GridsArea/Tier1Panel"
+@onready var tier_2_panel: PanelContainer = $"PanelContainer/VBoxContainer/GridsArea/Tier2Panel"
+@onready var tier_3_panel: PanelContainer = $"PanelContainer/VBoxContainer/GridsArea/Tier3Panel"
+@onready var tier_1_scroll: ScrollContainer = %Tier1Grid.get_parent() as ScrollContainer
+@onready var tier_2_scroll: ScrollContainer = %Tier2Grid.get_parent() as ScrollContainer
+@onready var tier_3_scroll: ScrollContainer = %Tier3Grid.get_parent() as ScrollContainer
 
 var _is_battle_context: bool = false
 var _data_source: Dictionary
 var _grids_initialized: bool = false
+const DRAG_SCROLL_ZONE_PX: float = 58.0
+const DRAG_SCROLL_MAX_SPEED: float = 920.0
 
 func _ready() -> void:
 	panel_container.gui_input.connect(_on_panel_gui_input)
@@ -20,9 +28,98 @@ func _ready() -> void:
 	tier_1_grid.gui_input.connect(_on_grid_gui_input)
 	tier_2_grid.gui_input.connect(_on_grid_gui_input)
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
+	_configure_scroll_navigation()
+	set_process(true)
 	
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
+
+func _configure_scroll_navigation() -> void:
+	# Keep overflow bounded by inventory/tier panels (not by scroll viewport itself).
+	panel_container.clip_contents = true
+	tier_1_panel.clip_contents = true
+	tier_2_panel.clip_contents = true
+	tier_3_panel.clip_contents = true
+
+	for scroll in _get_tier_scrolls():
+		if not is_instance_valid(scroll):
+			continue
+		# Allow hover pop to breathe within tier panels.
+		scroll.clip_contents = false
+		scroll.custom_minimum_size.x = maxf(scroll.custom_minimum_size.x, 608.0)
+		scroll.mouse_filter = Control.MOUSE_FILTER_PASS
+		
+		var vbar: VScrollBar = scroll.get_v_scroll_bar()
+		if not is_instance_valid(vbar):
+			continue
+		
+		# Make scrollbar finger-friendly.
+		vbar.custom_minimum_size = Vector2(30.0, 96.0)
+		vbar.mouse_filter = Control.MOUSE_FILTER_STOP
+		
+		# Improve visual affordance for the drag handle.
+		var rail := StyleBoxFlat.new()
+		rail.bg_color = Color(0.16, 0.16, 0.24, 0.72)
+		rail.corner_radius_top_left = 8
+		rail.corner_radius_top_right = 8
+		rail.corner_radius_bottom_left = 8
+		rail.corner_radius_bottom_right = 8
+		
+		var grabber := StyleBoxFlat.new()
+		grabber.bg_color = Color(0.82, 0.83, 0.95, 0.96)
+		grabber.corner_radius_top_left = 8
+		grabber.corner_radius_top_right = 8
+		grabber.corner_radius_bottom_left = 8
+		grabber.corner_radius_bottom_right = 8
+		
+		var grabber_hot := grabber.duplicate() as StyleBoxFlat
+		grabber_hot.bg_color = Color(0.93, 0.94, 1.0, 1.0)
+		
+		vbar.add_theme_stylebox_override("scroll", rail)
+		vbar.add_theme_stylebox_override("scroll_focus", rail)
+		vbar.add_theme_stylebox_override("grabber", grabber)
+		vbar.add_theme_stylebox_override("grabber_highlight", grabber_hot)
+		vbar.add_theme_stylebox_override("grabber_pressed", grabber_hot)
+
+func _get_tier_scrolls() -> Array[ScrollContainer]:
+	return [tier_1_scroll, tier_2_scroll, tier_3_scroll]
+
+func _process(delta: float) -> void:
+	_auto_scroll_during_drag(delta)
+
+func _auto_scroll_during_drag(delta: float) -> void:
+	if not visible:
+		return
+	if not GlobalInteractionRouter.is_drag_active():
+		return
+	
+	var mouse_pos: Vector2 = get_global_mouse_position()
+	for scroll in _get_tier_scrolls():
+		if not is_instance_valid(scroll):
+			continue
+		var rect: Rect2 = scroll.get_global_rect()
+		if not rect.has_point(mouse_pos):
+			continue
+		
+		var direction: float = 0.0
+		var top_limit: float = rect.position.y + DRAG_SCROLL_ZONE_PX
+		var bottom_limit: float = rect.end.y - DRAG_SCROLL_ZONE_PX
+		
+		if mouse_pos.y < top_limit:
+			direction = -(1.0 - clampf((mouse_pos.y - rect.position.y) / DRAG_SCROLL_ZONE_PX, 0.0, 1.0))
+		elif mouse_pos.y > bottom_limit:
+			direction = 1.0 - clampf((rect.end.y - mouse_pos.y) / DRAG_SCROLL_ZONE_PX, 0.0, 1.0)
+		
+		if is_zero_approx(direction):
+			continue
+		
+		var vbar: VScrollBar = scroll.get_v_scroll_bar()
+		if not is_instance_valid(vbar):
+			continue
+		
+		var max_value: int = int(ceil(vbar.max_value))
+		var next_scroll: int = int(round(scroll.scroll_vertical + direction * DRAG_SCROLL_MAX_SPEED * delta))
+		scroll.scroll_vertical = clampi(next_scroll, 0, max_value)
 
 func _update_localized_text() -> void:
 	# Update tier labels if they exist
