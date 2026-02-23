@@ -225,6 +225,7 @@ ui.no_explanation,No explanation available,Nenhuma explicação disponível
 ui.study,Study (+Tokens),Estudar (+Fichas)
 ui.stat_prize,Stat Prize,Prêmio de Atributo
 ui.show_tutorials,Show Tutorials & Tooltips,Mostrar Tutoriais e Dicas
+ui.crt_effect,CRT Display Effect,Efeito de Tela CRT
 ui.next,Next,Próximo
 tutorial.loadout,"Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run.","Escolha seu herói e deck de flashcards. Heróis têm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck é o baralho de flashcards que será usado por toda a jogatina."
 tutorial.path_choice_1,"Choose your next encounter carefully, each encounter counts as one day of your quest. Enemies get stronger each passing day. Survive as long as you can and one day you might finally face the final boss!","Escolha seu próximo encontro com cuidado, cada encontro conta como um dia de sua busca. Inimigos ficam mais fortes a cada dia que passa. Sobreviva o máximo que puder e um dia você poderá finalmente enfrentar o chefe final!"
