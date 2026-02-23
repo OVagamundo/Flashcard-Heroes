@@ -4,6 +4,7 @@ extends Control
 @onready var start_run_button: Button = %StartRunButton
 @onready var options_button: Button = %OptionsButton
 @onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
+@onready var crt_checkbox: CheckBox = %CRTCheckbox
 @onready var continue_button: Button = %ContinueButton
 
 func _input(event: InputEvent) -> void:
@@ -44,6 +45,12 @@ func _ready() -> void:
 			TutorialManager.save_settings()
 		)
 	
+	if crt_checkbox:
+		crt_checkbox.button_pressed = CRTEffect.is_enabled()
+		crt_checkbox.toggled.connect(func(enabled: bool):
+			CRTEffect.set_enabled(enabled)
+		)
+	
 	# Connect to locale changes to update button text
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
@@ -55,6 +62,8 @@ func _update_localized_text() -> void:
 		continue_button.text = tr("ui.continue")
 	if tutorial_checkbox:
 		tutorial_checkbox.text = tr("ui.show_tutorials")
+	if crt_checkbox:
+		crt_checkbox.text = tr("ui.crt_effect")
 
 func _on_options_pressed() -> void:
 	# Open the options window via WindowManager
