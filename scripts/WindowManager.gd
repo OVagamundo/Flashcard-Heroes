@@ -28,6 +28,8 @@ var _active_inspection_group: Array[Control] = []
 var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
 
+var _persistent_inventory_window: Control = null
+
 signal window_closed(window: Control)
 
 
@@ -50,6 +52,22 @@ func _ready() -> void:
 	SignalBus.loadout_scene_requested.connect(_close_all_windows)
 	SignalBus.title_scene_requested.connect(_close_all_windows)
 	SignalBus.path_choice_scene_requested.connect(close_all_inspection_windows)
+
+	call_deferred("_setup_persistent_inventory")
+
+func _setup_persistent_inventory() -> void:
+	if not _window_scenes.has(&"Inventory"):
+		return
+	_persistent_inventory_window = _window_scenes[&"Inventory"].instantiate()
+	_persistent_inventory_window.name = "PersistentInventoryWindow" # Good for debugging
+	_persistent_inventory_window.set_meta("window_type", &"Inventory")
+	_get_modal_layer().add_child(_persistent_inventory_window)
+	_persistent_inventory_window.hide()
+	
+	# Keep the root window on screen (0,0) so the base mask is visible when shown.
+	# The inner panel will animate its offset_y coordinates.
+	_persistent_inventory_window.position = Vector2.ZERO
+	_persistent_inventory_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 # --- PUBLIC API ---
@@ -105,11 +123,37 @@ func open_tutorial_overlay(context: Dictionary = {}) -> Control:
 
 # Public entry point for the Inventory Window.
 func open_inventory_window() -> void:
-	var context: Dictionary = {
-		"window_type": &"Inventory",
-		"populate_context": _get_inventory_populate_context()
-	}
-	_open_contextual_window(context)
+	var win = _persistent_inventory_window
+	if not is_instance_valid(win):
+		# Fallback if uninitialized
+		var context: Dictionary = {
+			"window_type": &"Inventory",
+			"populate_context": _get_inventory_populate_context()
+		}
+		_open_contextual_window(context)
+		return
+
+	var opening: bool = win.has_meta(_WM_META_OPENING) and bool(win.get_meta(_WM_META_OPENING))
+	var closing: bool = win.has_meta(_WM_META_CLOSING) and bool(win.get_meta(_WM_META_CLOSING))
+	
+	if win in _active_inspection_group:
+		if opening or not closing:
+			return # Already open or currently opening
+
+	# We are about to open the inventory, so close all other contexts gently
+	for iter_win in _active_inspection_group:
+		if is_instance_valid(iter_win) and iter_win != win:
+			stop_tracking_window(iter_win.get_instance_id())
+			_queue_free_with_optional_inventory_animation(iter_win)
+	
+	var ctx = _get_inventory_populate_context()
+	if win.has_method("populate"):
+		win.populate(ctx)
+	
+	if not _active_inspection_group.has(win):
+		_active_inspection_group.push_back(win)
+		
+	_animate_inventory_window_open(win)
 
 # Back-compat shim for GIR callers that still use the old private name
 func _open_inspection_window(loc: LocationIdentifier, source_view: Control) -> void:
@@ -217,7 +261,7 @@ func close_children_of(parent_window: Control) -> void:
 		var child_window = _active_inspection_group[i]
 		if is_instance_valid(child_window):
 			stop_tracking_window(child_window.get_instance_id())
-			child_window.queue_free()
+			_queue_free_with_optional_inventory_animation(child_window)
 
 # Back-compat API expected by GIR: resolve parent by instance_id and prune its children
 func close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
@@ -240,13 +284,15 @@ func close_all_inspection_windows() -> void:
 	for window in _active_inspection_group:
 		if is_instance_valid(window):
 			stop_tracking_window(window.get_instance_id())
-			window.queue_free()
-	_active_inspection_group.clear()
+			_queue_free_with_optional_inventory_animation(window)
 
 	# no-op if already empty
 
 # Public query function for the GIR.
 func is_any_inspection_window_open() -> bool:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		if not is_instance_valid(_active_inspection_group[i]):
+			_active_inspection_group.remove_at(i)
 	return not _active_inspection_group.is_empty()
 
 # Public helper queried by GIR to know if a view is part of the current inspection group.
@@ -294,7 +340,7 @@ func request_close_inspection_window(window: Control, cause: StringName = &"") -
 	if suppressed_for_id or suppressed_now:
 		return
 	stop_tracking_window(window_id)
-	window.queue_free()
+	_queue_free_with_optional_inventory_animation(window)
 
 
 # --- CORE INTERNAL LOGIC ---
@@ -651,7 +697,7 @@ func close_top_contextual_window() -> void:
 				var type = top_window.get_meta("window_type")
 				if type == &"Inventory" or type == &"DiscardPile":
 					return
-			top_window.queue_free()
+			_queue_free_with_optional_inventory_animation(top_window)
 
 func _close_all_windows() -> void:
 	close_all_inspection_windows()
@@ -831,9 +877,214 @@ func _clamp_window_to_viewport(pos: Vector2, size: Vector2) -> Vector2:
 # --- UI ANIMATION ---
 
 const UI_OPEN_REVEAL_SHADER = preload("res://assets/shaders/ui_open_reveal.gdshader")
+const INVENTORY_WINDOW_OPEN_RISE_PX: float = 680.0
+const INVENTORY_WINDOW_OPEN_OVERSHOOT_PX: float = 10.0
+const INVENTORY_WINDOW_CLOSE_DROP_PX: float = 680.0
+const INVENTORY_WINDOW_CLOSE_PULL_PX: float = 12.0
+const _WM_META_OPENING: StringName = &"wm_opening"
+const _WM_META_CLOSING: StringName = &"wm_closing"
+const _WM_META_ANIM_TWEEN: StringName = &"wm_anim_tween"
+
+func _is_inventory_window(window: Control) -> bool:
+	if not is_instance_valid(window):
+		return false
+	if window.has_meta("window_type") and window.get_meta("window_type") == &"Inventory":
+		return true
+	if "InventoryWindow" in window.name:
+		return true
+	var script_ref: Script = window.get_script() as Script
+	if script_ref != null:
+		var script_path: String = script_ref.resource_path
+		if script_path.ends_with("InventoryWindow.gd"):
+			return true
+	return false
+
+func _queue_free_with_optional_inventory_animation(window: Control) -> void:
+	if not is_instance_valid(window):
+		return
+	if window == _persistent_inventory_window:
+		_animate_inventory_window_close(window)
+		return
+	if _animate_inventory_window_close(window):
+		return
+	window.queue_free()
+
+func _kill_inventory_motion_tween(window: Control) -> void:
+	if not is_instance_valid(window):
+		return
+	if not window.has_meta(_WM_META_ANIM_TWEEN):
+		return
+	var existing_tween: Tween = window.get_meta(_WM_META_ANIM_TWEEN) as Tween
+	if is_instance_valid(existing_tween):
+		existing_tween.kill()
+	window.remove_meta(_WM_META_ANIM_TWEEN)
+
+func _is_full_rect_anchored(control: Control) -> bool:
+	return is_equal_approx(control.anchor_left, 0.0) \
+		and is_equal_approx(control.anchor_top, 0.0) \
+		and is_equal_approx(control.anchor_right, 1.0) \
+		and is_equal_approx(control.anchor_bottom, 1.0)
+
+func _apply_vertical_offset_delta(delta: float, control: Control, base_top: float, base_bottom: float) -> void:
+	if not is_instance_valid(control):
+		return
+	control.offset_top = base_top + delta
+	control.offset_bottom = base_bottom + delta
+
+func _set_inventory_motion_delta(control: Control, use_offsets: bool, base_top: float, base_bottom: float, base_pos: Vector2, delta: float) -> void:
+	if use_offsets:
+		_apply_vertical_offset_delta(delta, control, base_top, base_bottom)
+	else:
+		control.position = base_pos + Vector2(0.0, delta)
+
+func _tween_inventory_vertical_step(
+	tween: Tween,
+	control: Control,
+	use_offsets: bool,
+	base_top: float,
+	base_bottom: float,
+	base_pos: Vector2,
+	from_delta: float,
+	to_delta: float,
+	duration: float,
+	trans: Tween.TransitionType,
+	ease: Tween.EaseType
+) -> void:
+	if use_offsets:
+		tween.tween_method(
+			Callable(self, "_apply_vertical_offset_delta").bind(control, base_top, base_bottom),
+			from_delta,
+			to_delta,
+			duration
+		).set_trans(trans).set_ease(ease)
+	else:
+		tween.tween_property(
+			control,
+			"position",
+			base_pos + Vector2(0.0, to_delta),
+			duration
+		).set_trans(trans).set_ease(ease)
+
+func _animate_inventory_window_open(window: Control) -> void:
+	if not is_instance_valid(window): return
+	if window.has_meta(_WM_META_OPENING) and bool(window.get_meta(_WM_META_OPENING)): return
+	
+	window.set_meta(_WM_META_OPENING, true)
+	window.set_meta(_WM_META_CLOSING, false)
+	
+	var anim_target: Control = window
+	if window.has_method("get_window_to_animate"):
+		var candidate = window.get_window_to_animate()
+		if is_instance_valid(candidate):
+			anim_target = candidate
+			
+	window.show()
+	
+	# Prevent interactions during the animation
+	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in window.get_children():
+		child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	_kill_inventory_motion_tween(window)
+	
+	Audio.play_sfx("ui_window_open")
+
+	# Base layout is driven by anchors for the window.
+	# The inner PanelContainer has an offset_top of 162 natively.
+	var base_top: float = 162.0
+	var base_bottom: float = -238.0
+	
+	# Start panel completely below screen
+	var start_delta: float = get_viewport().get_visible_rect().size.y
+	_apply_vertical_offset_delta(start_delta, anim_target, base_top, base_bottom)
+	
+	var tween: Tween = window.create_tween()
+	window.set_meta(_WM_META_ANIM_TWEEN, tween)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	
+	# Slide the panel container up to its authored offset (delta = 0)
+	tween.tween_method(
+		Callable(self, "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
+		start_delta,
+		0.0,
+		0.45
+	).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+	
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.set_meta(_WM_META_OPENING, false)
+			
+			# Restore interactions once fully open
+			window.mouse_filter = Control.MOUSE_FILTER_PASS
+			for child in window.get_children():
+				if child is PanelContainer:
+					child.mouse_filter = Control.MOUSE_FILTER_PASS
+				else:
+					child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					
+			if window.has_meta(_WM_META_ANIM_TWEEN):
+				window.remove_meta(_WM_META_ANIM_TWEEN)
+	)
+
+func _animate_inventory_window_close(window: Control) -> bool:
+	if not _is_inventory_window(window): return false
+	if not is_instance_valid(window): return true
+	if window.has_meta(_WM_META_CLOSING) and bool(window.get_meta(_WM_META_CLOSING)): return true
+	
+	window.set_meta(_WM_META_OPENING, false)
+	window.set_meta(_WM_META_CLOSING, true)
+	
+	var anim_target: Control = window
+	if window.has_method("get_window_to_animate"):
+		var candidate = window.get_window_to_animate()
+		if is_instance_valid(candidate):
+			anim_target = candidate
+	
+	# Block interactions out instantly
+	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in window.get_children():
+		child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	_kill_inventory_motion_tween(window)
+	
+	var base_top: float = 162.0
+	var base_bottom: float = -238.0
+	var final_delta: float = get_viewport().get_visible_rect().size.y
+	
+	var tween: Tween = window.create_tween()
+	window.set_meta(_WM_META_ANIM_TWEEN, tween)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	
+	# Slide the panel container back down
+	tween.tween_method(
+		Callable(self, "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
+		0.0,
+		final_delta,
+		0.35
+	).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_IN)
+	
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.set_meta(_WM_META_CLOSING, false)
+			if window.has_meta(_WM_META_ANIM_TWEEN):
+				window.remove_meta(_WM_META_ANIM_TWEEN)
+			if window == _persistent_inventory_window:
+				window.hide()
+				var idx = _active_inspection_group.find(window)
+				if idx != -1:
+					_active_inspection_group.remove_at(idx)
+			else:
+				window.queue_free()
+	)
+	return true
 
 func _animate_window_open(window: Control) -> void:
 	if not is_instance_valid(window): return
+	var root_window: Control = window
+	var is_inventory_window: bool = _is_inventory_window(root_window)
+	if is_inventory_window:
+		_animate_inventory_window_open(root_window)
+		return
 	
 	# If the window has specific logic to provide the animation target (e.g., inner panel vs root blocker), use it
 	if window.has_method("get_window_to_animate"):
