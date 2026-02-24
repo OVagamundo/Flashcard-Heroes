@@ -5,7 +5,6 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
 
 @onready var panel_container: PanelContainer = %PanelContainer
-@onready var title_label: Label = %TitleLabel
 @onready var tier_1_grid: GridContainer = %Tier1Grid
 @onready var tier_2_grid: GridContainer = %Tier2Grid
 @onready var tier_3_grid: GridContainer = %Tier3Grid
@@ -30,9 +29,6 @@ func _ready() -> void:
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
 	_configure_scroll_navigation()
 	set_process(true)
-	
-	# Connect to locale changes
-	SignalBus.locale_changed.connect(_update_localized_text)
 
 func _configure_scroll_navigation() -> void:
 	# Keep overflow bounded by inventory/tier panels (not by scroll viewport itself).
@@ -44,8 +40,8 @@ func _configure_scroll_navigation() -> void:
 	for scroll in _get_tier_scrolls():
 		if not is_instance_valid(scroll):
 			continue
-		# Allow hover pop to breathe within tier panels.
-		scroll.clip_contents = false
+		# Keep slot visuals strictly contained inside each tier container artwork.
+		scroll.clip_contents = true
 		scroll.custom_minimum_size.x = maxf(scroll.custom_minimum_size.x, 608.0)
 		scroll.mouse_filter = Control.MOUSE_FILTER_PASS
 		
@@ -121,17 +117,6 @@ func _auto_scroll_during_drag(delta: float) -> void:
 		var next_scroll: int = int(round(scroll.scroll_vertical + direction * DRAG_SCROLL_MAX_SPEED * delta))
 		scroll.scroll_vertical = clampi(next_scroll, 0, max_value)
 
-func _update_localized_text() -> void:
-	# Update tier labels if they exist
-	var tier_labels = get_tree().get_nodes_in_group("tier_labels")
-	for label in tier_labels:
-		if label.name == "Tier1Label":
-			label.text = tr("ui.tier_1")
-		elif label.name == "Tier2Label":
-			label.text = tr("ui.tier_2")
-		elif label.name == "Tier3Label":
-			label.text = tr("ui.tier_3")
-
 func _exit_tree() -> void:
 	if SignalBus.is_connected("inventory_ui_refresh_requested", _on_ui_refresh):
 		SignalBus.inventory_ui_refresh_requested.disconnect(_on_ui_refresh)
@@ -153,7 +138,6 @@ func _exit_tree() -> void:
 			GlobalInteractionRouter.end_drag_visuals(false)
 
 func populate(context: Dictionary) -> void:
-	title_label.text = context.get("title", "Inventory")
 	_is_battle_context = context.get("is_battle_context", false)
 	_data_source = context.get("inventory")
 	
@@ -318,3 +302,8 @@ func _populate_grids() -> void:
 						break
 				if is_instance_valid(gacha_view):
 					gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
+
+func get_window_to_animate() -> Control:
+	if is_instance_valid(panel_container):
+		return panel_container
+	return self
