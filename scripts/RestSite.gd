@@ -377,7 +377,7 @@ func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
 	var hp_value: int = prize_data.hp_value
 	var pwr_value: int = prize_data.pwr_value
 	
-	var icon_texture = preload("res://assets/ui/textures/gachaball.png")
+	var icon_texture = preload("res://assets/ui/textures/gachaballcapsule.png")
 	
 	return {
 		"uuid": "prize_%d" % prize_data.slot_index,

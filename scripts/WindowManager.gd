@@ -264,7 +264,7 @@ func close_children_of(parent_window: Control) -> void:
 			_queue_free_with_optional_inventory_animation(child_window)
 
 # Back-compat API expected by GIR: resolve parent by instance_id and prune its children
-func close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
+func close_child_windows(_window_group_id: int, parent_window_id: int = -1) -> void:
 	if parent_window_id == -1:
 		return
 	var parent_window: Control = null
@@ -330,7 +330,7 @@ func handle_inspection_background_click(clicked_window: Control) -> void:
 
 # Suppression-aware close request for inspection windows.
 # Windows and internal handlers (e.g., anchor-freed) must use this instead of queue_free.
-func request_close_inspection_window(window: Control, cause: StringName = &"") -> void:
+func request_close_inspection_window(window: Control, _cause: StringName = &"") -> void:
 	if not is_instance_valid(window):
 		return
 	var window_id := window.get_instance_id()
@@ -617,10 +617,10 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	if not is_instance_valid(window_instance) or not is_instance_valid(anchor): return
 	var window_id = window_instance.get_instance_id()
 	var anchor_id = anchor.get_instance_id()
-	var geom_callable := Callable(self, "_on_inspection_anchor_moved").bind(window_id, anchor_id)
+	var geom_callable := Callable(self , "_on_inspection_anchor_moved").bind(window_id, anchor_id)
 	if not anchor.is_connected("item_rect_changed", geom_callable):
 		anchor.item_rect_changed.connect(geom_callable, CONNECT_DEFERRED)
-	var freed_callable := Callable(self, "_on_inspection_anchor_freed").bind(window_id, anchor_id, loc, geom_callable)
+	var freed_callable := Callable(self , "_on_inspection_anchor_freed").bind(window_id, anchor_id, loc, geom_callable)
 	if not anchor.is_connected("tree_exited", freed_callable):
 		anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 	_tracked_windows[window_id] = {"anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable}
@@ -658,14 +658,14 @@ func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: Locat
 	if is_instance_valid(old_anchor) and old_anchor.is_connected("item_rect_changed", geom_callable):
 		old_anchor.item_rect_changed.disconnect(geom_callable)
 	if is_instance_valid(window_instance):
-		var suppressed_for_id: bool = GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
-		var suppressed_now: bool = GlobalInteractionRouter.is_close_suppressed_now()
+		var _suppressed_for_id: bool = GlobalInteractionRouter.is_close_suppressed_for_window_id(window_id)
+		var _suppressed_now: bool = GlobalInteractionRouter.is_close_suppressed_now()
 		request_close_inspection_window(window_instance, &"ANCHOR_FREED")
 
 # FINAL FIX: This function is now correctly defined and used for lifecycle cleanup.
 func _register_window(window_instance: Control, is_modal: bool) -> void:
 	if not is_instance_valid(window_instance): return
-	var freed_callable := Callable(self, "_on_window_freed").bind(window_instance.get_instance_id(), is_modal)
+	var freed_callable := Callable(self , "_on_window_freed").bind(window_instance.get_instance_id(), is_modal)
 	if not window_instance.is_connected("tree_exited", freed_callable):
 		window_instance.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
 
@@ -948,22 +948,22 @@ func _tween_inventory_vertical_step(
 	to_delta: float,
 	duration: float,
 	trans: Tween.TransitionType,
-	ease: Tween.EaseType
+	_ease: Tween.EaseType
 ) -> void:
 	if use_offsets:
 		tween.tween_method(
-			Callable(self, "_apply_vertical_offset_delta").bind(control, base_top, base_bottom),
+			func(val): _apply_vertical_offset_delta(val, control, base_top, base_bottom),
 			from_delta,
 			to_delta,
 			duration
-		).set_trans(trans).set_ease(ease)
+		).set_trans(trans).set_ease(_ease)
 	else:
 		tween.tween_property(
 			control,
 			"position",
 			base_pos + Vector2(0.0, to_delta),
 			duration
-		).set_trans(trans).set_ease(ease)
+		).set_trans(trans).set_ease(_ease)
 
 func _animate_inventory_window_open(window: Control) -> void:
 	if not is_instance_valid(window): return
@@ -1004,7 +1004,7 @@ func _animate_inventory_window_open(window: Control) -> void:
 	
 	# Slide the panel container up to its authored offset (delta = 0)
 	tween.tween_method(
-		Callable(self, "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
+		Callable(self , "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
 		start_delta,
 		0.0,
 		0.45
@@ -1013,6 +1013,13 @@ func _animate_inventory_window_open(window: Control) -> void:
 	tween.chain().tween_callback(func():
 		if is_instance_valid(window):
 			window.set_meta(_WM_META_OPENING, false)
+			
+			# Jolt the physics balls (upward slam)
+			if window is InventoryWindow:
+				var upward_jolt = Vector2(0, -500)
+				window.tier_1_physics.apply_jolt(upward_jolt)
+				window.tier_2_physics.apply_jolt(upward_jolt)
+				window.tier_3_physics.apply_jolt(upward_jolt)
 			
 			# Restore interactions once fully open
 			window.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -1057,7 +1064,7 @@ func _animate_inventory_window_close(window: Control) -> bool:
 	
 	# Slide the panel container back down
 	tween.tween_method(
-		Callable(self, "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
+		Callable(self , "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
 		0.0,
 		final_delta,
 		0.35
@@ -1070,6 +1077,14 @@ func _animate_inventory_window_close(window: Control) -> bool:
 				window.remove_meta(_WM_META_ANIM_TWEEN)
 			if window == _persistent_inventory_window:
 				window.hide()
+				
+				# Jolt the physics balls (downward slam)
+				if window is InventoryWindow:
+					var downward_jolt = Vector2(0, 400)
+					window.tier_1_physics.apply_jolt(downward_jolt)
+					window.tier_2_physics.apply_jolt(downward_jolt)
+					window.tier_3_physics.apply_jolt(downward_jolt)
+				
 				var idx = _active_inspection_group.find(window)
 				if idx != -1:
 					_active_inspection_group.remove_at(idx)

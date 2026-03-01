@@ -59,6 +59,16 @@ Font: Must use a clear, monochromatic, pixel-art friendly font.
 ### 6.1 Unit View Elements
 Visual rules for dynamic elements overlaid on the unit view during gameplay.
 
+**Physical Gachaballs (Inventory):**
+- **Representation**: Units and items in the battle inventory are enclosed in a **Physical Gachaball Capsule**.
+- **1x Scale Constraint**: Balls are strictly forced to **1x native scale** and show **no UI overlays** (stats/pwr).
+- **Margin Alignment**: 
+    - Capsule texture: 96x96 pixels (Radius 48px).
+    - Physics collider: 50px radius.
+    - **2px Safety Margin**: The intentional gap between visual edge and collision edge prevents visual clipping and improves tactile "clacking".
+- **Aesthetic**: Translucent outer shell with the standard unit/item icon visible inside.
+- **Animation**: Reacts to gravity, collisions, and drawer movement with tactile physics and clack sounds.
+
 **Equipped Items:**
 - **Position:** Vertically stacked on the **Left Edge** of the unit slot.
 - **Size:** Small, fixed 45x45px icons.

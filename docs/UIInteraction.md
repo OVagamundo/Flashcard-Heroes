@@ -14,7 +14,7 @@ Main.tscn (Shell)
 │   ├── ContentArea → SubViewport → Battle.tscn (Board)
 │   │   ├── PlayerArea (Lineup, Bench)
 │   │   └── EnemyArea (Lineup, Traits)
-│   └── BottomArea (Gacha Machines 1-3)
+│   └── BottomArea (Physics Gacha Machines 1-3)
 ├── EffectsLayer (VFX)
 └── ModalLayer (Managed by WindowManager)
 ```
@@ -98,6 +98,31 @@ Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visu
 2. Equipped Items Wrapper (Left-aligned overlay)
 3. Stats Overlay (HP/PWR labels, Status Effects)
 4. Selection Ring (white outline shader)
+
+### Physics GachaBall Visuals
+- **Structure**: `RigidBody2D` with `CapsuleSprite` (outer shell) and `IconSprite` (inner unit/item icon).
+- **1x Scale**: Gachaballs in the inventory are strictly forced to 1x scale and do not show stat/pwr overlays.
+- **Highlighting**: On selection, both sprites scale up (1.08x) and the capsule modulates to a brighter color (1.3x).
+
+### Physics Inventory (Battle Only)
+- **Persistence**: The physics simulation persists and continues running even when the drawer is closed/hidden.
+- **Hierarchy**: Uses a separated hierarchy for visual stability:
+    - **`SlidingContainer`**: Holds the physics boundaries and simulating balls.
+    - **`BaseMask`**: A static fixed foreground that hides the sliding elements when closed.
+- **Interaction Rules**:
+    - **Hover-to-Inspect**: Opens temporary window (PC).
+    - **Click-to-Select**: Locks window open.
+    - **All Other Input Blocked**: No dragging, clicking, or double-clicking is permitted within the drawer boundaries.
+
+### Determinism & Performance
+- **Physics Ticks**: Forced to **120 TPS** for collision stability.
+- **Determinism**: Interpolation enabled; friction (0.8) and bounce (0.0) are tuned to prevent "boiling" (jittering while at rest).
+
+### Drawer Animation Physics
+The inventory drawer's vertical movement is synchronized with physical jolts:
+- **Upward Slam**: Triggered at the end of the "Open" animation.
+- **Downward Drop**: Triggered at the start of the "Close" animation.
+- **Implementation**: `WindowManager` calls `apply_jolt(base_impulse)` on the `PhysicsTierContainer` nodes.
 
 ### Selection Feedback
 - **Animation:** Physics-based hop (bounce + squash/stretch)

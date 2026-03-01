@@ -614,3 +614,11 @@ func apply_damage(unit: GachaBallInstance, amount: int) -> void:
     *   **Play DEATH:** Unit A plays death animation and fades out.
     *   **Play SUMMON:** Unit A's view is removed. Unit B's view is created in Slot 0 and fades in.
     *   **Play BUFF:** Unit C plays buff animation.
+---
+
+## 6. Real-Time Physics Penalties
+Separate from the turn-based simulation, the **Inventory Drawer** operates on a real-time physics clock.
+
+- **Overflow Penalty**: If a ball maintains continuous contact with the **Spring Lid** for 5 seconds, it emits the  signal.
+- **Data Mutation**: This signal triggers an **immediate** atomic move of the unit/item to the **Battle Discard Pile**.
+- **Presentation**: The gachaball is immediately `queue_free()`'d in the physics scene.

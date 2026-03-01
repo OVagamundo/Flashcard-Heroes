@@ -92,3 +92,17 @@ translation_remaps=PackedStringArray("res://localization/game.csv")
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/webp_compression/lossy_quality=0.9
+
+[layer_names]
+
+2d_physics/layer_10="Tier1_Bounds"
+2d_physics/layer_11="Tier1_Balls"
+2d_physics/layer_12="Tier2_Bounds"
+2d_physics/layer_13="Tier2_Balls"
+2d_physics/layer_14="Tier3_Bounds"
+2d_physics/layer_15="Tier3_Balls"
+
+[physics]
+
+common/physics_ticks_per_second=120
+common/max_physics_steps_per_frame=16

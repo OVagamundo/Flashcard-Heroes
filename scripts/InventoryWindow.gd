@@ -15,6 +15,11 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 @onready var tier_2_scroll: ScrollContainer = %Tier2Grid.get_parent() as ScrollContainer
 @onready var tier_3_scroll: ScrollContainer = %Tier3Grid.get_parent() as ScrollContainer
 
+# Bulletproof relative pathing utilizing the Unique Names of the grids
+@onready var tier_1_physics: PhysicsTierContainer = tier_1_scroll.get_parent().get_node("Tier1Physics")
+@onready var tier_2_physics: PhysicsTierContainer = tier_2_scroll.get_parent().get_node("Tier2Physics")
+@onready var tier_3_physics: PhysicsTierContainer = tier_3_scroll.get_parent().get_node("Tier3Physics")
+
 var _is_battle_context: bool = false
 var _data_source: Dictionary
 var _grids_initialized: bool = false
@@ -27,15 +32,26 @@ func _ready() -> void:
 	tier_1_grid.gui_input.connect(_on_grid_gui_input)
 	tier_2_grid.gui_input.connect(_on_grid_gui_input)
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
+	
+	# Force the physics containers to inherit the explicit layout space
+	_sync_physics_layout(tier_1_scroll, tier_1_physics)
+	_sync_physics_layout(tier_2_scroll, tier_2_physics)
+	_sync_physics_layout(tier_3_scroll, tier_3_physics)
+	
 	_configure_scroll_navigation()
 	set_process(true)
 
+func _sync_physics_layout(scroll: ScrollContainer, physics: PhysicsTierContainer) -> void:
+	physics.size_flags_horizontal = scroll.size_flags_horizontal
+	physics.size_flags_vertical = scroll.size_flags_vertical
+	physics.custom_minimum_size = scroll.custom_minimum_size
+
 func _configure_scroll_navigation() -> void:
 	# Keep overflow bounded by inventory/tier panels (not by scroll viewport itself).
-	panel_container.clip_contents = true
-	tier_1_panel.clip_contents = true
-	tier_2_panel.clip_contents = true
-	tier_3_panel.clip_contents = true
+	panel_container.clip_contents = not _is_battle_context
+	tier_1_panel.clip_contents = not _is_battle_context
+	tier_2_panel.clip_contents = not _is_battle_context
+	tier_3_panel.clip_contents = not _is_battle_context
 
 	for scroll in _get_tier_scrolls():
 		if not is_instance_valid(scroll):
@@ -102,7 +118,7 @@ func _auto_scroll_during_drag(delta: float) -> void:
 		var bottom_limit: float = rect.end.y - DRAG_SCROLL_ZONE_PX
 		
 		if mouse_pos.y < top_limit:
-			direction = -(1.0 - clampf((mouse_pos.y - rect.position.y) / DRAG_SCROLL_ZONE_PX, 0.0, 1.0))
+			direction = - (1.0 - clampf((mouse_pos.y - rect.position.y) / DRAG_SCROLL_ZONE_PX, 0.0, 1.0))
 		elif mouse_pos.y > bottom_limit:
 			direction = 1.0 - clampf((rect.end.y - mouse_pos.y) / DRAG_SCROLL_ZONE_PX, 0.0, 1.0)
 		
@@ -234,10 +250,27 @@ func _populate_grids() -> void:
 	if not _data_source:
 		return
 
+	# Toggle UI Visibilities - operate on the scroll containers to hide grids and scrollbars
+	tier_1_scroll.visible = not _is_battle_context
+	tier_2_scroll.visible = not _is_battle_context
+	tier_3_scroll.visible = not _is_battle_context
+	
+	tier_1_physics.visible = _is_battle_context
+	tier_2_physics.visible = _is_battle_context
+	tier_3_physics.visible = _is_battle_context
+	
+	if _is_battle_context:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			tier_1_physics.sync_state(bm.get_inventory_tier_instances(1))
+			tier_2_physics.sync_state(bm.get_inventory_tier_instances(2))
+			tier_3_physics.sync_state(bm.get_inventory_tier_instances(3))
+		return
+
 	# This will create the 16 SlotViews per grid, but only on the first run.
 	_initialize_grids_if_needed()
 
-	var data_owner = get_tree().get_first_node_in_group("battle_manager") if _is_battle_context else GameManager.run_state
+	var data_owner = GameManager.run_state
 	if not is_instance_valid(data_owner):
 		return
 
