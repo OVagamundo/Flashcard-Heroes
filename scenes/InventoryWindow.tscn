@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier1GachaBallBase.png" id="7_tier1_base"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
+[ext_resource type="PackedScene" uid="uid://cy8x8i0j8v9b5" path="res://scenes/PhysicsTierContainer.tscn" id="10_physics_tier"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clean"]
 
@@ -91,6 +92,11 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 3
 
+[node name="Tier1Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column" instance=ExtResource("10_physics_tier")]
+layout_mode = 2
+anchors_preset = 15
+size_flags_vertical = 3
+
 [node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
@@ -153,6 +159,12 @@ theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 3
 
+[node name="Tier2Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column" instance=ExtResource("10_physics_tier")]
+layout_mode = 2
+anchors_preset = 15
+size_flags_vertical = 3
+tier = 2
+
 [node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
@@ -214,6 +226,12 @@ size_flags_vertical = 3
 theme_override_constants/h_separation = 0
 theme_override_constants/v_separation = 0
 columns = 3
+
+[node name="Tier3Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column" instance=ExtResource("10_physics_tier")]
+layout_mode = 2
+anchors_preset = 15
+size_flags_vertical = 3
+tier = 3
 
 [node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
 custom_minimum_size = Vector2(0, 20)

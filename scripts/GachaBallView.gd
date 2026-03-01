@@ -7,7 +7,7 @@ const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
 const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
 
 # Gachaball overlay texture path for inventory items
-const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaball.png"
+const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaballcapsule.png"
 const GACHABALL_SELECTION_PATH = "res://assets/ui/textures/gachaballselected.png"
 
 # Path-choice-style hover motion for selectable gachaballs.
@@ -542,7 +542,7 @@ func _apply_hover_visuals(mode: int, blend: float) -> void:
 	var pointer_x = (_pointer_uv.x - 0.5) * 2.0
 	var pointer_y = (_pointer_uv.y - 0.5) * 2.0
 	var target_tilt = pointer_x * MAX_TILT_DEGREES * _hover_amount * transform_factor
-	var target_pitch = -pointer_y * MAX_PITCH_DEGREES * _hover_amount * transform_factor
+	var target_pitch = - pointer_y * MAX_PITCH_DEGREES * _hover_amount * transform_factor
 
 	_tilt_degrees = lerpf(_tilt_degrees, target_tilt, blend)
 	_pitch_degrees = lerpf(_pitch_degrees, target_pitch, blend)
@@ -1125,7 +1125,7 @@ func _get_all_instances_db() -> Dictionary:
 	return {}
 
 ## Create gachaball overlay for inventory windows
-## This adds the gachaball.png texture on top of unit/item sprites
+## This adds the gachaballcapsule.png texture on top of unit/item sprites
 func _create_gachaball_overlay() -> void:
 	if not is_instance_valid(icon_rect):
 		return
@@ -1391,7 +1391,7 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	get_parent().move_child(placeholder, get_index())
 
 	# Delegate drag visuals to GIR helper (replaces InteractionManager)
-	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
+	GlobalInteractionRouter.start_drag_visuals(self , placeholder)
 
 	# Notify GIR of drag origin so it can interpret the eventual drop
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")

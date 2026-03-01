@@ -1,40 +1,138 @@
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+Godot Engine v4.6.1.stable.official.14d19694e - https://godotengine.org
 OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
 
+WARNING: res://scenes/PhysicsGachaBall.tscn:4 - ext_resource, invalid UID: uid://dfnj2025edov3 - using text path instead: res://assets/ui/textures/gachaballcapsule.png
+   at: load (scene/resources/resource_format_text.cpp:500)
+WARNING: res://scenes/InventoryWindow.tscn:11 - ext_resource, invalid UID: uid://cy8x8i0j8v9b5 - using text path instead: res://scenes/PhysicsTierContainer.tscn
+   at: load (scene/resources/resource_format_text.cpp:500)
+   GDScript backtrace (most recent call first):
+       [0] @implicit_new (res://scripts/WindowManager.gd:6)
 WARNING: res://resources/items/item_emblem_earth.tres:3 - ext_resource, invalid UID: uid://bg2j5z5z5z5z5 - using text path instead: res://assets/sprites/items/EarthEmblem.png
-   at: load (scene/resources/resource_format_text.cpp:447)
+   at: load (scene/resources/resource_format_text.cpp:500)
+   GDScript backtrace (most recent call first):
+       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [1] _ready (res://scripts/Database.gd:24)
 WARNING: res://resources/items/item_emblem_earth.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
-   at: load (scene/resources/resource_format_text.cpp:447)
+   at: load (scene/resources/resource_format_text.cpp:500)
+   GDScript backtrace (most recent call first):
+       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [1] _ready (res://scripts/Database.gd:24)
 WARNING: res://resources/items/item_emblem_fire.tres:3 - ext_resource, invalid UID: uid://bg2j4y4y4y4y4 - using text path instead: res://assets/sprites/items/FireEmblem.png
-   at: load (scene/resources/resource_format_text.cpp:447)
+   at: load (scene/resources/resource_format_text.cpp:500)
+   GDScript backtrace (most recent call first):
+       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [1] _ready (res://scripts/Database.gd:24)
 WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
-   at: load (scene/resources/resource_format_text.cpp:447)
+   at: load (scene/resources/resource_format_text.cpp:500)
+   GDScript backtrace (most recent call first):
+       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [1] _ready (res://scripts/Database.gd:24)
 [Title] Ready. TutorialManager.tutorials_enabled: false
 [TutorialManager] Requesting tutorial: loadout_intro
 [TutorialManager] Blocked: Tutorials disabled
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+   GDScript backtrace (most recent call first):
+       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
 WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+   GDScript backtrace (most recent call first):
+       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+   GDScript backtrace (most recent call first):
+       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
 WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2145)
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+   GDScript backtrace (most recent call first):
+       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
 [SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_run
+[EncounterGen] Budget: 6, Spent: 6, Units: 2, Items: 0, Trinkets: 0
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
+[BattleLog] [1:1] ═══ TURN 1 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Tutorials disabled
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
-[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
-[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
-[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
-[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
-[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+[FlashcardManager] _on_minigame_complete called. Correct: 8
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
+[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=1 targets=1
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=2 targets=1
+[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=1 targets=1
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=1 targets=1
+[StatusEffectAnimation] execute() called - stat='spikes_stacks' amount=1 targets=1
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 3
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 3
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 3
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 3
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 3

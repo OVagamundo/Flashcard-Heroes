@@ -76,6 +76,7 @@ const SOUNDS: Dictionary = {
 	# Token
 	"token_spend": COIN_LAND,
 	"token_land": ACTION_LAND,
+	"plastic_clack": UI_CLICK,
 	
 	# Minigame
 	"minigame_correct": ACTION_BUFF,

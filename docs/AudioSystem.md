@@ -43,6 +43,7 @@ Audio.play_music(SoundRegistry.BGM_BATTLE)
 | `ui_error` | Invalid action | `ui/error1.ogg` |
 | `ui_window_open` | Window opens | `ui/drop.ogg` |
 | `ui_window_close` | Window closes | `ui/click1.ogg` |
+| `plastic_clack` | Gachaball collision | `ui/click1.ogg` |
 
 #### Action Sounds (New)
 | Sound ID | Description | Audio File |
@@ -130,6 +131,14 @@ Each scene calls `Audio.play_music()` in its `_ready()`:
 - `RestSite.gd` → `BGM_REST`
 - `Reward.gd` → `BGM_REWARD`
 - `FlashcardMinigame.gd` → `BGM_MINIGAME`
+
+### Physics Collision Audio
+`PhysicsGachaBall.gd` implements advanced dynamic audio for collisions:
+1. **Intensity Mapping**: Impact velocity is mapped to an intensity ratio (0.0 to 1.0).
+2. **Dynamic Volume**: Intensity drives `volume_db` from -24.0 (quiet) to 0.0 (full).
+3. **Dynamic Pitch**: Intensity drives base pitch (0.85 to 1.1) with ±0.15 random variance.
+4. **Chaos Cooldown**: A global `static` variable `next_allowed_clack_time` enforces a randomized 30ms-100ms window between any two balls clacking to prevent "machine gun" audio stacking.
+5. **Polyphony**: Each ball uses an internal `AudioStreamPlayer` with `max_polyphony = 3` for overlapping bounce sounds.
 
 ---
 

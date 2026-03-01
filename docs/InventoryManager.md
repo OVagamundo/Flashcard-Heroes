@@ -120,6 +120,42 @@ Rule G1: The Automatic Reshuffle Rule:
 Statement: When a Gacha draw makes the BattleInventoryT<n> pool empty (last gachaball on that tier container is drawn), the system automatically moves all GachaBalls of that same tier from the DiscardPile back into that pool.
 Stat Reset: When an instance is sent to the discard pile, its current_hp and current_pwr are reset to their base definition values. This ensures it is drawn in a fresh, undamaged state.
 Rationale: This creates a closed-loop economy within each battle. It ensures the player can never have no gachaballs, but the state of those units (which ones are active, available vs. defeated) creates a dynamic and evolving tactical puzzle throughout the encounter.
+
+## 3.1 Battle Physics Inventory (PhysicsTierContainer)
+During battle, the drawer-based inventory replaces the standard grid and acts as a **Read-Only Physics Visualization** of the active Gacha Pools.
+
+### Read-Only Constraints
+The physics inventory is strictly for observation. The following player actions are **completely disabled** within the battle inventory containers:
+- **No Dragging or Moving**: Balls cannot be manually repositioned.
+- **No Swapping**: Attempting to swap balls is ignored.
+- **No Merging**: Merging must be done on the Battle Board, not in the drawer.
+- **No Equipping**: Items cannot be dragged directly from the drawer to units.
+
+### Pool Visualization Logic
+- **Drawer = Active Pool**: The balls inside the `PhysicsTierContainer` represent the exact contents of the `BattleInventoryT<n>` pools.
+- **Drawing Impact**: When a gachaball is drawn via a machine button, the corresponding instance is removed from the physics simulation.
+- **Reshuffle Spawning**: When a pool reshuffles, balls spawn at the **top-center** of the container. Spawning is **sequential** (staggered) to prevent physics "explosions" from overlapping bodies.
+
+### Robust Boundaries
+To prevent gachaballs from tunneling or jittering, the `PhysicsTierContainer` uses three distinct `RectangleShape2D` nodes:
+- **Side Walls**: 100px thick rectangles.
+- **Thick Floor**: A 500px thick rectangle floor to ensure zero tunneling even during high-velocity jolts.
+
+### Layout Safeguard
+The `PhysicsTierContainer` implements a **Vertical Safeguard**:
+- `_max_y_seen`: The container tracks the maximum height it has ever reached.
+- On resize, the floor is locked to this maximum height. This prevents the floor from "dropping out" or shifting upward due to one-frame UI layout fluctuations (e.g., when adding many elements to a background container).
+
+### The Penalty Mechanic (Cleanup)
+- **Spring Lid**: Every container features a physical lid.
+- **Overflow Threshold**: If the container is too full, balls will push against the lid into the overflow area.
+- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, the `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard Pile**.
+
+### Tray Inertia (Jolts)
+To simulate the physical movement of the inventory drawer, the `WindowManager` triggers jolts via `apply_jolt(base_impulse: Vector2)`:
+- **Upward Slam (Inventory Open)**: A `Vector2(0, -500)` impulse applied when the drawer finishes opening.
+- **Downward Slam (Inventory Close)**: A `Vector2(0, 400)` impulse applied when the drawer drops away.
+- **Variance**: impulses include random variance and torque (spin) for a more organic, chaotic feel.
 End of Battle Cleanup
 Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.
 State Preservation: The original RunState and its RunInventory remain completely untouched and unmodified by the events of the battle. This ensures a clean state for the next encounter.

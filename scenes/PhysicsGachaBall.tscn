@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://cx6y83y3j70w6"]
+
+[ext_resource type="Script" path="res://scripts/PhysicsGachaBall.gd" id="1_physics"]
+[ext_resource type="Texture2D" uid="uid://dfnj2025edov3" path="res://assets/ui/textures/gachaballcapsule.png" id="2_texture"]
+[ext_resource type="AudioStream" uid="uid://x7wjpxtgr6u" path="res://assets/audio/sfx/ui/click1.ogg" id="3_audio"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g8g2b"]
+friction = 0.15
+bounce = 0.4
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7xh3p"]
+radius = 48.0
+
+[node name="PhysicsGachaBall" type="RigidBody2D"]
+input_pickable = true
+mass = 3.0
+physics_material_override = SubResource("PhysicsMaterial_g8g2b")
+continuous_cd = 1
+max_contacts_reported = 3
+contact_monitor = true
+linear_damp = 0.1
+angular_damp = 0.1
+script = ExtResource("1_physics")
+
+[node name="CapsuleSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_texture")
+
+[node name="IconSprite" type="Sprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_7xh3p")
+
+[node name="UIAnchor" type="Control" parent="."]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 3
+anchors_preset = 0
+offset_left = -48.0
+offset_top = -48.0
+offset_right = 48.0
+offset_bottom = 48.0
+mouse_filter = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_audio")
+max_polyphony = 3
+
+

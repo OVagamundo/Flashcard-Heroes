@@ -85,7 +85,7 @@ func _ready() -> void:
 		if not is_first: queue_free(); return
 
 	add_to_group("battle_manager")
-	GameManager.register_battle_manager(self) # ADD THIS LINE
+	GameManager.register_battle_manager(self ) # ADD THIS LINE
 	
 	# Sync test mode flag
 	is_test_mode = GameManager.is_test_mode
@@ -130,6 +130,9 @@ func _connect_signals() -> void:
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
 	SignalBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
+	if SignalBus.has_signal("inventory_instance_removed_penalty"):
+		if not SignalBus.inventory_instance_removed_penalty.is_connected(_on_battle_inventory_penalty):
+			SignalBus.inventory_instance_removed_penalty.connect(_on_battle_inventory_penalty)
 	# Apply deaths after animator finishes death fades
 	if SignalBus.has_signal("apply_deaths_requested") and not SignalBus.is_connected("apply_deaths_requested", _on_apply_deaths_requested):
 		SignalBus.apply_deaths_requested.connect(_on_apply_deaths_requested)
@@ -618,7 +621,7 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 		return
 
 	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.resolve_effect_request(request, out_events, death_tracking, self)
+	_combat.resolve_effect_request(request, out_events, death_tracking, self )
 
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
@@ -637,7 +640,7 @@ func _resolve_combat_phase() -> void:
 	var death_tracking: Dictionary = {}
 	
 	# 2. Execute combat turn via CombatSimulator
-	var turn_log: Array[CombatEvent] = _combat.execute_combat_turn(self, death_tracking)
+	var turn_log: Array[CombatEvent] = _combat.execute_combat_turn(self , death_tracking)
 	
 	# 3. Clean up deferred enemy instances AFTER all reactions have resolved
 	_flush_deferred_enemy_erasures()
@@ -705,7 +708,7 @@ func _on_turn_animation_finished() -> void:
 
 func _check_for_deaths(is_simulation: bool = false, out_events = null) -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
-	DeathProcessor.check_for_deaths(is_simulation, out_events, self)
+	DeathProcessor.check_for_deaths(is_simulation, out_events, self )
 		
 ## Centralized logic for cleaning up a dead unit.
 ## Moves player units to discard, removes enemy units entirely.
@@ -757,7 +760,7 @@ func _has_lethal_counter_abilities(unit: GachaBallInstance) -> bool:
 ## Enhanced death checking that defers death events for units with counter-attacks
 func _check_for_deaths_with_counter_delay(is_simulation: bool = false, out_events = null, death_tracking = null) -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
-	DeathProcessor.check_for_deaths_with_counter_delay(is_simulation, out_events, death_tracking, self)
+	DeathProcessor.check_for_deaths_with_counter_delay(is_simulation, out_events, death_tracking, self )
 
 
 ## Helper function to create DEATH events only once per unit
@@ -774,12 +777,12 @@ func _create_death_event_if_needed(unit_uuid: String, out_events: Array, death_t
 ## Check if any deferred counter-attack units have completed their abilities and should now die
 func _process_completed_counter_deaths(out_events = null, death_tracking = null) -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
-	DeathProcessor.process_completed_counter_deaths(out_events, death_tracking, self)
+	DeathProcessor.process_completed_counter_deaths(out_events, death_tracking, self )
 
 ## Helper function to process deferred on_ally_death triggers after counter-attacks resolve
 func _process_deferred_ally_death(dying_uuid: String, team: String) -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
-	DeathProcessor.process_deferred_ally_death(dying_uuid, team, self)
+	DeathProcessor.process_deferred_ally_death(dying_uuid, team, self )
 
 func _on_apply_deaths_requested(dead_unit_uuids: Array) -> void:
 	if dead_unit_uuids == null:
@@ -904,7 +907,7 @@ func _on_battle_victory() -> void:
 ## @return Array[String] - Array of target UUIDs
 
 func resolve_target(source_uuid: String, target_type: StringName, context: Dictionary) -> Array[String]:
-	return TargetResolver.resolve_target(source_uuid, target_type, context, self)
+	return TargetResolver.resolve_target(source_uuid, target_type, context, self )
 
 ## Check if a condition is met for an ability.
 ## @param condition_def: ConditionDefinition - The condition to check
@@ -912,7 +915,7 @@ func resolve_target(source_uuid: String, target_type: StringName, context: Dicti
 ## @param context: Dictionary - The context of the event
 ## @return bool - True if condition is met
 func check_condition(condition_def: ConditionDefinition, source_uuid: String, context: Dictionary) -> bool:
-	return TargetResolver.check_condition(condition_def, source_uuid, context, self)
+	return TargetResolver.check_condition(condition_def, source_uuid, context, self )
 
 
 ## Enqueue an effect request for processing.
@@ -929,7 +932,7 @@ func get_pending_reactions_size() -> int:
 
 func drain_pending_reactions_inline(start_index: int) -> void:
 	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.drain_reactions_inline(start_index, self)
+	_combat.drain_reactions_inline(start_index, self )
 
 func collect_inline_events() -> Array[CombatEvent]:
 	# THIN WRAPPER: Delegates to CombatSimulator
@@ -937,7 +940,7 @@ func collect_inline_events() -> Array[CombatEvent]:
 
 func drain_lethal_reactions_only(start_index: int) -> void:
 	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.drain_lethal_reactions(start_index, self)
+	_combat.drain_lethal_reactions(start_index, self )
 
 
 ## Get an instance by UUID.
@@ -1273,7 +1276,7 @@ func _resolve_pending_reactions_only(_extra_events: Array[CombatEvent] = []) -> 
 	
 	# Process all pending reactions (turn start abilities)
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
-	all_events_for_animator.append_array(_combat.process_reaction_queue(self, death_tracking))
+	all_events_for_animator.append_array(_combat.process_reaction_queue(self , death_tracking))
 	
 	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
 	# and any deferred deaths (waiting for empty queue) are released immediately.
@@ -1318,7 +1321,7 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	
 	# Resolve all pending reactions (e.g., Royal Insignia buffs)
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
-	events.append_array(_combat.process_reaction_queue(self, death_tracking))
+	events.append_array(_combat.process_reaction_queue(self , death_tracking))
 	
 	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
 	# and any deferred deaths (waiting for empty queue) are released immediately.
@@ -1373,7 +1376,7 @@ func _trigger_turn_end_abilities() -> void:
 	# print("DEBUG: Resolving ", _pending_reactions.size(), " pending reactions")
 	# 3. Resolve pending reactions from on_turn_end
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
-	all_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+	all_events.append_array(_combat.process_reaction_queue(self , death_tracking))
 	
 	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
 	# and any deferred deaths (waiting for empty queue) are released immediately.
@@ -1732,7 +1735,7 @@ func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> Gacha
 
 func _finalize_deaths() -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
-	var something_changed = DeathProcessor.finalize_deaths(self)
+	var something_changed = DeathProcessor.finalize_deaths(self )
 	if something_changed:
 		_emit_battle_inventory_changed()
 
@@ -2080,19 +2083,35 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 # =============================================================================
 
 func register_test_unit(unit_def_id: StringName, is_enemy: bool, position: int = -1) -> GachaBallInstance:
-	return TestModeHelpers.register_test_unit(self, unit_def_id, is_enemy, position)
+	return TestModeHelpers.register_test_unit(self , unit_def_id, is_enemy, position)
 
 func register_test_item(item_def_id: StringName, is_enemy: bool) -> GachaBallInstance:
-	return TestModeHelpers.register_test_item(self, item_def_id, is_enemy)
+	return TestModeHelpers.register_test_item(self , item_def_id, is_enemy)
 
 func register_test_item_on_unit(item_def_id: StringName, unit_uuid: String) -> GachaBallInstance:
-	return TestModeHelpers.register_test_item_on_unit(self, item_def_id, unit_uuid)
+	return TestModeHelpers.register_test_item_on_unit(self , item_def_id, unit_uuid)
 
 func register_test_trinket(trinket_def_id: StringName, is_enemy: bool) -> GachaBallInstance:
-	return TestModeHelpers.register_test_trinket(self, trinket_def_id, is_enemy)
+	return TestModeHelpers.register_test_trinket(self , trinket_def_id, is_enemy)
 
 func trigger_test_battle_start() -> void:
-	TestModeHelpers.trigger_test_battle_start(self)
+	TestModeHelpers.trigger_test_battle_start(self )
 
 func clear_test_team(is_enemy: bool) -> void:
-	TestModeHelpers.clear_test_team(self, is_enemy)
+	TestModeHelpers.clear_test_team(self , is_enemy)
+
+func _on_battle_inventory_penalty(uuid: String) -> void:
+	if _battle_instances.has(uuid):
+		var instance = _battle_instances.get(uuid)
+		var name_str = "Item"
+		
+		if is_instance_valid(instance):
+			var def = instance.get_definition()
+			if def and "display_name_key" in def:
+				name_str = tr(def.display_name_key)
+				
+		# The precise BattleManager API for atomic runtime move to discard
+		bm_move_instance_to_discard(uuid)
+		
+		if Engine.has_singleton("BattleLogger"):
+			BattleLogger.log_message("[color=red]OVERFLOW PENALTY:[/color] %s was moved to discard pile." % name_str)

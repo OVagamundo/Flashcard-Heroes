@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cy8x8i0j8wab5"]
+
+[ext_resource type="Script" path="res://scripts/PhysicsTierContainer.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid"]
+
+[node name="PhysicsTierContainer" type="Control"]
+mouse_filter = 2
+clip_contents = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="SpawnPoint" type="Marker2D" parent="."]
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="DropTimer" type="Timer" parent="."]
+wait_time = 0.15
+
+[node name="LidArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LidArea"]
+shape = SubResource("RectangleShape2D_lid")

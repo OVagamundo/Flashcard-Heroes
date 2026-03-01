@@ -146,38 +146,31 @@ If neither side wins, next turn begins.
 During Management Phase, the player may:
 
 1. **Draw**
-
    * Spend Tokens on Tier 1 / 2 / 3 machines.
+   * Drawn items go to `PlayerBench`.
 
-2. **Inspect Machine Pools, trinkets, traits and discard pile and the battle board (player/enemy)**
-
-   * View exact contents of each tier pool.
-   * Player sees full list of units/items remaining.
-   * Player sees the entire battle board including player/enemy units, their equipped items, trinkets and active traits.
+2. **Inspect Machine Pools (The Drawer), trinkets, traits and discard pile and the battle board (player/enemy)**
+   * View exact contents of each tier pool (Physics Drawer).
+   * **Note**: The Physics Drawer is **Read-Only**. Actions listed below (3-7) cannot be performed directly on balls within the drawer.
 
 3. **Place Units**
-
    * Drag from bench to lineup and vice versa(5 slots).
    * Lineup grid is fixed; units do not shift automatically.
 
 4. **Rearrange Units**
-
-   * Change formation.
+   * Change formation (Board/Bench).
 
 5. **Equip/use Items**
-
-   * Drag item to unit with available slot.
-   * Drag consumable item to use on units (consumables can only be use once per battle and are removed from battle inventory after use). 
+   * Drag item from **Bench** to unit with available slot.
+   * Drag consumable item to use on units.
 
 6. **Manage Equipped Items (same unit only)**
-
    * Move within unit slots.
    * Swap within same unit.
    * Merge items if recipe is unlocked.
 
 7. **Merge Units**
-
-   * On bench, board or inventory.
+   * On bench or board.
    * Requires unlocked recipe.
    * Creates new instance for current battle.
 
@@ -205,7 +198,17 @@ All three exist simultaneously.
 
 Go to one shared discard pile.
 
-## 6.3 Reshuffle Rule
+## 6.3 Physics Pool Visualization (Battle Only)
+During battle, the inventory drawer acts as a **Read-Only visualization** of the active gacha pools:
+- **No Manual Interaction**: Players cannot drag, move, swap, or merge items directly from the drawer.
+- **Draw removal**: When a gachaball is drawn, it is physically removed from the drawer.
+- **Reshuffle Spawning**: When a pool reshuffles, new balls spawn sequentially at the top-center of the container.
+
+## 6.4 The Overflow Penalty
+- **Mechanic**: If a container becomes physically overfilled, balls will push against the **Spring Lid**.
+- **Penalty**: Maintaining physical contact with the lid for **5 continuous seconds** results in the instance being **moved to the Shared Discard Pile**.
+
+## 6.5 Reshuffle Rule
 
 Reshuffle occurs only:
 
