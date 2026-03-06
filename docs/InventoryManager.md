@@ -121,25 +121,27 @@ Statement: When a Gacha draw makes the BattleInventoryT<n> pool empty (last gach
 Stat Reset: When an instance is sent to the discard pile, its current_hp and current_pwr are reset to their base definition values. This ensures it is drawn in a fresh, undamaged state.
 Rationale: This creates a closed-loop economy within each battle. It ensures the player can never have no gachaballs, but the state of those units (which ones are active, available vs. defeated) creates a dynamic and evolving tactical puzzle throughout the encounter.
 
-## 3.1 Battle Physics Inventory (PhysicsTierContainer)
-During battle, the drawer-based inventory replaces the standard grid and acts as a **Read-Only Physics Visualization** of the active Gacha Pools.
+## 3.1 Battle Physics Inventory & Discard Pile (PhysicsTierContainer)
+During battle, the drawer-based inventory (Battle Inventory) and the side-drawer Discard Pile act as **Read-Only Physics Visualizations**. 
 
 ### Read-Only Constraints
-The physics inventory is strictly for observation. The following player actions are **completely disabled** within the battle inventory containers:
+These containers are strictly for observation. The following player actions are **completely disabled** within their boundaries:
 - **No Dragging or Moving**: Balls cannot be manually repositioned.
 - **No Swapping**: Attempting to swap balls is ignored.
-- **No Merging**: Merging must be done on the Battle Board, not in the drawer.
-- **No Equipping**: Items cannot be dragged directly from the drawer to units.
+- **No Merging**: Merging must be done on the Battle Board.
+- **No Equipping**: Items cannot be dragged directly from these drawers.
 
 ### Pool Visualization Logic
-- **Drawer = Active Pool**: The balls inside the `PhysicsTierContainer` represent the exact contents of the `BattleInventoryT<n>` pools.
-- **Drawing Impact**: When a gachaball is drawn via a machine button, the corresponding instance is removed from the physics simulation.
-- **Reshuffle Spawning**: When a pool reshuffles, balls spawn at the **top-center** of the container. Spawning is **sequential** (staggered) to prevent physics "explosions" from overlapping bodies.
+- **Inventory = Active Pool**: Battle Inventory balls represent `BattleInventoryT<n>` contents.
+- **Discard = Shared History**: Discard Pile balls represent the contents of the `BattleDiscardPile`.
+- **Persistent State**: Simulation continues running while drawers are hidden. No "Kinematic Freeze" is required for movement; child physics nodes translate reliably with parent Controls.
+- **Sequential Spawning**: When a pool reshuffles or items are discarded, balls spawn at the **top-center** with a random X/Y stagger. Spawning is **sequential** (0.15s interval) to prevent overlapping explosions.
+- **Spawning Timing**: `populate()` is called **before** the drawer begins its opening animation (Battle Inventory) or **after** it completes (Discard Pile if horizontal momentum is a concern, though current implementation preferes consistency with Battle Inventory).
 
-### Robust Boundaries
-To prevent gachaballs from tunneling or jittering, the `PhysicsTierContainer` uses three distinct `RectangleShape2D` nodes:
-- **Side Walls**: 100px thick rectangles.
-- **Thick Floor**: A 500px thick rectangle floor to ensure zero tunneling even during high-velocity jolts.
+### Inescapable Boundaries
+To prevent gachaballs from tunneling or jittering, the `PhysicsTierContainer` uses extreme boundary dimensions:
+- **Sidewalls**: ~2000px thick rectangles extending infinitely upward/downward. This prevents balls from escaping during high-velocity horizontal slides (Discard Pile).
+- **Thick Floor**: A 500px thick rectangle floor ensuring zero tunneling even during high-velocity vertical slams (Battle Inventory).
 
 ### Layout Safeguard
 The `PhysicsTierContainer` implements a **Vertical Safeguard**:

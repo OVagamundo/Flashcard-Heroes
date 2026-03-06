@@ -1,58 +1,74 @@
-[gd_scene load_steps=2 format=3 uid="uid://c28k46w6p3h0"]
+[gd_scene load_steps=9 format=3 uid="uid://c28k46w6p3h0"]
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
+[ext_resource type="PackedScene" uid="uid://cy8x8i0j8wab5" path="res://scenes/PhysicsTierContainer.tscn" id="2_physics_tier"]
+[ext_resource type="Texture2D" uid="uid://coytkb7iik7e" path="res://assets/ui/textures/DiscardPileContainer.png" id="3_container_tex"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
+size = Vector2(2000, 4000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_right"]
+size = Vector2(2000, 4000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(4000, 2000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid2"]
+size = Vector2(1252, 50)
 
 [node name="DiscardPileWindow" type="Control"]
 layout_mode = 3
+anchors_preset = 0
+offset_left = 1920.0
+offset_top = 140.0
+offset_right = 3200.0
+offset_bottom = 820.0
+mouse_filter = 1
+script = ExtResource("1_v38m6")
+
+[node name="ContainerBG" type="TextureRect" parent="."]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("1_v38m6")
+texture = ExtResource("3_container_tex")
+expand_mode = 0
+stretch_mode = 3
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
-unique_name_in_owner = true
+[node name="DiscardPhysicsContainer" parent="." instance=ExtResource("2_physics_tier")]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -500.0
-offset_top = -350.0
-offset_right = 500.0
-offset_bottom = 350.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
+custom_minimum_size = Vector2(1280, 680)
+tier = 4
+left_wall_padding = -14.0
+right_wall_padding = -14.0
+bottom_wall_padding = 15.0
+use_static_bounds = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 15
+[node name="SpawnPoint" parent="DiscardPhysicsContainer" index="0"]
+position = Vector2(640, 100)
 
-[node name="TitleLabel" type="Label" parent="PanelContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HeaderLabel"
-theme_override_font_sizes/font_size = 28
-text = "Discard Pile"
-horizontal_alignment = 1
+[node name="LeftWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="0"]
+position = Vector2(-986, 0)
+shape = SubResource("RectangleShape2D_left")
 
+[node name="RightWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="1"]
+position = Vector2(2266, 0)
+shape = SubResource("RectangleShape2D_right")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer"]
-layout_mode = 2
-mouse_filter = 2
-size_flags_vertical = 3
+[node name="FloorWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="2"]
+position = Vector2(640, 1665)
+shape = SubResource("RectangleShape2D_floor")
 
-[node name="DiscardGrid" type="GridContainer" parent="PanelContainer/VBoxContainer/ScrollContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 5
+[node name="LidArea" parent="DiscardPhysicsContainer" index="3"]
+position = Vector2(640, 0)
+
+[node name="CollisionShape2D" parent="DiscardPhysicsContainer/LidArea" index="0"]
+shape = SubResource("RectangleShape2D_lid2")

@@ -6,6 +6,7 @@ extends Control
 @export var left_wall_padding: float = -14.0
 @export var right_wall_padding: float = -14.0
 @export var bottom_wall_padding: float = 15.0
+@export var use_static_bounds: bool = false
 
 @onready var spawn_point: Marker2D = $SpawnPoint
 @onready var drop_timer: Timer = $DropTimer
@@ -34,8 +35,14 @@ func _ready() -> void:
 	
 	lid_area.collision_layer = 0
 	lid_area.collision_mask = (1 << (ball_layer - 1))
+	
+	# If size is already set from the .tscn, the resized signal won't fire. 
+	# Force an initial bounds generation here.
+	_on_resized()
 
 func _on_resized() -> void:
+	if use_static_bounds:
+		return
 	# Only generate physics boundaries when the UI provides a real layout space
 	if size.x > 10.0 and size.y > 10.0:
 		# SAFEGUARD: The drawer height is static. Never let the floor move up 
@@ -146,6 +153,15 @@ func sync_state(tier_instances: Array) -> void:
 		if drop_timer.is_stopped():
 			drop_timer.start()
 
+func clear() -> void:
+	_spawn_queue.clear()
+	for uuid in _active_balls:
+		if is_instance_valid(_active_balls[uuid]):
+			_active_balls[uuid].queue_free()
+	_active_balls.clear()
+	_penalty_timers.clear()
+	drop_timer.stop()
+
 func _on_drop_timer_timeout() -> void:
 	if _spawn_queue.is_empty():
 		drop_timer.stop()
@@ -215,8 +231,10 @@ func _check_out_of_bounds() -> void:
 				ball.linear_velocity = Vector2.ZERO
 				ball.angular_velocity = 0.0
 				ball.position = spawn_point.position
-				# Add slight random offset to prevent exact stacking if multiple balls glitch
-				ball.position.x += randf_range(-10.0, 10.0)
+				# Add random offset to both X and Y to prevent exact stacking and physics explosion
+				var random_x = randf_range(-60.0, 60.0)
+				var random_y = randf_range(-40.0, 40.0)
+				ball.position += Vector2(random_x, random_y)
 				
 				if Engine.has_singleton("BattleLogger"):
 					BattleLogger.log_message("[color=yellow]SAFEGUARD:[/color] Gachaball recovered from out-of-bounds.")

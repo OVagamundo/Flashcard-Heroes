@@ -42,6 +42,7 @@ Main.tscn (Shell)
 | **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) |
 | **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
+| **S8** Hover Boundary | When a base inventory is open, hovers outside it are blocked |
 
 ---
 
@@ -104,25 +105,29 @@ Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visu
 - **1x Scale**: Gachaballs in the inventory are strictly forced to 1x scale and do not show stat/pwr overlays.
 - **Highlighting**: On selection, both sprites scale up (1.08x) and the capsule modulates to a brighter color (1.3x).
 
-### Physics Inventory (Battle Only)
-- **Persistence**: The physics simulation persists and continues running even when the drawer is closed/hidden.
-- **Hierarchy**: Uses a separated hierarchy for visual stability:
-    - **`SlidingContainer`**: Holds the physics boundaries and simulating balls.
-    - **`BaseMask`**: A static fixed foreground that hides the sliding elements when closed.
+### Physics Inventory & Discard Pile (Battle Only)
+- **Persistence**: The physics simulation persists and continues running even when the drawer is closed/hidden. No "kinematic freeze" is required; standard Canvas Layer 2D Physics handles the translation of RigidBody2D nodes along with their parent Control.
+- **Hierarchy & Movement**:
+    - **Battle Inventory**: Slides **vertically** from below.
+    - **Discard Pile**: Slides **horizontally** from the right.
+- **Inescapable Boundaries**: Side walls are ~2000px thick and extend infinitely to prevent tunneling or escaping during high-velocity drawer animations.
 - **Interaction Rules**:
     - **Hover-to-Inspect**: Opens temporary window (PC).
+    - **Rule S8 (Hover Boundary)**: If an inventory window is open, hovers originating from the background battle board are blocked to prevent accidental window closure.
     - **Click-to-Select**: Locks window open.
-    - **All Other Input Blocked**: No dragging, clicking, or double-clicking is permitted within the drawer boundaries.
+    - **All Other Input Blocked**: No dragging, clicking, or double-clicking is permitted within physics containers.
 
 ### Determinism & Performance
 - **Physics Ticks**: Forced to **120 TPS** for collision stability.
 - **Determinism**: Interpolation enabled; friction (0.8) and bounce (0.0) are tuned to prevent "boiling" (jittering while at rest).
 
 ### Drawer Animation Physics
-The inventory drawer's vertical movement is synchronized with physical jolts:
-- **Upward Slam**: Triggered at the end of the "Open" animation.
-- **Downward Drop**: Triggered at the start of the "Close" animation.
+The inventory drawer movements are synchronized with physical jolts:
+- **Upward Slam (Battle Inventory)**: Triggered at the end of the "Open" animation.
+- **Downward Drop (Battle Inventory)**: Triggered at the start of the "Close" animation.
+- **Horizontal Movement (Discard Pile)**: The drawer persists state and populates *before* opening to match Battle Inventory behavior.
 - **Implementation**: `WindowManager` calls `apply_jolt(base_impulse)` on the `PhysicsTierContainer` nodes.
+- **State Query**: `WindowManager.is_any_inventory_window_open()` is used by GIR to enforce interaction boundaries.
 
 ### Selection Feedback
 - **Animation:** Physics-based hop (bounce + squash/stretch)

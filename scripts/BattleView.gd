@@ -285,6 +285,7 @@ func _redraw_board() -> void:
 		var discard_count = discard_container.get_all_non_empty_uuids().size()
 		discard_pile_button.text = tr("ui.discard_pile_count") % discard_count
 
+
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
 	if not is_instance_valid(battle_manager):
 		return
@@ -649,7 +650,7 @@ func _clamp_trait_trackers_to_viewport(container: Control) -> void:
 	
 	var viewport_width = get_viewport_rect().size.x
 	var min_x: float = INF
-	var max_x: float = -INF
+	var max_x: float = - INF
 	
 	for child in container.get_children():
 		if not (child is Control):

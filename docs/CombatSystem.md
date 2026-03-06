@@ -617,8 +617,8 @@ func apply_damage(unit: GachaBallInstance, amount: int) -> void:
 ---
 
 ## 6. Real-Time Physics Penalties
-Separate from the turn-based simulation, the **Inventory Drawer** operates on a real-time physics clock.
+Separate from the turn-based simulation, the **Inventory Drawer** and **Discard Pile** operate on a real-time physics clock.
 
-- **Overflow Penalty**: If a ball maintains continuous contact with the **Spring Lid** for 5 seconds, it emits the  signal.
-- **Data Mutation**: This signal triggers an **immediate** atomic move of the unit/item to the **Battle Discard Pile**.
-- **Presentation**: The gachaball is immediately `queue_free()`'d in the physics scene.
+- **Overflow Penalty**: If a ball maintains continuous contact with the **Spring Lid** for 5 seconds, it emits a penalty signal.
+- **Data Mutation**: This signal triggers an **immediate** atomic move of the instance to the **Battle Discard Pile** (resetting its stats). See [InventoryManager.md](InventoryManager.md) for reshuffle rules.
+- **Interaction Boundaries**: To prevent accidental window closure, hover inspections originating outside the active inventory window are blocked while the drawer is open (Rule S8).
