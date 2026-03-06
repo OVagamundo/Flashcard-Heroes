@@ -1,4 +1,6 @@
-[gd_scene load_steps=9 format=3 uid="uid://c28k46w6p3h0"]
+import re
+
+scene = """[gd_scene load_steps=9 format=3 uid="uid://c28k46w6p3h0"]
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
 [ext_resource type="PackedScene" uid="uid://cy8x8i0j8wab5" path="res://scenes/PhysicsTierContainer.tscn" id="2_physics_tier"]
@@ -72,3 +74,8 @@ position = Vector2(640, 0)
 
 [node name="CollisionShape2D" parent="DiscardPhysicsContainer/LidArea" index="0"]
 shape = SubResource("RectangleShape2D_lid2")
+"""
+
+with open("scenes/DiscardPileWindow.tscn", "w") as f:
+    f.write(scene)
+print("Updated DiscardPileWindow.tscn with thick walls and proper funneling")

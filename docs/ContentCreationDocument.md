@@ -256,9 +256,15 @@ The animation system allows 3 simultaneous effects on a unit. You can mix and ma
 
 ### 11. Gacha Draw & Physics
 
-The draw animation follows a strict **Bezier Curve**.
+During battle, the gacha pools (and the shared Discard Pile) are represented as **Physics-Based Drawers**. These are read-only visualizations that represent the exact contents of the underlying `DataContainers`.
+
+#### Drawer Visualization
+-   **Persistent Simulation**: The physics continues simulated while closed/hidden.
+-   **Inescapable Boundaries**: Walls are ~2000px thick to prevent balls escaping during high-velocity drawer animations.
+-   **Sequential Spawning**: Balls spawn one-by-one with random stagger to prevent physics explosions.
 
 #### Arc Trajectory
+The draw animation follows a strict **Bezier Curve**.
 *   **End**: Center of destination slot (+96px Y for visual centering).
 *   **Control Point**: Horizontally centered, 400px above min(start.y, end.y).
 *   **Easing**: `pow(t, 0.55)` for fast launch, snappy landing.

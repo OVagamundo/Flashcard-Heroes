@@ -29,6 +29,7 @@ var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
 
 var _persistent_inventory_window: Control = null
+var _persistent_discard_pile_window: Control = null
 
 signal window_closed(window: Control)
 
@@ -54,6 +55,7 @@ func _ready() -> void:
 	SignalBus.path_choice_scene_requested.connect(close_all_inspection_windows)
 
 	call_deferred("_setup_persistent_inventory")
+	call_deferred("_setup_persistent_discard_pile")
 
 func _setup_persistent_inventory() -> void:
 	if not _window_scenes.has(&"Inventory"):
@@ -68,6 +70,17 @@ func _setup_persistent_inventory() -> void:
 	# The inner panel will animate its offset_y coordinates.
 	_persistent_inventory_window.position = Vector2.ZERO
 	_persistent_inventory_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+func _setup_persistent_discard_pile() -> void:
+	if not _window_scenes.has(&"DiscardPile"):
+		return
+	_persistent_discard_pile_window = _window_scenes[&"DiscardPile"].instantiate()
+	_persistent_discard_pile_window.name = "PersistentDiscardPileWindow"
+	_persistent_discard_pile_window.set_meta("window_type", &"DiscardPile")
+	_get_modal_layer().add_child(_persistent_discard_pile_window)
+	_persistent_discard_pile_window.hide()
+	# Root starts off-screen right as defined in .tscn (position.x = 1920)
+	_persistent_discard_pile_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 # --- PUBLIC API ---
@@ -171,11 +184,34 @@ func open_child_contextual_window(window_type: StringName, anchor_view: Control,
 
 # Public entry point for the Discard Pile Window.
 func open_discard_pile_window() -> void:
-	var context: Dictionary = {
-		"window_type": &"DiscardPile",
-		"populate_context": _get_discard_pile_populate_context()
-	}
-	_open_contextual_window(context)
+	var win = _persistent_discard_pile_window
+	if not is_instance_valid(win):
+		return
+
+	var opening: bool = win.has_meta(_WM_META_OPENING) and bool(win.get_meta(_WM_META_OPENING))
+	var closing: bool = win.has_meta(_WM_META_CLOSING) and bool(win.get_meta(_WM_META_CLOSING))
+
+	# Toggle: if already open (and not currently closing), close it
+	if win in _active_inspection_group:
+		if opening or not closing:
+			# Already open — close it
+			var idx = _active_inspection_group.find(win)
+			if idx != -1:
+				_active_inspection_group.remove_at(idx)
+			_animate_discard_pile_close(win)
+			return
+
+	var ctx = _get_discard_pile_populate_context()
+	if win.has_method("populate"):
+		win.populate(ctx)
+
+	if not _active_inspection_group.has(win):
+		_active_inspection_group.push_back(win)
+
+	_animate_discard_pile_open(win)
+
+func get_persistent_discard_pile_window() -> Control:
+	return _persistent_discard_pile_window
 
 # Public entry point for the Choice Window.
 # Optionally provide an anchor_view to dynamically position near a target view (e.g., target GachaBall).
@@ -294,6 +330,21 @@ func is_any_inspection_window_open() -> bool:
 		if not is_instance_valid(_active_inspection_group[i]):
 			_active_inspection_group.remove_at(i)
 	return not _active_inspection_group.is_empty()
+
+# Public API: check if ANY base inventory window (Battle, Run, or Discard Pile) is currently open
+func is_any_inventory_window_open() -> bool:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var win = _active_inspection_group[i]
+		if not is_instance_valid(win):
+			continue
+		if win.has_meta("window_type"):
+			var type = win.get_meta("window_type")
+			if type == &"Inventory" or type == &"DiscardPile":
+				return true
+		# Fallbacks if meta is missing
+		if win == _persistent_inventory_window or win == _persistent_discard_pile_window:
+			return true
+	return false
 
 # Public helper queried by GIR to know if a view is part of the current inspection group.
 # Returns the index within `_active_inspection_group`, or -1 if not present.
@@ -885,6 +936,78 @@ const _WM_META_OPENING: StringName = &"wm_opening"
 const _WM_META_CLOSING: StringName = &"wm_closing"
 const _WM_META_ANIM_TWEEN: StringName = &"wm_anim_tween"
 
+# Discard pile slides horizontally from the right
+const DISCARD_PILE_HIDDEN_X: float = 1920.0
+const DISCARD_PILE_OPEN_X: float = 640.0
+
+func _is_discard_pile_window(window: Control) -> bool:
+	if not is_instance_valid(window):
+		return false
+	if window.has_meta("window_type") and window.get_meta("window_type") == &"DiscardPile":
+		return true
+	return false
+
+func _animate_discard_pile_open(window: Control) -> void:
+	if not is_instance_valid(window): return
+	if window.has_meta(_WM_META_OPENING) and bool(window.get_meta(_WM_META_OPENING)): return
+
+	window.set_meta(_WM_META_OPENING, true)
+	window.set_meta(_WM_META_CLOSING, false)
+
+	# Start off-screen right and show
+	window.position.x = DISCARD_PILE_HIDDEN_X
+	window.show()
+	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	_kill_inventory_motion_tween(window)
+	Audio.play_sfx("ui_window_open")
+
+	var tween: Tween = window.create_tween()
+	window.set_meta(_WM_META_ANIM_TWEEN, tween)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+
+	tween.tween_property(window, "position:x", DISCARD_PILE_OPEN_X, 0.45
+		).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.set_meta(_WM_META_OPENING, false)
+			if window is DiscardPileWindow:
+				# Jolt balls leftward — simulates the drawer slamming to a stop
+				window.physics_container.apply_jolt(Vector2(-500, 0))
+			window.mouse_filter = Control.MOUSE_FILTER_STOP
+			if window.has_meta(_WM_META_ANIM_TWEEN):
+				window.remove_meta(_WM_META_ANIM_TWEEN)
+	)
+
+func _animate_discard_pile_close(window: Control) -> void:
+	if not is_instance_valid(window): return
+	if window.has_meta(_WM_META_CLOSING) and bool(window.get_meta(_WM_META_CLOSING)): return
+
+	window.set_meta(_WM_META_OPENING, false)
+	window.set_meta(_WM_META_CLOSING, true)
+	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	_kill_inventory_motion_tween(window)
+
+	var tween: Tween = window.create_tween()
+	window.set_meta(_WM_META_ANIM_TWEEN, tween)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+
+	tween.tween_property(window, "position:x", DISCARD_PILE_HIDDEN_X, 0.35
+		).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_IN)
+
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.set_meta(_WM_META_CLOSING, false)
+			if window.has_meta(_WM_META_ANIM_TWEEN):
+				window.remove_meta(_WM_META_ANIM_TWEEN)
+			window.hide()
+			if window is DiscardPileWindow:
+				# Jolt balls rightward — simulates the drawer bouncing off the right wall
+				window.physics_container.apply_jolt(Vector2(500, 0))
+	)
+
 func _is_inventory_window(window: Control) -> bool:
 	if not is_instance_valid(window):
 		return false
@@ -904,6 +1027,12 @@ func _queue_free_with_optional_inventory_animation(window: Control) -> void:
 		return
 	if window == _persistent_inventory_window:
 		_animate_inventory_window_close(window)
+		return
+	if window == _persistent_discard_pile_window:
+		var idx = _active_inspection_group.find(window)
+		if idx != -1:
+			_active_inspection_group.remove_at(idx)
+		_animate_discard_pile_close(window)
 		return
 	if _animate_inventory_window_close(window):
 		return

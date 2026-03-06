@@ -343,6 +343,30 @@ func _handle_hover_enter(context: InteractionContext) -> void:
 
 	_hover_entity_view_id = context.source_view_instance_id
 
+	# Guard: If an inventory window is currently dominating the screen,
+	# we MUST NOT allow hovers on entities that exist OUTSIDE that inventory window.
+	# Otherwise, interacting with the background battle board will cause a Focus Change
+	# and automatically close the inventory.
+	if _window_manager and _window_manager.is_any_inventory_window_open():
+		var source_view = _find_view_by_instance_id(context.source_view_instance_id)
+		if is_instance_valid(source_view):
+			var ancestor_window = _window_manager.find_ancestor_window_for_view(source_view)
+			# If the hovered item doesn't belong to any window, or belongs to a different window, block it.
+			if not is_instance_valid(ancestor_window) or not _window_manager.is_any_inventory_window_open(): # Actually, we just check if it's in a window at all since inventory is active
+				# Ensure we check if the ancestor window itself is an inventory window
+				var is_hovered_inside_inventory = false
+				if ancestor_window:
+					if ancestor_window.has_meta("window_type"):
+						var t = ancestor_window.get_meta("window_type")
+						if t == &"Inventory" or t == &"DiscardPile":
+							is_hovered_inside_inventory = true
+					elif "InventoryWindow" in ancestor_window.name or "DiscardPileWindow" in ancestor_window.name:
+						is_hovered_inside_inventory = true
+				
+				if not is_hovered_inside_inventory:
+					_hover_entity_view_id = -1
+					return
+
 	# Open inspection via command queue
 	var commands: Array[Command] = []
 	commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {

@@ -150,8 +150,8 @@ During Management Phase, the player may:
    * Drawn items go to `PlayerBench`.
 
 2. **Inspect Machine Pools (The Drawer), trinkets, traits and discard pile and the battle board (player/enemy)**
-   * View exact contents of each tier pool (Physics Drawer).
-   * **Note**: The Physics Drawer is **Read-Only**. Actions listed below (3-7) cannot be performed directly on balls within the drawer.
+   * View exact contents of each tier pool and Discard Pile (Physics Drawers).
+   * **Note**: The Physics Drawers are **Read-Only**. Actions listed below (3-7) cannot be performed directly on balls within the drawers. Hover inspections are only allowed for entities inside the drawer while it is open (Rule S8).
 
 3. **Place Units**
    * Drag from bench to lineup and vice versa(5 slots).
@@ -206,7 +206,10 @@ During battle, the inventory drawer acts as a **Read-Only visualization** of the
 
 ## 6.4 The Overflow Penalty
 - **Mechanic**: If a container becomes physically overfilled, balls will push against the **Spring Lid**.
-- **Penalty**: Maintaining physical contact with the lid for **5 continuous seconds** results in the instance being **moved to the Shared Discard Pile**.
+- **Penalty**: Maintaining physical contact with the lid for **5 continuous seconds** results in the instance being **moved to the Shared Discard Pile** and its stats reset.
+
+## 6.5 Hover Restriction (Rule S8)
+When a physics-based inventory (Battle/Run/Discard) is open, hover inspections are strictly limited to the gachaballs inside that window. This prevents accidental window closure caused by hovering over the background battle board.
 
 ## 6.5 Reshuffle Rule
 
