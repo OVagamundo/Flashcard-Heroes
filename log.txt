@@ -53,3 +53,464 @@ WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxConta
 [SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Requesting tutorial: gacha_inspect_run
+[TutorialManager] Blocked: Tutorials disabled
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
+[ItemInspection] Ability: item_tier3a_on_hurt_heal | Key: ability.item_t3a_on_hurt_heal.desc | Desc: When the holder is hurt, heal two random allies for 2 HP each.
+[ItemInspection] Ability: item_tier3c_on_attack_lifesteal | Key: ability.item_t3c_on_attack_lifesteal.desc | Desc: On attack, heal the holder for 20% of damage dealt (min 1 HP).
+[ItemInspection] Ability: item_tier3a_on_hurt_heal | Key: ability.item_t3a_on_hurt_heal.desc | Desc: When the holder is hurt, heal two random allies for 2 HP each.
+[ItemInspection] Ability: ability_consumable_steal | Key: ability.potion_plunder.desc | Desc: Steals a random item from the target.
+[EncounterGen] Budget: 6, Spent: 6, Units: 2, Items: 0, Trinkets: 0
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
+[BattleLog] [1:1] ═══ TURN 1 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Tutorials disabled
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: battle_management_intro
+[TutorialManager] Blocked: Tutorials disabled
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:2] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:3] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 3→4)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:4] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 4→5)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[AnimationCompletionTracker] Timeout for boss_1_1773064583_16 type 7
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:6] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 5→6)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:8] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1773064583_84_07768
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1773064583_84_07768
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1773064583_87_96597
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1773064583_87_96597
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[TutorialManager] Requesting tutorial: gacha_inspect_battle
+[TutorialManager] Blocked: Tutorials disabled
+[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
+[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
+[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
+[ItemInspection] Ability: ability_grant_heroism | Key: ability.grant_heroism.desc | Desc: Grants +3 HP, +3 PWR, and 3 Armor stacks.
+[ItemInspection] Ability: ability_grant_heroism | Key: ability.grant_heroism.desc | Desc: Grants +3 HP, +3 PWR, and 3 Armor stacks.
+DEBUG_GIR: Processing CONSUMABLE Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 874915046692
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 1
+DEBUG_GIR: Processing CONSUMABLE Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 874915046692
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 3
+DEBUG_GIR: + CMD: 4
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[ItemInspection] Ability: ability_consumable_potion_t1 | Key: ability.potion_t1.desc | Desc: Restores 4 HP.
+DEBUG_GIR: Processing CONSUMABLE Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 866828427618
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 1
+DEBUG_GIR: Processing CONSUMABLE Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 866828427618
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 5
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing UNIT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 867549847859
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 1
+DEBUG_GIR: Processing UNIT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 867549847859
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 3
+DEBUG_GIR: + CMD: 4
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[ItemInspection] Ability: ability_item_t2_c_summon | Key: item_t2_a.desc | Desc: Summons a random Tier 1 unit upon death.
+[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
+[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
+[ItemInspection] Ability: item_tier2c_passive_heal | Key: ability.item_tier2c_passive_heal.desc | Desc: When hurt, Heal this unit by 1 HP and gain 1 PWR.
+[ItemInspection] Ability: item_tier3b_on_attack_buff | Key: ability.item_t3b_on_attack_buff.desc | Desc: When the holder attacks, grant +2 PWR to two random allies.
+[ItemInspection] Ability: item_tier3c_on_attack_lifesteal | Key: ability.item_t3c_on_attack_lifesteal.desc | Desc: On attack, heal the holder for 20% of damage dealt (min 1 HP).
+DEBUG_GIR: Processing UNIT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 870938845383
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 1
+DEBUG_GIR: Processing UNIT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: true | LockedID: 870938845383
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 5
+DEBUG_GIR: + CMD: 0
+[ItemInspection] Ability: item_tier3c_on_attack_lifesteal | Key: ability.item_t3c_on_attack_lifesteal.desc | Desc: On attack, heal the holder for 20% of damage dealt (min 1 HP).
+[ItemInspection] Ability: item_tier3d_retaliate_random | Key: ability.item_tier3d_retaliate.desc | Desc: When hurt, deal half of the holder's PWR as damage to a random enemy.
+[ItemInspection] Ability: item_tier3c_on_attack_lifesteal | Key: ability.item_t3c_on_attack_lifesteal.desc | Desc: On attack, heal the holder for 20% of damage dealt (min 1 HP).
+[ItemInspection] Ability: item_tier3d_retaliate_random | Key: ability.item_tier3d_retaliate.desc | Desc: When hurt, deal half of the holder's PWR as damage to a random enemy.
+[ItemInspection] Ability: item_t3e_death_damage | Key: ability.item_t3e_death_damage.desc | Desc: When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 1
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+WARNING: [BattleAnimator] Failed to register unit_t1_d_1773064583_91_86641: Child is not GachaBallView
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_turn_sequence (res://scripts/BattleAnimator.gd:103)
+       [1] resolve_management_effects_and_animate (res://scripts/BattleManager.gd:1334)
+       [2] _trigger_on_draw_effects (res://scripts/BattleView.gd:941)
+       [3] <anonymous lambda> (res://scripts/BattleView.gd:900)
+[BattleLog] [1:10] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:11] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:756)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
+       [3] _animate_token_spend (res://scripts/Main.gd:339)
+WARNING: [BattleAnimator] HP delta target not in visual registry: boss_1_1773064583_167_92406
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] apply_hp_delta (res://scripts/BattleAnimator.gd:356)
+       [1] execute (res://scripts/animations/HealAnimation.gd:40)
+       [2] _process (res://scripts/vfx/StatProjectile.gd:90)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+WARNING: [BattleAnimator] Failed to register item_t1_a_1773064583_93_68423: Child is not GachaBallView
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_turn_sequence (res://scripts/BattleAnimator.gd:103)
+       [1] resolve_management_effects_and_animate (res://scripts/BattleManager.gd:1334)
+       [2] _trigger_on_draw_effects (res://scripts/BattleView.gd:941)
+       [3] <anonymous lambda> (res://scripts/BattleView.gd:900)
+[BattleLog] [1:12] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Tutorials disabled
+WARNING: [BattleAnimator] HP delta target not in visual registry: boss_1_1773064583_167_92406
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] apply_hp_delta (res://scripts/BattleAnimator.gd:356)
+       [1] execute (res://scripts/animations/HealAnimation.gd:40)
+       [2] _process (res://scripts/vfx/StatProjectile.gd:90)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:14] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [1:15] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 9→10)
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_c_1773064583_88_76548
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1773064583_88_76548
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1773064583_87_96597
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1773064583_87_96597
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1773064583_91_86641
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1773064583_91_86641
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_g_1773064680_168_72835
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_g_1773064680_168_72835
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_g_1773064680_168_72835
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_g_1773064680_168_72835
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_g_1773064680_168_72835
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_g_1773064680_168_72835
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_b_1773064583_94_46258
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1773064583_94_46258
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[ItemInspection] Ability: item_tier1a_turn_start_heal | Key: ability.item_tier1a_turn_start_heal.desc | Desc: At the start of the turn, Heal the holder for 2 HP.
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_a_1773064583_93_68423
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1773064583_93_68423
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1773064583_88_76548
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:16] Apprentice deals 1 dmg to Mud Wretch 
+[BattleLog] [1:17] Apprentice attacks unit_t2_... for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1773064583_166_99949"] source: unit_t1_a_1773064583_84_07768 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1773064583 type 5
+[BattleLog] [1:18] Protector deals 2 dmg to Mud Wretch 
+[BattleLog] [1:19] Protector attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_i_1773064583_166_99949"] source: unit_t1_c_1773064583_88_76548 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1773064583 type 5
+[BattleLog] [1:20] └─ unit_t2_... is defeated! 
+[BattleLog] [1:21] Shadow Cloner deals 2 dmg to Dreadnought 
+[BattleLog] [1:22] Shadow Cloner attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 5→3)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1773064583_165_15125"] source: unit_t2_g_1773064680_168_72835 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_g_1773064680 type 5
+[BattleLog] [1:23] Squire deals 2 dmg to Dreadnought 
+[BattleLog] [1:24] Squire attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 3→1)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1773064583_165_15125"] source: unit_t1_b_1773064583_87_96597 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1773064583 type 5
+[BattleLog] [1:25] Timekeeper deals 2 dmg to Dreadnought 
+[BattleLog] [1:26] Timekeeper attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1773064583_165_15125"] source: hero_timekeeper_1773064583_83_46791 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1773 type 5
+[BattleLog] [1:27] └─ unit_t3_... is defeated! 
+[BattleLog] [1:28] The Awakened Guardian deals 3 dmg to Apprentice 
+[BattleLog] [1:29] The Awakened Guardian attacks Apprentice for 3 damage (basic_attack, on_attack) (HP: 3→0)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1773064583_84_07768"] source: boss_1_1773064583_167_92406 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for boss_1_1773064583_16 type 5
+[BattleLog] [1:30] └─ Apprentice is defeated! 
+[TutorialManager] Requesting blocking tutorial: unit_death_intro
+[TutorialManager] Blocked: Tutorials disabled
+[EncounterGen] Budget: 2, Spent: 2, Units: 1, Items: 0, Trinkets: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:31] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [2:1] ═══ TURN 2 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Tutorials disabled
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 11 }
+[FlashcardManager] Signal emitted successfully
+[DeathProcessor] Phase 1 (on_death) done. Pending: 2
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1773064680_168_72835
+[CS] Draining reaction: unit_t2_g_buff_echo Prio:0 Src:unit_t2_g_1773064680_168_72835
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [2:2] The Awakened Guardian grants The Awakened Guardian -1 PWR (trait_wind_steal) 
+[BuffAnimation] execute() called - stat='pwr' amount=-1 targets=1
+[BattleLog] [2:3] The Awakened Guardian grants Shadow Cloner +1 PWR (trait_wind_steal) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [2:4] Squire grants Squire -1 PWR (trait_wind_steal) 
+[BuffAnimation] execute() called - stat='pwr' amount=-1 targets=1
+[BattleLog] [2:5] Squire grants Shadow Cloner +1 PWR (trait_wind_steal) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [2:6] Timekeeper heals Squire and Shadow Cloner and Protector for 2 HP 
+[BattleLog] [2:7] Timekeeper heals Squire for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 1→3)
+[BattleLog] [2:8] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
+[BattleLog] [2:9] Shadow Cloner heals Squire for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 3→5)
+[BattleLog] [2:10] Shadow Cloner echoes buff! Grants +2 HP to adjacent ally. 
+[BattleLog] [2:11] Shadow Cloner heals Protector for 2 HP (unit_t2_g_buff_echo, on_stat_increased) (HP: 3→5)
