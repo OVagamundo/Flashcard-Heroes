@@ -3,6 +3,7 @@ extends "res://scripts/InspectionWindow.gd"
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
+@onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var internal_background: ColorRect = $InternalBackground
 
 var _source_view: Control
@@ -27,7 +28,7 @@ func _ready() -> void:
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
+		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 
 
@@ -37,12 +38,12 @@ func populate(context: Dictionary) -> void:
 	_location = context.get("location")
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
-		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
+		WindowManager.request_close_inspection_window(self , &"INVALID_CONTEXT")
 		return
 
 	var item_def = _instance.get_definition()
 	if not is_instance_valid(item_def):
-		WindowManager.request_close_inspection_window(self, &"INVALID_DEFINITION")
+		WindowManager.request_close_inspection_window(self , &"INVALID_DEFINITION")
 		return
 
 	# Set up stable anchor pattern
@@ -106,18 +107,67 @@ func populate(context: Dictionary) -> void:
 	
 	# Store the full definition for the child window to use.
 	description_label.set_meta("effect_definition", item_def)
+	
+	_update_recipe_display(item_def)
+
+func _update_recipe_display(item_def: Resource) -> void:
+	if not is_instance_valid(recipe_container):
+		return
+	
+	for child in recipe_container.get_children():
+		child.queue_free()
+	
+	if not item_def is GachaBallDefinition:
+		recipe_container.visible = false
+		return
+	
+	var recipe: MergeRecipe = Database.get_recipe_for_result(item_def.id)
+	if not is_instance_valid(recipe):
+		recipe_container.visible = false
+		return
+	
+	var def_a = Database.get_definition(recipe.ingredient_a_id)
+	var def_b = Database.get_definition(recipe.ingredient_b_id)
+	
+	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
+		recipe_container.visible = false
+		return
+	
+	var _make_icon = func(def: Resource) -> TextureRect:
+		var tex = TextureRect.new()
+		if "icon" in def and def.icon != null:
+			tex.texture = def.icon
+		tex.custom_minimum_size = Vector2(40, 40)
+		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex.mouse_filter = MOUSE_FILTER_IGNORE
+		return tex
+	
+	var _make_label = func(txt: String) -> Label:
+		var lbl = Label.new()
+		lbl.text = txt
+		lbl.add_theme_font_size_override("font_size", 24)
+		lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.mouse_filter = MOUSE_FILTER_IGNORE
+		return lbl
+	
+	recipe_container.add_child(_make_icon.call(def_a))
+	recipe_container.add_child(_make_label.call("+"))
+	recipe_container.add_child(_make_icon.call(def_b))
+	recipe_container.visible = true
 func _on_description_meta_clicked(meta) -> void:
 	if meta == "effect":
 		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
 			# Open EffectInspection as a CHILD contextual window anchored to this window.
 			# Provide context so WindowManager can pick the correct parent (e.g., UnitInspection).
-			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
+			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
 			var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
 			var inside_unit: bool = parent_win is UnitInspectionWindow
 			WindowManager.open_child_contextual_window(
 				&"EffectInspection",
-				self,
+				self ,
 				{
 					"effect_definition": definition.ability_definitions,
 					"is_inside_unit_inspection": inside_unit,
@@ -135,7 +185,7 @@ func _on_description_gui_input(event: InputEvent) -> void:
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
+		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()
 
@@ -180,12 +230,12 @@ func _on_anchor_freed() -> void:
 	# This avoids premature self-closing that can bypass WindowManager suppression during actions.
 	var self_ref = self
 	await get_tree().create_timer(0.25).timeout
-	if not is_instance_valid(self_ref) or not is_instance_valid(self):
+	if not is_instance_valid(self_ref) or not is_instance_valid(self ):
 		return
 	# Try to re-establish a stable anchor from the current source view
 	_setup_stable_anchor()
 	if not is_instance_valid(_stable_anchor):
-		WindowManager.request_close_inspection_window(self, &"ANCHOR_LOST_NO_STABLE")
+		WindowManager.request_close_inspection_window(self , &"ANCHOR_LOST_NO_STABLE")
 
 ## Calculate position relative to stable anchor
 func _calculate_position_relative_to_anchor() -> Vector2:

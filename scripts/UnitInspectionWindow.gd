@@ -9,6 +9,7 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
 @onready var trait_icons_container: HBoxContainer = %TraitIconsContainer
+@onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var internal_background: ColorRect = $InternalBackground
 
 var _inspected_unit_uuid: String
@@ -58,7 +59,7 @@ func _exit_tree() -> void:
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
+		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary) -> void:
@@ -68,12 +69,12 @@ func populate(context: Dictionary) -> void:
 	_is_enemy_context = context.get("is_enemy_context", false)
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
-		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
+		WindowManager.request_close_inspection_window(self , &"INVALID_CONTEXT")
 		return
 
 	var unit_definition = _instance.get_definition()
 	if not is_instance_valid(unit_definition):
-		WindowManager.request_close_inspection_window(self, &"INVALID_DEFINITION")
+		WindowManager.request_close_inspection_window(self , &"INVALID_DEFINITION")
 		return
 
 	_inspected_unit_uuid = _instance.ball_uuid
@@ -88,6 +89,7 @@ func populate(context: Dictionary) -> void:
 	# --- Core UI Population Logic ---
 	_rebuild_item_grid()
 	_update_trait_display()
+	_update_recipe_display()
 
 ## Set up stable anchor pattern for robust positioning
 func _setup_stable_anchor() -> void:
@@ -130,12 +132,12 @@ func _on_anchor_freed() -> void:
 	if not is_instance_valid(tree):
 		return
 	await tree.create_timer(0.25).timeout
-	if not is_instance_valid(self_ref) or not is_instance_valid(self):
+	if not is_instance_valid(self_ref) or not is_instance_valid(self ):
 		return
 	# Try to re-establish a stable anchor from the current source view
 	_setup_stable_anchor()
 	if not is_instance_valid(_stable_anchor):
-		WindowManager.request_close_inspection_window(self, &"ANCHOR_LOST_NO_STABLE")
+		WindowManager.request_close_inspection_window(self , &"ANCHOR_LOST_NO_STABLE")
 
 ## Calculate position relative to stable anchor
 func _calculate_position_relative_to_anchor() -> Vector2:
@@ -299,13 +301,13 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 			_update_description()
 
 func _on_inventory_changed() -> void:
-	if not is_instance_valid(self):
+	if not is_instance_valid(self ):
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
 	var all_instances: Dictionary = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
-		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
+		WindowManager.request_close_inspection_window(self , &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
 		return
 	
 	# The unit still exists, so we just need to refresh the item grid.
@@ -313,9 +315,10 @@ func _on_inventory_changed() -> void:
 	_update_description()
 	_rebuild_item_grid()
 	_update_trait_display()
+	_update_recipe_display()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
-	if not is_instance_valid(self):
+	if not is_instance_valid(self ):
 		return
 	
 	# Only update if the changed unit is the one we're inspecting
@@ -326,7 +329,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	var all_instances = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
-		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_UNIT_INV_CHANGE")
+		WindowManager.request_close_inspection_window(self , &"INSTANCE_MISSING_AFTER_UNIT_INV_CHANGE")
 		return
 	
 	# The unit still exists, so we just need to refresh the item grid.
@@ -334,6 +337,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	_update_description()
 	_rebuild_item_grid()
 	_update_trait_display()
+	_update_recipe_display()
 
 func _get_all_instances_db() -> Dictionary:
 	var result: Dictionary
@@ -350,11 +354,11 @@ func _on_description_meta_clicked(meta) -> void:
 		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
 			# Ensure EffectInspection uses the Unit window as its parent when inside unit inspection.
-			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
+			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
 			var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
 			WindowManager.open_child_contextual_window(
 				&"EffectInspection",
-				self,
+				self ,
 				{
 					"effect_definition": definition.ability_definitions,
 					"is_inside_unit_inspection": true,
@@ -367,7 +371,7 @@ func _on_description_meta_clicked(meta) -> void:
 
 ## Recursively set mouse filters to PASS for child controls that should bubble to the root
 func _configure_mouse_filters() -> void:
-	var stack: Array = [self]
+	var stack: Array = [ self ]
 	while not stack.is_empty():
 		var node = stack.pop_back()
 		for child in node.get_children():
@@ -385,13 +389,13 @@ func _on_description_gui_input(event: InputEvent) -> void:
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
+		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()
 
 func _on_item_grid_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		WindowManager.handle_inspection_background_click(self)
+		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()
 
@@ -452,6 +456,56 @@ func _calculate_unit_trait_counts() -> Dictionary:
 				counts["WIND"] += 1
 	
 	return counts
+
+## Populate the RecipeContainer to show the merge ingredients for this unit.
+func _update_recipe_display() -> void:
+	if not is_instance_valid(recipe_container):
+		return
+	
+	for child in recipe_container.get_children():
+		child.queue_free()
+	
+	var unit_def = _instance.get_definition() if is_instance_valid(_instance) else null
+	if not is_instance_valid(unit_def):
+		recipe_container.visible = false
+		return
+	
+	var recipe: MergeRecipe = Database.get_recipe_for_result(unit_def.id)
+	if not is_instance_valid(recipe):
+		recipe_container.visible = false
+		return
+	
+	var def_a = Database.get_definition(recipe.ingredient_a_id)
+	var def_b = Database.get_definition(recipe.ingredient_b_id)
+	
+	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
+		recipe_container.visible = false
+		return
+	
+	# Build: [Icon A] [+] [Icon B]
+	var _make_icon = func(def: Resource) -> TextureRect:
+		var tex = TextureRect.new()
+		if "icon" in def and def.icon != null:
+			tex.texture = def.icon
+		tex.custom_minimum_size = Vector2(40, 40)
+		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex.mouse_filter = MOUSE_FILTER_IGNORE
+		return tex
+	
+	var _make_label = func(txt: String) -> Label:
+		var lbl = Label.new()
+		lbl.text = txt
+		lbl.add_theme_font_size_override("font_size", 24)
+		lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.mouse_filter = MOUSE_FILTER_IGNORE
+		return lbl
+	
+	recipe_container.add_child(_make_icon.call(def_a))
+	recipe_container.add_child(_make_label.call("+"))
+	recipe_container.add_child(_make_icon.call(def_b))
+	recipe_container.visible = true
 
 ## Update the trait icons display
 func _update_trait_display() -> void:

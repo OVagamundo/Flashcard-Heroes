@@ -136,6 +136,13 @@ func get_definition(id: StringName) -> Resource:
 
 	return null
 
+## Returns the MergeRecipe that produces the given result_id, or null if none.
+func get_recipe_for_result(result_id: StringName) -> MergeRecipe:
+	for recipe in recipes.values():
+		if recipe.result_id == result_id:
+			return recipe
+	return null
+
 ## A helper to get a definition from a deck by card ID
 func get_definition_from_deck(card_id: StringName) -> Resource:
 	return get_definition(card_id)
