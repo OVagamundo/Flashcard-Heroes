@@ -3,7 +3,6 @@ extends Resource
 
 ## Persistent state for a run using the single-source-of-truth data model.
 
-const FlashcardProgress = preload("res://scripts/FlashcardProgress.gd")
 
 @export var gold: int = 0
 @export var day: int = 1
@@ -141,7 +140,7 @@ func unlock_recipe_for_result(result_definition_id: StringName) -> void:
 
 func unlock_all_recipes_for_testing() -> void:
 	"""Test mode utility: unlock all recipes so spawned content can be merged."""
-	var changed: bool = false
+	var has_changes: bool = false
 	for recipe_key in Database.recipes:
 		var recipe: MergeRecipe = Database.recipes[recipe_key]
 		if not is_instance_valid(recipe):
@@ -149,8 +148,8 @@ func unlock_all_recipes_for_testing() -> void:
 		if unlocked_recipes.get(recipe.id, false):
 			continue
 		unlocked_recipes[recipe.id] = true
-		changed = true
-	if changed:
+		has_changes = true
+	if has_changes:
 		SignalBus.emit_signal("run_data_changed")
 
 func is_recipe_unlocked(recipe_id: StringName) -> bool:
@@ -214,7 +213,21 @@ func add_instance(instance: GachaBallInstance, container_name: StringName, index
 	if slot < 0:
 		slot = container.find_first_empty_slot()
 		if slot == -1:
-			return false
+			# NEW RULE: If a tiered inventory is full, permanently remove a random existing gachaball
+			# ONLY applies to RunInventoryT* (not Battle containers that might be accessed via RunState)
+			if String(container_name).begins_with("RunInventoryT"):
+				var all_uuids = container.get_all_non_empty_uuids()
+				if all_uuids.size() > 0:
+					# Select a random gachaball
+					randomize()
+					var uuid_to_replace = all_uuids[randi() % all_uuids.size()]
+					var loc_to_replace = get_location_for_uuid(uuid_to_replace)
+					slot = loc_to_replace.index
+					# Permanently remove the chosen instance from the run to make space
+					remove_instance(uuid_to_replace)
+			
+			if slot == -1:
+				return false
 	# Update Index
 	container.set_uuid(slot, instance.ball_uuid)
 	# Update Truth
@@ -456,7 +469,7 @@ func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifi
 			if src_container.get_uuid(source_loc.index) == a.ball_uuid:
 				src_container.set_uuid(source_loc.index, "")
 		# If slot occupied by B, move B to source
-		var moved_b_to_source := false
+		var _moved_b_to_source := false
 		if is_instance_valid(b) and b.ball_uuid != "":
 			# If B is currently equipped, clear its equip slot
 			if b.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
@@ -473,7 +486,7 @@ func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifi
 				b.location_slot_index = source_loc.index
 				b.equipped_on_uuid = ""
 				b.equipped_slot_index = -1
-				moved_b_to_source = true
+				_moved_b_to_source = true
 		# Equip A into target slot
 		var ok := equip_item(a.ball_uuid, target_unit.ball_uuid, target_slot)
 		if not ok:
@@ -714,7 +727,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
 		var container_name: StringName = &"RunInventoryT%d" % t
-		_containers[container_name] = GrowableGridContainer.new(24)
+		_containers[container_name] = FixedArrayContainer.new(39)
 
 	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(5)
@@ -915,7 +928,7 @@ func from_save_dict(data: Dictionary) -> void:
 		var container: DataContainer
 		# Create appropriate container type based on name
 		if cname_str.begins_with("RunInventoryT"):
-			container = GrowableGridContainer.new(max(24, uuids.size()))
+			container = FixedArrayContainer.new(39)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
 			container = FixedArrayContainer.new(5)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:

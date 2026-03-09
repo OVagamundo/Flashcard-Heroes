@@ -261,6 +261,11 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	context.window_group_id = _window_group_id
 	return context
 
+func _has_point(point: Vector2) -> bool:
+	var radius = size.x / 2.0
+	var center = Vector2(radius, size.y / 2.0)
+	return point.distance_to(center) <= radius
+
 func _gui_input(event: InputEvent) -> void:
 	# Ignore input entirely if we don't have a location (e.g. visual-only slots in RestSite)
 	if not is_instance_valid(_location):
@@ -296,7 +301,7 @@ func _can_drop_data(_at_position, data) -> bool:
 		
 	return data is Dictionary and data.has("source_loc")
 
-func _drop_data(_at_position, data) -> void:
+func _drop_data(_at_position, _data) -> void:
 	# Check if this is an inspection-only context
 	if _interaction_mode == &"INSPECTION_ONLY":
 		return

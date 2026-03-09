@@ -195,6 +195,10 @@ func _physics_process(delta: float) -> void:
 	
 	for body in overlapping:
 		if body is PhysicsGachaBall:
+			# Actively push the ball down (the "spring" in the spring-loaded lid)
+			if body is RigidBody2D:
+				body.apply_central_force(Vector2(0, 4000.0))
+				
 			var uuid = body.instance_uuid
 			current_overlapping_uuids.append(uuid)
 			if not _penalty_timers.has(uuid):

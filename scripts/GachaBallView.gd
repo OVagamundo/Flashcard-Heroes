@@ -349,10 +349,13 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				# Setup Battle Layout (Underlay)
 				_setup_battle_stats_layout()
 			elif _has_overlay_heuristic():
-				# Inventory Mode: Fixed slot size (192), Unit (128) centered inside
+				# Inventory Mode: Fixed slot size based on scale, Unit centered inside
 				# Ensure Overlay Layout
 				_setup_overlay_stats_layout()
-				icon_rect.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+				var current_slot_size = C.SLOT_SIZE_BASE * _size_scale
+				var current_unit_size = (C.UNIT_SPRITE_SIZE / 2.0) * _size_scale
+				
+				icon_rect.custom_minimum_size = Vector2(current_slot_size, current_slot_size)
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icon_rect.texture = null # Clear main texture, use child sprite
 				
@@ -366,11 +369,10 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 				
 				# Configure unit sprite size and position (no anchor preset, direct positioning)
-				unit_sprite.custom_minimum_size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
-				unit_sprite.size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
-				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_CENTER_OFFSET)
-				unit_sprite.texture = visual_data.get("icon")
-				unit_sprite.visible = true
+				unit_sprite.custom_minimum_size = Vector2(current_unit_size, current_unit_size)
+				unit_sprite.size = Vector2(current_unit_size, current_unit_size)
+				var offset = (current_slot_size - current_unit_size) / 2.0
+				unit_sprite.position = Vector2(offset, offset)
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
 				# CRITICAL: Copy shader material so flash effects work on visible sprite
@@ -1144,12 +1146,14 @@ func _create_gachaball_overlay() -> void:
 	overlay.name = "GachaBallOverlay"
 	overlay.texture = overlay_texture
 	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	overlay.stretch_mode = TextureRect.STRETCH_SCALE # Scale to fill 192px
+	overlay.stretch_mode = TextureRect.STRETCH_SCALE # Scale to fill slot
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var overlay_size: float = float(C.SLOT_SIZE_2X) - (INVENTORY_OVERLAY_INSET_PX * 2.0)
+	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
+	var overlay_size: float = current_slot_size - (INVENTORY_OVERLAY_INSET_PX * 2.0 * _size_scale)
 	overlay.custom_minimum_size = Vector2(overlay_size, overlay_size)
 	overlay.size = Vector2(overlay_size, overlay_size)
-	overlay.position = Vector2(INVENTORY_OVERLAY_INSET_PX, INVENTORY_OVERLAY_INSET_PX)
+	var offset = INVENTORY_OVERLAY_INSET_PX * _size_scale
+	overlay.position = Vector2(offset, offset)
 	
 	# Add as sibling to VBox (Icon) but before StatsOverlay to ensure correct Z-order:
 	# 0: Anim, 1: VBox(Unit), 2: Overlay(Ball), 3: Stats(Labels)
@@ -1241,6 +1245,11 @@ func _on_mouse_exited() -> void:
 	var ctx = _create_interaction_context(&"HOVER_EXIT")
 	SignalBus.emit_signal("interaction_context_received", ctx)
 
+func _has_point(point: Vector2) -> bool:
+	var radius = size.x / 2.0
+	var center = Vector2(radius, size.y / 2.0)
+	return point.distance_to(center) <= radius
+
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		_update_pointer_uv(event.position)
@@ -1311,13 +1320,8 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	# To center the preview on cursor: use a container twice the size, then offset content by -half
 	# Override preview size for battle logic to ensure squareness and prevent "too big" issues
 	# Battle views might be stretched by layout, but the drag preview should be a clean square.
-	var preview_size: Vector2
-	if _has_overlay_heuristic():
-		preview_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
-	else:
-		# Match inventory size for consistency and larger visuals.
-		var base_size = float(C.SLOT_SIZE_2X)
-		preview_size = Vector2(base_size, base_size)
+	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
+	var preview_size = Vector2(current_slot_size, current_slot_size)
 
 	var container_size = preview_size * 2 # Double size to allow centering
 	var offset = - preview_size / 2 # Offset to center content on top-left (where cursor is)
@@ -1334,10 +1338,11 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	preview.stretch_mode = TextureRect.STRETCH_SCALE
 	if _has_overlay_heuristic():
 		# In inventory mode: unit is centered in slot
-		var unit_size = preview_size * (float(C.UNIT_SPRITE_SIZE) / float(C.SLOT_SIZE_2X))
+		var current_unit_size = (float(C.UNIT_SPRITE_SIZE) / 2.0) * _size_scale
+		var unit_size = Vector2(current_unit_size, current_unit_size)
 		preview.custom_minimum_size = unit_size
 		preview.size = unit_size
-		preview.position = offset + (preview_size - unit_size) / 2 # Center unit
+		preview.position = offset + (preview_size - unit_size) / 2.0 # Center unit
 	else:
 		preview.custom_minimum_size = preview_size
 		preview.size = preview_size
@@ -1502,10 +1507,12 @@ func _apply_selection_feedback() -> void:
 					selection_ring.texture = selection_texture
 					selection_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					selection_ring.stretch_mode = TextureRect.STRETCH_SCALE
-					var ring_size: float = float(C.SLOT_SIZE_2X) - (INVENTORY_OVERLAY_INSET_PX * 2.0)
+					var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
+					var ring_size: float = current_slot_size - (INVENTORY_OVERLAY_INSET_PX * 2.0 * _size_scale)
 					selection_ring.custom_minimum_size = Vector2(ring_size, ring_size)
 					selection_ring.size = Vector2(ring_size, ring_size)
-					selection_ring.position = Vector2(INVENTORY_OVERLAY_INSET_PX, INVENTORY_OVERLAY_INSET_PX)
+					var offset = INVENTORY_OVERLAY_INSET_PX * _size_scale
+					selection_ring.position = Vector2(offset, offset)
 					selection_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
 					# Add after overlay (on top)
 					add_child(selection_ring)

@@ -4,9 +4,6 @@
 [ext_resource type="FontFile" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="2_title_font"]
 [ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="4_slotview"]
-[ext_resource type="Texture2D" path="res://assets/ui/textures/gachamachinetier1.png" id="5_machine1"]
-[ext_resource type="Texture2D" path="res://assets/ui/textures/gachamachinetier2.png" id="6_machine2"]
-[ext_resource type="Texture2D" path="res://assets/ui/textures/gachamachinetier3.png" id="7_machine3"]
 [ext_resource type="Texture2D" path="res://assets/ui/BGs/rest.png" id="8_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
@@ -137,18 +134,6 @@ custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="MachineImage" type="TextureRect" parent="VBoxContainer/MachinesArea/HPMachine"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("5_machine1")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/HPMachine"]
 layout_mode = 1
 anchors_preset = 15
@@ -203,18 +188,6 @@ custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="MachineImage" type="TextureRect" parent="VBoxContainer/MachinesArea/PWRMachine"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("6_machine2")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/PWRMachine"]
 layout_mode = 1
 anchors_preset = 15
@@ -268,18 +241,6 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 mouse_filter = 0
-
-[node name="MachineImage" type="TextureRect" parent="VBoxContainer/MachinesArea/BothMachine"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("7_machine3")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/BothMachine"]
 layout_mode = 1
