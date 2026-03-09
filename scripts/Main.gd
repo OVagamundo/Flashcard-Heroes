@@ -6,6 +6,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var scene_background: TextureRect = %SceneBackground
+@onready var color_glow_rect: ColorRect = $PostProcessLayer/ColorGlowRect
 
 # Gacha machine containers
 @onready var gacha_machine_1: Control = %GachaMachine1
@@ -34,7 +35,6 @@ const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
 
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
-const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 
 # Mastery level colors (matching FlashcardSystem.md)
 const MASTERY_COLORS = {
@@ -49,7 +49,7 @@ const LOCKED_COLOR = Color(0.4, 0.4, 0.4) # Grey for locked cards
 var _current_content_node: Node = null
 
 func _ready() -> void:
-	GameManager.register_main_node(self) # Register self with GameManager
+	GameManager.register_main_node(self ) # Register self with GameManager
 	
 	# Connect knob buttons to draw functionality
 	knob_button_1.pressed.connect(func(): _on_draw_button_pressed(knob_button_1, 1))
@@ -99,7 +99,13 @@ func _ready() -> void:
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
-
+	
+	CRTEffect.glow_toggled.connect(func(enabled: bool):
+		if is_instance_valid(color_glow_rect):
+			color_glow_rect.visible = enabled
+	)
+	if is_instance_valid(color_glow_rect):
+		color_glow_rect.visible = CRTEffect.is_glow_enabled()
 
 	_on_battle_state_changed(false)
 

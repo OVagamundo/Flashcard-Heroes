@@ -566,7 +566,11 @@ func _apply_inventory_brightness(mode: int) -> void:
 		return
 
 	if mode == HoverFxMode.INVENTORY_SPHERE:
-		var brightness = 1.0 + (INVENTORY_BRIGHTNESS_BOOST * _hover_amount)
+		var effective_hover = _hover_amount
+		if _is_selected:
+			effective_hover = maxf(effective_hover, 1.0)
+			
+		var brightness = 1.0 + (INVENTORY_BRIGHTNESS_BOOST * effective_hover)
 		sprite.modulate = Color(brightness, brightness, brightness, 1.0)
 	else:
 		sprite.modulate = Color.WHITE
@@ -855,9 +859,14 @@ func _create_status_icon(status_id: StringName, parent: Node, animate: bool = tr
 	if not is_instance_valid(status_def):
 		return
 	
+	# Scale relative to the original 2x design
+	var container_size = 24.0 * max(1.0, _size_scale)
+	var font_size = int(12.0 * max(1.0, _size_scale))
+	var outline_size = int(2.0 * max(1.0, _size_scale))
+	
 	# Create TextureRect for icon
 	var status_icon_rect = TextureRect.new()
-	status_icon_rect.custom_minimum_size = Vector2(48, 48)
+	status_icon_rect.custom_minimum_size = Vector2(container_size, container_size)
 	status_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	status_icon_rect.texture = status_def.icon
@@ -871,8 +880,8 @@ func _create_status_icon(status_id: StringName, parent: Node, animate: bool = tr
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_color_override("font_color", Color.WHITE)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", 4)
-	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_constant_override("outline_size", outline_size)
+	label.add_theme_font_size_override("font_size", font_size)
 	
 	status_icon_rect.add_child(label)
 	parent.add_child(status_icon_rect)
@@ -1706,17 +1715,32 @@ func _setup_overlay_stats_layout() -> void:
 	
 	if not top_container or not bottom_container: return
 	
-	# Move Main Stats back to Top Container (48x48)
+	# Scale relative to the original 2x design (so at 1x scale, sizes are half)
+	# Default sizes for 2x scale: container=48, font=24, outline=4
+	var container_size = 24.0 * max(1.0, _size_scale)
+	var font_size = int(12.0 * max(1.0, _size_scale))
+	var outline_size = int(2.0 * max(1.0, _size_scale))
+	
+	# Move Main Stats back to Top Container and scale
 	if hp_container.get_parent() != top_container:
 		hp_container.reparent(top_container)
 		pwr_container.reparent(top_container)
-		hp_container.custom_minimum_size = Vector2(48, 48)
-		pwr_container.custom_minimum_size = Vector2(48, 48)
-	
+		
+	hp_container.custom_minimum_size = Vector2(container_size, container_size)
+	pwr_container.custom_minimum_size = Vector2(container_size, container_size)
+	hp_label.add_theme_font_size_override("font_size", font_size)
+	pwr_label.add_theme_font_size_override("font_size", font_size)
+	hp_label.add_theme_constant_override("outline_size", outline_size)
+	pwr_label.add_theme_constant_override("outline_size", outline_size)
 
-	# Move Secondary Stats back to Bottom Container (48x48)
+	# Move Secondary Stats back to Bottom Container and scale
 	if burn_container.get_parent() != bottom_container:
 		burn_container.reparent(bottom_container)
 		armor_container.reparent(bottom_container)
-		burn_container.custom_minimum_size = Vector2(48, 48)
-		armor_container.custom_minimum_size = Vector2(48, 48)
+		
+	burn_container.custom_minimum_size = Vector2(container_size, container_size)
+	armor_container.custom_minimum_size = Vector2(container_size, container_size)
+	burn_label.add_theme_font_size_override("font_size", font_size)
+	armor_label.add_theme_font_size_override("font_size", font_size)
+	burn_label.add_theme_constant_override("outline_size", outline_size)
+	armor_label.add_theme_constant_override("outline_size", outline_size)

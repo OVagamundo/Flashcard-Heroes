@@ -3,12 +3,14 @@ extends CanvasLayer
 ## Global CRT post-process overlay and persistent toggle state.
 
 signal crt_toggled(enabled: bool)
+signal glow_toggled(enabled: bool)
 
 const SETTINGS_PATH := "user://display_settings.save"
 const CRT_SHADER_PATH := "res://assets/shaders/crt_display.gdshader"
 const CRT_LAYER := 200
 
 var _crt_enabled: bool = true
+var _glow_enabled: bool = true
 var _overlay: ColorRect = null
 
 
@@ -26,6 +28,9 @@ func _ready() -> void:
 func is_enabled() -> bool:
 	return _crt_enabled
 
+func is_glow_enabled() -> bool:
+	return _glow_enabled
+
 
 func set_enabled(enabled: bool, save_setting: bool = true) -> void:
 	if _crt_enabled == enabled:
@@ -38,9 +43,20 @@ func set_enabled(enabled: bool, save_setting: bool = true) -> void:
 		_save_settings()
 	crt_toggled.emit(_crt_enabled)
 
+func set_glow_enabled(enabled: bool, save_setting: bool = true) -> void:
+	if _glow_enabled == enabled:
+		return
+	
+	_glow_enabled = enabled
+	if save_setting:
+		_save_settings()
+	glow_toggled.emit(_glow_enabled)
 
 func toggle() -> void:
 	set_enabled(not _crt_enabled)
+
+func toggle_glow() -> void:
+	set_glow_enabled(not _glow_enabled)
 
 
 func _create_overlay_if_missing() -> void:
@@ -76,7 +92,10 @@ func _save_settings() -> void:
 	if file == null:
 		push_error("[CRTEffect] Failed to write settings file: %s" % SETTINGS_PATH)
 		return
-	file.store_var({"crt_enabled": _crt_enabled})
+	file.store_var({
+		"crt_enabled": _crt_enabled,
+		"glow_enabled": _glow_enabled
+	})
 	file.close()
 
 
@@ -94,3 +113,4 @@ func _load_settings() -> void:
 	
 	if data is Dictionary:
 		_crt_enabled = bool(data.get("crt_enabled", true))
+		_glow_enabled = bool(data.get("glow_enabled", true))
