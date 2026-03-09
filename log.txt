@@ -53,25 +53,14 @@ WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxConta
 [SaveManager] Run saved successfully (Day 1)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Requesting tutorial: gacha_inspect_run
+[TutorialManager] Blocked: Tutorials disabled
+[ItemInspection] Ability: item_tier2c_passive_heal | Key: ability.item_tier2c_passive_heal.desc | Desc: Ao ser ferido, cura esta unidade em 1 HP e ganha 1 PWR.
 [EncounterGen] Budget: 5, Spent: 5, Units: 2, Items: 0, Trinkets: 0
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 2
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 2, "incorrect_answers": 9 }
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TutorialManager] Requesting tutorial: battle_management_intro
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Tutorials disabled
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Tutorials disabled
