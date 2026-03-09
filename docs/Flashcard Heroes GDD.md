@@ -69,10 +69,14 @@ The player's persistent collection of unique GachaBall Instances for the current
 6.2. Battle Inventory & Gacha Machines
 During the management phase of a battle, the player has access to three Gacha Machines, corresponding to Tiers 1, 2, and 3.
 Battle Inventory: At the start of each battle, a temporary copy of the entire Run Inventory is created. This is the "Gacha Pool" inside the machines. It is NOT a "Hand" that the player holds. It serves as the drawable pool for the Gacha Machines for that battle only.
+
+**Run Inventory Limits (39 Slots):** The persistent Run Inventory has a fixed capacity of **39 slots** per tier.
 Drawing: The player spends Gacha Tokens to draw a random GachaBall from the machine of the corresponding tier.
 *   **Tier Gold Cost (Shop & Encounter Budget):** 1 / 2 / 4
 *   **Tier Draw Cost (Tokens):** 1 / 2 / 3
-Inspection: The player can inspect a Gacha Machine to view the current contents of its corresponding section of the Battle Inventory. This shows a summary of the types of GachaBalls and their counts (e.g., "Warrior x2, Archer x1").
+*   **Full Run Inventory Rule (Random Eviction):** If a GachaBall is acquired for the **Run Inventory** when its corresponding tier is already full (39 items), a **RANDOM** GachaBall is permanently removed from the run to make room.
+*   **Battle Inventory Overflow:** The Battle Inventory is physics-based. A "spring lid" actively pushes overflowing balls back down to force them to repack optimally. If a ball cannot repack and touches the lid continuously for 5 seconds, it is moved to the Discard Pile. No items are randomly deleted in battle.
+Inspection: The player can inspect a Gacha Machine to view its content. In the Run Inventory, this is displayed as a staggered honeycomb grid. In the Battle Inventory, it is a physical visualization of the gachaball pool.
 Discard Pile: A single Battle Discard Pile exists for the current battle. Defeated units, their salvaged items, and GachaBalls drawn when the bench/inventory is full are sent here.
 Reshuffling: Reshuffling occurs only during the Management Phase when a Tier pool becomes empty. All GachaBalls of that same tier currently in the Discard Pile are moved back into the Battle Inventory, making them available to be drawn again. When a GachaBall is reshuffled, its stats (HP and Power) are fully restored to their base values, ensuring it is drawn in a fresh state.
 End of Battle Cleanup: All temporary instances created for the battle are destroyed at its conclusion. The Run Inventory remains untouched.
@@ -84,7 +88,7 @@ Management Phase: The player uses Gacha Tokens, deploys units from their bench t
 Combat Phase: All actions resolve automatically without player input.
 End of Turn Phase: End-of-turn abilities resolve. If no victory/defeat condition is met, the next turn begins.
 7.2. Combat & Positional Logic
-Board Structure: The player has 5 slots for their active lineup and 5 for their reserve bench. The bench can hold both units and items. If the bench is full when a GachaBall is acquired, it is sent to the Discard Pile.
+Board Structure: The player has 5 slots for their active lineup and 5 for their reserve bench. The bench can hold both units and items. If the bench is full when a GachaBall is acquired, it is sent to the Discard Pile. Note: If a tiered inventory container for that GachaBall's tier is also full, the **Random Eviction Rule** (Section 6.2) applies before any other placement logic.
 Action Order: Units act one by one, from **front-to-back**.
 Player Team (Left Side): The action order is from right to left (slot 4 acts before slot 0 - **Front-to-Back**).
 Enemy Team (Right Side): The action order is also from their back to their front, which visually is right to left.

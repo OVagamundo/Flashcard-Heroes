@@ -65,6 +65,11 @@ Main.tscn (Shell)
 | **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor |
 | **Contextual (Fixed)** | InventoryWindow, DiscardPile | No | Centered, closes on outside click |
 
+### Window Rendering & Z-Order
+To ensure absolute visibility of contextual information, all windows managed by `WindowManager` (Modals, Tutorials, and Inspection Windows) are assigned a **`z_index = 100`** upon instantiation.
+- **Rationale**: Prevents local UI elevations—such as `GachaBallView` raising its local `z_index` to 40 during hover—from occluding the inspection window.
+- **Layer**: All windows reside on the `ModalLayer` (`CanvasLayer`), which identifies them as globally prioritized UI elements.
+
 ---
 
 ## 4. Combat Presentation (VCR)
@@ -116,7 +121,15 @@ Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visu
     - **Rule S8 (Hover Boundary)**: If an inventory window is open, hovers originating from the background battle board are blocked to prevent accidental window closure.
     - **Click-to-Select**: Locks window open.
     - **All Other Input Blocked**: No dragging, clicking, or double-clicking is permitted within physics containers.
+    - **39-Item Constraint**: Spawning/Logic uses `GrowableGridContainer(24)` as a baseline but does NOT enforce a hard numerical cap. Overflow is managed entirely by physics (see lid rule).
 
+### Staggered Grid (Run Inventory ONLY)
+The Run Inventory uses the `StaggeredGridContainer` for a compact, circular-optimized layout.
+- **Geometry**: A hexagonal/honeycomb pattern where even-numbered rows are offset by half a slot's width.
+- **39-Slot Capacity**: Perfectly sized to display 39 slots ($4 \times 6$ and $3 \times 5$) без scrolling.
+- **Separation**: `v_separation` is calculated as $SlotHeight \times 0.75$ to allow circular caps to nest perfectly.
+- **Alignment**: Uses `bottom_to_top = true` to fill from the base of the container.
+- **1x Scale**: Gachaballs are fixed at `1.0` scale to maximize grid density.
 ### Determinism & Performance
 - **Physics Ticks**: Forced to **120 TPS** for collision stability.
 - **Determinism**: Interpolation enabled; friction (0.8) and bounce (0.0) are tuned to prevent "boiling" (jittering while at rest).

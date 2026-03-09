@@ -5,9 +5,9 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
 
 @onready var panel_container: PanelContainer = %PanelContainer
-@onready var tier_1_grid: GridContainer = %Tier1Grid
-@onready var tier_2_grid: GridContainer = %Tier2Grid
-@onready var tier_3_grid: GridContainer = %Tier3Grid
+@onready var tier_1_grid: Container = %Tier1Grid
+@onready var tier_2_grid: Container = %Tier2Grid
+@onready var tier_3_grid: Container = %Tier3Grid
 @onready var tier_1_panel: PanelContainer = $"PanelContainer/VBoxContainer/GridsArea/Tier1Panel"
 @onready var tier_2_panel: PanelContainer = $"PanelContainer/VBoxContainer/GridsArea/Tier2Panel"
 @onready var tier_3_panel: PanelContainer = $"PanelContainer/VBoxContainer/GridsArea/Tier3Panel"
@@ -232,13 +232,13 @@ func _initialize_grids_if_needed() -> void:
 		if not is_instance_valid(container):
 			continue
 			
-		var slot_count = container.get_all_uuids().size()
+		var slot_count = 39 # HARDCAP: Staggered grid max capacity at 0 padding
 		for i in range(slot_count):
 			var slot_view = _SlotView.instantiate()
-			# Use 2x scale for inventory window (same as battle board)
-			slot_view.set_size_scale(2.0)
-			# Force square slots matching 2x sprite size
-			slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+			# Use 1x scale for inventory window
+			slot_view.set_size_scale(1.0)
+			# Force square slots matching 1x base size
+			slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
 			grid_node.add_child(slot_view)
 			# Configure interaction context for run inventory slots (FULLY_INTERACTIVE)
 			slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
@@ -254,6 +254,14 @@ func _populate_grids() -> void:
 	tier_1_scroll.visible = not _is_battle_context
 	tier_2_scroll.visible = not _is_battle_context
 	tier_3_scroll.visible = not _is_battle_context
+	
+	# Disable Scrolling since we have a hard-capped zero-padding grid 
+	tier_1_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tier_1_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tier_2_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tier_2_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tier_3_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	tier_3_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	
 	tier_1_physics.visible = _is_battle_context
 	tier_2_physics.visible = _is_battle_context

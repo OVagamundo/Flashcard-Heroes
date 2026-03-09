@@ -110,7 +110,19 @@ Cost Check: It verifies if the player has enough Gacha Tokens (token cost accord
 Pool Check: It checks the appropriate BattleInventoryT<n> container (each draw is associated with one of the tier containers).
 Reshuffle Check (Rule G1): If the pool becomes empty with a draw, it triggers the Reshuffle mechanism. If the pool is empty the draw fails and the token is not spent.
 Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first available slot of the PlayerBench (for both Units and Items).
-Overflow (Rule G2): If the destination container (PlayerBench) is full, the drawn instance is sent directly to the DiscardPile.
+Overflow (Rule G2): If the destination container (PlayerBench) is full, the drawn instance is sent directly to the DiscardPile. If a **Run Inventory** tiered container (`RunInventoryT*`) attempts to receive a 40th item, it triggers the **Random Eviction Rule** (see below).
+Rule G2: The Hardcap & Random Eviction Rule (RUN ONLY):
+Statement: Each **Run Inventory** tiered container has a hard capacity of **39 slots**. If a new GachaBall is added to a run container that already holds 39 items, a **RANDOM** existing GachaBall is permanently removed from the run to make space for the new one.
+Mechanism:
+1. The `RunState` detects that `find_first_empty_slot()` returns -1 for a tiered container.
+2. It selects a random index between 0 and 38.
+3. The instance occupying that index is permanently deleted via `remove_instance()`.
+4. The new instance is placed in the now-vacant slot at that index.
+Rationale: This enforces a strict UI limit (39 slots) while ensuring that getting new items is never blocked by a full inventory.
+
+> [!IMPORTANT]
+> **Battle Inventory Exception:** The Battle Inventory does NOT use the Random Eviction Rule. It is physics-driven and follows the 5-second spring-loaded lid rule (Section 3.1).
+
 The Discard Pile & Reshuffle Mechanism
 What Goes to the Discard Pile:
 Drawn GachaBalls when the bench/inventory is full (Rule G2).
@@ -158,6 +170,20 @@ To simulate the physical movement of the inventory drawer, the `WindowManager` t
 - **Upward Slam (Inventory Open)**: A `Vector2(0, -500)` impulse applied when the drawer finishes opening.
 - **Downward Slam (Inventory Close)**: A `Vector2(0, 400)` impulse applied when the drawer drops away.
 - **Variance**: impulses include random variance and torque (spin) for a more organic, chaotic feel.
+
+### 3.2 Run Inventory (Staggered Honeycomb Grid)
+Unlike the Battle Inventory, the **Run Inventory** uses a static, non-physics layout designed for maximum density and perfect visibility.
+- **Honeycomb Geometry**: Uses a zero-gap staggered grid alternating between 6 and 5 columns per row.
+- **39 Slot Hardcap**: The grid is perfectly sized to display exactly 39 slots ($4 \times 6$ rows and $3 \times 5$ rows) without scrolling.
+- **1x Size Constraint**: Gachaballs are rendered at strictly 1x scale and are forced to be perfectly circular (no vertical stretching).
+- **Bottom-Up Ordering**: Slots are filled from the bottom row upwards to maintain visual weight and consistency.
+- **Auto-Centering**: The entire grid content is dynamically centered horizontally and vertically within the inventory panel.
+
+### 3.3 Battle Inventory (Physics Rules)
+The Battle Inventory uses a **spring-loaded lid** mechanic for overflow:
+- **Active Repacking**: The lid actively applies a strong downward force (`apply_central_force`) to any GachaBall touching it, attempting to shove it back down so the pool can physically repack optimally.
+- **Cleanup Rule**: If a GachaBall maintains continuous physical contact with the top lid for **5 seconds** (meaning the downward force failed to repack it due to the drawer being completely full), it is moved to the **Battle Discard Pile**.
+- **No Deletion**: Unlike the Run Inventory, no items are ever randomly deleted during battle. They are merely shifted to history (discard).
 End of Battle Cleanup
 Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.
 State Preservation: The original RunState and its RunInventory remain completely untouched and unmodified by the events of the battle. This ensures a clean state for the next encounter.

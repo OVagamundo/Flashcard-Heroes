@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
 [ext_resource type="PackedScene" uid="uid://cy8x8i0j8v9b5" path="res://scenes/PhysicsTierContainer.tscn" id="10_physics_tier"]
+[ext_resource type="Script" path="res://scripts/StaggeredGridContainer.gd" id="11_staggered_grid"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clean"]
 
@@ -83,14 +84,15 @@ mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="Tier1Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column/ScrollContainer"]
+[node name="Tier1Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column/ScrollContainer"]
 unique_name_in_owner = true
 name = "Tier1InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 3
+script = ExtResource("11_staggered_grid")
+columns = 6
+h_separation = 0.0
+v_separation = -12.86
 
 [node name="Tier1Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column" instance=ExtResource("10_physics_tier")]
 layout_mode = 2
@@ -150,14 +152,15 @@ mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="Tier2Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column/ScrollContainer"]
+[node name="Tier2Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column/ScrollContainer"]
 unique_name_in_owner = true
 name = "Tier2InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 3
+script = ExtResource("11_staggered_grid")
+columns = 6
+h_separation = 0.0
+v_separation = -12.86
 
 [node name="Tier2Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column" instance=ExtResource("10_physics_tier")]
 layout_mode = 2
@@ -218,14 +221,15 @@ mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
 
-[node name="Tier3Grid" type="GridContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column/ScrollContainer"]
+[node name="Tier3Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column/ScrollContainer"]
 unique_name_in_owner = true
 name = "Tier3InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
-columns = 3
+script = ExtResource("11_staggered_grid")
+columns = 6
+h_separation = 0.0
+v_separation = -12.86
 
 [node name="Tier3Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column" instance=ExtResource("10_physics_tier")]
 layout_mode = 2

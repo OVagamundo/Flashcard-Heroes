@@ -303,8 +303,6 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	Audio.play_sfx("token_land")
 	
 	var machine_image = machine.get_node_or_null("MachineImage")
-	if not is_instance_valid(machine_image):
-		return
 	
 	machine.pivot_offset = Vector2(machine.size.x / 2, machine.size.y)
 	
@@ -314,10 +312,11 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	tween.tween_property(machine, "scale", Vector2(0.98, 1.02), 0.06).set_delay(0.04).set_trans(Tween.TRANS_SINE)
 	tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
-	var original_modulate = machine_image.modulate
-	var flash_color = Color(original_modulate.r * 1.3, original_modulate.g * 1.25, original_modulate.b * 1.1, 1.0)
-	tween.tween_property(machine_image, "modulate", flash_color, 0.03)
-	tween.tween_property(machine_image, "modulate", original_modulate, 0.12).set_delay(0.03)
+	if is_instance_valid(machine_image):
+		var original_modulate = machine_image.modulate
+		var flash_color = Color(original_modulate.r * 1.3, original_modulate.g * 1.25, original_modulate.b * 1.1, 1.0)
+		tween.tween_property(machine_image, "modulate", flash_color, 0.03)
+		tween.tween_property(machine_image, "modulate", original_modulate, 0.12).set_delay(0.03)
 
 func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictionary) -> void:
 	"""Animate gachaball from machine to prize slot with Bezier arc"""

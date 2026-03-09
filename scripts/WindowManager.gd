@@ -94,6 +94,7 @@ func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
 
 	var window_instance = _window_scenes[type].instantiate()
 	_get_modal_layer().add_child(window_instance)
+	window_instance.z_index = 100 # Ensure modal renders above elevated local z-indexes
 	_modal_stack.push_back(window_instance)
 	_register_window(window_instance, true)
 	
@@ -123,6 +124,7 @@ func open_tutorial_overlay(context: Dictionary = {}) -> Control:
 	# Do NOT close existing windows - tutorials overlay on top
 	var window_instance = _window_scenes[&"TutorialPopup"].instantiate()
 	_get_modal_layer().add_child(window_instance)
+	window_instance.z_index = 100 # Ensure tutorial renders above all
 	# Add to modal stack so it can be properly cleaned up
 	_modal_stack.push_back(window_instance)
 	_register_window(window_instance, true)
@@ -422,8 +424,10 @@ func _open_contextual_window(context: Dictionary) -> void:
 
 	var window_instance = _window_scenes[window_type].instantiate()
 	_get_modal_layer().add_child(window_instance)
+	
 	# Prevent flashing before we compute final position
 	window_instance.hide()
+	window_instance.z_index = 100 # Render above local z-index elevations (like hovered gachaballs = 40)
 	window_instance.set_meta("window_type", window_type) # Tag for identification
 	
 	_register_window(window_instance, false) # Register as NON-modal.
