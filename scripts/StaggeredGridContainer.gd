@@ -82,6 +82,12 @@ func _sort_staggered_children() -> void:
 		var child_x = offset_x + stagger_offset + col * (cell_size.x + h_separation)
 		var child_y = offset_y + inverted_row * (cell_size.y + v_separation)
 		
+		# Pixel-snap the final slot rect so exported/mobile builds don't rasterize
+		# the gachaball shell on fractional coordinates. The battle inventory does
+		# not use this container path, so snapping here restores parity.
+		child_x = roundf(child_x)
+		child_y = roundf(child_y)
+		
 		# Set child rect
 		fit_child_in_rect(child, Rect2(child_x, child_y, cell_size.x, cell_size.y))
 		

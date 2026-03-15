@@ -125,7 +125,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			
 			# Capture old stat
 			var old_val: int = tgt.current_hp if tgt_stat == "hp" else tgt.current_pwr
-			var max_hp: int = tgt_def.base_hp if is_instance_valid(tgt_def) else 0
+			var tgt_max_hp: int = tgt_def.base_hp if is_instance_valid(tgt_def) else 0
 			
 			# Apply stat change
 			var new_val = battle_manager.apply_stat_delta(tgt, tgt_stat, tgt_amount)
@@ -134,7 +134,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			all_target_uuids.append(target_uuid)
 			all_old_vals.append(old_val)
 			all_new_vals.append(new_val)
-			all_max_hp.append(max_hp)
+			all_max_hp.append(tgt_max_hp)
 			target_names.append(BattleHelpers.get_instance_display_name(tgt))
 			
 			if tgt_stat == "hp":

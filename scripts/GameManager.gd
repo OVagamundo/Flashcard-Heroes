@@ -12,6 +12,9 @@ var is_in_battle: bool = false # The global authority on whether a battle is act
 var is_test_mode: bool = false # Global flag for test environment
 var _active_battle_manager: Node = null # ADD THIS LINE
 
+var director: WeightedPoolDirector = WeightedPoolDirector.new()
+var director_run_state: DirectorRunState = DirectorRunState.new()
+
 var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
@@ -127,7 +130,19 @@ func _show_run_complete_popup() -> void:
 	}
 	WindowManager.open_modal_window(&"RunCompletePopup", context)
 
-func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
+func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> void:
+	if not is_instance_valid(run_state):
+		return
+	director_run_state.current_day = run_state.day
+	director_run_state.player_gold = run_state.gold
+	director_run_state.current_purpose = purpose as DirectorRunState.Purpose
+	# flashcard_mastery calculation could go here if available
+	director_run_state.unlocked_recipes.clear()
+	for r_id in run_state.unlocked_recipes.keys():
+		if run_state.unlocked_recipes[r_id]:
+			director_run_state.unlocked_recipes.append(String(r_id))
+
+func _on_battle_start_requested(_encounter_def: EncounterDefinition) -> void:
 	pass
 
 func _on_battle_won_rewards_pending() -> void:
@@ -148,30 +163,31 @@ func _on_battle_won_rewards_pending() -> void:
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
 	if is_special_victory:
-		# Boss rewards: 3 random trinkets
+		# Boss rewards: 3 random trinkets (use Director if they are WeightableEntities)
 		var all_trinkets = Database.trinkets.values().duplicate()
-		all_trinkets.shuffle()
-		for i in range(min(3, all_trinkets.size())):
+		_update_director_run_state(DirectorRunState.Purpose.REWARD)
+		var drawn_trinkets = director.draw_unique_items(all_trinkets, director_run_state, 3)
+		
+		for i in range(drawn_trinkets.size()):
 			var inst = GachaBallInstance.new()
-			inst.initialize_from_trinket(all_trinkets[i])
+			inst.initialize_from_trinket(drawn_trinkets[i])
 			inst.location_container_tag = &"Rewards"
 			inst.location_slot_index = i
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 	else:
-		# Regular rewards: gacha balls from dynamic pool
+		# Regular rewards: gacha balls from dynamic pool using Director
 		var all_defs = Database.get_all_pool_definitions()
 		if all_defs.is_empty():
 			push_error("[GameManager] Reward pool definitions are empty!")
 			return
 			
-		all_defs.shuffle()
+		_update_director_run_state(DirectorRunState.Purpose.REWARD)
+		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3)
 		
-		# ROBUSTNESS: Handle small pools without crashing
-		var count = mini(3, all_defs.size())
-		for i in range(count):
+		for i in range(drawn_rewards.size()):
 			var inst = GachaBallInstance.new()
-			inst.initialize(all_defs[i])
+			inst.initialize(drawn_rewards[i])
 			inst.location_container_tag = &"Rewards"
 			inst.location_slot_index = i
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
@@ -357,8 +373,8 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
 			var encounter_def: EncounterDefinition
-			# Standardized budget formula: base 5 + 3 per day after first
-			var daily_budget: int = 5 + (run_state.day - 1) * 3
+			# Standardized budget formula: base 3 + 1 per day after first
+			var daily_budget: int = 3 + (run_state.day - 1) * 1
 			
 			if node_def.subtype == "BOSS":
 				# Boss encounter - boss is free, support units use daily budget
@@ -368,8 +384,8 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				run_state.current_boss_level = boss_level
 				run_state.current_elite_level = 0
 			elif node_def.subtype == "ELITE":
-				# Elite encounter - 1.3x daily budget
-				var budget: int = int(floor(daily_budget * 1.3))
+				# Elite encounter - uses standard daily budget (has free elite unit)
+				var budget: int = daily_budget
 				encounter_def = EncounterGenerator.generate_elite_encounter(budget)
 				# Track elite level for victory handling (trinket rewards)
 				run_state.current_elite_level = 1
@@ -410,10 +426,11 @@ func _generate_shop_stock() -> void:
 	var all_defs = Database.get_all_pool_definitions()
 	if all_defs.is_empty(): return
 	
-	all_defs.shuffle()
+	_update_director_run_state(DirectorRunState.Purpose.SHOP)
+	var drawn_shop_items = director.draw_unique_items(all_defs, director_run_state, 3)
 	
-	for i in range(3):
-		var def = all_defs[i]
+	for i in range(drawn_shop_items.size()):
+		var def = drawn_shop_items[i]
 		var inst = GachaBallInstance.new()
 		inst.initialize(def)
 		
@@ -484,26 +501,29 @@ func _generate_reward_stock() -> void:
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
 	if _is_special_reward_pool:
-		# Boss/Elite rewards: 3 random trinkets
+		# Boss/Elite rewards: 3 random trinkets using Director
 		var all_trinkets = Database.trinkets.values().duplicate()
-		print("[RewardDebug] Trinkets available: ", all_trinkets.size())
-		all_trinkets.shuffle()
-		for i in range(min(3, all_trinkets.size())):
+		_update_director_run_state(DirectorRunState.Purpose.REWARD)
+		var drawn_trinkets = director.draw_unique_items(all_trinkets, director_run_state, 3)
+		
+		for i in range(drawn_trinkets.size()):
 			var inst = GachaBallInstance.new()
-			inst.initialize_from_trinket(all_trinkets[i])
+			inst.initialize_from_trinket(drawn_trinkets[i])
 			inst.location_container_tag = &"Rewards"
 			inst.location_slot_index = i
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 	else:
-		# Regular rewards: gacha balls from dynamic pool
+		# Regular rewards: gacha balls from dynamic pool using Director
 		var all_defs = Database.get_all_pool_definitions()
 		if all_defs.is_empty(): return
 		
-		all_defs.shuffle()
-		for i in range(3):
+		_update_director_run_state(DirectorRunState.Purpose.REWARD)
+		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3)
+		
+		for i in range(drawn_rewards.size()):
 			var inst = GachaBallInstance.new()
-			inst.initialize(all_defs[i])
+			inst.initialize(drawn_rewards[i])
 			inst.location_container_tag = &"Rewards"
 			inst.location_slot_index = i
 			_temporary_reward_master_dict[inst.ball_uuid] = inst

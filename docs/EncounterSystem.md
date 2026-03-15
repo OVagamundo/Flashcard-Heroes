@@ -9,13 +9,15 @@ The Encounter System is responsible for defining, generating, and instantiating 
 
 ## Budget Formula
 
-| 1 | 5 | Base |
-| 2 | 8 | 5 + 3 |
-| 3 | 11 | 5 + 6 |
-| 5 | 17 | 5 + 12 |
-| 10 | 32 | 5 + 27 |
+| Day | Budget | Calculation |
+|-----|--------|-------------|
+| 1   | 3      | Base        |
+| 2   | 4      | 3 + 1       |
+| 3   | 5      | 3 + 2       |
+| 5   | 7      | 3 + 4       |
+| 10  | 12     | 3 + 9       |
 
-**Formula:** `5 + 3 * (day - 1)`
+**Formula:** `3 + (day - 1)`
 
 ## Gachaball Costs
 
@@ -34,9 +36,9 @@ Bosses don't have a cost, they are free.
 | Type | Budget | Notes |
 |------|--------|-------|
 | Regular | Daily budget | Full budget for units/items/trinkets |
-| Elite | Daily budget × 1.3 | Elite unit is FREE | Full budget for units/items/trinkets |
-| Boss | Daily budget | Boss unit is FREE | Full budget for units/items/trinkets |
-| Boss Summons | Daily budget ÷ 2 | No trinkets |
+| Elite | Daily budget × 0.85 | Elite unit is FREE | Full budget for supports |
+| Boss | Daily budget × 0.85 | Boss unit is FREE | Full budget for supports |
+| Summons | Daily budget × 0.33 | Cap for Boss/Elite reinforcements per turn |
 
 ## Encounter Generation Algorithm
 
@@ -44,9 +46,10 @@ The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm th
 
 ### Algorithm Phases
 
-0. **Pool Filtering**
+1. **Gap Filtering & Prerequisites**
    - The generator pools all available Units, Items, and Trinkets.
-   - **Exclusivity Rule**: Content with `is_player_exclusive = true` is filtered out and will NOT appear in the enemy team pool.
+   - **Exclusivity Rule**: Content with `is_player_exclusive = true` is filtered out.
+   - **Temporal Rule**: Content must satisfy `min_day` and `max_day` constraints relative to the current run day (e.g., Hermit locked until Day 10).
    
 1. **Greedy Weighted Selection**
    - Priority weights: Units (3) > Items (2) > Trinkets (1)

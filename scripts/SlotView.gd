@@ -1,6 +1,8 @@
 class_name SlotView
 extends PanelContainer
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 var _location: LocationIdentifier
 
 # InteractionContext properties
@@ -271,7 +273,7 @@ func _gui_input(event: InputEvent) -> void:
 	if not is_instance_valid(_location):
 		return
 
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Do NOT consume the event here; allow child views to initiate drag
 		# Check for actual content (GachaBallView), ignoring the indicator
 		var has_content = false

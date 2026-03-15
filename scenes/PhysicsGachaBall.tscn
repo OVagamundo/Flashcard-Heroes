@@ -43,5 +43,3 @@ mouse_filter = 1
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("3_audio")
 max_polyphony = 3
-
-

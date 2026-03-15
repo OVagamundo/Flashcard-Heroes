@@ -281,7 +281,13 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 			if not target_uuid.is_empty():
 				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
 				if is_instance_valid(target_instance):
-					result = target_instance.current_hp > source_instance.current_hp
+					var self_hp = source_instance.current_hp
+					# If source is an ITEM, use the holder's HP for comparison
+					if source_instance.get_definition().category == &"ITEM" and not source_instance.equipped_on_uuid.is_empty():
+						var holder = battle_manager.get_instance_by_uuid(source_instance.equipped_on_uuid)
+						if is_instance_valid(holder):
+							self_hp = holder.current_hp
+					result = target_instance.current_hp > self_hp
 		C.COND_DAMAGE_WAS_NON_LETHAL:
 			var damaged_unit_uuid = context.get("victim_uuid", context.get("source_uuid", ""))
 			var damaged_unit = battle_manager.get_instance_by_uuid(damaged_unit_uuid) if not damaged_unit_uuid.is_empty() else source_instance

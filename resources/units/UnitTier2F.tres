@@ -1,23 +1,40 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier2unitF.png" id="2_icon"]
-[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres" id="4_ability_gold"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script_ability"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="3_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier2unitF.png" id="4_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="5_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres" id="6_ability_gold"]
+
+[sub_resource type="Resource" id="Resource_spawn_effect"]
+script = ExtResource("2_effect_script")
+target_type = "SELF"
+
+[sub_resource type="Resource" id="Resource_spawn_ability"]
+script = ExtResource("1_script_ability")
+id = &"ability_unit_t2_f_spawn_pwr"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr.desc"
+trigger = &"on_battle_start"
+effects = Array[Resource]([SubResource("Resource_spawn_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
 
 [resource]
-script = ExtResource("1_script")
+script = ExtResource("3_script")
 id = &"unit_t2_f"
 display_name_key = "unit_t2_f.name"
 description_key = "unit_t2_f.desc"
-icon = ExtResource("2_icon")
+icon = ExtResource("4_icon")
 tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WIND"])
 tier = 2
 cost = 3
 category = &"UNIT"
-item_slot_count = 1
+item_slot_count = 2
 base_hp = 1
 base_pwr = 2
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability_gold")])
+ability_definitions = Array[Resource]([ExtResource("5_basic_attack"), ExtResource("6_ability_gold"), SubResource("Resource_spawn_ability")])

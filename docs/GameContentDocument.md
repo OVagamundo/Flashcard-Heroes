@@ -27,20 +27,20 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `unit_t1_a` | Apprentice | 2 HP / 1 PWR | 1 | 1 Earth | **Resilience** (`on_hurt`): Heal self by (PWR). |
 | `unit_t1_b` | Squire | 1 HP / 2 PWR | 1 | 1 Fire | **Retaliation** (`on_hurt`): Counter-attack for (PWR) damage. |
 | `unit_t1_c` | Protector | 1 HP / 1 PWR | 1 | 1 Water | **Guardian's Grace** (`on_ally_hurt`): When ally directly in front takes damage, heal them for (PWR). |
-| `unit_t1_d` | Empath | 1 HP / 1 PWR | 1 | 1 Wind | **Empathic Link** (`on_healed`): When healed, grant +1 PWR to ally behind. |
+| `unit_t1_d` | Empath | 1 HP / 1 PWR | 1 | 1 Wind | **Empathic Link** (`on_death`): On death, grant total current PWR to ally behind. |
 
 ### Tier 2 Units (Cost: 2)
 | ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
 |---|---|---|---|---|---|---|
 | `unit_t2_a` | Paladin | **Apprentice + Apprentice** | 4 HP / 2 PWR | 2 | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain +2 HP before taking damage. |
 | `unit_t2_b` | Berserker | **Squire + Squire** | 2 HP / 4 PWR | 2 | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind. |
-| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 2 | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain +2 HP / +2 PWR. |
+| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 2 | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain +1 HP / +1 PWR. |
 | `unit_t2_d` | Templar | **Protector + Empath** | 2 HP / X PWR | 2 | 1 Water, 1 Wind | **Gacha Power** (`passive`): PWR is equal to Gacha Tokens (Min 1). PWR buffs convert to HP. |
 | `unit_t2_e` | Mimic | **Protector + Protector** | 2 HP / 2 PWR | 2 | 2 Water | **Mirror Transformation** (`on_turn_start`): Transforms into the base unit of the enemy in the mirror slot. |
-| `unit_t2_f` | Merchant | **Apprentice + Empath** | X HP / 2 PWR | 2 | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`): Sets HP equal to your current Gold when drawn. |
+| `unit_t2_f` | Merchant | **Apprentice + Empath** | X HP / X PWR | 2 | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`, `on_battle_start`): Initial PWR equals your current Gold when drawn or spawned. |
 | `unit_t2_g` | Shadow Cloner | **Empath + Empath** | 3 HP / 3 PWR | 2 | 1 Wind | **Buff Echo** (`on_stat_increased`): Repeats any buff (HP/PWR) received by an adjacent ally. |
-| `unit_t2_h` | Hermit | **Protector + Empath** | 4 HP / 2 PWR | 2 | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only): Gains +HP/+PWR equal to `Current PWR * Empty Slots`. |
-| `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 2 HP / 2 PWR | 2 | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain **+2 Armor**. |
+| `unit_t2_h` | Hermit | **Protector + Empath** | 4 HP / 2 PWR | 2 | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only): Gains +1 HP and +1 PWR per empty slot. (Unlocked on Day 10+ for encounter generator) |
+| `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 2 HP / 2 PWR | 2 | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain **+1 Armor and +1 Spike**. |
 | `unit_t2_j` | Steam Wisp | **Squire + Protector** | 1 HP / 3 PWR | 2 | 1 Fire, 1 Water | **Scald** (`on_healed`): When healed, deal equal damage to the front enemy. |
 
 ### Tier 3 Units (Gold Cost: 4 | Draw Cost: 3 Tokens)
@@ -61,7 +61,7 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `enemy_hero` | Enemy Hero | 10 HP / 2 PWR | Boss | (None by default) |
 | `boss_1` | The Awakened Guardian | 10 HP / 10 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Draining Presence** (`on_draw`): Gains +1 HP when player draws from gacha. |
 | `boss_2` | The Shadow Warden | 15 HP / 15 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Token Hunger** (`on_token_spent`): Gains +1 HP for each token the player spends. |
-| `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Vengeance Growth** (`on_ally_death`): Gains +3 HP and +2 PWR when an ally is defeated. |
+| `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Storm Rising** (`on_ally_death`): Gains +1 HP and +1 PWR for each ally that died this combat (Triggers on Turn Start). |
 | `boss_4` | The Ancient Titan | 25 HP / 25 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
 | `boss_5` | The Final Arbiter | 30 HP / 30 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
 
@@ -74,7 +74,7 @@ Items are equipped on units to provide stats and new abilities.
 | ID | Name | Stats | Ability |
 |---|---|---|---|
 | `item_t1_a` | Small HP Potion | +1 HP | **Restoration** (`on_turn_start`): Heal holder 2 HP. |
-| `item_t1_b` | Small PWR Potion | +1 PWR | **Extra Attack** (`on_attack`): Attack again if target HP > Holder HP. |
+| `item_t1_b` | Small PWR Potion | +1 PWR | **Tiger Spirit** (`on_attack`): Attack again ONLY if target HP OR PWR > Holder. |
 
 ### Tier 2 Items (Cost: 2)
 | ID | Name | Merge Recipe | Stats | Ability |
@@ -140,10 +140,10 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 
 | Souls | Effect |
 |---|---|
-| **3** | All Allies gain **1 Armor + 1 Spikes**; Earth units gain **2 Armor**. |
-| **5** | All Allies gain **2 Armor + 2 Spikes**; Earth units gain **4 Armor**. |
-| **7** | All Allies gain **3 Armor + 3 Spikes**; Earth units gain **6 Armor**. |
-| **9** | **Fortress**: All Allies gain **4 Armor + 4 Spikes**; Earth units gain **8 Armor**. |
+| **3** | All Allies gain **1 Armor**; Earth units gain **2 Armor**. |
+| **5** | All Allies gain **2 Armor**; Earth units gain **4 Armor**. |
+| **7** | All Allies gain **2 Armor + 1 Spike**; Earth units gain **4 Armor**. |
+| **9** | **Fortress**: All Allies gain **2 Armor + 2 Spikes**; Earth units gain **4 Armor**. |
 
 ### Water Trait (`SOUL_WATER`)
 *Focus: Adjacent Healing & Resilience*
@@ -166,8 +166,8 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 ### Daily Budget Formula
 The game allocates a precise amount of gold for enemy recruitment every day. The system ensures the entire budget is spent, prioritizing units, then items, and finally trinkets.
 
-- **Regular Battle**: `5 + 3 * (Day - 1)` (e.g., Day 1: 5, Day 2: 8, Day 3: 11).
-- **Elite Battle**: `Daily Budget * 1.3`. Elite nodes contain boss-tier units and grant **Trinket Rewards**.
+- **Regular Battle**: `3 + (Day - 1)` (e.g., Day 1: 3, Day 2: 4, Day 3: 5).
+- **Elite Battle**: `Daily Budget`. Elite nodes contain boss-tier units and grant **Trinket Rewards**.
 - **Boss Battle**: `Daily Budget`.
     - **Boss Unit**: Free (does not consume budget).
     - **Boss Summons**: Use half of the daily budget. Summons can spawn with randomly equipped items.

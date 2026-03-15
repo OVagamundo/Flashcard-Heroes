@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
-[ext_resource type="Script" path="res://scripts/effects/EffectBenchGrowth.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/effects/EffectGrantStatsPerDeadAlly.gd" id="2_effect"]
 
-[sub_resource type="Resource" id="EffectBenchGrowth"]
+[sub_resource type="Resource" id="EffectDeadAllyScaling"]
 script = ExtResource("2_effect")
 parameters = {
 "ability_id": "unit_t3_g_ability"
@@ -15,6 +15,6 @@ script = ExtResource("1_ability")
 id = &"unit_t3_g_ability"
 name_key = "ability.unit_t3_g.name"
 trigger = &"on_turn_start"
-effects = Array[Resource]([SubResource("EffectBenchGrowth")])
+effects = Array[Resource]([SubResource("EffectDeadAllyScaling")])
 description_key = "ability.unit_t3_g.desc"
 priority = 0

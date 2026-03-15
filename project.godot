@@ -19,10 +19,6 @@ run/main_scene="res://scenes/Title.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
-[audio]
-
-buses/default_bus_layout="res://default_bus_layout.tres"
-
 [autoload]
 
 SignalBus="*res://scripts/SignalBus.gd"
@@ -48,18 +44,15 @@ CRTEffect="*res://scripts/CRTEffect.gd"
 
 [debug]
 
-file_logging/enable_file_logging=true
-file_logging/log_path="/Users/danhh/Desktop/Flashcard Heroes/log.txt"
+file_logging/log_path="user://log.txt"
 file_logging/max_log_files=1
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/resizable=true
 window/size/mode=2
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 
 [export]
 
@@ -116,4 +109,5 @@ common/max_physics_steps_per_frame=16
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
 textures/webp_compression/lossy_quality=0.9

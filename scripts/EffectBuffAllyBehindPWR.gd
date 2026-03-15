@@ -16,12 +16,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if not is_instance_valid(target):
 		return EffectResult.empty() if is_simulation else null
 	
-	var buff_amount: int = 1
+	# ROBUSTNESS: Use snapshotted source PWR from context if available (captured at moment of death)
+	# Fallback to current PWR if context is missing (though AbilityResolver should provide it)
+	var buff_amount: int = context.get("source_pwr", 1)
 	
 	if is_simulation:
 		var old_pwr: int = target.current_pwr
-		target.current_pwr += buff_amount
-		var new_pwr: int = target.current_pwr
+		# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
+		var new_pwr: int = battle_manager.apply_stat_delta(target, "pwr", buff_amount, false, source_uuid)
 		
 		var result := EffectResult.new()
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {

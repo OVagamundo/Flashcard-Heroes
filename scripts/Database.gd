@@ -54,8 +54,8 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
 	while file_name != "":
-		if not dir.current_is_dir() and file_name.ends_with(".tres"):
-			var resource_path = path.path_join(file_name)
+		if not dir.current_is_dir() and _is_exported_resource_file(file_name):
+			var resource_path = path.path_join(_get_resource_load_name(file_name))
 			var resource = load(resource_path)
 			if is_instance_valid(resource):
 				if "id" in resource:
@@ -69,47 +69,15 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 
 ## Loads the translation CSV file and adds it to the TranslationServer
 func _load_translations() -> void:
-	# Create Translation resources for each supported language
-	var translation_en = Translation.new()
-	translation_en.locale = "en"
+	var translation_paths := PackedStringArray([
+		"res://localization/game.en.translation",
+		"res://localization/game.pt_BR.translation"
+	])
 	
-	var translation_pt = Translation.new()
-	translation_pt.locale = "pt_BR"
-	
-	# Load the CSV file
-	var csv_file = FileAccess.open("res://localization/game.csv", FileAccess.READ)
-	if not csv_file:
-		return
-	
-	# Read the header line to get column indices
-	var header = csv_file.get_csv_line()
-	var en_col = -1
-	var pt_col = -1
-	for i in range(header.size()):
-		if header[i] == "en":
-			en_col = i
-		elif header[i] == "pt_BR":
-			pt_col = i
-	
-	if en_col == -1:
-		return
-	
-	# Read all translation pairs
-	while not csv_file.eof_reached():
-		var line = csv_file.get_csv_line()
-		if line.size() >= 2:
-			var key = line[0]
-			if en_col < line.size():
-				translation_en.add_message(key, line[en_col])
-			if pt_col != -1 and pt_col < line.size():
-				translation_pt.add_message(key, line[pt_col])
-	
-	csv_file.close()
-	
-	# Add the translations to the server
-	TranslationServer.add_translation(translation_en)
-	if pt_col != -1:
-		TranslationServer.add_translation(translation_pt)
+	for translation_path in translation_paths:
+		var translation := load(translation_path) as Translation
+		if translation:
+			TranslationServer.add_translation(translation)
 	
 	# Set default locale (could load from saved preference later)
 	TranslationServer.set_locale("en")
@@ -157,6 +125,9 @@ func get_hero_definitions() -> Array[GachaBallDefinition]:
 	for unit in units.values():
 		if unit.is_hero:
 			hero_defs.append(unit)
+	hero_defs.sort_custom(func(a: GachaBallDefinition, b: GachaBallDefinition) -> bool:
+		return String(a.id) < String(b.id)
+	)
 	return hero_defs
 
 ## Returns metadata for all available decks
@@ -253,3 +224,13 @@ func _load_flashcard_definitions() -> void:
 			else:
 				pass
 		file_name = dir.get_next()
+
+
+func _is_exported_resource_file(file_name: String) -> bool:
+	return file_name.ends_with(".tres") or file_name.ends_with(".res") or file_name.ends_with(".tres.remap") or file_name.ends_with(".res.remap")
+
+
+func _get_resource_load_name(file_name: String) -> String:
+	if file_name.ends_with(".remap"):
+		return file_name.trim_suffix(".remap")
+	return file_name

@@ -6,6 +6,9 @@ extends Control
 @export var left_wall_padding: float = -14.0
 @export var right_wall_padding: float = -14.0
 @export var bottom_wall_padding: float = 15.0
+@export var side_wall_thickness: float = 100.0
+@export var floor_thickness: float = 500.0
+@export var spawn_y: float = -60.0
 @export var use_static_bounds: bool = false
 
 @onready var spawn_point: Marker2D = $SpawnPoint
@@ -40,6 +43,14 @@ func _ready() -> void:
 	# Force an initial bounds generation here.
 	_on_resized()
 
+func refresh_runtime_bounds() -> void:
+	if use_static_bounds:
+		return
+	if size.x > 10.0 and size.y > 10.0:
+		if size.y > _max_y_seen:
+			_max_y_seen = size.y
+		_generate_u_shape_bounds()
+
 func _on_resized() -> void:
 	if use_static_bounds:
 		return
@@ -52,8 +63,8 @@ func _on_resized() -> void:
 		_generate_u_shape_bounds()
 
 func _generate_u_shape_bounds() -> void:
-	var t_side = 100.0 # Side wall thickness
-	var t_bottom = 500.0 # Extra thick floor to prevent tunnel clipping
+	var t_side = side_wall_thickness
+	var t_bottom = floor_thickness
 	
 	# Lock the vertical size to the maximum seen to prevent the floor dropping out
 	var safe_y = maxf(size.y, _max_y_seen)
@@ -102,7 +113,7 @@ func _generate_u_shape_bounds() -> void:
 			child.queue_free()
 
 	# Keep the lid setup exactly the same as before
-	spawn_point.position = Vector2(size.x / 2.0, -60.0)
+	spawn_point.position = Vector2(size.x / 2.0, spawn_y)
 	lid_area.position = Vector2(size.x / 2.0, 0)
 	
 	var rect_shape = RectangleShape2D.new()
@@ -218,30 +229,54 @@ func _physics_process(delta: float) -> void:
 
 ## Snaps balls that glitched out of boundaries back to the spawn point
 func _check_out_of_bounds() -> void:
+	if size.x <= 10.0 or size.y <= 10.0:
+		return
+		
 	# Define a safe bound area (container size with some margin)
 	# If a ball is too far outside, it's considered glitched.
 	var safe_margin = 300.0
 	var min_x = - safe_margin
 	var max_x = size.x + safe_margin
 	var min_y = - safe_margin * 2.0 # Allow more head room for spawns
-	var max_y = size.y + safe_margin
+	
+	# CRITICAL: Use safe_y (max height seen) for bottom boundary.
+	# When the drawer is closed/collapsed, size.y might be small, 
+	# but the balls are still deep in the (now hidden) tray.
+	var safe_y = maxf(size.y, _max_y_seen)
+	var max_y = safe_y + safe_margin
+	
+	var objects_to_recover: Array[PhysicsGachaBall] = []
 	
 	for uuid in _active_balls:
 		var ball = _active_balls[uuid]
 		if is_instance_valid(ball):
 			var pos = ball.position
 			if pos.x < min_x or pos.x > max_x or pos.y < min_y or pos.y > max_y:
-				# Glitched out! Snap back to spawn
-				ball.linear_velocity = Vector2.ZERO
-				ball.angular_velocity = 0.0
-				ball.position = spawn_point.position
-				# Add random offset to both X and Y to prevent exact stacking and physics explosion
-				var random_x = randf_range(-60.0, 60.0)
-				var random_y = randf_range(-40.0, 40.0)
-				ball.position += Vector2(random_x, random_y)
+				objects_to_recover.append(ball)
 				
-				if Engine.has_singleton("BattleLogger"):
-					BattleLogger.log_message("[color=yellow]SAFEGUARD:[/color] Gachaball recovered from out-of-bounds.")
+	for ball in objects_to_recover:
+		var uuid = ball.instance_uuid
+		
+		# 1. Clean up the physics body
+		_active_balls.erase(uuid)
+		_penalty_timers.erase(uuid)
+		
+		# 2. Extract the instance from BattleManager to re-queue it
+		# (We don't want to destroy the instance, just the physics representation)
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			var inst = bm.get_instance(uuid)
+			if is_instance_valid(inst):
+				# Add back to the spawn queue so it drops gracefully
+				_spawn_queue.push_back(inst)
+				if drop_timer.is_stopped():
+					drop_timer.start()
+		
+		# 3. Remove the glitched body
+		ball.queue_free()
+		
+		if Engine.has_singleton("BattleLogger"):
+			BattleLogger.log_message("[color=yellow]SAFEGUARD:[/color] Gachaball recovered and re-spawned.")
 
 ## Applies a physical impulse to all active balls to simulate tray inertia
 func apply_jolt(base_impulse: Vector2) -> void:

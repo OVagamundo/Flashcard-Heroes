@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
-[ext_resource type="Script" path="res://scripts/EffectSetHPToGold.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="Resource_effect"]
 script = ExtResource("2_effect")
@@ -9,9 +9,9 @@ target_type = "SELF"
 
 [resource]
 script = ExtResource("1_script")
-id = &"ability_unit_t2_f_gold_hp"
-name_key = "ability.unit_t2_f_gold_hp.name"
-description_key = "ability.unit_t2_f_gold_hp.desc"
+id = &"ability_unit_t2_f_gold_pwr"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr.desc"
 trigger = &"on_draw"
 effects = Array[Resource]([SubResource("Resource_effect")])
 priority = 100

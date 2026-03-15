@@ -1,5 +1,7 @@
 extends Node
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 ## The GlobalInteractionRouter is the single source of truth for interpreting user intent.
 ## It receives InteractionContext from clicked views and generates command queues.
 
@@ -173,7 +175,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	# True background click: left mouse press not handled by any Control
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	if InputUtils.is_primary_pointer_press(event):
 		# Clear lock/hover state
 		_is_inspection_locked = false
 		_locked_entity_view_id = -1

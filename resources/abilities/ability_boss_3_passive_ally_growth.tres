@@ -7,7 +7,7 @@
 script = ExtResource("2_effect_script")
 parameters = {
 "ability_id": "ability_boss_3_ally_growth",
-"base_value": 3,
+"base_value": 1,
 "log_format": "%s absorbs the soul of a fallen ally (+%d HP)",
 "stat": "hp"
 }
@@ -17,7 +17,7 @@ target_type = &"SELF"
 script = ExtResource("2_effect_script")
 parameters = {
 "ability_id": "ability_boss_3_ally_growth",
-"base_value": 2,
+"base_value": 1,
 "log_format": "%s grows stronger from death (+%d PWR)",
 "stat": "pwr"
 }

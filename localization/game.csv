@@ -12,9 +12,9 @@ unit_t2_d.desc,PWR = Tokens (Min 1). Buffs to PWR grant HP.,PWR = Tokens (Min 1)
 ability.unit_t2_d_power.name,Token Power,Token Power
 ability.unit_t2_d_power.desc,PWR equals Tokens (Min 1). PWR buffs become HP.,PWR equals Tokens (Min 1). PWR buffs become HP.
 unit_t2_f.name,Merchant,Merchant
-unit_t2_f.desc,Initial HP equals Gold when drawn.,Initial HP equals Gold when drawn.
-ability.unit_t2_f_gold_hp.name,Gold Investments,Gold Investments
-ability.unit_t2_f_gold_hp.desc,Sets HP equal to your current Gold when drawn.,Sets HP equal to your current Gold when drawn.
+unit_t2_f.desc,Initial PWR equals Gold when drawn or spawned.,PWR inicial igual ao Gold ao ser comprado ou invocado.
+ability.unit_t2_f_gold_pwr.name,Gold Investments,Investimentos em Ouro
+ability.unit_t2_f_gold_pwr.desc,Initial PWR equals Gold when drawn or spawned.,PWR inicial igual ao Gold ao ser comprado ou invocado.
 unit_t1_c.name,Protector,Protetor
 unit_t1_c.desc,A steadfast guardian who heals the ally ahead when they take damage.,Um guardião firme que cura o aliado à frente quando ele recebe dano.
 ability.unit_t1_c_ally_shield.name,Guardian's Grace,Graça do Guardião
@@ -22,7 +22,7 @@ ability.unit_t1_c_ally_shield.desc,"When the ally directly in front takes damage
 unit_t1_d.name,Empath,Empata
 unit_t1_d.desc,A sensitive soul who empowers allies when healed.,Uma alma sensível que fortalece aliados quando curada.
 ability.unit_t1_d_empathic_link.name,Empathic Link,Vínculo Empático
-ability.unit_t1_d_empathic_link.desc,"When healed, grant +1 PWR to the ally behind.","Quando curada, concede +1 PWR ao aliado atrás."
+ability.unit_t1_d_empathic_link.desc,"When this unit dies, grant its current PWR to the ally behind.","Quando esta unidade morre, concede seu PWR atual ao aliado atrás."
 unit_t2_c.name,Knight,Cavaleiro
 unit_t2_c.desc,A valiant knight.,Um cavaleiro valente.
 item_t1_a.name,Koi's Blessing,Bênção da Carpa
@@ -51,7 +51,7 @@ ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker
 ability.item_tier1a_turn_start_heal.name,Restoration,Restauração
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No início do turno, cura o portador em 2 HP."
 ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
-ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +2 HP and +2 PWR.","Quando um aliado é derrotado, ganha +2 HP e +2 PWR."
+ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 ability.hero_bounty_hunter_ally_death_buff.name,Scavenger's Resolve,Determinação do Saqueador
 ability.hero_bounty_hunter_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 ability.item_tier3d_retaliate.name,Retaliation,Retaliação
@@ -111,7 +111,7 @@ ability.boss_1_draw_drain.desc,"Every time you draw a gachaball, this boss gains
 ability.boss_2_token_drain.name,Token Hunger,Fome de Fichas
 ability.boss_2_token_drain.desc,"Every time you spend a token, this boss gains +1 HP.","Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
 ability.boss_3_ally_growth.name,Vengeance Growth,Crescimento Vingativo
-ability.boss_3_ally_growth.desc,"When an ally is defeated, this boss gains +3 HP and +2 PWR.","Quando um aliado é derrotado, este chefe ganha +3 HP e +2 PWR."
+ability.boss_3_ally_growth.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 trinket.soul_echo.name,Soul Echo,Eco da Alma
 trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.,Uma gema mística que ecoa as almas dos caídos.
 ability.soul_echo.name,Soul Echo,Eco da Alma
@@ -299,10 +299,10 @@ trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total
 trait.fire.7,"Start of Turn: Apply 2 Burn to ALL enemies.","Início do Turno: Aplica 2 Queimadura a TODOS inimigos."
 trait.fire.9,"Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.","Chama do Traidor: Ataques causam dano bônus igual às pilhas de Queimadura do alvo."
 trait.earth.name,Earth,Terra
-trait.earth.3,"All Allies gain 1 Armor + 1 Spikes. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura + 1 Espinhos. Unidades de Terra ganham 2 Armadura."
-trait.earth.5,"All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura."
-trait.earth.7,"All Allies gain 3 Armor + 3 Spikes. Earth units gain 6 Armor.","Todos aliados ganham 3 Armadura + 3 Espinhos. Unidades de Terra ganham 6 Armadura."
-trait.earth.9,"Fortress: All Allies gain 4 Armor + 4 Spikes. Earth units gain 8 Armor.","Fortaleza: Todos aliados ganham 4 Armadura + 4 Espinhos. Unidades de Terra ganham 8 Armadura."
+trait.earth.3,"All Allies gain 1 Armor. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura."
+trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura."
+trait.earth.7,"All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura."
+trait.earth.9,"All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura."
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
 item.emblem_fire.desc,"When equipped, this unit counts as a Fire unit. Grants +2 PWR.","Quando equipado, esta unidade conta como uma unidade de Fogo. Concede +2 PWR."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
@@ -343,10 +343,10 @@ ability.unit_t2_g_buff_echo.desc,"When an adjacent ally receives a HP or PWR buf
 unit_t2_h.name,Hermit,Eremita
 unit_t2_h.desc,A solitary warrior who grows stronger when fighting with fewer allies.,Um guerreiro solitário que fica mais forte quando luta com menos aliados.
 ability.unit_t2_h.name,Solitary Strength,Força Solitária
-ability.unit_t2_h.desc,"At start of combat, gain +HP and +PWR equal to current PWR for each empty slot in your team.","No início do combate, ganha +HP e +PWR igual ao PWR atual para cada espaço vazio no seu time."
+ability.unit_t2_h.desc,"At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.","No início do combate, ganha +1 HP e +1 PWR para cada espaço vazio no seu time."
 unit_t2_i.name,Mud Wretch,Miserável de Lama
 ability.mud_coating.name,Mud Coating,Camada de Lama
-ability.mud_coating.desc,"When healed, gain **+2 Armor**.","Quando curado, ganha **+2 Armadura**."
+ability.mud_coating.desc,"When healed, gain **+1 Armor and +1 Spike**.","Quando curado, ganha **+1 Armadura e +1 Espinho**."
 unit_t2_j.name,Steam Wisp,Fogo Fátuo
 unit_t2_j.desc,An elemental spirit that retaliates with boiling steam when healed. Deals damage equal to heal amount.,Um espírito elemental que retalia com vapor fervente quando curado. Causa dano igual à quantidade de cura.
 ability.scald.name,Scald,Escaldar

@@ -50,6 +50,9 @@ tier = 4
 left_wall_padding = -14.0
 right_wall_padding = -14.0
 bottom_wall_padding = 15.0
+side_wall_thickness = 2000.0
+floor_thickness = 2000.0
+spawn_y = 100.0
 use_static_bounds = true
 
 [node name="SpawnPoint" parent="DiscardPhysicsContainer" index="0"]

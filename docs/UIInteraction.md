@@ -40,6 +40,7 @@ Main.tscn (Shell)
 | **S3** Selection-Only | Shop/Rewards: any click = change focus |
 | **S4** Re-Selection | Click selected item = lock inspection window |
 | **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) |
+| **S5a** Touch Peek | On touch devices, long-press temporarily opens inspection; release closes it unless the interaction is promoted by a tap/selection flow |
 | **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
 | **S8** Hover Boundary | When a base inventory is open, hovers outside it are blocked |
@@ -118,6 +119,7 @@ Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visu
 - **Inescapable Boundaries**: Side walls are ~2000px thick and extend infinitely to prevent tunneling or escaping during high-velocity drawer animations.
 - **Interaction Rules**:
     - **Hover-to-Inspect**: Opens temporary window (PC).
+    - **Touch Inspect**: Uses long-press (`0.32s`) with drag cancellation at `24px`, shared via `InputUtils.gd`.
     - **Rule S8 (Hover Boundary)**: If an inventory window is open, hovers originating from the background battle board are blocked to prevent accidental window closure.
     - **Click-to-Select**: Locks window open.
     - **All Other Input Blocked**: No dragging, clicking, or double-clicking is permitted within physics containers.
@@ -130,6 +132,12 @@ The Run Inventory uses the `StaggeredGridContainer` for a compact, circular-opti
 - **Separation**: `v_separation` is calculated as $SlotHeight \times 0.75$ to allow circular caps to nest perfectly.
 - **Alignment**: Uses `bottom_to_top = true` to fill from the base of the container.
 - **1x Scale**: Gachaballs are fixed at `1.0` scale to maximize grid density.
+
+### Touch Input Adapter
+- **Single Gate**: [InputUtils.gd](../scripts/InputUtils.gd) is the only approved touch/mouse routing helper.
+- **Desktop Parity Rule**: Mobile fixes must stay behind `prefers_touch_input()` and must not alter the desktop mouse path unless the behavior is intended for both platforms.
+- **Consumption Rule**: Touch presses on windows/background blockers must explicitly consume the event to avoid the same tap falling through into global-close handlers.
+
 ### Determinism & Performance
 - **Physics Ticks**: Forced to **120 TPS** for collision stability.
 - **Determinism**: Interpolation enabled; friction (0.8) and bounce (0.0) are tuned to prevent "boiling" (jittering while at rest).
@@ -174,4 +182,3 @@ For Swap/Merge via ChoiceWindow:
 | `WindowManager.handle_inspection_background_click()` | Local prune (W3) |
 | `WindowManager.find_ancestor_window_for_view()` | Resolve owning window |
 | `GIR.get_context_group()` | Get functional group for container |
-

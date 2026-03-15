@@ -1,9 +1,8 @@
 # res://scripts/TrinketDefinition.gd
 @tool
 class_name TrinketDefinition
-extends Resource
+extends WeightableEntity
 
-@export var id: StringName
 @export var name_key: String
 @export var description_key: String
 @export var icon: Texture2D

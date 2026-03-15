@@ -24,7 +24,8 @@ The game follows a mandatory hybrid architecture that separates data truth from 
 
 ### 2.1 Core Resources
 -   **`RunState.gd`**: Persistent state for the entire run (gold, day, unlocked recipes, global instance dictionary).
--   **`GachaBallDefinition.gd`**: Immutable template for units/items (base stats, abilities, cost).
+-   **`GachaBallDefinition.gd`**: Immutable template for units/items. Contains stats, abilities, cost, and temporal prerequisites (`min_day`, `max_day`). Inherits from `WeightableEntity`.
+-   **`TrinketDefinition.gd`**: Immutable template for trinkets. Now inherits from `WeightableEntity` to support Director-based reward generation.
 -   **`GachaBallInstance.gd`**: Mutable state of a specific gachaball.
 -   **`FlashcardDefinition.gd` & `FlashcardProgress.gd`**: loaded JSON data and run-specific mastery tracking.
 -   **`LocationIdentifier`**: Universal key `{container, index, unit_uuid}` used to bridge Managers and Views.
@@ -51,7 +52,7 @@ Core logic is partitioned to ensure Single Responsibility:
     -   **Snapshotting:** Before playback, a value-based snapshot is captured. Views query this snapshot to ensure visual consistency regardless of underlying state mutations.
 -   **Ability System:** A broadcast-based system where `AbilityResolver` converts triggers into effects using an O(N) single-pass bucketing algorithm for efficiency.
     -   (See `docs/AbilityExecutionPipeline.md`)
--   **Encounter System:** A budget-based generator (`5 + 3*(Day-1)`) that guarantees 100% budget spend using a greedy fill algorithm.
+-   **Encounter System:** A budget-based generator (`3 + (Day-1)`) that guarantees 100% budget spend using a greedy fill algorithm.
     -   (See `docs/EncounterSystem.md`)
 
 ### 3.2 Interactions & UI Flow
@@ -92,5 +93,28 @@ Centralized interpretation of user intent to decouple Views from Logic:
 ## Part 5: Infrastructure
 
 -   **Database:** Singleton that loads all `.tres` and `.json` resources on startup, providing a central registry for definitions.
--   **Localization:** Key-based translation via `localization.csv` and Godot's `tr()` function.
+-   **Localization:** Key-based translation via Godot `Translation` resources. Exported/mobile builds must load `.translation` assets instead of relying on raw CSV reads at runtime.
+-   **Exported Resource Loading:** Runtime directory scans must support exported `.remap` files (`.tres.remap`, `.res.remap`) because Android/exported builds do not expose loose desktop resources the same way.
 -   **Inventory Visualization**: Count labels on gacha machines/discard pile are driven by signals from `DataContainers`, ensuring real-time UI magnitude feedback.
+-   **Android/Mobile Reference:** See [AndroidPorting.md](AndroidPorting.md) for export setup, touch model, discard-pile mobile notes, and the current unresolved Android-only run-inventory glow issue.
+## Part 6: Run Lifecycle & Persistence
+
+### 6.1 Save & Checkpoints
+- **Checkpointing**: The run state is automatically serialized and saved to disk at the start of each "Day" (Path Selection scene).
+- **Session Management**: Players can resume from the title screen. The save file is **permanently deleted** upon reaching a terminal state (Victory or Defeat) to enforce roguelike stakes.
+
+### 6.2 Scene & State Transitions
+- **Persistence**: Core resources (Hero HP, Gold, Run Inventory, Trinkets, Mastery) are persisted in `RunState` and carried across all scenes.
+- **Temporary State**: Battle-specific data (Gacha Tokens, Battle Inventory, Discard Pile, Board State) is initialized upon entering a battle node and discarded upon exit.
+- **Transition Safety**: Managers must ensure atomic state transfers during transitions to prevent data loss or duplication between the persistent `RunState` and transient battle managers.
+
+---
+
+## Part 7: Environment & File System Constraints
+
+### 7.1 Prohibited File Types
+- **No `.bak` files**: Backup files (e.g., `Script.gd.bak`) containing `class_name` definitions MUST NOT exist within the project directory. They cause duplicate global class errors and break script indexing/compilation. 
+- **Automated Cleanup**: Any automation or build script should proactively remove these files to prevent Godot LSP failures.
+
+### 7.2 Base Class Stability
+- **`WeightableEntity`**: This is a critical base class for all director-indexed resources. It must remain in a stable, globally accessible location (root `scripts/` or `scripts/systems/director/`) to ensure all inheriting definitions can be parsed correctly.

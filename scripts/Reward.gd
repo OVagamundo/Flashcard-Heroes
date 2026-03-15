@@ -3,6 +3,7 @@ extends Control
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
@@ -338,7 +339,7 @@ func _on_gold_landed_on_button(_target_pos: Vector2, button: Button) -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	# Handle background clicks using the new InteractionContext system
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Create and emit InteractionContext for reward background
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()

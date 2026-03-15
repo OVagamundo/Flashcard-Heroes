@@ -1,5 +1,17 @@
 @tool
-class_name PathNodeDefinition extends Resource
+class_name PathNodeDefinition
+extends WeightableEntity
+
+@export var min_day_required: int = 1
+@export var required_mastery_threshold: float = 0.0
+
+func meets_prerequisites(state) -> bool:
+	if state.current_day < min_day_required:
+		return false
+	# Boss appearance timing or special nodes can scale with Flashcard Mastery
+	if state.flashcard_mastery < required_mastery_threshold:
+		return false
+	return true
 
 ## The primary type of the node ("BATTLE", "SHOP", "EVENT", "REST")
 @export var node_type: StringName

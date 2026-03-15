@@ -1,6 +1,8 @@
 class_name TraitTracker
 extends PanelContainer
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 @onready var icon_rect: TextureRect = $HBoxContainer/Icon
 @onready var name_label: Label = $HBoxContainer/VBoxContainer/NameLabel
 @onready var count_label: Label = $HBoxContainer/VBoxContainer/CountLabel
@@ -72,7 +74,7 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 	add_theme_stylebox_override("panel", style)
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Get trait name from label (reverse from display name to ID)
 		var trait_name = ""
 		match name_label.text:

@@ -1,13 +1,21 @@
 # res://scripts/PathChoice.gd
 extends Control
 
-const PathNodeDefinition = preload("res://scripts/PathNodeDefinition.gd")
 const NodeViewScene = preload("res://scenes/NodeView.tscn")
 const SELECTION_TRANSITION_DELAY: float = 0.12
 
 @onready var node_container: HBoxContainer = $CenterContainer/HBoxContainer
 var _selection_locked: bool = false
 var _node_views: Array[NodeView] = []
+
+var director: WeightedPoolDirector = WeightedPoolDirector.new()
+var director_run_state: DirectorRunState = DirectorRunState.new()
+
+func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> void:
+	if is_instance_valid(GameManager.run_state):
+		director_run_state.current_day = GameManager.run_state.day
+		director_run_state.player_gold = GameManager.run_state.gold
+		director_run_state.current_purpose = purpose as DirectorRunState.Purpose
 
 func _ready() -> void:
 	# AUDIO HOOK: Path Choice BGM
@@ -22,17 +30,14 @@ func _ready() -> void:
 			# Save checkpoint after day advances
 			SaveManager.save_run(GameManager.run_state)
 	
-	var current_day: int = 1
-	if is_instance_valid(GameManager.run_state):
-		current_day = GameManager.run_state.day
+	_update_director_run_state(DirectorRunState.Purpose.NODE_GENERATION)
 	
 	# Check for boss day (every 10th day: 10, 20, 30, 40, 50)
-	if current_day > 0 and current_day % 10 == 0:
-		var boss_level: int = current_day / 10
+	if director_run_state.current_day > 0 and director_run_state.current_day % 10 == 0:
+		var boss_level: int = int(director_run_state.current_day / 10.0)
 		if boss_level >= 1 and boss_level <= 5:
 			_setup_boss_node(boss_level)
 		else:
-			# Past boss 5, show normal nodes (shouldn't happen if game ends at boss 5)
 			_setup_normal_nodes()
 	else:
 		_setup_normal_nodes()
@@ -57,34 +62,29 @@ func _setup_boss_node(boss_level: int) -> void:
 	_register_node_view(node_view)
 
 ## Sets up the normal 3-option path choice for non-boss days.
-## Uses equal chances for BATTLE, ELITE, SHOP, REST with no duplicates.
 func _setup_normal_nodes() -> void:
-	# All possible node types with equal weight
-	var all_node_types = ["BATTLE", "ELITE", "SHOP", "REST"]
-	all_node_types.shuffle()
+	var pool: Array[PathNodeDefinition] = []
 	
-	# Take the first 3 (no duplicates since we're picking from unique list)
-	var selected_types = all_node_types.slice(0, 3)
+	# Create a pool of potential node types
+	var types = [
+		{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "weight": 100},
+		{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node", "weight": 30},
+		{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "weight": 50},
+		{"type": "REST", "subtype": "", "name": "ui.rest_node", "weight": 50}
+	]
+	
+	for t in types:
+		var def = PathNodeDefinition.new()
+		def.node_type = t.type
+		def.subtype = t.subtype
+		def.display_name_key = t.name
+		def.base_weight = t.weight
+		pool.append(def)
+	
+	# Use Director to draw 3 unique nodes
+	var selected_nodes = director.draw_unique_items(pool, director_run_state, 3)
 
-	for i in range(3):
-		var node_def = PathNodeDefinition.new()
-		var type_str: String = selected_types[i]
-		
-		# Handle ELITE as a BATTLE subtype
-		if type_str == "ELITE":
-			node_def.node_type = "BATTLE"
-			node_def.subtype = "ELITE"
-			node_def.display_name_key = "ui.elite_battle_node"
-		else:
-			node_def.node_type = type_str
-			match type_str:
-				"BATTLE":
-					node_def.display_name_key = "ui.battle_node"
-				"SHOP":
-					node_def.display_name_key = "ui.shop_node"
-				"REST":
-					node_def.display_name_key = "ui.rest_node"
-
+	for node_def in selected_nodes:
 		var node_view = NodeViewScene.instantiate()
 		node_view.populate(node_def)
 		_register_node_view(node_view)
