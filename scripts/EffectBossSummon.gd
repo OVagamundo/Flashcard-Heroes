@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Effect that summons units to fill empty enemy team slots using the encounter budget system.
 ## Used by boss units at end of turn to call reinforcements.
 ## 
-## Budget: Half of daily budget (5 + (day - 1) * 3) / 2
+## Budget: Half of daily budget (5 + (day - 1) * 1) / 2
 ## Summons include equipped items but NO trinkets.
 ##
 ## Note: This effect queries container state during end_of_turn, which is a stable game state.

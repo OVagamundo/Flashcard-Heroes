@@ -1,33 +1,24 @@
 # res://scripts/EncounterGenerator.gd
 extends Node
 
-const EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
-const GachaBallDefinition = preload("res://scripts/GachaBallDefinition.gd")
-
-## A stateless service that generates dynamic encounters using a budget-spending algorithm.
-## GUARANTEES: 100% budget spending through multi-phase optimization.
-## 
-## Budget Formula: 5 + (day - 1) * 3
-## - Day 1: 5 gold, Day 2: 8 gold, Day 3: 11 gold, etc.
-## - Elite battles: daily_budget * 1.3
-## - Boss battles: Boss is free, support units use daily budget
-## - Boss summons: half daily budget, no trinkets
+var director: WeightedPoolDirector = WeightedPoolDirector.new()
+var director_run_state: DirectorRunState = DirectorRunState.new()
 
 ## Slot limits
 const MAX_UNITS := 5
 const MAX_TRINKETS := 5
 
-## Priority weights for weighted random selection
-const WEIGHT_UNIT := 3
-const WEIGHT_ITEM := 2
-const WEIGHT_TRINKET := 1
+func _update_director_run_state() -> void:
+	if is_instance_valid(GameManager.run_state):
+		director_run_state.current_day = GameManager.run_state.day
+		director_run_state.player_gold = GameManager.run_state.gold
+		director_run_state.current_purpose = DirectorRunState.Purpose.ENCOUNTER
+		# mastery sync if needed
 
 ## Generates a complete encounter based on the given budget.
-## Uses "Greedy Fill + Knapsack Top-up" algorithm to guarantee 100% budget spending.
-## @param budget: int - The total budget to spend on units, items, and trinkets
-## @return EncounterDefinition - A complete encounter definition with enemy placements
 func generate_encounter(budget: int) -> EncounterDefinition:
 	assert(budget > 0, "Encounter budget must be greater than 0")
+	_update_director_run_state()
 	
 	# Phase 1: Pool available resources
 	var pools := _create_resource_pools(true) # Include trinkets
@@ -38,21 +29,17 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	# Phase 3: Assemble the final encounter
 	return _assemble_encounter(build, "dynamic_encounter")
 
-
 ## Generates a boss encounter with the boss placed at position 4.
-## Boss is FREE (not counted against budget). Support units use the full daily budget.
-## @param boss_level: int - The boss number (1-5)
-## @param daily_budget: int - The daily budget for support units
-## @param current_day: int - The current day (passed to EncounterDefinition for boss summon budget)
-## @return EncounterDefinition - An encounter with the boss and support units
 func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: int) -> EncounterDefinition:
 	var boss_id: StringName = &"boss_%d" % boss_level
 	var boss_def = Database.get_definition(boss_id)
 	assert(is_instance_valid(boss_def), "Boss definition not found: %s" % boss_id)
+	_update_director_run_state()
 	
-	# Boss is FREE - use full daily budget for support units
+	# Boss is FREE - use reduced daily budget (85%) for support units (keeps Boss >= Elite)
 	var pools := _create_resource_pools(true) # Include trinkets
-	var build := _build_encounter_with_full_spend(daily_budget, pools, MAX_UNITS - 1, MAX_TRINKETS) # Reserve 1 slot for boss
+	var support_budget: int = int(daily_budget * 0.85)
+	var build := _build_encounter_with_full_spend(support_budget, pools, MAX_UNITS - 1, MAX_TRINKETS) # Reserve 1 slot for boss
 	
 	# Assemble encounter - reserve position 4 for boss
 	var encounter := _assemble_encounter(build, "boss_encounter_%d" % boss_level, true)
@@ -66,21 +53,19 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 	
 	return encounter
 
-
 ## Generates an elite encounter using a random boss unit.
-## Elite unit is FREE (like boss battles). Full budget used for support units.
-## @param total_budget: int - The total encounter budget (after 1.3x elite multiplier applied)
-## @return EncounterDefinition - An encounter with a boss unit and support units
 func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
 	# Elite encounters randomly select between Boss 1, Boss 2, and Boss 3 as a "Mini Boss"
 	var boss_options: Array[StringName] = [&"boss_1", &"boss_2", &"boss_3"]
 	var boss_id: StringName = boss_options.pick_random()
 	var boss_def = Database.get_definition(boss_id)
 	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % boss_id)
+	_update_director_run_state()
 	
-	# Elite unit is FREE (like boss battles) - full budget for support units
+	# Elite unit is FREE (like boss battles) - reduced budget (85%) for support units
 	var pools := _create_resource_pools(true) # Include trinkets
-	var build := _build_encounter_with_full_spend(total_budget, pools, MAX_UNITS - 1, MAX_TRINKETS)
+	var support_budget: int = int(total_budget * 0.85)
+	var build := _build_encounter_with_full_spend(support_budget, pools, MAX_UNITS - 1, MAX_TRINKETS)
 	
 	# Assemble encounter - reserve position 4 for elite unit
 	var encounter := _assemble_encounter(build, "elite_encounter_%s" % String(boss_id), true)
@@ -90,21 +75,16 @@ func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
 	encounter.enemy_placements.append(boss_placement)
 	
 	# Mark this as an elite encounter with stat scaling for the boss
-	# 1/3 stats for the "Mini Boss"
 	encounter.set_meta("elite_stat_scale", 0.33)
 	
 	return encounter
 
-
-## Generates summons for boss abilities (used by EffectBossSummon).
-## Uses half the daily budget, no trinkets.
-## @param day: int - The current day for budget calculation
-## @param max_units: int - Maximum number of units to summon
-## @return Array - Array of {unit_id: StringName, items: Array[StringName]}
+## Generates summons for boss abilities.
 func generate_boss_summons(day: int, max_units: int) -> Array:
-	# Calculate half of daily budget
-	var daily_budget: int = 5 + (day - 1) * 3
-	var budget: int = int(floor(daily_budget / 2.0))
+	# Standardized baseline (3 instead of 5) and reduced multiplier (0.33 instead of 0.5)
+	var daily_budget: int = 3 + (day - 1) * 1
+	var budget: int = int(floor(daily_budget * 0.33))
+	_update_director_run_state()
 	
 	if budget <= 0 or max_units <= 0:
 		return []
@@ -115,12 +95,10 @@ func generate_boss_summons(day: int, max_units: int) -> Array:
 	# Build with full spend guarantee
 	var build := _build_encounter_with_full_spend(budget, pools, max_units, 0)
 	
-	# Convert to summon format
 	var summons: Array = []
 	var item_index := 0
 	for unit_def in build.units:
 		var summon := {"unit_id": unit_def.id, "items": []}
-		# Assign items to this unit up to its slot count
 		var slots_to_fill: int = unit_def.item_slot_count
 		while slots_to_fill > 0 and item_index < build.items.size():
 			summon.items.append(build.items[item_index].id)
@@ -130,132 +108,89 @@ func generate_boss_summons(day: int, max_units: int) -> Array:
 	
 	return summons
 
-
 # =============================================================================
-# CORE ALGORITHM: Greedy Fill + Knapsack Top-up
+# CORE ALGORITHM: Greedy Fill + Knapsack Top-up (Director Refactored)
 # =============================================================================
 
-## Builds an encounter that spends EXACTLY 100% of the budget.
-## Returns a dictionary with units, items, trinkets, spent, and overflow.
-## Runs multiple attempts and picks the best build (prioritizing unit count).
 func _build_encounter_with_full_spend(budget: int, pools: Dictionary, max_units: int, max_trinkets: int) -> Dictionary:
 	var best_build: Dictionary = {"units": [], "items": [], "trinkets": [], "spent": 0, "overflow": budget}
 	
-	# Run multiple attempts to find the best build
 	for attempt in range(10):
 		var build := _single_build_attempt(budget, pools, max_units, max_trinkets)
-		
-		# Prefer builds that spend more budget, then builds with more units
-		var is_better := false
 		if build.spent > best_build.spent:
-			is_better = true
+			best_build = build
 		elif build.spent == best_build.spent and build.units.size() > best_build.units.size():
-			is_better = true
-		
-		if is_better:
 			best_build = build
 		
-		# Perfect build: full budget spent with reasonable unit count
 		if build.spent == budget and build.units.size() >= mini(max_units, 3):
 			break
 	
-	print("[EncounterGen] Budget: %d, Spent: %d, Units: %d, Items: %d, Trinkets: %d" % [
-		budget, best_build.spent, best_build.units.size(), best_build.items.size(), best_build.trinkets.size()
-	])
-	
 	return best_build
 
-
-## Single deterministic attempt at building an encounter that perfectly spends the budget.
 func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_trinkets: int) -> Dictionary:
 	var purchased_units: Array = []
 	var purchased_items: Array = []
 	var purchased_trinkets: Array = []
 	var spent := 0
 	
-	# Helper to find the highest cost affordable item randomly from the top tier
-	var get_best = func(arr: Array, max_cost: int):
-		var best = null
-		var valid = arr.filter(func(x): return _get_cost(x) <= max_cost)
-		if valid.size() > 0:
-			valid.sort_custom(func(a, b): return _get_cost(a) > _get_cost(b))
-			var highest_cost = _get_cost(valid[0])
-			var top_tier = valid.filter(func(x): return _get_cost(x) == highest_cost)
-			best = top_tier[randi() % top_tier.size()]
-		return best
-
-	# 1. Buy units
+	# 1. Buy units using Director
 	while spent < budget and purchased_units.size() < max_units:
-		var u = get_best.call(pools.units, budget - spent)
+		var affordable_units = pools.units.filter(func(x): return _get_cost(x) <= budget - spent)
+		if affordable_units.is_empty(): break
+		var u = director.draw_item(affordable_units, director_run_state)
 		if u == null: break
 		purchased_units.append(u)
 		spent += _get_cost(u)
 		
-	# 2. Buy items for unit slots
+	# 2. Buy items using Director
 	var total_slots = 0
 	for u in purchased_units: total_slots += u.item_slot_count
 	while spent < budget and purchased_items.size() < total_slots:
-		var item = get_best.call(pools.items, budget - spent)
+		var affordable_items = pools.items.filter(func(x): return _get_cost(x) <= budget - spent)
+		if affordable_items.is_empty(): break
+		var item = director.draw_item(affordable_items, director_run_state)
 		if item == null: break
 		purchased_items.append(item)
 		spent += _get_cost(item)
 		
-	# 3. Buy trinkets
+	# 3. Buy trinkets using Director
 	while spent < budget and purchased_trinkets.size() < max_trinkets:
-		var t = get_best.call(pools.trinkets, budget - spent)
+		var affordable_trinkets = pools.trinkets.filter(func(x): return _get_cost(x) <= budget - spent)
+		if affordable_trinkets.is_empty(): break
+		var t = director.draw_item(affordable_trinkets, director_run_state)
 		if t == null: break
 		purchased_trinkets.append(t)
 		spent += _get_cost(t)
 		
-	# 4. If we still haven't spent budget, try to upgrade! (e.g. replace 1-cost with 2-cost)
+	# 4. Upgrade logic using Director
 	while spent < budget:
 		var upgraded = false
 		var remaining = budget - spent
 		
-		# Upgrade units
-		var u_indices = range(purchased_units.size())
-		u_indices.shuffle()
-		for i in u_indices:
-			var u = purchased_units[i]
-			var cost = _get_cost(u)
-			var upgrade = get_best.call(pools.units, cost + remaining)
-			if upgrade and _get_cost(upgrade) > cost:
-				purchased_units[i] = upgrade
-				spent += (_get_cost(upgrade) - cost)
-				upgraded = true
-				break
-				
-		if upgraded: continue
+		var upgrade_candidates = []
+		# Wrap upgrades as (collection, index, old_item)
+		for i in purchased_units.size(): upgrade_candidates.append([purchased_units, i, pools.units])
+		for i in purchased_items.size(): upgrade_candidates.append([purchased_items, i, pools.items])
+		for i in purchased_trinkets.size(): upgrade_candidates.append([purchased_trinkets, i, pools.trinkets])
+		upgrade_candidates.shuffle()
 		
-		# Upgrade items
-		var i_indices = range(purchased_items.size())
-		i_indices.shuffle()
-		for i in i_indices:
-			var item = purchased_items[i]
-			var cost = _get_cost(item)
-			var upgrade = get_best.call(pools.items, cost + remaining)
-			if upgrade and _get_cost(upgrade) > cost:
-				purchased_items[i] = upgrade
-				spent += (_get_cost(upgrade) - cost)
-				upgraded = true
-				break
-				
-		if upgraded: continue
+		for candidate in upgrade_candidates:
+			var list = candidate[0]
+			var idx = candidate[1]
+			var pool = candidate[2]
+			var current_item = list[idx]
+			var current_cost = _get_cost(current_item)
+			
+			var potential_upgrades = pool.filter(func(x): return _get_cost(x) > current_cost and _get_cost(x) <= current_cost + remaining)
+			if not potential_upgrades.is_empty():
+				var upgrade = director.draw_item(potential_upgrades, director_run_state)
+				if upgrade:
+					list[idx] = upgrade
+					spent += (_get_cost(upgrade) - current_cost)
+					upgraded = true
+					break
 		
-		# Upgrade trinkets
-		var t_indices = range(purchased_trinkets.size())
-		t_indices.shuffle()
-		for i in t_indices:
-			var t = purchased_trinkets[i]
-			var cost = _get_cost(t)
-			var upgrade = get_best.call(pools.trinkets, cost + remaining)
-			if upgrade and _get_cost(upgrade) > cost:
-				purchased_trinkets[i] = upgrade
-				spent += (_get_cost(upgrade) - cost)
-				upgraded = true
-				break
-				
-		if not upgraded: break # Mathematically impossible or capped out
+		if not upgraded: break
 		
 	return {
 		"units": purchased_units,

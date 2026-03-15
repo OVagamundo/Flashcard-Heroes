@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 parameters = {
-"amount": 2,
+"amount": 1,
 "status_id": "armor"
 }
 target_type = &"SELF"

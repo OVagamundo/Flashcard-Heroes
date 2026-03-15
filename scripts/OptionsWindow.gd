@@ -9,6 +9,8 @@ extends Control
 
 @onready var crt_checkbox: CheckBox = %CRTCheckbox
 @onready var glow_checkbox: CheckBox = %GlowCheckbox
+@onready var glow_debug_label: Label = %GlowDebugLabel
+@onready var glow_debug_dropdown: OptionButton = %GlowDebugDropdown
 @onready var master_slider: HSlider = %MasterSlider
 @onready var music_slider: HSlider = %MusicSlider
 @onready var sfx_slider: HSlider = %SFXSlider
@@ -18,6 +20,14 @@ const AUDIO_SETTINGS_PATH := "user://audio_settings.save"
 const LANGUAGES = [
 	{"locale": "en", "name_key": "ui.english"},
 	{"locale": "pt_BR", "name_key": "ui.portuguese"},
+]
+const GLOW_DEBUG_VIEW_NORMAL := 0
+const GLOW_DEBUG_VIEW_SOURCE_MASK := 1
+const GLOW_DEBUG_VIEW_WEIGHT_MASK := 2
+const GLOW_DEBUG_OPTIONS = [
+	{"id": GLOW_DEBUG_VIEW_NORMAL, "label": "Normal"},
+	{"id": GLOW_DEBUG_VIEW_SOURCE_MASK, "label": "Source Mask"},
+	{"id": GLOW_DEBUG_VIEW_WEIGHT_MASK, "label": "Glow Weight"},
 ]
 
 func _ready() -> void:
@@ -45,6 +55,10 @@ func _init_graphics_settings() -> void:
 		glow_checkbox.toggled.connect(func(enabled: bool):
 			CRTEffect.set_glow_enabled(enabled)
 		)
+
+	if glow_debug_dropdown:
+		_populate_glow_debug_dropdown()
+		glow_debug_dropdown.item_selected.connect(_on_glow_debug_selected)
 
 func _init_audio_settings() -> void:
 	# Load settings first
@@ -145,6 +159,10 @@ func _update_labels() -> void:
 	
 	if glow_checkbox:
 		glow_checkbox.text = tr("ui.glow_effect")
+
+	if glow_debug_label:
+		var translated := tr("ui.glow_debug")
+		glow_debug_label.text = translated if translated != "ui.glow_debug" else "Glow Debug:"
 	
 	# Update Audio label texts if we want to localize those (e.g. Master, Music, SFX)
 	# For now, using inline localization, but ideally should be added to CSV.
@@ -179,3 +197,19 @@ func _on_close_pressed() -> void:
 func populate(_context: Dictionary = {}) -> void:
 	# Options window doesn't need external context
 	pass
+
+func _populate_glow_debug_dropdown() -> void:
+	glow_debug_dropdown.clear()
+	var selected_idx := 0
+	var current_view := CRTEffect.get_glow_debug_view()
+	for i in range(GLOW_DEBUG_OPTIONS.size()):
+		var option = GLOW_DEBUG_OPTIONS[i]
+		glow_debug_dropdown.add_item(option.label, option.id)
+		if option.id == current_view:
+			selected_idx = i
+	glow_debug_dropdown.select(selected_idx)
+
+func _on_glow_debug_selected(index: int) -> void:
+	if index < 0 or index >= GLOW_DEBUG_OPTIONS.size():
+		return
+	CRTEffect.set_glow_debug_view(GLOW_DEBUG_OPTIONS[index].id)

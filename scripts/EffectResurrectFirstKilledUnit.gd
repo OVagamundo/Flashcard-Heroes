@@ -36,14 +36,24 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		print("[SoulEcho] Failed: invalid unit def ", def_id)
 		return EffectResult.empty()
 
-	# 5. Get the exact slot where they died
+	# 5. Determine where to resurrect
+	# We prefer the slot where the triggering ally died (fainting_ally_location)
+	# This matches Soul Caller and other summoning items.
+	# Fallback to the original death location if necessary.
+	var fainting_ally_location: LocationIdentifier = context.get("fainting_ally_location")
 	var death_location: LocationIdentifier = first_killed_data.get("location_snapshot")
-	if not is_instance_valid(death_location):
-		print("[SoulEcho] Failed: invalid death location")
+	
+	var summon_location: LocationIdentifier = fainting_ally_location
+	if not is_instance_valid(summon_location):
+		summon_location = death_location
+		
+	if not is_instance_valid(summon_location) or summon_location.index < 0:
+		var loc_str = str(summon_location.index) if is_instance_valid(summon_location) else "null"
+		print("[SoulEcho] Failed: invalid summon location index ", loc_str)
 		return EffectResult.empty()
 
 	# 6. Mark resurrection as done for this team
-	print("[SoulEcho] SUCCESS: Resurrecting ", def_id, " at ", death_location.index)
+	print("[SoulEcho] SUCCESS: Resurrecting ", def_id, " at ", summon_location.index)
 	battle_manager._turn_metadata[resurrection_flag_key] = true
 
 	# 7. Return EffectResult with resurrection instructions
@@ -51,7 +61,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	result.summon_request = {
 		"summon_unit_id": def_id,
 		"holder_uuid": first_killed_data.get("uuid", ""), # Pass original UUID to allow overwriting the corpse
-		"holder_location": death_location,
+		"holder_location": summon_location,
 		"is_resurrection": true # Flag for special handling
 	}
 	return result

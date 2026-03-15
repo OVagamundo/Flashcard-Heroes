@@ -6,6 +6,7 @@ uniform vec4 target_color = vec4(1.0, 0.945098, 0.909804, 1.0); // Exact #fff1e8
 uniform float tolerance : hint_range(0.0, 1.0) = 0.005; // Extremely strict tolerance for exact matches only 
 uniform float glow_intensity : hint_range(0.0, 10.0) = 4.0;
 uniform vec4 glow_color : source_color = vec4(1.0, 0.945, 0.91, 1.0);
+uniform int debug_view = 0; // 0 = normal, 1 = source mask, 2 = glow weight
 
 const int SAMPLE_COUNT = 7; // Loop 15x15 times instead of 31x31 (saves 75% GPU power)
 const float SPREAD = 2.0;   // Skips every other pixel to maintain the massive 14-pixel aura
@@ -13,6 +14,8 @@ const float SPREAD = 2.0;   // Skips every other pixel to maintain the massive 1
 void fragment() {
     vec4 base_color = texture(screen_texture, SCREEN_UV);
     vec2 pixel_size = SCREEN_PIXEL_SIZE;
+    float source_dist = distance(base_color.rgb, target_color.rgb);
+    bool is_source_pixel = source_dist <= tolerance;
     
     float max_glow_weight = 0.0;
     
@@ -44,13 +47,22 @@ void fragment() {
     // Exponential curve for softer edge bleeding instead of solid blocks
     // Increased power (3.0) drops brightness dramatically as it moves away from the source
     float final_weight = pow(max_glow_weight, 3.0);
-    
-    // Blend the glow physically as a light addition
-    // The intensity is scaled down heavily so a massive radius doesn't blow out the visuals
-    vec3 glow_light = glow_color.rgb * final_weight * (glow_intensity * 0.15);
-    
-    // Add the computed glow physically on top of the screen's existing color
-    vec3 final_rgb = min(vec3(1.0), base_color.rgb + glow_light);
-    
-    COLOR = vec4(final_rgb, base_color.a);
+
+    vec4 output_color = vec4(0.0);
+
+    if (debug_view == 1) {
+        output_color = vec4(is_source_pixel ? vec3(1.0) : vec3(0.0), 1.0);
+    } else if (debug_view == 2) {
+        output_color = vec4(vec3(final_weight), 1.0);
+    } else {
+        // Blend the glow physically as a light addition
+        // The intensity is scaled down heavily so a massive radius doesn't blow out the visuals
+        vec3 glow_light = glow_color.rgb * final_weight * (glow_intensity * 0.15);
+        
+        // Add the computed glow physically on top of the screen's existing color
+        vec3 final_rgb = min(vec3(1.0), base_color.rgb + glow_light);
+        output_color = vec4(final_rgb, base_color.a);
+    }
+
+    COLOR = output_color;
 }

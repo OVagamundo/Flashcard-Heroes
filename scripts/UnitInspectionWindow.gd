@@ -3,6 +3,7 @@ extends "res://scripts/InspectionWindow.gd"
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -58,7 +59,7 @@ func _exit_tree() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 
@@ -388,13 +389,13 @@ func _on_description_gui_input(event: InputEvent) -> void:
 	pass
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()
 
 func _on_item_grid_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()

@@ -4,6 +4,7 @@ extends Control
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
 @onready var buy_button: Button = %BuyButton
@@ -423,7 +424,7 @@ func _on_leave_pressed() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	# Handle background clicks using the new InteractionContext system
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Create and emit InteractionContext for shop background
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()

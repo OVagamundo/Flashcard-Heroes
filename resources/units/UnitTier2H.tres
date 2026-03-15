@@ -8,6 +8,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"unit_t2_h"
+min_day = 10
+max_day = 99
 display_name_key = "unit_t2_h.name"
 description_key = "unit_t2_h.desc"
 icon = ExtResource("2_icon")

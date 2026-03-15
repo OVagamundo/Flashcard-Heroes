@@ -2,6 +2,8 @@
 class_name HeroSelectButton
 extends Control
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 ## Clickable hero sprite button for the loadout scene.
 ## Displays hero at 2x scale with shader outline selection feedback (like battle lineup).
 
@@ -86,7 +88,7 @@ func _gui_input(event: InputEvent) -> void:
 	if _is_locked:
 		return
 	
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		get_viewport().set_input_as_handled()
 		Audio.play_sfx("ui_click")
 		hero_selected.emit(_hero_def)

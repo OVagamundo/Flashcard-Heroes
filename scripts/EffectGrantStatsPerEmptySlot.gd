@@ -39,8 +39,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if empty_slots_count <= 0:
 		return EffectResult.empty()
 		
-	var pwr_per_slot: int = source_unit.current_pwr
-	var total_amount: int = pwr_per_slot * empty_slots_count
+	var amount_per_slot: int = context.get("parameters", {}).get("amount", 1)
+	var total_amount: int = amount_per_slot * empty_slots_count
 	
 	if total_amount <= 0:
 		return EffectResult.empty()

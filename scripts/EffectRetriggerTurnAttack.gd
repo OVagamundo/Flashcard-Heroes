@@ -37,6 +37,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_instance_valid(target):
 		# No front enemy found, skipping
 		return EffectResult.empty() if is_simulation else null
+
+	# --- CONDITION CHECK: Target has more HP or more PWR ---
+	# User Request: "Tiger spirit should attack again ONLY if target has more hp or more pwr"
+	var target_has_more_hp = target.current_hp > attacker.current_hp
+	var target_has_more_pwr = target.current_pwr > attacker.current_pwr
+	
+	if not (target_has_more_hp or target_has_more_pwr):
+		# Condition not met - target is weaker or equal, skipping extra attack
+		return EffectResult.empty() if is_simulation else null
 	
 	# Performing FRESH turn action
 	

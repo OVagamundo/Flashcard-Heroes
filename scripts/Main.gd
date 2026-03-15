@@ -3,6 +3,7 @@ extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var scene_background: TextureRect = %SceneBackground
@@ -104,8 +105,10 @@ func _ready() -> void:
 		if is_instance_valid(color_glow_rect):
 			color_glow_rect.visible = enabled
 	)
+	CRTEffect.glow_debug_view_changed.connect(_apply_glow_debug_view)
 	if is_instance_valid(color_glow_rect):
 		color_glow_rect.visible = CRTEffect.is_glow_enabled()
+	_apply_glow_debug_view(CRTEffect.get_glow_debug_view())
 
 	_on_battle_state_changed(false)
 
@@ -123,43 +126,53 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
 
+func _apply_glow_debug_view(view: int) -> void:
+	if not is_instance_valid(color_glow_rect):
+		return
+	var material := color_glow_rect.material as ShaderMaterial
+	if material == null:
+		return
+	material.set_shader_parameter("debug_view", view)
+
 func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.is_pressed():
-			# Create and emit InteractionContext for main game background
-			var context = InteractionContext.new()
-			context.source_view_instance_id = get_instance_id()
-			context.event_type = &"SINGLE_CLICK"
-			context.location = null # No specific location for background
-			context.entity_uuid = ""
-			context.entity_type = &"GLOBAL_BACKGROUND"
-			context.interaction_mode = &"FULLY_INTERACTIVE"
-			context.window_group_id = 0 # Main game area
-			# FIXME: This interferes with SubViewport interaction handling (bubbling from SubViewportContainer)
-			# effectively overriding all clicks in BattleView with a DESELECT.
-			# Since BattleView has its own background handler that correctly respects STOP filters,
-			# we can disable this catch-all.
-			# SignalBus.emit_signal("interaction_context_received", context)
-		elif GlobalInteractionRouter.is_drag_active() and not event.is_pressed():
-			# Do NOT forcibly end drag on background release here; drop targets manage drag end.
-			# This was canceling drag before GIR processed battle board drop targets.
-			pass
+	if InputUtils.is_primary_pointer_press(event):
+		# Create and emit InteractionContext for main game background
+		var context = InteractionContext.new()
+		context.source_view_instance_id = get_instance_id()
+		context.event_type = &"SINGLE_CLICK"
+		context.location = null # No specific location for background
+		context.entity_uuid = ""
+		context.entity_type = &"GLOBAL_BACKGROUND"
+		context.interaction_mode = &"FULLY_INTERACTIVE"
+		context.window_group_id = 0 # Main game area
+		# FIXME: This interferes with SubViewport interaction handling (bubbling from SubViewportContainer)
+		# effectively overriding all clicks in BattleView with a DESELECT.
+		# Since BattleView has its own background handler that correctly respects STOP filters,
+		# we can disable this catch-all.
+		# SignalBus.emit_signal("interaction_context_received", context)
+	elif InputUtils.is_primary_pointer_release(event) and GlobalInteractionRouter.is_drag_active():
+		# Do NOT forcibly end drag on background release here; drop targets manage drag end.
+		# This was canceling drag before GIR processed battle board drop targets.
+		pass
 
 ## Explicit handler for UI overlays (Top Bar, etc.) that should act as "Background"
 ## Clicking these should close inspection windows/deselect.
 func _on_ui_overlay_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
 		context.entity_type = &"GLOBAL_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		SignalBus.emit_signal("interaction_context_received", context)
+		get_viewport().set_input_as_handled()
+		if InputUtils.is_touch_pointer_event(event):
+			accept_event()
 
 func _on_machine_gui_input(event: InputEvent) -> void:
 	# Handle clicks on machine image area (outside the knob button)
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Check if any windows are open
 		if WindowManager.is_any_inspection_window_open():
 			# Close all open windows - this is the "click outside window" behavior
@@ -168,6 +181,9 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 		else:
 			# No windows open - open inventory
 			SignalBus.emit_signal("inspect_inventory_requested")
+		get_viewport().set_input_as_handled()
+		if InputUtils.is_touch_pointer_event(event):
+			accept_event()
 
 func _on_knob_hover_enter(button: Button) -> void:
 	if button.disabled:

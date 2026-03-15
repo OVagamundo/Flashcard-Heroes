@@ -7,6 +7,7 @@ extends Control
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 # Machine references
 @onready var hp_machine: Control = %HPMachine
@@ -464,7 +465,7 @@ func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
 
 func _on_prize_slot_gui_input(event: InputEvent, prize_index: int) -> void:
 	"""Handle clicks on prize slots"""
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		_apply_prize(prize_index)
 
 func _apply_prize(prize_index: int) -> void:

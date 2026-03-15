@@ -1,6 +1,8 @@
 class_name ItemInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var recipe_container: HBoxContainer = %RecipeContainer
@@ -27,7 +29,7 @@ func _ready() -> void:
 		internal_background.gui_input.connect(_on_internal_background_gui_input)
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 
@@ -184,7 +186,7 @@ func _on_description_gui_input(event: InputEvent) -> void:
 	pass
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()

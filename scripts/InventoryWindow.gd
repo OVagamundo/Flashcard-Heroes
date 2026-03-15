@@ -3,6 +3,7 @@ extends Control
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var panel_container: PanelContainer = %PanelContainer
 @onready var tier_1_grid: Container = %Tier1Grid
@@ -182,7 +183,7 @@ func _on_ui_refresh() -> void:
 	_populate_grids()
 
 func _on_panel_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		if GlobalInteractionRouter.is_drag_active():
 			GlobalInteractionRouter.end_drag(false)
 			return
@@ -199,9 +200,11 @@ func _on_panel_gui_input(event: InputEvent) -> void:
 		
 		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
+		if InputUtils.is_touch_pointer_event(event):
+			accept_event()
 
 func _on_grid_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Only clear selection if the click is not on a SlotView
 		var target = get_viewport().gui_get_focus_owner()
 		if not (target and target is SlotView):
@@ -217,6 +220,8 @@ func _on_grid_gui_input(event: InputEvent) -> void:
 			
 			SignalBus.emit_signal("interaction_context_received", context)
 			get_viewport().set_input_as_handled()
+			if InputUtils.is_touch_pointer_event(event):
+				accept_event()
 
 func _initialize_grids_if_needed() -> void:
 	if _grids_initialized:

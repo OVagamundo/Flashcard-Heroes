@@ -392,6 +392,12 @@ When a unit is summoned, the system determines its target slot in this strict or
 3.  **Discard Pile:** (Player Only) If lineup is full, summon to the Discard Pile.
 4.  **Cancel:** If all options fail, the summon is cancelled.
 
+#### 4. Summon Location Context
+Summoning effects often require specific context from the trigger source (e.g., "Summon where the unit died"):
+- **`fainting_ally_location`**: Provided during `on_ally_death`.
+- **`death_location`**: Provided during `on_death`.
+- **Preference**: Effects like **Soul Echo** MUST prioritize the `fainting_ally_location` snapshot to ensure the resurrected unit takes the exact same slot it occupied before death.
+
 #### 3. Mid-Turn Action Rule
 Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.
 - **Rule:** "One Action Per Slot Per Turn".

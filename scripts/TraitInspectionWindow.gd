@@ -1,6 +1,8 @@
 class_name TraitInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 # TDD Section 11.2: TraitInspectionWindow.gd
 # This window displays detailed information about a trait and its active levels.
 # It behaves as a standard inspection window (contextual, auto-closing).
@@ -28,12 +30,12 @@ func _ready() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()

@@ -5,6 +5,7 @@ extends Control
 const SlotViewScene = preload("res://scenes/SlotView.tscn")
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const TraitTrackerScene = preload("res://scenes/TraitTracker.tscn")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
@@ -424,7 +425,7 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 		_redraw_board()
 
 func _gui_input(event) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		print("DEBUG_INPUT: BattleView Background Clicked.")
 		# Create and emit InteractionContext for battle background
 		var context = InteractionContext.new()

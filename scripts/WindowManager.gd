@@ -977,8 +977,7 @@ func _animate_discard_pile_open(window: Control) -> void:
 		if is_instance_valid(window):
 			window.set_meta(_WM_META_OPENING, false)
 			if window is DiscardPileWindow:
-				# Jolt balls leftward — simulates the drawer slamming to a stop
-				window.physics_container.apply_jolt(Vector2(-500, 0))
+				window.call_deferred("on_window_opened")
 			window.mouse_filter = Control.MOUSE_FILTER_STOP
 			if window.has_meta(_WM_META_ANIM_TWEEN):
 				window.remove_meta(_WM_META_ANIM_TWEEN)
@@ -1007,9 +1006,6 @@ func _animate_discard_pile_close(window: Control) -> void:
 			if window.has_meta(_WM_META_ANIM_TWEEN):
 				window.remove_meta(_WM_META_ANIM_TWEEN)
 			window.hide()
-			if window is DiscardPileWindow:
-				# Jolt balls rightward — simulates the drawer bouncing off the right wall
-				window.physics_container.apply_jolt(Vector2(500, 0))
 	)
 
 func _is_inventory_window(window: Control) -> bool:

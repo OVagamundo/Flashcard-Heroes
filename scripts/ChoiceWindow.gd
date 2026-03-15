@@ -3,6 +3,7 @@ class_name ChoiceWindow
 extends Control
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var merge_button: Button = %MergeButton
 @onready var swap_button: Button = %SwapButton
@@ -26,7 +27,7 @@ func _ready() -> void:
 	gui_input.connect(_on_panel_gui_input)
 
 func _on_panel_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		# Local background click inside this window should prune only its children.
 		# Global outside clicks are handled by GIR to close the entire inspection group.
 		WindowManager.handle_inspection_background_click(self)

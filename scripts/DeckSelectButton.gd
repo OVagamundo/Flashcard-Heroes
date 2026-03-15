@@ -2,6 +2,8 @@
 class_name DeckSelectButton
 extends PanelContainer
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+
 ## Clickable deck card button for the loadout scene.
 ## Displays deck name and card count with selection highlight.
 
@@ -52,7 +54,7 @@ func _play_selection_bounce() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if InputUtils.is_primary_pointer_press(event):
 		get_viewport().set_input_as_handled()
 		Audio.play_sfx("ui_click")
 		deck_selected.emit(_deck_meta)

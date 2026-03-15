@@ -4,13 +4,18 @@ extends CanvasLayer
 
 signal crt_toggled(enabled: bool)
 signal glow_toggled(enabled: bool)
+signal glow_debug_view_changed(view: int)
 
 const SETTINGS_PATH := "user://display_settings.save"
 const CRT_SHADER_PATH := "res://assets/shaders/crt_display.gdshader"
 const CRT_LAYER := 200
+const GLOW_DEBUG_VIEW_NORMAL := 0
+const GLOW_DEBUG_VIEW_SOURCE_MASK := 1
+const GLOW_DEBUG_VIEW_WEIGHT_MASK := 2
 
 var _crt_enabled: bool = true
 var _glow_enabled: bool = true
+var _glow_debug_view: int = GLOW_DEBUG_VIEW_NORMAL
 var _overlay: ColorRect = null
 
 
@@ -30,6 +35,9 @@ func is_enabled() -> bool:
 
 func is_glow_enabled() -> bool:
 	return _glow_enabled
+
+func get_glow_debug_view() -> int:
+	return _glow_debug_view
 
 
 func set_enabled(enabled: bool, save_setting: bool = true) -> void:
@@ -58,6 +66,19 @@ func toggle() -> void:
 func toggle_glow() -> void:
 	set_glow_enabled(not _glow_enabled)
 
+func set_glow_debug_view(view: int, save_setting: bool = true) -> void:
+	view = clampi(view, GLOW_DEBUG_VIEW_NORMAL, GLOW_DEBUG_VIEW_WEIGHT_MASK)
+	if _glow_debug_view == view:
+		_apply_overlay_state()
+		glow_debug_view_changed.emit(_glow_debug_view)
+		return
+
+	_glow_debug_view = view
+	_apply_overlay_state()
+	if save_setting:
+		_save_settings()
+	glow_debug_view_changed.emit(_glow_debug_view)
+
 
 func _create_overlay_if_missing() -> void:
 	if is_instance_valid(_overlay):
@@ -84,7 +105,9 @@ func _create_overlay_if_missing() -> void:
 
 func _apply_overlay_state() -> void:
 	if is_instance_valid(_overlay):
-		_overlay.visible = _crt_enabled
+		# Glow debug views need the raw glow pass. Leaving CRT enabled makes the
+		# diagnostic unreadable because the CRT shader reprocesses the debug mask.
+		_overlay.visible = _crt_enabled and _glow_debug_view == GLOW_DEBUG_VIEW_NORMAL
 
 
 func _save_settings() -> void:
@@ -94,7 +117,8 @@ func _save_settings() -> void:
 		return
 	file.store_var({
 		"crt_enabled": _crt_enabled,
-		"glow_enabled": _glow_enabled
+		"glow_enabled": _glow_enabled,
+		"glow_debug_view": _glow_debug_view
 	})
 	file.close()
 
@@ -114,3 +138,4 @@ func _load_settings() -> void:
 	if data is Dictionary:
 		_crt_enabled = bool(data.get("crt_enabled", true))
 		_glow_enabled = bool(data.get("glow_enabled", true))
+		_glow_debug_view = clampi(int(data.get("glow_debug_view", GLOW_DEBUG_VIEW_NORMAL)), GLOW_DEBUG_VIEW_NORMAL, GLOW_DEBUG_VIEW_WEIGHT_MASK)

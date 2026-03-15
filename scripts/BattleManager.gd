@@ -20,9 +20,6 @@ var _actor_queue: Array[GachaBallInstance]:
 var _pending_reactions: Array[EffectRequest]:
 	get: return _combat._pending_reactions
 	set(value): _combat._pending_reactions = value
-var _inline_events: Array[CombatEvent]:
-	get: return _combat._inline_events
-	set(value): _combat._inline_events = value
 var _is_processing_effect: bool:
 	get: return _combat._is_processing_effect
 	set(value): _combat._is_processing_effect = value
@@ -1848,18 +1845,26 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var units = get_instances_in_container(container_tag)
 			
-			var base_value = 1
+			var armor_value = 0
+			var spikes_value = 0
+			
 			if earth_souls >= 9:
-				base_value = 4
+				armor_value = 2
+				spikes_value = 2
 			elif earth_souls >= 7:
-				base_value = 3
+				armor_value = 2
+				spikes_value = 1
 			elif earth_souls >= 5:
-				base_value = 2
+				armor_value = 2
+				spikes_value = 0
+			elif earth_souls >= 3:
+				armor_value = 1
+				spikes_value = 0
 				
 			for unit in units:
 				if is_instance_valid(unit) and unit.current_hp > 0:
 					var is_earth = _has_trait_soul(unit, "EARTH")
-					var armor_to_apply = base_value
+					var armor_to_apply = armor_value
 					
 					if is_earth:
 						armor_to_apply *= 2
@@ -1873,17 +1878,16 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						total_events.append(event)
 					
 					# Apply Spikes to ALL team units (not doubled for Earth units)
-					# Uses same base_value as armor but always applies to everyone equally
-					if base_value > 0:
+					if spikes_value > 0:
 						var old_spikes = unit.get_status_effect_amount(&"spikes")
-						var new_spikes = apply_stat_delta(unit, "spikes_stacks", base_value)
+						var new_spikes = apply_stat_delta(unit, "spikes_stacks", spikes_value)
 						
 						var spikes_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 							"source_uuid": "",
 							"target_uuids": [unit.ball_uuid],
 							"ability_id": &"trait_earth_spikes",
 							"visual_payload": {
-								"amount": base_value,
+								"amount": spikes_value,
 								"stat": "spikes_stacks",
 								"targets_old_val": [old_spikes],
 								"targets_new_val": [new_spikes]

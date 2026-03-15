@@ -2,13 +2,15 @@
 class_name GachaBallView
 extends PanelContainer
 
+const InputUtils = preload("res://scripts/InputUtils.gd")
+const GachaBallCapsuleGlow = preload("res://scripts/GachaBallCapsuleGlow.gd")
+
 # Size scale constants for different contexts
 const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
 const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
 
 # Gachaball overlay texture path for inventory items
 const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaballcapsule.png"
-const GACHABALL_SELECTION_PATH = "res://assets/ui/textures/gachaballselected.png"
 
 # Path-choice-style hover motion for selectable gachaballs.
 const HOVER_SCALE: float = 0.12
@@ -94,6 +96,11 @@ var _pitch_degrees: float = 0.0
 var _base_z_index: int = 0
 var _slot_view_ref: Control = null
 var _slot_base_z_index: int = 0
+var _touch_long_press_timer: Timer = null
+var _touch_press_active: bool = false
+var _touch_long_press_triggered: bool = false
+var _touch_hover_override_active: bool = false
+var _touch_press_position: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -139,9 +146,33 @@ func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 
+	_touch_long_press_timer = Timer.new()
+	_touch_long_press_timer.one_shot = true
+	_touch_long_press_timer.wait_time = InputUtils.TOUCH_LONG_PRESS_SEC
+	_touch_long_press_timer.timeout.connect(_on_touch_long_press_timeout)
+	add_child(_touch_long_press_timer)
+
+	if not CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
+		CRTEffect.glow_toggled.connect(_on_global_glow_toggled)
+	_refresh_capsule_local_glow()
+
 func _process(delta: float) -> void:
-	_update_hover_animation(delta)
+	if _needs_hover_visual_update():
+		_update_hover_animation(delta)
 	_update_drag_deformation(delta)
+
+func _needs_hover_visual_update() -> bool:
+	if _get_hover_fx_mode() != HoverFxMode.OFF:
+		return true
+	if _is_hovered:
+		return true
+	if _hover_amount > 0.001 or _press_amount > 0.001:
+		return true
+	if absf(rotation) > 0.001:
+		return true
+	if scale.distance_to(Vector2.ONE) > 0.001:
+		return true
+	return false
 
 func _update_drag_deformation(delta: float) -> void:
 	# Drag deformation: Apply rubber-toy physics to drag preview based on velocity
@@ -183,6 +214,8 @@ func _update_drag_deformation(delta: float) -> void:
 	_drag_preview.scale = _drag_preview.scale.lerp(target_scale, lerp_speed)
 
 func _exit_tree() -> void:
+	_stop_touch_long_press()
+	_touch_hover_override_active = false
 	_is_hovered = false
 	if is_instance_valid(_hover_tween):
 		_hover_tween.kill()
@@ -216,6 +249,8 @@ func _exit_tree() -> void:
 		mouse_entered.disconnect(_on_mouse_entered)
 	if mouse_exited.is_connected(_on_mouse_exited):
 		mouse_exited.disconnect(_on_mouse_exited)
+	if CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
+		CRTEffect.glow_toggled.disconnect(_on_global_glow_toggled)
 
 	# If this view is being freed during a drag, centrally end the drag ONLY if it is the source
 	if GlobalInteractionRouter.is_drag_active():
@@ -248,6 +283,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 		_hover_tween.kill()
 	if is_instance_valid(_press_tween):
 		_press_tween.kill()
+	_stop_touch_long_press()
+	_touch_hover_override_active = false
+	_is_selected = false
 	_is_hovered = false
 	_set_hover_amount(0.0)
 	_set_press_amount(0.0)
@@ -259,6 +297,11 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_pitch_degrees = 0.0
 	scale = Vector2.ONE
 	rotation = 0.0
+	modulate.a = 1.0
+	_apply_inventory_brightness(HoverFxMode.OFF)
+	var selection_ring = get_node_or_null("SelectionRing")
+	if selection_ring:
+		selection_ring.visible = false
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 	if visual_data.is_empty():
@@ -334,6 +377,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 					unit_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+				_match_icon_texture_filter(unit_sprite)
 				
 				# Configure unit sprite size and position
 				unit_sprite.custom_minimum_size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
@@ -367,6 +411,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 					unit_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+				_match_icon_texture_filter(unit_sprite)
 				
 				# Configure unit sprite size and position (no anchor preset, direct positioning)
 				unit_sprite.custom_minimum_size = Vector2(current_unit_size, current_unit_size)
@@ -406,6 +451,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	# Add gachaball overlay for inventory windows
 	if _has_overlay_heuristic():
 		_create_gachaball_overlay()
+		_refresh_capsule_local_glow()
 
 	# Set tooltip from localization key
 	var loc_key: String = visual_data.get("display_name_key", "")
@@ -414,6 +460,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	
 	_update_item_slots()
 	_apply_selection_feedback()
+	_apply_inventory_brightness(HoverFxMode.OFF)
 
 
 func update_visuals(visual_data: Dictionary) -> void:
@@ -466,12 +513,12 @@ func _get_hover_fx_mode() -> int:
 		return HoverFxMode.OFF
 	if not is_instance_valid(_location):
 		return HoverFxMode.OFF
-	if DisplayServer.is_touchscreen_available():
+	if InputUtils.prefers_touch_input() and not _touch_hover_override_active:
 		return HoverFxMode.OFF
 
 	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 	if context_group == &"InventoryGrid":
-		return HoverFxMode.INVENTORY_SPHERE
+		return HoverFxMode.OFF
 	if context_group == &"BattleBoard":
 		return HoverFxMode.BATTLE_NO_SHEEN
 	return HoverFxMode.OFF
@@ -490,6 +537,170 @@ func _set_hover_state(active: bool, play_sound: bool = false) -> void:
 	_animate_hover_to(1.0 if active else 0.0, 0.16 if active else 0.12)
 	if not active:
 		_animate_press_to(0.0, 0.08)
+
+func _start_touch_long_press(local_pos: Vector2) -> void:
+	if not _is_inspectable:
+		return
+	if not is_instance_valid(_location):
+		return
+	_touch_press_active = true
+	_touch_long_press_triggered = false
+	_touch_press_position = local_pos
+	_update_pointer_uv(local_pos)
+	if is_instance_valid(_touch_long_press_timer):
+		_touch_long_press_timer.start()
+
+func _stop_touch_long_press() -> void:
+	_touch_press_active = false
+	_touch_long_press_triggered = false
+	_touch_press_position = Vector2.ZERO
+	if is_instance_valid(_touch_long_press_timer):
+		_touch_long_press_timer.stop()
+
+func _emit_hover_enter() -> void:
+	if not _is_inspectable:
+		return
+	if not is_instance_valid(_location):
+		return
+	var ctx = _create_interaction_context(&"HOVER_ENTER")
+	SignalBus.emit_signal("interaction_context_received", ctx)
+
+func _emit_hover_exit() -> void:
+	if not is_instance_valid(_location):
+		return
+	var ctx = _create_interaction_context(&"HOVER_EXIT")
+	SignalBus.emit_signal("interaction_context_received", ctx)
+
+func _begin_touch_hover_peek() -> void:
+	if _touch_long_press_triggered:
+		return
+	if not _touch_press_active:
+		return
+	_touch_long_press_triggered = true
+	_touch_hover_override_active = true
+	_set_hover_state(true, true)
+	_emit_hover_enter()
+
+func _end_touch_hover_peek() -> void:
+	if not _touch_hover_override_active:
+		return
+	_touch_hover_override_active = false
+	_set_hover_state(false, false)
+	_emit_hover_exit()
+
+func _on_touch_long_press_timeout() -> void:
+	_begin_touch_hover_peek()
+
+func _can_begin_drag() -> bool:
+	if not _is_interactive:
+		return false
+	if GlobalInteractionRouter and GlobalInteractionRouter.is_combat_locked():
+		return false
+	if is_instance_valid(_location):
+		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
+		if context_group == &"InspectionOnly":
+			return false
+	return true
+
+func _begin_touch_drag() -> void:
+	var drag_payload := _prepare_drag_payload()
+	if drag_payload.is_empty():
+		return
+	_animate_press_to(0.0, 0.05)
+	force_drag(drag_payload["data"], drag_payload["preview"])
+
+func _prepare_drag_payload() -> Dictionary:
+	if not _can_begin_drag():
+		return {}
+
+	_drag_initiated_for_click = true
+	_pressed_pending_click = false
+	_stop_touch_long_press()
+	_touch_hover_override_active = false
+
+	# --- Drag Deformation: Start tracking ---
+	_is_dragging = true
+	_drag_first_frame = true
+	_last_mouse_pos = get_global_mouse_position()
+	_drag_velocity = Vector2.ZERO
+	if is_instance_valid(icon_rect):
+		_original_icon_scale = icon_rect.scale
+		_original_icon_rotation = icon_rect.rotation
+
+	var drag_texture: Texture2D = icon_rect.texture
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	if unit_sprite and unit_sprite.texture:
+		drag_texture = unit_sprite.texture
+
+	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
+	var preview_size = Vector2(current_slot_size, current_slot_size)
+	var container_size = preview_size * 2.0
+	var offset = -preview_size / 2.0
+
+	var preview_container = Control.new()
+	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
+	preview_container.custom_minimum_size = container_size
+
+	var preview = TextureRect.new()
+	preview.texture = drag_texture
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_SCALE
+	_match_icon_texture_filter(preview)
+	if _has_overlay_heuristic():
+		var current_unit_size = (float(C.UNIT_SPRITE_SIZE) / 2.0) * _size_scale
+		var unit_size = Vector2(current_unit_size, current_unit_size)
+		preview.custom_minimum_size = unit_size
+		preview.size = unit_size
+		preview.position = offset + (preview_size - unit_size) / 2.0
+	else:
+		preview.custom_minimum_size = preview_size
+		preview.size = preview_size
+		preview.position = offset
+	preview_container.add_child(preview)
+
+	if _has_overlay_heuristic():
+		var overlay_texture = load(GACHABALL_OVERLAY_PATH)
+		if overlay_texture:
+			var overlay_preview = TextureRect.new()
+			overlay_preview.texture = overlay_texture
+			overlay_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			overlay_preview.stretch_mode = TextureRect.STRETCH_SCALE
+			overlay_preview.custom_minimum_size = preview_size
+			overlay_preview.size = preview_size
+			overlay_preview.position = offset
+			preview_container.add_child(overlay_preview)
+			preview_container.move_child(overlay_preview, 0)
+			GachaBallCapsuleGlow.apply_to_texture_rect(overlay_preview)
+
+		if _is_selected and icon_rect.material:
+			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
+			drag_mat.set_shader_parameter("outline_enabled", true)
+			preview.material = drag_mat
+	else:
+		if icon_rect.material:
+			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
+			drag_mat.set_shader_parameter("outline_enabled", true)
+			preview.material = drag_mat
+
+	_drag_preview = preview_container
+	_drag_preview.scale = Vector2.ONE
+	_drag_preview.pivot_offset = Vector2.ZERO
+	_last_mouse_pos = get_global_mouse_position()
+
+	var placeholder = Control.new()
+	placeholder.custom_minimum_size = self.size
+	get_parent().add_child(placeholder)
+	get_parent().move_child(placeholder, get_index())
+
+	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
+	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
+	GlobalInteractionRouter.start_drag(origin_ctx)
+
+	return {
+		"data": {"source_loc": _location},
+		"preview": preview_container,
+	}
 
 func _animate_hover_to(target: float, duration: float) -> void:
 	if is_instance_valid(_hover_tween):
@@ -584,6 +795,12 @@ func _get_active_visual_sprite() -> TextureRect:
 		return unit_sprite
 
 	return icon_rect
+
+func _match_icon_texture_filter(item: CanvasItem) -> void:
+	if not is_instance_valid(item):
+		return
+	if is_instance_valid(icon_rect):
+		item.texture_filter = icon_rect.texture_filter
 
 func _update_hover_draw_priority() -> void:
 	var raise_priority: bool = _is_hovered and _get_hover_fx_mode() != HoverFxMode.OFF
@@ -1004,13 +1221,13 @@ func _setup_status_effect_click_handlers() -> void:
 
 ## Handle click on burn container to show status effect tooltip
 func _on_burn_container_clicked(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	if InputUtils.is_primary_pointer_press(event):
 		_open_status_effect_tooltip(&"burn", burn_container)
 		get_viewport().set_input_as_handled()
 
 ## Handle click on armor container to show status effect tooltip
 func _on_armor_container_clicked(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	if InputUtils.is_primary_pointer_press(event):
 		_open_status_effect_tooltip(&"armor", armor_container)
 		get_viewport().set_input_as_handled()
 
@@ -1103,7 +1320,7 @@ func _update_equipped_items_display() -> void:
 
 ## Handle click on an equipped item icon
 func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	if InputUtils.is_primary_pointer_press(event):
 		# Find the item instance and open its inspection window
 		var all_instances = _get_all_instances_db()
 		if all_instances.has(item_uuid):
@@ -1136,43 +1353,58 @@ func _get_all_instances_db() -> Dictionary:
 	return {}
 
 ## Create gachaball overlay for inventory windows
-## This adds the gachaballcapsule.png texture on top of unit/item sprites
+## Match the physics inventory composition: capsule behind the unit sprite.
 func _create_gachaball_overlay() -> void:
 	if not is_instance_valid(icon_rect):
 		return
 	
 	# Check if overlay already exists (prevent duplication on repopulate)
-	if get_node_or_null("GachaBallOverlay"):
+	var existing_overlay = get_node_or_null("GachaBallOverlay") as Sprite2D
+	if is_instance_valid(existing_overlay):
+		GachaBallCapsuleGlow.apply_to_sprite(existing_overlay)
+		_refresh_capsule_local_glow()
 		return
 	
 	# Load the overlay texture
-	var overlay_texture = load(GACHABALL_OVERLAY_PATH)
+	var overlay_texture: Texture2D = load(GACHABALL_OVERLAY_PATH)
 	if not is_instance_valid(overlay_texture):
 		return
 	
-	# Create overlay TextureRect
-	var overlay = TextureRect.new()
+	# Use Sprite2D so the run inventory capsule is rendered the same way as PhysicsGachaBall.
+	var overlay = Sprite2D.new()
 	overlay.name = "GachaBallOverlay"
 	overlay.texture = overlay_texture
-	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	overlay.stretch_mode = TextureRect.STRETCH_SCALE # Scale to fill slot
-	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
 	var overlay_size: float = current_slot_size - (INVENTORY_OVERLAY_INSET_PX * 2.0 * _size_scale)
-	overlay.custom_minimum_size = Vector2(overlay_size, overlay_size)
-	overlay.size = Vector2(overlay_size, overlay_size)
-	var offset = INVENTORY_OVERLAY_INSET_PX * _size_scale
-	overlay.position = Vector2(offset, offset)
+	var overlay_texture_size: Vector2 = overlay_texture.get_size()
+	var base_scale: Vector2 = Vector2(
+		overlay_size / maxf(overlay_texture_size.x, 1.0),
+		overlay_size / maxf(overlay_texture_size.y, 1.0)
+	)
+	overlay.centered = true
+	overlay.position = Vector2(current_slot_size / 2.0, current_slot_size / 2.0)
+	overlay.scale = base_scale
+	overlay.set_meta("base_scale", base_scale)
 	
-	# Add as sibling to VBox (Icon) but before StatsOverlay to ensure correct Z-order:
-	# 0: Anim, 1: VBox(Unit), 2: Overlay(Ball), 3: Stats(Labels)
+	# Add as a sibling behind VBox so the capsule matches PhysicsGachaBall:
+	# capsule under the icon/unit, selection ring above it.
 	add_child(overlay)
-	move_child(overlay, 2)
+	move_child(overlay, 1)
+	GachaBallCapsuleGlow.apply_to_sprite(overlay)
+	_refresh_capsule_local_glow()
 	
 	# Ensure clipping is disabled so glow can spill outside the bounding box
 	clip_contents = false
 	if get_parent() is Control:
 		get_parent().clip_contents = false
+
+func _refresh_capsule_local_glow(enabled: bool = CRTEffect.is_glow_enabled()) -> void:
+	var overlay = get_node_or_null("GachaBallOverlay") as Sprite2D
+	if is_instance_valid(overlay):
+		GachaBallCapsuleGlow.set_sprite_glow_enabled(overlay, enabled)
+
+func _on_global_glow_toggled(enabled: bool) -> void:
+	_refresh_capsule_local_glow(enabled)
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -1240,19 +1472,17 @@ func _on_mouse_entered() -> void:
 	if not _is_inspectable: return
 	if not is_instance_valid(_location): return
 	# Touch guard: only emit on desktop
-	if DisplayServer.is_touchscreen_available(): return
-	var ctx = _create_interaction_context(&"HOVER_ENTER")
-	SignalBus.emit_signal("interaction_context_received", ctx)
+	if InputUtils.prefers_touch_input(): return
+	_emit_hover_enter()
 
 func _on_mouse_exited() -> void:
 	_set_hover_state(false, false)
 	if not is_instance_valid(_location): return
-	if DisplayServer.is_touchscreen_available(): return
+	if InputUtils.prefers_touch_input(): return
 	# Drag guard: never emit hover during ANY drag (self or global)
 	if _is_dragging: return
 	if GlobalInteractionRouter.is_drag_active(): return
-	var ctx = _create_interaction_context(&"HOVER_EXIT")
-	SignalBus.emit_signal("interaction_context_received", ctx)
+	_emit_hover_exit()
 
 func _has_point(point: Vector2) -> bool:
 	var radius = size.x / 2.0
@@ -1260,15 +1490,53 @@ func _has_point(point: Vector2) -> bool:
 	return point.distance_to(center) <= radius
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		_update_pointer_uv(event.position)
+	if InputUtils.is_primary_pointer_motion(event):
+		var pointer_pos = InputUtils.get_event_position(event)
+		_update_pointer_uv(pointer_pos)
+		if event is InputEventScreenDrag and _touch_press_active and not _touch_long_press_triggered:
+			if pointer_pos.distance_to(_touch_press_position) > InputUtils.TOUCH_DRAG_THRESHOLD_PX:
+				_stop_touch_long_press()
+				_pressed_pending_click = false
+				if not _drag_initiated_for_click:
+					_begin_touch_drag()
+					get_viewport().set_input_as_handled()
+					accept_event()
+					return
+			get_viewport().set_input_as_handled()
+			accept_event()
+			return
 
 	# Ignore input entirely if we don't have a location (e.g. visual-only balls in RestSite)
 	# This allows the click to bubble up to the Rest Site's prize slot gui_input handler
 	if not is_instance_valid(_location):
 		return
 
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_animate_press_to(1.0, 0.05)
+			get_viewport().set_input_as_handled()
+			accept_event()
+			_pressed_pending_click = true
+			_drag_initiated_for_click = false
+			_start_touch_long_press(event.position)
+		else:
+			_animate_press_to(0.0, 0.14)
+			var long_press_was_triggered := _touch_long_press_triggered
+			_stop_touch_long_press()
+			if long_press_was_triggered:
+				_end_touch_hover_peek()
+			elif _pressed_pending_click and not _drag_initiated_for_click:
+				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK")
+				SignalBus.emit_signal("interaction_context_received", sc_ctx)
+			_pressed_pending_click = false
+			_drag_initiated_for_click = false
+			get_viewport().set_input_as_handled()
+			accept_event()
+		return
+
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if InputUtils.should_ignore_mouse_pointer_event(event):
+			return
 		# DOUBLE_CLICK is no longer needed — hover replaces inspect, click locks
 		if event.is_pressed():
 			print("DEBUG_INPUT: GachaBallView Pressed. UUID: ", _instance_uuid)
@@ -1289,17 +1557,16 @@ func _gui_input(event: InputEvent) -> void:
 			# Reset flags regardless
 			_pressed_pending_click = false
 			_drag_initiated_for_click = false
+			get_viewport().set_input_as_handled()
 
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	# Use the new flag to control drag-and-drop.
-	if not _is_interactive: return null
-	# Full input lock during COMBAT: do not start engine drag or create previews
+	# Preserve the original desktop drag setup order so the engine-managed
+	# drag preview behaves exactly as it did before the mobile touch work.
+	if not _is_interactive:
+		return null
 	if GlobalInteractionRouter and GlobalInteractionRouter.is_combat_locked():
 		return null
-		
-	# TDD 4.3.III.5: Prevent dragging in Inspection-Only contexts
-	# (DiscardPile, Trinkets, EnemyLineup - can only inspect, not drag)
 	if is_instance_valid(_location):
 		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 		if context_group == &"InspectionOnly":
@@ -1307,58 +1574,47 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 
 	_drag_initiated_for_click = true
 	_pressed_pending_click = false
-	# Do NOT close windows on drag start. Closing ancestor windows can free the
-	# source view or the engine-managed drag preview and cause errors.
-	
-	# --- Drag Deformation: Start tracking ---
+
 	_is_dragging = true
-	_drag_first_frame = true # Skip first velocity calc
+	_drag_first_frame = true
 	_last_mouse_pos = get_global_mouse_position()
 	_drag_velocity = Vector2.ZERO
 	if is_instance_valid(icon_rect):
 		_original_icon_scale = icon_rect.scale
 		_original_icon_rotation = icon_rect.rotation
-	
-	# Get the correct texture for drag preview
+
 	var drag_texture: Texture2D = icon_rect.texture
 	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
 	if unit_sprite and unit_sprite.texture:
 		drag_texture = unit_sprite.texture
-	
-	# Create container for drag preview (to show both unit and ball in inventory mode)
-	# To center the preview on cursor: use a container twice the size, then offset content by -half
-	# Override preview size for battle logic to ensure squareness and prevent "too big" issues
-	# Battle views might be stretched by layout, but the drag preview should be a clean square.
+
 	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
 	var preview_size = Vector2(current_slot_size, current_slot_size)
+	var container_size = preview_size * 2.0
+	var offset = -preview_size / 2.0
 
-	var container_size = preview_size * 2 # Double size to allow centering
-	var offset = - preview_size / 2 # Offset to center content on top-left (where cursor is)
-	
 	var preview_container = Control.new()
 	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX # Stay on top
+	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 	preview_container.custom_minimum_size = container_size
-	
-	# Add unit/item texture
+
 	var preview = TextureRect.new()
 	preview.texture = drag_texture
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_SCALE
+	_match_icon_texture_filter(preview)
 	if _has_overlay_heuristic():
-		# In inventory mode: unit is centered in slot
 		var current_unit_size = (float(C.UNIT_SPRITE_SIZE) / 2.0) * _size_scale
 		var unit_size = Vector2(current_unit_size, current_unit_size)
 		preview.custom_minimum_size = unit_size
 		preview.size = unit_size
-		preview.position = offset + (preview_size - unit_size) / 2.0 # Center unit
+		preview.position = offset + (preview_size - unit_size) / 2.0
 	else:
 		preview.custom_minimum_size = preview_size
 		preview.size = preview_size
 		preview.position = offset
 	preview_container.add_child(preview)
-	
-	# Add gachaball overlay for inventory mode
+
 	if _has_overlay_heuristic():
 		var overlay_texture = load(GACHABALL_OVERLAY_PATH)
 		if overlay_texture:
@@ -1370,32 +1626,22 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 			overlay_preview.size = preview_size
 			overlay_preview.position = offset
 			preview_container.add_child(overlay_preview)
-		
-		# Add selection outline circle for drag feedback
-		var selection_texture = load(GACHABALL_SELECTION_PATH)
-		if selection_texture:
-			var selection_ring = TextureRect.new()
-			selection_ring.texture = selection_texture
-			selection_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			selection_ring.stretch_mode = TextureRect.STRETCH_SCALE
-			selection_ring.custom_minimum_size = preview_size
-			selection_ring.size = preview_size
-			selection_ring.position = offset
-			preview_container.add_child(selection_ring)
+			preview_container.move_child(overlay_preview, 0)
+			GachaBallCapsuleGlow.apply_to_texture_rect(overlay_preview)
+
+		if _is_selected and icon_rect.material:
+			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
+			drag_mat.set_shader_parameter("outline_enabled", true)
+			preview.material = drag_mat
 	else:
-		# Battle mode: Apply outline shader to unit preview
 		if icon_rect.material:
 			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
 			drag_mat.set_shader_parameter("outline_enabled", true)
 			preview.material = drag_mat
-	
-	# Store reference to drag preview for deformation animation
+
 	_drag_preview = preview_container
-	# Initialize scale and pivot for deformation
 	_drag_preview.scale = Vector2.ONE
 	_drag_preview.pivot_offset = Vector2.ZERO
-	
-	# Skip first frame velocity calc to avoid spike
 	_last_mouse_pos = get_global_mouse_position()
 	set_drag_preview(preview_container)
 
@@ -1404,10 +1650,8 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	get_parent().add_child(placeholder)
 	get_parent().move_child(placeholder, get_index())
 
-	# Delegate drag visuals to GIR helper (replaces InteractionManager)
-	GlobalInteractionRouter.start_drag_visuals(self , placeholder)
+	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
 
-	# Notify GIR of drag origin so it can interpret the eventual drop
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
 	GlobalInteractionRouter.start_drag(origin_ctx)
 
@@ -1497,45 +1741,20 @@ func _apply_selection_feedback() -> void:
 	if not is_inside_tree(): return
 	if not is_instance_valid(icon_rect): return
 	_update_hover_draw_priority()
-	
-	# Apply outline shader (universal feedback)
+
+	var overlay = get_node_or_null("GachaBallOverlay")
+	var use_inventory_capsule_feedback := is_instance_valid(overlay) and _has_overlay_heuristic()
+
 	if is_instance_valid(_anim_controller):
 		_anim_controller.set_selection_outline(_is_selected)
-	
-	# In inventory mode, use a white circle outline texture for selection
-	var overlay = get_node_or_null("GachaBallOverlay")
-	if overlay and _has_overlay_heuristic():
-		# Create/show selection ring when selected
+
+	if use_inventory_capsule_feedback:
 		var selection_ring = get_node_or_null("SelectionRing")
-		if _is_selected:
-			if not selection_ring:
-				var selection_texture = load(GACHABALL_SELECTION_PATH)
-				if selection_texture:
-					selection_ring = TextureRect.new()
-					selection_ring.name = "SelectionRing"
-					selection_ring.texture = selection_texture
-					selection_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-					selection_ring.stretch_mode = TextureRect.STRETCH_SCALE
-					var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
-					var ring_size: float = current_slot_size - (INVENTORY_OVERLAY_INSET_PX * 2.0 * _size_scale)
-					selection_ring.custom_minimum_size = Vector2(ring_size, ring_size)
-					selection_ring.size = Vector2(ring_size, ring_size)
-					var offset = INVENTORY_OVERLAY_INSET_PX * _size_scale
-					selection_ring.position = Vector2(offset, offset)
-					selection_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
-					# Add after overlay (on top)
-					add_child(selection_ring)
-					move_child(selection_ring, 3) # After overlay (2), before stats (4)
-			if selection_ring:
-				selection_ring.visible = true
-			
-			# Also apply scale effect
-			overlay.scale = Vector2(1.05, 1.05)
-			overlay.pivot_offset = overlay.size / 2
-		else:
-			if selection_ring:
-				selection_ring.visible = false
-			overlay.scale = Vector2(1.0, 1.0)
+		if is_instance_valid(selection_ring):
+			selection_ring.queue_free()
+		var overlay_base_scale: Vector2 = overlay.get_meta("base_scale", Vector2.ONE)
+		overlay.scale = overlay_base_scale * (1.05 if _is_selected else 1.0)
+		overlay.modulate = Color(1.3, 1.3, 1.3) if _is_selected else Color.WHITE
 	else:
 		# Battle mode: Use shader-based outline on icon_rect
 		# NOTE: Do NOT modify icon_rect.scale here - it conflicts with animations
@@ -1547,6 +1766,8 @@ func _notification(what: int) -> void:
 	# Signal Drag Start to GIR (Critical for State Management)
 	if what == NOTIFICATION_DRAG_BEGIN:
 		if _drag_initiated_for_click:
+			_stop_touch_long_press()
+			_touch_hover_override_active = false
 			print("DEBUG_INPUT: Emitting DRAG_START. Entity: ", _entity_type, " | UUID: ", _instance_uuid)
 			_set_hover_state(false, false)
 			_animate_press_to(0.0, 0.05)
