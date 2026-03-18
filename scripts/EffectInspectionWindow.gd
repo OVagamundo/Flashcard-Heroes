@@ -1,7 +1,7 @@
 class_name EffectInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
-const InputUtils = preload("res://scripts/InputUtils.gd")
+const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -18,13 +18,13 @@ func _ready() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants (do not close self)
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
 
 func _on_internal_background_clicked(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		# Prune only this window's descendants via WindowManager (preferred local pattern)
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
@@ -79,6 +79,15 @@ func populate(context: Dictionary) -> void:
 
 	name_label.text = tr(name_key)
 	description_label.text = tr(desc_key)
+	_reset_window_size()
+
+func _reset_window_size() -> void:
+	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(self):
+		custom_minimum_size = Vector2.ZERO
+		size = Vector2.ZERO
 
 func get_location() -> LocationIdentifier:
 	return null

@@ -3,7 +3,7 @@ extends "res://scripts/InspectionWindow.gd"
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
-const InputUtils = preload("res://scripts/InputUtils.gd")
+const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -11,6 +11,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var item_grid_label: Label = %ItemGridLabel
 @onready var trait_icons_container: HBoxContainer = %TraitIconsContainer
 @onready var recipe_container: HBoxContainer = %RecipeContainer
+@onready var separator: HSeparator = %HSeparator
 @onready var internal_background: ColorRect = $InternalBackground
 
 var _inspected_unit_uuid: String
@@ -59,7 +60,7 @@ func _exit_tree() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 
@@ -91,6 +92,23 @@ func populate(context: Dictionary) -> void:
 	_rebuild_item_grid()
 	_update_trait_display()
 	_update_recipe_display()
+
+	# Manage separator visibility based on any visible footers
+	if is_instance_valid(separator):
+		separator.visible = item_grid.visible or trait_icons_container.visible or recipe_container.visible
+
+	# Force window to shrink to its minimal content size after layout settles
+	_reset_window_size()
+
+func _reset_window_size() -> void:
+	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(self):
+		custom_minimum_size = Vector2.ZERO
+		size = Vector2.ZERO
+		# Let WindowManager know we have settled so it can refine the position if needed
+		# (Note: Standard contextual window positioning happens in WindowManager)
 
 ## Set up stable anchor pattern for robust positioning
 func _setup_stable_anchor() -> void:
@@ -188,20 +206,31 @@ func _rebuild_item_grid() -> void:
 			content.queue_free()
 
 	# Ensure the correct number of persistent SlotViews exist.
-	while item_grid.get_child_count() < unit_definition.item_slot_count:
+	var children = item_grid.get_children()
+	# Filter out any lingering children that are already queued for deletion
+	var active_children = []
+	for child in children:
+		if not child.is_queued_for_deletion():
+			active_children.append(child)
+	
+	while active_children.size() < unit_definition.item_slot_count:
 		var slot_view = _SlotView.instantiate()
-		# Use 1x scale for inspection window items (96x96 fixed size)
+		slot_view.custom_minimum_size = Vector2(64, 80)
 		slot_view.set_size_scale(1.0)
 		item_grid.add_child(slot_view)
-	while item_grid.get_child_count() > unit_definition.item_slot_count:
-		item_grid.get_child(item_grid.get_child_count() - 1).queue_free()
+		active_children.append(slot_view)
+		
+	while active_children.size() > unit_definition.item_slot_count:
+		var slot_to_remove = active_children.pop_back()
+		item_grid.remove_child(slot_to_remove)
+		slot_to_remove.queue_free()
 
 	if unit_definition.item_slot_count == 0:
 		item_grid_label.visible = false
 		item_grid.visible = false
 		return
 	else:
-		item_grid_label.visible = true
+		item_grid_label.visible = false
 		item_grid.visible = true
 		item_grid.columns = unit_definition.item_slot_count
 
@@ -253,7 +282,6 @@ func _update_description() -> void:
 	if not is_instance_valid(unit_definition):
 		return
 	
-	var description_text = tr(unit_definition.description_key)
 
 	# Basic attack description (always present for units)
 	var basic_attack_desc = tr("ability.basic_attack.desc")
@@ -262,33 +290,32 @@ func _update_description() -> void:
 
 	# Build abilities section: list all abilities with name and localized description
 	var abilities_lines: Array[String] = []
-	if "ability_definitions" in unit_definition and unit_definition.ability_definitions.size() > 0:
-		for ability in unit_definition.ability_definitions:
-			if not is_instance_valid(ability):
-				continue
-			# Skip Basic Attack here to avoid duplicate (we show it separately above)
-			if "id" in ability and String(ability.id) == "basic_attack":
-				continue
-			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
-			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
-			# Replace common placeholders with current stats where applicable
-			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr))
-			# Special case: counter-attack ability should show numeric damage with PWR hint
-			if "id" in ability and String(ability.id) == "unit_tier1b_counter_on_hurt":
-				# If the text mentions "current PWR", append explicit numeric damage hint
-				if ability_desc.find("current PWR") != -1:
-					ability_desc = ability_desc.replace("current PWR", "%s (PWR)" % str(_instance.current_pwr))
-			if not ability_name.is_empty() or not ability_desc.is_empty():
-				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+	var seen_ability_names: Dictionary = {}
+	
+	for ability_def: AbilityDefinition in unit_definition.ability_definitions:
+		if not ability_def or ability_def.id == &"basic_attack":
+			continue
+		
+		var ability_name = tr(ability_def.name_key)
+		if ability_name.is_empty() or seen_ability_names.has(ability_name):
+			continue
+		seen_ability_names[ability_name] = true
+		
+		var ability_desc = tr(ability_def.description_key)
+		if is_instance_valid(_instance):
+			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
+			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
+		
+		if not ability_desc.is_empty():
+			abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 
 	var abilities_block := "\n".join(abilities_lines)
-	var full_text: String = description_text
-	full_text += "\n\n" + basic_attack_desc
+	var full_text: String = basic_attack_desc
 	if not abilities_block.is_empty():
-		full_text += "\n\n" + abilities_block
-	full_text += "\n\n[url=effect]EFFECTS[/url]"
+		full_text += "\n" + abilities_block
+	full_text += "\n[url=effect]EFFECTS[/url]"
 
-	description_label.text = full_text
+	description_label.text = full_text.strip_edges()
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
 ## Granular stat change handler - updates description when any stat changes
@@ -300,6 +327,7 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 		if is_instance_valid(current_instance):
 			_instance = current_instance
 			_update_description()
+			_reset_window_size()
 
 func _on_inventory_changed() -> void:
 	if not is_instance_valid(self ):
@@ -317,6 +345,7 @@ func _on_inventory_changed() -> void:
 	_rebuild_item_grid()
 	_update_trait_display()
 	_update_recipe_display()
+	_reset_window_size()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	if not is_instance_valid(self ):
@@ -339,6 +368,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	_rebuild_item_grid()
 	_update_trait_display()
 	_update_recipe_display()
+	_reset_window_size()
 
 func _get_all_instances_db() -> Dictionary:
 	var result: Dictionary
@@ -384,18 +414,20 @@ func _configure_mouse_filters() -> void:
 					(child as Control).mouse_filter = MOUSE_FILTER_PASS
 				stack.append(child)
 
-func _on_description_gui_input(event: InputEvent) -> void:
+func _on_description_gui_input(_event: InputEvent) -> void:
+	if not is_instance_valid(_instance):
+		return
 	# No-op: we rely on meta hover/click to manage link interactions.
 	pass
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()
 
 func _on_item_grid_gui_input(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()
@@ -488,7 +520,7 @@ func _update_recipe_display() -> void:
 		var tex = TextureRect.new()
 		if "icon" in def and def.icon != null:
 			tex.texture = def.icon
-		tex.custom_minimum_size = Vector2(40, 40)
+		tex.custom_minimum_size = Vector2(48, 48)
 		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex.mouse_filter = MOUSE_FILTER_IGNORE
@@ -526,7 +558,7 @@ func _update_trait_display() -> void:
 		
 		var fire_icon = TextureRect.new()
 		fire_icon.texture = preload("res://assets/sprites/items/FireEmblem.png")
-		fire_icon.custom_minimum_size = Vector2(32, 32)
+		fire_icon.custom_minimum_size = Vector2(48, 48)
 		fire_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		fire_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
@@ -547,7 +579,7 @@ func _update_trait_display() -> void:
 		
 		var earth_icon = TextureRect.new()
 		earth_icon.texture = preload("res://assets/sprites/items/EarthEmblem.png")
-		earth_icon.custom_minimum_size = Vector2(32, 32)
+		earth_icon.custom_minimum_size = Vector2(48, 48)
 		earth_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		earth_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
@@ -568,7 +600,7 @@ func _update_trait_display() -> void:
 		
 		var water_icon = TextureRect.new()
 		water_icon.texture = preload("res://assets/sprites/items/WaterEmblem.png")
-		water_icon.custom_minimum_size = Vector2(32, 32)
+		water_icon.custom_minimum_size = Vector2(48, 48)
 		water_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		water_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
@@ -589,7 +621,7 @@ func _update_trait_display() -> void:
 		
 		var wind_icon = TextureRect.new()
 		wind_icon.texture = preload("res://assets/sprites/items/AirEmblem.png")
-		wind_icon.custom_minimum_size = Vector2(32, 32)
+		wind_icon.custom_minimum_size = Vector2(48, 48)
 		wind_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		wind_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
@@ -602,3 +634,6 @@ func _update_trait_display() -> void:
 		wind_container.add_child(wind_icon)
 		wind_container.add_child(wind_label)
 		trait_icons_container.add_child(wind_container)
+	
+	# Only show the container if it actually has content
+	trait_icons_container.visible = trait_icons_container.get_child_count() > 0

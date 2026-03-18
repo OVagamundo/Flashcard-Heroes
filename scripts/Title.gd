@@ -3,6 +3,7 @@ extends Control
 
 @onready var start_run_button: Button = %StartRunButton
 @onready var options_button: Button = %OptionsButton
+@onready var exit_button: Button = %ExitButton
 @onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
 @onready var continue_button: Button = %ContinueButton
 
@@ -37,6 +38,11 @@ func _ready() -> void:
 	)
 	options_button.pressed.connect(_on_options_pressed)
 	
+	if exit_button:
+		exit_button.pressed.connect(func():
+			get_tree().quit()
+		)
+	
 	if tutorial_checkbox:
 		tutorial_checkbox.button_pressed = TutorialManager.tutorials_enabled
 		tutorial_checkbox.toggled.connect(func(enabled: bool):
@@ -51,6 +57,8 @@ func _ready() -> void:
 func _update_localized_text() -> void:
 	start_run_button.text = tr("ui.start_run")
 	options_button.text = tr("ui.options")
+	if exit_button:
+		exit_button.text = tr("ui.exit_game")
 	if continue_button:
 		continue_button.text = tr("ui.continue")
 	if tutorial_checkbox:

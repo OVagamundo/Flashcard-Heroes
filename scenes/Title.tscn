@@ -79,6 +79,19 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 20
 text = "Options"
 
+[node name="ExitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("3_label_font")
+theme_override_font_sizes/font_size = 20
+text = "Exit Game"
+
 [node name="TutorialCheckbox" type="CheckBox" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2

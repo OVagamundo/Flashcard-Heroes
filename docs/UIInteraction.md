@@ -63,8 +63,14 @@ Main.tscn (Shell)
 | Type | Examples | Blocker | Behavior |
 |------|----------|---------|----------|
 | **Hermetic Modals** | FlashcardMinigame, EndBattlePopup | Yes | Blocks all input, self-closing |
-| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor |
+| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. |
 | **Contextual (Fixed)** | InventoryWindow, DiscardPile | No | Centered, closes on outside click |
+
+### Window Layout & Sizing
+To prevent persistent layout "bloat" and ensure windows correctly shrink to their content:
+1. **Show-before-Measure**: `WindowManager` makes windows visible with `modulate.a = 0.0` immediately upon creation and moves them to `Vector2(-2000, -2000)`. This prevents them from intercepting mouse events for on-screen units while forcing Godot to calculate the shrunk layout size.
+2. **Settling Delay**: Positioning is deferred for 3 frames to allow the window's internal layout to resolve.
+3. **Immediate Pruning**: Dynamic lists (like unit item grids) must call `remove_child()` immediately followed by `queue_free()` to avoid deferred deletion delays that cause incorrect sizing measured by the parent.
 
 ### Window Rendering & Z-Order
 To ensure absolute visibility of contextual information, all windows managed by `WindowManager` (Modals, Tutorials, and Inspection Windows) are assigned a **`z_index = 100`** upon instantiation.

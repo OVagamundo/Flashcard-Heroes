@@ -1,17 +1,17 @@
 class_name ItemInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
-const InputUtils = preload("res://scripts/InputUtils.gd")
+const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var recipe_container: HBoxContainer = %RecipeContainer
+@onready var separator: HSeparator = %HSeparator
 @onready var internal_background: ColorRect = $InternalBackground
 
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
-var _window_group_id: int = 1 # Inspection window group
 var _stable_anchor: Control = null # Stable anchor for positioning
 
 func _ready() -> void:
@@ -29,7 +29,7 @@ func _ready() -> void:
 		internal_background.gui_input.connect(_on_internal_background_gui_input)
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 
@@ -52,15 +52,11 @@ func populate(context: Dictionary) -> void:
 	_setup_stable_anchor()
 
 	var name_key: String
-	var trinket_desc: String = ""
 	if item_def is GachaBallDefinition:
 		name_key = item_def.display_name_key
 	else:
 		# TrinketDefinition uses name_key instead of display_name_key
 		name_key = item_def.name_key
-		# For trinkets, we want to show the main description
-		if "description_key" in item_def:
-			trinket_desc = tr(item_def.description_key)
 	
 	name_label.text = tr(name_key)
 	# Omit base flavor description for items; we will show only stats and abilities.
@@ -84,33 +80,47 @@ func populate(context: Dictionary) -> void:
 				continue
 			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
 			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
-			print("[ItemInspection] Ability: %s | Key: %s | Desc: %s" % [ability.id, ability.description_key, ability_desc])
+			if is_instance_valid(_instance):
+				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
+				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
+			
 			if not ability_name.is_empty() or not ability_desc.is_empty():
 				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 		abilities_block = "\n".join(abilities_lines)
 
 	var full_text: String = ""
-	if not trinket_desc.is_empty():
-		full_text += trinket_desc
 	if not effect_desc.is_empty():
-		if not full_text.is_empty():
-			full_text += "\n\n"
 		full_text += effect_desc
 	if not abilities_block.is_empty():
 		if not full_text.is_empty():
-			full_text += "\n\n"
+			full_text += "\n"
 		full_text += abilities_block
 	if not full_text.is_empty():
-		full_text += "\n\n[url=effect]EFFECTS[/url]"
+		full_text += "\n[url=effect]EFFECTS[/url]"
 	else:
 		full_text = "[url=effect]EFFECTS[/url]"
 
-	description_label.text = full_text
+	description_label.text = full_text.strip_edges()
 	
 	# Store the full definition for the child window to use.
 	description_label.set_meta("effect_definition", item_def)
 	
 	_update_recipe_display(item_def)
+
+	# Manage separator visibility based on recipe container
+	if is_instance_valid(separator):
+		separator.visible = recipe_container.visible
+
+	# Force window to shrink to its minimal content size after layout settles
+	_reset_window_size()
+
+func _reset_window_size() -> void:
+	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(self):
+		custom_minimum_size = Vector2.ZERO
+		size = Vector2.ZERO
 
 func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(recipe_container):
@@ -139,7 +149,7 @@ func _update_recipe_display(item_def: Resource) -> void:
 		var tex = TextureRect.new()
 		if "icon" in def and def.icon != null:
 			tex.texture = def.icon
-		tex.custom_minimum_size = Vector2(40, 40)
+		tex.custom_minimum_size = Vector2(48, 48)
 		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex.mouse_filter = MOUSE_FILTER_IGNORE
@@ -180,13 +190,13 @@ func _on_description_meta_clicked(meta) -> void:
 			get_viewport().set_input_as_handled()
 			accept_event()
 
-func _on_description_gui_input(event: InputEvent) -> void:
+func _on_description_gui_input(_event: InputEvent) -> void:
 	# No-op: non-link clicks should bubble to the window root to trigger pruning.
 	# Link clicks are handled in _on_description_meta_clicked and are consumed there.
 	pass
 
-func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
+func _on_internal_background_gui_input(_event: InputEvent) -> void:
+	if _InputUtils.is_primary_pointer_press(_event):
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()

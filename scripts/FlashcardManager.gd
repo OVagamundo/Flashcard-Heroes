@@ -91,8 +91,8 @@ func get_next_question() -> Dictionary:
 	if not is_instance_valid(_run_state_ref):
 		return {}
 	
-	if _active_deck_ids.size() < 10:
-		return {} # Not enough cards for a question and 9 distractors
+	if _active_deck_ids.size() < 6:
+		return {} # Not enough cards for a question and 5 distractors
 	
 	var question_card_id = _select_card_via_srs()
 	if question_card_id.is_empty():
@@ -105,7 +105,7 @@ func get_next_question() -> Dictionary:
 	distractors.shuffle()
 	
 	var choices: Array[StringName] = [question_card_id]
-	choices.append_array(distractors.slice(0, 8))
+	choices.append_array(distractors.slice(0, 5))
 	choices.shuffle()
 	
 	return {
@@ -121,6 +121,7 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 	if _run_state_ref.flashcard_progress.has(question_id):
 		var progress: FlashcardProgress = _run_state_ref.flashcard_progress[question_id]
 		progress.record_answer(was_correct, _run_state_ref.day)
+		SignalBus.emit_signal("run_data_changed")
 
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""

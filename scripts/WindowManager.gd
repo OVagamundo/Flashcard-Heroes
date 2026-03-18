@@ -425,9 +425,19 @@ func _open_contextual_window(context: Dictionary) -> void:
 	var window_instance = _window_scenes[window_type].instantiate()
 	_get_modal_layer().add_child(window_instance)
 	
-	# Prevent flashing before we compute final position
-	window_instance.hide()
-	window_instance.z_index = 100 # Render above local z-index elevations (like hovered gachaballs = 40)
+	# CRITICAL: Do NOT use hide() here. Hidden nodes often skip layout calculations in Godot 4.
+	# instead, set alpha to 0 and show it to force the engine to calculate final shrunk bounds
+	# before we measure and position it in _deferred_position.
+	window_instance.modulate.a = 0.0
+	window_instance.show()
+	
+	# MOUSE CONFLICT FIX: Move the window far off-screen while it sits at 
+	# alpha 0.0 during the 3-frame measurement delay. This prevents it 
+	# from intercepting mouse events and breaking hover for units near (0,0).
+	# Position is finalized in _deferred_position.
+	_set_window_screen_position(window_instance, Vector2(-2000, -2000))
+	
+	window_instance.z_index = 100 # Render above local z-index elevations
 	window_instance.set_meta("window_type", window_type) # Tag for identification
 	
 	_register_window(window_instance, false) # Register as NON-modal.
@@ -456,7 +466,11 @@ func _open_contextual_window(context: Dictionary) -> void:
 
 func _deferred_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = "") -> void:
 	if not is_instance_valid(window): return
-	# Ensure layout has settled for the newly added window before measuring
+	# Ensure layout has settled for the newly added window before measuring.
+	# We wait THREE frames because inspection windows wait TWO frames to shrink to content,
+	# and we want to measure their final settled dimensions.
+	await get_tree().process_frame
+	await get_tree().process_frame
 	await get_tree().process_frame
 	
 	# ASYNC SAFETY CHECK: Window might have been freed during the await frame

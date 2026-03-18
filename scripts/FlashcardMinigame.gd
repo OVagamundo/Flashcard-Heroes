@@ -19,6 +19,7 @@ const COLOR_FLASH_INCORRECT := Color(0.9, 0.2, 0.2)
 # Load fonts
 const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
 const BUTTON_FONT = preload("res://assets/fonts/DotGothic16/DotGothic16-Regular.ttf")
+const WESTERN_FONT = preload("res://assets/fonts/pixel_operator/PixelOperatorSC.ttf")
 
 @onready var main_panel: Panel = %MainPanel
 @onready var question_label: Label = %QuestionLabel
@@ -31,6 +32,7 @@ const BUTTON_FONT = preload("res://assets/fonts/DotGothic16/DotGothic16-Regular.
 @onready var intro_answer_label: Label = %IntroAnswerLabel
 @onready var intro_explanation_label: Label = %IntroExplanationLabel
 @onready var got_it_button: Button = %GotItButton
+@onready var skip_button: Button = %SkipButton
 @onready var priority_cards_container: HBoxContainer = %PriorityCardsContainer
 
 var _run_state: RunState = null
@@ -59,6 +61,7 @@ func _ready() -> void:
 	# Connect to the FlashcardManager's minigame_finished signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 	got_it_button.pressed.connect(_on_got_it_pressed)
+	skip_button.pressed.connect(_on_skip_pressed)
 	
 	# Setup panel style for dynamic mastery colors
 	_setup_panel_style()
@@ -228,6 +231,7 @@ func _show_card_introduction() -> void:
 		timer_bar.hide()
 	timer_label.hide()
 	score_label.hide()
+	skip_button.hide()
 	
 	# Initialize displayed card to the new card being introduced
 	_displayed_card_id = _new_card_id
@@ -248,7 +252,7 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 		var explanation = card_data.get("explanation", "")
 		if explanation.is_empty():
 			explanation = tr("ui.no_explanation")
-		intro_explanation_label.text = tr("ui.explanation") % explanation
+		intro_explanation_label.text = explanation # Simplified as per feedback or clarity
 	
 	# Get mastery level for this card and update panel color
 	var mastery_color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
@@ -302,7 +306,7 @@ func _populate_priority_cards() -> void:
 		child.queue_free()
 	
 	var priority_cards = _get_priority_sorted_cards()
-	var count = mini(10, priority_cards.size())
+	var count = mini(6, priority_cards.size())
 	
 	for i in range(count):
 		var card_info = priority_cards[i]
@@ -374,8 +378,8 @@ func _start_minigame_session() -> void:
 	
 	card_intro_container.hide()
 	
-	# TDD: 5-second session timer for the entire session
-	_session_timer = 5.0
+	# 7-second base timer
+	_session_timer = 7.0
 	if is_instance_valid(timer_bar):
 		timer_bar.max_value = _session_timer
 		timer_bar.value = _session_timer
@@ -391,6 +395,7 @@ func _start_minigame_session() -> void:
 	timer_bar.show() # Parents the label, so showing bar shows label too
 	timer_label.show()
 	score_label.show()
+	skip_button.show()
 	
 	# Start the timer
 	_update_timer_display()
@@ -454,20 +459,35 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 	for child in choices_grid.get_children():
 		child.queue_free()
 	
-	# Create 9 choice buttons in a 3x3 grid
-	for i in range(mini(9, _current_choices.size())):
+	# Create 6 choice buttons in a 2x3 grid
+	for i in range(mini(6, _current_choices.size())):
 		var choice_id: StringName = _current_choices[i]
 		var choice_data: Dictionary = Database.get_flashcard_definition(choice_id)
 		if not choice_data.is_empty():
 			var button := Button.new()
-			button.text = choice_data.get("answer", "Error")
+			var answer_text: String = choice_data.get("answer", "Error")
+			var is_jp: bool = _is_japanese(answer_text)
+			
+			button.text = answer_text if is_jp else answer_text.to_upper()
+			button.set_meta(&"choice_id", choice_id)
 			button.custom_minimum_size = Vector2(280, 100)
-			# Use NotoSansJP font with cool black text and warm white outline
-			button.add_theme_font_override("font", JAPANESE_FONT)
-			button.add_theme_font_size_override("font_size", 64)
+			
+			# Apply conditional font and size
+			if is_jp:
+				button.add_theme_font_override("font", JAPANESE_FONT)
+				button.add_theme_font_size_override("font_size", 48)
+			else:
+				button.add_theme_font_override("font", WESTERN_FONT)
+				button.add_theme_font_size_override("font_size", 42) # Specific for PixelOperatorSC
+			
 			button.add_theme_color_override("font_color", COLOR_COOL_BLACK)
 			button.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
 			button.add_theme_constant_override("outline_size", 6)
+			
+			# Enable autowrap for long translations
+			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			button.clip_text = false
+			
 			button.pressed.connect(_on_choice_selected.bind(choice_id))
 			choices_grid.add_child(button)
 			
@@ -507,6 +527,10 @@ func _update_panel_color(color: Color) -> void:
 
 func _on_choice_selected(selected_answer_id: StringName) -> void:
 	"""Handle when a player selects an answer"""
+	if _input_locked or _session_timer <= 0:
+		return
+		
+	_input_locked = true
 	var was_correct: bool = selected_answer_id == _current_question_id
 	_total_answers += 1
 	
@@ -515,33 +539,23 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	
 	if was_correct:
 		_correct_answers += 1
-		# Check for hero-specific timer passives
-		if _is_timekeeper():
-			# Timekeeper: +1.0s on correct (High Risk / High Reward)
-			_session_timer += 1.0
-		elif _is_bounty_hunter():
-			# Bounty Hunter: +0.8s on correct
-			_session_timer += 0.8
+		_session_timer += 0.5
+		_update_timer_display()
 			
-		_flash_button_correct(selected_answer_id)
+		_flash_button_correct(selected_answer_id, true)
 		_flash_timer_bar_correct()
 		# AUDIO HOOK: Correct
 		Audio.play_sfx("minigame_correct")
 	else:
-		# Check for hero-specific timer penalties
-		if _is_timekeeper():
-			# Timekeeper: -0.5s on wrong
-			_session_timer -= 0.5
-		elif _is_bounty_hunter():
-			# Bounty Hunter: -0.2s on wrong
-			_session_timer -= 0.2
+		# NO timer reduction as per user request
 			
 		_flash_button_incorrect(selected_answer_id)
 		_flash_timer_bar_incorrect()
+		_flash_button_correct(_current_question_id, false) # Reveal correct answer, no token
 		# AUDIO HOOK: Incorrect
 		Audio.play_sfx("minigame_incorrect")
 	
-	# Get the next question BEFORE flashing so we know the target color
+	# Delay showing the next question
 	var next_question: Dictionary = FlashcardManager.get_next_question()
 	var next_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
 	
@@ -555,10 +569,10 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	var flash_color: Color = COLOR_FLASH_CORRECT if was_correct else COLOR_FLASH_INCORRECT
 	_flash_panel_and_transition(flash_color, next_mastery_color)
 	
-	# Delay showing the next question to allow visual feedback to register
-	# This also holds the _input_locked state, preventing button mash
+	var feedback_pause = 0.05 if was_correct else 1.0
+	
 	var delay_tween = create_tween()
-	delay_tween.tween_interval(FLASH_DURATION)
+	delay_tween.tween_interval(feedback_pause)
 	delay_tween.tween_callback(func():
 		if not is_instance_valid(self): return
 		
@@ -634,18 +648,60 @@ func _is_timekeeper() -> bool:
 	return def.id == &"hero_timekeeper"
 
 
-func _flash_button_correct(correct_answer_id: StringName) -> void:
-	"""Flash the correct answer button green and spawn token pop VFX"""
+func _flash_button_correct(correct_answer_id: StringName, spawn_token: bool = true) -> void:
+	"""Flash the correct answer button green and optionally spawn token pop VFX"""
 	for i in range(choices_grid.get_child_count()):
 		var button: Control = choices_grid.get_child(i)
 		if not is_instance_valid(button):
 			continue
-		if button.text == Database.get_flashcard_definition(correct_answer_id).get("answer", ""):
+		if button.get_meta(&"choice_id", &"") == correct_answer_id:
 			button.modulate = Color.LIGHT_GREEN
 			
-			# Spawn Mario-style token pop from button center, flying to token counter
-			_spawn_token_pop(button)
+			if spawn_token:
+				# Spawn Mario-style token pop from button center, flying to token counter
+				_spawn_token_pop(button)
 			break
+
+func _on_skip_pressed() -> void:
+	if _input_locked or _session_timer <= 0:
+		return
+	
+	_input_locked = true
+	
+	# Skip counts as an incorrect answer for mastery (reduces it by 1)
+	FlashcardManager.submit_answer(_current_question_id, false)
+	
+	# 1. Correct answer lit green for 0.5s
+	# 2. Timer +0.5s increment
+	# 3. NO token
+	# 4. Stay for 0.5s while timer runs then move to next
+	
+	_flash_button_correct(_current_question_id, false)
+	_session_timer += 0.5
+	_update_timer_display()
+	
+	# Reveal correct button
+	_flash_timer_bar_correct() 
+	
+	var next_question: Dictionary = FlashcardManager.get_next_question()
+	var next_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
+	if not next_question.is_empty():
+		var next_card_id: StringName = next_question.get("question_id", &"")
+		if is_instance_valid(_run_state) and _run_state.flashcard_progress.has(next_card_id):
+			var progress: FlashcardProgress = _run_state.flashcard_progress[next_card_id]
+			next_mastery_color = progress.get_mastery_color()
+
+	_flash_panel_and_transition(COLOR_FLASH_CORRECT, next_mastery_color)
+
+	var delay_tween = create_tween()
+	delay_tween.tween_interval(0.5)
+	delay_tween.tween_callback(func():
+		if not is_instance_valid(self): return
+		if _session_timer <= 0:
+			_end_minigame()
+			return
+		_show_next_question_with_data(next_question)
+	)
 
 func _get_token_counter_target_position() -> Vector2:
 	"""Get the global position of the token counter icon for animation target"""
@@ -707,7 +763,7 @@ func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 		var button: Control = choices_grid.get_child(i)
 		if not is_instance_valid(button):
 			continue
-		if button.text == Database.get_flashcard_definition(incorrect_answer_id).get("answer", ""):
+		if button.get_meta(&"choice_id", &"") == incorrect_answer_id:
 			button.modulate = Color.RED
 			break
 
@@ -744,6 +800,19 @@ func _exit_tree() -> void:
 	
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
+
+## Helper to detect Japanese characters for font selection
+func _is_japanese(text: String) -> bool:
+	for c in text:
+		var code = c.unicode_at(0)
+		# Hiragana: 0x3040-0x309F
+		# Katakana: 0x30A0-0x30FF
+		# CJK Unified Ideographs (Kanji): 0x4E00-0x9FFF
+		if (code >= 0x3040 and code <= 0x309F) or \
+		   (code >= 0x30A0 and code <= 0x30FF) or \
+		   (code >= 0x4E00 and code <= 0x9FFF):
+			return true
+	return false
 
 func get_window_to_animate() -> Control:
 	return main_panel
