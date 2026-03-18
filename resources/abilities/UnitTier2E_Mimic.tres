@@ -11,8 +11,8 @@ params = {}
 [resource]
 script = ExtResource("1_def")
 id = "ability_unit_t2_e_mimic"
-display_name = "unit_t2_e_mimic.name"
-description = "unit_t2_e_mimic.desc"
+name_key = "ability.unit_t2_e_mimic.name"
+description_key = "ability.unit_t2_e_mimic.desc"
 trigger = "on_turn_start"
 effects = Array[ExtResource("3_base_effect")]([SubResource("Resource_custom_transform")])
 priority = 500

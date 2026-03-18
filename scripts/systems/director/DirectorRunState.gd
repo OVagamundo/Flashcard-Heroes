@@ -16,6 +16,7 @@ var current_purpose: Purpose = Purpose.ANY
 var current_day: int = 1
 var player_gold: int = 0
 var flashcard_mastery: float = 0.0
+var unlock_percentage: float = 0.0
 var unlocked_recipes: Array[String] = []
 var encountered_bosses: Array[String] = []
 

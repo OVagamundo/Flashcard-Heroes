@@ -8,6 +8,7 @@ extends Control
 @onready var title_label: Label = %TitleLabel
 
 @onready var crt_checkbox: CheckBox = %CRTCheckbox
+@onready var fullscreen_checkbox: CheckBox = %FullscreenCheckbox
 @onready var glow_checkbox: CheckBox = %GlowCheckbox
 @onready var glow_debug_label: Label = %GlowDebugLabel
 @onready var glow_debug_dropdown: OptionButton = %GlowDebugDropdown
@@ -49,6 +50,15 @@ func _init_graphics_settings() -> void:
 		crt_checkbox.toggled.connect(func(enabled: bool):
 			CRTEffect.set_enabled(enabled)
 		)
+
+	if fullscreen_checkbox:
+		if InputUtils.prefers_touch_input():
+			fullscreen_checkbox.hide()
+		else:
+			fullscreen_checkbox.button_pressed = CRTEffect.is_fullscreen_enabled()
+			fullscreen_checkbox.toggled.connect(func(enabled: bool):
+				CRTEffect.set_fullscreen_enabled(enabled)
+			)
 
 	if glow_checkbox:
 		glow_checkbox.button_pressed = CRTEffect.is_glow_enabled()
@@ -156,6 +166,9 @@ func _update_labels() -> void:
 	
 	if crt_checkbox:
 		crt_checkbox.text = tr("ui.crt_effect")
+	
+	if fullscreen_checkbox:
+		fullscreen_checkbox.text = tr("ui.fullscreen")
 	
 	if glow_checkbox:
 		glow_checkbox.text = tr("ui.glow_effect")

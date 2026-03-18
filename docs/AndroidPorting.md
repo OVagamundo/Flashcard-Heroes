@@ -142,6 +142,17 @@ The following have already been ruled out as the primary cause:
 - Missing Android export resources
 - Duplicate top-level glow passes
 - Wrong capsule asset file
-- Desktop selection logic accidentally selecting every run-inventory ball
+- [InventoryWindow.tscn](../scenes/InventoryWindow.tscn)
+- [StaggeredGridContainer.gd](../scripts/StaggeredGridContainer.gd)
+- [PhysicsTierContainer.gd](../scripts/PhysicsTierContainer.gd)
 
-Resume the investigation from the render-path difference between the run `Control` tree and the battle physics `Sprite2D` tree.
+## 6. UI & Platform Specifics
+
+### Exit Game Button
+- The `ExitButton` on the Title screen uses `get_tree().quit()`, which is standard for closing the app on both PC and Android.
+
+### Fullscreen Toggle
+- The "Fullscreen" toggle in the Options window is hidden on mobile platforms (`Android`, `iOS`) using `InputUtils.prefers_touch_input()`. Mobile OSes manage the window state exclusively.
+
+### Boss Progression UI
+- The percentage-based boss scheduling and the visual markers on the progress bar are platform-agnostic and verified to work on mobile.

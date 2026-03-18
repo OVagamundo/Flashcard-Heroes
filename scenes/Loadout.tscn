@@ -92,16 +92,24 @@ theme_override_fonts/font = ExtResource("2_title_font")
 theme_override_font_sizes/font_size = 24
 text = "Choose Your Hero"
 
-[node name="HeroGrid" type="GridContainer" parent="MainContent/HeroRow/HeroLeftSection"]
+[node name="HeroScroll" type="ScrollContainer" parent="MainContent/HeroRow/HeroLeftSection"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="HeroGrid" type="GridContainer" parent="MainContent/HeroRow/HeroLeftSection/HeroScroll"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 0
+size_flags_horizontal = 3
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
-columns = 5
+columns = 3
 
 [node name="HeroInfoPanel" type="PanelContainer" parent="MainContent/HeroRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.8
@@ -195,16 +203,24 @@ theme_override_fonts/font = ExtResource("2_title_font")
 theme_override_font_sizes/font_size = 24
 text = "Choose Your Flashcard Deck"
 
-[node name="DeckGrid" type="GridContainer" parent="MainContent/DeckRow/DeckLeftSection"]
+[node name="DeckScroll" type="ScrollContainer" parent="MainContent/DeckRow/DeckLeftSection"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DeckGrid" type="GridContainer" parent="MainContent/DeckRow/DeckLeftSection/DeckScroll"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 0
+size_flags_horizontal = 3
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
-columns = 5
+columns = 1
 
 [node name="DeckInfoPanel" type="PanelContainer" parent="MainContent/DeckRow"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.8

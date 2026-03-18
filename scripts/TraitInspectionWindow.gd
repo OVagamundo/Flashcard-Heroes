@@ -1,7 +1,7 @@
 class_name TraitInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
-const InputUtils = preload("res://scripts/InputUtils.gd")
+const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 # TDD Section 11.2: TraitInspectionWindow.gd
 # This window displays detailed information about a trait and its active levels.
@@ -30,12 +30,12 @@ func _ready() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
+	if _InputUtils.is_primary_pointer_press(event):
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
@@ -81,7 +81,17 @@ func populate(context: Dictionary) -> void:
 	
 	description_label.text = text
 	
+	_reset_window_size()
+	
 	_setup_stable_anchor()
+
+func _reset_window_size() -> void:
+	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(self):
+		custom_minimum_size = Vector2.ZERO
+		size = Vector2.ZERO
 
 ## Set up stable anchor pattern for robust positioning (copied from ItemInspectionWindow)
 func _setup_stable_anchor() -> void:

@@ -61,7 +61,7 @@ Centralized interpretation of user intent to decouple Views from Logic:
 -   **Global Interaction Router (GIR):** The entry point for all UI input. It translates raw `InteractionContext` into a `CommandQueue`.
     -   (See `docs/UIInteraction.md` for selection/interaction rules)
     -   **O(1) Domain Mapping:** Maps containers to functional groups (`BattleBoard`, `InventoryGrid`, etc.) to determine valid interactions.
--   **Window Manager:** Manages the hierarchical lifecycle of modals and inspection windows.
+-   **Window Manager:** Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization to ensure windows shrink to content before positioning.
 -   **Inventory Manager:** Stateless executor of `REQUEST_ACTION` commands. It bridges the GIR and the data owners (RunState/BattleManager).
 -   **Audio System:** Decoupled SFX/BGM management via semantic IDs (`unit_hop`, `ui_click`).
     -   (See `docs/AudioSystem.md`)

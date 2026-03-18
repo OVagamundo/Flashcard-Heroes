@@ -15,6 +15,7 @@ func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> 
 	if is_instance_valid(GameManager.run_state):
 		director_run_state.current_day = GameManager.run_state.day
 		director_run_state.player_gold = GameManager.run_state.gold
+		director_run_state.unlock_percentage = GameManager.run_state.get_deck_unlock_percentage()
 		director_run_state.current_purpose = purpose as DirectorRunState.Purpose
 
 func _ready() -> void:
@@ -32,13 +33,13 @@ func _ready() -> void:
 	
 	_update_director_run_state(DirectorRunState.Purpose.NODE_GENERATION)
 	
-	# Check for boss day (every 10th day: 10, 20, 30, 40, 50)
-	if director_run_state.current_day > 0 and director_run_state.current_day % 10 == 0:
-		var boss_level: int = int(director_run_state.current_day / 10.0)
-		if boss_level >= 1 and boss_level <= 5:
-			_setup_boss_node(boss_level)
-		else:
-			_setup_normal_nodes()
+	# Check for boss based on deck unlock percentage (every 20%: 20%, 40%, 60%, 80%, 100%)
+	var boss_level: int = GameManager.run_state.bosses_defeated + 1
+	var threshold: float = boss_level * 0.2
+	
+	# Use a small epsilon to handle float precision issues
+	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= 5:
+		_setup_boss_node(boss_level)
 	else:
 		_setup_normal_nodes()
 	

@@ -3,7 +3,6 @@ extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
-const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var scene_background: TextureRect = %SceneBackground
@@ -129,10 +128,10 @@ func _exit_tree() -> void:
 func _apply_glow_debug_view(view: int) -> void:
 	if not is_instance_valid(color_glow_rect):
 		return
-	var material := color_glow_rect.material as ShaderMaterial
-	if material == null:
+	var glow_material := color_glow_rect.material as ShaderMaterial
+	if glow_material == null:
 		return
-	material.set_shader_parameter("debug_view", view)
+	glow_material.set_shader_parameter("debug_view", view)
 
 func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area
@@ -621,12 +620,28 @@ func _populate_flashcard_progress() -> void:
 	var card_width = (total_width - total_gaps) / main_deck_cards.size()
 	
 	# Create a rectangle for each card in main deck order
-	for card_id in main_deck_cards:
+	var boss_thresholds = [0.2, 0.4, 0.6, 0.8, 1.0]
+	var boss_indices = []
+	for t in boss_thresholds:
+		var idx = clampi(ceil(main_deck_cards.size() * t) - 1, 0, main_deck_cards.size() - 1)
+		if not boss_indices.has(idx):
+			boss_indices.append(idx)
+	
+	for i in range(main_deck_cards.size()):
+		var card_id = main_deck_cards[i]
 		var rect = ColorRect.new()
-		rect.custom_minimum_size = Vector2(card_width, 10)
 		
 		# Check if card is in active deck
 		var is_active = GameManager.run_state.active_deck_ids.has(card_id)
+		var is_boss_trigger = boss_indices.has(i)
+		
+		var height = 10.0
+		if is_boss_trigger and not is_active:
+			height = 24.0 # Taller marker for future bosses
+		
+		rect.custom_minimum_size = Vector2(card_width, height)
+		# Center taller markers vertically relative to the bar
+		rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		
 		if is_active:
 			# Get mastery level and apply corresponding color
@@ -637,8 +652,11 @@ func _populate_flashcard_progress() -> void:
 			else:
 				rect.color = MASTERY_COLORS[1] # Default to level 1 if no progress
 		else:
-			# Card not yet unlocked - grey
-			rect.color = LOCKED_COLOR
+			# Card not yet unlocked
+			if is_boss_trigger:
+				rect.color = Color.WHITE # White for locked bosses
+			else:
+				rect.color = LOCKED_COLOR # Grey for locked normal cards
 		
 		flashcard_progress_bar.add_child(rect)
 

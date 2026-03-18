@@ -15,6 +15,7 @@ const GLOW_DEBUG_VIEW_WEIGHT_MASK := 2
 
 var _crt_enabled: bool = true
 var _glow_enabled: bool = true
+var _fullscreen_enabled: bool = true
 var _glow_debug_view: int = GLOW_DEBUG_VIEW_NORMAL
 var _overlay: ColorRect = null
 
@@ -39,6 +40,9 @@ func is_glow_enabled() -> bool:
 func get_glow_debug_view() -> int:
 	return _glow_debug_view
 
+func is_fullscreen_enabled() -> bool:
+	return _fullscreen_enabled
+
 
 func set_enabled(enabled: bool, save_setting: bool = true) -> void:
 	if _crt_enabled == enabled:
@@ -59,6 +63,16 @@ func set_glow_enabled(enabled: bool, save_setting: bool = true) -> void:
 	if save_setting:
 		_save_settings()
 	glow_toggled.emit(_glow_enabled)
+
+func set_fullscreen_enabled(enabled: bool, save_setting: bool = true) -> void:
+	if _fullscreen_enabled == enabled:
+		_apply_window_mode()
+		return
+	
+	_fullscreen_enabled = enabled
+	_apply_window_mode()
+	if save_setting:
+		_save_settings()
 
 func toggle() -> void:
 	set_enabled(not _crt_enabled)
@@ -109,6 +123,20 @@ func _apply_overlay_state() -> void:
 		# diagnostic unreadable because the CRT shader reprocesses the debug mask.
 		_overlay.visible = _crt_enabled and _glow_debug_view == GLOW_DEBUG_VIEW_NORMAL
 
+func _apply_window_mode() -> void:
+	if _fullscreen_enabled:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		# Native resolution is 1920x1080
+		var native_res = Vector2i(1920, 1080)
+		DisplayServer.window_set_size(native_res)
+		
+		# Center the window on the screen
+		var screen_size = DisplayServer.screen_get_size()
+		var window_pos = Vector2i((Vector2(screen_size) * 0.5) - (Vector2(native_res) * 0.5))
+		DisplayServer.window_set_position(window_pos)
+
 
 func _save_settings() -> void:
 	var file := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
@@ -118,6 +146,7 @@ func _save_settings() -> void:
 	file.store_var({
 		"crt_enabled": _crt_enabled,
 		"glow_enabled": _glow_enabled,
+		"fullscreen_enabled": _fullscreen_enabled,
 		"glow_debug_view": _glow_debug_view
 	})
 	file.close()
@@ -138,4 +167,8 @@ func _load_settings() -> void:
 	if data is Dictionary:
 		_crt_enabled = bool(data.get("crt_enabled", true))
 		_glow_enabled = bool(data.get("glow_enabled", true))
+		_fullscreen_enabled = bool(data.get("fullscreen_enabled", true))
 		_glow_debug_view = clampi(int(data.get("glow_debug_view", GLOW_DEBUG_VIEW_NORMAL)), GLOW_DEBUG_VIEW_NORMAL, GLOW_DEBUG_VIEW_WEIGHT_MASK)
+		
+		# Apply window mode after loading
+		_apply_window_mode()

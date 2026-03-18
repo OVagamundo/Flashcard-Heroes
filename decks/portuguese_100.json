@@ -1,607 +1,107 @@
 {
     "deck_id": "portuguese_100",
-    "display_name": "Portuguese Sentences 100",
-    "description": "100 most common everyday Portuguese sentences (3 words each)",
+    "display_name": "Portuguese Irregular Verbs (Casual)",
+    "description": "100 most used irregular verb conjugations for casual conversation",
     "cards": [
-        {
-            "id": "PORT_SENT_001",
-            "question": "Eu estou bem",
-            "answer": "I am fine",
-            "explanation": "Simple statement of well‑being"
-        },
-        {
-            "id": "PORT_SENT_002",
-            "question": "Como vai você",
-            "answer": "How are you",
-            "explanation": "Common greeting"
-        },
-        {
-            "id": "PORT_SENT_003",
-            "question": "Obrigado por isso",
-            "answer": "Thank you for that",
-            "explanation": "Expression of gratitude"
-        },
-        {
-            "id": "PORT_SENT_004",
-            "question": "Desculpe pelo atraso",
-            "answer": "Sorry for the delay",
-            "explanation": "Apology"
-        },
-        {
-            "id": "PORT_SENT_005",
-            "question": "Onde fica o banheiro",
-            "answer": "Where is the bathroom",
-            "explanation": "Asking location"
-        },
-        {
-            "id": "PORT_SENT_006",
-            "question": "Quanto custa isso",
-            "answer": "How much is this",
-            "explanation": "Asking price"
-        },
-        {
-            "id": "PORT_SENT_007",
-            "question": "Preciso de ajuda",
-            "answer": "I need help",
-            "explanation": "Requesting assistance"
-        },
-        {
-            "id": "PORT_SENT_008",
-            "question": "Vamos sair hoje",
-            "answer": "Let's go out today",
-            "explanation": "Invitation"
-        },
-        {
-            "id": "PORT_SENT_009",
-            "question": "Eu quero água",
-            "answer": "I want water",
-            "explanation": "Requesting a drink"
-        },
-        {
-            "id": "PORT_SENT_010",
-            "question": "Estou com fome",
-            "answer": "I am hungry",
-            "explanation": "Expressing hunger"
-        },
-        {
-            "id": "PORT_SENT_011",
-            "question": "Estou cansado agora",
-            "answer": "I am tired now",
-            "explanation": "Expressing fatigue"
-        },
-        {
-            "id": "PORT_SENT_012",
-            "question": "Vamos ao cinema",
-            "answer": "Let's go to the cinema",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_013",
-            "question": "Eu gosto de música",
-            "answer": "I like music",
-            "explanation": "Expressing preference"
-        },
-        {
-            "id": "PORT_SENT_014",
-            "question": "Ele está aqui",
-            "answer": "He is here",
-            "explanation": "Statement of presence"
-        },
-        {
-            "id": "PORT_SENT_015",
-            "question": "Ela chegou tarde",
-            "answer": "She arrived late",
-            "explanation": "Statement of arrival"
-        },
-        {
-            "id": "PORT_SENT_016",
-            "question": "Nós vamos viajar",
-            "answer": "We are going to travel",
-            "explanation": "Future plan"
-        },
-        {
-            "id": "PORT_SENT_017",
-            "question": "Preciso de carro",
-            "answer": "I need a car",
-            "explanation": "Requesting a vehicle"
-        },
-        {
-            "id": "PORT_SENT_018",
-            "question": "Você tem tempo",
-            "answer": "Do you have time",
-            "explanation": "Asking availability"
-        },
-        {
-            "id": "PORT_SENT_019",
-            "question": "Vou comprar pão",
-            "answer": "I will buy bread",
-            "explanation": "Intent to purchase"
-        },
-        {
-            "id": "PORT_SENT_020",
-            "question": "Ele gosta de futebol",
-            "answer": "He likes soccer",
-            "explanation": "Expressing interest"
-        },
-        {
-            "id": "PORT_SENT_021",
-            "question": "Ela trabalha aqui",
-            "answer": "She works here",
-            "explanation": "Job location"
-        },
-        {
-            "id": "PORT_SENT_022",
-            "question": "Eu preciso dormir",
-            "answer": "I need to sleep",
-            "explanation": "Expressing need"
-        },
-        {
-            "id": "PORT_SENT_023",
-            "question": "Vamos fazer isso",
-            "answer": "Let's do it",
-            "explanation": "Encouragement"
-        },
-        {
-            "id": "PORT_SENT_024",
-            "question": "Ele está doente",
-            "answer": "He is sick",
-            "explanation": "Health status"
-        },
-        {
-            "id": "PORT_SENT_025",
-            "question": "Ela está feliz",
-            "answer": "She is happy",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_026",
-            "question": "Eu não sei",
-            "answer": "I don't know",
-            "explanation": "Admission of ignorance"
-        },
-        {
-            "id": "PORT_SENT_027",
-            "question": "Você pode ajudar",
-            "answer": "Can you help",
-            "explanation": "Request"
-        },
-        {
-            "id": "PORT_SENT_028",
-            "question": "Ele quer sair",
-            "answer": "He wants to go out",
-            "explanation": "Desire"
-        },
-        {
-            "id": "PORT_SENT_029",
-            "question": "Ela quer ficar",
-            "answer": "She wants to stay",
-            "explanation": "Desire"
-        },
-        {
-            "id": "PORT_SENT_030",
-            "question": "Vamos comer agora",
-            "answer": "Let's eat now",
-            "explanation": "Invitation to eat"
-        },
-        {
-            "id": "PORT_SENT_031",
-            "question": "Eu preciso estudar",
-            "answer": "I need to study",
-            "explanation": "Obligation"
-        },
-        {
-            "id": "PORT_SENT_032",
-            "question": "Ele está estudando",
-            "answer": "He is studying",
-            "explanation": "Current action"
-        },
-        {
-            "id": "PORT_SENT_033",
-            "question": "Ela está lendo",
-            "answer": "She is reading",
-            "explanation": "Current action"
-        },
-        {
-            "id": "PORT_SENT_034",
-            "question": "Eu gosto de ler",
-            "answer": "I like to read",
-            "explanation": "Preference"
-        },
-        {
-            "id": "PORT_SENT_035",
-            "question": "Vamos ao parque",
-            "answer": "Let's go to the park",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_036",
-            "question": "Ele corre rápido",
-            "answer": "He runs fast",
-            "explanation": "Observation"
-        },
-        {
-            "id": "PORT_SENT_037",
-            "question": "Ela fala bem",
-            "answer": "She speaks well",
-            "explanation": "Observation"
-        },
-        {
-            "id": "PORT_SENT_038",
-            "question": "Eu preciso comprar",
-            "answer": "I need to buy",
-            "explanation": "Intent"
-        },
-        {
-            "id": "PORT_SENT_039",
-            "question": "Você tem dinheiro",
-            "answer": "Do you have money",
-            "explanation": "Question about resources"
-        },
-        {
-            "id": "PORT_SENT_040",
-            "question": "Ele tem carro",
-            "answer": "He has a car",
-            "explanation": "Statement of possession"
-        },
-        {
-            "id": "PORT_SENT_041",
-            "question": "Ela tem gato",
-            "answer": "She has a cat",
-            "explanation": "Statement of possession"
-        },
-        {
-            "id": "PORT_SENT_042",
-            "question": "Eu quero viajar",
-            "answer": "I want to travel",
-            "explanation": "Desire"
-        },
-        {
-            "id": "PORT_SENT_043",
-            "question": "Vamos fazer pausa",
-            "answer": "Let's take a break",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_044",
-            "question": "Ele está cansado",
-            "answer": "He is tired",
-            "explanation": "State"
-        },
-        {
-            "id": "PORT_SENT_045",
-            "question": "Ela está animada",
-            "answer": "She is excited",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_046",
-            "question": "Eu não gosto",
-            "answer": "I don't like it",
-            "explanation": "Dislike"
-        },
-        {
-            "id": "PORT_SENT_047",
-            "question": "Você gosta disso",
-            "answer": "Do you like this",
-            "explanation": "Question"
-        },
-        {
-            "id": "PORT_SENT_048",
-            "question": "Ele está trabalhando",
-            "answer": "He is working",
-            "explanation": "Current activity"
-        },
-        {
-            "id": "PORT_SENT_049",
-            "question": "Ela está cozinhando",
-            "answer": "She is cooking",
-            "explanation": "Current activity"
-        },
-        {
-            "id": "PORT_SENT_050",
-            "question": "Eu preciso descansar",
-            "answer": "I need to rest",
-            "explanation": "Need"
-        },
-        {
-            "id": "PORT_SENT_051",
-            "question": "Vamos ao restaurante",
-            "answer": "Let's go to the restaurant",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_052",
-            "question": "Ele tem medo",
-            "answer": "He is afraid",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_053",
-            "question": "Ela tem medo",
-            "answer": "She is afraid",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_054",
-            "question": "Eu estou feliz",
-            "answer": "I am happy",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_055",
-            "question": "Você está pronto",
-            "answer": "Are you ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "PORT_SENT_056",
-            "question": "Ele está pronto",
-            "answer": "He is ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "PORT_SENT_057",
-            "question": "Ela está pronta",
-            "answer": "She is ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "PORT_SENT_058",
-            "question": "Eu preciso ir",
-            "answer": "I need to go",
-            "explanation": "Obligation"
-        },
-        {
-            "id": "PORT_SENT_059",
-            "question": "Vamos conversar agora",
-            "answer": "Let's talk now",
-            "explanation": "Invitation"
-        },
-        {
-            "id": "PORT_SENT_060",
-            "question": "Ele está ouvindo",
-            "answer": "He is listening",
-            "explanation": "Current action"
-        },
-        {
-            "id": "PORT_SENT_061",
-            "question": "Ela está falando",
-            "answer": "She is speaking",
-            "explanation": "Current action"
-        },
-        {
-            "id": "PORT_SENT_062",
-            "question": "Eu quero aprender",
-            "answer": "I want to learn",
-            "explanation": "Desire"
-        },
-        {
-            "id": "PORT_SENT_063",
-            "question": "Você pode esperar",
-            "answer": "Can you wait",
-            "explanation": "Request"
-        },
-        {
-            "id": "PORT_SENT_064",
-            "question": "Ele pode ajudar",
-            "answer": "He can help",
-            "explanation": "Capability"
-        },
-        {
-            "id": "PORT_SENT_065",
-            "question": "Ela pode cantar",
-            "answer": "She can sing",
-            "explanation": "Capability"
-        },
-        {
-            "id": "PORT_SENT_066",
-            "question": "Eu preciso correr",
-            "answer": "I need to run",
-            "explanation": "Obligation"
-        },
-        {
-            "id": "PORT_SENT_067",
-            "question": "Vamos jogar futebol",
-            "answer": "Let's play soccer",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_068",
-            "question": "Ele está estudando",
-            "answer": "He is studying",
-            "explanation": "Current activity"
-        },
-        {
-            "id": "PORT_SENT_069",
-            "question": "Ela está estudando",
-            "answer": "She is studying",
-            "explanation": "Current activity"
-        },
-        {
-            "id": "PORT_SENT_070",
-            "question": "Eu preciso estudar",
-            "answer": "I need to study",
-            "explanation": "Obligation"
-        },
-        {
-            "id": "PORT_SENT_071",
-            "question": "Você tem um carro",
-            "answer": "Do you have a car",
-            "explanation": "Question about possession"
-        },
-        {
-            "id": "PORT_SENT_072",
-            "question": "Ele tem um cachorro",
-            "answer": "He has a dog",
-            "explanation": "Statement of possession"
-        },
-        {
-            "id": "PORT_SENT_073",
-            "question": "Ela tem um gato",
-            "answer": "She has a cat",
-            "explanation": "Statement of possession"
-        },
-        {
-            "id": "PORT_SENT_074",
-            "question": "Eu quero um café",
-            "answer": "I want a coffee",
-            "explanation": "Request"
-        },
-        {
-            "id": "PORT_SENT_075",
-            "question": "Vamos ao mercado",
-            "answer": "Let's go to the market",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_076",
-            "question": "Ele está feliz",
-            "answer": "He is happy",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_077",
-            "question": "Ela está triste",
-            "answer": "She is sad",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "PORT_SENT_078",
-            "question": "Eu estou cansado",
-            "answer": "I am tired",
-            "explanation": "State"
-        },
-        {
-            "id": "PORT_SENT_079",
-            "question": "Você está pronto",
-            "answer": "Are you ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "PORT_SENT_080",
-            "question": "Ele está pronto",
-            "answer": "He is ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "PORT_SENT_081",
-            "question": "Ela está pronta",
-            "answer": "She is ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "PORT_SENT_082",
-            "question": "Eu preciso descansar",
-            "answer": "I need to rest",
-            "explanation": "Need"
-        },
-        {
-            "id": "PORT_SENT_083",
-            "question": "Vamos ao médico",
-            "answer": "Let's go to the doctor",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_084",
-            "question": "Ele tem febre",
-            "answer": "He has a fever",
-            "explanation": "Health"
-        },
-        {
-            "id": "PORT_SENT_085",
-            "question": "Ela tem dor",
-            "answer": "She has pain",
-            "explanation": "Health"
-        },
-        {
-            "id": "PORT_SENT_086",
-            "question": "Eu estou doente",
-            "answer": "I am sick",
-            "explanation": "Health"
-        },
-        {
-            "id": "PORT_SENT_087",
-            "question": "Você está doente",
-            "answer": "Are you sick",
-            "explanation": "Health question"
-        },
-        {
-            "id": "PORT_SENT_088",
-            "question": "Ele está aqui",
-            "answer": "He is here",
-            "explanation": "Presence"
-        },
-        {
-            "id": "PORT_SENT_089",
-            "question": "Ela está lá",
-            "answer": "She is there",
-            "explanation": "Presence"
-        },
-        {
-            "id": "PORT_SENT_090",
-            "question": "Eu preciso de ajuda",
-            "answer": "I need help",
-            "explanation": "Request"
-        },
-        {
-            "id": "PORT_SENT_091",
-            "question": "Você pode me ajudar",
-            "answer": "Can you help me",
-            "explanation": "Request"
-        },
-        {
-            "id": "PORT_SENT_092",
-            "question": "Ele pode vir",
-            "answer": "He can come",
-            "explanation": "Capability"
-        },
-        {
-            "id": "PORT_SENT_093",
-            "question": "Ela pode vir",
-            "answer": "She can come",
-            "explanation": "Capability"
-        },
-        {
-            "id": "PORT_SENT_094",
-            "question": "Vamos comprar isso",
-            "answer": "Let's buy this",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "PORT_SENT_095",
-            "question": "Eu quero comprar",
-            "answer": "I want to buy",
-            "explanation": "Desire"
-        },
-        {
-            "id": "PORT_SENT_096",
-            "question": "Você tem tempo",
-            "answer": "Do you have time",
-            "explanation": "Question"
-        },
-        {
-            "id": "PORT_SENT_097",
-            "question": "Ele tem tempo",
-            "answer": "He has time",
-            "explanation": "Statement"
-        },
-        {
-            "id": "PORT_SENT_098",
-            "question": "Ela tem tempo",
-            "answer": "She has time",
-            "explanation": "Statement"
-        },
-        {
-            "id": "PORT_SENT_099",
-            "question": "Eu preciso de água",
-            "answer": "I need water",
-            "explanation": "Request"
-        },
-        {
-            "id": "PORT_SENT_100",
-            "question": "Vamos começar agora",
-            "answer": "Let's start now",
-            "explanation": "Invitation"
-        }
+        { "id": "PORT_IRREG_001", "question": "Faço", "answer": "I do / I make", "explanation": "Eu faço isso depois. (I'll do this later.)" },
+        { "id": "PORT_IRREG_002", "question": "Faz", "answer": "You do / He/She does / Makes", "explanation": "Você faz muita falta! (You are greatly missed!)" },
+        { "id": "PORT_IRREG_003", "question": "Fiz", "answer": "I did / I made", "explanation": "Fiz o que deu. (I did what I could.)" },
+        { "id": "PORT_IRREG_004", "question": "Fez", "answer": "You did / He/She did / Was", "explanation": "Ele fez de propósito. (He did it on purpose.)" },
+        { "id": "PORT_IRREG_005", "question": "Digo", "answer": "I say / I tell", "explanation": "O que eu digo pra ela? (What do I say to her?)" },
+        { "id": "PORT_IRREG_006", "question": "Diz", "answer": "You say / He-She says / Tell", "explanation": "Diz que sim! (Say yes!)" },
+        { "id": "PORT_IRREG_007", "question": "Disse", "answer": "I-You-He-She said / Told", "explanation": "Eu já disse isso. (I already said that.)" },
+        { "id": "PORT_IRREG_008", "question": "Posso", "answer": "I can / I may", "explanation": "Posso entrar? (Can I come in?)" },
+        { "id": "PORT_IRREG_009", "question": "Pode", "answer": "You can / He-She can / May", "explanation": "Pode deixar! (Leave it to me / No problem!)" },
+        { "id": "PORT_IRREG_010", "question": "Pude", "answer": "I could / I was able to", "explanation": "Não pude ir ontem. (I couldn't go yesterday.)" },
+        { "id": "PORT_IRREG_011", "question": "Pôde", "answer": "You-He-She could / Was able", "explanation": "Ele não pôde avisar. (He couldn't let [us] know.)" },
+        { "id": "PORT_IRREG_012", "question": "Sei", "answer": "I know", "explanation": "Não sei de nada. (I don't know anything.)" },
+        { "id": "PORT_IRREG_013", "question": "Sabe", "answer": "You know / He-She knows", "explanation": "Você sabe como é. (You know how it is.)" },
+        { "id": "PORT_IRREG_014", "question": "Soube", "answer": "I found out / I heard", "explanation": "Soube que você viajou. (I found out you traveled.)" },
+        { "id": "PORT_IRREG_015", "question": "Vejo", "answer": "I see / I watch", "explanation": "Te vejo lá! (See you there!)" },
+        { "id": "PORT_IRREG_016", "question": "Vê", "answer": "You see / He-She sees / Look", "explanation": "Vê se não esquece! (Make sure you don't forget!)" },
+        { "id": "PORT_IRREG_017", "question": "Viu", "answer": "I-You-He-She saw / Look", "explanation": "Viu o que aconteceu? (Did you see what happened?)" },
+        { "id": "PORT_IRREG_018", "question": "Venho", "answer": "I come / I am coming", "explanation": "Venho aqui sempre. (I come here all the time.)" },
+        { "id": "PORT_IRREG_019", "question": "Vem", "answer": "You come / He-She comes", "explanation": "Vem cá rapidão. (Come here real quick.)" },
+        { "id": "PORT_IRREG_020", "question": "Veio", "answer": "I-You-He-She came", "explanation": "Ninguém veio hoje. (Nobody came today.)" },
+        { "id": "PORT_IRREG_021", "question": "Tenho", "answer": "I have / I've got", "explanation": "Tenho que ir. (I have to go.)" },
+        { "id": "PORT_IRREG_022", "question": "Tem", "answer": "You have / He-She has / There is", "explanation": "Tem café aí? (Is there any coffee there?)" },
+        { "id": "PORT_IRREG_023", "question": "Teve", "answer": "I-You-He-She had", "explanation": "Ele teve sorte. (He was lucky.)" },
+        { "id": "PORT_IRREG_024", "question": "Sou", "answer": "I am", "explanation": "Sou eu! (It's me!)" },
+        { "id": "PORT_IRREG_025", "question": "É", "answer": "It is / You-He-She is", "explanation": "É sério isso? (Is that serious?)" },
+        { "id": "PORT_IRREG_026", "question": "São", "answer": "They are / You (pl) are", "explanation": "São quase dez horas. (It's almost ten o'clock.)" },
+        { "id": "PORT_IRREG_027", "question": "Foi", "answer": "I-You-He-She went / was", "explanation": "Foi mal! (My bad!)" },
+        { "id": "PORT_IRREG_028", "question": "Fui", "answer": "I went / was", "explanation": "Fui eu que fiz. (It was me who did it.)" },
+        { "id": "PORT_IRREG_029", "question": "Estou", "answer": "I am (state)", "explanation": "Estou chegando! (I'm arriving!)" },
+        { "id": "PORT_IRREG_030", "question": "Tá", "answer": "You-He-She is / Okay", "explanation": "Tá tudo bem? (Is everything okay?)" },
+        { "id": "PORT_IRREG_031", "question": "Tava", "answer": "I-You-He-She was (casual)", "explanation": "Eu tava dormindo. (I was sleeping.)" },
+        { "id": "PORT_IRREG_032", "question": "Tão", "answer": "They-You (pl) are / So", "explanation": "Onde eles tão? (Where are they?)" },
+        { "id": "PORT_IRREG_033", "question": "Vou", "answer": "I go / I'm going", "explanation": "Vou sair agora. (I'm going out now.)" },
+        { "id": "PORT_IRREG_034", "question": "Vai", "answer": "You-He-She goes / Will", "explanation": "Vai dar certo! (It's going to work!)" },
+        { "id": "PORT_IRREG_035", "question": "Quero", "answer": "I want", "explanation": "Quero nem saber! (I don't even want to know!)" },
+        { "id": "PORT_IRREG_036", "question": "Quer", "answer": "You-He-She wants / Want", "explanation": "Quer ajuda? (Want help?)" },
+        { "id": "PORT_IRREG_037", "question": "Quis", "answer": "I-You-He-She wanted", "explanation": "Ele não quis vir. (He didn't want to come.)" },
+        { "id": "PORT_IRREG_038", "question": "Dou", "answer": "I give", "explanation": "Te dou um toque. (I'll give you a call/ping.)" },
+        { "id": "PORT_IRREG_039", "question": "Dá", "answer": "You-He-She gives / One can", "explanation": "Dá pra ver daqui. (It's possible to see from here.)" },
+        { "id": "PORT_IRREG_040", "question": "Deu", "answer": "I-You-He-She gave / It worked", "explanation": "Deu tudo certo! (Everything worked out!)" },
+        { "id": "PORT_IRREG_041", "question": "Trago", "answer": "I bring", "explanation": "Trago as brejas. (I'll bring the beers.)" },
+        { "id": "PORT_IRREG_042", "question": "Traz", "answer": "You-He-She brings / Bring", "explanation": "Traz pra mim, por favor. (Bring it to me, please.)" },
+        { "id": "PORT_IRREG_043", "question": "Trouxe", "answer": "I-You-He-She brought", "explanation": "Trouxe o que você pediu. (I brought what you asked for.)" },
+        { "id": "PORT_IRREG_044", "question": "Ponho", "answer": "I put", "explanation": "Onde eu ponho isso? (Where do I put this?)" },
+        { "id": "PORT_IRREG_045", "question": "Põe", "answer": "You-He-She puts / Put", "explanation": "Põe em cima da mesa. (Put it on the table.)" },
+        { "id": "PORT_IRREG_046", "question": "Pôs", "answer": "I-You-He-She put (past)", "explanation": "Quem pôs isso aqui? (Who put this here?)" },
+        { "id": "PORT_IRREG_047", "question": "Peço", "answer": "I ask / request / order", "explanation": "Peço uma pizza? (Should I order a pizza?)" },
+        { "id": "PORT_IRREG_048", "question": "Pede", "answer": "You-He-She asks", "explanation": "Ele pede demais. (He asks too much.)" },
+        { "id": "PORT_IRREG_049", "question": "Pediu", "answer": "I-You-He-She asked / ordered", "explanation": "Pediu pra avisar. (He asked to let [you] know.)" },
+        { "id": "PORT_IRREG_050", "question": "Ouço", "answer": "I hear / I listen", "explanation": "Não ouço nada. (I can't hear anything.)" },
+        { "id": "PORT_IRREG_051", "question": "Ouve", "answer": "You-He-She hears / Listen", "explanation": "Ouve o que eu tô dizendo. (Listen to what I'm saying.)" },
+        { "id": "PORT_IRREG_052", "question": "Ouviu", "answer": "I-You-He-She heard", "explanation": "Você ouviu isso? (Did you hear that?)" },
+        { "id": "PORT_IRREG_053", "question": "Perco", "answer": "I lose / I miss", "explanation": "Não perco por nada! (I won't miss it for anything!)" },
+        { "id": "PORT_IRREG_054", "question": "Perde", "answer": "You-He-She loses / Misses", "explanation": "Cuidado pra não perder. (Careful not to lose [it].)" },
+        { "id": "PORT_IRREG_055", "question": "Perdeu", "answer": "I-You-He-She lost / Missed", "explanation": "Perdeu a hora? (Did you miss the time / oversleep?)" },
+        { "id": "PORT_IRREG_056", "question": "Saio", "answer": "I go out / I leave", "explanation": "Saio do trampo às seis. (I leave work at six.)" },
+        { "id": "PORT_IRREG_057", "question": "Sai", "answer": "You-He-She goes out / Leaves", "explanation": "Sai daqui logo! (Get out of here now!)" },
+        { "id": "PORT_IRREG_058", "question": "Saiu", "answer": "I-You-He-She went out / Left", "explanation": "Ela já saiu. (She already left.)" },
+        { "id": "PORT_IRREG_059", "question": "Rio", "answer": "I laugh / River", "explanation": "Eu rio de tudo. (I laugh at everything.)" },
+        { "id": "PORT_IRREG_060", "question": "Ri", "answer": "You-He-She laughs / Laugh", "explanation": "Ele ri à toa. (He laughs for no reason.)" },
+        { "id": "PORT_IRREG_061", "question": "Riu", "answer": "I-You-He-She laughed", "explanation": "Ninguém riu da piada. (Nobody laughed at the joke.)" },
+        { "id": "PORT_IRREG_062", "question": "Vale", "answer": "It is worth / It counts", "explanation": "Valeu a pena! (It was worth it!)" },
+        { "id": "PORT_IRREG_063", "answer": "I am worth", "question": "Valho", "explanation": "Eu valho muito mais. (I am worth much more.)" },
+        { "id": "PORT_IRREG_064", "question": "Valeu", "answer": "Thanks / It was worth", "explanation": "Valeu, abraço! (Thanks, bye!)" },
+        { "id": "PORT_IRREG_065", "question": "Cabe", "answer": "It fits", "explanation": "Não cabe mais nada. (Nothing else fits.)" },
+        { "id": "PORT_IRREG_066", "question": "Coube", "answer": "It fitted", "explanation": "Coube certinho! (It fitted perfectly!)" },
+        { "id": "PORT_IRREG_067", "question": "Meço", "answer": "I measure", "explanation": "Eu meço dois metros. (I measure two meters.)" },
+        { "id": "PORT_IRREG_068", "question": "Mede", "answer": "You-He-She measures / Measure", "explanation": "Mede aí pra mim. (Measure [it] there for me.)" },
+        { "id": "PORT_IRREG_069", "question": "Mediu", "answer": "I-You-He-She measured", "explanation": "Ele mediu errado. (He measured it wrong.)" },
+        { "id": "PORT_IRREG_070", "question": "Leio", "answer": "I read", "explanation": "Eu leio no ônibus. (I read on the bus.)" },
+        { "id": "PORT_IRREG_071", "question": "Lê", "answer": "You-He-She reads / Read", "explanation": "Você lê rápido? (Do you read fast?)" },
+        { "id": "PORT_IRREG_072", "question": "Leu", "answer": "I-You-He-She read (past)", "explanation": "Leu o Whats? (Did you read the WhatsApp [message]?)" },
+        { "id": "PORT_IRREG_073", "question": "Creio", "answer": "I believe / I think", "explanation": "Creio que sim. (I believe so.)" },
+        { "id": "PORT_IRREG_074", "question": "Crê", "answer": "You-He-She believes / Believe", "explanation": "Ninguém crê nisso. (Nobody believes in that.)" },
+        { "id": "PORT_IRREG_075", "answer": "They see", "question": "Veem", "explanation": "Eles não veem a hora. (They can't wait.)" },
+        { "id": "PORT_IRREG_076", "question": "Vêm", "answer": "They come", "explanation": "Quando eles vêm? (When are they coming?)" },
+        { "id": "PORT_IRREG_077", "question": "Têm", "answer": "They have", "explanation": "Eles têm razão. (They are right.)" },
+        { "id": "PORT_IRREG_078", "question": "Lemos", "answer": "We read", "explanation": "Lemos isso ontem. (We read this yesterday.)" },
+        { "id": "PORT_IRREG_079", "question": "Fazemos", "answer": "We do / We make", "explanation": "O que fazemos agora? (What do we do now?)" },
+        { "id": "PORT_IRREG_080", "question": "Pudemos", "answer": "We could / We were able", "explanation": "Pudemos ajudar. (We were able to help.)" },
+        { "id": "PORT_IRREG_081", "question": "Tive", "answer": "I had", "explanation": "Tive um problema. (I had a problem.)" },
+        { "id": "PORT_IRREG_082", "question": "Estive", "answer": "I was (state)", "explanation": "Estive lá semana passada. (I was there last week.)" },
+        { "id": "PORT_IRREG_083", "question": "Houve", "answer": "There was / There were", "explanation": "Houve um erro. (There was an error.)" },
+        { "id": "PORT_IRREG_084", "question": "Trarei", "answer": "I will bring", "explanation": "Trarei amanhã sem falta. (I'll bring it tomorrow without fail.)" },
+        { "id": "PORT_IRREG_085", "question": "Direi", "answer": "I will say / I'll tell", "explanation": "Não direi nada. (I won't say anything.)" },
+        { "id": "PORT_IRREG_086", "question": "Farão", "answer": "They-You (pl) will do/make", "explanation": "O que eles farão? (What will they do?)" },
+        { "id": "PORT_IRREG_087", "question": "Poderia", "answer": "I-You-He-She could / might", "explanation": "Poderia me ajudar? (Could you help me?)" },
+        { "id": "PORT_IRREG_088", "question": "Gostaria", "answer": "I-You-He-She would like", "explanation": "Gostaria de um café. (I would like a coffee.)" },
+        { "id": "PORT_IRREG_089", "question": "Soubermos", "answer": "If we know / find out", "explanation": "Se soubermos, avisamos. (If we find out, we'll let [you] know.)" },
+        { "id": "PORT_IRREG_090", "question": "Vier", "answer": "If-When I-You-He-She comes", "explanation": "Se ele vier, eu saio. (If he comes, I leave.)" },
+        { "id": "PORT_IRREG_091", "question": "Fizer", "answer": "If-When I-You-He-She does", "explanation": "Se você fizer isso, morre. (If you do that, you die.)" },
+        { "id": "PORT_IRREG_092", "question": "Puder", "answer": "If-When I-You-He-She can", "explanation": "Quando eu puder, eu vou. (When I can, I'll go.)" },
+        { "id": "PORT_IRREG_093", "question": "Quiser", "answer": "If-When I-You-He-She wants", "explanation": "Se você quiser, eu topo. (If you want, I'm down.)" },
+        { "id": "PORT_IRREG_094", "question": "Der", "answer": "If-When it works / possible", "explanation": "Se der, eu apareço. (If possible, I'll show up.)" },
+        { "id": "PORT_IRREG_095", "question": "Virmos", "answer": "If we see", "explanation": "Se o virmos, falamos. (If we see him, we'll talk.)" },
+        { "id": "PORT_IRREG_096", "question": "Dissermos", "answer": "If we say / tell", "explanation": "Se dissermos a verdade... (If we tell the truth...)" },
+        { "id": "PORT_IRREG_097", "question": "Trouxerem", "answer": "If they bring", "explanation": "Se eles trouxerem comida... (If they bring food...)" },
+        { "id": "PORT_IRREG_098", "question": "Puserem", "answer": "If they put", "explanation": "Se puserem aqui, quebra. (If they put [it] here, it breaks.)" },
+        { "id": "PORT_IRREG_099", "question": "Tiverem", "answer": "If they have", "explanation": "Se as meninas tiverem lá... (If the girls are there...)" },
+        { "id": "PORT_IRREG_100", "question": "Quiserem", "answer": "If they want", "explanation": "Se eles quiserem vir, pode. (If they want to come, they can.)" }
     ]
 }

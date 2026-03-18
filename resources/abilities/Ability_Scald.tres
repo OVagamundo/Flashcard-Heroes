@@ -6,6 +6,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_scald"
+name_key = "ability.scald.name"
+description_key = "ability.scald.desc"
 trigger = &"on_healed"
 effects = Array[Resource]([ExtResource("2_effect")])
 priority = 0

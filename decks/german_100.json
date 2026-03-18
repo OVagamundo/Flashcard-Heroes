@@ -1,607 +1,107 @@
 {
     "deck_id": "german_100",
-    "display_name": "German Sentences 100",
-    "description": "100 most common everyday German sentences (3 words each)",
+    "display_name": "German Casual Conversations",
+    "description": "100 highly useful words and expressions for casual German conversation",
     "cards": [
-        {
-            "id": "GER_SENT_001",
-            "question": "Wie geht es",
-            "answer": "How are you",
-            "explanation": "Common greeting"
-        },
-        {
-            "id": "GER_SENT_002",
-            "question": "Ich habe Hunger",
-            "answer": "I am hungry",
-            "explanation": "Expressing hunger"
-        },
-        {
-            "id": "GER_SENT_003",
-            "question": "Danke für Hilfe",
-            "answer": "Thanks for help",
-            "explanation": "Gratitude"
-        },
-        {
-            "id": "GER_SENT_004",
-            "question": "Entschuldigung für",
-            "answer": "Sorry for",
-            "explanation": "Apology"
-        },
-        {
-            "id": "GER_SENT_005",
-            "question": "Wo ist Toilette",
-            "answer": "Where is bathroom",
-            "explanation": "Asking location"
-        },
-        {
-            "id": "GER_SENT_006",
-            "question": "Wie viel kostet",
-            "answer": "How much costs",
-            "explanation": "Asking price"
-        },
-        {
-            "id": "GER_SENT_007",
-            "question": "Ich brauche Hilfe",
-            "answer": "I need help",
-            "explanation": "Requesting assistance"
-        },
-        {
-            "id": "GER_SENT_008",
-            "question": "Lass uns gehen",
-            "answer": "Let's go",
-            "explanation": "Invitation"
-        },
-        {
-            "id": "GER_SENT_009",
-            "question": "Ich will Wasser",
-            "answer": "I want water",
-            "explanation": "Requesting drink"
-        },
-        {
-            "id": "GER_SENT_010",
-            "question": "Ich bin müde",
-            "answer": "I am tired",
-            "explanation": "State of fatigue"
-        },
-        {
-            "id": "GER_SENT_011",
-            "question": "Ich bin glücklich",
-            "answer": "I am happy",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_012",
-            "question": "Wir gehen heute",
-            "answer": "We go today",
-            "explanation": "Future plan"
-        },
-        {
-            "id": "GER_SENT_013",
-            "question": "Ich habe Auto",
-            "answer": "I have car",
-            "explanation": "Possession"
-        },
-        {
-            "id": "GER_SENT_014",
-            "question": "Kannst du helfen",
-            "answer": "Can you help",
-            "explanation": "Request"
-        },
-        {
-            "id": "GER_SENT_015",
-            "question": "Er ist hier",
-            "answer": "He is here",
-            "explanation": "Presence"
-        },
-        {
-            "id": "GER_SENT_016",
-            "question": "Sie ist dort",
-            "answer": "She is there",
-            "explanation": "Presence"
-        },
-        {
-            "id": "GER_SENT_017",
-            "question": "Wir reisen zusammen",
-            "answer": "We travel together",
-            "explanation": "Future activity"
-        },
-        {
-            "id": "GER_SENT_018",
-            "question": "Ich muss schlafen",
-            "answer": "I must sleep",
-            "explanation": "Obligation"
-        },
-        {
-            "id": "GER_SENT_019",
-            "question": "Lass uns essen",
-            "answer": "Let's eat",
-            "explanation": "Invitation to eat"
-        },
-        {
-            "id": "GER_SENT_020",
-            "question": "Ich mag Musik",
-            "answer": "I like music",
-            "explanation": "Preference"
-        },
-        {
-            "id": "GER_SENT_021",
-            "question": "Er spielt Fußball",
-            "answer": "He plays soccer",
-            "explanation": "Statement"
-        },
-        {
-            "id": "GER_SENT_022",
-            "question": "Sie liest Buch",
-            "answer": "She reads book",
-            "explanation": "Current action"
-        },
-        {
-            "id": "GER_SENT_023",
-            "question": "Wir gehen Park",
-            "answer": "We go park",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "GER_SENT_024",
-            "question": "Ich habe Zeit",
-            "answer": "I have time",
-            "explanation": "Statement of availability"
-        },
-        {
-            "id": "GER_SENT_025",
-            "question": "Du hast Geld",
-            "answer": "You have money",
-            "explanation": "Possession"
-        },
-        {
-            "id": "GER_SENT_026",
-            "question": "Er hat Angst",
-            "answer": "He is afraid",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_027",
-            "question": "Sie hat Angst",
-            "answer": "She is afraid",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_028",
-            "question": "Ich verstehe nicht",
-            "answer": "I don't understand",
-            "explanation": "Admission"
-        },
-        {
-            "id": "GER_SENT_029",
-            "question": "Kannst du warten",
-            "answer": "Can you wait",
-            "explanation": "Request"
-        },
-        {
-            "id": "GER_SENT_030",
-            "question": "Wir machen Pause",
-            "answer": "We take break",
-            "explanation": "Suggestion"
-        },
-        {
-            "id": "GER_SENT_031",
-            "question": "Ich brauche Arzt",
-            "answer": "I need doctor",
-            "explanation": "Health request"
-        },
-        {
-            "id": "GER_SENT_032",
-            "question": "Er ist krank",
-            "answer": "He is sick",
-            "explanation": "Health status"
-        },
-        {
-            "id": "GER_SENT_033",
-            "question": "Sie ist krank",
-            "answer": "She is sick",
-            "explanation": "Health status"
-        },
-        {
-            "id": "GER_SENT_034",
-            "question": "Ich will reisen",
-            "answer": "I want travel",
-            "explanation": "Desire"
-        },
-        {
-            "id": "GER_SENT_035",
-            "question": "Wir gehen jetzt",
-            "answer": "We go now",
-            "explanation": "Immediate action"
-        },
-        {
-            "id": "GER_SENT_036",
-            "question": "Er arbeitet heute",
-            "answer": "He works today",
-            "explanation": "Current activity"
-        },
-        {
-            "id": "GER_SENT_037",
-            "question": "Sie arbeitet morgen",
-            "answer": "She works tomorrow",
-            "explanation": "Future activity"
-        },
-        {
-            "id": "GER_SENT_038",
-            "question": "Ich habe Angst",
-            "answer": "I am afraid",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_039",
-            "question": "Du bist bereit",
-            "answer": "You are ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "GER_SENT_040",
-            "question": "Er ist bereit",
-            "answer": "He is ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "GER_SENT_041",
-            "question": "Sie ist bereit",
-            "answer": "She is ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "GER_SENT_042",
-            "question": "Ich muss gehen",
-            "answer": "I must go",
-            "explanation": "Obligation"
-        },
-        {
-            "id": "GER_SENT_043",
-            "question": "Wir reden jetzt",
-            "answer": "We talk now",
-            "explanation": "Invitation"
-        },
-        {
-            "id": "GER_SENT_044",
-            "question": "Er hört Musik",
-            "answer": "He listens music",
-            "explanation": "Current action"
-        },
-        {
-            "id": "GER_SENT_045",
-            "question": "Sie spricht Deutsch",
-            "answer": "She speaks German",
-            "explanation": "Language ability"
-        },
-        {
-            "id": "GER_SENT_046",
-            "question": "Ich lerne Deutsch",
-            "answer": "I learn German",
-            "explanation": "Learning"
-        },
-        {
-            "id": "GER_SENT_047",
-            "question": "Kannst du kommen",
-            "answer": "Can you come",
-            "explanation": "Request"
-        },
-        {
-            "id": "GER_SENT_048",
-            "question": "Wir kaufen das",
-            "answer": "We buy that",
-            "explanation": "Purchase"
-        },
-        {
-            "id": "GER_SENT_049",
-            "question": "Ich will kaufen",
-            "answer": "I want buy",
-            "explanation": "Desire"
-        },
-        {
-            "id": "GER_SENT_050",
-            "question": "Du hast Zeit",
-            "answer": "You have time",
-            "explanation": "Statement"
-        },
-        {
-            "id": "GER_SENT_051",
-            "question": "Er hat Zeit",
-            "answer": "He has time",
-            "explanation": "Statement"
-        },
-        {
-            "id": "GER_SENT_052",
-            "question": "Sie hat Zeit",
-            "answer": "She has time",
-            "explanation": "Statement"
-        },
-        {
-            "id": "GER_SENT_053",
-            "question": "Ich brauche Wasser",
-            "answer": "I need water",
-            "explanation": "Request"
-        },
-        {
-            "id": "GER_SENT_054",
-            "question": "Wir starten jetzt",
-            "answer": "We start now",
-            "explanation": "Invitation"
-        },
-        {
-            "id": "GER_SENT_055",
-            "question": "Er ist glücklich",
-            "answer": "He is happy",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_056",
-            "question": "Sie ist traurig",
-            "answer": "She is sad",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_057",
-            "question": "Ich bin müde",
-            "answer": "I am tired",
-            "explanation": "State"
-        },
-        {
-            "id": "GER_SENT_058",
-            "question": "Du bist bereit",
-            "answer": "You are ready",
-            "explanation": "Readiness"
-        },
-        {
-            "id": "GER_SENT_059",
-            "question": "Wir gehen essen",
-            "answer": "We go eat",
-            "explanation": "Invitation"
-        },
-        {
-            "id": "GER_SENT_060",
-            "question": "Er hat Geld",
-            "answer": "He has money",
-            "explanation": "Possession"
-        },
-        {
-            "id": "GER_SENT_061",
-            "question": "Sie hat Geld",
-            "answer": "She has money",
-            "explanation": "Possession"
-        },
-        {
-            "id": "GER_SENT_062",
-            "question": "Ich will lernen",
-            "answer": "I want learn",
-            "explanation": "Desire"
-        },
-        {
-            "id": "GER_SENT_063",
-            "question": "Wir machen Sport",
-            "answer": "We do sport",
-            "explanation": "Activity"
-        },
-        {
-            "id": "GER_SENT_064",
-            "question": "Er spielt Klavier",
-            "answer": "He plays piano",
-            "explanation": "Hobby"
-        },
-        {
-            "id": "GER_SENT_065",
-            "question": "Sie spielt Gitarre",
-            "answer": "She plays guitar",
-            "explanation": "Hobby"
-        },
-        {
-            "id": "GER_SENT_066",
-            "question": "Ich habe Hunger",
-            "answer": "I am hungry",
-            "explanation": "State"
-        },
-        {
-            "id": "GER_SENT_067",
-            "question": "Wir gehen schwimmen",
-            "answer": "We go swimming",
-            "explanation": "Activity"
-        },
-        {
-            "id": "GER_SENT_068",
-            "question": "Er fährt Auto",
-            "answer": "He drives car",
-            "explanation": "Action"
-        },
-        {
-            "id": "GER_SENT_069",
-            "question": "Sie fährt Fahrrad",
-            "answer": "She rides bike",
-            "explanation": "Action"
-        },
-        {
-            "id": "GER_SENT_070",
-            "question": "Ich trinke Kaffee",
-            "answer": "I drink coffee",
-            "explanation": "Habit"
-        },
-        {
-            "id": "GER_SENT_071",
-            "question": "Wir trinken Tee",
-            "answer": "We drink tea",
-            "explanation": "Habit"
-        },
-        {
-            "id": "GER_SENT_072",
-            "question": "Er liest Zeitung",
-            "answer": "He reads newspaper",
-            "explanation": "Current action"
-        },
-        {
-            "id": "GER_SENT_073",
-            "question": "Sie liest Buch",
-            "answer": "She reads book",
-            "explanation": "Current action"
-        },
-        {
-            "id": "GER_SENT_074",
-            "question": "Ich schreibe Brief",
-            "answer": "I write letter",
-            "explanation": "Action"
-        },
-        {
-            "id": "GER_SENT_075",
-            "question": "Wir schreiben Email",
-            "answer": "We write email",
-            "explanation": "Action"
-        },
-        {
-            "id": "GER_SENT_076",
-            "question": "Er kocht Suppe",
-            "answer": "He cooks soup",
-            "explanation": "Cooking"
-        },
-        {
-            "id": "GER_SENT_077",
-            "question": "Sie kocht Reis",
-            "answer": "She cooks rice",
-            "explanation": "Cooking"
-        },
-        {
-            "id": "GER_SENT_078",
-            "question": "Ich kaufe Brot",
-            "answer": "I buy bread",
-            "explanation": "Shopping"
-        },
-        {
-            "id": "GER_SENT_079",
-            "question": "Wir kaufen Milch",
-            "answer": "We buy milk",
-            "explanation": "Shopping"
-        },
-        {
-            "id": "GER_SENT_080",
-            "question": "Er fährt Zug",
-            "answer": "He rides train",
-            "explanation": "Transport"
-        },
-        {
-            "id": "GER_SENT_081",
-            "question": "Sie fährt Bus",
-            "answer": "She rides bus",
-            "explanation": "Transport"
-        },
-        {
-            "id": "GER_SENT_082",
-            "question": "Ich nehme Taxi",
-            "answer": "I take taxi",
-            "explanation": "Transport"
-        },
-        {
-            "id": "GER_SENT_083",
-            "question": "Wir gehen laufen",
-            "answer": "We go running",
-            "explanation": "Exercise"
-        },
-        {
-            "id": "GER_SENT_084",
-            "question": "Er spielt Tennis",
-            "answer": "He plays tennis",
-            "explanation": "Sport"
-        },
-        {
-            "id": "GER_SENT_085",
-            "question": "Sie spielt Fußball",
-            "answer": "She plays soccer",
-            "explanation": "Sport"
-        },
-        {
-            "id": "GER_SENT_086",
-            "question": "Ich sehe Film",
-            "answer": "I watch movie",
-            "explanation": "Leisure"
-        },
-        {
-            "id": "GER_SENT_087",
-            "question": "Wir sehen Serie",
-            "answer": "We watch series",
-            "explanation": "Leisure"
-        },
-        {
-            "id": "GER_SENT_088",
-            "question": "Er hört Radio",
-            "answer": "He listens radio",
-            "explanation": "Leisure"
-        },
-        {
-            "id": "GER_SENT_089",
-            "question": "Sie hört Podcast",
-            "answer": "She listens podcast",
-            "explanation": "Leisure"
-        },
-        {
-            "id": "GER_SENT_090",
-            "question": "Ich spiele Spiel",
-            "answer": "I play game",
-            "explanation": "Leisure"
-        },
-        {
-            "id": "GER_SENT_091",
-            "question": "Wir spielen Karten",
-            "answer": "We play cards",
-            "explanation": "Leisure"
-        },
-        {
-            "id": "GER_SENT_092",
-            "question": "Er arbeitet hart",
-            "answer": "He works hard",
-            "explanation": "Work ethic"
-        },
-        {
-            "id": "GER_SENT_093",
-            "question": "Sie arbeitet schnell",
-            "answer": "She works fast",
-            "explanation": "Work ethic"
-        },
-        {
-            "id": "GER_SENT_094",
-            "question": "Ich lerne schnell",
-            "answer": "I learn fast",
-            "explanation": "Skill"
-        },
-        {
-            "id": "GER_SENT_095",
-            "question": "Wir lernen zusammen",
-            "answer": "We learn together",
-            "explanation": "Collaboration"
-        },
-        {
-            "id": "GER_SENT_096",
-            "question": "Er spricht laut",
-            "answer": "He speaks loud",
-            "explanation": "Description"
-        },
-        {
-            "id": "GER_SENT_097",
-            "question": "Sie spricht leise",
-            "answer": "She speaks soft",
-            "explanation": "Description"
-        },
-        {
-            "id": "GER_SENT_098",
-            "question": "Ich fühle mich",
-            "answer": "I feel",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_099",
-            "question": "Wir fühlen uns",
-            "answer": "We feel",
-            "explanation": "Emotion"
-        },
-        {
-            "id": "GER_SENT_100",
-            "question": "Er bleibt hier",
-            "answer": "He stays here",
-            "explanation": "Location"
-        }
+        { "id": "GER_CASUAL_001", "question": "Halt", "answer": "Just / Kind of (particle)", "explanation": "Das ist halt so. (That's just the way it is.)" },
+        { "id": "GER_CASUAL_002", "question": "Mal", "answer": "Just / Once (particle)", "explanation": "Schau mal! (Just look!)" },
+        { "id": "GER_CASUAL_003", "question": "Doch", "answer": "Yes (after negative) / But", "explanation": "Hast du kein Geld? Doch! (Don't you have money? Yes, I do!)" },
+        { "id": "GER_CASUAL_004", "question": "Eben", "answer": "Exactly / Just (particle)", "explanation": "Eben! Das meine ich auch. (Exactly! That's what I mean too.)" },
+        { "id": "GER_CASUAL_005", "question": "Sowieso", "answer": "Anyway / Either way", "explanation": "Ich gehe sowieso dorthin. (I'm going there anyway.)" },
+        { "id": "GER_CASUAL_006", "question": "Überhaupt", "answer": "At all / Generally", "explanation": "Das stimmt überhaupt nicht. (That's not true at all.)" },
+        { "id": "GER_CASUAL_007", "question": "Eigentlich", "answer": "Actually / In fact", "explanation": "Was machst du eigentlich hier? (What are you actually doing here?)" },
+        { "id": "GER_CASUAL_008", "question": "Vielleicht", "answer": "Maybe / Perhaps", "explanation": "Vielleicht morgen? (Maybe tomorrow?)" },
+        { "id": "GER_CASUAL_009", "question": "Bestimmt", "answer": "Certainly / Definitely", "explanation": "Das klappt bestimmt. (That will definitely work.)" },
+        { "id": "GER_CASUAL_010", "question": "Genau", "answer": "Exactly / Precise", "explanation": "Genau das! (Exactly that!)" },
+        { "id": "GER_CASUAL_011", "question": "Quasi", "answer": "Basically / More or less", "explanation": "Wir sind quasi fertig. (We're basically done.)" },
+        { "id": "GER_CASUAL_012", "question": "Irgendwie", "answer": "Somehow / Kind of", "explanation": "Es ist irgendwie komisch. (It's kind of weird.)" },
+        { "id": "GER_CASUAL_013", "question": "Irgendwas", "answer": "Something", "explanation": "Hast du irgendwas gesehen? (Have you seen something?)" },
+        { "id": "GER_CASUAL_014", "question": "Irgendwo", "answer": "Somewhere", "explanation": "Es muss irgendwo sein. (It must be somewhere.)" },
+        { "id": "GER_CASUAL_015", "question": "Sogar", "answer": "Even", "explanation": "Sogar er weiß es. (Even he knows it.)" },
+        { "id": "GER_CASUAL_016", "question": "Gerade", "answer": "Just / Currently / Straight", "explanation": "Ich bin gerade angekommen. (I just arrived.)" },
+        { "id": "GER_CASUAL_017", "question": "Schon", "answer": "Already / Yet", "explanation": "Bist du schon fertig? (Are you done already?)" },
+        { "id": "GER_CASUAL_018", "question": "Noch", "answer": "Still / More", "explanation": "Noch ein Bier, bitte. (One more beer, please.)" },
+        { "id": "GER_CASUAL_019", "question": "Echt?", "answer": "Really? / Genuine", "explanation": "Echt? Das wusste ich nicht. (Really? I didn't know that.)" },
+        { "id": "GER_CASUAL_020", "question": "Ganz", "answer": "Quite / Entirely", "explanation": "Das ist ganz gut. (That's quite good.)" },
+        { "id": "GER_CASUAL_021", "question": "Gar nicht", "answer": "Not at all", "explanation": "Ich habe gar nicht geschlafen. (I didn't sleep at all.)" },
+        { "id": "GER_CASUAL_022", "question": "Na ja", "answer": "Well... / Oh well", "explanation": "Na ja, es geht so. (Well, it's so-so.)" },
+        { "id": "GER_CASUAL_023", "question": "Ach so!", "answer": "OIC! / I see!", "explanation": "Ach so, jetzt verstehe ich. (Oh, I see, now I understand.)" },
+        { "id": "GER_CASUAL_024", "question": "Krass", "answer": "Extreme / Awesome / Intense", "explanation": "Das ist echt krass! (That's really extreme/awesome!)" },
+        { "id": "GER_CASUAL_025", "question": "Wahnsinn", "answer": "Crazy / Insane / Amazing", "explanation": "Wahnsinn! Wie hast du das gemacht? (Amazing! How did you do that?)" },
+        { "id": "GER_CASUAL_026", "question": "Klappt", "answer": "It works / It's on", "explanation": "Das klappt bestimmt! (That will definitely work!)" },
+        { "id": "GER_CASUAL_027", "question": "Passt", "answer": "It fits / It's fine", "explanation": "Passt schon! (It's fine! / No worries!)" },
+        { "id": "GER_CASUAL_028", "question": "Checken", "answer": "To check / To get it", "explanation": "Ich check das nicht. (I don't get it.)" },
+        { "id": "GER_CASUAL_029", "question": "Machen", "answer": "To do / To make", "explanation": "Was machen wir jetzt? (What are we doing now?)" },
+        { "id": "GER_CASUAL_030", "question": "Gucken", "answer": "To look / To watch", "explanation": "Guck mal da! (Look over there!)" },
+        { "id": "GER_CASUAL_031", "question": "Holen", "answer": "To get / To fetch", "explanation": "Soll ich ein Bier holen? (Should I get a beer?)" },
+        { "id": "GER_CASUAL_032", "question": "Kriegen", "answer": "To get / To receive (inf.)", "explanation": "Was kriegst du? (What are you getting?)" },
+        { "id": "GER_CASUAL_033", "question": "Laufen", "answer": "To run / To walk / To go", "explanation": "Wie läuft's? (How's it going?)" },
+        { "id": "GER_CASUAL_034", "question": "Sagen", "answer": "To say / To tell", "explanation": "Sag mir die Wahrheit. (Tell me the truth.)" },
+        { "id": "GER_CASUAL_035", "question": "Hören", "answer": "To hear / To listen", "explanation": "Hör mal kurz zu. (Listen for a second.)" },
+        { "id": "GER_CASUAL_036", "question": "Wissen", "answer": "To know (fact)", "explanation": "Ich weiß es nicht. (I don't know it.)" },
+        { "id": "GER_CASUAL_037", "question": "Kennen", "answer": "To know (person/place)", "explanation": "Kennst du ihn? (Do you know him?)" },
+        { "id": "GER_CASUAL_038", "question": "Gehen", "answer": "To go / To walk", "explanation": "Das geht nicht. (That doesn't work / isn't possible.)" },
+        { "id": "GER_CASUAL_039", "question": "Stehen", "answer": "To stand / Suits you", "explanation": "Das steht dir gut. (That looks good on you.)" },
+        { "id": "GER_CASUAL_040", "question": "Bringen", "answer": "To bring / To take", "explanation": "Bring mir bitte was mit. (Please bring me something.)" },
+        { "id": "GER_CASUAL_041", "question": "Nehmen", "answer": "To take", "explanation": "Nimm das hier mit. (Take this with you.)" },
+        { "id": "GER_CASUAL_042", "question": "Geben", "answer": "To give", "explanation": "Es gibt... (There is...)" },
+        { "id": "GER_CASUAL_043", "question": "Lassen", "answer": "To let / To leave", "explanation": "Lass das bitte! (Please stop that!)" },
+        { "id": "GER_CASUAL_044", "question": "Bleiben", "answer": "To stay / To remain", "explanation": "Ich bleibe hier. (I'm staying here.)" },
+        { "id": "GER_CASUAL_045", "question": "Gleich", "answer": "Same / Immediately / Soon", "explanation": "Ich komme gleich. (I'm coming soon.)" },
+        { "id": "GER_CASUAL_046", "question": "Später", "answer": "Later", "explanation": "Bis später! (See you later!)" },
+        { "id": "GER_CASUAL_047", "question": "Früh", "answer": "Early", "explanation": "Es ist noch früh. (It's still early.)" },
+        { "id": "GER_CASUAL_048", "question": "Viel", "answer": "Much / Many", "explanation": "Viel Glück! (Good luck!)" },
+        { "id": "GER_CASUAL_049", "question": "Wenig", "answer": "Little / Few", "explanation": "Ich habe wenig Zeit. (I have little time.)" },
+        { "id": "GER_CASUAL_050", "question": "Schnell", "answer": "Fast / Quick", "explanation": "Mach schnell! (Hurry up!)" },
+        { "id": "GER_CASUAL_051", "question": "Langsam", "answer": "Slow / Slowly", "explanation": "Langsam bitte. (Slowly, please.)" },
+        { "id": "GER_CASUAL_052", "question": "Heiß", "answer": "Hot", "explanation": "Mir ist heiß. (I'm hot.)" },
+        { "id": "GER_CASUAL_053", "question": "Kalt", "answer": "Cold", "explanation": "Hier ist es kalt. (It's cold in here.)" },
+        { "id": "GER_CASUAL_054", "question": "Teuer", "answer": "Expensive", "explanation": "Das ist zu teuer. (That's too expensive.)" },
+        { "id": "GER_CASUAL_055", "question": "Günstig", "answer": "Cheap / Favorable", "explanation": "Das war günstig. (That was cheap.)" },
+        { "id": "GER_CASUAL_056", "question": "Klar", "answer": "Clear / Sure", "explanation": "Na klar! (Sure!)" },
+        { "id": "GER_CASUAL_057", "question": "Sicher", "answer": "Safe / Certain / Sure", "explanation": "Ganz sicher? (Are you quite sure?)" },
+        { "id": "GER_CASUAL_058", "question": "Voll", "answer": "Full / Entirely (slang)", "explanation": "Das ist voll gut! (That's really good!)" },
+        { "id": "GER_CASUAL_059", "question": "Leer", "answer": "Empty", "explanation": "Das Glas ist leer. (The glass is empty.)" },
+        { "id": "GER_CASUAL_060", "question": "Fertig", "answer": "Ready / Finished / Done", "explanation": "Bist du fertig? (Are you ready?)" },
+        { "id": "GER_CASUAL_061", "question": "Wichtig", "answer": "Important", "explanation": "Das ist sehr wichtig. (That is very important.)" },
+        { "id": "GER_CASUAL_062", "question": "Egal", "answer": "Doesn't matter / Whatever", "explanation": "Das ist mir egal. (I don't care / It doesn't matter to me.)" },
+        { "id": "GER_CASUAL_063", "question": "Leider", "answer": "Unfortunately / Regrettably", "explanation": "Leider kann ich nicht. (Unfortunately I can't.)" },
+        { "id": "GER_CASUAL_064", "question": "Hoffentlich", "answer": "Hopefully", "explanation": "Hoffentlich klappt es. (Hopefully it works.)" },
+        { "id": "GER_CASUAL_065", "question": "Vielleicht", "answer": "Maybe / Perhaps", "explanation": "Vielleicht nächstes Mal. (Maybe next time.)" },
+        { "id": "GER_CASUAL_066", "question": "Überall", "answer": "Everywhere", "explanation": "Ich habe überall gesucht. (I looked everywhere.)" },
+        { "id": "GER_CASUAL_067", "question": "Irgendwo", "answer": "Somewhere", "explanation": "Irgendwo da drüben. (Somewhere over there.)" },
+        { "id": "GER_CASUAL_068", "question": "Hier", "answer": "Here", "explanation": "Ich bin hier! (I'm here!)" },
+        { "id": "GER_CASUAL_069", "question": "Dort", "answer": "There", "explanation": "Dort ist das Hotel. (The hotel is there.)" },
+        { "id": "GER_CASUAL_070", "question": "Draußen", "answer": "Outside / Outdoors", "explanation": "Es ist kalt draußen. (It's cold outside.)" },
+        { "id": "GER_CASUAL_071", "question": "Drinnen", "answer": "Inside / Indoors", "explanation": "Lass uns reingehen. (Let's go inside.)" },
+        { "id": "GER_CASUAL_072", "question": "Oben", "answer": "Up / Upstairs", "explanation": "Ganz oben. (At the very top.)" },
+        { "id": "GER_CASUAL_073", "question": "Unten", "answer": "Down / Downstairs", "explanation": "Ganz unten. (At the very bottom.)" },
+        { "id": "GER_CASUAL_074", "question": "Vorne", "answer": "Front / Ahead", "explanation": "Gleich vorne an der Ecke. (Right ahead at the corner.)" },
+        { "id": "GER_CASUAL_075", "question": "Hinten", "answer": "Back / Behind", "explanation": "Ganz hinten im Laden. (At the very back of the shop.)" },
+        { "id": "GER_CASUAL_076", "question": "Links", "answer": "Left", "explanation": "Hier links abbiegen. (Turn left here.)" },
+        { "id": "GER_CASUAL_077", "question": "Rechts", "answer": "Right", "explanation": "Auf der rechten Seite. (On the right side.)" },
+        { "id": "GER_CASUAL_078", "question": "Morgen", "answer": "Tomorrow / Morning", "explanation": "Bis morgen! (See you tomorrow!)" },
+        { "id": "GER_CASUAL_079", "question": "Heute", "answer": "Today", "explanation": "Heute ist ein guter Tag. (Today is a good day.)" },
+        { "id": "GER_CASUAL_080", "question": "Gestern", "answer": "Yesterday", "explanation": "Das war gestern. (That was yesterday.)" },
+        { "id": "GER_CASUAL_081", "question": "Immer", "answer": "Always", "explanation": "Immer mit der Ruhe! (Take it easy!)" },
+        { "id": "GER_CASUAL_082", "question": "Nie", "answer": "Never", "explanation": "Das habe ich nie gesagt. (I never said that.)" },
+        { "id": "GER_CASUAL_083", "question": "Manchmal", "answer": "Sometimes", "explanation": "Manchmal regnet es. (Sometimes it rains.)" },
+        { "id": "GER_CASUAL_084", "question": "Oft", "answer": "Often / Frequently", "explanation": "Ich gehe oft joggen. (I often go jogging.)" },
+        { "id": "GER_CASUAL_085", "question": "Selten", "answer": "Rarely / Seldom", "explanation": "Das passiert selten. (That rarely happens.)" },
+        { "id": "GER_CASUAL_086", "question": "Sofort", "answer": "Immediately / Right away", "explanation": "Ich komme sofort! (I'm coming right away!)" },
+        { "id": "GER_CASUAL_087", "question": "Zuerst", "answer": "First / At first", "explanation": "Zuerst essen wir. (First we eat.)" },
+        { "id": "GER_CASUAL_088", "question": "Dann", "answer": "Then", "explanation": "Erst das, dann das. (First this, then that.)" },
+        { "id": "GER_CASUAL_089", "question": "Danach", "answer": "Afterwards", "explanation": "Und was kam danach? (And what came after that?)" },
+        { "id": "GER_CASUAL_090", "question": "Beide", "answer": "Both", "explanation": "Wir nehmen beide. (We'll take both.)" },
+        { "id": "GER_CASUAL_091", "question": "Andere", "answer": "Other / Another", "explanation": "Die anderen kommen gleich. (The others are coming soon.)" },
+        { "id": "GER_CASUAL_092", "question": "Wenigstens", "answer": "At least", "explanation": "Wenigstens hat es geklappt. (At least it worked.)" },
+        { "id": "GER_CASUAL_093", "question": "Vielleicht", "answer": "Maybe", "explanation": "Vielleicht hast du recht. (Maybe you're right.)" },
+        { "id": "GER_CASUAL_094", "question": "Wirklich", "answer": "Really / Truly", "explanation": "Wirklich? Wow! (Really? Wow!)" },
+        { "id": "GER_CASUAL_095", "question": "Zusammen", "answer": "Together", "explanation": "Lass uns zusammen gehen. (Let's go together.)" },
+        { "id": "GER_CASUAL_096", "question": "Allein", "answer": "Alone", "explanation": "Bist du allein? (Are you alone?)" },
+        { "id": "GER_CASUAL_097", "question": "Muss", "answer": "Must / Have to", "explanation": "Ich muss jetzt gehen. (I have to go now.)" },
+        { "id": "GER_CASUAL_098", "question": "Kann", "answer": "Can / Be able to", "explanation": "Kannst du mir helfen? (Can you help me?)" },
+        { "id": "GER_CASUAL_099", "question": "Soll", "answer": "Should / Is supposed to", "explanation": "Das soll so sein. (It's supposed to be like that.)" },
+        { "id": "GER_CASUAL_100", "question": "Will", "answer": "Want / Intend", "explanation": "Ich will das! (I want that!)" }
     ]
 }

@@ -40,6 +40,18 @@ static var RUN_CONTAINER_TAGS: Dictionary = {
 # Query helpers
 # ------------------------------------------------------------------
 
+func get_deck_unlock_percentage() -> float:
+	"""Returns the percentage of the full deck that has been unlocked (active_deck_ids size / total card_ids).
+	Returns 0.0 if no deck is selected."""
+	if deck_def_id == &"":
+		return 0.0
+	
+	var full_deck = Database.get_cards_for_deck(deck_def_id)
+	if full_deck.is_empty():
+		return 0.0
+		
+	return float(active_deck_ids.size()) / float(full_deck.size())
+
 func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	return run_instances.get(uuid)
 
@@ -719,9 +731,9 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 			progress.mastery_level = FlashcardProgress.MASTERY_MIN # Start at level 1 (Very Hard)
 			flashcard_progress[card_id] = progress
 	
-	# Populate the initial active deck with the first 10 cards
-	# Required for minigame distractors (needs 10 cards minimum)
-	for i in range(min(10, deck_card_ids.size())):
+	# Populate the initial active deck with the first 6 cards
+	# Required for minigame distractors (needs 6 cards minimum)
+	for i in range(min(6, deck_card_ids.size())):
 		active_deck_ids.append(deck_card_ids[i])
 	
 	# Create fresh empty inventory containers for tiers 1-3
@@ -819,9 +831,9 @@ func check_deck_expansion() -> bool:
 		return false
 	
 	# CRITICAL: Do not expand deck until all initial 10 cards have been formally introduced
-	# via the new card popup. The minigame uses all 10 cards for questions immediately,
+	# via the new card popup. The minigame uses all 6 cards for questions immediately,
 	# but the popup introduces them one-by-one tracked by cards_presented_count.
-	if cards_presented_count < 10:
+	if cards_presented_count < 6:
 		return false
 	
 	var full_deck = Database.get_cards_for_deck(deck_def_id)

@@ -31,7 +31,7 @@ Each flashcard has a **mastery level** from 1 to 5, tracked per run (resets when
 **Mastery Progression:**
 - All cards start at level 1 (Very Hard).
 - **Correct answer:** Mastery increases by 1 (max 5).
-- **Incorrect answer:** Mastery decreases by 1 (min 1).
+- **Incorrect answer / Skip:** Mastery decreases by 1 (min 1).
 - Mastery does **not** persist across runs.
 
 ---
@@ -60,15 +60,16 @@ When `start_minigame` is called:
    
    **Priority Cards Preview:** The popup displays 10 clickable card buttons at the bottom showing the highest-priority cards from the active deck (sorted by SRS weight without RNG). Each button is colored according to its mastery level. Clicking a button switches the main display to show that card's information. This allows players to preview or study cards before they are formally introduced.
 
-2. **Start Timer:** 5-second session begins. The modal window disables all other interactions.
+2. **Start Timer:** 7-second session begins. The modal window disables all other interactions.
 
 3. **Question Loop:**
    - **Select Question:** Uses SRS algorithm (see Section 5).
-   - **Display:** Shows question with 9 multiple-choice answers.
+   - **Display:** Shows question with 6 multiple-choice answers in a 2x3 grid.
    - **Player Answers:**
-     - ✓ Correct: Panel flashes **white**, mastery +1, next question instantly.
-     - ✗ Incorrect: Panel flashes **red**, mastery −1, next question instantly.
-   - **Input Locking**: Inputs are strictly locked immediately upon selection. The lock is only released after the visual transition completes and the **new** answer buttons are spawned, preventing race conditions.
+     - ✓ Correct: Button highlights **Green**, Panel flashes **white**, mastery +1, timer +0.5s, spawns token VFX, next question after 0.05s.
+     - ✗ Incorrect: Button highlights **Red**, correct answer highlights **Green**, Panel flashes **red**, mastery −1, NO token, next question after 1.0s.
+     - ⏭ Skip: Correct answer highlights **Green**, timer +0.5s, NO token, mastery -1, next question after 0.5s.
+   - **Input Locking**: Inputs are strictly locked at the very start of the `_on_choice_selected` and `_on_skip_pressed` handlers. Any subsequent attempts to interact with the minigame are ignored until the visual transition completes and the **new** answer buttons are spawned.
 
 4. **Session End:** Timer expires → window closes → `minigame_finished` signal emitted.
 
@@ -112,7 +113,9 @@ Question selection uses weighted random selection with three priority factors:
 Rewards are handled by the calling system, not the FlashcardManager:
 
 **In Battle (BattleManager):**
-- Each correct answer = 1 Gacha Token (temporary, resets after battle).
+- **Correct Answer**: = 1 Gacha Token (temporary, resets after battle).
+- **Incorrect/Skip**: NO Token.
 
 **At Rest Sites (RestSite.gd):**
-- Each correct answer provides tokens. These tokens are used as currency to activate Gacha Machines at the Rest Site which roll for permanent stat increases to the Hero's HP or PWR.
+- **Correct Answer**: Provides tokens used to draw Permanent Hero Base Stat increases.
+- **Incorrect/Skip**: NO Token.

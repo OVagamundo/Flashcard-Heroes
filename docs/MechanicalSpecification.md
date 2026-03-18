@@ -108,7 +108,7 @@ Battle-temporary state:
 
 ## 3.3 Gacha Tokens
 
-* Generated via Flashcard Mini-Game during battle.
+* Generated via Correct Answers in the Flashcard Mini-Game during battle.
 * Used to draw from Gacha Machines.
 * Reset to 0 at end of each battle.
 * Can be banked between turns within a battle.
@@ -148,6 +148,7 @@ If neither side wins, next turn begins.
 The game supports both Desktop and Mobile interaction models.
 - **Mouse (Desktop)**: Drag-and-Drop, Single-Click Select, Hover-to-Peek.
 - **Touch (Mobile)**: Tap-to-Select, Long-Press-to-Peek (0.32s).
+- **Platform Specifics**: The "Exit Game" button is available on all platforms to close the application. The "Fullscreen" toggle is platform-dependent and hidden on mobile devices.
 
 ## 5.2 Drag-and-Drop Priority
 The game automatically determines intent when dropping one entity onto another:
@@ -391,7 +392,8 @@ Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. Th
 
 ## In Battle:
 
-Correct answers → Tokens
+Correct answers → Tokens (+1 Mastery)
+Incorrect/Skip → NO Tokens (-1 Mastery)
 
 ## At Rest Site:
 
@@ -465,6 +467,8 @@ Tier 3:
 ## 14.1 Inspection Window System
 Rules for locking and closing inspection modals:
 - **Opening**: Hover to preview; Click to "Lock" open.
+- **Robust Sizing**: Windows utilize a "Show-before-Measure" strategy, rendering with alpha 0.0 for 3 frames before positioning. To prevent these invisible windows from intercepting mouse events (especially for units near the screen origin), they are moved to an off-screen "waiting room" at `Vector2(-2000, -2000)` during the measurement phase.
+- **Immediate Cleanup**: Content grids (e.g. unit slots) are pruned of stale children immediately using `remove_child()` followed by `queue_free()`, ensuring no inherited "ghost slots" from previous inspections.
 - **Single Active Group**: Opening a new root closes the entire previous chain.
 - **Single Child per Parent**: A parent can only have one child window; opening a new one closes the current sibling and its descendants.
 - **Closing**: 
@@ -732,4 +736,4 @@ This document now:
 
 ## 17.2 Run Progression
 - **Difficulty Scaling**: `Day` counter increments `EncounterGenerator` budgets.
-- **Boss Tapering**: Bosses appear at fixed Day milestones.
+- **Boss Tapering**: Bosses appear at deck unlock thresholds (every 20%).

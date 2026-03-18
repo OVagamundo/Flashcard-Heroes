@@ -12,7 +12,7 @@ unit_t2_d.desc,PWR = Tokens (Min 1). Buffs to PWR grant HP.,PWR = Tokens (Min 1)
 ability.unit_t2_d_power.name,Token Power,Token Power
 ability.unit_t2_d_power.desc,PWR equals Tokens (Min 1). PWR buffs become HP.,PWR equals Tokens (Min 1). PWR buffs become HP.
 unit_t2_f.name,Merchant,Merchant
-unit_t2_f.desc,Initial PWR equals Gold when drawn or spawned.,PWR inicial igual ao Gold ao ser comprado ou invocado.
+unit_t2_f.desc,,
 ability.unit_t2_f_gold_pwr.name,Gold Investments,Investimentos em Ouro
 ability.unit_t2_f_gold_pwr.desc,Initial PWR equals Gold when drawn or spawned.,PWR inicial igual ao Gold ao ser comprado ou invocado.
 unit_t1_c.name,Protector,Protetor
@@ -43,11 +43,11 @@ trinket.polished_plate.desc,Armor does not decay at the end of the turn.,Armadur
 ability.polished_plate.name,Reinforced Armor,Armadura Reforçada
 ability.polished_plate.desc,"At the start of the turn, gain 2 Armor.","No início do turno, ganha 2 de Armadura."
 ability.item_tier2c_passive_heal.name,Regeneration,Regeneração
-ability.item_tier2c_passive_heal.desc,"When hurt, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido, cura esta unidade em 1 HP e ganha 1 PWR."
+ability.item_tier2c_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
 ability.unit_tier1a_passive_heal.name,Resilience,Resiliência
-ability.unit_tier1a_passive_heal.desc,"When hurt, Heal this unit by (PWR) HP.","Ao ser ferido, cura esta unidade em (PWR) HP."
+ability.unit_tier1a_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by (PWR) HP.","Ao ser ferido POR UM ATAQUE, cura esta unidade em (PWR) HP."
 ability.unit_tier1b_counter_on_hurt.name,Retaliation,Retaliação
-ability.unit_tier1b_counter_on_hurt.desc,"When hurt, Counter-attack the attacker for damage equal to this unit's current PWR. Triggers on final time when the damage to this unit is lethal.","Ao ser ferido, contra-ataca o atacante causando dano igual ao PWR atual desta unidade. Dispara uma última vez quando o dano é letal."
+ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for (PWR) damage. Triggers even if lethal.","Ao ser ferido POR UM ATAQUE, contra-ataca o atacante com (PWR) de dano. Dispara mesmo se letal."
 ability.item_tier1a_turn_start_heal.name,Restoration,Restauração
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No início do turno, cura o portador em 2 HP."
 ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
@@ -55,9 +55,9 @@ ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain +1 HP a
 ability.hero_bounty_hunter_ally_death_buff.name,Scavenger's Resolve,Determinação do Saqueador
 ability.hero_bounty_hunter_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 ability.item_tier3d_retaliate.name,Retaliation,Retaliação
-ability.item_tier3d_retaliate.desc,"When hurt, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido, causa metade do PWR do portador como dano a um inimigo aleatório."
+ability.item_tier3d_retaliate.desc,"When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatório."
 ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
-ability.unit_tier3d_resilient_aura.desc,"When hurt, grants +1 HP and +1 PWR to adjacent allies.","Ao ser ferido, concede +1 HP e +1 PWR aos aliados adjacentes."
+ability.unit_tier3d_resilient_aura.desc,"When hurt BY AN ATTACK, grants +1 HP and +1 PWR to adjacent allies.","Ao ser ferido POR UM ATAQUE, concede +1 HP e +1 PWR aos aliados adjacentes."
 item_t2_a.name,Summoning Scroll,Pergaminho de Invocação
 item_t2_a.desc,Summons a random Tier 1 unit upon death.,Invoca uma unidade Nível 1 aleatória ao morrer.
 item_t3_e.name,Death's Bargain,Barganha da Morte
@@ -135,11 +135,11 @@ ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal dama
 unit_t3_c.name,Soul Caller,Invocador de Almas
 unit_t3_c.desc,A mystical unit that summons powerful allies upon its demise.,Uma unidade mística que invoca aliados poderosos ao morrer.
 ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
-ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit in an empty slot.","Quando esta unidade morre, invoca uma unidade Nível 2 aleatória em um espaço vazio."
+ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit.","Quando esta unidade morre, invoca uma unidade Nível 2 aleatória."
 item_t3_a.name,Heart Stone,Pedra do Coração
-item_t3_a.desc,When hurt the holder spreads healing energy to allies.,Quando ferido o portador espalha energia curativa aos aliados.
+item_t3_a.desc,When hurt BY AN ATTACK the holder spreads healing energy to allies.,Quando ferido POR UM ATAQUE o portador espalha energia curativa aos aliados.
 ability.item_t3a_on_hurt_heal.name,Vital Link,Vínculo Vital
-ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt, heal two random allies for 2 HP each.","Quando o portador é ferido, cura dois aliados aleatórios em 2 HP cada."
+ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.","Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
 item_t3_b.name,Power Amulet,Amuleto de Poder
 item_t3_b.desc,When attacking the holder empowers allies with strength.,Ao atacar o portador fortalece aliados com poder.
 ability.item_t3b_on_attack_buff.name,Battle Cry,Grito de Guerra
@@ -180,6 +180,7 @@ ui.take_gold,Take Gold Instead,Pegar Ouro
 ui.run_complete,RUN COMPLETE!,JOGATINA COMPLETA!
 ui.congratulations,Congratulations!,Parabéns!
 ui.return_to_title,Return to Title,Voltar ao Início
+ui.exit_game,Exit Game,Sair do Jogo
 ui.battle_log,Battle Log,Registro de Batalha
 ui.hide,Hide,Esconder
 ui.clear,Clear,Limpar
@@ -226,6 +227,7 @@ ui.study,Study (+Tokens),Estudar (+Fichas)
 ui.stat_prize,Stat Prize,Prêmio de Atributo
 ui.show_tutorials,Show Tutorials & Tooltips,Mostrar Tutoriais e Dicas
 ui.crt_effect,CRT Display Effect,Efeito de Tela CRT
+ui.fullscreen,Fullscreen,Tela Cheia
 ui.next,Next,Próximo
 tutorial.loadout,"Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run.","Escolha seu herói e deck de flashcards. Heróis têm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck é o baralho de flashcards que será usado por toda a jogatina."
 tutorial.path_choice_1,"Choose your next encounter carefully, each encounter counts as one day of your quest. Enemies get stronger each passing day. Survive as long as you can and one day you might finally face the final boss!","Escolha seu próximo encontro com cuidado, cada encontro conta como um dia de sua busca. Inimigos ficam mais fortes a cada dia que passa. Sobreviva o máximo que puder e um dia você poderá finalmente enfrentar o chefe final!"
@@ -304,15 +306,15 @@ trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliado
 trait.earth.7,"All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura."
 trait.earth.9,"All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura."
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
-item.emblem_fire.desc,"When equipped, this unit counts as a Fire unit. Grants +2 PWR.","Quando equipado, esta unidade conta como uma unidade de Fogo. Concede +2 PWR."
+item.emblem_fire.desc,"Adds a [b]Soul Fire[/b] trait to this unit. Grants +2 PWR.","Adiciona o atributo de alma [b]Alma de Fogo[/b] a esta unidade. Concede +2 PWR."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
-item.emblem_earth.desc,"When equipped, this unit counts as an Earth unit. Grants +4 HP.","Quando equipado, esta unidade conta como uma unidade de Terra. Concede +4 HP."
+item.emblem_earth.desc,"Adds a [b]Soul Earth[/b] trait to this unit. Grants +4 HP.","Adiciona o atributo de alma [b]Alma de Terra[/b] a esta unidade. Concede +4 HP."
 trait.water.name,Water,Água
 trait.water.2,"Water units heal adjacent allies 1 HP at start of turn.","Unidades de Água curam aliados adjacentes em 1 HP no início do turno."
 trait.wind.name,Wind,Vento
 trait.wind.2,"Wind units steal 1 PWR from the opposite enemy at start of turn.","Unidades de Vento roubam 1 PWR do inimigo oposto no início do turno."
 item.emblem_water.name,Water Emblem,Emblema de Água
-item.emblem_water.desc,"When equipped, this unit counts as a Water unit. Grants +2 HP and +1 PWR.","Quando equipado, esta unidade conta como uma unidade de Água. Concede +2 HP e +1 PWR."
+item.emblem_water.desc,"Adds a [b]Soul Water[/b] trait to this unit. Grants +2 HP and +1 PWR.","Adiciona o atributo de alma [b]Alma de Água[/b] a esta unidade. Concede +2 HP e +1 PWR."
 item.emblem_wind.name,Wind Emblem,Emblema de Vento
 item.emblem_wind.desc,"When equipped, this unit counts as a Wind unit. Grants +1 PWR and +2 HP.","Quando equipado, esta unidade conta como uma unidade de Vento. Concede +1 PWR e +2 HP."
 
@@ -335,7 +337,7 @@ ability.potion_plunder.desc,Steals a random item from the target.,Rouba um item 
 unit_t2_e.name,Mimic,Mímico
 unit_t2_e.desc,A mysterious entity that transforms into the reflection of its enemy.,Uma entidade misteriosa que se transforma no reflexo de seu inimigo.
 ability.unit_t2_e_mimic.name,Mirror Image,Imagem Espelhada
-ability.unit_t2_e_mimic.desc,"At start of turn, transforms into the base unit of the enemy in the mirror slot.","No início do turno, transforma-se na unidade base do inimigo na posição oposta."
+ability.unit_t2_e_mimic.desc,"At start of turn, transforms into the base unit of the mirror enemy.","No início do turno, transforma-se na unidade base do inimigo oposto."
 unit_t2_g.name,Shadow Cloner,Clone das Sombras
 unit_t2_g.desc,An ethereal unit that echoes buffs received by adjacent allies.,Uma unidade etérea que ecoa buffs recebidos por aliados adjacentes.
 ability.unit_t2_g_buff_echo.name,Buff Echo,Eco de Buff
@@ -348,7 +350,10 @@ unit_t2_i.name,Mud Wretch,Miserável de Lama
 ability.mud_coating.name,Mud Coating,Camada de Lama
 ability.mud_coating.desc,"When healed, gain **+1 Armor and +1 Spike**.","Quando curado, ganha **+1 Armadura e +1 Espinho**."
 unit_t2_j.name,Steam Wisp,Fogo Fátuo
-unit_t2_j.desc,An elemental spirit that retaliates with boiling steam when healed. Deals damage equal to heal amount.,Um espírito elemental que retalia com vapor fervente quando curado. Causa dano igual à quantidade de cura.
+unit_t2_j.desc,"Scald.","Scald."
+ability.mud_coating.name,Mud Coating,Camada de Lama
+ability.scald.name,Scald,Scald
+ability.scald.desc,"When healed, retaliate with damage equal to the heal amount.","Ao ser curado, retalia com dano igual ao valor da cura."
 ability.scald.name,Scald,Escaldar
 ability.scald.desc,"When this unit is healed, deal damage equal to the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual à quantidade de cura ao inimigo da frente."
 unit_t3_g.name,Phantom Wayfarer,Viajante Fantasma
