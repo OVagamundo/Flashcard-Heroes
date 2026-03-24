@@ -30,6 +30,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 @onready var machine_2_count_label: Label = %GachaMachine2.get_node("CountLabel")
 @onready var machine_3_count_label: Label = %GachaMachine3.get_node("CountLabel")
 
+
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")

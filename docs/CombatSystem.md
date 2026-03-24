@@ -73,6 +73,9 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 *   **Correct:** `DAMAGE` -> `DEATH` -> `SUMMON` -> `BUFF`
 *   **Incorrect:** `DEATH` -> `BUFF` -> `SUMMON` (Violates causality; the buff source might be the summoned unit)
 
+### Step-by-Step Playback
+In Step Mode, the Presentation Phase pauses between each `CombatEvent`. The player can click **"Next Step"** to advance exactly one event at a time. Each step captures a single logical transition (e.g., one instance of damage, one buff application), allowing players to debug and study complex priority-based chains.
+
 > [!IMPORTANT]
 > **Fidelity Rule:** Every `CombatEvent` in the TurnLog **MUST** be processed by `BattleAnimator`. The animator may not skip, filter, or drop events. Each event has a unique `event_id` for verification. Look for `[SIM]` and `[ANIM]` prefixes in logs to trace simulation-presentation fidelity.
 
@@ -81,22 +84,27 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 The system uses a **Priority-Based Reaction System** to resolve complex interactions. Reactions are not instantaneous; they are collected, sorted by priority, and filtered by validity (e.g., lethality checks) before execution.
 
 **1. The Priority Hierarchy (Execution Order)**
-Every effect and reaction has a priority value (defined in AbilityDefinition). Higher priority resolves first.
+Every effect and reaction has a priority value (defined in `AbilityDefinition`). The `CombatSimulator` sorts the pending reaction queue by priority (descending) before resolution.
 
-> [!IMPORTANT]
-> **Single Source of Truth:** All priority constants are defined in `scripts/Constants.gd` (and `AbilityPriorities.gd` is deprecated/removed).
+**Priority Bands (Guidelines):**
+- **300+**: Interceptors (Must resolve before damage is finalized).
+- **200-299**: High-priority Reactions (Resurrections, Summons, Death damage).
+- **100-199**: Standard Reactions (Buffs, Heals, Auras).
+- **1-99**: Modifiers (Counter-attacks, Defensive triggers).
+- **0**: Default (Standard abilities).
+- **< 0**: Delayed (Extra actions, Boss reinforcements).
 
-| Priority | Constant | Description | Examples |
-|----------|----------|-------------|----------|
+| Priority | Constant | Usage | Examples |
+|----------|----------|-------|----------|
 | 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
-| 210 | `PRIORITY_TRINKET_SUMMON` | Resurrection from trinkets | Soul Echo |
+| 210 | `PRIORITY_SOUL_ECHO` | High-priority Resurrection | Soul Echo |
 | 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
 | 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
-| 100 | `PRIORITY_RESILIENT_AURA` | On-hurt buffs/heals | Resilient Aura |
+| 100 | `PRIORITY_BUFF_HEAL` | Standard Buffs/Heals | Resilient Aura |
 | 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate |
-| 10 | `PRIORITY_DEFENSIVE_STANCE` | Attack modifiers | Shockwave |
+| 10 | `PRIORITY_MODIFY_ATTACK` | Attack modifiers | Shockwave |
 | 0 | `PRIORITY_STANDARD` | Default abilities | Most abilities |
-| -50 | `PRIORITY_BOSS_SUMMON` | End-of-turn spawns | Boss waves |
+| -50 | `PRIORITY_BOSS_REINFORCEMENT`| End-of-turn spawns | Boss waves |
 | -100 | `PRIORITY_EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
 
 
@@ -483,6 +491,14 @@ Armor is a **status effect** that absorbs incoming damage before HP is affected.
 
 
 The `BattleAnimator` is a dumb playback engine. It does not know rules; it only knows how to visualize events.
+
+### Playback Speed & Scale
+
+To maintain mechanical decoupling, the game utilizes a **Global Speed Factor** (`AnimationConstants.speed_factor`) rather than modifying the engine's time scale.
+
+- **Animation Duration Scaling**: All animation durations must be wrapped in `AnimationConstants.scaled(duration)`. This ensures that `1x`, `2x`, and `4x` playback speeds affect all visual transitions (lunges, flashes, projectiles) uniformly.
+- **VFX Independence**: Non-combat UI animations (shop refreshes, inventory opening) should **not** be scaled, preserving general menu responsiveness.
+- **Persistence**: The playback speed is run-persistent; it does not reset between battles, allowing players to find their preferred pacing and keep it.
 
 ### Responsibilities
 1.  **Visual Registry (Puppet System):**

@@ -256,6 +256,12 @@ When a unit is reshuffled into a Tier pool, its stats are restored to its base v
 
 The player may inspect the exact contents of each Tier pool and manually calculate draw probability.
 
+## Playback Controls
+
+* **Speed Scaling**: Combat animations can be scaled to 1x, 2x, or 4x speed. This affects only visual transitions and does not alter the underlying deterministic logic.
+* **Step-by-Step Mode**: Players can pause combat and advance exactly one `CombatEvent` at a time. This provides perfect transparency for complex priority-based interactions.
+* **Persistence**: Chosen playback speeds persist across battles and sessions.
+
 ---
 
 ## Sources of Randomness
@@ -292,6 +298,16 @@ All stat changes are persistent until modified again. There is no max stats, onl
    Enemy initiates their action chains front-to-back.
 
 Each action chain may cause reactions from own team and/or opposing team before proceeding.
+
+## 8.2 Execution Priorities
+
+Reactions are resolved using a **Priority Band** system:
+- **Interceptors (300+)**: Resolve before the triggering damage is applied.
+- **Reactionary Summons (200-299)**: High-priority triggers like Resurrections.
+- **Standard Effects (100-199)**: Buffs and heals.
+- **Modifiers (1-99)**: Counter-attacks and defensive shifts.
+- **Standard (0)**: Default behavior.
+- **Delayed (<0)**: Reinforcements and extra actions.
 
 ---
 

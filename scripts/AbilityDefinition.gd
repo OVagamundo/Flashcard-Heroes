@@ -31,7 +31,21 @@ extends Resource
 ##    0: STANDARD (Default for new abilities)
 ##  -50: BOSS_SUMMON (End-of-turn spawns)
 ## -100: EXTRA_ACTION (Grant extra turn)
-@export var priority: int = 0
+var priority: int = 0
+
+## Custom Inspector properties
+func _get_property_list() -> Array:
+	var props = []
+	
+	props.append({
+		"name": "priority",
+		"type": TYPE_INT,
+		"usage": PROPERTY_USAGE_DEFAULT,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "Guardian Intercept:300,Trinket Summon:210,Resilient Aura:100,Counter Attack:50,Modifiers:10,Standard:0,Boss Summon:-50,Extra Action:-100"
+	})
+	
+	return props
 
 
 ## If true, triggering this ability during 'on_attack' will prevent the default Basic Attack from being enqueued.

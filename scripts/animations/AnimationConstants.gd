@@ -2,6 +2,16 @@
 class_name AnimationConstants
 extends RefCounted
 
+# --- PLAYBACK SPEED ---
+# SAP-style speed factor. All animation durations are divided by this.
+# 1.0 = normal, 2.0 = 2x speed, 4.0 = 4x speed
+static var speed_factor: float = 1.0
+
+## Get a duration scaled by the current speed factor.
+## All animation code should call this instead of using raw constants.
+static func scaled(duration: float) -> float:
+	return duration / speed_factor
+
 # =============================================================================
 # MELEE ATTACK ANIMATION
 # =============================================================================

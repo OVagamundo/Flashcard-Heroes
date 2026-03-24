@@ -443,7 +443,7 @@ func get_location() -> LocationIdentifier:
 
 ## Calculate trait counts for the inspected unit (including emblems)
 func _calculate_unit_trait_counts() -> Dictionary:
-	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0}
+	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
 	
 	if not is_instance_valid(_instance):
 		return counts
@@ -458,8 +458,8 @@ func _calculate_unit_trait_counts() -> Dictionary:
 				counts["EARTH"] += 1
 			elif tag == &"SOUL_WATER":
 				counts["WATER"] += 1
-			elif tag == &"SOUL_WIND":
-				counts["WIND"] += 1
+			elif tag == &"SOUL_AIR":
+				counts["AIR"] += 1
 	
 	# Count traits from equipped items (emblems)
 	var all_instances_db = _get_all_instances_db()
@@ -485,8 +485,8 @@ func _calculate_unit_trait_counts() -> Dictionary:
 				counts["EARTH"] += 1
 			elif tag == &"SOUL_WATER":
 				counts["WATER"] += 1
-			elif tag == &"SOUL_WIND":
-				counts["WIND"] += 1
+			elif tag == &"SOUL_AIR":
+				counts["AIR"] += 1
 	
 	return counts
 
@@ -614,26 +614,26 @@ func _update_trait_display() -> void:
 		water_container.add_child(water_label)
 		trait_icons_container.add_child(water_container)
 	
-	# Display Wind trait if count > 0
-	if trait_counts["WIND"] > 0:
-		var wind_container = HBoxContainer.new()
-		wind_container.add_theme_constant_override("separation", 4)
+	# Display Air trait if count > 0
+	if trait_counts["AIR"] > 0:
+		var air_container = HBoxContainer.new()
+		air_container.add_theme_constant_override("separation", 4)
 		
-		var wind_icon = TextureRect.new()
-		wind_icon.texture = preload("res://assets/sprites/items/AirEmblem.png")
-		wind_icon.custom_minimum_size = Vector2(48, 48)
-		wind_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		wind_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var air_icon = TextureRect.new()
+		air_icon.texture = preload("res://assets/sprites/items/AirEmblem.png")
+		air_icon.custom_minimum_size = Vector2(48, 48)
+		air_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		air_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
-		var wind_label = Label.new()
-		wind_label.text = "x%d" % trait_counts["WIND"]
-		wind_label.add_theme_font_size_override("font_size", 20)
-		wind_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
-		wind_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		var air_label = Label.new()
+		air_label.text = "x%d" % trait_counts["AIR"]
+		air_label.add_theme_font_size_override("font_size", 20)
+		air_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		air_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		
-		wind_container.add_child(wind_icon)
-		wind_container.add_child(wind_label)
-		trait_icons_container.add_child(wind_container)
+		air_container.add_child(air_icon)
+		air_container.add_child(air_label)
+		trait_icons_container.add_child(air_container)
 	
 	# Only show the container if it actually has content
 	trait_icons_container.visible = trait_icons_container.get_child_count() > 0

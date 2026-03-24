@@ -87,17 +87,21 @@ The game follows a mandatory **Hybrid Architecture** that separates **Data Truth
 The `BattleManager` processes reactions using a priority queue. **Higher Priority = Executed First.**
 All constants are in `scripts/Constants.gd`.
 
-| Priority | Constant | Usage |
-|----------|----------|-------|
-| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception (Guardian Sentinel) |
-| 210 | `PRIORITY_TRINKET_SUMMON` | Resurrection from trinkets (Soul Echo) |
-| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon (Sakura Spirit) |
-| 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon (Last Wish) |
-| 100 | `PRIORITY_RESILIENT_AURA` | On-hurt buffs/heals (Heart Stone) |
-| 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage (Retaliate) |
-| 0 | `PRIORITY_STANDARD` | Default abilities |
-| -50 | `PRIORITY_BOSS_SUMMON` | End-of-turn spawns (Boss reinforcements) |
-| -100 | `PRIORITY_EXTRA_ACTION` | Grant extra turns (Bloodlust Edge) |
+| Priority | Constant | Usage | Examples |
+|----------|----------|-------|----------|
+| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 210 | `PRIORITY_SOUL_ECHO` | High-priority Resurrection | Soul Echo |
+| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
+| 100 | `PRIORITY_BUFF_HEAL` | Standard Buffs/Heals | Resilient Aura |
+| 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate |
+| 10 | `PRIORITY_MODIFY_ATTACK` | Attack modifiers | Shockwave |
+| 0 | `PRIORITY_STANDARD` | Default abilities | Most abilities |
+| -50 | `PRIORITY_BOSS_REINFORCEMENT`| End-of-turn spawns | Boss waves |
+| -100 | `PRIORITY_EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
+
+> [!TIP]
+> **Instructor Dropdown**: You don't need to remember these integers. The `AbilityDefinition.tres` Inspector now provides a labeled dropdown for selecting these priority tiers directly.
 
 > [!TIP]
 > **Summon Logic:** High priority summons (Trinkets) claim slots first. If `Soul Echo` resurrects a unit into its own slot, `Last Wish` (lower priority) will look for a *different* open slot.

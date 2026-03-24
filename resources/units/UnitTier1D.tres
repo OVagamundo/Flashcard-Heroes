@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier1unitD.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier1AirUnit.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink.tres" id="4_empathic_link"]
 
@@ -11,7 +11,7 @@ id = &"unit_t1_d"
 display_name_key = "unit_t1_d.name"
 description_key = "unit_t1_d.desc"
 icon = ExtResource("2_icon")
-tags = Array[StringName]([&"SOUL_WIND"])
+tags = Array[StringName]([&"SOUL_AIR"])
 tier = 1
 cost = 1
 category = &"UNIT"

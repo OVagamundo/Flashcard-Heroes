@@ -1,15 +1,15 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_wind_001"]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_air_001"]
 
 [ext_resource type="Texture2D" path="res://assets/sprites/items/AirEmblem.png" id="1_tex"]
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
 
 [resource]
 script = ExtResource("2_scr")
-id = &"item_emblem_wind"
-display_name_key = "item.emblem_wind.name"
-description_key = "item.emblem_wind.desc"
+id = &"item_emblem_air"
+display_name_key = "item.emblem_air.name"
+description_key = "item.emblem_air.desc"
 icon = ExtResource("1_tex")
-tags = Array[StringName]([&"ITEM", &"SOUL_WIND"])
+tags = Array[StringName]([&"ITEM", &"SOUL_AIR"])
 is_hero = false
 tier = 3
 cost = 3

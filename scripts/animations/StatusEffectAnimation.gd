@@ -39,7 +39,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				await proj.impact
 	elif use_projectiles:
 		# Fallback for missing snapshots
-		await animator.get_tree().create_timer(0.4).timeout
+		await animator.get_tree().create_timer(AnimationConstants.scaled(0.4)).timeout
 
 	# 2. Apply Stat Buff / Status Effect
 	var stack_values = payload.get("targets_new_val", [])
@@ -84,7 +84,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			SignalBus.emit_signal("unit_deform", target_uuid, &"SQUISH_BOUNCE")
 
 	# Wait for visual effect completion
-	await animator.get_tree().create_timer(0.2).timeout
+	await animator.get_tree().create_timer(AnimationConstants.scaled(0.2)).timeout
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
 	# Use "buff" style projectiles for status effects

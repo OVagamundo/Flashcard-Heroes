@@ -106,7 +106,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# Wait for Bump Impact
 		if should_bump:
-			await animator.get_tree().create_timer(AnimationConstants.BUMP_TOTAL_DURATION).timeout
+			await animator.get_tree().create_timer(AnimationConstants.scaled(AnimationConstants.BUMP_TOTAL_DURATION)).timeout
 		
 		# Apply Damage
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -166,7 +166,7 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 				# Animate armor label countdown
 				animator.apply_armor_delta(target_uuid, armor_consumed, new_armor)
 				# Longer pause between armor and HP updates for player to register
-				await animator.get_tree().create_timer(0.5).timeout
+				await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
 		
 			# HP EFFECTS SECOND
 			var hp_damage = abs(amount) - armor_consumed

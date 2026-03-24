@@ -165,8 +165,8 @@ func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	
 	_view.position = start_pos
 	var tween = _view.create_tween()
-	tween.tween_property(_view, "position", bump_target, AC.BUMP_FORWARD_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(_view, "position", start_pos, AC.BUMP_RETURN_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(_view, "position", bump_target, AC.scaled(AC.BUMP_FORWARD_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_view, "position", start_pos, AC.scaled(AC.BUMP_RETURN_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.finished.connect(_on_bump_tween_finished)
 
 func _on_bump_tween_finished() -> void:
@@ -185,12 +185,12 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	var fade_tween = _view.create_tween()
 	fade_tween.set_parallel(true)
 	
-	fade_tween.tween_property(_view, "position", levitate_target, AC.DEATH_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	fade_tween.tween_property(_view, "modulate:a", 0.0, AC.DEATH_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	fade_tween.tween_property(_view, "position", levitate_target, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	fade_tween.tween_property(_view, "modulate:a", 0.0, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
 	var mat = _get_active_material()
 	if mat:
-		fade_tween.tween_method(func(v): mat.set_shader_parameter("alpha_multiplier", v), 1.0, 0.0, AC.DEATH_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		fade_tween.tween_method(func(v): mat.set_shader_parameter("alpha_multiplier", v), 1.0, 0.0, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
 	fade_tween.set_parallel(false)
 	fade_tween.finished.connect(_on_death_fade_tween_finished)
@@ -224,19 +224,19 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	
 	# Phase 1: Drop + fade in (parallel)
 	fade_tween.set_parallel(true)
-	fade_tween.tween_property(_view, "position", original_position, AC.SUMMON_DROP_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	fade_tween.tween_property(_view, "modulate:a", 1.0, AC.SUMMON_FADE_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	fade_tween.tween_property(_view, "position", original_position, AC.scaled(AC.SUMMON_DROP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	fade_tween.tween_property(_view, "modulate:a", 1.0, AC.scaled(AC.SUMMON_FADE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	if mat:
-		fade_tween.tween_method(func(v): mat.set_shader_parameter("alpha_multiplier", v), 0.0, 1.0, AC.SUMMON_FADE_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		fade_tween.tween_method(func(v): mat.set_shader_parameter("alpha_multiplier", v), 0.0, 1.0, AC.scaled(AC.SUMMON_FADE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	fade_tween.set_parallel(false)
 	
 	# Phase 2: Stretch (wide/short) on landing impact - USE SPRITE not _icon_rect
 	if is_instance_valid(sprite):
-		fade_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		fade_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		# Phase 3: Return to normal scale with elastic bounce
-		fade_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		fade_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	fade_tween.finished.connect(_on_summon_fade_tween_finished)
 
@@ -266,14 +266,14 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	
 	# Windup: Move back + SQUISH sprite (narrow & tall)
 	tween.set_parallel(true)
-	tween.tween_property(_view, "global_position", windup_pos, AC.MELEE_WINDUP_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_view, "global_position", windup_pos, AC.scaled(AC.MELEE_WINDUP_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if is_instance_valid(sprite):
-		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.MELEE_WINDUP_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.MELEE_WINDUP_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.set_parallel(false)
 	
 	# Lunge: Bezier arc with STRETCH sprite (wide & short)
 	if is_instance_valid(sprite):
-		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	tween.tween_method(
 		func(t: float):
@@ -283,12 +283,12 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 			var p2 = target_position
 			var one_minus_t = 1.0 - t
 			_view.global_position = (one_minus_t * one_minus_t * p0) + (2.0 * one_minus_t * t * p1) + (t * t * p2),
-		0.0, 1.0, AC.MELEE_LUNGE_DURATION - AC.DEFORM_DURATION
+		0.0, 1.0, AC.scaled(AC.MELEE_LUNGE_DURATION - AC.DEFORM_DURATION)
 	).set_trans(Tween.TRANS_LINEAR)
 	
 	# Impact: Quick SQUISH on hit
 	if is_instance_valid(sprite):
-		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	tween.finished.connect(_on_melee_lunge_tween_finished)
 
@@ -337,15 +337,15 @@ func _on_unit_melee_return(unit_uuid: String) -> void:
 	
 	# Return: STRETCH sprite during jump back
 	if is_instance_valid(sprite):
-		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Move back to origin
-	tween.tween_property(_view, "global_position", _melee_origin_position, AC.MELEE_RETURN_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_view, "global_position", _melee_origin_position, AC.scaled(AC.MELEE_RETURN_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	# Land: SQUISH then normalize with elastic
 	if is_instance_valid(sprite):
-		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	tween.finished.connect(_on_melee_return_tween_finished)
 
@@ -371,7 +371,7 @@ func _flash_unit_color(flash_color: Color) -> void:
 		var original_modulate: Color = _view.modulate
 		_view.modulate = flash_color
 		var fallback_tween = _view.create_tween()
-		fallback_tween.tween_property(_view, "modulate", original_modulate, 0.3)
+		fallback_tween.tween_property(_view, "modulate", original_modulate, AC.scaled(0.3))
 		fallback_tween.finished.connect(_on_flash_tween_finished)
 		return
 	
@@ -414,25 +414,25 @@ func _flash_unit_color(flash_color: Color) -> void:
 		
 		# Squish down (anticipation)
 		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		
 		# Stretch and jump up
 		_flash_tween.set_parallel(true)
 		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		_flash_tween.tween_property(_view, "global_position", hop_target, AC.FLASH_HOP_UP_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_flash_tween.tween_property(_view, "global_position", hop_target, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_flash_tween.set_parallel(false)
 		
 		# Fall and squish on landing
 		_flash_tween.set_parallel(true)
 		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		_flash_tween.tween_property(_view, "global_position", original_position, AC.FLASH_HOP_DOWN_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		_flash_tween.tween_property(_view, "global_position", original_position, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		_flash_tween.set_parallel(false)
 		
 		# Return to normal scale
 		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	else:
 		# HURT: Instant recoil + stretch -> return to normal
 		var recoil_direction := Vector2.RIGHT if _icon_rect.flip_h else Vector2.LEFT
@@ -440,16 +440,16 @@ func _flash_unit_color(flash_color: Color) -> void:
 		
 		# Instant recoil + stretch (hit by impact)
 		_flash_tween.set_parallel(true)
-		_flash_tween.tween_property(_view, "global_position", recoil_target, AC.FLASH_RECOIL_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_flash_tween.tween_property(_view, "global_position", recoil_target, AC.scaled(AC.FLASH_RECOIL_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.FLASH_RECOIL_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.FLASH_RECOIL_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		_flash_tween.set_parallel(false)
 		
 		# Return to normal position and scale
 		_flash_tween.set_parallel(true)
-		_flash_tween.tween_property(_view, "global_position", original_position, AC.FLASH_RETURN_DURATION).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		_flash_tween.tween_property(_view, "global_position", original_position, AC.scaled(AC.FLASH_RETURN_DURATION)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.FLASH_RETURN_DURATION).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.FLASH_RETURN_DURATION)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		_flash_tween.set_parallel(false)
 	
 	# Flash fade happens independently in parallel
@@ -485,22 +485,22 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	
 	# Phase 1: Float up while turning golden
 	save_tween.set_parallel(true)
-	save_tween.tween_property(_view, "position", levitate_target, AC.LETHAL_SAVE_RISE_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	save_tween.tween_property(_view, "position", levitate_target, AC.scaled(AC.LETHAL_SAVE_RISE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if mat:
 		mat.set_shader_parameter("flash_color", AC.COLOR_GOLD)
-		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 0.0, 1.0, AC.LETHAL_SAVE_RISE_DURATION)
-	save_tween.tween_property(_view, "modulate", AC.COLOR_GOLD_GLOW, AC.LETHAL_SAVE_RISE_DURATION)
+		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 0.0, 1.0, AC.scaled(AC.LETHAL_SAVE_RISE_DURATION))
+	save_tween.tween_property(_view, "modulate", AC.COLOR_GOLD_GLOW, AC.scaled(AC.LETHAL_SAVE_RISE_DURATION))
 	
 	# Hold at peak
 	save_tween.set_parallel(false)
-	save_tween.tween_interval(AC.LETHAL_SAVE_HOLD_DURATION)
+	save_tween.tween_interval(AC.scaled(AC.LETHAL_SAVE_HOLD_DURATION))
 	
 	# Phase 2: Land back down
 	save_tween.set_parallel(true)
-	save_tween.tween_property(_view, "position", original_position, AC.LETHAL_SAVE_LAND_DURATION).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	save_tween.tween_property(_view, "position", original_position, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION)).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	if mat:
-		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, AC.LETHAL_SAVE_LAND_DURATION)
-	save_tween.tween_property(_view, "modulate", Color.WHITE, AC.LETHAL_SAVE_LAND_DURATION)
+		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION))
+	save_tween.tween_property(_view, "modulate", Color.WHITE, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION))
 	
 	save_tween.set_parallel(false)
 	save_tween.finished.connect(_on_lethal_save_tween_finished)
@@ -529,10 +529,10 @@ func animate_leap_to(target_center: Vector2) -> void:
 	_ensure_pivot() # Recalculate pivot with current size
 	
 	# Phase 1: Squish icon before leap (anticipation)
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 2: Stretch icon and leap
-	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 3: Arc to target position
 	tween.tween_method(
@@ -542,14 +542,14 @@ func animate_leap_to(target_center: Vector2) -> void:
 			var p2 = target_pos
 			var one_minus_t = 1.0 - t
 			_view.global_position = (one_minus_t * one_minus_t * p0) + (2.0 * one_minus_t * t * p1) + (t * t * p2),
-		0.0, 1.0, AC.GUARDIAN_LEAP_DURATION - AC.DEFORM_DURATION * 2
+		0.0, 1.0, AC.scaled(AC.GUARDIAN_LEAP_DURATION - AC.DEFORM_DURATION * 2)
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	# Phase 4: Squish icon on landing
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 5: Return icon to normal scale
-	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
 
@@ -562,16 +562,16 @@ func animate_leap_return() -> void:
 	_ensure_pivot() # Recalculate pivot with current size
 	
 	# Phase 1: Stretch icon for return jump
-	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 2: Return to origin position
-	tween.tween_property(_view, "global_position", _guardian_original_position, AC.GUARDIAN_RETURN_DURATION - AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_view, "global_position", _guardian_original_position, AC.scaled(AC.GUARDIAN_RETURN_DURATION - AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	# Phase 3: Squish icon on landing
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Phase 4: Return icon to normal scale
-	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
 	
@@ -605,8 +605,8 @@ func _on_unit_color_flash(unit_uuid: String, flash_color: Color, duration: float
 	# Fade out
 	_color_tween = _view.create_tween()
 	_color_tween.set_parallel(true)
-	_color_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, duration)
-	_color_tween.tween_property(_view, "modulate", original_modulate, duration)
+	_color_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, AC.scaled(duration))
+	_color_tween.tween_property(_view, "modulate", original_modulate, AC.scaled(duration))
 	_color_tween.set_parallel(false)
 	
 	_color_tween.finished.connect(func(): SignalBus.emit_signal("unit_color_flash_finished", _get_uuid()))
@@ -636,25 +636,25 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 	match deform_type:
 		&"SQUISH_BOUNCE":
 			# Squish (narrow/tall) → return with elastic
-			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"STRETCH_BOUNCE":
 			# Stretch (wide/short) → return with elastic
-			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.DEFORM_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"HIT_IMPACT":
 			# Impact: Quick stretch then elastic return
-			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, 0.04).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(0.04)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(0.24)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"HOP_DEFORM":
 			# Synced with HOP movement (0.12s up + 0.18s down = 0.3s total)
-			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, 0.03).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(0.03)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(0.09)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(0.12)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(0.12)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"LANDING_BOUNCE":
 			# Inventory action landing feedback (drop/swap/equip)
@@ -693,18 +693,18 @@ func _on_unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
 	match move_type:
 		&"HOP":
 			var hop_target = Vector2(_move_original_position.x, _move_original_position.y - AC.FLASH_HOP_HEIGHT)
-			_move_tween.tween_property(_view, "global_position", hop_target, AC.FLASH_HOP_UP_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.FLASH_HOP_DOWN_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			_move_tween.tween_property(_view, "global_position", hop_target, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		
 		&"RECOIL":
 			var recoil_target = _move_original_position + (direction.normalized() * AC.HURT_RECOIL_DISTANCE)
-			_move_tween.tween_property(_view, "global_position", recoil_target, AC.FLASH_RECOIL_DURATION).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.FLASH_RETURN_DURATION).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			_move_tween.tween_property(_view, "global_position", recoil_target, AC.scaled(AC.FLASH_RECOIL_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.scaled(AC.FLASH_RETURN_DURATION)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 		&"BUMP":
 			var bump_target = _move_original_position + (direction.normalized() * AC.BUMP_DISTANCE)
-			_move_tween.tween_property(_view, "global_position", bump_target, AC.BUMP_FORWARD_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.BUMP_RETURN_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			_move_tween.tween_property(_view, "global_position", bump_target, AC.scaled(AC.BUMP_FORWARD_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.scaled(AC.BUMP_RETURN_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
 	_move_tween.finished.connect(func():
 		_view.top_level = false

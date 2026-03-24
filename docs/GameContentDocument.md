@@ -152,7 +152,7 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 |---|---|
 | **2** | At Turn Start: Water units **heal adjacent allies** for 1 HP. |
 
-### Wind Trait (`SOUL_WIND`)
+### Air Trait (`SOUL_AIR`)
 *Focus: Power Theft & Disruption*
 
 | Souls | Effect |

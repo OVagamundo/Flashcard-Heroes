@@ -656,7 +656,6 @@ func _trigger_pre_combat_abilities() -> void:
 	var context: Dictionary = {"turn": _current_turn}
 	AbilityResolver.process_trigger(C.TRIGGER_ON_PRE_COMBAT, context)
 	
-	# Consume the effect queue immediately to generate events
 	# Events will be sent to the animator, which triggers _on_turn_animation_finished when done
 	call_deferred("_resolve_pending_reactions_only")
 
@@ -670,6 +669,14 @@ func _on_turn_animation_finished() -> void:
 	
 	if _pending_inventory_refresh:
 		_emit_battle_inventory_changed()
+	
+	# ALWAYS check for battle over FIRST after animations finish in ANY phase
+	# This prevents getting stuck in Management phase if a turn start/end ability wiped the board
+	if _is_battle_over():
+		if not _battle_over_emitted:
+			_battle_over_deferred = false
+			_emit_battle_over()
+		return
 	
 	if _current_battle_phase == Phases.PRE_COMBAT:
 		# Transition from Pre-Combat (Start of Combat effects) to Combat
@@ -685,20 +692,9 @@ func _on_turn_animation_finished() -> void:
 		_emit_battle_inventory_changed()
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	elif _current_battle_phase == Phases.END_OF_TURN:
-		# Check if battle is over after poison/turn-end effects
-		if _battle_over_deferred or _is_battle_over():
-			_battle_over_deferred = false
-			_emit_battle_over()
-			return
 		# Poison/turn-end animations finished, now start the next turn
 		_change_phase(Phases.START_OF_TURN)
 	elif _current_battle_phase == Phases.COMBAT:
-		# If a battle over condition was detected during simulation, emit it now
-		if _battle_over_deferred:
-			_battle_over_deferred = false
-			# Emit and transition to BATTLE_OVER now that visuals are done
-			_emit_battle_over()
-			return
 		# After combat finishes, trigger end of turn abilities, then start next turn
 		_change_phase(Phases.END_OF_TURN)
 
@@ -1753,7 +1749,7 @@ func get_active_traits(team: String) -> Dictionary:
 
 ## Internal calculation of active traits based on current board state.
 func _calculate_active_traits(team: String) -> Dictionary:
-	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "WIND": 0}
+	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	
 	var units = get_instances_in_container(container_tag)
@@ -1772,8 +1768,8 @@ func _calculate_active_traits(team: String) -> Dictionary:
 					counts["EARTH"] += 1
 				elif tag == &"SOUL_WATER":
 					counts["WATER"] += 1
-				elif tag == &"SOUL_WIND":
-					counts["WIND"] += 1
+				elif tag == &"SOUL_AIR":
+					counts["AIR"] += 1
 		
 		# Check equipped items for trait tags (Emblems)
 		for item_uuid in unit.equipped_item_uuids:
@@ -1791,8 +1787,8 @@ func _calculate_active_traits(team: String) -> Dictionary:
 						counts["EARTH"] += 1
 					elif tag == &"SOUL_WATER":
 						counts["WATER"] += 1
-					elif tag == &"SOUL_WIND":
-						counts["WIND"] += 1
+					elif tag == &"SOUL_AIR":
+						counts["AIR"] += 1
 					
 	return counts
 
@@ -1968,9 +1964,9 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						# Trigger on_healed for reactions (e.g. Tier 1 Air units)
 						TurnAbilities.trigger_on_healed(ally.ball_uuid, 1, unit.ball_uuid)
 		
-		# WIND TRAIT: 2+ Souls -> Wind units steal 1 PWR from the opposite enemy
-		var wind_souls = traits.get("WIND", 0)
-		if wind_souls >= 2:
+		# AIR TRAIT: 2+ Souls -> Air units steal 1 PWR from the opposite enemy
+		var air_souls = traits.get("AIR", 0)
+		if air_souls >= 2:
 			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			var enemy_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 			var is_player_team = (team == "PLAYER")
@@ -1981,8 +1977,8 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 			for unit in units:
 				if not is_instance_valid(unit) or unit.current_hp <= 0:
 					continue
-				# Only Wind units trigger this
-				if not _has_trait_soul(unit, "WIND"):
+				# Only Air units trigger this
+				if not _has_trait_soul(unit, "AIR"):
 					continue
 				
 				# Get unit's slot index
@@ -2051,7 +2047,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
 						"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
 						"target_uuids": [enemy.ball_uuid],
-						"ability_id": &"trait_wind_steal",
+						"ability_id": &"trait_air_steal",
 						"visual_payload": {
 							"source_uuid": enemy.ball_uuid,
 							"stat": "pwr",
@@ -2062,11 +2058,11 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					})
 					total_events.append(debuff_event)
 				
-				# Create buff event for unit - projectile FROM enemy TO Wind unit
+				# Create buff event for unit - projectile FROM enemy TO Air unit
 				var buff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": enemy.ball_uuid, # Projectile originates FROM enemy
-					"target_uuids": [unit.ball_uuid], # Travels TO Wind unit
-					"ability_id": &"trait_wind_steal",
+					"target_uuids": [unit.ball_uuid], # Travels TO Air unit
+					"ability_id": &"trait_air_steal",
 					"visual_payload": {
 						"source_uuid": enemy.ball_uuid, # From enemy
 						"stat": "pwr",

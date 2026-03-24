@@ -425,7 +425,13 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						stat_provider = holder
 			
 			# Snapshot stats from the appropriate provider (source for units, holder for items)
-			sim_ctx["source_pwr"] = stat_provider.current_pwr
+			# DEATH CONTEXT PRESERVATION: If the source is dead (on_death ability) and the
+			# trigger_context already has a snapshotted source_pwr from DeathProcessor,
+			# preserve that value instead of overwriting with the (potentially stale) live value.
+			if stat_provider.current_hp <= 0 and request.trigger_context.has("source_pwr"):
+				sim_ctx["source_pwr"] = request.trigger_context["source_pwr"]
+			else:
+				sim_ctx["source_pwr"] = stat_provider.current_pwr
 			sim_ctx["source_hp"] = stat_provider.current_hp
 		
 		var _effect_script_path = request.effect_definition.get_script().resource_path if request.effect_definition.get_script() else "no_script"
@@ -662,10 +668,6 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				drain_reactions_inline(result_hurt_start, bm)
 				var hurt_inline_evts = collect_and_clear_inline_events()
 				out_events.append_array(hurt_inline_evts)
-			
-			# Fire on_kill triggers
-			for killed_uuid in effect_result.killed_uuids:
-				bm.trigger_on_kill(request.source_uuid, killed_uuid)
 			
 			# Fire on_kill triggers
 			for killed_uuid in effect_result.killed_uuids:
