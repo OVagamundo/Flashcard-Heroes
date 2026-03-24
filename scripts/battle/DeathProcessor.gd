@@ -277,7 +277,8 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 					"dying_uuid": unit.ball_uuid,
 					"dying_team": "PLAYER",
 					"dying_location": death_location,
-					"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
+					"equipped_items": snapshot_equipped_items(unit, bm._battle_instances),
+					"source_pwr": unit.current_pwr
 				}
 				AbilityResolver.process_trigger(&"on_death", death_context)
 				
@@ -311,7 +312,8 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 					"dying_uuid": unit.ball_uuid,
 					"dying_team": "ENEMY",
 					"dying_location": death_location,
-					"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
+					"equipped_items": snapshot_equipped_items(unit, bm._battle_instances),
+					"source_pwr": unit.current_pwr
 				}
 				AbilityResolver.process_trigger(&"on_death", death_context)
 				
@@ -437,7 +439,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			"dying_uuid": data.unit.ball_uuid,
 			"dying_team": data.team,
 			"dying_location": data.death_location,
-			"equipped_items": data.equipped_items
+			"equipped_items": data.equipped_items,
+			"source_pwr": data.unit.current_pwr
 		}
 		AbilityResolver.process_trigger(&"on_death", death_ctx)
 	
@@ -446,15 +449,16 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 
 	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
 	# and emit DEATH events
+	var pending_death_events: Array[CombatEvent] = []
 	for data in dying_units_data:
 		if data.has_lethal_counter:
 			_defer_ally_death(bm, data.unit, data.death_location, data.team.to_lower())
 		else:
-			# Emit DEATH event with container_tag for player unit detection
+			# Emit DEATH event with container_tag for player unit detection (deferred until after cascade)
 			var death_container_tag: StringName = data.death_location.container if is_instance_valid(data.death_location) else &""
 			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking, death_container_tag)
 			if death_event != null:
-				out_events.append(death_event)
+				pending_death_events.append(death_event)
 			
 			# Fire on_ally_death trigger
 			var ally_death_ctx := {
@@ -482,6 +486,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
 		for evt in cascade_evts:
 			out_events.append(evt)
+			
+	# Append actual DEATH events AFTER the drained reactions visually occur
+	if is_simulation and out_events != null:
+		out_events.append_array(pending_death_events)
 		
 		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
 		# The kamikaze animation handles the death at the target position

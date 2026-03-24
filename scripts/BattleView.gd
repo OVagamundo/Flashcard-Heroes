@@ -23,10 +23,22 @@ var _player_trait_anchor: Control
 var _enemy_trait_anchor: Control
 var _trait_hud_root: Control
 
-const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "WIND"]
+const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "AIR"]
 const TRAIT_HUD_Y: float = 10.0
 const TRAIT_TRACKER_SPACING: float = 8.0
 const TRAIT_SCREEN_MARGIN: float = 24.0
+
+# Combat Controls
+@onready var combat_controls_panel: PanelContainer = %CombatControlsPanel
+@onready var pause_btn: Button = %PauseBtn
+@onready var speed_1x_btn: Button = %Speed1xBtn
+@onready var speed_2x_btn: Button = %Speed2xBtn
+@onready var speed_3x_btn: Button = %Speed3xBtn
+@onready var step_button: Button = %StepButton
+@onready var step_desc_label: Label = %StepDescLabel
+
+var _speed_buttons: Array[Button] = []
+var _battle_animator: Node = null
 
 # --- Node References ---
 var battle_manager: BattleManager
@@ -192,6 +204,23 @@ func _ready() -> void:
 	# Animate initial unit entry (first battle only - subsequent battles via signal)
 	await get_tree().process_frame
 	_animate_initial_unit_entry()
+	
+	# Initialize combat controls styling/connections
+	_battle_animator = get_node_or_null("BattleAnimator")
+	
+	_speed_buttons = [pause_btn, speed_1x_btn, speed_2x_btn, speed_3x_btn]
+	if is_instance_valid(pause_btn): pause_btn.pressed.connect(_on_pause_button_pressed)
+	if is_instance_valid(speed_1x_btn): speed_1x_btn.pressed.connect(func(): _on_speed_button_pressed(1.0))
+	if is_instance_valid(speed_2x_btn): speed_2x_btn.pressed.connect(func(): _on_speed_button_pressed(2.0))
+	if is_instance_valid(speed_3x_btn): speed_3x_btn.pressed.connect(func(): _on_speed_button_pressed(3.0))
+	if is_instance_valid(step_button): step_button.pressed.connect(_on_step_button_pressed)
+	
+	if is_instance_valid(combat_controls_panel): combat_controls_panel.visible = true
+	var current_speed = AnimationConstants.speed_factor
+	_update_speed_button_styles(current_speed)
+	
+	if is_instance_valid(_battle_animator) and _battle_animator.has_signal("combat_step_reached"):
+		_battle_animator.combat_step_reached.connect(_on_combat_step_reached)
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	"""Called when battle state changes - triggers entry animation on battle start"""
@@ -423,6 +452,7 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# these phases destroys the views BattleAnimator is managing.
 	if phase_name == &"MANAGEMENT":
 		_redraw_board()
+	# Controls remain visible in all phases to allow step/speed control of start/end turn effects
 
 func _gui_input(event) -> void:
 	if InputUtils.is_primary_pointer_press(event):
@@ -940,3 +970,50 @@ func _trigger_on_draw_effects(draw_result) -> void:
 	# VCR Step 3: If effects were generated, resolve and animate them
 	if battle_manager._pending_reactions.size() > 0:
 		battle_manager.resolve_management_effects_and_animate(snapshot)
+
+# =============================================================================
+# COMBAT CONTROLS LOGIC
+# =============================================================================
+
+func _on_pause_button_pressed() -> void:
+	if is_instance_valid(_battle_animator):
+		_battle_animator.pause_combat()
+	_update_speed_button_styles(-1.0) # -1.0 represents Paused
+
+func _on_speed_button_pressed(speed: float) -> void:
+	if is_instance_valid(_battle_animator):
+		_battle_animator.play_continuous(speed)
+	_update_speed_button_styles(speed)
+
+func _update_speed_button_styles(active_speed: float) -> void:
+	var speeds := [-1.0, 1.0, 2.0, 3.0]
+	for i in range(mini(_speed_buttons.size(), speeds.size())):
+		var btn = _speed_buttons[i]
+		if not is_instance_valid(btn): continue
+		var is_active = is_equal_approx(speeds[i], active_speed)
+		
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.3, 0.5, 0.8) if is_active else Color(0.25, 0.25, 0.3)
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 4
+		style.corner_radius_bottom_right = 4
+		btn.add_theme_stylebox_override("normal", style)
+
+func _on_step_button_pressed() -> void:
+	if not is_instance_valid(_battle_animator):
+		return
+	
+	_battle_animator.request_step()
+	if is_instance_valid(step_button):
+		step_button.text = "Next Step ⏭"
+	_update_speed_button_styles(-1.0) # Always highlights Pause when stepping
+
+func _on_combat_step_reached(step_info: Dictionary) -> void:
+	if is_instance_valid(step_desc_label):
+		var desc = String(step_info.get("description", ""))
+		step_desc_label.text = desc
+		step_desc_label.visible = not desc.is_empty()
+	
+	if is_instance_valid(step_button):
+		step_button.text = "Next Step ⏭"

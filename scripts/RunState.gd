@@ -792,7 +792,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c",
 				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f",
 				&"item_emblem_fire", &"item_emblem_fire", &"item_emblem_earth", &"item_emblem_earth",
-				&"item_emblem_water", &"item_emblem_water", &"item_emblem_wind", &"item_emblem_wind"
+				&"item_emblem_water", &"item_emblem_water", &"item_emblem_air", &"item_emblem_air"
 			]
 		&"hero_bounty_hunter":
 			# Bounty Hunter: 4 of each Tier 1 gachaball (32 total)

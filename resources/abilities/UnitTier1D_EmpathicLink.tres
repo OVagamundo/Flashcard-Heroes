@@ -15,5 +15,5 @@ name_key = "ability.unit_t1_d_empathic_link.name"
 trigger = &"on_death"
 effects = Array[Resource]([SubResource("EffectBuffAllyBehindPWR_1")])
 description_key = "ability.unit_t1_d_empathic_link.desc"
-priority = 100
+priority = 300
 execute_on_lethal = true

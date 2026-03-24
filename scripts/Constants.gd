@@ -126,7 +126,19 @@ const SLOT_SIZE_2X: int = 192
 const UNIT_SPRITE_SIZE: int = 128
 const SLOT_CENTER_OFFSET: int = 32 # (192-128)/2
 
-# --- Ability Priority System ---
+# --- Ability System Priority Bands ---
+# Priority determines the resolution order of abilities triggering simultaneously.
+# Higher numbers resolve first.
+# 
+# [300] GUARDIAN_INTERCEPT: Must resolve before damage is dealt to the original target.
+# [210] TRINKET_SUMMON: E.g., Soul Echo resurrection. Resolves before on-death spawns.
+# [100] RESILIENT_AURA: Defensive reactions. Resolves before retaliation.
+#  [50] COUNTER_ATTACK: Retaliation logic. Resolves before standard effects.
+#  [10] MODIFIERS: Minor timing tweaks (e.g., Defensive Stance before Standard).
+#   [0] STANDARD: The default for 90% of abilities (damage, heal, buff).
+# [-50] BOSS_SUMMON: E.g., Necromancer skeleton. Resolves after standard deaths.
+#[-100] EXTRA_ACTION: E.g., granting an extra turn. Must be lowest priority.
+
 const PRIORITY_GUARDIAN_INTERCEPT = 300
 const PRIORITY_DEATH_DAMAGE = 215
 const PRIORITY_TRINKET_SUMMON = 210
@@ -138,6 +150,7 @@ const PRIORITY_ON_ATTACK_BUFF = 100
 const PRIORITY_AMBUSH_PREDATOR = 100
 const PRIORITY_SUMMON_BLESSING = 110 # Higher than Ambush Predator so ally buff applies first
 const PRIORITY_COUNTER_ATTACK = 50
+const PRIORITY_MODIFIERS = 10
 const PRIORITY_DEFENSIVE_STANCE = 10
 const PRIORITY_SHOCKWAVE = 10
 const PRIORITY_MIRROR_STRIKE = 10
@@ -187,10 +200,10 @@ const TRAIT_DEFINITIONS = {
 			{"min": 2, "desc_key": "trait.water.2"}
 		]
 	},
-	"WIND": {
-		"display_name_key": "trait.wind.name",
+	"AIR": {
+		"display_name_key": "trait.air.name",
 		"levels": [
-			{"min": 2, "desc_key": "trait.wind.2"}
+			{"min": 2, "desc_key": "trait.air.2"}
 		]
 	}
 }

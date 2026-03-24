@@ -13,6 +13,15 @@ var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vect
 var _pending_guardian_return: String = "" # UUID of Guardian needing to return after damage
 var _tracker: AnimationCompletionTracker # Animation completion tracking
 
+# --- Speed Control ---
+# Speed factor is stored in AnimationConstants.speed_factor (static var)
+
+# --- Step Mode & Pause ---
+var _is_paused: bool = false
+var _step_advance_requested: bool = false
+
+signal combat_step_reached(step_info: Dictionary)  # For UI to display step description
+
 func set_hp_snapshot(snapshot: Dictionary) -> void:
 	# Snapshot of unit_uuid -> hp before simulation. Animator will restore these
 	# values before playing events so each event updates the label visibly.
@@ -148,6 +157,22 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
 	for event in events:
 		SignalBus.log_animation_event.emit(event)
+		
+		# Skip non-visual events in step mode
+		if event.type == CombatEvent.Type.LOG_MESSAGE:
+			continue
+		
+		# STEP MODE: Pause before each visual event and wait for user input
+		if _is_paused and not _step_advance_requested:
+			var step_info = _build_step_info(event)
+			emit_signal("combat_step_reached", step_info)
+			
+			# Wait for user to click "Next Step" or a Play speed
+			while _is_paused and not _step_advance_requested:
+				await get_tree().process_frame
+				
+		_step_advance_requested = false # consume the step request exactly once per event
+		
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
 				pass # Log messages are instant, no animation to wait for
@@ -344,6 +369,11 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	
 	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
 	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
+	
+	# Clear step mode at end of turn
+	_is_paused = false
+	_step_advance_requested = false
+	
 	emit_signal("turn_animation_finished")
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
@@ -457,3 +487,75 @@ func wait_for_animation_completion(animation_type: String, expected_uuid: String
 			anim_type = AnimationCompletionTracker.AnimationType.FLASH # Default fallback
 	
 	await _tracker.await_completion(expected_uuid, anim_type)
+
+# =============================================================================
+# SPEED CONTROL
+# =============================================================================
+
+## Set combat playback speed (1.0 = normal, 2.0 = 2x, 3.0 = 3x, 4.0 = 4x)
+func set_combat_speed(factor: float) -> void:
+	AnimationConstants.speed_factor = clampf(factor, 1.0, 4.0)
+
+## Get current combat playback speed
+func get_combat_speed() -> float:
+	return AnimationConstants.speed_factor
+
+# =============================================================================
+# STEP MODE & PAUSE CONTROL
+# =============================================================================
+
+func pause_combat() -> void:
+	_is_paused = true
+	_step_advance_requested = false
+
+func play_continuous(speed: float) -> void:
+	_is_paused = false
+	_step_advance_requested = true # unblock if waiting
+	set_combat_speed(speed)
+
+func request_step() -> void:
+	_is_paused = true
+	_step_advance_requested = true
+
+## Build human-readable step info from a CombatEvent for UI display
+func _build_step_info(event: CombatEvent) -> Dictionary:
+	var info: Dictionary = {
+		"event_type": event.get_type_name(),
+		"source_uuid": event.source_uuid,
+		"target_uuids": event.target_uuids,
+		"ability_id": event.ability_id,
+		"trigger_type": event.trigger_type
+	}
+	
+	match event.type:
+		CombatEvent.Type.DAMAGE:
+			var amount = abs(int(event.visual_payload.get("amount", 0)))
+			info["description"] = "Deals %d damage" % amount
+		CombatEvent.Type.HEAL:
+			var amount = int(event.visual_payload.get("amount", 0))
+			info["description"] = "Heals for %d" % amount
+		CombatEvent.Type.BUFF:
+			var stat = String(event.visual_payload.get("stat", ""))
+			var amount = int(event.visual_payload.get("amount", 0))
+			info["description"] = "+%d %s" % [amount, stat.to_upper()]
+		CombatEvent.Type.DEATH:
+			info["description"] = "Dies"
+		CombatEvent.Type.SUMMON:
+			info["description"] = "Summoned"
+		CombatEvent.Type.KAMIKAZE_ATTACK:
+			var amount = abs(int(event.visual_payload.get("amount", 0)))
+			info["description"] = "Kamikaze for %d damage" % amount
+		CombatEvent.Type.STATUS_EFFECT:
+			var stat = String(event.visual_payload.get("stat", ""))
+			var amount = int(event.visual_payload.get("amount", 0))
+			info["description"] = "%s %d" % [stat.trim_suffix("_stacks").to_upper(), amount]
+		CombatEvent.Type.LETHAL_SAVE:
+			info["description"] = "Saved from lethal damage"
+		CombatEvent.Type.GUARDIAN_INTERCEPT:
+			info["description"] = "Guardian intercepts"
+		CombatEvent.Type.TRANSFORM:
+			info["description"] = "Transforms"
+		_:
+			info["description"] = event.get_type_name()
+	
+	return info

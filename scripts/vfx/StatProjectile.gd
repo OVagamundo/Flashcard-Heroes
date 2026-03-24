@@ -41,7 +41,7 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 	
 	# Default duration if not set
 	if _duration <= 0:
-		_duration = 0.6
+		_duration = AnimationConstants.scaled(0.6)
 		
 	# Solve for Gravity (g)
 	# Formula derived from projectile motion equations constrained by T, H, and DeltaY
@@ -61,8 +61,12 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 	
 	_velocity = Vector2(vx, vy)
 
-func launch(duration: float = 0.6) -> void:
-	_duration = duration
+func launch(custom_duration: float = 0.0) -> void:
+	if custom_duration > 0.0:
+		_duration = custom_duration
+	elif _duration <= 0.0:
+		_duration = AnimationConstants.scaled(0.6)
+		
 	_time = 0.0
 	_is_moving = true
 	

@@ -8,7 +8,7 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 	await animator.get_tree().process_frame
 	
 	# SPEED FACTOR: Make transformation faster than standard death (snappier feel)
-	var speed_factor = 0.3
+	var transform_speed_factor = 0.3
 	
 	for target_uuid in targets:
 		var view = animator._visual_registry.get(target_uuid)
@@ -30,11 +30,11 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 			tween.set_parallel(true)
 			
 			# Physics: Levitate (Matches DeathAnimation) - FASTER
-			tween.tween_property(view, "position", levitate_target, AC.DEATH_DURATION * speed_factor).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tween.tween_property(view, "position", levitate_target, AC.scaled(AC.DEATH_DURATION * transform_speed_factor)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			
 			# Color: Fade to Bright Yellow (Matches user request) - FASTER
 			var flash_color = Color(2.5, 2.5, 0.5, 1.0)
-			tween.tween_property(view, "modulate", flash_color, AC.DEATH_DURATION * speed_factor).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			tween.tween_property(view, "modulate", flash_color, AC.scaled(AC.DEATH_DURATION * transform_speed_factor)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 			
 			await tween.finished
 			

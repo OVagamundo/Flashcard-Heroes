@@ -98,6 +98,13 @@ To ensure absolute visibility of contextual information, all windows managed by 
 ### Position Data Rule
 Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visual_registry` for positions.**
 
+### 4.4 Playback Controls
+
+The `CombatControlsPanel` provides real-time interaction with the `BattleAnimator`:
+- **Speed Toggles (1x, 2x, 4x)**: Updates `AnimationConstants.speed_factor`. These buttons use a "Radio Button" style (only one active at a time) and reflect the current global state upon room entry.
+- **Step Button**: Immediately pauses playback and enters "Step Mode". If already in Step Mode, it advances the animator by exactly one `CombatEvent`.
+- **Center Alignment**: To prevent overlap with Trait labels, these controls are anchored to the bottom-center of the screen.
+
 ---
 
 ## 5. View Internals & Rendering

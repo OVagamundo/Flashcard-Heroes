@@ -311,12 +311,12 @@ item.emblem_earth.name,Earth Emblem,Emblema de Terra
 item.emblem_earth.desc,"Adds a [b]Soul Earth[/b] trait to this unit. Grants +4 HP.","Adiciona o atributo de alma [b]Alma de Terra[/b] a esta unidade. Concede +4 HP."
 trait.water.name,Water,Água
 trait.water.2,"Water units heal adjacent allies 1 HP at start of turn.","Unidades de Água curam aliados adjacentes em 1 HP no início do turno."
-trait.wind.name,Wind,Vento
-trait.wind.2,"Wind units steal 1 PWR from the opposite enemy at start of turn.","Unidades de Vento roubam 1 PWR do inimigo oposto no início do turno."
+trait.air.name,Air,Ar
+trait.air.2,"Air units steal 1 PWR from the opposite enemy at start of turn.","Unidades de Ar roubam 1 PWR do inimigo oposto no início do turno."
 item.emblem_water.name,Water Emblem,Emblema de Água
 item.emblem_water.desc,"Adds a [b]Soul Water[/b] trait to this unit. Grants +2 HP and +1 PWR.","Adiciona o atributo de alma [b]Alma de Água[/b] a esta unidade. Concede +2 HP e +1 PWR."
-item.emblem_wind.name,Wind Emblem,Emblema de Vento
-item.emblem_wind.desc,"When equipped, this unit counts as a Wind unit. Grants +1 PWR and +2 HP.","Quando equipado, esta unidade conta como uma unidade de Vento. Concede +1 PWR e +2 HP."
+item.emblem_air.name,Air Emblem,Emblema de Ar
+item.emblem_air.desc,"When equipped, this unit counts as an Air unit. Grants +1 PWR and +2 HP.","Quando equipado, esta unidade conta como uma unidade de Ar. Concede +1 PWR e +2 HP."
 
 item.potion_t1.name,Minor Healing Potion,Poção de Cura Menor
 item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.

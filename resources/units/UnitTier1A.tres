@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier1unitA.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier1EarthUnit.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal.tres" id="4_passive_heal"]
 

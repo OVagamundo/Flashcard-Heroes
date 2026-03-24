@@ -20,14 +20,14 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 			"WATER":
 				icon_rect.texture = preload("res://assets/sprites/items/WaterEmblem.png")
 				if is_instance_valid(name_label): name_label.text = "Water"
-			"WIND":
+			"AIR":
 				icon_rect.texture = preload("res://assets/sprites/items/AirEmblem.png")
-				if is_instance_valid(name_label): name_label.text = "Wind"
+				if is_instance_valid(name_label): name_label.text = "Air"
 			_:
 				if is_instance_valid(name_label): name_label.text = trait_name
 	
 	# Set Count text with dynamic threshold (3 for Fire/Earth, 2 for Water/Wind)
-	var threshold = 2 if trait_name in ["WATER", "WIND"] else 3
+	var threshold = 2 if trait_name in ["WATER", "AIR"] else 3
 	if is_instance_valid(count_label):
 		count_label.text = "%d / %d" % [count, threshold]
 	
@@ -81,7 +81,7 @@ func _gui_input(event: InputEvent) -> void:
 			"Fire": trait_name = "FIRE"
 			"Earth": trait_name = "EARTH"
 			"Water": trait_name = "WATER"
-			"Wind": trait_name = "WIND"
+			"Air": trait_name = "AIR"
 		
 		if not trait_name.is_empty():
 			# S6/W2: Clicking UI element clears selection

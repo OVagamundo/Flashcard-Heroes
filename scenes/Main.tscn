@@ -265,9 +265,6 @@ alignment = 1
 [node name="RightStats" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 2
-mouse_filter = 2
-
 [node name="PlayerTrinketBar" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/RightStats"]
 unique_name_in_owner = true
 layout_mode = 2
