@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn2.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn2_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite2_spawn_hurt"
+name_key = "ability_dust_elite_spawn.name"
+description_key = "ability_dust_elite_spawn.desc"
+trigger = &"on_hurt"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn2_1")])

@@ -52,6 +52,14 @@ func get_deck_unlock_percentage() -> float:
 		
 	return float(active_deck_ids.size()) / float(full_deck.size())
 
+## Records an elite encounter in the history
+func record_elite_encounter(elite_id: StringName) -> void:
+	if not elite_encounter_history.has(elite_id):
+		elite_encounter_history[elite_id] = 0
+	elite_encounter_history[elite_id] += 1
+	# Emit signal to ensure UI/Save is updated
+	SignalBus.emit_signal("run_data_changed")
+
 func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 	return run_instances.get(uuid)
 
@@ -705,6 +713,10 @@ func start_new_run() -> void:
 	active_deck_ids.clear()
 	cards_presented_count = 0
 	unlocked_recipes.clear() # All recipes start locked
+
+## Track which elite bosses have been encountered this run (ID -> count)
+## Used for weighted encounter generation (pity system)
+@export var elite_encounter_history: Dictionary = {}
 
 func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	start_new_run()

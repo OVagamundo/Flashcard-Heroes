@@ -364,3 +364,108 @@ unit_t3_h.name,Fusion Warden,Guardião da Fusão
 unit_t3_h.desc,A volatile hybrid that grows stronger whenever any battle-board merge occurs.,Um híbrido volátil que fica mais forte sempre que qualquer fusão ocorre no tabuleiro de batalha.
 ability.unit_t3_h.name,Convergence Surge,Surto de Convergência
 ability.unit_t3_h.desc,"Whenever a merge happens on the battle board (bench or lineup, unit or item), if this unit is on the battle board, gain **+2 HP** and **+2 PWR**.","Sempre que uma fusão acontece no tabuleiro de batalha (banco ou formação, unidade ou item), se esta unidade estiver no tabuleiro de batalha, ganha **+2 HP** e **+2 PWR**."
+u n i t _ d u s t _ t 2 . n a m e 
+ 
+ F i n e 
+ 
+ D u s t 
+ 
+ P o e i r a 
+ 
+ F i n a 
+ 
+ u n i t _ d u s t _ t 2 . d e s c 
+ 
+ A 
+ 
+ c l u m p 
+ 
+ o f 
+ 
+ s l i g h t l y 
+ 
+ m o r e 
+ 
+ s o l i d 
+ 
+ d u s t . 
+ 
+ U m 
+ 
+ a g l o m e r a d o 
+ 
+ d e 
+ 
+ p o e i r a 
+ 
+ u m 
+ 
+ p o u c o 
+ 
+ m a i s 
+ 
+ s � l i d a . 
+ 
+ u n i t _ d u s t _ e l i t e _ t 2 . n a m e 
+ 
+ D u s t 
+ 
+ G u a r d i a n 
+ 
+ G u a r d i � o 
+ 
+ d e 
+ 
+ P o e i r a 
+ 
+ u n i t _ d u s t _ e l i t e _ t 2 . d e s c 
+ 
+ A n 
+ 
+ e l i t e 
+ 
+ g u a r d i a n 
+ 
+ b o r n 
+ 
+ f r o m 
+ 
+ a n c i e n t 
+ 
+ d u s t . 
+ 
+ U m 
+ 
+ g u a r d i � o 
+ 
+ d e 
+ 
+ e l i t e 
+ 
+ n a s c i d o 
+ 
+ d e 
+ 
+ p o e i r a 
+ 
+ a n t i g a . 
+ 
+ 
+unit_dust_t2.name,Dust Minion (T2),Recruta de Poeira (T2)
+unit_dust_t2.desc,A construct. Attacks for 0 damage but stays in the fight.,Um construto. Ataca com 0 de dano, mas permanece na luta.
+unit_dust_elite_t2.name,Dust Sentinel (T2),Sentinela de Poeira (T2)
+unit_dust_elite_t3.desc,An overlord that spawns random Dust units on Turn Start, On Hurt, On Attack, and On Ally Death.,Um soberano que invoca Recrutas de Poeira aleatórios no Início do Turno, ao Sofrer Dano, ao Atacar e na Morte de Aliados.
+ability_dust_elite_spawn.name,Dust Pulse,Pulso de Poeira
+ability_dust_elite_spawn.desc,Spawns a Dust unit in the player's inventory.,Invoca um Recruta de Poeira no inventário do jogador.
+unit_dust_t1.name,Dust Minion (T1),Recruta de Poeira (T1)
+unit_dust_t1.desc,A fragile construct. Attacks for 0 damage but stays in the fight.,Um construto frágil. Ataca com 0 de dano, mas permanece na luta.
+unit_dust_elite_t3.name,Dust Overlord (T3),Soberano de Poeira (T3)
+ability_dust_elite_spawn_turn.name,Dust Pulse (Turn),Pulso de Poeira (Turno)
+ability_dust_elite_spawn_turn.desc,Spawns a Dust unit at Turn Start.,Invoca um Recruta de Poeira no início do turno.
+ability_dust_elite_spawn_death.name,Dust Pulse (Death),Pulso de Poeira (Morte)
+ability_dust_elite_spawn_death.desc,Spawns a Dust unit when an Ally dies.,Invoca um Recruta de Poeira quando um aliado morre.
+ability_dust_elite_spawn_hurt.name,Dust Pulse (Hurt),Pulso de Poeira (Dano)
+ability_dust_elite_spawn_hurt.desc,Spawns a Dust unit when Hurt.,Invoca um Recruta de Poeira ao sofrer dano.
+ability_dust_elite_spawn_attack.name,Dust Pulse (Attack),Pulso de Poeira (Ataque)
+ability_dust_elite_spawn_attack.desc,Spawns a Dust unit when Attacking.,Invoca um Recruta de Poeira ao atacar.
+unit_dust_elite_t2.desc,A sentinel that spawns a Dust unit (T2) whenever an ally dies.,Uma sentinela que invoca um Recruta de Poeira (T2) sempre que um aliado morre.

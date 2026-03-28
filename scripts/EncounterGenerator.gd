@@ -53,13 +53,39 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 	
 	return encounter
 
-## Generates an elite encounter using a random boss unit.
-func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
-	# Elite encounters randomly select between Boss 1, Boss 2, and Boss 3 as a "Mini Boss"
-	var boss_options: Array[StringName] = [&"boss_1", &"boss_2", &"boss_3"]
-	var boss_id: StringName = boss_options.pick_random()
-	var boss_def = Database.get_definition(boss_id)
-	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % boss_id)
+## Generates an elite encounter using a random boss unit (with weighted pity system).
+func generate_elite_encounter(total_budget: int, history: Dictionary = {}) -> EncounterDefinition:
+	# 1. Define elite boss options
+	var boss_options: Array[StringName] = [&"unit_dust_elite_t2", &"unit_dust_elite_t3"]
+	
+	# 2. Calculate weights based on history (Pity System)
+	var weights: Array[float] = []
+	var total_weight: float = 0.0
+	
+	for boss_id in boss_options:
+		var count = history.get(boss_id, 0)
+		# Reduction formula: weight = 100 / (1 + count * 2)
+		# 0 encounters -> 100, 1 -> 33, 2 -> 20, 3 -> 14...
+		var w: float = 100.0 / (1.0 + float(count) * 2.0)
+		weights.append(w)
+		total_weight += w
+	
+	# 3. Pick weighted boss
+	var roll = randf() * total_weight
+	var cumulative_weight: float = 0.0
+	var selected_boss_id: StringName = boss_options[0] # Fallback
+	
+	for i in range(boss_options.size()):
+		cumulative_weight += weights[i]
+		if roll < cumulative_weight:
+			selected_boss_id = boss_options[i]
+			break
+			
+	if OS.is_debug_build():
+		print("[EncounterGenerator] Elite weighting: ", weights, " Total: ", total_weight, " Roll: ", roll, " Picked: ", selected_boss_id)
+
+	var boss_def = Database.get_definition(selected_boss_id)
+	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % selected_boss_id)
 	_update_director_run_state()
 	
 	# Elite unit is FREE (like boss battles) - reduced budget (85%) for support units
@@ -68,7 +94,7 @@ func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
 	var build := _build_encounter_with_full_spend(support_budget, pools, MAX_UNITS - 1, MAX_TRINKETS)
 	
 	# Assemble encounter - reserve position 4 for elite unit
-	var encounter := _assemble_encounter(build, "elite_encounter_%s" % String(boss_id), true)
+	var encounter := _assemble_encounter(build, "elite_encounter_%s" % String(selected_boss_id), true)
 	
 	# Place elite boss at position 4 (back of lineup)
 	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
@@ -76,6 +102,9 @@ func generate_elite_encounter(total_budget: int) -> EncounterDefinition:
 	
 	# Mark this as an elite encounter with stat scaling for the boss
 	encounter.set_meta("elite_stat_scale", 0.33)
+	
+	# Metadata for GameManager to record history
+	encounter.set_meta("elite_boss_id", selected_boss_id)
 	
 	return encounter
 

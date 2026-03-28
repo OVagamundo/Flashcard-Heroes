@@ -385,8 +385,15 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				run_state.current_elite_level = 0
 			elif node_def.subtype == "ELITE":
 				# Elite encounter - uses standard daily budget (has free elite unit)
+				# Pass history for weighted pity system
 				var budget: int = daily_budget
-				encounter_def = EncounterGenerator.generate_elite_encounter(budget)
+				encounter_def = EncounterGenerator.generate_elite_encounter(budget, run_state.elite_encounter_history)
+				
+				# Record encounter in history immediately upon generation/selection
+				var elite_id = encounter_def.get_meta("elite_boss_id")
+				if elite_id is StringName:
+					run_state.record_elite_encounter(elite_id)
+				
 				# Track elite level for victory handling (trinket rewards)
 				run_state.current_elite_level = 1
 				run_state.current_boss_level = 0

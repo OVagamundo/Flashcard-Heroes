@@ -3,11 +3,9 @@ class_name BattleSetup
 extends RefCounted
 
 ## BattleSetup encapsulates battle initialization logic.
-## Responsible for creating battle copies of units from RunState and placing them.
 
 const RS = preload("res://scripts/RunState.gd")
 const C = preload("res://scripts/Constants.gd")
-# EncounterDefinition is a global class, no preload needed
 
 # ============================================================================
 # HELPER UTILITIES
@@ -16,36 +14,36 @@ const C = preload("res://scripts/Constants.gd")
 static func is_hero_definition(def: Resource) -> bool:
 	if not is_instance_valid(def):
 		return false
-	var id_str = String(def.id).to_lower()
+	if not def is GachaBallDefinition:
+		return false
+	var gbd := def as GachaBallDefinition
+	var id_str = String(gbd.id).to_lower()
 	if id_str == "hero":
 		return true
-	if def is GachaBallDefinition:
-		var gbd = def as GachaBallDefinition
-		if gbd.tags and gbd.tags.has("hero"):
-			return true
+	if gbd.tags.has(&"hero"):
+		return true
 	return false
 
 static func is_trinket_definition(def: Resource) -> bool:
 	if not is_instance_valid(def):
 		return false
-	return def.category == &"TRINKET"
+	return def is TrinketDefinition or def.get("category") == &"TRINKET"
 
 static func is_unit_definition(def: Resource) -> bool:
 	if not is_instance_valid(def):
 		return false
-	return def.category == &"UNIT"
+	if not def is GachaBallDefinition:
+		return false
+	return (def as GachaBallDefinition).category == &"UNIT"
 
 # ============================================================================
 # SETUP FROM RUN STATE
 # ============================================================================
 
-## Create battle copies of all instances from run state and place them in battle containers.
-## Returns dictionary mapping permanent UUIDs to battle UUIDs.
-static func create_battle_copies_from_run_state(state: BattleState) -> Dictionary:
+static func create_battle_copies_from_run_state(state: RefCounted) -> Dictionary:
 	var permanent_to_battle_uuid_map: Dictionary = {}
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 
-	# First pass: Create all battle copies and map their new UUIDs
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
 		var is_hero = is_hero_definition(def)
@@ -57,7 +55,6 @@ static func create_battle_copies_from_run_state(state: BattleState) -> Dictionar
 				permanent_to_battle_uuid_map[perm_inst.ball_uuid] = hero_battle_copy.ball_uuid
 			continue
 		
-		# Skip trinkets - they don't need battle copies
 		if is_trinket_definition(def):
 			continue
 			
@@ -67,7 +64,6 @@ static func create_battle_copies_from_run_state(state: BattleState) -> Dictionar
 		state.register_instance(battle_copy)
 		permanent_to_battle_uuid_map[perm_inst.ball_uuid] = battle_copy.ball_uuid
 
-	# Second pass: Remap equipped item UUIDs on all battle copies
 	for battle_uuid in state.get_all_instances():
 		var battle_inst = state.get_instance(battle_uuid)
 		if battle_inst.get_definition().category != &"UNIT":
@@ -88,8 +84,7 @@ static func create_battle_copies_from_run_state(state: BattleState) -> Dictionar
 
 	return permanent_to_battle_uuid_map
 
-## Place battle copies in their correct containers based on run state locations.
-static func place_instances_from_run_state(state: BattleState, permanent_to_battle_uuid_map: Dictionary) -> void:
+static func place_instances_from_run_state(state: RefCounted, permanent_to_battle_uuid_map: Dictionary) -> void:
 	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
 	
 	for perm_inst in run_state_instances:
@@ -120,10 +115,11 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 			continue
 			
 		var target_container_name: StringName
-		if perm_loc.container.begins_with("RunInventoryT"):
+		var perm_container_str = String(perm_loc.container)
+		if perm_container_str.begins_with("RunInventoryT"):
 			var perm_def = perm_inst.get_definition()
-			if perm_def is GachaBallDefinition:
-				var tier = perm_def.tier
+			if is_instance_valid(perm_def):
+				var tier = perm_def.get("tier")
 				target_container_name = &"BattleInventoryT%d" % tier
 			else:
 				continue
@@ -136,29 +132,27 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 				_:
 					continue
 
-		var container: DataContainer = state.get_container(target_container_name)
-		# Use find_first_empty_slot() for inventory to avoid index mismatches
-		# between RunInventory (can expand) and BattleInventory (fixed capacity)
+		var container = state.get_container(target_container_name)
 		var index: int
 		if String(target_container_name).begins_with("BattleInventoryT"):
 			index = container.find_first_empty_slot()
 			if index == -1:
-				push_error("BattleSetup: No space in %s for instance %s" % [String(target_container_name), battle_copy.ball_uuid])
 				continue
 		else:
-			# For lineup/bench, preserve the exact slot position
 			index = perm_loc.index
 		container.set_uuid(index, battle_copy.ball_uuid)
 		state.update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
-## Setup enemy lineup from encounter definition
-static func setup_enemy_lineup(state: BattleState, encounter_def: EncounterDefinition) -> void:
+static func setup_enemy_lineup(state: RefCounted, encounter_def: Resource) -> void:
 	if not is_instance_valid(encounter_def):
-		_setup_fallback_enemy_lineup(state)
 		return
 	
 	var lineup_container = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	for placement in encounter_def.enemy_placements:
+	var placements = encounter_def.get("enemy_placements")
+	if not placements is Array:
+		return
+		
+	for placement in placements:
 		var unit_id = placement.get("id", placement.get("unit_id", ""))
 		var unit_def = Database.get_definition(unit_id)
 		if not is_instance_valid(unit_def):
@@ -167,16 +161,22 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: EncounterDefin
 		var enemy_inst = GachaBallInstance.new()
 		enemy_inst.initialize(unit_def)
 		
-		# Check for elite stat scaling (Mini Boss logic)
-		if encounter_def.has_meta("elite_stat_scale") and placement.position == 4:
-			var scale: float = encounter_def.get_meta("elite_stat_scale")
-			# Apply scaling to base stats, ensuring at least 1
-			enemy_inst.current_hp = maxi(1, int(floor(enemy_inst.current_hp * scale)))
-			enemy_inst.current_pwr = maxi(1, int(floor(enemy_inst.current_pwr * scale)))
+		var pos = placement.get("position")
+		if encounter_def.has_meta("elite_stat_scale") and pos == 4:
+			var id_str = String(unit_id)
+			if id_str == "unit_dust_elite_t3" or id_str == "unit_dust_elite_t2":
+				var day: int = 1
+				if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+					day = GameManager.run_state.day
+				enemy_inst.current_hp = maxi(3, day)
+				enemy_inst.current_pwr = maxi(1, int(floor(day / 2.0)))
+			else:
+				var scale: float = encounter_def.get_meta("elite_stat_scale")
+				enemy_inst.current_hp = maxi(1, int(floor(enemy_inst.current_hp * scale)))
+				enemy_inst.current_pwr = maxi(1, int(floor(enemy_inst.current_pwr * scale)))
 			
 		state.register_instance(enemy_inst)
 		
-		# Equip items
 		var equipment = placement.get("equipment", placement.get("items", []))
 		for item_data in equipment:
 			var item_id = item_data if item_data is StringName or item_data is String else item_data.get("id", "")
@@ -187,29 +187,10 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: EncounterDefin
 			var item_inst = GachaBallInstance.new()
 			item_inst.initialize(item_def)
 			state.register_instance(item_inst)
-			
-			# Perform atomic equip
 			_perform_static_equip(item_inst, enemy_inst)
 		
-		lineup_container.set_uuid(placement.position, enemy_inst.ball_uuid)
-		state.update_instance_location(enemy_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, placement.position)
-
-static func _setup_fallback_enemy_lineup(state: BattleState) -> void:
-	# Fallback to hardcoded enemy lineup for testing or broken encounters
-	var enemy_unit_ids = [&"unit_t1_a", &"unit_t1_b", &"unit_t2_c", &"unit_t3_d", &"enemy_hero"]
-	var lineup_container = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
-	
-	for i in range(min(enemy_unit_ids.size(), 5)):
-		var unit_def = Database.get_definition(enemy_unit_ids[i])
-		if not is_instance_valid(unit_def):
-			continue
-		
-		var enemy_inst = GachaBallInstance.new()
-		enemy_inst.initialize(unit_def)
-		state.register_instance(enemy_inst)
-		
-		lineup_container.set_uuid(i, enemy_inst.ball_uuid)
-		state.update_instance_location(enemy_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, i)
+		lineup_container.set_uuid(pos, enemy_inst.ball_uuid)
+		state.update_instance_location(enemy_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
 
 static func _perform_static_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	var empty_slot_idx: int = unit_instance.equipped_item_uuids.find("")
@@ -217,21 +198,19 @@ static func _perform_static_equip(item_instance: GachaBallInstance, unit_instanc
 		unit_instance.equipped_item_uuids[empty_slot_idx] = item_instance.ball_uuid
 		item_instance.equipped_on_uuid = unit_instance.ball_uuid
 		item_instance.equipped_slot_index = empty_slot_idx
-		
-		# Apply the item's stat bonuses to the unit
 		unit_instance.equip_item_bonus(item_instance)
 
-## Setup enemy trinkets from encounter definition
-static func setup_enemy_trinkets(state: BattleState, encounter_def: EncounterDefinition) -> void:
+static func setup_enemy_trinkets(state: RefCounted, encounter_def: Resource) -> void:
 	if not is_instance_valid(encounter_def):
 		return
-	
-	var et_container := state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+	var et_container = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
 	if not is_instance_valid(et_container):
 		return
-	
 	var slot_index := 0
-	for trinket_id in encounter_def.enemy_trinket_ids:
+	var trinket_ids = encounter_def.get("enemy_trinket_ids")
+	if not trinket_ids is Array:
+		return
+	for trinket_id in trinket_ids:
 		var trinket_def = Database.get_definition(trinket_id)
 		if not is_instance_valid(trinket_def):
 			continue
@@ -243,14 +222,11 @@ static func setup_enemy_trinkets(state: BattleState, encounter_def: EncounterDef
 		state.enemy_trinkets.append(trinket_inst)
 		slot_index += 1
 
-## Setup player trinkets from run state
-static func setup_player_trinkets(state: BattleState) -> void:
+static func setup_player_trinkets(state: RefCounted) -> void:
 	if not is_instance_valid(GameManager.run_state):
 		return
-	
-	var pt_container := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
+	var pt_container = state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS)
 	var slot_index := 0
-	
 	for perm_inst in GameManager.run_state.get_all_instances().values():
 		var def = perm_inst.get_definition()
 		if not is_trinket_definition(def):
@@ -260,7 +236,6 @@ static func setup_player_trinkets(state: BattleState) -> void:
 			continue
 		if perm_loc.container != RS.RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 			continue
-		
 		var battle_trinket: GachaBallInstance = perm_inst.create_battle_copy()
 		if not is_instance_valid(battle_trinket):
 			continue
