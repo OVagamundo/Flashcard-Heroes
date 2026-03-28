@@ -279,8 +279,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					var battle_view = get_tree().get_first_node_in_group("battle_view")
 					if is_instance_valid(battle_view):
 						var lineup_container: HBoxContainer = null
-						if container_tag == &"PlayerLineup":
-							lineup_container = battle_view.player_lineup
+						if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
+							lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_bench
 						elif container_tag == &"EnemyLineup":
 							lineup_container = battle_view.enemy_lineup
 						

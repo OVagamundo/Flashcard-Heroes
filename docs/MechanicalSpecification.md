@@ -316,6 +316,7 @@ Reactions are resolved using a **Priority Band** system:
 * Deals damage equal to current PWR.
 * Targets frontmost enemy.
 * If empty, nearest forward unit.
+* **0-PWR Visuals**: Units with 0 PWR (e.g., Dust Minions) still execute the full attack sequence and trigger visual impact feedback on their targets, despite dealing no damage.
 
 ---
 
@@ -469,6 +470,7 @@ Tier 3:
 * Budget formula: `3 + (Day - 1)`.
 * Buys units/items using tier gold cost.
 * Elites and Bosses use 85% of the base budget for support units (Mini-Boss/Boss units are FREE).
+* **Elite Pity System**: The encounter generator dynamically adjusts weights for elite boss variants based on the run's encounter history. Each prior encounter with a specific elite significantly reduces its weight for future selection, ensuring variety between variants (e.g., Dust Sentinel vs. Dust Overlord).
 * Boss Reinforcements use 33% of the daily budget (baseline `3 + (Day-1)`).
 
 ## 13.2 Shop Node Logic

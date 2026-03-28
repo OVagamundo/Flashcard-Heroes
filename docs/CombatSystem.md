@@ -64,6 +64,11 @@ graph TD
     *   **Rule:** Effects must **NEVER** set properties (e.g., `current_hp`) directly.
     *   **Purpose:** This function updates the data model *and* returns the absolute value required for the `CombatEvent` visual payload, ensuring the snapshot is accurate.
 
+### 0-Damage Visual Feedback
+To ensure consistent game feel, units with 0 PWR (like Dust Minions) still trigger visual feedback when they attack.
+- **Rule**: `EffectHandlers.handle_damage_effect` always includes hit targets in the `damaged_uuids` list of an `EffectResult`.
+- **Impact**: The `BattleAnimator` receives a `DAMAGE` event for every hit, even if 0 HP is lost, allowing it to trigger "bump" and "impact VFX" animations for every basic attack.
+
 ### The Event Queue (TurnLog)
 The output of the simulation is a linear queue of `CombatEvent` objects. This queue represents the **Causal History** of the turn.
 

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier1DustUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_t1"
+display_name_key = "unit_dust_t1.name"
+description_key = "unit_dust_t1.desc"
+icon = ExtResource("2_icon")
+tags = []
+is_hero = false
+tier = 1
+cost = 1
+category = &"UNIT"
+item_slot_count = 1
+base_hp = 1
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_attack")])

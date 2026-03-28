@@ -59,6 +59,10 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | ID | Name | Stats | Type | Abilities |
 |---|---|---|---|---|
 | `enemy_hero` | Enemy Hero | 10 HP / 2 PWR | Boss | (None by default) |
+| `unit_dust_t1` | Dust Minion (T1) | 1 HP / 0 PWR | Support | **Basic Attack**: Attacks for 0 damage. |
+| `unit_dust_t2` | Dust Minion (T2) | 1 HP / 0 PWR | Support | **Basic Attack**: Attacks for 0 damage. |
+| `unit_dust_elite_t2` | Dust Sentinel (Elite T2) | 3 HP / 1 PWR | Elite | **Dust Pulse (Death)**: Summons a Dust Minion (T2) whenever an ally dies. |
+| `unit_dust_elite_t3` | Dust Overlord (Elite T3) | 3 HP / 1 PWR | Elite | **Dust Pulse (Multi)**: Summons random Dust Minions (T1/T2) on Turn Start, On Hurt, On Attack, and On Ally Death. |
 | `boss_1` | The Awakened Guardian | 10 HP / 10 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Draining Presence** (`on_draw`): Gains +1 HP when player draws from gacha. |
 | `boss_2` | The Shadow Warden | 15 HP / 15 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Token Hunger** (`on_token_spent`): Gains +1 HP for each token the player spends. |
 | `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Storm Rising** (`on_ally_death`): Gains +1 HP and +1 PWR for each ally that died this combat (Triggers on Turn Start). |

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier3DustEliteUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_spawn_turn.tres" id="4_turn"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_spawn_death.tres" id="5_death"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_spawn_hurt.tres" id="6_hurt"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_spawn_attack.tres" id="7_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_elite_t3"
+display_name_key = "unit_dust_elite_t3.name"
+description_key = "unit_dust_elite_t3.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS"])
+is_hero = false
+tier = 3
+cost = 5
+category = &"UNIT"
+item_slot_count = 2
+base_hp = 3
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_summon"), ExtResource("4_turn"), ExtResource("5_death"), ExtResource("6_hurt"), ExtResource("7_attack")])

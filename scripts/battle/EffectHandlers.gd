@@ -421,8 +421,9 @@ static func handle_damage_effect(
 		
 		# Add to damaged_uuids if HP or armor was affected OR if Burn is applied
 		# This ensures that attacks that do 0 damage (due to armor) but apply burn still trigger visual feedback
-		if hp_damage > 0 or armor_consumed > 0 or should_apply_burn:
-			result.damaged_uuids.append(tgt_uuid)
+		# Always include target for visual feedback, even if 0 HP damage was dealt
+		# This ensures animations (like bumps/impacts) fire for 0-PWR units
+		result.damaged_uuids.append(tgt_uuid)
 		
 		var tgt_def := tgt.get_definition()
 		if is_instance_valid(tgt_def):

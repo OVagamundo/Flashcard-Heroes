@@ -95,3 +95,16 @@ Boss units call `EncounterGenerator.generate_boss_summons(day, max_units)` which
 - Generates units with equipped items
 - **No trinkets** for summoned units
 - Returns Array of `{unit_id: StringName, items: Array[StringName]}`
+
+## Elite Encounter Pity System
+
+To ensure variety, the `EncounterGenerator` tracks the history of encountered elite variants.
+
+### Weighted Selection Formula
+When generating an elite encounter, the system accepts an `elite_encounter_history` dictionary and adjusts the weights of available bosses:
+- **Base Weight**: 100
+- **Formula**: `Weight = 100 / (1 + Count * 2)`
+  - *0 Encounters*: 100 Weight
+  - *1 Encounter*: 33 Weight
+  - *2 Encounters*: 20 Weight
+- **Impact**: This significantly reduces the probability of seeing the same elite back-to-back, ensuring a balanced frequency between Tier 2 and Tier 3 Dust Elites.
