@@ -187,6 +187,17 @@ signal unit_lethal_save_finished(unit_uuid: String)
 signal battle_inventory_changed
 
 # -----------------------------------------------------------------------------
+# BATTLE INVENTORY TRANSITION SIGNALS
+# -----------------------------------------------------------------------------
+
+## Emitted when the battle inventory starts its open/close animation
+## @param is_opening: bool - True if opening, False if closing
+signal battle_inventory_transition_started(is_opening: bool)
+
+## Emitted when the battle inventory finishes its animation
+signal battle_inventory_transition_finished
+
+# -----------------------------------------------------------------------------
 # UNIT LABEL OVERLAY SIGNALS (Decoupled stat display system)
 # -----------------------------------------------------------------------------
 

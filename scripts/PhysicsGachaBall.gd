@@ -16,6 +16,7 @@ var _pending_texture: Texture2D
 @onready var icon_sprite: Sprite2D = $IconSprite
 @onready var ui_anchor: Control = $UIAnchor
 @onready var impact_audio: AudioStreamPlayer = $AudioStreamPlayer
+@onready var col_poly: CollisionPolygon2D = $CollisionPolygon2D
 
 var _orig_capsule_scale: Vector2
 var _orig_icon_scale: Vector2
@@ -69,6 +70,17 @@ func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Text
 			icon_sprite.texture = tex
 		else:
 			_pending_texture = tex
+
+func spawn_in(duration: float) -> void:
+	# SOFT-SPAWN: Start with a tiny collision presence to allow the ball 
+	# to enter the world gracefully even if the spawn zone is crowded.
+	col_poly.scale = Vector2(0.1, 0.1)
+	
+	# Gently grow it into full volume
+	var tween = create_tween()
+	tween.tween_property(col_poly, "scale", Vector2(1.0, 1.0), duration)\
+			.set_trans(Tween.TRANS_QUAD)\
+			.set_ease(Tween.EASE_OUT)
 
 func _refresh_capsule_local_glow(enabled: bool = CRTEffect.is_glow_enabled()) -> void:
 	GachaBallCapsuleGlow.set_sprite_glow_enabled(capsule_sprite, enabled)

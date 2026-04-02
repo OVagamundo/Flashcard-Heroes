@@ -13,6 +13,7 @@ var _window_scenes: Dictionary = {
 	
 	# --- Contextual Windows (Managed by _active_inspection_group) ---
 	&"Inventory": load("res://scenes/InventoryWindow.tscn"),
+	&"BattleInventory": load("res://scenes/BattleInventoryWindow.tscn"),
 	&"DiscardPile": load("res://scenes/DiscardPileWindow.tscn"),
 	&"ChoiceWindow": load("res://scenes/ChoiceWindow.tscn"),
 	&"UnitInspection": load("res://scenes/UnitInspectionWindow.tscn"),
@@ -29,6 +30,7 @@ var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
 
 var _persistent_inventory_window: Control = null
+var _persistent_battle_inventory_window: Control = null
 var _persistent_discard_pile_window: Control = null
 
 signal window_closed(window: Control)
@@ -56,6 +58,10 @@ func _ready() -> void:
 
 	call_deferred("_setup_persistent_inventory")
 	call_deferred("_setup_persistent_discard_pile")
+	
+	# Create/destroy the battle inventory window when entering/leaving battle
+	if SignalBus.has_signal("battle_state_changed"):
+		SignalBus.battle_state_changed.connect(_on_battle_state_changed_wm)
 
 func _setup_persistent_inventory() -> void:
 	if not _window_scenes.has(&"Inventory"):
@@ -81,6 +87,40 @@ func _setup_persistent_discard_pile() -> void:
 	_persistent_discard_pile_window.hide()
 	# Root starts off-screen right as defined in .tscn (position.x = 1920)
 	_persistent_discard_pile_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+func _setup_persistent_battle_inventory() -> void:
+	if is_instance_valid(_persistent_battle_inventory_window):
+		return
+	if not _window_scenes.has(&"BattleInventory"):
+		return
+	_persistent_battle_inventory_window = _window_scenes[&"BattleInventory"].instantiate()
+	_persistent_battle_inventory_window.name = "PersistentBattleInventoryWindow"
+	_persistent_battle_inventory_window.set_meta("window_type", &"Inventory")
+	_get_modal_layer().add_child(_persistent_battle_inventory_window)
+	# Starts hidden — the window stays in tree for physics persistence
+	_persistent_battle_inventory_window.visible = true
+	_persistent_battle_inventory_window.position = Vector2.ZERO
+	_persistent_battle_inventory_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Start in closed state (trays down)
+	if _persistent_battle_inventory_window.has_method("set_open_progress"):
+		_persistent_battle_inventory_window.set_open_progress(0.0)
+
+func _teardown_persistent_battle_inventory() -> void:
+	if not is_instance_valid(_persistent_battle_inventory_window):
+		return
+	# Remove from inspection group if tracked
+	var idx = _active_inspection_group.find(_persistent_battle_inventory_window)
+	if idx != -1:
+		_active_inspection_group.remove_at(idx)
+	_kill_inventory_motion_tween(_persistent_battle_inventory_window)
+	_persistent_battle_inventory_window.queue_free()
+	_persistent_battle_inventory_window = null
+
+func _on_battle_state_changed_wm(is_in_battle: bool) -> void:
+	if is_in_battle:
+		_setup_persistent_battle_inventory()
+	else:
+		_teardown_persistent_battle_inventory()
 
 
 # --- PUBLIC API ---
@@ -137,20 +177,31 @@ func open_tutorial_overlay(context: Dictionary = {}) -> Control:
 	return window_instance
 
 # Public entry point for the Inventory Window.
+# Routes to the dedicated BattleInventoryWindow during battle, or the
+# run-mode grid InventoryWindow outside of battle.
 func open_inventory_window() -> void:
-	var win = _persistent_inventory_window
+	var is_battle := GameManager.is_in_battle
+	var win: Control = _persistent_battle_inventory_window if is_battle else _persistent_inventory_window
 	if not is_instance_valid(win):
-		# Fallback if uninitialized
-		var context: Dictionary = {
-			"window_type": &"Inventory",
-			"populate_context": _get_inventory_populate_context()
-		}
-		_open_contextual_window(context)
-		return
+		if is_battle:
+			_setup_persistent_battle_inventory()
+			win = _persistent_battle_inventory_window
+		else:
+			_setup_persistent_inventory()
+			win = _persistent_inventory_window
+		if not is_instance_valid(win):
+			# Fallback if still uninitialized
+			var fallback_type: StringName = &"BattleInventory" if is_battle else &"Inventory"
+			var context: Dictionary = {
+				"window_type": fallback_type,
+				"populate_context": _get_battle_inventory_populate_context() if is_battle else _get_run_inventory_populate_context()
+			}
+			_open_contextual_window(context)
+			return
 
 	var opening: bool = win.has_meta(_WM_META_OPENING) and bool(win.get_meta(_WM_META_OPENING))
 	var closing: bool = win.has_meta(_WM_META_CLOSING) and bool(win.get_meta(_WM_META_CLOSING))
-	
+
 	if win in _active_inspection_group:
 		if opening or not closing:
 			return # Already open or currently opening
@@ -160,15 +211,18 @@ func open_inventory_window() -> void:
 		if is_instance_valid(iter_win) and iter_win != win:
 			stop_tracking_window(iter_win.get_instance_id())
 			_queue_free_with_optional_inventory_animation(iter_win)
-	
-	var ctx = _get_inventory_populate_context()
+
+	var ctx = _get_battle_inventory_populate_context() if is_battle else _get_run_inventory_populate_context()
 	if win.has_method("populate"):
 		win.populate(ctx)
-	
+
 	if not _active_inspection_group.has(win):
 		_active_inspection_group.push_back(win)
-		
-	_animate_inventory_window_open(win)
+
+	if _is_battle_inventory_window(win):
+		_animate_battle_inventory_open(win)
+	else:
+		_animate_inventory_window_open(win)
 
 # Back-compat shim for GIR callers that still use the old private name
 func _open_inspection_window(loc: LocationIdentifier, source_view: Control) -> void:
@@ -344,7 +398,7 @@ func is_any_inventory_window_open() -> bool:
 			if type == &"Inventory" or type == &"DiscardPile":
 				return true
 		# Fallbacks if meta is missing
-		if win == _persistent_inventory_window or win == _persistent_discard_pile_window:
+		if win == _persistent_inventory_window or win == _persistent_battle_inventory_window or win == _persistent_discard_pile_window:
 			return true
 	return false
 
@@ -612,19 +666,23 @@ func _locations_equal(a, b) -> bool:
 	var b_unit: String = b.get("unit_uuid") if b is Object else ""
 	return a_container == b_container and a_index == b_index and a_unit == b_unit
 
-func _get_inventory_populate_context() -> Dictionary:
-	var is_battle = GameManager.is_in_battle
+func _get_run_inventory_populate_context() -> Dictionary:
 	var inventory_data: Dictionary = {}
-	var title = ""
-	if is_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm): inventory_data = bm.get_battle_inventory()
-		title = "Battle Inventory"
-	else:
-		var run_state = GameManager.run_state
-		if is_instance_valid(run_state): inventory_data = run_state.get_run_inventory_containers()
-		title = "Run Inventory"
-	return {"inventory": inventory_data, "is_battle_context": is_battle, "title": title, "is_interactive": true}
+	var run_state = GameManager.run_state
+	if is_instance_valid(run_state):
+		inventory_data = run_state.get_run_inventory_containers()
+	return {"inventory": inventory_data, "is_battle_context": false, "title": "Run Inventory", "is_interactive": true}
+
+func _get_battle_inventory_populate_context() -> Dictionary:
+	var inventory_data: Dictionary = {}
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm):
+		inventory_data = bm.get_battle_inventory()
+	return {"inventory": inventory_data, "is_battle_context": true, "title": "Battle Inventory", "is_interactive": true}
+
+# Legacy shim — kept for any callers that haven't been updated yet
+func _get_inventory_populate_context() -> Dictionary:
+	return _get_battle_inventory_populate_context() if GameManager.is_in_battle else _get_run_inventory_populate_context()
 
 func _get_discard_pile_populate_context() -> Dictionary:
 	var inventory_data: Array = []
@@ -1036,8 +1094,17 @@ func _is_inventory_window(window: Control) -> bool:
 			return true
 	return false
 
+func _is_battle_inventory_window(window: Control) -> bool:
+	return is_instance_valid(window) and window == _persistent_battle_inventory_window
+
 func _queue_free_with_optional_inventory_animation(window: Control) -> void:
 	if not is_instance_valid(window):
+		return
+	if window == _persistent_battle_inventory_window:
+		var idx = _active_inspection_group.find(window)
+		if idx != -1:
+			_active_inspection_group.remove_at(idx)
+		_animate_battle_inventory_close(window)
 		return
 	if window == _persistent_inventory_window:
 		_animate_inventory_window_close(window)
@@ -1110,6 +1177,9 @@ func _tween_inventory_vertical_step(
 
 func _animate_inventory_window_open(window: Control) -> void:
 	if not is_instance_valid(window): return
+	if _is_battle_inventory_window(window):
+		_animate_battle_inventory_open(window)
+		return
 	if window.has_meta(_WM_META_OPENING) and bool(window.get_meta(_WM_META_OPENING)): return
 	
 	window.set_meta(_WM_META_OPENING, true)
@@ -1157,13 +1227,6 @@ func _animate_inventory_window_open(window: Control) -> void:
 		if is_instance_valid(window):
 			window.set_meta(_WM_META_OPENING, false)
 			
-			# Jolt the physics balls (upward slam)
-			if window is InventoryWindow:
-				var upward_jolt = Vector2(0, -500)
-				window.tier_1_physics.apply_jolt(upward_jolt)
-				window.tier_2_physics.apply_jolt(upward_jolt)
-				window.tier_3_physics.apply_jolt(upward_jolt)
-			
 			# Restore interactions once fully open
 			window.mouse_filter = Control.MOUSE_FILTER_PASS
 			for child in window.get_children():
@@ -1179,6 +1242,10 @@ func _animate_inventory_window_open(window: Control) -> void:
 func _animate_inventory_window_close(window: Control) -> bool:
 	if not _is_inventory_window(window): return false
 	if not is_instance_valid(window): return true
+	# Delegate battle inventory to its dedicated close function
+	if _is_battle_inventory_window(window):
+		_animate_battle_inventory_close(window)
+		return true
 	if window.has_meta(_WM_META_CLOSING) and bool(window.get_meta(_WM_META_CLOSING)): return true
 	
 	window.set_meta(_WM_META_OPENING, false)
@@ -1220,14 +1287,6 @@ func _animate_inventory_window_close(window: Control) -> bool:
 				window.remove_meta(_WM_META_ANIM_TWEEN)
 			if window == _persistent_inventory_window:
 				window.hide()
-				
-				# Jolt the physics balls (downward slam)
-				if window is InventoryWindow:
-					var downward_jolt = Vector2(0, 400)
-					window.tier_1_physics.apply_jolt(downward_jolt)
-					window.tier_2_physics.apply_jolt(downward_jolt)
-					window.tier_3_physics.apply_jolt(downward_jolt)
-				
 				var idx = _active_inspection_group.find(window)
 				if idx != -1:
 					_active_inspection_group.remove_at(idx)
@@ -1235,6 +1294,88 @@ func _animate_inventory_window_close(window: Control) -> bool:
 				window.queue_free()
 	)
 	return true
+
+# --- BATTLE INVENTORY ANIMATION ---
+# Dedicated open/close for the persistent BattleInventoryWindow.
+# Uses tray motion (set_open_progress) instead of panel offset animation.
+# Tray motion imparts real physics to the balls via AnimatableBody2D,
+# so no apply_jolt() is needed.
+
+func _animate_battle_inventory_open(window: Control) -> void:
+	if not is_instance_valid(window): return
+	if window.has_meta(_WM_META_OPENING) and bool(window.get_meta(_WM_META_OPENING)): return
+
+	window.set_meta(_WM_META_OPENING, true)
+	window.set_meta(_WM_META_CLOSING, false)
+
+	if window.has_method("prepare_for_open"):
+		window.prepare_for_open()
+
+	_kill_inventory_motion_tween(window)
+	Audio.play_sfx("ui_window_open")
+
+	var duration: float = 0.45
+	if window.has_method("get_open_duration"):
+		duration = window.get_open_duration()
+
+	var tween: Tween = window.create_tween()
+	window.set_meta(_WM_META_ANIM_TWEEN, tween)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+
+	tween.tween_method(
+		Callable(window, "set_open_progress"),
+		window.get_open_progress() if window.has_method("get_open_progress") else 0.0,
+		1.0,
+		duration
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.set_meta(_WM_META_OPENING, false)
+			if window.has_method("finish_open"):
+				window.finish_open()
+			if window.has_meta(_WM_META_ANIM_TWEEN):
+				window.remove_meta(_WM_META_ANIM_TWEEN)
+	)
+
+func _animate_battle_inventory_close(window: Control) -> void:
+	if not is_instance_valid(window): return
+	if window.has_meta(_WM_META_CLOSING) and bool(window.get_meta(_WM_META_CLOSING)): return
+
+	window.set_meta(_WM_META_OPENING, false)
+	window.set_meta(_WM_META_CLOSING, true)
+
+	if window.has_method("prepare_for_close"):
+		window.prepare_for_close()
+
+	_kill_inventory_motion_tween(window)
+
+	var duration: float = 0.35
+	if window.has_method("get_close_duration"):
+		duration = window.get_close_duration()
+
+	var tween: Tween = window.create_tween()
+	window.set_meta(_WM_META_ANIM_TWEEN, tween)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+
+	tween.tween_method(
+		Callable(window, "set_open_progress"),
+		window.get_open_progress() if window.has_method("get_open_progress") else 1.0,
+		0.0,
+		duration
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	tween.chain().tween_callback(func():
+		if is_instance_valid(window):
+			window.set_meta(_WM_META_CLOSING, false)
+			if window.has_method("finish_close"):
+				window.finish_close()
+			if window.has_meta(_WM_META_ANIM_TWEEN):
+				window.remove_meta(_WM_META_ANIM_TWEEN)
+			# Do NOT hide — the window stays alive for physics persistence
+	)
 
 func _animate_window_open(window: Control) -> void:
 	if not is_instance_valid(window): return

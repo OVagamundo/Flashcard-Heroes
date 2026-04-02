@@ -110,11 +110,31 @@ Centralized interpretation of user intent to decouple Views from Logic:
 
 ---
 
-## Part 7: Environment & File System Constraints
+## Part 8: Physics-Based Gacha Visuals
 
-### 7.1 Prohibited File Types
-- **No `.bak` files**: Backup files (e.g., `Script.gd.bak`) containing `class_name` definitions MUST NOT exist within the project directory. They cause duplicate global class errors and break script indexing/compilation. 
-- **Automated Cleanup**: Any automation or build script should proactively remove these files to prevent Godot LSP failures.
+The battle inventory system uses a pure Godot 2D Physics simulation for the gachaball containers. To ensure stability and visual fidelity during high-speed movement, the following architectural choices are enforced:
 
-### 7.2 Base Class Stability
-- **`WeightableEntity`**: This is a critical base class for all director-indexed resources. It must remain in a stable, globally accessible location (root `scripts/` or `scripts/systems/director/`) to ensure all inheriting definitions can be parsed correctly.
+### 8.1 Stability & Resting State
+-   **Restitution (Bounce)**: Set to `0.08` for all gachaball physics materials. This trace amount of bounce is required to prevent "grid-locking," allowing balls to naturally jostle and settle into hexagonal packing patterns.
+-   **Damping**: `linear_damp` and `angular_damp` are set to `0.5` on the gachaballs. This lower value prevents the "syrup-like" stacking seen in previous iterations and ensures gravity remains the dominant force.
+-   **Friction**: Set to `0.3` to provide enough surface grip for stable stacking.
+-   **Sleep Mode**: `can_sleep` is disabled on gachaballs to prevent them from freezing in "floating" positions before they have fully settled into the pile.
+
+### 8.4 Soft Spawning (Collision Scaling)
+-   **Initial State**: To prevent the "Popcorn Effect" (violent upward shooting) caused by simultaneous overlaps during high-volume spawning, gachaballs are initialized with a collision scale of `0.1`.
+-   **Growth Transition**: A `Tween` is used to grow the collision shape to `1.0` scale over **0.5 seconds**. This translates potentially explosive restorative impulses into gentle "nudges," allowing the physics solver to resolve overlaps gracefully as the balls fall.
+-   **Spawn Interval**: The `DropTimer` is set to **0.18s** to provide enough temporal breathing room for the physics engine between spawns.
+
+### 8.6 Dodecagon Shape Approximation
+-   **Stable Facets**: Direct `CircleShape2D` contact is avoid due to numerical instability (single-point contact). Instead, gachaballs use a **12nd-sided CollisionPolygon2D (Dodecagon)**.
+-   **Resting Stability**: The flat facets of the dodecagon allow balls to "lock" together in a stable pile, creating "stable bridges" that Godot's physics solver can resolve to a zero-velocity state much faster.
+-   **Visual Fidelity**: 12 sides provide a visual approximation that is indistinguishable from a circle at 48px radius while providing the necessary structural stability.
+
+### 8.2 Tunneling Prevention (Fast Movement)
+-   **Massive Boundary Buffering**: Container boundaries (walls, floor, and hard lid) utilize a thickness of **5000.0 pixels**. This ensures that even during extreme single-frame positional deltas (rapid elevator slams), the physics solver's corrective vectors always push the balls inward.
+-   **Discrete Layering**: Containers use mutually exclusive physics layers (e.g., Tier 1 on Layers 10/11, Tier 2 on 12/13). This isolation allows the massive bounds of one container to safely overlap others without causing unintended collisions.
+
+### 8.3 Rendering Fidelity
+-   **Physics Interpolation**: The system utilizes Godot 4's native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (currently 120 Hz).
+-   **Spawn Sequence**: To prevent a 1-frame "flash" at the scene origin `(0,0)`, gachaballs have their local position calculated and assigned *before* calling `add_child()`.
+-   **Interpolation Reset**: Immediately after being added to the tree, `reset_physics_interpolation()` is called to prevent the interpolation engine from "sliding" the ball from the origin to its spawn point in a single frame.

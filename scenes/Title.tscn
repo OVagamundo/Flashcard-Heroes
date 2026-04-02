@@ -1,11 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://cvorou27dlts"]
+[gd_scene format=3 uid="uid://cvorou27dlts"]
 
 [ext_resource type="Script" uid="uid://6d52omscjhhr" path="res://scripts/Title.gd" id="1_abcde"]
 [ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/ui/game_theme.tres" id="3_iyajp"]
-[ext_resource type="FontFile" uid="uid://cl64dwatceoc5" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
-[ext_resource type="Texture2D" uid="uid://kbbuaaimfk7t" path="res://assets/ui/BGs/tittle.png" id="4_bg"]
+[ext_resource type="FontFile" uid="uid://cqq68f74egtp1" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
+[ext_resource type="Texture2D" uid="uid://bg8vsrtl5v5tu" path="res://assets/ui/BGs/tittle.png" id="4_bg"]
 
-[node name="Title" type="Control"]
+[node name="Title" type="Control" unique_id=652401031]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_abcde")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=937947504]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,7 +26,7 @@ texture = ExtResource("4_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=271254616]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,11 +35,11 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_iyajp")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1127379861]
 layout_mode = 2
 theme_override_constants/separation = 40
 
-[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1018423652]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(300, 70)
@@ -53,7 +53,7 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 20
 text = "Continue"
 
-[node name="StartRunButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="StartRunButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1839421922]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 70)
 layout_mode = 2
@@ -66,7 +66,7 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 20
 text = "Start Run"
 
-[node name="OptionsButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="OptionsButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1322786734]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 70)
 layout_mode = 2
@@ -79,7 +79,7 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 20
 text = "Options"
 
-[node name="ExitButton" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="ExitButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=340341179]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 70)
 layout_mode = 2
@@ -92,7 +92,7 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 20
 text = "Exit Game"
 
-[node name="TutorialCheckbox" type="CheckBox" parent="CenterContainer/VBoxContainer"]
+[node name="TutorialCheckbox" type="CheckBox" parent="CenterContainer/VBoxContainer" unique_id=1142518148]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
@@ -103,5 +103,3 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 12
 button_pressed = true
 text = "Show Tutorials & Tooltips"
-
-
