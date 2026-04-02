@@ -42,6 +42,7 @@ var _drag_source_view: Control = null
 var _drag_placeholder: Control = null
 var _suppress_close_parent_window_id: int = -1
 var _suppress_close_until_msec: int = 0
+var _is_ui_transitioning: bool = false
 
 ## Hover/Lock inspection state (SEPARATE from _current_selection)
 var _locked_entity_view_id: int = -1 # instance_id of view with locked inspection
@@ -65,6 +66,9 @@ func _ready() -> void:
 		SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
+	
+	SignalBus.battle_inventory_transition_started.connect(_on_battle_inventory_transition_started)
+	SignalBus.battle_inventory_transition_finished.connect(_on_battle_inventory_transition_finished)
 	
 	# Connect to WindowManager closing signal to clear stale selections
 	if _window_manager.has_signal("window_closed"):
@@ -105,8 +109,8 @@ func _exit_tree() -> void:
 func _on_interaction_context_received(context: InteractionContext) -> void:
 	var command_queue: Array[Command] = []
 
-	# Full input lock during COMBAT: ignore all interaction contexts
-	if _is_combat_phase:
+	# Full input lock during COMBAT or UI Transitions
+	if _is_combat_phase or _is_ui_transitioning:
 		return
 
 	# Hover events: handled separately, never enter the click-based command queue
@@ -223,6 +227,14 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 		var vp := get_viewport()
 		if vp and vp.has_method("gui_cancel_drag"):
 			vp.gui_cancel_drag()
+
+func _on_battle_inventory_transition_started(_is_opening: bool) -> void:
+	_is_ui_transitioning = true
+	if _is_drag_active:
+		end_drag(false)
+
+func _on_battle_inventory_transition_finished() -> void:
+	_is_ui_transitioning = false
 
 ## Handler for WindowManager.window_closed signal
 ## Clears selection if the selected item was inside the closed window.

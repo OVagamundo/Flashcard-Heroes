@@ -16,12 +16,6 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var tier_2_scroll: ScrollContainer = %Tier2Grid.get_parent() as ScrollContainer
 @onready var tier_3_scroll: ScrollContainer = %Tier3Grid.get_parent() as ScrollContainer
 
-# Bulletproof relative pathing utilizing the Unique Names of the grids
-@onready var tier_1_physics: PhysicsTierContainer = tier_1_scroll.get_parent().get_node("Tier1Physics")
-@onready var tier_2_physics: PhysicsTierContainer = tier_2_scroll.get_parent().get_node("Tier2Physics")
-@onready var tier_3_physics: PhysicsTierContainer = tier_3_scroll.get_parent().get_node("Tier3Physics")
-
-var _is_battle_context: bool = false
 var _data_source: Dictionary
 var _grids_initialized: bool = false
 const DRAG_SCROLL_ZONE_PX: float = 58.0
@@ -34,25 +28,24 @@ func _ready() -> void:
 	tier_2_grid.gui_input.connect(_on_grid_gui_input)
 	tier_3_grid.gui_input.connect(_on_grid_gui_input)
 	
-	# Force the physics containers to inherit the explicit layout space
-	_sync_physics_layout(tier_1_scroll, tier_1_physics)
-	_sync_physics_layout(tier_2_scroll, tier_2_physics)
-	_sync_physics_layout(tier_3_scroll, tier_3_physics)
-	
 	_configure_scroll_navigation()
 	set_process(true)
+	# Initial state check
+	process_mode = PROCESS_MODE_INHERIT if visible else PROCESS_MODE_DISABLED
 
-func _sync_physics_layout(scroll: ScrollContainer, physics: PhysicsTierContainer) -> void:
-	physics.size_flags_horizontal = scroll.size_flags_horizontal
-	physics.size_flags_vertical = scroll.size_flags_vertical
-	physics.custom_minimum_size = scroll.custom_minimum_size
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_VISIBILITY_CHANGED:
+		if is_node_ready():
+			# Disable ALL processing (including physics) when hidden to prevent
+			# overlapping colliders from interfering with other windows (like BattleInventory).
+			process_mode = PROCESS_MODE_INHERIT if visible else PROCESS_MODE_DISABLED
 
 func _configure_scroll_navigation() -> void:
-	# Keep overflow bounded by inventory/tier panels (not by scroll viewport itself).
-	panel_container.clip_contents = not _is_battle_context
-	tier_1_panel.clip_contents = not _is_battle_context
-	tier_2_panel.clip_contents = not _is_battle_context
-	tier_3_panel.clip_contents = not _is_battle_context
+	# Keep overflow bounded by inventory/tier panels.
+	panel_container.clip_contents = true
+	tier_1_panel.clip_contents = true
+	tier_2_panel.clip_contents = true
+	tier_3_panel.clip_contents = true
 
 	for scroll in _get_tier_scrolls():
 		if not is_instance_valid(scroll):
@@ -155,26 +148,20 @@ func _exit_tree() -> void:
 			GlobalInteractionRouter.end_drag_visuals(false)
 
 func populate(context: Dictionary) -> void:
-	_is_battle_context = context.get("is_battle_context", false)
 	_data_source = context.get("inventory")
 	
 	# Trigger the initial population and drawing of the grids.
 	_populate_grids()
 	
-	# Show context-appropriate inventory tutorial (deferred to allow window to render)
+	# Show run-mode inventory tutorial (deferred to allow window to render)
 	call_deferred("_show_inventory_tutorial")
 
 
 func _show_inventory_tutorial() -> void:
-	"""Show the appropriate inventory tutorial after the window renders"""
-	if _is_battle_context:
-		TutorialManager.show_tutorial(&"gacha_inspect_battle", [
-			{"text": tr("tutorial.gacha_inspect_battle")}
-		])
-	else:
-		TutorialManager.show_tutorial(&"gacha_inspect_run", [
-			{"text": tr("tutorial.gacha_inspect_run")}
-		])
+	"""Show the run-mode inventory tutorial after the window renders"""
+	TutorialManager.show_tutorial(&"gacha_inspect_run", [
+		{"text": tr("tutorial.gacha_inspect_run")}
+	])
 
 func _on_ui_refresh() -> void:
 	if not self.visible:
@@ -232,7 +219,7 @@ func _initialize_grids_if_needed() -> void:
 	var grids: Dictionary = {1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid}
 	for tier in grids:
 		var grid_node = grids[tier]
-		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
+		var container_name = &"RunInventoryT%d" % tier
 		var container: DataContainer = _data_source.get(container_name)
 		if not is_instance_valid(container):
 			continue
@@ -255,10 +242,10 @@ func _populate_grids() -> void:
 	if not _data_source:
 		return
 
-	# Toggle UI Visibilities - operate on the scroll containers to hide grids and scrollbars
-	tier_1_scroll.visible = not _is_battle_context
-	tier_2_scroll.visible = not _is_battle_context
-	tier_3_scroll.visible = not _is_battle_context
+	# Scroll containers always visible in run mode
+	tier_1_scroll.visible = true
+	tier_2_scroll.visible = true
+	tier_3_scroll.visible = true
 	
 	# Disable Scrolling since we have a hard-capped zero-padding grid 
 	tier_1_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -267,18 +254,6 @@ func _populate_grids() -> void:
 	tier_2_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	tier_3_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	tier_3_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	
-	tier_1_physics.visible = _is_battle_context
-	tier_2_physics.visible = _is_battle_context
-	tier_3_physics.visible = _is_battle_context
-	
-	if _is_battle_context:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			tier_1_physics.sync_state(bm.get_inventory_tier_instances(1))
-			tier_2_physics.sync_state(bm.get_inventory_tier_instances(2))
-			tier_3_physics.sync_state(bm.get_inventory_tier_instances(3))
-		return
 
 	# This will create the 16 SlotViews per grid, but only on the first run.
 	_initialize_grids_if_needed()
@@ -306,7 +281,7 @@ func _populate_grids() -> void:
 	var grids: Dictionary = {1: tier_1_grid, 2: tier_2_grid, 3: tier_3_grid}
 	for tier in grids:
 		var grid_node = grids[tier]
-		var container_name = &"RunInventoryT%d" % tier if not _is_battle_context else &"BattleInventoryT%d" % tier
+		var container_name = &"RunInventoryT%d" % tier
 		var container: DataContainer = _data_source.get(container_name)
 		if not is_instance_valid(container):
 			continue

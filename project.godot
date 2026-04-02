@@ -104,10 +104,15 @@ translation_remaps=PackedStringArray("res://localization/game.csv")
 
 common/physics_ticks_per_second=120
 common/max_physics_steps_per_frame=16
+common/physics_jitter_fix=0.0
+2d/physics_engine="GodotPhysics2D"
+2d/sleep_threshold_linear=20.0
+2d/sleep_threshold_angular=20.0
+2d/time_before_sleep=0.2
+2d/solver/solver_iterations=64
+common/physics_interpolation=true
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 textures/webp_compression/lossy_quality=0.9
