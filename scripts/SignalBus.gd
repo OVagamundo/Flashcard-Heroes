@@ -247,8 +247,7 @@ signal gacha_tokens_changed(new_amount: int)
 # INVENTORY & LOADOUT SIGNALS
 # -----------------------------------------------------------------------------
 
-## Emitted when an item overflows a physics container lid for 3 consecutive seconds
-## @param uuid: String - The UUID of the instance to be destroyed
+## Emitted when an item overflows a physics container lid for 5 consecutive seconds
 signal inventory_instance_removed_penalty(uuid: String)
 
 ## Emitted when run data changes (inventory, gold, etc.)

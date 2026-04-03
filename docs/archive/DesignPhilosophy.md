@@ -20,9 +20,10 @@ The elegance of the Gold Standard lies in its rejection of fractional balancing.
 
 | Tier Designation | Gold Cost | Merge Value | Item Slots | Enemy Budget (XP) | Removal Cost Scaling |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Tier 1 (Peasant)** | 1 | 1 | 1 | 1 | 1x |
-| **Tier 2 (Knight)** | 2 | 2 | 2 | 2 | 2x |
-| **Tier 3 (Hero)** | 4 | 4 | 4 | 4 | 4x |
+| **Tier 1** | 1 | 1 | 1 | 1 | 1x |
+| **Tier 2** | 2 | 2 | 2 | 2 | 2x |
+| **Tier 3** | 4 | 4 | 4 | 4 | 4x |
+| **Tier 0 (Hero)** | - | - | 4 | - | - |
 
 This table serves as the immutable law of the game's economy. When designing a new unit, the first question is not "What does it do?" but "Which bucket does it fill?". The strict adherence to these integers creates a "solvability" that players find rewarding; they can calculate the exact opportunity cost of every action without hidden variables. A Tier 3 unit represents a significant commitment—not just in gold, but in the opportunity cost of the four Tier 1 units that were sacrificed or forgone to create it.
 
@@ -36,7 +37,9 @@ The **removal cost scaling (1x/2x/4x)** is particularly critical for content pac
 While the cost curve is linear (1 -> 2 -> 4), the power curve is designed to be **sigmoid or geometric**, specifically driven by the interaction between **Base Stats** and **Item Slots**.
 
 *   A Tier 1 unit has **1 Item Slot**.
+*   A Tier 2 unit has **2 Item Slots**.
 *   A Tier 3 unit has **4 Item Slots**.
+*   The **Hero (Tier 0)** has **4 Item Slots**.
 
 This is not a linear progression; it is a capability jump that allows for combinatorial explosions. A Tier 1 unit can hold a sword (+Attack). A Tier 3 unit can hold a sword, a shield, a haste potion, and a lifesteal amulet. The synergy between these four items creates a "Gestalt" effect where the whole is greater than the sum of its parts.
 
@@ -315,7 +318,7 @@ Every unit must have the following tags defined:
 | **Tier** | Int | {1, 2, 4} | Determines Cost, Merge Value, XP, Slots. |
 | **BaseHP** | Int | >0 | Health Pool. |
 | **BaseATK** | Int | >0 | Damage per hit. |
-| **Slots** | Int | =Tier | Number of item slots. Hard-coded to Tier. |
+| **Slots** | Int | 1/2/4 (Tier) | Number of item slots. Computed automatically based on Tier (0:4, 1:1, 2:2, 3:4). |
 | **Family** | Enum | {Martial, Magic, Bestial} | Determines valid "Mutations" or Merge compatibilities. |
 | **MergeBehavior** | Script | Logic | What happens on merge? (Default: Add stats. Override: "Keep Highest HP"). |
 

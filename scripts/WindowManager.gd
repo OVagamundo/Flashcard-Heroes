@@ -28,6 +28,7 @@ var _active_inspection_group: Array[Control] = []
 
 var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
+var _background_ui_layer: CanvasLayer = null
 
 var _persistent_inventory_window: Control = null
 var _persistent_battle_inventory_window: Control = null
@@ -69,7 +70,7 @@ func _setup_persistent_inventory() -> void:
 	_persistent_inventory_window = _window_scenes[&"Inventory"].instantiate()
 	_persistent_inventory_window.name = "PersistentInventoryWindow" # Good for debugging
 	_persistent_inventory_window.set_meta("window_type", &"Inventory")
-	_get_modal_layer().add_child(_persistent_inventory_window)
+	_get_background_ui_layer().add_child(_persistent_inventory_window)
 	_persistent_inventory_window.hide()
 	
 	# Keep the root window on screen (0,0) so the base mask is visible when shown.
@@ -83,7 +84,7 @@ func _setup_persistent_discard_pile() -> void:
 	_persistent_discard_pile_window = _window_scenes[&"DiscardPile"].instantiate()
 	_persistent_discard_pile_window.name = "PersistentDiscardPileWindow"
 	_persistent_discard_pile_window.set_meta("window_type", &"DiscardPile")
-	_get_modal_layer().add_child(_persistent_discard_pile_window)
+	_get_background_ui_layer().add_child(_persistent_discard_pile_window)
 	_persistent_discard_pile_window.hide()
 	# Root starts off-screen right as defined in .tscn (position.x = 1920)
 	_persistent_discard_pile_window.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -96,7 +97,7 @@ func _setup_persistent_battle_inventory() -> void:
 	_persistent_battle_inventory_window = _window_scenes[&"BattleInventory"].instantiate()
 	_persistent_battle_inventory_window.name = "PersistentBattleInventoryWindow"
 	_persistent_battle_inventory_window.set_meta("window_type", &"Inventory")
-	_get_modal_layer().add_child(_persistent_battle_inventory_window)
+	_get_background_ui_layer().add_child(_persistent_battle_inventory_window)
 	# Starts hidden — the window stays in tree for physics persistence
 	_persistent_battle_inventory_window.visible = true
 	_persistent_battle_inventory_window.position = Vector2.ZERO
@@ -991,8 +992,20 @@ func _get_modal_layer() -> CanvasLayer:
 		if not is_instance_valid(_modal_layer):
 			_modal_layer = CanvasLayer.new()
 			_modal_layer.name = "ModalLayerFailsafe"
+			_modal_layer.layer = 120 # Standardized Modal Layer
 			get_tree().root.add_child(_modal_layer)
 	return _modal_layer
+
+func _get_background_ui_layer() -> CanvasLayer:
+	if not is_instance_valid(_background_ui_layer):
+		_background_ui_layer = get_tree().get_first_node_in_group("background_ui_layer")
+		if not is_instance_valid(_background_ui_layer):
+			# Create a failsafe background layer if missing
+			_background_ui_layer = CanvasLayer.new()
+			_background_ui_layer.name = "BackgroundLayerFailsafe"
+			_background_ui_layer.layer = 40
+			get_tree().root.add_child(_background_ui_layer)
+	return _background_ui_layer
 
 func _clamp_window_to_viewport(pos: Vector2, size: Vector2) -> Vector2:
 	var viewport_rect = get_viewport().get_visible_rect()
@@ -1034,6 +1047,8 @@ func _animate_discard_pile_open(window: Control) -> void:
 	window.position.x = DISCARD_PILE_HIDDEN_X
 	window.show()
 	window.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if window.has_method("prepare_for_open"):
+		window.prepare_for_open()
 
 	_kill_inventory_motion_tween(window)
 	Audio.play_sfx("ui_window_open")

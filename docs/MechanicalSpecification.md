@@ -216,17 +216,23 @@ Go to one shared discard pile.
 ## 6.3 Physics Pool Visualization (Battle Only)
 During battle, the inventory drawer acts as a **Read-Only visualization** of the active gacha pools:
 - **No Manual Interaction**: Players cannot drag, move, swap, or merge items directly from the drawer.
-- **Draw removal**: When a gachaball is drawn, it is physically removed from the drawer.
-- **Reshuffle Spawning**: When a pool reshuffles, new balls spawn sequentially at the top-center of the container.
+- **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns. When a pool reshuffles, new balls spawn sequentially at the top-center of the container.
 
 ## 6.4 The Overflow Penalty
 - **Mechanic**: If a container becomes physically overfilled, balls will push against the **Spring Lid**.
-- **Penalty**: Maintaining physical contact with the lid for **5 continuous seconds** results in the instance being **moved to the Shared Discard Pile** and its stats reset.
+- **Penalty**: Maintaining physical contact with the lid (a **30px high zone** at the top of the container) for **5 continuous seconds** results in the instance being **moved to the Shared Discard Pile** and its stats reset.
 
 ## 6.5 Hover Restriction (Rule S8)
 When a physics-based inventory (Battle/Run/Discard) is open, hover inspections are strictly limited to the gachaballs inside that window. This prevents accidental window closure caused by hovering over the background battle board.
 
-## 6.5 Reshuffle Rule
+## 6.6 Selective Reshuffle (Overflow Penalty)
+If a container overflows, the system normally moves the instance to the Discard Pile.
+- **Exception**: If the instance is **already** in the Discard Pile (e.g., waiting to be spawned when the container is opened), it is instead **returned to the Trays pool** with its stats reset. This prevents duplicate entries in the discard ledger.
+
+## 6.7 Discard Pile Jolt
+When the Discard Pile window is opened, a horizontal impulse of **Vector2(-500, 0)** is applied to all balls. This ensuring the pile doesn't form static "stalagmites" and encourages dense, efficient packing.
+
+## 6.8 Reshuffle Rule
 
 Reshuffle occurs only:
 
@@ -506,6 +512,13 @@ The following must remain true for solvability:
 6. Tier Token draw cost remains 1-2-3.
 7. Reshuffle only when tier pool empties.
 8. Hero death = immediate run loss.
+
+## 15.1 Tier-Based Item Slot Constraints
+Item slot counts are strictly computed based on unit Tier:
+     - Tier 0 (Hero): 4 Slots
+     - Tier 1: 1 Slot
+     - Tier 2: 2 Slots
+     - Tier 3: 4 Slots
 
 Breaking these changes game identity.
 

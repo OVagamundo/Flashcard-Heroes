@@ -11,7 +11,7 @@ tier = 2
 base_hp = 2
 base_pwr = 2
 is_hero = false
-item_slot_count = 2
+
 souls = 2
 ability_definitions = Array[Resource]([ExtResource("2_ability")])
 icon = ExtResource("3_icon")

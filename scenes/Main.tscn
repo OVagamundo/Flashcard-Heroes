@@ -165,127 +165,10 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="TopArea" type="PanelContainer" parent="VBoxContainer"]
-unique_name_in_owner = true
+[node name="TopAreaSpacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 144)
-size_flags_vertical = 0
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_top")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TopArea"]
-layout_mode = 2
-mouse_filter = 2
-
-[node name="LeftStats" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 40
-alignment = 0
-mouse_filter = 2
-
-[node name="LeftMargin" type="Control" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
-custom_minimum_size = Vector2(20, 0)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="GoldGroup" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 8
-mouse_filter = 2
-
-[node name="GoldIcon" type="TextureRect" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("8_gold_coin")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="GoldLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.843, 0, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 48
-text = "0"
-vertical_alignment = 1
-
-[node name="TokenGroup" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 8
-mouse_filter = 2
-
-[node name="TokenIcon" type="TextureRect" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("9_token_coin")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="TokensLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 48
-text = "0"
-vertical_alignment = 1
-
-[node name="CenterStats" type="CenterContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-
-[node name="CenterContent" type="VBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats"]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="DaysLabel" type="Label" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 48
-text = "Day 1"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="FlashcardProgressBar" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(480, 10)
-layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
-
-
-[node name="RightStats" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-[node name="PlayerTrinketBar" type="HBoxContainer" parent="VBoxContainer/TopArea/HBoxContainer/RightStats"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 4
-alignment = 1
-mouse_filter = 2
-
-[node name="TrinketSlot0" parent="VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
-
-[node name="TrinketSlot1" parent="VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
-
-[node name="TrinketSlot2" parent="VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
-
-[node name="TrinketSlot3" parent="VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
-
-[node name="TrinketSlot4" parent="VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
 
 [node name="ContentArea" type="SubViewportContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
@@ -306,26 +189,173 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="BottomArea" type="PanelContainer" parent="VBoxContainer"]
+[node name="BottomAreaSpacer" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
-size_flags_vertical = 0
+mouse_filter = 2
+
+[node name="HUDLayer" type="CanvasLayer" parent="."]
+layer = 60
+
+[node name="HUDContainer" type="Control" parent="HUDLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 144)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_top")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LeftStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+alignment = 0
+mouse_filter = 2
+
+[node name="LeftMargin" type="Control" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="GoldGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="GoldIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("8_gold_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GoldLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 48
+text = "0"
+vertical_alignment = 1
+
+[node name="TokenGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="TokenIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("9_token_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TokensLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "0"
+vertical_alignment = 1
+
+[node name="CenterStats" type="CenterContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CenterContent" type="VBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/CenterStats"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DaysLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 48
+text = "Day 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FlashcardProgressBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 10)
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="RightStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PlayerTrinketBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+alignment = 1
+mouse_filter = 2
+
+[node name="TrinketSlot0" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(128, 128)
+
+[node name="TrinketSlot1" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(128, 128)
+
+[node name="TrinketSlot2" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(128, 128)
+
+[node name="TrinketSlot3" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(128, 128)
+
+[node name="TrinketSlot4" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(128, 128)
+
+[node name="BottomArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bottom")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/BottomArea"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HUDLayer/HUDContainer/BottomArea"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = -2
 alignment = 1
 
-[node name="GachaMachine1" type="Control" parent="VBoxContainer/BottomArea/HBoxContainer"]
+[node name="GachaMachine1" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(640, 260)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="MachineImage" type="TextureRect" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine1"]
+[node name="MachineImage" type="TextureRect" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -337,7 +367,7 @@ texture = ExtResource("10_machine1")
 expand_mode = 0
 stretch_mode = 3
 
-[node name="KnobButton" type="Button" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine1"]
+[node name="KnobButton" type="Button" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 160.0
@@ -356,7 +386,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "1 Token"
 
-[node name="CountLabel" type="Label" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine1"]
+[node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 3
@@ -378,13 +408,13 @@ text = "x0"
 horizontal_alignment = 2
 vertical_alignment = 2
 
-[node name="GachaMachine2" type="Control" parent="VBoxContainer/BottomArea/HBoxContainer"]
+[node name="GachaMachine2" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(640, 260)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="MachineImage" type="TextureRect" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine2"]
+[node name="MachineImage" type="TextureRect" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -396,7 +426,7 @@ texture = ExtResource("11_machine2")
 expand_mode = 0
 stretch_mode = 3
 
-[node name="KnobButton" type="Button" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine2"]
+[node name="KnobButton" type="Button" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 160.0
@@ -415,7 +445,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "2 Tokens"
 
-[node name="CountLabel" type="Label" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine2"]
+[node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 3
@@ -437,13 +467,13 @@ text = "x0"
 horizontal_alignment = 2
 vertical_alignment = 2
 
-[node name="GachaMachine3" type="Control" parent="VBoxContainer/BottomArea/HBoxContainer"]
+[node name="GachaMachine3" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(640, 260)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="MachineImage" type="TextureRect" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine3"]
+[node name="MachineImage" type="TextureRect" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -455,7 +485,7 @@ texture = ExtResource("12_machine3")
 expand_mode = 0
 stretch_mode = 3
 
-[node name="KnobButton" type="Button" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine3"]
+[node name="KnobButton" type="Button" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 160.0
@@ -474,7 +504,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "3 Tokens"
 
-[node name="CountLabel" type="Label" parent="VBoxContainer/BottomArea/HBoxContainer/GachaMachine3"]
+[node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 3
@@ -499,9 +529,12 @@ vertical_alignment = 2
 [node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
 layer = 90
 
+[node name="BackgroundUILayer" type="CanvasLayer" parent="." groups=["background_ui_layer"]]
+layer = 40
+
 [node name="ModalLayer" type="CanvasLayer" parent="." groups=["modal_layer"]]
 unique_name_in_owner = true
-layer = 128
+layer = 120
 
 [node name="GlowWorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_glow")

@@ -557,6 +557,7 @@ func _on_run_data_changed() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
+		_update_machine_counts()
 
 func _populate_player_trinkets() -> void:
 	if not is_instance_valid(GameManager.run_state):
@@ -669,24 +670,24 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	else:
 		pass
 
+
+
 ## Update the inventory count labels on all three gacha machines
 func _update_machine_counts() -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if not is_instance_valid(bm):
-		return
 	
-	if not bm.has_method("get_inventory_tier_instances"):
-		return
-	
-	# Update each machine's count label
-	if is_instance_valid(machine_1_count_label):
-		var tier_1_instances = bm.get_inventory_tier_instances(1)
-		machine_1_count_label.text = "x%d" % tier_1_instances.size()
-	
-	if is_instance_valid(machine_2_count_label):
-		var tier_2_instances = bm.get_inventory_tier_instances(2)
-		machine_2_count_label.text = "x%d" % tier_2_instances.size()
-	
-	if is_instance_valid(machine_3_count_label):
-		var tier_3_instances = bm.get_inventory_tier_instances(3)
-		machine_3_count_label.text = "x%d" % tier_3_instances.size()
+	for tier in [1, 2, 3]:
+		var count = 0
+		if is_instance_valid(bm) and bm.has_method("get_inventory_tier_instances"):
+			count = bm.get_inventory_tier_instances(tier).size()
+		elif is_instance_valid(GameManager.run_state):
+			count = GameManager.run_state.get_inventory_tier_instances(tier).size()
+			
+		var label = null
+		match tier:
+			1: label = machine_1_count_label
+			2: label = machine_2_count_label
+			3: label = machine_3_count_label
+			
+		if is_instance_valid(label):
+			label.text = "x%d" % count

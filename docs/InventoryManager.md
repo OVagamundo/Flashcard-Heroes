@@ -150,10 +150,19 @@ These containers are strictly for observation. The following player actions are 
 - **Sequential Spawning**: When a pool reshuffles or items are discarded, balls spawn at the **top-center** with a random X/Y stagger. Spawning is **sequential** (0.15s interval) to prevent overlapping explosions.
 - **Spawning Timing**: `populate()` is called **before** the drawer begins its opening animation (Battle Inventory) or **after** it completes (Discard Pile if horizontal momentum is a concern, though current implementation preferes consistency with Battle Inventory).
 
-### Inescapable Boundaries
-To prevent gachaballs from tunneling or jittering, the `PhysicsTierContainer` uses extreme boundary dimensions:
-- **Sidewalls**: ~2000px thick rectangles extending infinitely upward/downward. This prevents balls from escaping during high-velocity horizontal slides (Discard Pile).
-- **Thick Floor**: A 500px thick rectangle floor ensuring zero tunneling even during high-velocity vertical slams (Battle Inventory).
+### High-Fidelity Physics Stabilization
+To achieve a "heavy," stable feel and prevent gachaballs from tunneling or jittering, the following physics properties are enforced:
+- **Gravity Scale**: Set to **4.0** for faster, more tactile settling.
+- **Continuous Collision Detection (CCD)**: Enabled on all gachaball RigidBody2D nodes to prevent tunneling through the container floor during high-velocity drawer animations.
+- **Sleep Thresholds**: Aggressive `linear_sleep_threshold` and `angular_sleep_threshold` ensure balls freeze to a zero-velocity state after 6 seconds of settling.
+- **Dynamic Bounciness (Decay)**: To ensure lively movement during container travel without sacrificing stability, bounciness (`mat.bounce`) is set to **0.8** when the container starts moving and smoothly decays to **0.15** (base) over **5.0 seconds** after it stops.
+- **Collision Shape**: Uses a **12-sided Dodecagon** (approximated circle) to provide stable "facets" for resting, preventing the micro-jittering common with perfect CircleShape2D contacts.
+
+### The Penalty Mechanic (Cleanup)
+- **Spring Lid**: Every container features a physical "lid" at the top of the tray.
+- **Visual Feedback**: The lid is represented by a **30px high translucent red rectangle** at the top of the container area.
+- **Overflow Threshold**: If the container is too full, balls will push against this lid into the overflow area.
+- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, it is considered "un-repackable." The `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard Pile**.
 
 ### Layout Safeguard
 The `PhysicsTierContainer` implements a **Vertical Safeguard**:
@@ -182,7 +191,7 @@ Unlike the Battle Inventory, the **Run Inventory** uses a static, non-physics la
 ### 3.3 Battle Inventory (Physics Rules)
 The Battle Inventory uses a **spring-loaded lid** mechanic for overflow:
 - **Active Repacking**: The lid actively applies a strong downward force (`apply_central_force`) to any GachaBall touching it, attempting to shove it back down so the pool can physically repack optimally.
-- **Cleanup Rule**: If a GachaBall maintains continuous physical contact with the top lid for **5 seconds** (meaning the downward force failed to repack it due to the drawer being completely full), it is moved to the **Battle Discard Pile**.
+- **Cleanup Rule**: If a GachaBall maintains continuous physical contact with the top lid (the 30px red detection area) for **5 seconds**, it is moved to the **Battle Discard Pile**.
 - **No Deletion**: Unlike the Run Inventory, no items are ever randomly deleted during battle. They are merely shifted to history (discard).
 End of Battle Cleanup
 Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.
