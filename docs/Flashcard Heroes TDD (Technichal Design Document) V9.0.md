@@ -25,6 +25,7 @@ The game follows a mandatory hybrid architecture that separates data truth from 
 ### 2.1 Core Resources
 -   **`RunState.gd`**: Persistent state for the entire run (gold, day, unlocked recipes, global instance dictionary).
 -   **`GachaBallDefinition.gd`**: Immutable template for units/items. Contains stats, abilities, cost, and temporal prerequisites (`min_day`, `max_day`). Inherits from `WeightableEntity`.
+    -   **Computed Slots**: `item_slot_count` is now automatically computed based on Tier (0:4, 1:1, 2:2, 3:4).
 -   **`TrinketDefinition.gd`**: Immutable template for trinkets. Now inherits from `WeightableEntity` to support Director-based reward generation.
 -   **`GachaBallInstance.gd`**: Mutable state of a specific gachaball.
 -   **`FlashcardDefinition.gd` & `FlashcardProgress.gd`**: loaded JSON data and run-specific mastery tracking.
@@ -61,7 +62,13 @@ Centralized interpretation of user intent to decouple Views from Logic:
 -   **Global Interaction Router (GIR):** The entry point for all UI input. It translates raw `InteractionContext` into a `CommandQueue`.
     -   (See `docs/UIInteraction.md` for selection/interaction rules)
     -   **O(1) Domain Mapping:** Maps containers to functional groups (`BattleBoard`, `InventoryGrid`, etc.) to determine valid interactions.
--   **Window Manager:** Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization to ensure windows shrink to content before positioning.
+-   **Window Manager:** Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization and enforces a strict five-tier layering system:
+    - **BackgroundUILayer (40)**: Inventory and Trays.
+    - **HUDLayer (60)**: Persistent HUD and Gacha Machines.
+    - **EffectsLayer (90)**: Global VFX.
+    - **ModalLayer (120)**: Pop-ups and Inspections.
+    - **PostProcessLayer (130)**: Full-screen shaders (Glow/CRT).
+    - **CursorLayer (1024)**: Software Cursor (Sprite2D).
 -   **Inventory Manager:** Stateless executor of `REQUEST_ACTION` commands. It bridges the GIR and the data owners (RunState/BattleManager).
 -   **Audio System:** Decoupled SFX/BGM management via semantic IDs (`unit_hop`, `ui_click`).
     -   (See `docs/AudioSystem.md`)
@@ -115,15 +122,17 @@ Centralized interpretation of user intent to decouple Views from Logic:
 The battle inventory system uses a pure Godot 2D Physics simulation for the gachaball containers. To ensure stability and visual fidelity during high-speed movement, the following architectural choices are enforced:
 
 ### 8.1 Stability & Resting State
--   **Restitution (Bounce)**: Set to `0.08` for all gachaball physics materials. This trace amount of bounce is required to prevent "grid-locking," allowing balls to naturally jostle and settle into hexagonal packing patterns.
--   **Damping**: `linear_damp` and `angular_damp` are set to `0.5` on the gachaballs. This lower value prevents the "syrup-like" stacking seen in previous iterations and ensures gravity remains the dominant force.
--   **Friction**: Set to `0.3` to provide enough surface grip for stable stacking.
--   **Sleep Mode**: `can_sleep` is disabled on gachaballs to prevent them from freezing in "floating" positions before they have fully settled into the pile.
+-   **Restitution (Base Bounce)**: **0.15** (Landing decay from 0.8 ensures stability while maintaining 'life').
+-   **Gravity Scale**: Fixed at **4.0** (RigidBody2D property) to ensure heavy, satisfying impact and fast settling.
+-   **Damping**: `linear_damp` is set to **0.05** and `angular_damp` is set to **0.5** on the gachaballs. This allows for fluid movement while preventing eternal rolling.
+-   **Friction**: Set to **0.05** (from `GachaBallMaterial.tres`) to allow for slippery, high-density packing.
+-   **Sleep Mode**: A global 6.0s countdown timer force-sleeps the entire pile after a container stops moving.
+-   **CCD**: Continuous Collision Detection is enabled on all balls to prevent floor-tunneling during high-velocity drawer slams.
 
 ### 8.4 Soft Spawning (Collision Scaling)
 -   **Initial State**: To prevent the "Popcorn Effect" (violent upward shooting) caused by simultaneous overlaps during high-volume spawning, gachaballs are initialized with a collision scale of `0.1`.
 -   **Growth Transition**: A `Tween` is used to grow the collision shape to `1.0` scale over **0.5 seconds**. This translates potentially explosive restorative impulses into gentle "nudges," allowing the physics solver to resolve overlaps gracefully as the balls fall.
--   **Spawn Interval**: The `DropTimer` is set to **0.18s** to provide enough temporal breathing room for the physics engine between spawns.
+-   **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns.
 
 ### 8.6 Dodecagon Shape Approximation
 -   **Stable Facets**: Direct `CircleShape2D` contact is avoid due to numerical instability (single-point contact). Instead, gachaballs use a **12nd-sided CollisionPolygon2D (Dodecagon)**.
@@ -132,9 +141,11 @@ The battle inventory system uses a pure Godot 2D Physics simulation for the gach
 
 ### 8.2 Tunneling Prevention (Fast Movement)
 -   **Massive Boundary Buffering**: Container boundaries (walls, floor, and hard lid) utilize a thickness of **5000.0 pixels**. This ensures that even during extreme single-frame positional deltas (rapid elevator slams), the physics solver's corrective vectors always push the balls inward.
+-   **Overflow Mechanic**: A **30px** translucent red rectangle at the top of drawers detects gachaballs. Continuous contact for 5 seconds triggers a "discard penalty," moving the ball to the Discard Pile.
 -   **Discrete Layering**: Containers use mutually exclusive physics layers (e.g., Tier 1 on Layers 10/11, Tier 2 on 12/13). This isolation allows the massive bounds of one container to safely overlap others without causing unintended collisions.
 
 ### 8.3 Rendering Fidelity
 -   **Physics Interpolation**: The system utilizes Godot 4's native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (currently 120 Hz).
+-   **High-Fidelity Rules**: Gravity is set to 2.0, and Continuous Collision Detection (CCD) is enabled on all balls to prevent tunneling during high-velocity drawer animations.
 -   **Spawn Sequence**: To prevent a 1-frame "flash" at the scene origin `(0,0)`, gachaballs have their local position calculated and assigned *before* calling `add_child()`.
 -   **Interpolation Reset**: Immediately after being added to the tree, `reset_physics_interpolation()` is called to prevent the interpolation engine from "sliding" the ball from the origin to its spawn point in a single frame.

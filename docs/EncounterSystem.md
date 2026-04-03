@@ -27,7 +27,7 @@ Tiered units and items have the following budget costs:
 |------|------|-------|
 | 1 | 1 | Base tier |
 | 2 | 2 | |
-| 3 | 3 | High tier |
+| 3 | 4 | High tier |
 
 Bosses don't have a cost, they are free.
 
@@ -91,7 +91,7 @@ var enemy_trinket_ids: Array[StringName]
 ## Boss Summons
 
 Boss units call `EncounterGenerator.generate_boss_summons(day, max_units)` which:
-- Uses **half the daily budget**
+- Uses **one-third (33%)** of the daily budget
 - Generates units with equipped items
 - **No trinkets** for summoned units
 - Returns Array of `{unit_id: StringName, items: Array[StringName]}`

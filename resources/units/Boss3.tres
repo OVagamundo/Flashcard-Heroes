@@ -16,7 +16,7 @@ is_hero = false
 tier = 3
 cost = 15
 category = &"UNIT"
-item_slot_count = 2
+
 base_hp = 10
 base_pwr = 10
 bonus_hp = 0

@@ -5,6 +5,8 @@ extends Control
 @onready var tier_2_tray: BattleInventoryTrayRig = %Tier2Tray
 @onready var tier_3_tray: BattleInventoryTrayRig = %Tier3Tray
 
+
+
 var _base_y: float = 162.0
 var _closed_y: float = 1300.0
 var _is_open: bool = false
@@ -118,6 +120,8 @@ func _sync_all_trays() -> void:
 		tier_2_tray.sync_state(bm.get_inventory_tier_instances(2))
 	if is_instance_valid(tier_3_tray):
 		tier_3_tray.sync_state(bm.get_inventory_tier_instances(3))
+
+
 
 func _gui_input(event: InputEvent) -> void:
 	var InputUtils = preload("res://scripts/InputUtils.gd")

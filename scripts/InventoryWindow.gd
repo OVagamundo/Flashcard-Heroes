@@ -16,6 +16,8 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var tier_2_scroll: ScrollContainer = %Tier2Grid.get_parent() as ScrollContainer
 @onready var tier_3_scroll: ScrollContainer = %Tier3Grid.get_parent() as ScrollContainer
 
+
+
 var _data_source: Dictionary
 var _grids_initialized: bool = false
 const DRAG_SCROLL_ZONE_PX: float = 58.0

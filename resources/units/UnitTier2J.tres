@@ -15,7 +15,7 @@ tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER"])
 tier = 2
 cost = 2
 category = &"UNIT"
-item_slot_count = 2
+
 base_hp = 1
 base_pwr = 3
 bonus_hp = 0

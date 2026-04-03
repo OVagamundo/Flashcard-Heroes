@@ -15,8 +15,12 @@ Main.tscn (Shell)
 │   │   ├── PlayerArea (Lineup, Bench)
 │   │   └── EnemyArea (Lineup, Traits)
 │   └── BottomArea (Physics Gacha Machines 1-3)
-├── EffectsLayer (VFX)
-└── ModalLayer (Managed by WindowManager)
+├── BackgroundUILayer (Inventory Trays/Windows - Layer 40)
+├── HUDLayer (Gacha Machines/Upper HUD - Layer 60)
+├── EffectsLayer (VFX - Layer 90)
+├── ModalLayer (Managed by WindowManager - Layer 120)
+├── PostProcessLayer (Full-screen shaders - Layer 130)
+└── CursorLayer (Software Cursor - Layer 1024)
 ```
 
 | Element | Size | Notes |
@@ -57,6 +61,7 @@ Main.tscn (Shell)
 | **W4** Global Close | Click non-interactive area = close all + deselect |
 | **W5** Escape | 1) Cancel drag → 2) Close windows → 3) Deselect |
 | **W6** Selection Persist | Parent entity stays selected when opening child windows |
+| **W7** Transition Block | Interaction is completely blocked during drawer/inventory animations (Open/Close) |
 
 ### Window Categories
 
@@ -75,7 +80,15 @@ To prevent persistent layout "bloat" and ensure windows correctly shrink to thei
 ### Window Rendering & Z-Order
 To ensure absolute visibility of contextual information, all windows managed by `WindowManager` (Modals, Tutorials, and Inspection Windows) are assigned a **`z_index = 100`** upon instantiation.
 - **Rationale**: Prevents local UI elevations—such as `GachaBallView` raising its local `z_index` to 40 during hover—from occluding the inspection window.
-- **Layer**: All windows reside on the `ModalLayer` (`CanvasLayer`), which identifies them as globally prioritized UI elements.
+- **Layer**: All windows reside on the `ModalLayer` (`CanvasLayer`), which identifies them as globally prioritized UI elements (Layer index 120).
+
+### Standardized Layering Policy
+The application maintains a strict four-tier UI hierarchy to resolve all occlusion issues:
+1. **BackgroundUILayer (40)**: Persistent inventory windows (Run/Battle) and Discard Pile.
+2. **HUDLayer (60)**: Gacha Machine textures, count labels, and top/bottom panel buttons.
+3. **EffectsLayer (90)**: Global VFX and transitions.
+4. **ModalLayer (120)**: Inspection windows, pop-ups, tutorials, and minigames.
+*Note: This ensures the "physical" UI (Inventory) slides out behind the Gacha Machines, while pop-ups always render on top of both.*
 
 ---
 
@@ -108,6 +121,13 @@ The `CombatControlsPanel` provides real-time interaction with the `BattleAnimato
 ---
 
 ## 5. View Internals & Rendering
+
+### Custom Mouse Cursors
+The application uses a **Software Cursor** system managed by `CursorManager.gd`:
+- **Implementation**: A dedicated `CanvasLayer` (Layer 1024) renders a `Sprite2D` on top of all other UI, including modals and post-processing.
+- **Default Pointer**: `BaseCursor.png` (hardware cursor is hidden via `MOUSE_MODE_HIDDEN`).
+- **Clicked State**: `ClickedCursor.png` (swapped via polling `Input.is_mouse_button_pressed`).
+- **Interactions**: Cursors are initialized on `_ready()` and remain visible during pauses.
 
 ### SlotView
 - **Background:** `StyleBoxTexture` with `slot.png` (not a child node) to prevent cleanup scripts from destroying it.

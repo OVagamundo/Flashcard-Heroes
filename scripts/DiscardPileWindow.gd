@@ -47,11 +47,18 @@ func clear_cached_inventory_visuals() -> void:
 
 func on_window_opened() -> void:
 	await get_tree().process_frame
-	if is_instance_valid(physics_container) and physics_container.has_method("refresh_runtime_bounds"):
-		physics_container.refresh_runtime_bounds()
+	if is_instance_valid(physics_container):
+		if physics_container.has_method("refresh_runtime_bounds"):
+			physics_container.refresh_runtime_bounds()
+		if physics_container.has_method("finish_open"):
+			physics_container.finish_open()
 	refresh_cached_inventory()
 	if is_instance_valid(physics_container):
 		physics_container.apply_jolt(Vector2(-500, 0))
+
+func prepare_for_open() -> void:
+	if is_instance_valid(physics_container) and physics_container.has_method("prepare_for_open"):
+		physics_container.prepare_for_open()
 
 func _cache_valid_instances(instances: Array) -> void:
 	_cached_instances.clear()

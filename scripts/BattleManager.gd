@@ -2109,8 +2109,25 @@ func _on_battle_inventory_penalty(uuid: String) -> void:
 			var def = instance.get_definition()
 			if def and "display_name_key" in def:
 				name_str = tr(def.display_name_key)
+			
+			# SELECTIVE RESHUFFLE: If ball is already in Discard, send it back to Trays
+			if instance.location_container_tag == C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
+				var tier = def.tier if (def is GachaBallDefinition) else 1
+				var target_container = "BattleInventoryT%d" % tier
 				
-		# The precise BattleManager API for atomic runtime move to discard
+				# Restore stats before returning to tray pool
+				instance.reset_battle_stats()
+				
+				# Remove from discard first to prevent duplicate entries (Golden Rule safe)
+				_state.remove_instance_from_container(instance)
+				
+				# Atomic move: add to target tray
+				if bm_add_instance(instance, target_container):
+					if Engine.has_singleton("BattleLogger"):
+						BattleLogger.log_message("[color=cyan]SELECTIVE RESHUFFLE:[/color] %s returned to Tier %d tray." % [name_str, tier])
+				return
+
+		# Standard Penalty: move to discard
 		bm_move_instance_to_discard(uuid)
 		
 		if Engine.has_singleton("BattleLogger"):

@@ -12,7 +12,7 @@ icon = ExtResource("2_icon")
 tier = 0
 cost = 0
 category = &"UNIT"
-item_slot_count = 5
+
 base_hp = 10
 base_pwr = 2
 bonus_hp = 0

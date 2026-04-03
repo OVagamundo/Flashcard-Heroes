@@ -26,7 +26,7 @@ var location_slot_index: int = -1
 var equipped_on_uuid: String = ""
 var equipped_slot_index: int = -1
 # Up to 3 equipped items (by UUID). Empty string indicates empty slot.
-var equipped_item_uuids: Array[String] = ["", "", ""]
+var equipped_item_uuids: Array[String] = []
 
 # --- Dynamic State Properties ---
 var dynamic_tags: Array[StringName] = [] # For status effects like "POISONED", "HONEY_ARMOR"
@@ -50,7 +50,6 @@ func initialize(definition: GachaBallDefinition) -> void:
 	self.equipped_on_uuid = ""
 	self.equipped_slot_index = -1
 	self.equipped_item_uuids.clear()
-	self.equipped_item_uuids.resize(definition.item_slot_count)
 	self.equipped_item_uuids.resize(definition.item_slot_count)
 	self.equipped_item_uuids.fill("")
 

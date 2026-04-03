@@ -73,7 +73,7 @@ mouse_filter = 2
 size_flags_horizontal = 4
 
 [node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
-custom_minimum_size = Vector2(0, 0)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 mouse_filter = 2
 
@@ -98,6 +98,7 @@ v_separation = -12.86
 layout_mode = 2
 anchors_preset = 15
 size_flags_vertical = 3
+show_overflow_visual = false
 
 [node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
 custom_minimum_size = Vector2(0, 20)
@@ -141,7 +142,7 @@ mouse_filter = 2
 size_flags_horizontal = 4
 
 [node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
-custom_minimum_size = Vector2(0, 0)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 mouse_filter = 2
 
@@ -167,6 +168,7 @@ layout_mode = 2
 anchors_preset = 15
 size_flags_vertical = 3
 tier = 2
+show_overflow_visual = false
 
 [node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
 custom_minimum_size = Vector2(0, 20)
@@ -210,7 +212,7 @@ mouse_filter = 2
 size_flags_horizontal = 4
 
 [node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
-custom_minimum_size = Vector2(0, 0)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 mouse_filter = 2
 
@@ -236,6 +238,7 @@ layout_mode = 2
 anchors_preset = 15
 size_flags_vertical = 3
 tier = 3
+show_overflow_visual = false
 
 [node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
 custom_minimum_size = Vector2(0, 20)
@@ -251,68 +254,5 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("6_container_display")
-expand_mode = 0
-stretch_mode = 3
-
-[node name="BaseMask" type="HBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -260.0
-grow_horizontal = 2
-mouse_filter = 2
-theme_override_constants/separation = -2
-alignment = 1
-
-[node name="Tier1BaseMask" type="Control" parent="BaseMask"]
-custom_minimum_size = Vector2(640, 260)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Texture" type="TextureRect" parent="BaseMask/Tier1BaseMask"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("7_tier1_base")
-expand_mode = 0
-stretch_mode = 3
-
-[node name="Tier2BaseMask" type="Control" parent="BaseMask"]
-custom_minimum_size = Vector2(640, 260)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Texture" type="TextureRect" parent="BaseMask/Tier2BaseMask"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("8_tier2_base")
-expand_mode = 0
-stretch_mode = 3
-
-[node name="Tier3BaseMask" type="Control" parent="BaseMask"]
-custom_minimum_size = Vector2(640, 260)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Texture" type="TextureRect" parent="BaseMask/Tier3BaseMask"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("9_tier3_base")
 expand_mode = 0
 stretch_mode = 3

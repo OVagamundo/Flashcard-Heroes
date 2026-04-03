@@ -24,6 +24,7 @@ Timed mini-game that generates **Gacha Tokens** for use in the current encounter
 - **Units**: Creatures with HP and PWR stats and abilities. HP and PWR scale up to a 99 max cap; healing additive.
 - **Items**: Equipment and consumables that provide stat bonuses or effects. Consumables are single-use per encounter, some can be single use per run.
 - **Attributes**: Tiers (1-3), Rarity (Common-Legendary), and Tags (Fire, Water, Earth, Air, Light, Dark, Attacker, Defender, Support, etc.) for synergies.
+    - **Item Slots**: Automatically computed based on Tier: Tier 1 (1 slot), Tier 2 (2 slots), Tier 3 (4 slots), and Hero (4 slots).
 
 6. Inventories & Drawing
 - **Run Inventory**: Your persistent collection (deck) for the run.

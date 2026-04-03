@@ -64,6 +64,12 @@ func set_overflow_monitoring_active(active: bool) -> void:
 	_penalties_active = active
 	if not active:
 		_penalty_timers.clear()
+	
+	# Sync visual visibility
+	if is_instance_valid(lid_area):
+		var visual = lid_area.get_node_or_null("OverflowVisual") as ColorRect
+		if visual:
+			visual.visible = active
 
 func _generate_bounds() -> void:
 	var bound_layer = 10 + ((tier - 1) * 2)
@@ -100,10 +106,29 @@ func _generate_bounds() -> void:
 	hard_lid.position = Vector2(container_size.x / 2.0, -2500.0) # Massive buffer blocks balls from flying out top
 	
 	spawn_point.position = Vector2(container_size.x / 2.0, spawn_y)
-	lid_area.position = Vector2(container_size.x / 2.0, 0)
+	
+	# OVERFLOW MECHANISM: 30px detection area positioned below the lid (y=0)
+	# Position at y=15.0 with height=30.0 covers from y=0 to y=30
+	lid_area.position = Vector2(container_size.x / 2.0, 15.0)
 	
 	var lid_shape_node = _get_or_create_area_shape(lid_area)
-	lid_shape_node.shape.size = Vector2(inner_right - inner_left, 50.0)
+	lid_shape_node.shape.size = Vector2(inner_right - inner_left, 30.0)
+	
+	# VISUAL: Translucent red rectangle for the overflow area
+	var visual_name = "OverflowVisual"
+	var visual = lid_area.get_node_or_null(visual_name) as ColorRect
+	if not visual:
+		visual = ColorRect.new()
+		visual.name = visual_name
+		visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		lid_area.add_child(visual)
+	
+	visual.color = Color(1.0, 0.0, 0.0, 0.4) # Translucent red
+	visual.size = lid_shape_node.shape.size
+	visual.position = -visual.size / 2.0
+	
+	# Only show visual if penalties are active
+	visual.visible = _penalties_active
 
 func _get_or_create_wall(wall_name: String) -> CollisionShape2D:
 	var wall = motion_body.get_node_or_null(wall_name) as CollisionShape2D
@@ -305,10 +330,10 @@ func _on_battle_transition_finished() -> void:
 	# Start the 6s countdown to force-sleep the entire pile after movement stops
 	_global_sleep_timer.start()
 	
-	# DEADEN: Smoothly decay bounce to 0.0 over 5 seconds (Fast at start, Slow at end)
+	# DEADEN: Smoothly decay bounce to 0.15 over 5 seconds (Fast at start, Slow at end)
 	# Finishes at 5.0s so balls are 'dead' for 1s before the 6.0s Sleep Sweep locks them.
 	var mat = preload("res://resources/physics/GachaBallMaterial.tres")
 	_bounce_tween = create_tween()
-	_bounce_tween.tween_property(mat, "bounce", 0.0, 5.0)\
+	_bounce_tween.tween_property(mat, "bounce", 0.15, 5.0)\
 			.set_trans(Tween.TRANS_CUBIC)\
 			.set_ease(Tween.EASE_OUT)
