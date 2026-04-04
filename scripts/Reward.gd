@@ -161,6 +161,12 @@ func _on_confirm_pressed() -> void:
 		var start_pos: Vector2 = Vector2.ZERO
 		if is_instance_valid(slot_view):
 			start_pos = slot_view.get_global_rect().get_center()
+			# CONVERSION: Slot is in SubViewport, animations are in Screen Space (Main)
+			var main_node = GameManager._active_main_node
+			if is_instance_valid(main_node):
+				var content_area = main_node.get_node_or_null("%ContentArea")
+				if is_instance_valid(content_area):
+					start_pos += content_area.global_position
 		
 		# Get instance and capture visual data before it's cleared
 		var instance = GameManager.get_instance_by_uuid(_reward_uuids[selected_loc.index])
@@ -274,8 +280,8 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 		on_complete.call()
 		return
 	
-	var gold_counter = main_node.get_node_or_null("VBoxContainer/TopArea/HBoxContainer/LeftStats/GoldCounter")
-	if not is_instance_valid(gold_counter):
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group):
 		on_complete.call()
 		return
 	
@@ -287,8 +293,14 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 	
 	# Spawn gold coins with stagger
 	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
-	var start_pos = gold_counter.global_position + gold_counter.size / 2
+	var start_pos = gold_group.global_position + gold_group.size / 2
 	var target_pos = target_button.global_position + target_button.size / 2
+	
+	# CONVERSION: Button is in SubViewport, animations are in Screen Space (Main)
+	if is_instance_valid(main_node):
+		var content_area = main_node.get_node_or_null("%ContentArea")
+		if is_instance_valid(content_area):
+			target_pos += content_area.global_position
 	var stagger_delay = 0.08
 	
 	for i in range(coins_to_spawn):
@@ -360,8 +372,7 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 		return
 	
 	# Get target machine position
-	var machine_path = "VBoxContainer/BottomArea/HBoxContainer/GachaMachine%d" % tier
-	var machine = main_node.get_node_or_null(machine_path)
+	var machine = main_node.get_node_or_null("%%GachaMachine%d" % tier)
 	if not is_instance_valid(machine):
 		return
 	
@@ -451,7 +462,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 		return
 	
 	# Get target: PlayerTrinketBar in TopArea
-	var trinket_bar = main_node.get_node_or_null("VBoxContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar")
+	var trinket_bar = main_node.get_node_or_null("%PlayerTrinketBar")
 	if not is_instance_valid(trinket_bar):
 		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
 		return

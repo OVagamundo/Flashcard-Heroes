@@ -479,17 +479,19 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	
 	# PHASE 3: Drain ALL reactions AFTER both trigger types have queued
 	# Priority sorting now correctly orders trinket (210) before item (200)
-	if is_simulation and out_events != null and not bm._pending_reactions.is_empty():
-		if OS.is_debug_build():
-			print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
-		bm.drain_pending_reactions_inline(0)
-		var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
-		for evt in cascade_evts:
-			out_events.append(evt)
-			
-	# Append actual DEATH events AFTER the drained reactions visually occur
 	if is_simulation and out_events != null:
+		# APPEND DEATH EVENTS BEFORE DRAINING:
+		# This ensures the Animator plays the fade-out before any effect triggered by the death (like a Summon).
 		out_events.append_array(pending_death_events)
+		pending_death_events.clear()
+		
+		if not bm._pending_reactions.is_empty():
+			if OS.is_debug_build():
+				print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
+			bm.drain_pending_reactions_inline(0)
+			var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
+			for evt in cascade_evts:
+				out_events.append(evt)
 		
 		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
 		# The kamikaze animation handles the death at the target position

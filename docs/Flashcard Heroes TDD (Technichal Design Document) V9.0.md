@@ -135,7 +135,7 @@ The battle inventory system uses a pure Godot 2D Physics simulation for the gach
 -   **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns.
 
 ### 8.6 Dodecagon Shape Approximation
--   **Stable Facets**: Direct `CircleShape2D` contact is avoid due to numerical instability (single-point contact). Instead, gachaballs use a **12nd-sided CollisionPolygon2D (Dodecagon)**.
+-   **Stable Facets**: Direct `CircleShape2D` contact is avoid due to numerical instability (single-point contact). Instead, gachaballs use a **12-sided CollisionPolygon2D (Dodecagon)**.
 -   **Resting Stability**: The flat facets of the dodecagon allow balls to "lock" together in a stable pile, creating "stable bridges" that Godot's physics solver can resolve to a zero-velocity state much faster.
 -   **Visual Fidelity**: 12 sides provide a visual approximation that is indistinguishable from a circle at 48px radius while providing the necessary structural stability.
 
@@ -146,6 +146,6 @@ The battle inventory system uses a pure Godot 2D Physics simulation for the gach
 
 ### 8.3 Rendering Fidelity
 -   **Physics Interpolation**: The system utilizes Godot 4's native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (currently 120 Hz).
--   **High-Fidelity Rules**: Gravity is set to 2.0, and Continuous Collision Detection (CCD) is enabled on all balls to prevent tunneling during high-velocity drawer animations.
+-   **High-Fidelity Rules**: Gravity Scale is set to **4.0**, and Continuous Collision Detection (CCD) is enabled on all balls to prevent tunneling during high-velocity drawer animations.
 -   **Spawn Sequence**: To prevent a 1-frame "flash" at the scene origin `(0,0)`, gachaballs have their local position calculated and assigned *before* calling `add_child()`.
 -   **Interpolation Reset**: Immediately after being added to the tree, `reset_physics_interpolation()` is called to prevent the interpolation engine from "sliding" the ball from the origin to its spawn point in a single frame.

@@ -202,6 +202,13 @@ func _on_buy_pressed() -> void:
 			var start_pos: Vector2 = Vector2.ZERO
 			if is_instance_valid(slot_view):
 				start_pos = slot_view.get_global_rect().get_center()
+				# CONVERSION: Slot is in SubViewport, animations are in Screen Space (Main)
+				# get_global_rect() in a SubViewport is relative to that Viewport.
+				var main_node = GameManager._active_main_node
+				if is_instance_valid(main_node):
+					var content_area = main_node.get_node_or_null("%ContentArea")
+					if is_instance_valid(content_area):
+						start_pos += content_area.global_position
 			
 			# Capture visual data and tier before purchase clears the instance
 			var visual_data = VisualDataAdapter.create_visual_data(instance)
@@ -278,6 +285,12 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 		btn_rect.position.y + btn_rect.size.y / 2
 	)
 	
+	# CONVERSION: Button is in SubViewport, animations are in Screen Space (Main)
+	if is_instance_valid(main_node):
+		var content_area = main_node.get_node_or_null("%ContentArea")
+		if is_instance_valid(content_area):
+			target_pos += content_area.global_position
+	
 	# Spawn gold coins with stagger
 	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
 	var stagger_delay = 0.08
@@ -336,8 +349,7 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 		return
 	
 	# Get target machine position
-	var machine_path = "VBoxContainer/BottomArea/HBoxContainer/GachaMachine%d" % tier
-	var machine = main_node.get_node_or_null(machine_path)
+	var machine = main_node.get_node_or_null("%%GachaMachine%d" % tier)
 	if not is_instance_valid(machine):
 		return
 	

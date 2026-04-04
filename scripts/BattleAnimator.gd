@@ -287,19 +287,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
 							var slot_view = lineup_container.get_child(index)
 							
-							# SAFETY: Clear any existing views in slot before adding new one
-							# This handles cases where DEATH animation hasn't freed views yet
-							for existing_child in slot_view.get_children():
-								if existing_child is GachaBallView:
-									# Also remove from registry if present
-									var existing_uuid = ""
-									if is_instance_valid(existing_child) and existing_child.has_method("get_instance_uuid"):
-										existing_uuid = existing_child.get_instance_uuid()
-									if not existing_uuid.is_empty() and _visual_registry.has(existing_uuid):
-										_visual_registry.erase(existing_uuid)
-									existing_child.queue_free()
-							
-							# Create new view (slot now guaranteed empty)
+							# PRESENTATION ONLY: Create new view in slot
+							# DEATH event already removed the old view (DEATH → SUMMON ordering)
+							# Animator just plays events in sequence blindly - no game state knowledge needed
 							var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
 							slot_view.add_child(new_view)
 							
