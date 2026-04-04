@@ -154,6 +154,13 @@ static func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 ## @param summoned_team: String - "PLAYER" or "ENEMY" team of the summoned unit
 ## @param summoned_location: LocationIdentifier - Where the unit was summoned
 static func trigger_on_enemy_summon(summoned_uuid: String, summoned_team: String, summoned_location: LocationIdentifier) -> void:
+	# AMBUSH FILTER: Only trigger if the unit is in a lineup (battlefield)
+	# This prevents Dreadnought from attacking units summoned to the bench
+	if is_instance_valid(summoned_location):
+		var container := summoned_location.container
+		if container != C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and container != C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+			return
+	
 	var summon_context: Dictionary = {
 		"summoned_uuid": summoned_uuid,
 		"summoned_team": summoned_team,
@@ -167,6 +174,13 @@ static func trigger_on_enemy_summon(summoned_uuid: String, summoned_team: String
 ## @param summoned_team: String - "PLAYER" or "ENEMY" team of the summoned unit
 ## @param summoned_location: LocationIdentifier - Where the unit was summoned
 static func trigger_on_ally_summon(summoned_uuid: String, summoned_team: String, summoned_location: LocationIdentifier) -> void:
+	# FIELD ONLY FILTER: Only trigger if the unit is in a lineup (battlefield)
+	# This prevents Warden from blessing units summoned to the bench
+	if is_instance_valid(summoned_location):
+		var container := summoned_location.container
+		if container != C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and container != C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+			return
+	
 	var summon_context: Dictionary = {
 		"summoned_uuid": summoned_uuid,
 		"summoned_team": summoned_team,

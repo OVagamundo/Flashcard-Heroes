@@ -250,6 +250,12 @@ func _create_resource_pools(include_trinkets: bool) -> Dictionary:
 			continue
 		if String(d.id).begins_with("boss_"):
 			continue
+		
+		# Skip units with special tags (Hidden, Token, Boss)
+		# Dust units are now tagged HIDDEN. Bosses are always excluded.
+		if d.tags.has(&"HIDDEN") or d.tags.has(&"TOKEN") or d.tags.has(&"BOSS"):
+			continue
+			
 		available_units.append(d)
 	
 	for d in Database.items.values():

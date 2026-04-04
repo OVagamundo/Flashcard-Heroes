@@ -49,6 +49,7 @@ The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm th
 1. **Gap Filtering & Prerequisites**
    - The generator pools all available Units, Items, and Trinkets.
    - **Exclusivity Rule**: Content with `is_player_exclusive = true` is filtered out.
+   - **Tag-Based Exclusion Rule**: Units tagged with `HIDDEN`, `BOSS`, or `TOKEN` are excluded from standard budget-based pools. This ensures special-purpose units (like Dust units) are reserved for Elite battles or specific summons.
    - **Temporal Rule**: Content must satisfy `min_day` and `max_day` constraints relative to the current run day (e.g., Hermit locked until Day 10).
    
 1. **Greedy Weighted Selection**

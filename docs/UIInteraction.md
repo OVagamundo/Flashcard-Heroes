@@ -10,16 +10,16 @@
 ```
 Main.tscn (Shell)
 ├── VBoxContainer
-│   ├── TopArea (Gold, Tokens, Day, PlayerTrinketBar)
+│   ├── TopAreaSpacer (144px)
 │   ├── ContentArea → SubViewport → Battle.tscn (Board)
-│   │   ├── PlayerArea (Lineup, Bench)
-│   │   └── EnemyArea (Lineup, Traits)
-│   └── BottomArea (Physics Gacha Machines 1-3)
-├── BackgroundUILayer (Inventory Trays/Windows - Layer 40)
-├── HUDLayer (Gacha Machines/Upper HUD - Layer 60)
-├── EffectsLayer (VFX - Layer 90)
-├── ModalLayer (Managed by WindowManager - Layer 120)
-├── PostProcessLayer (Full-screen shaders - Layer 130)
+│   └── BottomAreaSpacer (260px)
+├── HUDLayer (Top Bar, Machine HUD - Layer 60)
+│   ├── TopArea (Gold, Tokens, Day, PlayerTrinketBar)
+│   └── BottomArea (Machines 1-3)
+├── BackgroundUILayer (Inventory Windows - Layer 40)
+├── EffectsLayer (VFX / Animations - Layer 90)
+├── ModalLayer (Inspections / Popups - Layer 120)
+├── PostProcessLayer (Shaders - Layer 130)
 └── CursorLayer (Software Cursor - Layer 1024)
 ```
 
@@ -29,7 +29,7 @@ Main.tscn (Shell)
 | Inventory slot | 192x192px | Glass overlay, unit 128x128 centered |
 | TopArea trinket slot | 128x128px | Standard icon size |
 | Gacha machines | 260px height | Fixed bottom bar |
-| Top gap spacer | 80px | Injected at runtime by BattleView |
+| Top gap spacer | 144px | Defines the HUD vertical boundary |
 
 **Critical:** `BattleView._initialize_slots()` overrides scene placeholders with SlotViews. Always set `custom_minimum_size` on slots, not `set_size_scale()`.
 
@@ -149,7 +149,7 @@ The application uses a **Software Cursor** system managed by `CursorManager.gd`:
 - **Hierarchy & Movement**:
     - **Battle Inventory**: Slides **vertically** from below.
     - **Discard Pile**: Slides **horizontally** from the right.
-- **Inescapable Boundaries**: Side walls are ~2000px thick and extend infinitely to prevent tunneling or escaping during high-velocity drawer animations.
+- **Inescapable Boundaries**: Side walls are **5000px thick** and extend infinitely to prevent tunneling or escaping during high-velocity drawer animations.
 - **Interaction Rules**:
     - **Hover-to-Inspect**: Opens temporary window (PC).
     - **Touch Inspect**: Uses long-press (`0.32s`) with drag cancellation at `24px`, shared via `InputUtils.gd`.
@@ -173,7 +173,7 @@ The Run Inventory uses the `StaggeredGridContainer` for a compact, circular-opti
 
 ### Determinism & Performance
 - **Physics Ticks**: Forced to **120 TPS** for collision stability.
-- **Determinism**: Interpolation enabled; friction (0.8) and bounce (0.0) are tuned to prevent "boiling" (jittering while at rest).
+- **Determinism**: Interpolation enabled; friction (0.05) and bounce (0.15) are tuned to ensure stability while maintaining life in the gachapon balls.
 
 ### Drawer Animation Physics
 The inventory drawer movements are synchronized with physical jolts:

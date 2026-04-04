@@ -425,6 +425,12 @@ Summoned units may act in the *same turn* they are summoned, but ONLY if valid w
      - **Enemy Team**: Searches **Back-to-Front** (Index N → 0).
   2. If lineup full, target the `BATTLE_DISCARD_PILE` (Player only).
 
+#### 5. Field-Only Trigger Rule (Ambush/Blessing)
+To ensure that reactive abilities (like **Ambush Predator** or **Summon Blessing**) behave logically, their triggers are filtered by location.
+- **Rule**: `on_enemy_summon` and `on_ally_summon` triggers ONLY fire if the unit is summoned to a **Lineup** container.
+- **Purpose**: This prevents units in the bench or discard pile from being "ambushed" or "blessed" before they have actually entered the field of play.
+- **Implementation**: Handled globally in `TurnAbilities.gd`.
+
 ### Mid-Turn Summon Actions
 Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.
 - **Rule**: "One Action Per Slot Per Turn".

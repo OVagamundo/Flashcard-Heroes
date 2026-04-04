@@ -5,10 +5,21 @@ extends EffectDefinition
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
 	var result := EffectResult.new()
 	
+	# 1. Select the dust unit FIRST to know its tier
+	# Tier 3 Elite spawns random of T1 or T2 Dust units
+	var dust_pool = [&"unit_dust_t1", &"unit_dust_t2"]
+	var selected_dust = dust_pool[randi() % dust_pool.size()]
+	
+	# Determine target container based on tier
+	var tier := 1
+	if selected_dust == &"unit_dust_t2":
+		tier = 2
+	
+	var inventory_tag: StringName = "BattleInventoryT%d" % tier
 	var is_space_available := false
 	var target_location: Dictionary
 	
-	# 1. Try PlayerBench
+	# 2. Try PlayerBench first
 	var bench = battle_manager.get_container(&"PlayerBench")
 	if is_instance_valid(bench):
 		var empty_index = bench.find_first_empty_slot()
@@ -16,21 +27,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			is_space_available = true
 			target_location = {"container": &"PlayerBench", "index": empty_index}
 	
-	# 2. Try BattleInventoryT1 as fallback
+	# 3. Try the CORRECT Tier Inventory as fallback
 	if not is_space_available:
-		var inventory = battle_manager.get_container(&"BattleInventoryT1")
+		var inventory = battle_manager.get_container(inventory_tag)
 		if is_instance_valid(inventory):
 			var empty_index = inventory.find_first_empty_slot()
 			if empty_index != -1:
 				is_space_available = true
-				target_location = {"container": &"BattleInventoryT1", "index": empty_index}
+				target_location = {"container": inventory_tag, "index": empty_index}
 	
 	if not is_space_available:
 		return EffectResult.empty()
-		
-	# Tier 3 Elite spawns random of T1 or T2 Dust units
-	var dust_pool = [&"unit_dust_t1", &"unit_dust_t2"]
-	var selected_dust = dust_pool[randi() % dust_pool.size()]
 	
 	# Summon unit using standard summon request
 	result.summon_request = {
