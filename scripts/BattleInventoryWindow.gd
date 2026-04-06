@@ -85,7 +85,10 @@ func finish_open() -> void:
 	_sync_all_trays()
 	
 	TutorialManager.show_tutorial(&"gacha_inspect_battle", [
-		{"text": tr("tutorial.gacha_inspect_battle")}
+		{
+			"text": tr("tutorial.gacha_inspect_battle"),
+			"center": true
+		}
 	])
 	SignalBus.battle_inventory_transition_finished.emit()
 

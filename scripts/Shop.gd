@@ -402,7 +402,9 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	)
 	
 	# Use tween_method to animate along the Bezier curve
-	var tween = create_tween()
+	# IMPORTANT: Bind tween to anim_ball, NOT self (the Shop).
+	# This ensures the animation completes even if the Shop is freed.
+	var tween = anim_ball.create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
 	# Nearly linear easing: smooth and fast
@@ -425,8 +427,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 		# AUDIO HOOK: Ball land sound
 		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
-		# Trigger machine bounce
-		if main_node.has_method("trigger_machine_bounce"):
+		# Trigger machine bounce (safety check if main_node is still the same)
+		if is_instance_valid(main_node) and main_node.has_method("trigger_machine_bounce"):
 			main_node.trigger_machine_bounce(tier)
 	)
 

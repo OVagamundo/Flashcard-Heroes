@@ -9,18 +9,22 @@
 
 ```
 Main.tscn (Shell)
-├── VBoxContainer
-│   ├── TopAreaSpacer (144px)
-│   ├── ContentArea → SubViewport → Battle.tscn (Board)
-│   └── BottomAreaSpacer (260px)
-├── HUDLayer (Top Bar, Machine HUD - Layer 60)
-│   ├── TopArea (Gold, Tokens, Day, PlayerTrinketBar)
-│   └── BottomArea (Machines 1-3)
-├── BackgroundUILayer (Inventory Windows - Layer 40)
-├── EffectsLayer (VFX / Animations - Layer 90)
-├── ModalLayer (Inspections / Popups - Layer 120)
-├── PostProcessLayer (Shaders - Layer 130)
-└── CursorLayer (Software Cursor - Layer 1024)
+├── ContentArea → SubViewportContainer → SubViewport
+│   └── SceneBackground (1920x1080)
+│   └── VBoxContainer (Centering Layout)
+│       ├── TopAreaSpacer (144px)
+│       ├── SceneSlot (BattleBoard / Flow)
+│       └── BottomAreaSpacer (260px)
+├── HUDLayer (CanvasLayer - Layer 60)
+│   ├── TopArea (Gold, Tokens, PlayerTrinketBar)
+│   └── BottomArea (Gacha Machines x3, Labels)
+├── BackgroundUILayer (CanvasLayer - Layer 40)
+│   ├── InventoryWindow
+│   └── DiscardPile
+├── ModalLayer (CanvasLayer - Layer 120)
+│   └── Inspection Windows, Popups, Tutorials
+├── EffectsLayer (CanvasLayer - Layer 90)
+└── CursorLayer (Software Overlay - Layer 1024)
 ```
 
 | Element | Size | Notes |
@@ -31,7 +35,12 @@ Main.tscn (Shell)
 | Gacha machines | 260px height | Fixed bottom bar |
 | Top gap spacer | 144px | Defines the HUD vertical boundary |
 
-**Critical:** `BattleView._initialize_slots()` overrides scene placeholders with SlotViews. Always set `custom_minimum_size` on slots, not `set_size_scale()`.
+**Critical:** `BattleView._initialize_slots()` overrides scene placeholders with SlotViews.
+### GachaBall Animation & Spawning
+The game uses two distinct methods for GachaBall movement:
+1. **Draw Animation (Machine → Bench)**: When a player spends tokens, the ball animates along a Catmull-Rom spline starting from the **specific GachaMachine's knob position** and ending at the target `SlotView`.
+2. **Pool Population (Top-down Gravity)**: Inside the Physics Drawers (Battle Inventory/Discard), balls spawn at the **top-center** with a random X-stagger and fall naturally. Spawning is sequential (0.15s interval) to prevent overlap explosions.
+- **Scaling**: All slots maintain their 192px baseline asset scale.
 
 ---
 
@@ -62,13 +71,14 @@ Main.tscn (Shell)
 | **W5** Escape | 1) Cancel drag → 2) Close windows → 3) Deselect |
 | **W6** Selection Persist | Parent entity stays selected when opening child windows |
 | **W7** Transition Block | Interaction is completely blocked during drawer/inventory animations (Open/Close) |
+| **W8** Bounce Animation | Windows open with a subtle scale overshoot (bounce) and vanish instantly on close |
 
 ### Window Categories
 
 | Type | Examples | Blocker | Behavior |
 |------|----------|---------|----------|
 | **Hermetic Modals** | FlashcardMinigame, EndBattlePopup | Yes | Blocks all input, self-closing |
-| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. |
+| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). |
 | **Contextual (Fixed)** | InventoryWindow, DiscardPile | No | Centered, closes on outside click |
 
 ### Window Layout & Sizing
@@ -122,12 +132,13 @@ The `CombatControlsPanel` provides real-time interaction with the `BattleAnimato
 
 ## 5. View Internals & Rendering
 
-### Custom Mouse Cursors
-The application uses a **Software Cursor** system managed by `CursorManager.gd`:
-- **Implementation**: A dedicated `CanvasLayer` (Layer 1024) renders a `Sprite2D` on top of all other UI, including modals and post-processing.
-- **Default Pointer**: `BaseCursor.png` (hardware cursor is hidden via `MOUSE_MODE_HIDDEN`).
-- **Clicked State**: `ClickedCursor.png` (swapped via polling `Input.is_mouse_button_pressed`).
-- **Interactions**: Cursors are initialized on `_ready()` and remain visible during pauses.
+### 5.1 High-Performance Hybrid Cursor
+The application uses a **High-Performance Hybrid Cursor** system managed by `CursorManager.gd`:
+- **Implementation**: A dedicated `CanvasLayer` (Layer 1024) renders a `Sprite2D` on top of all other UI.
+- **Zero-Latency Movement**: `Input.use_accumulated_input` is disabled. This allows the software sprite to track at the hardware polling rate (e.g. 1000Hz) instead of being throttled by the game's frame rate.
+- **Raw Input Tracking**: Position and texture swaps are handled directly in `_input(event)` for sub-frame response, bypassing the standard `_process` frame delay.
+- **Stationary Click-Fix**: Texture swaps occur immediately upon the OS-level button event, ensuring click visuals change even if the mouse is perfectly still.
+- **Hardware Mode**: The physical system cursor is hidden (`MOUSE_MODE_HIDDEN`).
 
 ### SlotView
 - **Background:** `StyleBoxTexture` with `slot.png` (not a child node) to prevent cleanup scripts from destroying it.

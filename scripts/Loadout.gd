@@ -44,6 +44,7 @@ var _deck_buttons: Array = [] # DeckSelectButton instances
 
 
 func _ready() -> void:
+	
 	# AUDIO HOOK: Loadout BGM
 	Audio.play_music(SoundRegistry.BGM_LOADOUT)
 	
@@ -56,17 +57,12 @@ func _ready() -> void:
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
-	
-	# Show loadout tutorial
-	TutorialManager.show_tutorial(&"loadout_intro", [
-		{"text": tr("tutorial.loadout")}
-	])
 
 
 func _update_localized_text() -> void:
 	hero_title.text = tr("ui.choose_your_hero")
 	deck_title.text = tr("ui.choose_your_deck")
-	start_button.text = tr("ui.start_run")
+	start_button.text = tr("ui.play")
 	test_button.text = tr("ui.test_mode")
 	
 	# Re-populate to update translated names

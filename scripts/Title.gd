@@ -55,7 +55,7 @@ func _ready() -> void:
 	_update_localized_text()
 
 func _update_localized_text() -> void:
-	start_run_button.text = tr("ui.start_run")
+	start_run_button.text = tr("ui.play")
 	options_button.text = tr("ui.options")
 	if exit_button:
 		exit_button.text = tr("ui.exit_game")

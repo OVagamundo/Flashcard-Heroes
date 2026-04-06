@@ -251,8 +251,8 @@ When a unit reaches 0 HP, the simulation processes death in this order:
 7. Game state cleanup (unit removed from containers - deferred for reactions)
 
 > [!IMPORTANT]
-> **Causality Rule for Death Processing:**
-> Pending `on_hurt` reactions (e.g., resilient_aura buffs) MUST be drained BEFORE `on_death` triggers fire. This ensures the dying unit's reactive abilities generate their events while the unit is still "alive" in the event sequence. See `_check_for_deaths_with_counter_delay()` in BattleManager.gd.
+> **Causality Rule for Death Processing (FIXED)**:
+> Pending `on_hurt` reactions (e.g., resilient_aura buffs) MUST be drained BEFORE `on_death` triggers fire. This ensures the dying unit's reactive abilities generate events before it is logically removed. See `_check_for_deaths_with_counter_delay()` in `BattleManager.gd`.
 
 > [!IMPORTANT]
 > **Event Generation vs. Cleanup Separation:**
@@ -427,9 +427,9 @@ Summoned units may act in the *same turn* they are summoned, but ONLY if valid w
 
 #### 5. Field-Only Trigger Rule (Ambush/Blessing)
 To ensure that reactive abilities (like **Ambush Predator** or **Summon Blessing**) behave logically, their triggers are filtered by location.
-- **Rule**: `on_enemy_summon` and `on_ally_summon` triggers ONLY fire if the unit is summoned to a **Lineup** container.
+- **Rule**: `on_enemy_summon` and `on_ally_summon` triggers ONLY fire if the unit is summoned to a **Lineup** (battlefield) container.
 - **Purpose**: This prevents units in the bench or discard pile from being "ambushed" or "blessed" before they have actually entered the field of play.
-- **Implementation**: Handled globally in `TurnAbilities.gd`.
+- **Implementation**: Handled globally in `battle/TurnAbilities.gd`.
 
 ### Mid-Turn Summon Actions
 Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.

@@ -64,7 +64,7 @@ theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 20
-text = "Start Run"
+text = "Play"
 
 [node name="OptionsButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1322786734]
 unique_name_in_owner = true

@@ -411,12 +411,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 		"REST":
 			# Use registered Main node
 			if is_instance_valid(_active_main_node):
-				_active_main_node._clear_content_area()
-				var instance = REST_SITE_SCENE.instantiate()
-				_active_main_node._current_content_node = instance
-				_active_main_node.content_area.get_node("SubViewport/MarginContainer").add_child(instance)
-				# Sync background texture to full-screen SceneBackground
-				_active_main_node._sync_scene_background(instance)
+				_active_main_node.load_content(REST_SITE_SCENE)
 
 func _enter_shop() -> void:
 	_reroll_cost = 1

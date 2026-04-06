@@ -117,7 +117,12 @@ func get_definition_from_deck(card_id: StringName) -> Resource:
 
 ## A helper to get flashcard data from a deck by card ID
 func get_flashcard_definition(card_id: StringName) -> Dictionary:
-	return flashcard_definitions.get(card_id, {})
+	var def = flashcard_definitions.get(card_id, {}).duplicate()
+	if TranslationServer.get_locale().begins_with("pt"):
+		var pt_expl = def.get("explanation_pt", "")
+		if not pt_expl.is_empty():
+			def["explanation"] = pt_expl
+	return def
 
 ## Returns all hero definitions
 func get_hero_definitions() -> Array[GachaBallDefinition]:
@@ -204,12 +209,12 @@ func _load_flashcard_definitions() -> void:
 								var card_id = StringName(card.id)
 								card_ids.append(card_id)
 								
-								# Store card definition globally (last write wins if duplicates exist across decks, 
-								# which is acceptable for now or we could namespace them)
+								# Store card definition globally
 								flashcard_definitions[card_id] = {
 									"question": card.question,
 									"answer": card.answer,
-									"explanation": card.get("explanation", "")
+									"explanation": card.get("explanation", ""),
+									"explanation_pt": card.get("explanation_pt", "")
 								}
 						
 						# Store deck definition

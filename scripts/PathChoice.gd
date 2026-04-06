@@ -43,11 +43,10 @@ func _ready() -> void:
 	else:
 		_setup_normal_nodes()
 	
-	# Show path choice tutorial (2 pages)
+	# Show path choice tutorial (1 page)
 	TutorialManager.show_tutorial(&"path_choice_intro", [
-		{"text": tr("tutorial.path_choice_1")},
-		{"text": tr("tutorial.path_choice_2")}
-	])
+		{"text": tr("tutorial.path_choice_1")}
+	], node_container)
 
 ## Sets up a single boss encounter button for boss days.
 func _setup_boss_node(boss_level: int) -> void:

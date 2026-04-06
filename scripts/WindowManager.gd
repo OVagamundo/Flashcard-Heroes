@@ -1405,50 +1405,25 @@ func _animate_window_open(window: Control) -> void:
 		window = window.get_window_to_animate()
 		if not is_instance_valid(window): return
 
-	
-	# Prepare shader material
-	var mat = ShaderMaterial.new()
-	mat.shader = UI_OPEN_REVEAL_SHADER
-	# Make sure it's unique so tweens don't conflict if we had shared resources (though new() handles that)
-	window.material = mat
-	mat.set_shader_parameter("progress", 0.0)
-	mat.set_shader_parameter("shine_strength", 0.5)
-	mat.set_shader_parameter("shine_color", Color(1.0, 1.0, 1.0, 0.5))
-	
-	# Initial transform state
-	window.scale = Vector2(0.95, 0.95)
 	# Set pivot to center for nice scaling
 	window.pivot_offset = window.size / 2.0
 	
-	# Initial visibility
+	# Initial visibility: Show instantly
 	window.modulate.a = 1.0
 	window.show()
+	
+	# Reset scale to neutral for the 'instant' look
+	window.scale = Vector2.ONE
 	
 	# Audio
 	Audio.play_sfx("ui_window_open")
 	
-	# Tween
-	# CORRECT IMPLEMENTATION: Bind tween to the window itself.
-	# If the window is freed (e.g. closed mid-animation), the tween is automatically killed.
-	# This prevents "Lambda capture freed" errors naturally without defensive checks.
+	# Tween: Subtle bouncy overshoot AFTER it's open
 	var tween = window.create_tween()
 	
 	# IMPORTANT: Ensure animation runs even if the game is paused
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.set_parallel(true)
-	tween.set_ease(Tween.EASE_OUT)
-	tween.set_trans(Tween.TRANS_BACK)
 	
-	# Scale up slightly
-	tween.tween_property(window, "scale", Vector2.ONE, 0.5)
-	
-	# Reveal via shader
-	# Use a simpler ease for the wipe
-	tween.set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(mat, "shader_parameter/progress", 1.0, 0.5)
-	
-	# Cleanup
-	# Safe to use lambda here because if window is freed, tween dies and this never runs.
-	tween.chain().tween_callback(func():
-		window.material = null
-	)
+	# Subtle overshoot (1.0 -> 1.04 -> 1.0)
+	tween.tween_property(window, "scale", Vector2(1.04, 1.04), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(window, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
