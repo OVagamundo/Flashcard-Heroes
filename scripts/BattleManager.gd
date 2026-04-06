@@ -1666,13 +1666,9 @@ func _on_flashcard_completed(results: Dictionary) -> void:
 	# NOTE: Window closing is now handled by FlashcardManager
 	_last_minigame_results = results
 
-	var correct_answers: int = results.get("correct_answers", 0)
-	var _gacha_gain = 5 + correct_answers # TDD: gacha_gain = 5 (base) + results.correct_answers
-	
-	# Display ResultsPopup
-	WindowManager.open_modal_window(&"ResultsPopup", {
-		"populate_args": ["Turn Start!", "You earned %d Gacha Tokens." % correct_answers, "Okay"]
-	})
+	# Automatically emit results acknowledged to trigger dependencies and phase transition
+	# skipping the ResultsPopup to go directly to game flow
+	SignalBus.results_acknowledged.emit()
 
 func _on_results_acknowledged() -> void:
 	"""Called when player acknowledges the results popup"""

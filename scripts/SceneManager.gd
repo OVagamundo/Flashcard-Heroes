@@ -71,8 +71,7 @@ func _load_content_scene(path: String) -> void:
 		_change_scene_to(SCENE_PATHS["Main"])
 		await get_tree().process_frame
 	
-	var holder_path := "VBoxContainer/ContentArea/SubViewport/MarginContainer"
-	var holder: Node = current_scene.get_node(holder_path)
+	var holder: Node = current_scene.get_node_or_null("%SceneSlot")
 	if not is_instance_valid(holder):
 		return
 	# Clear old content

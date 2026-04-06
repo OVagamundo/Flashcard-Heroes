@@ -162,7 +162,7 @@ func populate(context: Dictionary) -> void:
 func _show_inventory_tutorial() -> void:
 	"""Show the run-mode inventory tutorial after the window renders"""
 	TutorialManager.show_tutorial(&"gacha_inspect_run", [
-		{"text": tr("tutorial.gacha_inspect_run")}
+		{"text": "tutorial.gacha_inspect_run"}
 	])
 
 func _on_ui_refresh() -> void:

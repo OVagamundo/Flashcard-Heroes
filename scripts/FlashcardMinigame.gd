@@ -27,12 +27,14 @@ const WESTERN_FONT = preload("res://assets/fonts/pixel_operator/PixelOperatorSC.
 @onready var timer_label: Label = %TimerLabel
 @onready var timer_bar: ProgressBar = %TimerBar
 @onready var score_label: Label = %ScoreLabel
+@onready var title_label: Label = %TitleLabel
 @onready var card_intro_container: VBoxContainer = %CardIntroContainer
 @onready var intro_question_label: Label = %IntroQuestionLabel
 @onready var intro_answer_label: Label = %IntroAnswerLabel
 @onready var intro_explanation_label: Label = %IntroExplanationLabel
 @onready var got_it_button: Button = %GotItButton
 @onready var skip_button: Button = %SkipButton
+@onready var priority_cards_label: Label = %PriorityCardsLabel
 @onready var priority_cards_container: HBoxContainer = %PriorityCardsContainer
 
 var _run_state: RunState = null
@@ -62,6 +64,10 @@ func _ready() -> void:
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
 	got_it_button.pressed.connect(_on_got_it_pressed)
 	skip_button.pressed.connect(_on_skip_pressed)
+	
+	# Connect to locale changes
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
 	
 	# Setup panel style for dynamic mastery colors
 	_setup_panel_style()
@@ -188,6 +194,8 @@ func populate(context: Dictionary) -> void:
 	if not is_instance_valid(_run_state):
 		return
 	
+	_update_localized_text()
+	
 	# Check if we need to introduce a new card
 	_check_for_new_card()
 	
@@ -240,6 +248,8 @@ func _show_card_introduction() -> void:
 	# Populate the priority cards at the bottom
 	_populate_priority_cards()
 	
+	_update_localized_text() # Refresh text after setting state
+	
 	# Show new card tutorial (deferred to ensure UI is ready)
 	call_deferred("_show_new_card_tutorial")
 
@@ -248,7 +258,7 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 	var card_data = Database.get_flashcard_definition(card_id)
 	if not card_data.is_empty():
 		intro_question_label.text = card_data.get("question", "Error: No question")
-		intro_answer_label.text = tr("ui.answer") % card_data.get("answer", "Error")
+		intro_answer_label.text = card_data.get("answer", "Error")
 		var explanation = card_data.get("explanation", "")
 		if explanation.is_empty():
 			explanation = tr("ui.no_explanation")
@@ -298,6 +308,26 @@ func _get_priority_sorted_cards() -> Array[Dictionary]:
 	weighted_cards.sort_custom(func(a, b): return a.weight > b.weight)
 	
 	return weighted_cards
+
+func _update_localized_text() -> void:
+	if not is_inside_tree(): return
+	
+	if _is_introducing_new_card:
+		title_label.text = tr("ui.review_title")
+		title_label.show()
+	else:
+		title_label.text = ""
+		title_label.hide()
+	
+	skip_button.text = tr("ui.skip")
+	got_it_button.text = tr("ui.ready")
+	priority_cards_label.text = tr("ui.priority_cards")
+	
+	if _is_introducing_new_card:
+		intro_question_label.text = tr("ui.intro_new_card") # Default if not updated by card info
+		# Re-trigger card info update to refresh localized answer/explanation if needed
+		if not _displayed_card_id.is_empty():
+			_update_displayed_card_info(_displayed_card_id)
 
 func _populate_priority_cards() -> void:
 	"""Create buttons for the top 10 priority cards"""
@@ -362,9 +392,11 @@ func _on_priority_card_clicked(card_id: StringName) -> void:
 func _show_new_card_tutorial() -> void:
 	"""Show new card tutorial overlay"""
 	TutorialManager.show_tutorial(&"new_card_intro", [
-		{"text": tr("tutorial.new_card_1")},
-		{"text": tr("tutorial.new_card_2")}
-	])
+		{
+			"text": "tutorial.new_card_intro",
+			"anchor_side": "top_left"
+		}
+	], %MainPanel)
 
 func _on_got_it_pressed() -> void:
 	"""Called when player clicks 'Got It!' on card introduction"""
@@ -388,6 +420,8 @@ func _start_minigame_session() -> void:
 	_correct_answers = 0
 	_total_answers = 0
 	_tokens_pending = 0
+	
+	_update_localized_text() # Refresh UI state to hide title
 	
 	# Show the game UI
 	question_label.show()

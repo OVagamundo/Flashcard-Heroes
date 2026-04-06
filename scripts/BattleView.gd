@@ -39,6 +39,7 @@ const TRAIT_SCREEN_MARGIN: float = 24.0
 
 var _speed_buttons: Array[Button] = []
 var _battle_animator: Node = null
+var _waiting_for_management_tutorial: bool = false
 
 # --- Node References ---
 var battle_manager: BattleManager
@@ -182,6 +183,10 @@ func _ready() -> void:
 	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
 	discard_pile_button.pressed.connect(func(): SignalBus.emit_signal("display_discard_pile_requested"))
 	
+	# Connect to locale changes to update button text
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
+	
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")
 	_initialize_slots(player_bench, &"PlayerBench")
@@ -232,14 +237,23 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 
 
 func _on_results_acknowledged() -> void:
-	"""Called when results popup is closed - show battle management tutorial"""
-	# Check if we are in MANAGEMENT phase (which we should be after minigame)
+	"""Called when results popup is implicitly acknowledged (no more popup)"""
 	if battle_manager.get_current_phase() == BattleManager.Phases.MANAGEMENT:
-		# Wait a frame for the results popup to fully close/free
-		await get_tree().process_frame
-		TutorialManager.show_tutorial(&"battle_management_intro", [
-			{"text": tr("tutorial.battle_management")}
-		])
+		_show_battle_management_tutorial()
+	else:
+		_waiting_for_management_tutorial = true
+
+func _update_localized_text() -> void:
+	if is_instance_valid(end_turn_button):
+		end_turn_button.text = tr("ui.end_turn")
+	if is_instance_valid(discard_pile_button):
+		# We need to refresh the discard pile text which includes a counter
+		var discard_container = battle_manager.get_container(&"DiscardPile")
+		if is_instance_valid(discard_container):
+			var discard_count = discard_container.get_all_non_empty_uuids().size()
+			discard_pile_button.text = tr("ui.discard_pile_count") % discard_count
+		else:
+			discard_pile_button.text = tr("ui.discard_pile")
 
 
 func _animate_initial_unit_entry() -> void:
@@ -452,6 +466,40 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# these phases destroys the views BattleAnimator is managing.
 	if phase_name == &"MANAGEMENT":
 		_redraw_board()
+		if _waiting_for_management_tutorial:
+			_show_battle_management_tutorial()
+			_waiting_for_management_tutorial = false
+
+func _show_battle_management_tutorial() -> void:
+	# Ensure tutorial hasn't been completed already
+	if TutorialManager.is_completed(&"battle_management_intro"):
+		return
+	
+	_waiting_for_management_tutorial = false
+		
+	var main_node = get_tree().get_root().find_child("Main", true, false)
+	if not is_instance_valid(main_node): return
+	
+	# Identify all elements we want to point to
+	# Tokens are in the top bar, Machines are in the bottom area
+	var token_group = main_node.get_node_or_null("%TokenGroup")
+	var machine1 = main_node.get_node_or_null("%GachaMachine1")
+	var machine2 = main_node.get_node_or_null("%GachaMachine2")
+	var machine3 = main_node.get_node_or_null("%GachaMachine3")
+	
+	var anchors: Array[String] = []
+	if is_instance_valid(token_group): anchors.append(token_group.get_path())
+	if is_instance_valid(machine1): anchors.append(machine1.get_path())
+	if is_instance_valid(machine2): anchors.append(machine2.get_path())
+	if is_instance_valid(machine3): anchors.append(machine3.get_path())
+	
+	TutorialManager.show_tutorial(&"battle_management_intro", [
+		{
+			"text": tr("tutorial.battle_management"),
+			"center": true,
+			"anchor_paths": anchors
+		}
+	], null)
 	# Controls remain visible in all phases to allow step/speed control of start/end turn effects
 
 func _gui_input(event) -> void:
@@ -731,17 +779,14 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	
 	# Assuming machines are GachaMachine1, GachaMachine2, GachaMachine3
 	# and we need to map Tier (int) to Machine (1/2/3)
-	# The Tier comes from battle_manager.get_inventory_tier_instances(tier) context?
-	# Wait, draw_result doesn't have Tier. But bm_draw_gacha_instance was called with tier.
-	# We need the source tier to determine the machine.
-	# InventoryOperations.DrawResult does NOT store "tier" but it stores "source_container".
-	# source_container = "BattleInventoryT%d" % tier.
 	var tier = 1
 	if draw_result.source_container.ends_with("T2"): tier = 2
 	elif draw_result.source_container.ends_with("T3"): tier = 3
 	
-	var machine_path = "VBoxContainer/BottomArea/HBoxContainer/GachaMachine%d/KnobButton" % tier
-	var knob_node = main_node.get_node_or_null(machine_path)
+	# Use Scene Unique Name lookup on Main which is the owner of the machines
+	var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % tier)
+	var knob_node = machine_node.get_node_or_null("KnobButton") if machine_node else null
+	
 	var start_pos: Vector2
 	if knob_node:
 		start_pos = knob_node.get_global_rect().get_center()
@@ -783,8 +828,8 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	
 	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
 	anim_ball.force_inventory_mode = true
-	anim_ball.custom_minimum_size = Vector2(192, 192)
-	anim_ball.size = Vector2(192, 192)
+	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+	anim_ball.size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	
 	# Populate with visual data (after added to tree so @onready vars work)
 	var instance = battle_manager.get_instance(draw_result.drawn_uuid)
@@ -804,10 +849,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	
 	# For animation, we'll track the CENTER position and derive global_position from it
 	var start_center: Vector2 = start_pos
-	# Offset end position DOWN significantly to land in the visual center of the slot
-	# The ball is 192px, the slot is ~250px tall, and anchoring is top-left
-	# So we need to offset by roughly half the ball size to center it vertically
-	var end_center: Vector2 = end_pos + Vector2(0, 96) # Ball radius (192/2) to center
+	var end_center: Vector2 = end_pos
 	
 	# Initial setup: place ball at start (small scale, centered on knob)
 	var initial_scale := 0.3
@@ -873,11 +915,22 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		return
 	
-	# Show first draw tutorial (3 pages) - only on first successful draw
+	# Show first draw tutorial (2 pages) - only on first successful draw
+	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
+	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
+	
 	TutorialManager.show_tutorial(&"first_draw", [
-		{"text": tr("tutorial.first_draw_1")},
-		{"text": tr("tutorial.first_draw_2")},
-		{"text": tr("tutorial.first_draw_3")}
+		{
+			"text": tr("tutorial.first_draw_1"),
+			"anchor_side": "TOP_RIGHT",
+			"anchor_paths": [lineup_slot_2.get_path(), bench_slot_1.get_path(), discard_pile_button.get_path()]
+		},
+		{
+			"title": tr("tutorial.first_draw_combat.title"),
+			"text": tr("tutorial.first_draw_2"),
+			"center": true,
+			"anchor_path": end_turn_button.get_path()
+		}
 	])
 	
 	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)

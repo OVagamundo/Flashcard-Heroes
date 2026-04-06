@@ -6,6 +6,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var scene_background: TextureRect = %SceneBackground
+@onready var scene_slot: MarginContainer = %SceneSlot
 @onready var color_glow_rect: ColorRect = $PostProcessLayer/ColorGlowRect
 
 # Gacha machine containers
@@ -202,16 +203,16 @@ func _on_knob_hover_exit(button: Button) -> void:
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.1)
 
-func _clear_content_area() -> void:
+func clear_content_area() -> void:
 	if is_instance_valid(_current_content_node):
 		_current_content_node.queue_free()
 	_current_content_node = null
 
-func _load_content(scene_resource: PackedScene) -> void:
-	_clear_content_area()
+func load_content(scene_resource: PackedScene) -> void:
+	clear_content_area()
 	var instance = scene_resource.instantiate()
 	_current_content_node = instance
-	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	scene_slot.add_child(instance)
 	
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
@@ -232,12 +233,12 @@ func _sync_scene_background(scene_instance: Node) -> void:
 		scene_background.texture = null
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
-	_load_content(BATTLE_SCENE)
+	load_content(BATTLE_SCENE)
 	# Use call_deferred to ensure the BattleManager is ready before calling it
 	call_deferred("_start_battle_with_encounter", encounter_def)
 
 func _on_path_choice_scene_requested() -> void:
-	_load_content(PATH_CHOICE_SCENE)
+	load_content(PATH_CHOICE_SCENE)
 	# AUDIO HOOK: Menu BGM (Returning from battle or shop)
 	Audio.play_music(SoundRegistry.BGM_MENU)
 	
@@ -246,11 +247,11 @@ func _on_path_choice_scene_requested() -> void:
 
 	
 func _on_reward_scene_requested(context: Dictionary) -> void:
-	_clear_content_area()
+	clear_content_area()
 	var instance = REWARD_SCENE.instantiate()
 	_current_content_node = instance
-	# Correctly parent the new scene inside the MarginContainer
-	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	# Correctly parent the new scene inside the SceneSlot
+	scene_slot.add_child(instance)
 	
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
@@ -536,10 +537,10 @@ func _animate_token_counter_pop() -> void:
 	pop_tween.tween_property(tokens_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
 
 func _on_shop_scene_requested(context: Dictionary) -> void:
-	_clear_content_area()
+	clear_content_area()
 	var instance = SHOP_SCENE.instantiate()
 	_current_content_node = instance
-	content_area.get_node("SubViewport/MarginContainer").add_child(instance)
+	scene_slot.add_child(instance)
 	
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
