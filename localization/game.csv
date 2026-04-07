@@ -216,6 +216,12 @@ ui.battle_node,Battle,Batalha
 ui.elite_battle_node,Elite Battle,Batalha de Elite
 ui.shop_node,Shop,Loja
 ui.rest_node,Rest Site,Local de Descanso
+ui.training_grounds_node,Training Grounds,Campus de Treinamento
+ui.gambling_den_node,Gambling Den,Canto das Apostas
+ui.training_grounds,Training Grounds,Campus de Treinamento
+ui.gambling_den,Gambling Den,Canto das Apostas
+tutorial.training_grounds,"A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades.","Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder."
+tutorial.gambling_den,"Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards.","Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas máquinas em recompensas imediatas de ouro."
 ui.effects,Effects,Efeitos
 ui.no_effects,This unit has no special effects.,Esta unidade não possui efeitos especiais.
 ui.no_effect_details,No details available for this effect.,Nenhum detalhe disponível para este efeito.

@@ -208,7 +208,7 @@ func clear_content_area() -> void:
 		_current_content_node.queue_free()
 	_current_content_node = null
 
-func load_content(scene_resource: PackedScene) -> void:
+func load_content(scene_resource: PackedScene) -> Node:
 	clear_content_area()
 	var instance = scene_resource.instantiate()
 	_current_content_node = instance
@@ -216,6 +216,7 @@ func load_content(scene_resource: PackedScene) -> void:
 	
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
+	return instance
 
 func _sync_scene_background(scene_instance: Node) -> void:
 	"""Extract background texture from loaded scene and apply to full-screen SceneBackground"""

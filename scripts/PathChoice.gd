@@ -63,16 +63,17 @@ func _setup_boss_node(boss_level: int) -> void:
 
 ## Sets up the normal 3-option path choice for non-boss days.
 func _setup_normal_nodes() -> void:
-	var pool: Array[PathNodeDefinition] = []
-	
-	# Create a pool of potential node types
+	# Create potential node versions
 	var types = [
 		{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "weight": 100},
 		{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node", "weight": 30},
-		{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "weight": 50},
-		{"type": "REST", "subtype": "", "name": "ui.rest_node", "weight": 50}
+		{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "weight": 40},
+		{"type": "REST", "subtype": "", "name": "ui.rest_node", "weight": 40},
+		{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "weight": 50},
+		{"type": "GOLD", "subtype": "", "name": "ui.gambling_den_node", "weight": 60}
 	]
 	
+	var pool: Array[PathNodeDefinition] = []
 	for t in types:
 		var def = PathNodeDefinition.new()
 		def.node_type = t.type
@@ -81,8 +82,21 @@ func _setup_normal_nodes() -> void:
 		def.base_weight = t.weight
 		pool.append(def)
 	
-	# Use Director to draw 3 unique nodes
-	var selected_nodes = director.draw_unique_items(pool, director_run_state, 3)
+	# Draw 3 unique nodes one by one to ensure categorical uniqueness
+	var selected_nodes: Array[PathNodeDefinition] = []
+	for i in range(3):
+		if pool.is_empty():
+			break
+			
+		var drawn = director.draw_item(pool, director_run_state)
+		if is_instance_valid(drawn):
+			selected_nodes.append(drawn)
+			# Filter pool to remove any node with the same type/subtype pair
+			var next_pool: Array[PathNodeDefinition] = []
+			for p in pool:
+				if p.node_type != drawn.node_type or p.subtype != drawn.subtype:
+					next_pool.append(p)
+			pool = next_pool
 
 	for node_def in selected_nodes:
 		var node_view = NodeViewScene.instantiate()
