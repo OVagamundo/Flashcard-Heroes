@@ -409,9 +409,23 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 		"SHOP":
 			_enter_shop()
 		"REST":
-			# Use registered Main node
 			if is_instance_valid(_active_main_node):
-				_active_main_node.load_content(REST_SITE_SCENE)
+				var inst = _active_main_node.load_content(REST_SITE_SCENE)
+				if inst is ResourceSite:
+					inst.site_type = ResourceSite.SiteType.HP
+					inst.setup_site()
+		"DOJO":
+			if is_instance_valid(_active_main_node):
+				var inst = _active_main_node.load_content(REST_SITE_SCENE)
+				if inst is ResourceSite:
+					inst.site_type = ResourceSite.SiteType.PWR
+					inst.setup_site()
+		"GOLD":
+			if is_instance_valid(_active_main_node):
+				var inst = _active_main_node.load_content(REST_SITE_SCENE)
+				if inst is ResourceSite:
+					inst.site_type = ResourceSite.SiteType.GOLD
+					inst.setup_site()
 
 func _enter_shop() -> void:
 	_reroll_cost = 1

@@ -128,13 +128,13 @@ size_flags_horizontal = 4
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="HPMachine" type="Control" parent="VBoxContainer/MachinesArea"]
+[node name="Tier1Machine" type="Control" parent="VBoxContainer/MachinesArea"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/HPMachine"]
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier1Machine"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -143,7 +143,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/HPMachine"]
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier1Machine"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -163,7 +163,7 @@ theme_override_font_sizes/font_size = 18
 text = "HP"
 horizontal_alignment = 1
 
-[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/HPMachine"]
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier1Machine"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 100.0
@@ -180,15 +180,15 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
-text = "2 Tokens"
+text = "1 Token"
 
-[node name="PWRMachine" type="Control" parent="VBoxContainer/MachinesArea"]
+[node name="Tier2Machine" type="Control" parent="VBoxContainer/MachinesArea"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/PWRMachine"]
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier2Machine"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -197,7 +197,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/PWRMachine"]
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier2Machine"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -217,7 +217,7 @@ theme_override_font_sizes/font_size = 18
 text = "PWR"
 horizontal_alignment = 1
 
-[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/PWRMachine"]
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier2Machine"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 100.0
@@ -236,13 +236,13 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
 theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
 text = "2 Tokens"
 
-[node name="BothMachine" type="Control" parent="VBoxContainer/MachinesArea"]
+[node name="Tier3Machine" type="Control" parent="VBoxContainer/MachinesArea"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 mouse_filter = 0
 
-[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/BothMachine"]
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier3Machine"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -251,7 +251,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/BothMachine"]
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier3Machine"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -271,7 +271,7 @@ theme_override_font_sizes/font_size = 18
 text = "HP+PWR"
 horizontal_alignment = 1
 
-[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/BothMachine"]
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier3Machine"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 100.0
