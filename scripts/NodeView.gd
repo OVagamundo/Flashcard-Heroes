@@ -34,6 +34,7 @@ const MAX_PERSPECTIVE_Y: float = 0.15
 const CARD_TEXTURES = {
 	"BATTLE": "res://assets/ui/textures/BattlePath.png",
 	"SHOP": "res://assets/ui/textures/ShopCard.png",
+	"BLACK_MARKET": "res://assets/ui/textures/BlackMarketPath.png",
 	"REST": "res://assets/ui/textures/RestSitePath.png",
 	"DOJO": "res://assets/ui/textures/trainingGroundspath.png",
 	"GOLD": "res://assets/ui/textures/GamblingDenPath.png",
@@ -66,6 +67,8 @@ func populate(node_def) -> void:
 			bg_color = Color(0.6, 0.2, 0.2) # Battle Red
 	elif type == "SHOP":
 		bg_color = Color(0.5, 0.4, 0.2) # Shop Brown/Gold
+	elif type == "BLACK_MARKET":
+		bg_color = Color(0.12, 0.12, 0.12) # Black Market charcoal
 	elif type == "REST":
 		bg_color = Color(0.2, 0.3, 0.6) # Rest Blue
 	elif type == "DOJO":
@@ -109,8 +112,8 @@ func populate(node_def) -> void:
 		# No texture path, ensure label is visible
 		label.visible = true
 	
-	# Allow BATTLE, SHOP, REST, DOJO, and GOLD nodes to be enabled.
-	disabled = not (node_def.node_type in [&"BATTLE", &"SHOP", &"REST", &"DOJO", &"GOLD"])
+	# Allow supported path nodes to be enabled.
+	disabled = not (node_def.node_type in [&"BATTLE", &"SHOP", &"BLACK_MARKET", &"REST", &"DOJO", &"GOLD"])
 	_refresh_interaction_state()
 
 func _on_pressed() -> void:

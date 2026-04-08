@@ -215,11 +215,18 @@ ui.boss,Boss %d,Chefe %d
 ui.battle_node,Battle,Batalha
 ui.elite_battle_node,Elite Battle,Batalha de Elite
 ui.shop_node,Shop,Loja
+ui.black_market_node,Black Market,Mercado Negro
 ui.rest_node,Rest Site,Local de Descanso
 ui.training_grounds_node,Training Grounds,Campus de Treinamento
 ui.gambling_den_node,Gambling Den,Canto das Apostas
 ui.training_grounds,Training Grounds,Campus de Treinamento
 ui.gambling_den,Gambling Den,Canto das Apostas
+ui.black_market_title,Black Market,Mercado Negro
+ui.black_market_open_inventory,REMOVE OR TRANSFORM,REMOVER OU TRANSFORMAR
+ui.black_market_prompt,What would you like to do with %s?,O que você quer fazer com %s?
+ui.black_market_instructions,Drop a GachaBall here to Remove or Transform it for 5 Gold.,Solte uma GachaBall aqui para remover ou transformar por 5 de Ouro.
+ui.remove_cost,Remove (5 Gold),Remover (5 Ouro)
+ui.transform_cost,Transform (5 Gold),Transformar (5 Ouro)
 tutorial.training_grounds,"A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades.","Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder."
 tutorial.gambling_den,"Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards.","Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas máquinas em recompensas imediatas de ouro."
 ui.effects,Effects,Efeitos

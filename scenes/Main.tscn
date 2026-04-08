@@ -532,7 +532,7 @@ vertical_alignment = 2
 layer = 90
 
 [node name="BackgroundUILayer" type="CanvasLayer" parent="." groups=["background_ui_layer"]]
-layer = 40
+layer = 87
 
 [node name="ModalLayer" type="CanvasLayer" parent="." groups=["modal_layer"]]
 unique_name_in_owner = true
