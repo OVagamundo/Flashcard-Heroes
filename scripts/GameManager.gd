@@ -2,6 +2,7 @@
 extends Node
 
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
+const BLACK_MARKET_SCENE = preload("res://scenes/BlackMarket.tscn")
 const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 
 ## Manages the persistent state of the current run by holding a RunState resource.
@@ -408,6 +409,9 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				_active_main_node._on_battle_start_requested(encounter_def)
 		"SHOP":
 			_enter_shop()
+		"BLACK_MARKET":
+			if is_instance_valid(_active_main_node):
+				_active_main_node.load_content(BLACK_MARKET_SCENE)
 		"REST":
 			if is_instance_valid(_active_main_node):
 				var inst = _active_main_node.load_content(REST_SITE_SCENE)

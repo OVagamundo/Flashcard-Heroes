@@ -68,6 +68,7 @@ func _setup_normal_nodes() -> void:
 		{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "weight": 100},
 		{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node", "weight": 30},
 		{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "weight": 40},
+		{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "weight": 40},
 		{"type": "REST", "subtype": "", "name": "ui.rest_node", "weight": 40},
 		{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "weight": 50},
 		{"type": "GOLD", "subtype": "", "name": "ui.gambling_den_node", "weight": 60}

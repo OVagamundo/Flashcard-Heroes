@@ -403,6 +403,22 @@ func is_any_inventory_window_open() -> bool:
 			return true
 	return false
 
+func is_run_inventory_window_open() -> bool:
+	if not is_instance_valid(_persistent_inventory_window):
+		return false
+	return _persistent_inventory_window in _active_inspection_group \
+		and _persistent_inventory_window.visible \
+		and not (_persistent_inventory_window.has_meta(_WM_META_CLOSING) and bool(_persistent_inventory_window.get_meta(_WM_META_CLOSING)))
+
+func is_run_inventory_window_interactive() -> bool:
+	if not is_run_inventory_window_open():
+		return false
+	if _persistent_inventory_window.has_meta(_WM_META_OPENING) and bool(_persistent_inventory_window.get_meta(_WM_META_OPENING)):
+		return false
+	if _persistent_inventory_window.has_meta(_WM_META_CLOSING) and bool(_persistent_inventory_window.get_meta(_WM_META_CLOSING)):
+		return false
+	return true
+
 # Public helper queried by GIR to know if a view is part of the current inspection group.
 # Returns the index within `_active_inspection_group`, or -1 if not present.
 func find_window_in_group(view: Control) -> int:

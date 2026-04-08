@@ -40,6 +40,8 @@ var _is_drag_active: bool = false
 var _drag_origin_context: InteractionContext = null
 var _drag_source_view: Control = null
 var _drag_placeholder: Control = null
+var _drag_overlay_preview: Control = null
+var _drag_preview_layer: CanvasLayer = null
 var _suppress_close_parent_window_id: int = -1
 var _suppress_close_until_msec: int = 0
 var _is_ui_transitioning: bool = false
@@ -52,6 +54,7 @@ var _is_inspection_locked: bool = false # true = sticky window, hover cannot rep
 func _ready() -> void:
 	# Register as singleton
 	add_to_group("global_interaction_router")
+	set_process(true)
 	
 	# Get references to other managers
 	_window_manager = WindowManager
@@ -104,6 +107,10 @@ func _exit_tree() -> void:
 	if _window_manager and _window_manager.has_signal("window_closed"):
 		if _window_manager.is_connected("window_closed", _on_window_closed):
 			_window_manager.disconnect("window_closed", _on_window_closed)
+	_clear_drag_overlay_preview()
+	if is_instance_valid(_drag_preview_layer):
+		_drag_preview_layer.queue_free()
+	_drag_preview_layer = null
 
 ## Main entry point for processing interactions
 func _on_interaction_context_received(context: InteractionContext) -> void:
@@ -151,6 +158,10 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 
 	# Execute the command queue
 	_execute_command_queue(command_queue)
+
+func _process(_delta: float) -> void:
+	if is_instance_valid(_drag_overlay_preview):
+		_drag_overlay_preview.global_position = get_viewport().get_mouse_position()
 
 ## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
@@ -671,6 +682,10 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 	if selection_group == target_group:
 		return true
 
+	# Allow inventory click-to-act on the Black Market service slot.
+	if selection_group == &"InventoryGrid" and target.location.container == &"BlackMarket":
+		return true
+
 	# Allow equipping: Inventory -> Equipped
 	if selection_group == &"InventoryGrid" and target_group == &"EquippedGrid":
 		return true
@@ -685,11 +700,18 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
 	if not _window_manager:
 		return false
+	if _is_black_market_target_context(context):
+		return true
 	var view: Control = _find_view_by_instance_id(context.source_view_instance_id)
 	if not view:
 		return false
 	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
 	return is_instance_valid(parent_window)
+
+func _is_black_market_target_context(context: InteractionContext) -> bool:
+	if context == null or not is_instance_valid(context.location):
+		return false
+	return context.location.container == &"BlackMarket" and WindowManager.is_run_inventory_window_open()
 
 ## Temporary suppression after in-window actions: prevent closing the parent inspection window
 func _activate_close_suppression_for_view(view: Control, duration_msec: int = 200) -> void:
@@ -1057,8 +1079,32 @@ func _end_drag_visuals(was_handled: bool) -> void:
 		
 	if is_instance_valid(_drag_placeholder):
 		_drag_placeholder.queue_free()
+	_clear_drag_overlay_preview()
 	_drag_source_view = null
 	_drag_placeholder = null
+
+func set_drag_overlay_preview(preview: Control) -> void:
+	_clear_drag_overlay_preview()
+	if not is_instance_valid(preview):
+		return
+	_drag_overlay_preview = preview
+	_drag_overlay_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_get_drag_preview_layer().add_child(_drag_overlay_preview)
+	_drag_overlay_preview.global_position = get_viewport().get_mouse_position()
+
+func _clear_drag_overlay_preview() -> void:
+	if is_instance_valid(_drag_overlay_preview):
+		_drag_overlay_preview.queue_free()
+	_drag_overlay_preview = null
+
+func _get_drag_preview_layer() -> CanvasLayer:
+	if is_instance_valid(_drag_preview_layer):
+		return _drag_preview_layer
+	_drag_preview_layer = CanvasLayer.new()
+	_drag_preview_layer.name = "DragPreviewLayer"
+	_drag_preview_layer.layer = 1023
+	get_tree().root.add_child(_drag_preview_layer)
+	return _drag_preview_layer
 
 ## Public API: query drag active state
 func is_drag_active() -> bool:

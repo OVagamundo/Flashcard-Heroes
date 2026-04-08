@@ -627,6 +627,30 @@ func _prepare_drag_payload() -> Dictionary:
 		_original_icon_scale = icon_rect.scale
 		_original_icon_rotation = icon_rect.rotation
 
+	var drag_visual := _build_drag_preview_visual()
+	var engine_preview := _build_drag_engine_preview_stub()
+
+	_drag_preview = drag_visual
+	_drag_preview.scale = Vector2.ONE
+	_drag_preview.pivot_offset = Vector2.ZERO
+	_last_mouse_pos = get_global_mouse_position()
+
+	var placeholder = Control.new()
+	placeholder.custom_minimum_size = self.size
+	get_parent().add_child(placeholder)
+	get_parent().move_child(placeholder, get_index())
+
+	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
+	GlobalInteractionRouter.set_drag_overlay_preview(drag_visual)
+	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
+	GlobalInteractionRouter.start_drag(origin_ctx)
+
+	return {
+		"data": {"source_loc": _location},
+		"preview": engine_preview,
+	}
+
+func _build_drag_preview_visual() -> Control:
 	var drag_texture: Texture2D = icon_rect.texture
 	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
 	if unit_sprite and unit_sprite.texture:
@@ -641,6 +665,7 @@ func _prepare_drag_payload() -> Dictionary:
 	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 	preview_container.custom_minimum_size = container_size
+	preview_container.size = container_size
 
 	var preview = TextureRect.new()
 	preview.texture = drag_texture
@@ -683,24 +708,22 @@ func _prepare_drag_payload() -> Dictionary:
 			drag_mat.set_shader_parameter("outline_enabled", true)
 			preview.material = drag_mat
 
-	_drag_preview = preview_container
-	_drag_preview.scale = Vector2.ONE
-	_drag_preview.pivot_offset = Vector2.ZERO
-	_last_mouse_pos = get_global_mouse_position()
+	_set_preview_tree_mouse_ignore(preview_container)
+	return preview_container
 
-	var placeholder = Control.new()
-	placeholder.custom_minimum_size = self.size
-	get_parent().add_child(placeholder)
-	get_parent().move_child(placeholder, get_index())
+func _build_drag_engine_preview_stub() -> Control:
+	var preview_stub := Control.new()
+	preview_stub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview_stub.custom_minimum_size = Vector2.ONE
+	preview_stub.size = Vector2.ONE
+	preview_stub.modulate.a = 0.0
+	return preview_stub
 
-	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
-	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
-	GlobalInteractionRouter.start_drag(origin_ctx)
-
-	return {
-		"data": {"source_loc": _location},
-		"preview": preview_container,
-	}
+func _set_preview_tree_mouse_ignore(node: Node) -> void:
+	if node is Control:
+		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_set_preview_tree_mouse_ignore(child)
 
 func _animate_hover_to(target: float, duration: float) -> void:
 	if is_instance_valid(_hover_tween):
@@ -1561,101 +1584,11 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	# Preserve the original desktop drag setup order so the engine-managed
-	# drag preview behaves exactly as it did before the mobile touch work.
-	if not _is_interactive:
+	var drag_payload := _prepare_drag_payload()
+	if drag_payload.is_empty():
 		return null
-	if GlobalInteractionRouter and GlobalInteractionRouter.is_combat_locked():
-		return null
-	if is_instance_valid(_location):
-		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
-		if context_group == &"InspectionOnly":
-			return null
-
-	_drag_initiated_for_click = true
-	_pressed_pending_click = false
-
-	_is_dragging = true
-	_drag_first_frame = true
-	_last_mouse_pos = get_global_mouse_position()
-	_drag_velocity = Vector2.ZERO
-	if is_instance_valid(icon_rect):
-		_original_icon_scale = icon_rect.scale
-		_original_icon_rotation = icon_rect.rotation
-
-	var drag_texture: Texture2D = icon_rect.texture
-	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-	if unit_sprite and unit_sprite.texture:
-		drag_texture = unit_sprite.texture
-
-	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
-	var preview_size = Vector2(current_slot_size, current_slot_size)
-	var container_size = preview_size * 2.0
-	var offset = -preview_size / 2.0
-
-	var preview_container = Control.new()
-	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
-	preview_container.custom_minimum_size = container_size
-
-	var preview = TextureRect.new()
-	preview.texture = drag_texture
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_SCALE
-	_match_icon_texture_filter(preview)
-	if _has_overlay_heuristic():
-		var current_unit_size = (float(C.UNIT_SPRITE_SIZE) / 2.0) * _size_scale
-		var unit_size = Vector2(current_unit_size, current_unit_size)
-		preview.custom_minimum_size = unit_size
-		preview.size = unit_size
-		preview.position = offset + (preview_size - unit_size) / 2.0
-	else:
-		preview.custom_minimum_size = preview_size
-		preview.size = preview_size
-		preview.position = offset
-	preview_container.add_child(preview)
-
-	if _has_overlay_heuristic():
-		var overlay_texture = load(GACHABALL_OVERLAY_PATH)
-		if overlay_texture:
-			var overlay_preview = TextureRect.new()
-			overlay_preview.texture = overlay_texture
-			overlay_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			overlay_preview.stretch_mode = TextureRect.STRETCH_SCALE
-			overlay_preview.custom_minimum_size = preview_size
-			overlay_preview.size = preview_size
-			overlay_preview.position = offset
-			preview_container.add_child(overlay_preview)
-			preview_container.move_child(overlay_preview, 0)
-			GachaBallCapsuleGlow.apply_to_texture_rect(overlay_preview)
-
-		if _is_selected and icon_rect.material:
-			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
-			drag_mat.set_shader_parameter("outline_enabled", true)
-			preview.material = drag_mat
-	else:
-		if icon_rect.material:
-			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
-			drag_mat.set_shader_parameter("outline_enabled", true)
-			preview.material = drag_mat
-
-	_drag_preview = preview_container
-	_drag_preview.scale = Vector2.ONE
-	_drag_preview.pivot_offset = Vector2.ZERO
-	_last_mouse_pos = get_global_mouse_position()
-	set_drag_preview(preview_container)
-
-	var placeholder = Control.new()
-	placeholder.custom_minimum_size = self.size
-	get_parent().add_child(placeholder)
-	get_parent().move_child(placeholder, get_index())
-
-	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
-
-	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
-	GlobalInteractionRouter.start_drag(origin_ctx)
-
-	return {"source_loc": _location}
+	set_drag_preview(drag_payload["preview"])
+	return drag_payload["data"]
 
 func _can_drop_data(_at_position, data) -> bool:
 	# TDD 4.3.III.5: Prevent dropping in Inspection-Only contexts
