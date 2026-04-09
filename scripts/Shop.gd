@@ -5,6 +5,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
+const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
 @onready var buy_button: Button = %BuyButton
@@ -31,9 +32,20 @@ func _ready() -> void:
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
+	_mark_shop_action_buttons()
 	
 	# AUDIO HOOK: Shop BGM
 	Audio.play_music(SoundRegistry.BGM_SHOP)
+
+func _mark_shop_action_buttons() -> void:
+	_mark_action_button_for_inspection_avoidance(buy_button)
+	_mark_action_button_for_inspection_avoidance(reroll_button)
+	_mark_action_button_for_inspection_avoidance(leave_button)
+
+func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
+	if not is_instance_valid(button):
+		return
+	button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Shop")
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")

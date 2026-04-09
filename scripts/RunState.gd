@@ -12,6 +12,7 @@ extends Resource
 @export var elites_defeated: int = 0
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
+@export var black_market_remove_cost: int = 5
 @export var hero_instance: GachaBallInstance
 
 # Recipe unlock tracking (per-run) - key: recipe_id (StringName), value: bool (unlocked)
@@ -571,6 +572,13 @@ func spend_gold(amount: int) -> bool:
 	SignalBus.emit_signal("run_data_changed")
 	return true
 
+func get_black_market_remove_cost() -> int:
+	return max(5, black_market_remove_cost)
+
+func increase_black_market_remove_cost() -> void:
+	black_market_remove_cost = get_black_market_remove_cost() + 1
+	SignalBus.emit_signal("run_data_changed")
+
 
 func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
 	# Equips an item onto a unit, filling first empty slot if not specified.
@@ -707,6 +715,7 @@ func start_new_run() -> void:
 	elites_defeated = 0
 	total_enemies_defeated = 0
 	total_gold_earned = 0
+	black_market_remove_cost = 5
 	run_instances.clear()
 	_containers.clear()
 	flashcard_progress.clear()
@@ -893,6 +902,7 @@ func to_save_dict() -> Dictionary:
 		"elites_defeated": elites_defeated,
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
+		"black_market_remove_cost": black_market_remove_cost,
 		"deck_def_id": String(deck_def_id),
 		"cards_presented_count": cards_presented_count,
 		# Serialize all instances
@@ -927,6 +937,7 @@ func from_save_dict(data: Dictionary) -> void:
 	elites_defeated = data.get("elites_defeated", 0)
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
+	black_market_remove_cost = data.get("black_market_remove_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
 	cards_presented_count = data.get("cards_presented_count", 0)
 	

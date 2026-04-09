@@ -100,7 +100,20 @@ func _reposition_window() -> void:
 	
 	# Priority 1: Centering
 	if page.get("center", false):
-		popup_panel.global_position = (viewport_size - panel_size) / 2.0
+		var centered_position := (viewport_size - panel_size) / 2.0
+		if is_instance_valid(_anchor):
+			var popup_rect := Rect2(centered_position, panel_size)
+			var anchor_rect := _anchor.get_global_rect()
+			if popup_rect.intersects(anchor_rect):
+				var below_y := anchor_rect.end.y + WINDOW_MARGIN
+				var above_y := anchor_rect.position.y - panel_size.y - WINDOW_MARGIN
+				if below_y <= viewport_size.y - panel_size.y - WINDOW_MARGIN:
+					centered_position.y = below_y
+				elif above_y >= WINDOW_MARGIN:
+					centered_position.y = above_y
+				else:
+					centered_position.y = clampf(centered_position.y, WINDOW_MARGIN, viewport_size.y - panel_size.y - WINDOW_MARGIN)
+		popup_panel.global_position = centered_position
 		return
 	
 	# Priority 2: Corner cases (independent of anchor)
