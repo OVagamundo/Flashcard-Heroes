@@ -27,6 +27,9 @@ var _color_tween: Tween = null
 var _deform_tween: Tween = null
 var _move_tween: Tween = null
 var _move_original_position: Vector2 = Vector2.ZERO
+var _move_original_local_position: Vector2 = Vector2.ZERO
+var _move_original_size: Vector2 = Vector2.ZERO
+var _move_original_top_level: bool = false
 
 func _ready() -> void:
 	_view = get_parent() as GachaBallView
@@ -138,6 +141,20 @@ func _reset_sprite_scale() -> void:
 	var sprite := _get_sprite()
 	if is_instance_valid(sprite):
 		sprite.scale = Vector2.ONE
+
+func _restore_move_layout_state() -> void:
+	if not is_instance_valid(_view):
+		return
+
+	_view.top_level = _move_original_top_level
+	if _move_original_top_level:
+		_view.global_position = _move_original_position
+	else:
+		# Restore the original local layout state so container-managed slots do not
+		# accumulate offsets after temporary top-level animations.
+		_view.position = _move_original_local_position
+		if _move_original_size != Vector2.ZERO:
+			_view.size = _move_original_size
 
 # Legacy alias for compatibility
 func _reset_icon_scale() -> void:
@@ -302,10 +319,17 @@ func play_selection_bounce() -> void:
 	if not is_inside_tree():
 		return
 		
+	var uuid = _get_uuid()
+	var loc: LocationIdentifier = _view.get_meta("location_identifier", null)
+	if is_instance_valid(loc) and GlobalInteractionRouter.get_context_group(loc.container) == &"SelectionOnly":
+		# Selection-only rows like Shop/Rewards live inside container-managed slots.
+		# Keep their feedback local so the scene layout never accumulates drift.
+		_on_unit_deform(uuid, &"LANDING_BOUNCE")
+		return
+
 	# Reuse standard HOP animation (Move + Deform)
 	# This ensures correct pivot handling (_ensure_pivot called in deform)
 	# and consistent physics with other hop/bounce effects.
-	var uuid = _get_uuid()
 	_on_unit_move(uuid, &"HOP", Vector2.ZERO)
 	_on_unit_deform(uuid, &"HOP_DEFORM")
 
@@ -676,11 +700,13 @@ func _on_unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
 	# Kill existing move tween
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
-		_view.top_level = false
-		_view.global_position = _move_original_position
+		_restore_move_layout_state()
 	
 	# CRITICAL: Capture global position BEFORE detaching from parent
 	_move_original_position = _view.global_position
+	_move_original_local_position = _view.position
+	_move_original_size = _view.size
+	_move_original_top_level = _view.top_level
 	
 	# Detach from parent layout - this changes coordinate space!
 	_view.top_level = true
@@ -707,7 +733,6 @@ func _on_unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
 			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.scaled(AC.BUMP_RETURN_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
 	_move_tween.finished.connect(func():
-		_view.top_level = false
-		_view.global_position = _move_original_position
+		_restore_move_layout_state()
 		SignalBus.emit_signal("unit_move_finished", _get_uuid())
 	)

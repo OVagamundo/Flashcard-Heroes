@@ -2,6 +2,8 @@
 extends Node
 
 const INSPECTION_WINDOW_MARGIN = 20.0
+const ACTION_BUTTON_AVOID_MARGIN = 12.0
+const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
 var _window_scenes: Dictionary = {
 	# --- Hermetic Modals (Managed by _modal_stack, use open_modal_window) ---
@@ -510,6 +512,9 @@ func _open_contextual_window(context: Dictionary) -> void:
 	
 	window_instance.z_index = 100 # Render above local z-index elevations
 	window_instance.set_meta("window_type", window_type) # Tag for identification
+	var action_button_avoid_scope: StringName = StringName(context.get(ACTION_BUTTON_AVOID_SCOPE_META, &""))
+	if action_button_avoid_scope != &"":
+		window_instance.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, action_button_avoid_scope)
 	
 	_register_window(window_instance, false) # Register as NON-modal.
 	_active_inspection_group.push_back(window_instance)
@@ -529,7 +534,7 @@ func _open_contextual_window(context: Dictionary) -> void:
 		var loc: LocationIdentifier = populate_context.get("location")
 		if loc == null:
 			loc = populate_context.get("target_location")
-		_track_inspection_anchor(window_instance, anchor_view, loc)
+		_track_inspection_anchor(window_instance, anchor_view, loc, pos_hint)
 
 
 # --- HELPER FUNCTIONS ---
@@ -547,33 +552,7 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
 	if not is_instance_valid(window): return
 
-	var position: Vector2
-	# SIMPLIFIED RULE: If a parent window is provided, ALWAYS position relative to it.
-	# This makes child windows independent of scene structure and canvas layers of anchors.
-	if is_instance_valid(parent_window):
-		# If caller requests parent-based placement (e.g., equipped items), ignore anchor.
-		if pos_hint == "use_parent_window":
-			position = _calculate_child_window_position(parent_window, window)
-		# Prefer anchor-relative placement when anchor is available; clamp to viewport.
-		elif is_instance_valid(anchor):
-			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
-		else:
-			position = _calculate_child_window_position(parent_window, window)
-	elif is_instance_valid(anchor):
-		# Root-anchored windows (no parent): allow specific hints; otherwise use general placement
-		if pos_hint == "center_over_anchor":
-			position = _calculate_centered_over_anchor(anchor, window)
-		elif pos_hint == "top_center_over_anchor":
-			position = _calculate_top_center_over_anchor(anchor, window)
-		elif pos_hint == "left_of_anchor":
-			position = _calculate_left_of_anchor(anchor, window)
-		else:
-			position = _calculate_window_position(anchor, window)
-	else: # It's a root fixed-position window (Inventory, etc.)
-		var viewport_rect = get_viewport().get_visible_rect()
-		var vp_pos: Vector2 = Vector2(viewport_rect.position)
-		var vp_size: Vector2 = Vector2(viewport_rect.size)
-		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
+	var position := _calculate_contextual_window_position(anchor, parent_window, window, pos_hint)
 
 	# Set position in screen space accounting for canvas transforms
 	_set_window_screen_position(window, position)
@@ -586,29 +565,7 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 	
 	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
 	if not is_instance_valid(window): return
-	var position: Vector2
-	# Keep the simplified parent-first rule for child windows
-	if is_instance_valid(parent_window):
-		if pos_hint == "use_parent_window":
-			position = _calculate_child_window_position(parent_window, window)
-		elif is_instance_valid(anchor):
-			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
-		else:
-			position = _calculate_child_window_position(parent_window, window)
-	elif is_instance_valid(anchor):
-		if pos_hint == "center_over_anchor":
-			position = _calculate_centered_over_anchor(anchor, window)
-		elif pos_hint == "top_center_over_anchor":
-			position = _calculate_top_center_over_anchor(anchor, window)
-		elif pos_hint == "left_of_anchor":
-			position = _calculate_left_of_anchor(anchor, window)
-		else:
-			position = _calculate_window_position(anchor, window)
-	else:
-		var viewport_rect = get_viewport().get_visible_rect()
-		var vp_pos: Vector2 = Vector2(viewport_rect.position)
-		var vp_size: Vector2 = Vector2(viewport_rect.size)
-		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
+	var position := _calculate_contextual_window_position(anchor, parent_window, window, pos_hint)
 	_set_window_screen_position(window, position)
 	_set_window_screen_position(window, position)
 	_animate_window_open(window)
@@ -747,6 +704,13 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 		window_type = &"EffectInspection"
 		context = {"source_view": source_view, "effect_definition": effect_def}
 	else: return {}
+
+	if is_instance_valid(loc) and loc.container in [&"Shop", &"Rewards"]:
+		# Keep reward/shop inspection windows above the selected slot so they do not
+		# cover the action buttons needed to confirm or buy the selection.
+		payload["positioning_hint"] = "top_center_over_anchor"
+		payload[ACTION_BUTTON_AVOID_SCOPE_META] = loc.container
+
 	payload["window_type"] = window_type
 	payload["context"] = context
 	return payload
@@ -757,11 +721,11 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
  #   `anchor_view != null` (lines where we gate the tracking).
  # - Child windows do NOT track anchors (their position is derived from parent).
  # - Root fixed-position windows (e.g., Inventory) also do NOT track anchors.
-func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: LocationIdentifier) -> void:
+func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: LocationIdentifier, pos_hint: String = "") -> void:
 	if not is_instance_valid(window_instance) or not is_instance_valid(anchor): return
 	var window_id = window_instance.get_instance_id()
 	var anchor_id = anchor.get_instance_id()
-	var geom_callable := Callable(self , "_on_inspection_anchor_moved").bind(window_id, anchor_id)
+	var geom_callable := Callable(self , "_on_inspection_anchor_moved").bind(window_id, anchor_id, pos_hint)
 	if not anchor.is_connected("item_rect_changed", geom_callable):
 		anchor.item_rect_changed.connect(geom_callable, CONNECT_DEFERRED)
 	var freed_callable := Callable(self , "_on_inspection_anchor_freed").bind(window_id, anchor_id, loc, geom_callable)
@@ -786,11 +750,11 @@ func stop_tracking_window(window_id: int) -> void:
 			anchor.tree_exited.disconnect(tracking_info["freed_callable"])
 	_tracked_windows.erase(window_id)
 
-func _on_inspection_anchor_moved(window_id: int, anchor_id: int) -> void:
+func _on_inspection_anchor_moved(window_id: int, anchor_id: int, pos_hint: String = "") -> void:
 	var window_instance = instance_from_id(window_id) as Control
 	var anchor = instance_from_id(anchor_id) as Control
 	if is_instance_valid(anchor) and is_instance_valid(window_instance):
-		var pos: Vector2 = _calculate_window_position(anchor, window_instance)
+		var pos := _calculate_contextual_window_position(anchor, null, window_instance, pos_hint)
 		_set_window_screen_position(window_instance, pos)
 
 
@@ -941,21 +905,38 @@ func _calculate_left_of_anchor(anchor: Control, new_window: Control) -> Vector2:
 func _get_screen_rect(ctrl: Control) -> Rect2:
 	if not is_instance_valid(ctrl):
 		return Rect2()
-	var size := ctrl.size
+	var size: Vector2 = ctrl.size
 	if size == Vector2.ZERO:
-		var min_sz := ctrl.get_combined_minimum_size()
+		var min_sz: Vector2 = ctrl.get_combined_minimum_size()
 		if min_sz != Vector2.ZERO:
 			size = min_sz
-	var xf := ctrl.get_global_transform_with_canvas()
+	var xf: Transform2D = ctrl.get_global_transform_with_canvas()
 	var p0: Vector2 = xf * Vector2(0, 0)
 	var p1: Vector2 = xf * Vector2(size.x, 0)
 	var p2: Vector2 = xf * Vector2(0, size.y)
 	var p3: Vector2 = xf * Vector2(size.x, size.y)
-	var min_x = min(p0.x, min(p1.x, min(p2.x, p3.x)))
-	var max_x = max(p0.x, max(p1.x, max(p2.x, p3.x)))
-	var min_y = min(p0.y, min(p1.y, min(p2.y, p3.y)))
-	var max_y = max(p0.y, max(p1.y, max(p2.y, p3.y)))
-	return Rect2(Vector2(min_x, min_y), Vector2(max_x - min_x, max_y - min_y))
+	var min_x: float = min(p0.x, min(p1.x, min(p2.x, p3.x)))
+	var max_x: float = max(p0.x, max(p1.x, max(p2.x, p3.x)))
+	var min_y: float = min(p0.y, min(p1.y, min(p2.y, p3.y)))
+	var max_y: float = max(p0.y, max(p1.y, max(p2.y, p3.y)))
+	var rect: Rect2 = Rect2(Vector2(min_x, min_y), Vector2(max_x - min_x, max_y - min_y))
+	var viewport: Viewport = ctrl.get_viewport()
+	var root_viewport: Viewport = get_viewport()
+	if viewport != root_viewport and viewport is SubViewport:
+		var viewport_host: Node = viewport.get_parent()
+		if viewport_host is SubViewportContainer:
+			var host_rect: Rect2 = _get_screen_rect(viewport_host as Control)
+			var viewport_size: Vector2 = Vector2(viewport.size)
+			if viewport_size.x > 0.0 and viewport_size.y > 0.0:
+				var scale: Vector2 = Vector2(
+					host_rect.size.x / viewport_size.x,
+					host_rect.size.y / viewport_size.y
+				)
+				rect.position = host_rect.position + rect.position * scale
+				rect.size *= scale
+			else:
+				rect.position += host_rect.position
+	return rect
 
 func _set_window_screen_position(window: Control, screen_pos: Vector2) -> void:
 	# Convert a desired screen-space top-left position into the window's parent/canvas space
@@ -1001,6 +982,175 @@ func _calculate_child_window_position(parent_window: Control, child_window: Cont
 	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - child_sz.x - margin)
 	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
 	return Vector2(x, y)
+
+func _calculate_contextual_window_position(anchor: Control, parent_window: Control, window: Control, pos_hint: String = "") -> Vector2:
+	var position: Vector2
+	if is_instance_valid(parent_window):
+		if pos_hint == "use_parent_window":
+			position = _calculate_child_window_position(parent_window, window)
+		elif is_instance_valid(anchor):
+			position = _calculate_child_window_position_from_anchor(parent_window, anchor, window)
+		else:
+			position = _calculate_child_window_position(parent_window, window)
+	elif is_instance_valid(anchor):
+		if pos_hint == "center_over_anchor":
+			position = _calculate_centered_over_anchor(anchor, window)
+		elif pos_hint == "top_center_over_anchor":
+			position = _calculate_top_center_over_anchor(anchor, window)
+		elif pos_hint == "left_of_anchor":
+			position = _calculate_left_of_anchor(anchor, window)
+		else:
+			position = _calculate_window_position(anchor, window)
+	else:
+		var viewport_rect: Rect2 = get_viewport().get_visible_rect()
+		var vp_pos: Vector2 = Vector2(viewport_rect.position)
+		var vp_size: Vector2 = Vector2(viewport_rect.size)
+		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
+	
+	return _resolve_action_button_safe_position(window, position, anchor)
+
+func _resolve_action_button_safe_position(window: Control, desired_pos: Vector2, anchor: Control = null) -> Vector2:
+	var window_size: Vector2 = _get_window_size(window)
+	var clamped_desired: Vector2 = _clamp_window_to_viewport(desired_pos, window_size)
+	var avoid_scope: StringName = _get_action_button_avoid_scope(window)
+	if avoid_scope == &"":
+		return clamped_desired
+	
+	var blocked_rects: Array[Rect2] = _get_visible_action_button_rects(window, avoid_scope)
+	if blocked_rects.is_empty():
+		return clamped_desired
+	
+	var desired_rect: Rect2 = Rect2(clamped_desired, window_size)
+	if not _rect_overlaps_any(desired_rect, blocked_rects):
+		return clamped_desired
+	
+	var candidates: Array[Vector2] = []
+	_append_unique_window_candidate(candidates, clamped_desired)
+	
+	var anchor_rect: Rect2 = Rect2()
+	var has_anchor_rect: bool = is_instance_valid(anchor)
+	if has_anchor_rect:
+		anchor_rect = _get_screen_rect(anchor)
+		_append_unique_window_candidate(candidates, _calculate_top_center_over_anchor(anchor, window))
+		_append_unique_window_candidate(candidates, _calculate_left_of_anchor(anchor, window))
+		_append_unique_window_candidate(candidates, _calculate_window_position(anchor, window))
+		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+			Vector2(anchor_rect.get_center().x - window_size.x / 2.0, anchor_rect.end.y + INSPECTION_WINDOW_MARGIN),
+			window_size
+		))
+	
+	for blocked_rect in blocked_rects:
+		if not desired_rect.intersects(blocked_rect):
+			continue
+		
+		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+			Vector2(clamped_desired.x, blocked_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN),
+			window_size
+		))
+		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+			Vector2(clamped_desired.x, blocked_rect.end.y + INSPECTION_WINDOW_MARGIN),
+			window_size
+		))
+		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+			Vector2(blocked_rect.position.x - window_size.x - INSPECTION_WINDOW_MARGIN, clamped_desired.y),
+			window_size
+		))
+		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+			Vector2(blocked_rect.end.x + INSPECTION_WINDOW_MARGIN, clamped_desired.y),
+			window_size
+		))
+		
+		if has_anchor_rect:
+			var centered_x: float = anchor_rect.get_center().x - window_size.x / 2.0
+			_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+				Vector2(centered_x, blocked_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN),
+				window_size
+			))
+			_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
+				Vector2(centered_x, blocked_rect.end.y + INSPECTION_WINDOW_MARGIN),
+				window_size
+			))
+	
+	var best_pos: Vector2 = clamped_desired
+	var best_overlap: float = INF
+	var best_distance: float = INF
+	for candidate in candidates:
+		var clamped_candidate: Vector2 = _clamp_window_to_viewport(candidate, window_size)
+		var overlap_area: float = _total_overlap_area(Rect2(clamped_candidate, window_size), blocked_rects)
+		var distance_score: float = clamped_candidate.distance_squared_to(clamped_desired)
+		if overlap_area < best_overlap - 0.01:
+			best_overlap = overlap_area
+			best_distance = distance_score
+			best_pos = clamped_candidate
+		elif is_equal_approx(overlap_area, best_overlap) and distance_score < best_distance:
+			best_distance = distance_score
+			best_pos = clamped_candidate
+	
+	return best_pos
+
+func _get_action_button_avoid_scope(window: Control) -> StringName:
+	if not is_instance_valid(window):
+		return &""
+	if not window.has_meta(ACTION_BUTTON_AVOID_SCOPE_META):
+		return &""
+	return StringName(window.get_meta(ACTION_BUTTON_AVOID_SCOPE_META))
+
+func _get_visible_action_button_rects(exclude_window: Control, avoid_scope: StringName) -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	var nodes: Array[Node] = [get_tree().root]
+	var viewport_rect: Rect2 = get_viewport().get_visible_rect()
+	
+	while not nodes.is_empty():
+		var node: Node = nodes.pop_back() as Node
+		for child in node.get_children():
+			nodes.push_back(child)
+		
+		if not (node is BaseButton):
+			continue
+		
+		var button: BaseButton = node as BaseButton
+		if not is_instance_valid(button) or not button.is_visible_in_tree():
+			continue
+		if not button.has_meta(ACTION_BUTTON_AVOID_SCOPE_META):
+			continue
+		var button_scope: StringName = StringName(button.get_meta(ACTION_BUTTON_AVOID_SCOPE_META))
+		if button_scope != avoid_scope:
+			continue
+		if button.mouse_filter == Control.MOUSE_FILTER_IGNORE:
+			continue
+		if is_instance_valid(exclude_window) and exclude_window.is_ancestor_of(button):
+			continue
+		
+		var rect: Rect2 = _get_screen_rect(button)
+		if rect.size == Vector2.ZERO:
+			continue
+		rect = rect.grow(ACTION_BUTTON_AVOID_MARGIN)
+		if not rect.intersects(viewport_rect):
+			continue
+		rects.append(rect)
+	
+	return rects
+
+func _rect_overlaps_any(rect: Rect2, blocked_rects: Array[Rect2]) -> bool:
+	for blocked_rect in blocked_rects:
+		if rect.intersects(blocked_rect):
+			return true
+	return false
+
+func _total_overlap_area(rect: Rect2, blocked_rects: Array[Rect2]) -> float:
+	var area: float = 0.0
+	for blocked_rect in blocked_rects:
+		if not rect.intersects(blocked_rect):
+			continue
+		var overlap: Rect2 = rect.intersection(blocked_rect)
+		area += overlap.size.x * overlap.size.y
+	return area
+
+func _append_unique_window_candidate(candidates: Array[Vector2], candidate: Vector2) -> void:
+	for existing in candidates:
+		if existing.distance_squared_to(candidate) < 1.0:
+			return
+	candidates.append(candidate)
 
 func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):

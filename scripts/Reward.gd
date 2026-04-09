@@ -1,20 +1,17 @@
 extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
-const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
-const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
+const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
 @onready var confirm_button: Button = %ConfirmSelectionButton
 @onready var gold_button: Button = %TakeGoldButton
 @onready var back_to_path_button: Button = %BackToPathButton
-@onready var reroll_button: Button = %RerollButton
 
 var _reward_uuids: Array[String] = []
 var _gold_amount: int = 0
-var _current_reroll_cost: int = 1
 
 func _ready() -> void:
 	# AUDIO HOOK: Reward BGM
@@ -26,7 +23,6 @@ func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	gold_button.pressed.connect(_on_gold_pressed)
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
-	reroll_button.pressed.connect(_on_reroll_pressed)
 	
 	# Add global input handling for closing inspection windows
 	gui_input.connect(_on_gui_input)
@@ -34,12 +30,22 @@ func _ready() -> void:
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
+	_mark_reward_action_buttons()
+
+func _mark_reward_action_buttons() -> void:
+	_mark_action_button_for_inspection_avoidance(confirm_button)
+	_mark_action_button_for_inspection_avoidance(gold_button)
+	_mark_action_button_for_inspection_avoidance(back_to_path_button)
+
+func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
+	if not is_instance_valid(button):
+		return
+	button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.choose_reward")
 	confirm_button.text = tr("ui.confirm_selection")
 	back_to_path_button.text = tr("ui.back_to_path")
-	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 	# Gold button text is set in populate() with the amount
 
 # This is a public function called by Main.gd at the correct time.
@@ -48,7 +54,6 @@ func populate(context: Dictionary) -> void:
 	# Get reward instances and gold amount from the context
 	var reward_instances: Array = context.get("reward_instances", [])
 	_gold_amount = context.get("gold_amount", 0)
-	_current_reroll_cost = context.get("reroll_cost", 1)
 
 	# Derive the UUIDs from the instances passed in the context
 	_reward_uuids.clear()
@@ -57,25 +62,10 @@ func populate(context: Dictionary) -> void:
 			_reward_uuids.append(inst.ball_uuid)
 	
 	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
-	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 	
-	# ROBUSTNESS: Ensure buttons are visible when replenishing stock
-	# (They might have been hidden by _on_confirm_pressed logic previously)
 	confirm_button.visible = true
 	gold_button.visible = true
-	back_to_path_button.visible = false # Logic dictates back button hides when selection is active, but actually we want "confirm" or "back/skip"?
-	# ACTUALLY: The design is:
-	# - Default state: Show [Take Gold] [Reroll] [Back to Path]
-	# - Selection state: [Take Gold] [Reroll] [Confirm] (Back hidden?)
-	# Let's check _on_selection_changed.
-	# _on_selection_changed toggles confirm_button.disabled.
-	# It DOES NOT toggle visibility of back/gold.
-	
-	# Let's restore the default state:
-	confirm_button.visible = true
-	gold_button.visible = true
-	back_to_path_button.visible = true # Back to Path is always an option unless we are in the "confirmed" state (which closes the scene)
-	reroll_button.visible = true
+	back_to_path_button.visible = true
 
 
 	var slot_nodes = choices_container.get_children()
@@ -238,116 +228,6 @@ func _on_back_to_path_pressed() -> void:
 	SignalBus.emit_signal("path_choice_scene_requested")
 	# The reward scene has served its purpose and should be removed.
 	queue_free()
-
-func _on_reroll_pressed() -> void:
-	# PRE-VALIDATION: Check if player has enough gold BEFORE animating
-	var current_gold: int = 0
-	if is_instance_valid(GameManager.run_state):
-		current_gold = GameManager.run_state.gold
-	
-	if current_gold < _current_reroll_cost:
-		# Insufficient funds - shake button and gold counter
-		# Fix: get_nodes_in_group returns Array, but play_rejection_with_counter expects Control
-		var main_node = GameManager._active_main_node
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-		
-		# Fallback if unique name not found, try group list first element
-		if not is_instance_valid(gold_group):
-			var group_nodes = get_tree().get_nodes_in_group("gold_counter_group")
-			if group_nodes.size() > 0:
-				gold_group = group_nodes[0]
-				
-		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
-		return
-	
-	# Disable button during animation
-	reroll_button.disabled = true
-	# Animate gold coins then reroll
-	_animate_gold_spend(_current_reroll_cost, reroll_button, func():
-		# This callback is safe because _animate_gold_spend binds its tweens/timers to the scene
-		if is_instance_valid(reroll_button):
-			SignalBus.emit_signal("reward_reroll_requested")
-			# AUDIO HOOK: Reroll
-			Audio.play_sfx("shop_reroll")
-			reroll_button.disabled = false
-	)
-
-func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callable) -> void:
-	"""Animate gold coins flying from gold counter to target button"""
-	# Find gold counter in Main
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		on_complete.call()
-		return
-	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		on_complete.call()
-		return
-	
-	# Effect layer for particles
-	var effects_layer = main_node.get_node_or_null("EffectsLayer")
-	if not is_instance_valid(effects_layer):
-		on_complete.call()
-		return
-	
-	# Spawn gold coins with stagger
-	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
-	var start_pos = gold_group.global_position + gold_group.size / 2
-	var target_pos = target_button.global_position + target_button.size / 2
-	
-	# CONVERSION: Button is in SubViewport, animations are in Screen Space (Main)
-	if is_instance_valid(main_node):
-		var content_area = main_node.get_node_or_null("%ContentArea")
-		if is_instance_valid(content_area):
-			target_pos += content_area.global_position
-	var stagger_delay = 0.08
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		add_child(coin_vfx)
-		
-		# Connect to trigger button reaction
-		coin_vfx.coin_landed.connect(_on_gold_landed_on_button.bind(target_button))
-		
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-		# AUDIO HOOK: Coin Spawn
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05)) # Pitch up slightly for each coin
-	
-	# Wait for animations then call completion callback
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
-	
-	# Use a tween for the delay so it's bound to this node's lifecycle
-	# If this node is freed, the tween stops and the callback is never called, preventing the "freed object" error
-	var delay_tween = create_tween()
-	delay_tween.tween_interval(total_wait)
-	delay_tween.tween_callback(on_complete)
-
-func _on_gold_landed_on_button(_target_pos: Vector2, button: Button) -> void:
-	"""React when a gold coin lands on a button - flash and bounce"""
-	# AUDIO HOOK: Coin Land
-	Audio.play_sfx("coin_land")
-	
-	if not is_instance_valid(button):
-		return
-	
-	# Set pivot for scaling from center
-	button.pivot_offset = button.size / 2
-	
-	# Create bounce and flash effect
-	var reaction_tween = create_tween()
-	reaction_tween.set_parallel(true)
-	
-	# Quick scale bounce
-	reaction_tween.tween_property(button, "scale", Vector2(1.05, 0.95), 0.03)
-	reaction_tween.tween_property(button, "scale", Vector2(0.97, 1.03), 0.05).set_delay(0.03)
-	reaction_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.08).set_trans(Tween.TRANS_ELASTIC)
-	
-	# Flash bright gold
-	var flash_color = Color(1.3, 1.2, 0.8, 1.0)
-	reaction_tween.tween_property(button, "modulate", flash_color, 0.03)
-	reaction_tween.tween_property(button, "modulate", Color.WHITE, 0.1).set_delay(0.03)
 
 func _on_gui_input(event: InputEvent) -> void:
 	# Handle background clicks using the new InteractionContext system

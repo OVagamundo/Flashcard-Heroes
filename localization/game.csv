@@ -224,9 +224,11 @@ ui.gambling_den,Gambling Den,Canto das Apostas
 ui.black_market_title,Black Market,Mercado Negro
 ui.black_market_open_inventory,REMOVE OR TRANSFORM,REMOVER OU TRANSFORMAR
 ui.black_market_prompt,What would you like to do with %s?,O que você quer fazer com %s?
-ui.black_market_instructions,Drop a GachaBall here to Remove or Transform it for 5 Gold.,Solte uma GachaBall aqui para remover ou transformar por 5 de Ouro.
-ui.remove_cost,Remove (5 Gold),Remover (5 Ouro)
-ui.transform_cost,Transform (5 Gold),Transformar (5 Ouro)
+ui.black_market_instructions,Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it.,Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro).
+ui.remove_cost,Remove (%d Gold),Remover (%d Ouro)
+ui.transform_cost,Transform (%d Gold),Transformar (%d Ouro)
+tutorial.black_market_intro.title,Removing and Transforming,Removendo e Transformando
+tutorial.black_market_intro,"The Black Market lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase.","O Mercado Negro permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
 tutorial.training_grounds,"A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades.","Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder."
 tutorial.gambling_den,"Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards.","Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas máquinas em recompensas imediatas de ouro."
 ui.effects,Effects,Efeitos

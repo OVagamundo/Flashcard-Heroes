@@ -1,6 +1,7 @@
 extends Control
 
-const COST_GOLD: int = 5
+const BASE_REMOVE_COST: int = 5
+const TRANSFORM_COST_GOLD: int = 5
 const BLACK_MARKET_CONTAINER: StringName = &"BlackMarket"
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const ChoiceWindowScene = preload("res://scenes/BlackMarketChoiceWindow.tscn")
@@ -39,6 +40,7 @@ func _ready() -> void:
 	if black_market_slot.has_method("set_controller"):
 		black_market_slot.set_controller(self)
 	set_process(true)
+	call_deferred("_show_black_market_tutorial")
 
 func _exit_tree() -> void:
 	if SignalBus.locale_changed.is_connected(_update_localized_text):
@@ -65,7 +67,7 @@ func _update_localized_text() -> void:
 	title_label.text = tr("ui.black_market_title")
 	open_inventory_button.text = tr("ui.black_market_open_inventory")
 	leave_button.text = tr("ui.leave")
-	instruction_label.text = tr("ui.black_market_instructions")
+	instruction_label.text = tr("ui.black_market_instructions") % [_get_remove_cost(), TRANSFORM_COST_GOLD]
 
 func can_accept_black_market_drop(source_loc: LocationIdentifier) -> bool:
 	if _action_in_progress or _has_staged_transaction():
@@ -154,7 +156,7 @@ func _show_choice_window() -> void:
 
 	_choice_window = ChoiceWindowScene.instantiate() as BlackMarketChoiceWindow
 	_choice_backdrop.add_child(_choice_window)
-	_choice_window.populate(_staged_display_name)
+	_choice_window.populate(_staged_display_name, _get_remove_cost(), TRANSFORM_COST_GOLD)
 	_choice_window.remove_requested.connect(_on_remove_requested)
 	_choice_window.transform_requested.connect(_on_transform_requested)
 	call_deferred("_position_choice_window")
@@ -222,16 +224,31 @@ func _clear_stage_state() -> void:
 func _has_staged_transaction() -> bool:
 	return is_instance_valid(_staged_source_location) and not _staged_source_uuid.is_empty()
 
-func _spend_gold_or_reject() -> bool:
+func _spend_gold_or_reject(amount: int) -> bool:
 	if not is_instance_valid(GameManager.run_state):
 		return false
-	if GameManager.run_state.spend_gold(COST_GOLD):
+	if GameManager.run_state.spend_gold(amount):
 		return true
 
 	var main_node = GameManager._active_main_node
 	var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 	RejectionFeedbackScript.play_rejection_with_counter(service_area, gold_group, get_tree())
 	return false
+
+func _get_remove_cost() -> int:
+	if not is_instance_valid(GameManager.run_state):
+		return BASE_REMOVE_COST
+	if GameManager.run_state.has_method("get_black_market_remove_cost"):
+		return GameManager.run_state.get_black_market_remove_cost()
+	return BASE_REMOVE_COST
+
+func _show_black_market_tutorial() -> void:
+	TutorialManager.show_tutorial(&"black_market_intro", [
+		{
+			"text": "tutorial.black_market_intro",
+			"center": true
+		}
+	], open_inventory_button)
 
 func _draw_transform_definition(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
 	var eligible: Array[GachaBallDefinition] = []
@@ -267,7 +284,8 @@ func _resolve_ball_view(anchor: Control) -> Control:
 func _on_remove_requested() -> void:
 	if _action_in_progress or not _has_staged_transaction():
 		return
-	if not _spend_gold_or_reject():
+	var remove_cost := _get_remove_cost()
+	if not _spend_gold_or_reject(remove_cost):
 		return
 
 	_action_in_progress = true
@@ -276,6 +294,9 @@ func _on_remove_requested() -> void:
 		black_market_slot.clear_staged_visual()
 
 	GameManager.run_state.remove_instance(_staged_source_uuid)
+	if GameManager.run_state.has_method("increase_black_market_remove_cost"):
+		GameManager.run_state.increase_black_market_remove_cost()
+	_update_localized_text()
 
 	_close_choice_window()
 	_clear_stage_state()
@@ -298,7 +319,7 @@ func _on_transform_requested() -> void:
 	var result_definition := _draw_transform_definition(source_definition.id, int(source_definition.tier))
 	if not is_instance_valid(result_definition):
 		return
-	if not _spend_gold_or_reject():
+	if not _spend_gold_or_reject(TRANSFORM_COST_GOLD):
 		return
 
 	_action_in_progress = true
