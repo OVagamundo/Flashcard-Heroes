@@ -6,7 +6,7 @@ extends Node2D
 ## Natural parabolic arc like tossing a coin
 
 # Animation parameters
-const COIN_SCALE := 1.5 # 1.5 * 64px = 96px, perfectly matching the top bar GoldIcon
+const COIN_SCALE := 0.375 # 0.375 * 256px = 96px, perfectly matching the top bar GoldIcon (texture is 4x original)
 const TOSS_DURATION := 0.45
 const SPIN_COUNT := 3
 const WOBBLE_DEGREES := 20.0

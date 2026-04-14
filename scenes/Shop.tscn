@@ -74,18 +74,6 @@ layout_mode = 2
 theme_override_constants/separation = 40
 alignment = 1
 
-[node name="BuyButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtonsContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(250, 70)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
-theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 3
-theme_override_fonts/font = ExtResource("4_label_font")
-theme_override_font_sizes/font_size = 18
-disabled = true
-text = "Buy"
-
 [node name="RerollButton" type="Button" parent="CenterContainer/VBoxContainer/ActionButtonsContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 70)

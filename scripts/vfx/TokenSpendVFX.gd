@@ -8,7 +8,7 @@ extends Node2D
 const TOKEN_TEXTURE = preload("res://assets/ui/textures/token_100yen.png")
 
 # Animation parameters - tuned for satisfying "toss" feel
-const COIN_SCALE := 1.5 # 1.5 * 64px = 96px, matching top bar icon perfectly
+const COIN_SCALE := 0.375 # 0.375 * 256px = 96px, matching top bar icon perfectly (texture is 4x original)
 const TOSS_DURATION := 0.45 # Total flight time
 const SPIN_COUNT := 3 # Number of full spins during flight
 const GRAVITY_FACTOR := 1.8 # How much the arc curves down

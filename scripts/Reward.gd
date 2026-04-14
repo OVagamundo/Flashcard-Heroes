@@ -6,7 +6,6 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
-@onready var confirm_button: Button = %ConfirmSelectionButton
 @onready var gold_button: Button = %TakeGoldButton
 @onready var back_to_path_button: Button = %BackToPathButton
 
@@ -19,8 +18,7 @@ func _ready() -> void:
 	
 	SignalBus.selection_changed.connect(_on_selection_changed)
 	SignalBus.reward_stock_refreshed.connect(populate)
-	confirm_button.disabled = true
-	confirm_button.pressed.connect(_on_confirm_pressed)
+	SignalBus.confirm_drop_zone_activated.connect(_on_confirm_pressed)
 	gold_button.pressed.connect(_on_gold_pressed)
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
 	
@@ -33,7 +31,6 @@ func _ready() -> void:
 	_mark_reward_action_buttons()
 
 func _mark_reward_action_buttons() -> void:
-	_mark_action_button_for_inspection_avoidance(confirm_button)
 	_mark_action_button_for_inspection_avoidance(gold_button)
 	_mark_action_button_for_inspection_avoidance(back_to_path_button)
 
@@ -44,7 +41,6 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.choose_reward")
-	confirm_button.text = tr("ui.confirm_selection")
 	back_to_path_button.text = tr("ui.back_to_path")
 	# Gold button text is set in populate() with the amount
 
@@ -63,7 +59,6 @@ func populate(context: Dictionary) -> void:
 	
 	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
 	
-	confirm_button.visible = true
 	gold_button.visible = true
 	back_to_path_button.visible = true
 
@@ -138,8 +133,8 @@ func _animate_staggered_entry() -> void:
 
 
 func _on_selection_changed(new_location: LocationIdentifier) -> void:
-	var is_valid_selection = new_location and new_location.container == &"Rewards"
-	confirm_button.disabled = not is_valid_selection
+	# Drop zone visibility is handled by Main.gd via the same signal
+	pass
 
 func _on_confirm_pressed() -> void:
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
@@ -186,8 +181,10 @@ func _on_confirm_pressed() -> void:
 		if tier != -1:
 			SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		
-		# Hide old buttons, show the new one
-		confirm_button.visible = false
+		# Hide old buttons and drop zone overlay, show the back button
+		var main_node_ref = GameManager._active_main_node
+		if is_instance_valid(main_node_ref) and main_node_ref.has_method("hide_confirm_drop_zone"):
+			main_node_ref.hide_confirm_drop_zone()
 		gold_button.visible = false
 		back_to_path_button.visible = true
 		# Clear selection and remove all reward GachaBalls
@@ -210,8 +207,10 @@ func _on_confirm_pressed() -> void:
 func _on_gold_pressed() -> void:
 	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
 	
-	# Hide old buttons, show the new one
-	confirm_button.visible = false
+	# Hide old buttons and drop zone overlay, show the back button
+	var main_node_ref = GameManager._active_main_node
+	if is_instance_valid(main_node_ref) and main_node_ref.has_method("hide_confirm_drop_zone"):
+		main_node_ref.hide_confirm_drop_zone()
 	gold_button.visible = false
 	back_to_path_button.visible = true
 
@@ -225,6 +224,10 @@ func _on_gold_pressed() -> void:
 			child.queue_free()
 
 func _on_back_to_path_pressed() -> void:
+	# Hide the drop zone overlay before leaving
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):
+		main_node.hide_confirm_drop_zone()
 	SignalBus.emit_signal("path_choice_scene_requested")
 	# The reward scene has served its purpose and should be removed.
 	queue_free()

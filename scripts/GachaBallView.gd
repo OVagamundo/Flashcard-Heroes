@@ -342,7 +342,8 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 			# If slot is 128px, ball is 128px.
 			# Unit should be 64px (native) centered.
 			
-			var target_size = icon_rect.texture.get_size() * _size_scale
+			var base_size = Vector2(C.UNIT_SPRITE_SIZE / 2.0, C.UNIT_SPRITE_SIZE / 2.0)
+			var target_size = base_size * _size_scale
 			
 			# Hack: If this is the inventory view (which we can infer or pass via populate options? No...)
 			# Let's rely on _create_gachaball_overlay to fix it? No, populate sets min_size.

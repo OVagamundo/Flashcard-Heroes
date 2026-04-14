@@ -335,6 +335,10 @@ signal reward_stock_refreshed(context: Dictionary)
 ## Emitted when reward reroll is requested
 signal reward_reroll_requested
 
+## Emitted when the confirm drop zone overlay is activated (clicked or drop received)
+## Used by Reward and Shop scenes to trigger confirm/buy actions
+signal confirm_drop_zone_activated
+
 # -----------------------------------------------------------------------------
 # INTERACTION SYSTEM SIGNALS
 # -----------------------------------------------------------------------------

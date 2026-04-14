@@ -57,7 +57,14 @@ static func _configure_material(material: ShaderMaterial, source_size: Vector2, 
 	var safe_scale = Vector2(maxf(source_scale.x, 0.0001), maxf(source_scale.y, 0.0001))
 	var expansion = Vector2(GLOW_RADIUS_PX / safe_scale.x, GLOW_RADIUS_PX / safe_scale.y)
 
-	material.set_shader_parameter("source_pixel_size", Vector2(1.0 / safe_size.x, 1.0 / safe_size.y))
+	# NORMALIZE: Divide by safe_scale to keep the perceived sampling density (glow thickness) 
+	# consistent with the design resolution regardless of the actual texture asset size.
+	var sampling_pixel_size = Vector2(
+		(1.0 / safe_size.x) / safe_scale.x,
+		(1.0 / safe_size.y) / safe_scale.y
+	)
+
+	material.set_shader_parameter("source_pixel_size", sampling_pixel_size)
 	material.set_shader_parameter("expansion", expansion)
 	material.set_shader_parameter("glow_intensity", GLOW_INTENSITY if glow_enabled else 0.0)
 	material.set_shader_parameter("falloff_power", GLOW_FALLOFF_POWER)

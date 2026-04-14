@@ -39,6 +39,7 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	
 	_orig_capsule_scale = capsule_sprite.scale
+	_adjust_capsule_scale()
 	_orig_icon_scale = icon_sprite.scale
 	GachaBallCapsuleGlow.apply_to_sprite(capsule_sprite)
 
@@ -55,6 +56,7 @@ func _ready() -> void:
 	if _pending_texture and is_instance_valid(icon_sprite):
 		icon_sprite.texture = _pending_texture
 		_pending_texture = null
+		_adjust_icon_scale()
 
 func _exit_tree() -> void:
 	_stop_touch_long_press()
@@ -68,8 +70,29 @@ func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Text
 	if tex:
 		if is_node_ready() and is_instance_valid(icon_sprite):
 			icon_sprite.texture = tex
+			_adjust_icon_scale()
 		else:
 			_pending_texture = tex
+
+func _adjust_icon_scale() -> void:
+	if not is_instance_valid(icon_sprite) or not icon_sprite.texture:
+		return
+	var tex_size = icon_sprite.texture.get_size()
+	if tex_size.x == 0 or tex_size.y == 0:
+		return
+	var target_size = 64.0 # Base size for unit sprite in 96x96 container
+	icon_sprite.scale = Vector2(target_size / tex_size.x, target_size / tex_size.y)
+	_orig_icon_scale = icon_sprite.scale
+
+func _adjust_capsule_scale() -> void:
+	if not is_instance_valid(capsule_sprite) or not capsule_sprite.texture:
+		return
+	var tex_size = capsule_sprite.texture.get_size()
+	if tex_size.x == 0 or tex_size.y == 0:
+		return
+	var target_size = 96.0 # Base size for capsule (SLOT_SIZE_BASE)
+	capsule_sprite.scale = Vector2(target_size / tex_size.x, target_size / tex_size.y)
+	_orig_capsule_scale = capsule_sprite.scale
 
 func spawn_in(duration: float) -> void:
 	# SOFT-SPAWN: Start with a tiny collision presence to allow the ball 

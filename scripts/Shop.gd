@@ -8,7 +8,6 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
-@onready var buy_button: Button = %BuyButton
 @onready var reroll_button: Button = %RerollButton
 @onready var leave_button: Button = %LeaveButton
 @onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
@@ -21,7 +20,7 @@ func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
 	SignalBus.selection_changed.connect(_on_selection_changed)
 
-	buy_button.pressed.connect(_on_buy_pressed)
+	SignalBus.confirm_drop_zone_activated.connect(_on_buy_pressed)
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	leave_button.pressed.connect(_on_leave_pressed)
 	
@@ -38,7 +37,6 @@ func _ready() -> void:
 	Audio.play_music(SoundRegistry.BGM_SHOP)
 
 func _mark_shop_action_buttons() -> void:
-	_mark_action_button_for_inspection_avoidance(buy_button)
 	_mark_action_button_for_inspection_avoidance(reroll_button)
 	_mark_action_button_for_inspection_avoidance(leave_button)
 
@@ -49,7 +47,6 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")
-	buy_button.text = tr("ui.buy")
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 	leave_button.text = tr("ui.back_to_path")
 
@@ -181,12 +178,8 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 		if is_instance_valid(instance):
 			var shop_def = instance.get_definition()
 			_selected_cost = GameManager.get_item_cost(shop_def)
-			buy_button.text = tr("ui.buy_gold") % _selected_cost
-			buy_button.disabled = false
 			return
 
-	buy_button.text = tr("ui.buy")
-	buy_button.disabled = true
 	_selected_cost = 0
 
 func _on_buy_pressed() -> void:
@@ -205,7 +198,10 @@ func _on_buy_pressed() -> void:
 				# Insufficient gold - play rejection feedback
 				var main_node = GameManager._active_main_node
 				var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-				RejectionFeedbackScript.play_rejection_with_counter(buy_button, gold_group, get_tree())
+				# Play rejection on the drop zone overlay instead of the old buy button
+				var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
+				var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
+				RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
 				return
 			
 			# Capture slot position and visual data BEFORE purchase
@@ -232,16 +228,17 @@ func _on_buy_pressed() -> void:
 			if is_instance_valid(def) and def.category == &"TRINKET":
 				tier = 3
 			
-			# Disable button during animation
-			buy_button.disabled = true
 			# Animate gold coins then purchase, then animate gachaball
-			_animate_gold_spend(_selected_cost, buy_button, func():
+			_animate_gold_spend(_selected_cost, reroll_button, func():
 				SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
 				# AUDIO HOOK: Buy
 				Audio.play_sfx("shop_buy")
-				buy_button.disabled = false
 				# After purchase, animate gachaball to machine
 				_animate_gachaball_to_machine(start_pos, visual_data, tier)
+				# Hide the drop zone after purchase
+				var mn = GameManager._active_main_node
+				if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
+					mn.hide_confirm_drop_zone()
 			)
 
 func _on_reroll_pressed() -> void:
@@ -445,6 +442,10 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	)
 
 func _on_leave_pressed() -> void:
+	# Hide the drop zone overlay before leaving
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):
+		main_node.hide_confirm_drop_zone()
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
