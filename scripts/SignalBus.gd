@@ -339,6 +339,12 @@ signal reward_reroll_requested
 ## Used by Reward and Shop scenes to trigger confirm/buy actions
 signal confirm_drop_zone_activated
 
+## Emitted when the Black Market "Remove" drop zone is activated
+signal black_market_remove_zone_activated
+
+## Emitted when the Black Market "Transform" drop zone is activated
+signal black_market_transform_zone_activated
+
 # -----------------------------------------------------------------------------
 # INTERACTION SYSTEM SIGNALS
 # -----------------------------------------------------------------------------

@@ -1,46 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://c6l8m7y3bv8k2"]
+[gd_scene load_steps=5 format=3 uid="uid://c6l8m7y3bv8k2"]
 
 [ext_resource type="Script" path="res://scripts/BlackMarket.gd" id="1_x0k8m"]
 [ext_resource type="FontFile" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="2_title_font"]
 [ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_label_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/BGs/BlackMarket.png" id="4_bg"]
-[ext_resource type="Script" path="res://scripts/BlackMarketSlot.gd" id="5_slot_script"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
-bg_color = Color(0, 0, 0, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.98, 0.96, 0.92, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-expand_margin_left = 5
-expand_margin_top = 5
-expand_margin_right = 5
-expand_margin_bottom = 5
-shadow_color = Color(0, 0, 0, 0.6)
-shadow_size = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
-bg_color = Color(0, 0, 0, 0.7)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.98, 0.96, 0.92, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-content_margin_left = 24.0
-content_margin_top = 24.0
-content_margin_right = 24.0
-content_margin_bottom = 24.0
-shadow_color = Color(0, 0, 0, 0.45)
-shadow_size = 8
 
 [node name="BlackMarket" type="Control"]
 layout_mode = 3
@@ -129,66 +92,4 @@ theme_override_fonts/font = ExtResource("3_label_font")
 theme_override_font_sizes/font_size = 16
 text = "Leave"
 
-[node name="ForegroundUI" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-visible = false
-mouse_filter = 2
 
-[node name="MachineCover" type="PanelContainer" parent="ForegroundUI"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -260.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_2")
-
-[node name="ServiceLayout" type="VBoxContainer" parent="ForegroundUI"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -260.0
-grow_horizontal = 2
-grow_vertical = 0
-mouse_filter = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="InstructionLabel" type="Label" parent="ForegroundUI/ServiceLayout"]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("3_label_font")
-theme_override_font_sizes/font_size = 14
-text = "Drop a GachaBall here to Remove or Transform it for 5 Gold."
-horizontal_alignment = 1
-
-[node name="ServiceArea" type="PanelContainer" parent="ForegroundUI/ServiceLayout"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 128)
-layout_mode = 2
-size_flags_horizontal = 4
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_1")
-
-[node name="BlackMarketSlot" type="Control" parent="ForegroundUI/ServiceLayout/ServiceArea"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 128)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-mouse_filter = 0
-script = ExtResource("5_slot_script")

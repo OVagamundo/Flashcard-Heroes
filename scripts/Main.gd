@@ -59,6 +59,18 @@ var _confirm_drop_zone_mode: StringName = &"" # &"Rewards" or &"Shop"
 var _confirm_drop_zone_visible: bool = false
 var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for restoring selection on drop
 
+# Black Market split drop zones (Remove / Transform)
+var _bm_drop_zone_container: PanelContainer = null
+var _bm_remove_zone: PanelContainer = null
+var _bm_transform_zone: PanelContainer = null
+var _bm_remove_label: Label = null
+var _bm_transform_label: Label = null
+var _bm_drop_zones_visible: bool = false
+var _bm_drop_zone_drag_context: InteractionContext = null
+var _bm_instruction_overlay: PanelContainer = null
+var _bm_instruction_label: Label = null
+var _bm_instruction_visible: bool = false
+
 func _ready() -> void:
 	GameManager.register_main_node(self ) # Register self with GameManager
 	
@@ -110,6 +122,7 @@ func _ready() -> void:
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
+	SignalBus.locale_changed.connect(_update_programmatic_labels)
 	
 	# Connect drop zone signals
 	SignalBus.selection_changed.connect(_on_selection_changed_for_drop_zone)
@@ -129,6 +142,8 @@ func _ready() -> void:
 	
 	# Build the confirm drop zone overlay (programmatic, not in .tscn)
 	_build_confirm_drop_zone()
+	# Build the black market split drop zones
+	_build_black_market_drop_zones()
 
 	SignalBus.emit_signal("path_choice_scene_requested")
 
@@ -791,11 +806,11 @@ func show_confirm_drop_zone(mode: StringName) -> void:
 	
 	# Set label text based on mode
 	if mode == &"Rewards":
-		_confirm_drop_zone_label.text = "Get"
+		_confirm_drop_zone_label.text = tr("ui.drop_zone_get")
 	elif mode == &"Shop":
-		_confirm_drop_zone_label.text = "Buy"
+		_confirm_drop_zone_label.text = tr("ui.drop_zone_buy")
 	else:
-		_confirm_drop_zone_label.text = "Confirm"
+		_confirm_drop_zone_label.text = tr("ui.confirm")
 	
 	if _confirm_drop_zone_visible:
 		return # Already showing
@@ -833,33 +848,58 @@ func _on_confirm_drop_zone_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> void:
-	"""Show/hide the drop zone based on whether a Reward/Shop item is selected."""
+	"""Show/hide drop zones based on current context and selection."""
+	# Handle Reward/Shop
 	if new_location and new_location.container == &"Rewards":
 		show_confirm_drop_zone(&"Rewards")
 	elif new_location and new_location.container == &"Shop":
 		show_confirm_drop_zone(&"Shop")
 	else:
-		# Defer the hide slightly: during drag-end, GIR clears selection (emitting
-		# selection_changed(null)) BEFORE emitting drag_ended. If we hide immediately,
-		# the drag_ended handler can't detect mouse-over-zone. Use call_deferred
-		# so drag_ended processes first.
 		call_deferred("_deferred_maybe_hide_drop_zone")
+	
+	# Handle Black Market
+	if _bm_instruction_visible or _bm_drop_zones_visible:
+		if new_location and String(new_location.container).begins_with("RunInventoryT"):
+			# "Upgrade" to action zones
+			show_black_market_drop_zones()
+			# Don't call hide_black_market_instruction yet, let the show method handle it or do it here
+			_bm_instruction_overlay.visible = false
+			_bm_instruction_visible = false
+			_bm_instruction_overlay.modulate.a = 0.0
+		else:
+			call_deferred("_deferred_maybe_hide_bm_drop_zones")
 
 func _deferred_maybe_hide_drop_zone() -> void:
 	"""Hide drop zone if no relevant selection or drag is active."""
-	# If mode was already cleared (by confirm/buy), nothing to do
 	if _confirm_drop_zone_mode == &"":
 		return
-	# If a new selection was established in the meantime, don't hide
 	var sel = GlobalInteractionRouter.get_current_selection()
 	if sel and is_instance_valid(sel.location):
 		if sel.location.container == &"Rewards" or sel.location.container == &"Shop":
 			return
 	hide_confirm_drop_zone()
 
+func _deferred_maybe_hide_bm_drop_zones() -> void:
+	"""Hide BM drop zones and show instruction if no relevant selection or drag is active."""
+	if not _bm_drop_zones_visible:
+		return
+	
+	# Only hide if no selection and no drag
+	var sel = GlobalInteractionRouter.get_current_selection()
+	if sel and is_instance_valid(sel.location) and String(sel.location.container).begins_with("RunInventoryT"):
+		return
+		
+	if _bm_drop_zone_drag_context != null:
+		return
+		
+	hide_black_market_drop_zones()
+	# "Downgrade" back to instruction overlay
+	show_black_market_instruction()
+
 func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 	"""Show the drop zone when dragging from Reward/Shop. Save context for drop."""
 	_drop_zone_drag_context = null
+	_bm_drop_zone_drag_context = null
 	if origin_context and is_instance_valid(origin_context.location):
 		if origin_context.location.container == &"Rewards":
 			_drop_zone_drag_context = origin_context
@@ -867,11 +907,26 @@ func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 		elif origin_context.location.container == &"Shop":
 			_drop_zone_drag_context = origin_context
 			show_confirm_drop_zone(&"Shop")
+		elif (_bm_instruction_visible or _bm_drop_zones_visible) and String(origin_context.location.container).begins_with("RunInventoryT"):
+			# Dragging from inventory while Black Market context is active
+			_bm_drop_zone_drag_context = origin_context
+			show_black_market_drop_zones()
+			# Instant hide instruction
+			_bm_instruction_overlay.visible = false
+			_bm_instruction_visible = false
+			_bm_instruction_overlay.modulate.a = 0.0
 
 func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
-	"""Check if drag ended over the drop zone and trigger confirm if so."""
+	"""Check if drag ended over any drop zone and trigger appropriate action."""
 	var saved_ctx = _drop_zone_drag_context
+	var saved_bm_ctx = _bm_drop_zone_drag_context
 	_drop_zone_drag_context = null
+	_bm_drop_zone_drag_context = null
+	
+	# Check Black Market zones first (independent from confirm zone)
+	if _check_bm_drag_drop_on_zones_with_context(saved_bm_ctx):
+		return
+	
 	
 	if _confirm_drop_zone_mode == &"":
 		return
@@ -901,3 +956,249 @@ func get_confirm_drop_zone_rect() -> Rect2:
 	if is_instance_valid(_confirm_drop_zone) and _confirm_drop_zone.visible:
 		return _confirm_drop_zone.get_global_rect()
 	return Rect2()
+
+# =============================================================================
+# BLACK MARKET SPLIT DROP ZONES (Remove / Transform)
+# =============================================================================
+
+func _build_black_market_drop_zones() -> void:
+	"""Build two side-by-side drop zones for Black Market Remove and Transform."""
+	_bm_drop_zone_container = PanelContainer.new()
+	_bm_drop_zone_container.name = "BlackMarketDropZones"
+	
+	# Match BottomArea anchors: full width, bottom-anchored, 260px tall
+	_bm_drop_zone_container.layout_mode = 1
+	_bm_drop_zone_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_bm_drop_zone_container.custom_minimum_size = Vector2(0, 260)
+	_bm_drop_zone_container.offset_top = -260
+	_bm_drop_zone_container.offset_bottom = 0
+	
+	# Transparent panel (children provide the visuals)
+	var container_style = StyleBoxFlat.new()
+	container_style.bg_color = Color(0, 0, 0, 0)
+	_bm_drop_zone_container.add_theme_stylebox_override("panel", container_style)
+	_bm_drop_zone_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	# HBoxContainer to split into two halves
+	var hbox = HBoxContainer.new()
+	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hbox.add_theme_constant_override("separation", 8)
+	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_bm_drop_zone_container.add_child(hbox)
+	
+	# Left zone: Transform
+	_bm_transform_zone = _create_bm_zone_panel(tr("ui.drop_zone_transform"), Color(0.93, 0.96, 0.98, 0.95))
+	_bm_transform_zone.name = "TransformZone"
+	_bm_transform_label = _bm_transform_zone.get_child(0).get_child(0) as Label
+	hbox.add_child(_bm_transform_zone)
+	_bm_transform_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_bm_transform_zone.gui_input.connect(_on_bm_transform_zone_gui_input)
+	
+	# Right zone: Remove
+	_bm_remove_zone = _create_bm_zone_panel(tr("ui.drop_zone_remove"), Color(0.98, 0.93, 0.93, 0.95))
+	_bm_remove_zone.name = "RemoveZone"
+	_bm_remove_label = _bm_remove_zone.get_child(0).get_child(0) as Label
+	hbox.add_child(_bm_remove_zone)
+	_bm_remove_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_bm_remove_zone.gui_input.connect(_on_bm_remove_zone_gui_input)
+	
+	# Add to HUDContainer after BottomArea
+	var hud_container = bottom_area.get_parent()
+	if is_instance_valid(hud_container):
+		hud_container.add_child(_bm_drop_zone_container)
+		_bm_drop_zone_container.z_index = 5
+	
+	# Start hidden
+	_bm_drop_zone_container.visible = false
+	_bm_drop_zone_container.modulate.a = 0.0
+	
+	_build_bm_instruction_overlay()
+
+func _build_bm_instruction_overlay() -> void:
+	"""Build the black background instruction overlay for Black Market."""
+	_bm_instruction_overlay = PanelContainer.new()
+	_bm_instruction_overlay.name = "BlackMarketInstruction"
+	
+	_bm_instruction_overlay.layout_mode = 1
+	_bm_instruction_overlay.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_bm_instruction_overlay.custom_minimum_size = Vector2(0, 260)
+	_bm_instruction_overlay.offset_top = -260
+	_bm_instruction_overlay.offset_bottom = 0
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.7)
+	style.corner_radius_top_left = 24
+	style.corner_radius_top_right = 24
+	_bm_instruction_overlay.add_theme_stylebox_override("panel", style)
+	
+	# The user requested that this area lets clicks pass to close inventory just like 
+	# if it wasn't there. Setting ignore ensures it doesn't block the scene content.
+	_bm_instruction_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	var center = CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bm_instruction_overlay.add_child(center)
+	
+	_bm_instruction_label = Label.new()
+	_bm_instruction_label.text = tr("ui.bm_instruction")
+	_bm_instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_bm_instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_bm_instruction_label.add_theme_font_size_override("font_size", 24)
+	_bm_instruction_label.add_theme_color_override("font_color", Color(0.98, 0.96, 0.92, 0.8))
+	_bm_instruction_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(_bm_instruction_label)
+	
+	# Add to HUDContainer
+	var hud_container = bottom_area.get_parent()
+	if is_instance_valid(hud_container):
+		hud_container.add_child(_bm_instruction_overlay)
+		_bm_instruction_overlay.z_index = 4 # Below drop zones (z=5)
+	
+	_bm_instruction_overlay.visible = false
+	_bm_instruction_overlay.modulate.a = 0.0
+
+func _update_programmatic_labels() -> void:
+	"""Update all programmatically created labels with current localized text."""
+	if is_instance_valid(_confirm_drop_zone_label):
+		if _confirm_drop_zone_mode == &"Rewards":
+			_confirm_drop_zone_label.text = tr("ui.drop_zone_get")
+		elif _confirm_drop_zone_mode == &"Shop":
+			_confirm_drop_zone_label.text = tr("ui.drop_zone_buy")
+			
+	if is_instance_valid(_bm_transform_label):
+		_bm_transform_label.text = tr("ui.drop_zone_transform")
+	if is_instance_valid(_bm_remove_label):
+		_bm_remove_label.text = tr("ui.drop_zone_remove")
+	if is_instance_valid(_bm_instruction_label):
+		_bm_instruction_label.text = tr("ui.bm_instruction")
+
+func _create_bm_zone_panel(text: String, bg_color: Color) -> PanelContainer:
+	"""Create a single BM zone panel with centered label."""
+	var panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.corner_radius_top_left = 24
+	style.corner_radius_top_right = 24
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
+	panel.add_theme_stylebox_override("panel", style)
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	
+	var center = CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(center)
+	
+	var label = Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 48)
+	label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.28, 0.85))
+	label.add_theme_color_override("font_outline_color", Color(0.15, 0.17, 0.22, 0.3))
+	label.add_theme_constant_override("outline_size", 2)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(label)
+	
+	return panel
+
+func show_black_market_drop_zones() -> void:
+	"""Show the two-zone Black Market overlay."""
+	if not is_instance_valid(_bm_drop_zone_container):
+		return
+	if _bm_drop_zones_visible:
+		return
+	_bm_drop_zones_visible = true
+	_bm_drop_zone_container.visible = true
+	
+	var tween = create_tween()
+	tween.tween_property(_bm_drop_zone_container, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func hide_black_market_drop_zones() -> void:
+	"""Hide the two-zone Black Market overlay."""
+	if not is_instance_valid(_bm_drop_zone_container):
+		return
+	if not _bm_drop_zones_visible:
+		return
+	_bm_drop_zones_visible = false
+	
+	var tween = create_tween()
+	tween.tween_property(_bm_drop_zone_container, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		if is_instance_valid(_bm_drop_zone_container):
+			_bm_drop_zone_container.visible = false
+	)
+
+func show_black_market_instruction() -> void:
+	"""Show the black background instruction overlay for Black Market."""
+	if not is_instance_valid(_bm_instruction_overlay):
+		return
+	if _bm_instruction_visible:
+		return
+	_bm_instruction_visible = true
+	_bm_instruction_overlay.visible = true
+	
+	var tween = create_tween()
+	tween.tween_property(_bm_instruction_overlay, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func hide_black_market_instruction() -> void:
+	"""Hide the black background instruction overlay for Black Market."""
+	if not is_instance_valid(_bm_instruction_overlay):
+		return
+	if not _bm_instruction_visible:
+		return
+	_bm_instruction_visible = false
+	
+	var tween = create_tween()
+	tween.tween_property(_bm_instruction_overlay, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		if is_instance_valid(_bm_instruction_overlay):
+			_bm_instruction_overlay.visible = false
+	)
+
+func _on_bm_remove_zone_gui_input(event: InputEvent) -> void:
+	if InputUtils.is_primary_pointer_press(event):
+		SignalBus.emit_signal("black_market_remove_zone_activated")
+		Audio.play_sfx("ui_click")
+		get_viewport().set_input_as_handled()
+
+func _on_bm_transform_zone_gui_input(event: InputEvent) -> void:
+	if InputUtils.is_primary_pointer_press(event):
+		SignalBus.emit_signal("black_market_transform_zone_activated")
+		Audio.play_sfx("ui_click")
+		get_viewport().set_input_as_handled()
+
+func _check_bm_drag_drop_on_zones_with_context(context: InteractionContext) -> bool:
+	"""Check if a drag ended over one of the BM zones. Returns true if handled."""
+	if not _bm_drop_zones_visible or not is_instance_valid(_bm_drop_zone_container):
+		return false
+	if context == null:
+		return false
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	
+	# Check Remove zone
+	if is_instance_valid(_bm_remove_zone) and _bm_remove_zone.get_global_rect().has_point(mouse_pos):
+		# Restore selection so handlers can find the item
+		GlobalInteractionRouter.set_current_selection(context)
+		SignalBus.emit_signal("selection_changed", context.location)
+		SignalBus.emit_signal("black_market_remove_zone_activated")
+		Audio.play_sfx("ui_click")
+		return true
+	
+	# Check Transform zone
+	if is_instance_valid(_bm_transform_zone) and _bm_transform_zone.get_global_rect().has_point(mouse_pos):
+		GlobalInteractionRouter.set_current_selection(context)
+		SignalBus.emit_signal("selection_changed", context.location)
+		SignalBus.emit_signal("black_market_transform_zone_activated")
+		Audio.play_sfx("ui_click")
+		return true
+	
+	return false
+
+## Public API: Get the BM Remove zone node (for rejection feedback)
+func get_bm_remove_zone() -> Control:
+	return _bm_remove_zone
+
+## Public API: Get the BM Transform zone node (for rejection feedback)
+func get_bm_transform_zone() -> Control:
+	return _bm_transform_zone
