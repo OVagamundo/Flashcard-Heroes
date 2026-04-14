@@ -11,14 +11,6 @@ func _ready() -> void:
 # --- Main Action Handler ---
 
 func _on_try_inventory_action(source_loc, target_loc) -> void:
-	if is_instance_valid(target_loc) and target_loc.container == &"BlackMarket":
-		var controller = get_tree().get_first_node_in_group("black_market_controller")
-		if is_instance_valid(controller) and controller.has_method("handle_black_market_selection_action"):
-			if controller.handle_black_market_selection_action(source_loc):
-				return
-		SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-		return
-
 	# Early-case: Allow equipping items onto units even across functional groups
 	var early_source_instance = _get_instance_at_location(source_loc)
 	var early_target_instance = _get_instance_at_location(target_loc)

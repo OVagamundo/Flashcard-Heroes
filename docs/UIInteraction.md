@@ -199,6 +199,14 @@ The inventory drawer movements are synchronized with physical jolts:
 - **Highlight:** White outline shader (`outline_width=3.0`)
 - **Source:** All views subscribe to `SignalBus.view_selected`
 
+### 5.5 Interactive Overlays
+To streamline interactions in Reward, Shop, and Black Market scenes, the game uses **Interactive Overlays** instead of modal choice windows.
+- **Implementation**: Managed programmatically by `Main.gd`.
+- **Mode 1: Unified Confirm**: A single warm-white zone (`_confirm_drop_zone`) used for Rewards ("Get") and Shops ("Buy"). Appears when any valid item is selected or dragged.
+- **Mode 2: Split Action Zones**: Two side-by-side zones used for the Black Market ("Transform" / "Remove").
+- **UI Context**: Overlays are anchored to the `BottomArea` and render on the `HUDLayer` (Z-index 5) to ensure they are always accessible above machine bases.
+- **Input Flow**: Supports both **click-to-click** (click item -> click zone) and **drag-and-drop** (drag item -> drop on zone) interchangeably.
+
 ---
 
 ## 6. Functional Groups & APIs

@@ -682,10 +682,6 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 	if selection_group == target_group:
 		return true
 
-	# Allow inventory click-to-act on the Black Market service slot.
-	if selection_group == &"InventoryGrid" and target.location.container == &"BlackMarket":
-		return true
-
 	# Allow equipping: Inventory -> Equipped
 	if selection_group == &"InventoryGrid" and target_group == &"EquippedGrid":
 		return true
