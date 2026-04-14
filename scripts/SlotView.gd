@@ -50,6 +50,19 @@ func set_slot_color(container_name: StringName) -> void:
 	if not is_instance_valid(_background_style):
 		return
 	
+	# Determine if this is a battle slot
+	var is_battle_slot = (container_name == &"PlayerLineup" or container_name == &"EnemyLineup" or container_name == &"PlayerBench" or container_name == &"EnemyBench" or container_name == &"EnemyTrinkets" or container_name == &"PlayerTrinkets")
+	
+	if is_battle_slot:
+		_background_style.texture = load("res://assets/ui/textures/slotBattle.png")
+		# Expand the top margin instead so the base stays at the bottom to touch the unit's feet
+		# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
+		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
+		_background_style.expand_margin_bottom = -15.0
+	else:
+		_background_style.texture = load("res://assets/ui/textures/slot.png")
+		_background_style.expand_margin_bottom = 0.0
+		
 	# Tint the slot background texture based on container type
 	match container_name:
 		&"PlayerLineup":

@@ -3,6 +3,7 @@ extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
+const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var scene_background: TextureRect = %SceneBackground
@@ -13,11 +14,12 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 @onready var gacha_machine_1: Control = %GachaMachine1
 @onready var gacha_machine_2: Control = %GachaMachine2
 @onready var gacha_machine_3: Control = %GachaMachine3
+@onready var bottom_area: PanelContainer = %BottomArea
 
 # Knob buttons for drawing
-@onready var knob_button_1: Button = %GachaMachine1.get_node("KnobButton")
-@onready var knob_button_2: Button = %GachaMachine2.get_node("KnobButton")
-@onready var knob_button_3: Button = %GachaMachine3.get_node("KnobButton")
+@onready var knob_button_1: TextureButton = %GachaMachine1.get_node("KnobButton")
+@onready var knob_button_2: TextureButton = %GachaMachine2.get_node("KnobButton")
+@onready var knob_button_3: TextureButton = %GachaMachine3.get_node("KnobButton")
 
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
@@ -49,6 +51,13 @@ const MASTERY_COLORS = {
 const LOCKED_COLOR = Color(0.4, 0.4, 0.4) # Grey for locked cards
 
 var _current_content_node: Node = null
+
+# Confirm drop zone overlay (covers bottom area for Reward/Shop confirm)
+var _confirm_drop_zone: PanelContainer = null
+var _confirm_drop_zone_label: Label = null
+var _confirm_drop_zone_mode: StringName = &"" # &"Rewards" or &"Shop"
+var _confirm_drop_zone_visible: bool = false
+var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for restoring selection on drop
 
 func _ready() -> void:
 	GameManager.register_main_node(self ) # Register self with GameManager
@@ -102,6 +111,11 @@ func _ready() -> void:
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	
+	# Connect drop zone signals
+	SignalBus.selection_changed.connect(_on_selection_changed_for_drop_zone)
+	SignalBus.drag_started.connect(_on_drag_started_for_drop_zone)
+	SignalBus.drag_ended.connect(_on_drag_ended_for_drop_zone)
+	
 	CRTEffect.glow_toggled.connect(func(enabled: bool):
 		if is_instance_valid(color_glow_rect):
 			color_glow_rect.visible = enabled
@@ -112,6 +126,9 @@ func _ready() -> void:
 	_apply_glow_debug_view(CRTEffect.get_glow_debug_view())
 
 	_on_battle_state_changed(false)
+	
+	# Build the confirm drop zone overlay (programmatic, not in .tscn)
+	_build_confirm_drop_zone()
 
 	SignalBus.emit_signal("path_choice_scene_requested")
 
@@ -126,6 +143,13 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
+	# Cleanup drop zone signals
+	if SignalBus.selection_changed.is_connected(_on_selection_changed_for_drop_zone):
+		SignalBus.selection_changed.disconnect(_on_selection_changed_for_drop_zone)
+	if SignalBus.drag_started.is_connected(_on_drag_started_for_drop_zone):
+		SignalBus.drag_started.disconnect(_on_drag_started_for_drop_zone)
+	if SignalBus.drag_ended.is_connected(_on_drag_ended_for_drop_zone):
+		SignalBus.drag_ended.disconnect(_on_drag_ended_for_drop_zone)
 
 func _apply_glow_debug_view(view: int) -> void:
 	if not is_instance_valid(color_glow_rect):
@@ -186,7 +210,7 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 		if InputUtils.is_touch_pointer_event(event):
 			accept_event()
 
-func _on_knob_hover_enter(button: Button) -> void:
+func _on_knob_hover_enter(button: TextureButton) -> void:
 	if button.disabled:
 		return
 	# Grow the button slightly with a smooth animation
@@ -196,7 +220,7 @@ func _on_knob_hover_enter(button: Button) -> void:
 	button.pivot_offset = button.size / 2
 	tween.tween_property(button, "scale", Vector2(1.08, 1.08), 0.15)
 
-func _on_knob_hover_exit(button: Button) -> void:
+func _on_knob_hover_exit(button: TextureButton) -> void:
 	# Return to normal size
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_OUT)
@@ -282,6 +306,11 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	button.disabled = true
 	# Ensure UI focus doesn't interfere
 	button.release_focus()
+	
+	# Animate knob rotation
+	var knob_tween = create_tween()
+	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
@@ -693,3 +722,182 @@ func _update_machine_counts() -> void:
 			
 		if is_instance_valid(label):
 			label.text = "x%d" % count
+
+# =============================================================================
+# CONFIRM DROP ZONE OVERLAY
+# =============================================================================
+
+func _build_confirm_drop_zone() -> void:
+	"""Programmatically create the warm white overlay that covers the bottom area."""
+	_confirm_drop_zone = PanelContainer.new()
+	_confirm_drop_zone.name = "ConfirmDropZone"
+	_confirm_drop_zone.unique_name_in_owner = true
+	
+	# Match BottomArea anchors: full width, bottom-anchored, 260px tall
+	_confirm_drop_zone.layout_mode = 1 # Anchored
+	_confirm_drop_zone.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_confirm_drop_zone.custom_minimum_size = Vector2(0, 260)
+	_confirm_drop_zone.offset_top = -260
+	_confirm_drop_zone.offset_bottom = 0
+	
+	# Warm white rounded rectangle style
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.98, 0.96, 0.93, 0.95) # Warm white, slight transparency
+	style.corner_radius_top_left = 24
+	style.corner_radius_top_right = 24
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
+	_confirm_drop_zone.add_theme_stylebox_override("panel", style)
+	
+	# Must capture mouse clicks
+	_confirm_drop_zone.mouse_filter = Control.MOUSE_FILTER_STOP
+	
+	# Center the label inside
+	var center = CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_confirm_drop_zone.add_child(center)
+	
+	_confirm_drop_zone_label = Label.new()
+	_confirm_drop_zone_label.text = "Get"
+	_confirm_drop_zone_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_confirm_drop_zone_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_confirm_drop_zone_label.add_theme_font_size_override("font_size", 52)
+	_confirm_drop_zone_label.add_theme_color_override("font_color", Color(0.35, 0.35, 0.32, 0.85))
+	_confirm_drop_zone_label.add_theme_color_override("font_outline_color", Color(0.15, 0.17, 0.22, 0.3))
+	_confirm_drop_zone_label.add_theme_constant_override("outline_size", 2)
+	_confirm_drop_zone_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.add_child(_confirm_drop_zone_label)
+	
+	# Add to HUDContainer, AFTER BottomArea so it renders on top
+	var hud_container = bottom_area.get_parent()
+	if is_instance_valid(hud_container):
+		hud_container.add_child(_confirm_drop_zone)
+		# Ensure it's above BottomArea in z-order
+		_confirm_drop_zone.z_index = 5
+	
+	# Connect click handler
+	_confirm_drop_zone.gui_input.connect(_on_confirm_drop_zone_gui_input)
+	
+	# Start hidden
+	_confirm_drop_zone.visible = false
+	_confirm_drop_zone.modulate.a = 0.0
+
+func show_confirm_drop_zone(mode: StringName) -> void:
+	"""Show the confirm drop zone overlay with the appropriate text.
+	mode should be &'Rewards' or &'Shop'."""
+	if not is_instance_valid(_confirm_drop_zone):
+		return
+	_confirm_drop_zone_mode = mode
+	
+	# Set label text based on mode
+	if mode == &"Rewards":
+		_confirm_drop_zone_label.text = "Get"
+	elif mode == &"Shop":
+		_confirm_drop_zone_label.text = "Buy"
+	else:
+		_confirm_drop_zone_label.text = "Confirm"
+	
+	if _confirm_drop_zone_visible:
+		return # Already showing
+	_confirm_drop_zone_visible = true
+	_confirm_drop_zone.visible = true
+	
+	# Fade in animation
+	var tween = create_tween()
+	tween.tween_property(_confirm_drop_zone, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func hide_confirm_drop_zone() -> void:
+	"""Hide the confirm drop zone overlay."""
+	if not is_instance_valid(_confirm_drop_zone):
+		return
+	if not _confirm_drop_zone_visible:
+		return
+	_confirm_drop_zone_visible = false
+	_confirm_drop_zone_mode = &""
+	
+	# Fade out animation
+	var tween = create_tween()
+	tween.tween_property(_confirm_drop_zone, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		if is_instance_valid(_confirm_drop_zone):
+			_confirm_drop_zone.visible = false
+	)
+
+func _on_confirm_drop_zone_gui_input(event: InputEvent) -> void:
+	"""Handle click on the confirm drop zone overlay."""
+	if InputUtils.is_primary_pointer_press(event):
+		if _confirm_drop_zone_mode != &"":
+			SignalBus.emit_signal("confirm_drop_zone_activated")
+			# Play confirm sound
+			Audio.play_sfx("ui_click")
+		get_viewport().set_input_as_handled()
+
+func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> void:
+	"""Show/hide the drop zone based on whether a Reward/Shop item is selected."""
+	if new_location and new_location.container == &"Rewards":
+		show_confirm_drop_zone(&"Rewards")
+	elif new_location and new_location.container == &"Shop":
+		show_confirm_drop_zone(&"Shop")
+	else:
+		# Defer the hide slightly: during drag-end, GIR clears selection (emitting
+		# selection_changed(null)) BEFORE emitting drag_ended. If we hide immediately,
+		# the drag_ended handler can't detect mouse-over-zone. Use call_deferred
+		# so drag_ended processes first.
+		call_deferred("_deferred_maybe_hide_drop_zone")
+
+func _deferred_maybe_hide_drop_zone() -> void:
+	"""Hide drop zone if no relevant selection or drag is active."""
+	# If mode was already cleared (by confirm/buy), nothing to do
+	if _confirm_drop_zone_mode == &"":
+		return
+	# If a new selection was established in the meantime, don't hide
+	var sel = GlobalInteractionRouter.get_current_selection()
+	if sel and is_instance_valid(sel.location):
+		if sel.location.container == &"Rewards" or sel.location.container == &"Shop":
+			return
+	hide_confirm_drop_zone()
+
+func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
+	"""Show the drop zone when dragging from Reward/Shop. Save context for drop."""
+	_drop_zone_drag_context = null
+	if origin_context and is_instance_valid(origin_context.location):
+		if origin_context.location.container == &"Rewards":
+			_drop_zone_drag_context = origin_context
+			show_confirm_drop_zone(&"Rewards")
+		elif origin_context.location.container == &"Shop":
+			_drop_zone_drag_context = origin_context
+			show_confirm_drop_zone(&"Shop")
+
+func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
+	"""Check if drag ended over the drop zone and trigger confirm if so."""
+	var saved_ctx = _drop_zone_drag_context
+	_drop_zone_drag_context = null
+	
+	if _confirm_drop_zone_mode == &"":
+		return
+	
+	# Check if mouse is over the drop zone rect
+	if is_instance_valid(_confirm_drop_zone) and _confirm_drop_zone.visible:
+		var mouse_pos = get_viewport().get_mouse_position()
+		var zone_rect = _confirm_drop_zone.get_global_rect()
+		if zone_rect.has_point(mouse_pos) and saved_ctx != null:
+			# CRITICAL: GIR.end_drag() already cleared the selection before
+			# this signal fired. Restore it so Reward/Shop confirm handlers
+			# can find the selected item via get_current_selection().
+			GlobalInteractionRouter.set_current_selection(saved_ctx)
+			SignalBus.emit_signal("selection_changed", saved_ctx.location)
+			
+			# Drag ended over the drop zone — trigger confirm!
+			SignalBus.emit_signal("confirm_drop_zone_activated")
+			Audio.play_sfx("ui_click")
+			return
+	
+	# Drag ended elsewhere — hide the drop zone
+	hide_confirm_drop_zone()
+
+
+## Public API: Get the global rect of the drop zone (for external hit testing)
+func get_confirm_drop_zone_rect() -> Rect2:
+	if is_instance_valid(_confirm_drop_zone) and _confirm_drop_zone.visible:
+		return _confirm_drop_zone.get_global_rect()
+	return Rect2()

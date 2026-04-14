@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://crndwktdbp0rc"]
+[gd_scene load_steps=12 format=3 uid="uid://crndwktdbp0rc"]
 
 [ext_resource type="Shader" path="res://assets/shaders/color_glow_post_process.gdshader" id="1_glow"]
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier2GachaBallBase.png" id="11_machine2"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/Tier3GachaBallBase.png" id="12_machine3"]
 [ext_resource type="Script" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
+[ext_resource type="Texture2D" uid="uid://scjvpm7p8kjd" path="res://assets/ui/textures/Knob.png" id="100_knob"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_post"]
 shader = ExtResource("1_glow")
@@ -366,48 +367,42 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("10_machine1")
-expand_mode = 0
-stretch_mode = 3
+expand_mode = 1
+stretch_mode = 5
 
-[node name="KnobButton" type="Button" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
+[node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 160.0
-offset_top = 40.0
-offset_right = 330.0
-offset_bottom = 180.0
+offset_left = 442.0
+offset_top = 90.0
+offset_right = 592.0
+offset_bottom = 240.0
+pivot_offset = Vector2(75, 75)
 mouse_filter = 0
-theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
-theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
-theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
-text = "1 Token"
+texture_normal = ExtResource("100_knob")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchors_preset = 7
+anchor_left = 0.575
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.575
 anchor_bottom = 1.0
-offset_left = -120.0
+offset_left = -100.0
 offset_top = -60.0
-offset_right = -20.0
-offset_bottom = -20.0
-grow_horizontal = 0
+offset_right = 100.0
+offset_bottom = -15.0
+grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 42
 text = "x0"
-horizontal_alignment = 2
+horizontal_alignment = 1
 vertical_alignment = 2
 
 [node name="GachaMachine2" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
@@ -425,48 +420,42 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("11_machine2")
-expand_mode = 0
-stretch_mode = 3
+expand_mode = 1
+stretch_mode = 5
 
-[node name="KnobButton" type="Button" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
+[node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 160.0
-offset_top = 40.0
-offset_right = 330.0
-offset_bottom = 180.0
+offset_left = 442.0
+offset_top = 90.0
+offset_right = 592.0
+offset_bottom = 240.0
+pivot_offset = Vector2(75, 75)
 mouse_filter = 0
-theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
-theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
-theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
-text = "2 Tokens"
+texture_normal = ExtResource("100_knob")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchors_preset = 7
+anchor_left = 0.575
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.575
 anchor_bottom = 1.0
-offset_left = -120.0
+offset_left = -100.0
 offset_top = -60.0
-offset_right = -20.0
-offset_bottom = -20.0
-grow_horizontal = 0
+offset_right = 100.0
+offset_bottom = -15.0
+grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 42
 text = "x0"
-horizontal_alignment = 2
+horizontal_alignment = 1
 vertical_alignment = 2
 
 [node name="GachaMachine3" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
@@ -484,48 +473,42 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("12_machine3")
-expand_mode = 0
-stretch_mode = 3
+expand_mode = 1
+stretch_mode = 5
 
-[node name="KnobButton" type="Button" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
+[node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 160.0
-offset_top = 40.0
-offset_right = 330.0
-offset_bottom = 180.0
+offset_left = 442.0
+offset_top = 90.0
+offset_right = 592.0
+offset_bottom = 240.0
+pivot_offset = Vector2(75, 75)
 mouse_filter = 0
-theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
-theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
-theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
-theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
-text = "3 Tokens"
+texture_normal = ExtResource("100_knob")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchors_preset = 7
+anchor_left = 0.575
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.575
 anchor_bottom = 1.0
-offset_left = -120.0
+offset_left = -100.0
 offset_top = -60.0
-offset_right = -20.0
-offset_bottom = -20.0
-grow_horizontal = 0
+offset_right = 100.0
+offset_bottom = -15.0
+grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 42
 text = "x0"
-horizontal_alignment = 2
+horizontal_alignment = 1
 vertical_alignment = 2
 
 [node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
