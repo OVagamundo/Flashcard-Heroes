@@ -54,19 +54,30 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 	return encounter
 
 ## Generates an elite encounter using a random boss unit (with weighted pity system).
-func generate_elite_encounter(total_budget: int, history: Dictionary = {}) -> EncounterDefinition:
-	# 1. Define elite boss options
-	var boss_options: Array[StringName] = [&"unit_dust_elite_t2", &"unit_dust_elite_t3"]
+func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_elite_id: StringName = &"") -> EncounterDefinition:
+	# 1. Define elite boss options with priority baseline (T1 > T2 > T3)
+	var boss_options: Array[StringName] = [&"unit_dust_elite_t1", &"unit_dust_elite_t2", &"unit_dust_elite_t3"]
+	var baseline_weights: Dictionary = {
+		&"unit_dust_elite_t1": 300.0,
+		&"unit_dust_elite_t2": 200.0,
+		&"unit_dust_elite_t3": 100.0
+	}
 	
-	# 2. Calculate weights based on history (Pity System)
+	# 2. Calculate weights based on history (Pity System) and Never-Twice-In-Row
 	var weights: Array[float] = []
 	var total_weight: float = 0.0
 	
 	for boss_id in boss_options:
+		# Never appear twice in a row
+		if boss_id == last_elite_id:
+			weights.append(0.0)
+			continue
+			
 		var count = history.get(boss_id, 0)
-		# Reduction formula: weight = 100 / (1 + count * 2)
-		# 0 encounters -> 100, 1 -> 33, 2 -> 20, 3 -> 14...
-		var w: float = 100.0 / (1.0 + float(count) * 2.0)
+		var baseline = baseline_weights.get(boss_id, 100.0)
+		# Reduction formula: weight = baseline / (1 + count * 2)
+		# 0 encounters -> baseline, 1 -> baseline/3, 2 -> baseline/5...
+		var w: float = baseline / (1.0 + float(count) * 2.0)
 		weights.append(w)
 		total_weight += w
 	
@@ -82,7 +93,7 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}) -> En
 			break
 			
 	if OS.is_debug_build():
-		print("[EncounterGenerator] Elite weighting: ", weights, " Total: ", total_weight, " Roll: ", roll, " Picked: ", selected_boss_id)
+		print("[EncounterGenerator] Elite weighting: ", weights, " (Last: ", last_elite_id, ") Picked: ", selected_boss_id)
 
 	var boss_def = Database.get_definition(selected_boss_id)
 	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % selected_boss_id)

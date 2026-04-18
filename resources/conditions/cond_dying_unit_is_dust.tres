@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ConditionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"cond_dying_unit_is_dust"
+condition_type = &"DYING_UNIT_IS_DUST"
+parameters = {}
+invert_result = false

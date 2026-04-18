@@ -3,10 +3,10 @@
 extends EffectDefinition
 
 ## Effect that buffs the drawn unit based on tier filtering.
-## Used by Royal Insignia trinket to grant +2 HP, +2 PWR to Tier 1 units on draw.
+## Used by Royal Insignia trinket to grant +1 HP, +1 PWR to Tier 1 units on draw.
 ## Expected parameters:
-##   - hp_amount: int (default 2) - HP buff amount
-##   - pwr_amount: int (default 2) - PWR buff amount  
+##   - hp_amount: int (default 1) - HP buff amount
+##   - pwr_amount: int (default 1) - PWR buff amount  
 ##   - tier_filter: int (default 1) - Only buff units of this tier (0 = any)
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
@@ -78,11 +78,11 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		target_instance.add_tag(buff_tag)
 		
 		# Get buff amounts from parameters
-		var raw_hp = parameters.get("hp_amount", 2)
-		var hp_amount: int = int(raw_hp) if raw_hp != null else 2
+		var raw_hp = parameters.get("hp_amount", 1)
+		var hp_amount: int = int(raw_hp) if raw_hp != null else 1
 		
-		var raw_pwr = parameters.get("pwr_amount", 2)
-		var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 2
+		var raw_pwr = parameters.get("pwr_amount", 1)
+		var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
 		
 		if is_simulation:
 			# Capture old stats

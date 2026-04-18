@@ -63,6 +63,7 @@ const TRIGGER_ON_PRE_COMBAT = &"on_pre_combat" # Before combat snapshot (Tier 2 
 const TRIGGER_ON_DEATH = &"on_death" # This unit dies
 const TRIGGER_ON_ALLY_DEATH = &"on_ally_death" # A teammate dies
 const TRIGGER_ON_KILL = &"on_kill" # This unit kills an enemy
+const TRIGGER_ON_UNIT_DEATH = &"on_unit_death" # Any unit in the battle dies
 
 # Turn-related triggers
 const TRIGGER_ON_TURN_START = &"on_turn_start" # Turn begins
@@ -105,6 +106,7 @@ const COND_DAMAGE_WAS_RECEIVED = &"DAMAGE_WAS_RECEIVED"
 const COND_IS_TURN_INITIATED_ATTACK = &"IS_TURN_INITIATED_ATTACK"
 const COND_COMPOSITE = &"COMPOSITE"
 const COND_TRIGGER_CAUSE_MATCH = &"TRIGGER_CAUSE_MATCH"
+const COND_DYING_UNIT_IS_DUST = &"DYING_UNIT_IS_DUST"
 
 # --- Trigger Context Causes ---
 # Who/What initiated the event chain?

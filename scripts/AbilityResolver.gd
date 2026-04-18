@@ -142,6 +142,10 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# All living units respond to token changes
 			return unit.current_hp > 0
 			
+		&"on_unit_death":
+			# All living units respond to any unit death
+			return unit.current_hp > 0
+			
 		&"on_stat_increased":
 			# Units respond if they are adjacent to the unit that received the stat increase
 			# AND they are NOT the source of the stat increase (Loop Prevention)

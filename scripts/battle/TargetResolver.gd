@@ -310,6 +310,18 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 				result = true
 			else:
 				result = trigger_cause in allowed_causes
+		C.COND_DYING_UNIT_IS_DUST:
+			# Prefer the pre-baked definition_id from context (unit may already be removed from registry)
+			var def_id_str: String = context.get("dying_definition_id", "")
+			if not def_id_str.is_empty():
+				result = def_id_str.to_lower().contains("dust")
+			else:
+				# Fallback: try UUID lookup
+				var dying_uuid: String = context.get("dying_uuid", "")
+				if not dying_uuid.is_empty():
+					var dying_inst = battle_manager.get_instance_by_uuid(dying_uuid)
+					if is_instance_valid(dying_inst):
+						result = String(dying_inst.definition_id).to_lower().contains("dust")
 		_:
 			result = false
 	

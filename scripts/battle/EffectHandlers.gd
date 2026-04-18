@@ -887,7 +887,9 @@ static func handle_summon_unit(
 			"old_unit_uuid": final_old_uuid,
 			"new_unit_uuid": new_inst.ball_uuid,
 			"old_unit_location": final_location,
-			"new_unit_snapshot": snapshot
+			"new_unit_snapshot": snapshot,
+			"spawn_source_uuid": effect_data.get("spawn_source_uuid", ""),
+			"unit_tier": effect_data.get("unit_tier", 1)
 		}
 	}))
 	

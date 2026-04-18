@@ -467,6 +467,21 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 				"fainting_ally_team": data.team
 			}
 			AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
+			
+			# Fire on_unit_death trigger (World trigger, all teams)
+			var dying_tier: int = 0
+			var dying_def = data.unit.get_definition()
+			if is_instance_valid(dying_def):
+				dying_tier = dying_def.tier
+				
+			var unit_death_ctx := {
+				"dying_uuid": data.unit.ball_uuid,
+				"dying_team": data.team,
+				"dying_location": data.death_location,
+				"dying_tier": dying_tier,
+				"dying_definition_id": String(data.unit.definition_id)
+			}
+			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 
 	if OS.is_debug_build() and is_simulation:
 		print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())

@@ -431,6 +431,11 @@ To ensure that reactive abilities (like **Ambush Predator** or **Summon Blessing
 - **Purpose**: This prevents units in the bench or discard pile from being "ambushed" or "blessed" before they have actually entered the field of play.
 - **Implementation**: Handled globally in `battle/TurnAbilities.gd`.
 
+#### 6. Inventory-Targeted Summons (Dust Elite)
+Reserved for specific "Minion Summons" that bypass the standard battlefield economy:
+- **Direct Entry**: Units are spawned directly into a `BattleInventoryT*` tray.
+- **Logic**: Targets the first available slot in the physics drawer corresponding to the unit's tier.
+
 ### Mid-Turn Summon Actions
 Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.
 - **Rule**: "One Action Per Slot Per Turn".

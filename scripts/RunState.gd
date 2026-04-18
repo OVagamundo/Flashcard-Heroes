@@ -14,6 +14,7 @@ extends Resource
 @export var total_gold_earned: int = 0
 @export var black_market_remove_cost: int = 5
 @export var hero_instance: GachaBallInstance
+@export var last_elite_id: StringName = &""
 
 # Recipe unlock tracking (per-run) - key: recipe_id (StringName), value: bool (unlocked)
 @export var unlocked_recipes: Dictionary = {}
@@ -58,6 +59,7 @@ func record_elite_encounter(elite_id: StringName) -> void:
 	if not elite_encounter_history.has(elite_id):
 		elite_encounter_history[elite_id] = 0
 	elite_encounter_history[elite_id] += 1
+	last_elite_id = elite_id
 	# Emit signal to ensure UI/Save is updated
 	SignalBus.emit_signal("run_data_changed")
 

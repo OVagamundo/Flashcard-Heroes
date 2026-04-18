@@ -265,59 +265,120 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						])
 			CombatEvent.Type.SUMMON:
 				var payload = event.visual_payload
-				var _old_unit_uuid = String(payload.get("old_unit_uuid", "")) # For reference only
-				var new_unit_uuid = String(payload.get("new_unit_uuid", ""))
+				var new_unit_uuid = payload.get("new_unit_uuid", "")
 				var old_location = payload.get("old_unit_location")
+				var spawn_source_uuid = payload.get("spawn_source_uuid", "")
+				var unit_tier = int(payload.get("unit_tier", 1))
 				
-				# PRESENTATION ONLY: Create new view in slot
-				# DEATH event already removed the old view (DEATH → SUMMON ordering)
-				# Animator just plays events in sequence blindly - no game state knowledge needed
-				if is_instance_valid(old_location):
-					var container_tag = old_location.container
-					var index = old_location.index
+				var container_tag = old_location.container if old_location else &""
+				var index = old_location.index if old_location else -1
+				var is_inventory_summon = String(container_tag).begins_with("BattleInventoryT")
+				
+				var battle_view = get_tree().get_first_node_in_group("battle_view")
+				var main_node = get_tree().get_root().find_child("Main", true, false)
+				
+				# 1. Arc Animation (Elite -> Machine) if metadata present
+				var arc_completed = false
+				if not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
+					var source_pos_data = _position_snapshot.get(spawn_source_uuid, {})
+					var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % unit_tier)
 					
-					var battle_view = get_tree().get_first_node_in_group("battle_view")
-					if is_instance_valid(battle_view):
-						var lineup_container: HBoxContainer = null
-						if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
-							lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_bench
-						elif container_tag == &"EnemyLineup":
-							lineup_container = battle_view.enemy_lineup
+					if not source_pos_data.is_empty() and is_instance_valid(machine_node):
+						var start_center: Vector2 = source_pos_data["center"]
+						var machine_rect = machine_node.get_global_rect()
+						var end_center: Vector2 = machine_rect.get_center()
 						
-						if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
-							var slot_view = lineup_container.get_child(index)
+						# Initial setup - REUSING EXACT SYSTEM PROPORTIONS
+						var anim_capsule = preload("res://scenes/GachaBallView.tscn").instantiate()
+						anim_capsule.set_size_scale(1.0) # Matches 96px Inventory Standard
+						
+						# Standard UI setup to prevent expansion
+						anim_capsule.custom_minimum_size = Vector2(96, 96)
+						anim_capsule.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+						
+						# CRITICAL: Add to tree BEFORE populate so @onready vars work!
+						anim_capsule.top_level = true
+						main_node.add_child(anim_capsule)
+						
+						anim_capsule.force_inventory_mode = true # Ensure system capsule overlay is used
+						var new_snapshot = payload.get("new_unit_snapshot", {})
+						anim_capsule.populate(null, new_snapshot)
+						
+						var initial_scale := 0.3
+						var final_scale_val := 1.5
+						anim_capsule.scale = Vector2(initial_scale, initial_scale)
+						
+						var center_offset = Vector2(48, 48) # slot_base/2
+						var arc_height := 500.0 # Standard weighted peak
+						var duration := 0.7
+						
+						var tween = anim_capsule.create_tween()
+						tween.set_trans(Tween.TRANS_LINEAR)
+						
+						tween.tween_method(func(t: float):
+							# 1. THE "CORRECT" KINEMATIC ARC:
+							var curr_x = lerp(start_center.x, end_center.x, t)
+							var curr_y = lerp(start_center.y, end_center.y, t) - (4.0 * arc_height * t * (1.0 - t))
 							
-							# PRESENTATION ONLY: Create new view in slot
-							# DEATH event already removed the old view (DEATH → SUMMON ordering)
-							# Animator just plays events in sequence blindly - no game state knowledge needed
-							var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
-							slot_view.add_child(new_view)
+							# 2. FAST-SCALE "POP": Reaches final size at 10% of duration
+							var scale_t = clamp(t * 10.0, 0.0, 1.0)
+							var current_scale = lerp(initial_scale, final_scale_val, scale_t)
+							anim_capsule.scale = Vector2(current_scale, current_scale)
 							
-							# Use new_unit_snapshot from payload
-							var new_snapshot = payload.get("new_unit_snapshot", {})
-							if not new_snapshot.is_empty():
-								var new_location = LocationIdentifier.new(container_tag, index)
-								new_view.populate(new_location, new_snapshot, false, false)
-								var def_id: StringName = new_snapshot.get("def_id", &"")
-								new_view.set_is_enemy(container_tag == &"EnemyLineup", def_id)
-								
-								_visual_registry[new_unit_uuid] = new_view
-								
-								# DECOUPLING: Register position for animations targeting summoned units
-								await get_tree().process_frame # Wait for layout to update
-								var rect = new_view.get_global_rect()
-								_position_snapshot[new_unit_uuid] = {
-									"position": rect.position,
-									"size": rect.size,
-									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-								}
-								
-								# Trigger summon animation
+							var pos = Vector2(curr_x, curr_y)
+							anim_capsule.global_position = pos - (center_offset * current_scale)
+						, 0.0, 1.0, duration)
+						
+						await tween.finished
+						anim_capsule.queue_free()
+						Audio.play_sfx("coin_land")
+						if main_node.has_method("trigger_machine_bounce"):
+							main_node.trigger_machine_bounce(unit_tier)
+						arc_completed = true
+
+				# 2. Fade in unit in its actual slot (unless it's an inventory summon, which has no slot)
+				if not is_inventory_summon and is_instance_valid(battle_view):
+					var lineup_container: HBoxContainer = null
+					if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
+						lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_bench
+					elif container_tag == &"EnemyLineup":
+						lineup_container = battle_view.enemy_lineup
+					
+					if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
+						var slot_view = lineup_container.get_child(index)
+						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
+						slot_view.add_child(new_view)
+						
+						var new_snapshot = payload.get("new_unit_snapshot", {})
+						if not new_snapshot.is_empty():
+							var new_location = LocationIdentifier.new(container_tag, index)
+							new_view.populate(new_location, new_snapshot, false, false)
+							new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+							
+							_visual_registry[new_unit_uuid] = new_view
+							
+							# Register dynamic position
+							await get_tree().process_frame
+							var rect = new_view.get_global_rect()
+							_position_snapshot[new_unit_uuid] = {
+								"position": rect.position,
+								"size": rect.size,
+								"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+							}
+							
+							if arc_completed:
+								# If we arced, just snap the unit in and bounce
+								new_view.play_landing_bounce()
+							else:
+								# Standard fade in
 								if SignalBus.has_signal("unit_summon_fade"):
 									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
-									# AUDIO HOOK: Summon
 									Audio.play_sfx("combat_summon")
 									await wait_for_animation_completion("summon_fade", new_unit_uuid)
+				
+				# Wait a tiny bit for the machine bounce to feel solid
+				if arc_completed:
+					await get_tree().create_timer(0.2).timeout
 
 			CombatEvent.Type.LETHAL_SAVE:
 				# Aegis Charm: use dedicated LethalSaveAnimation

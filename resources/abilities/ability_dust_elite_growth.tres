@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/conditions/cond_dying_unit_is_dust.tres" id="3_cond"]
+
+[sub_resource type="Resource" id="EffectHP_Gain"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = {
+"base_value": 0,
+"scaling_context_key": "dying_tier",
+"scaling_context_multiplier": 1.0,
+"stat": "hp"
+}
+
+[sub_resource type="Resource" id="EffectPWR_Gain"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = {
+"base_value": 0,
+"scaling_context_key": "dying_tier",
+"scaling_context_multiplier": 1.0,
+"stat": "pwr"
+}
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_dust_elite_growth"
+name_key = "ability.dust_growth.name"
+description_key = "ability.dust_growth.desc"
+trigger = &"on_unit_death"
+condition = ExtResource("3_cond")
+effects = Array[Resource]([SubResource("EffectHP_Gain"), SubResource("EffectPWR_Gain")])
+priority = 0
+execute_on_lethal = false

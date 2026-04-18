@@ -164,13 +164,9 @@ static func setup_enemy_lineup(state: RefCounted, encounter_def: Resource) -> vo
 		var pos = placement.get("position")
 		if encounter_def.has_meta("elite_stat_scale") and pos == 4:
 			var id_str = String(unit_id)
-			if id_str == "unit_dust_elite_t3" or id_str == "unit_dust_elite_t2":
-				var day: int = 1
-				if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
-					day = GameManager.run_state.day
-				enemy_inst.current_hp = maxi(3, day)
-				enemy_inst.current_pwr = maxi(1, int(floor(day / 2.0)))
-			else:
+			
+			# Dust Elites use their own internal growth and should not be externally scaled
+			if not id_str.contains("unit_dust_elite"):
 				var scale: float = encounter_def.get_meta("elite_stat_scale")
 				enemy_inst.current_hp = maxi(1, int(floor(enemy_inst.current_hp * scale)))
 				enemy_inst.current_pwr = maxi(1, int(floor(enemy_inst.current_pwr * scale)))
