@@ -56,9 +56,9 @@ func get_container(container_name: StringName) -> DataContainer:
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
 			new_container = GrowableGridContainer.new(24)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
-			new_container = FixedArrayContainer.new(5)
+			new_container = FixedArrayContainer.new(C.ENEMY_TRINKET_CAP)
 		BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
-			new_container = FixedArrayContainer.new(5)
+			new_container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		_: # Default case for BattleInventoryT*
 			if container_name.begins_with("BattleInventoryT"):
 				new_container = GrowableGridContainer.new(24)

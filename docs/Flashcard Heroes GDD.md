@@ -36,8 +36,8 @@ Timed mini-game that generates **Gacha Tokens** for use in the current encounter
     - **Discard & Reshuffle**: Defeated units and overflow go to a shared Discard Pile. If a tier machine is empty, its balls from the discard pile are reshuffled (resetting stats to base).
 - **Physics Overflow**: Battle draws are physical. Overfilling causes balls to push against a lid; sustained pressure sends them to the Discard Pile.
 
-### 6.2 Economy & Tier Scaling
-The game operates on a dual-economy system that defines encounter difficulty and player progression.
+### 6.2 Economy & The Core Duality
+The game operates on a dual-economy system that defines encounter difficulty and player progression. It is critical to distinguish between the **Run Economy** (Curating the Deck) and the **Battle Economy** (Realizing Value).
 
 | Tier | Gold Cost (Shop) | Draw Cost (Tokens) | Note |
 | :--- | :--- | :--- | :--- |
@@ -45,8 +45,13 @@ The game operates on a dual-economy system that defines encounter difficulty and
 | **Tier 2** | 2 Gold | 2 Tokens | Advanced synergies. |
 | **Tier 3** | 4 Gold | 3 Tokens | Elite/Boss power levels. |
 
-- **Macro Economy (Gold)**: Used in Shops. Also serves as the "Budget" for the **Encounter Generator**; harder days/elites have larger gold budgets to "buy" more or higher-tier enemy units.
-- **Battle Economy (Tokens)**: Earned via Flashcards. Used only during battle to draw from Gacha Machines.
+- **Run Economy (Gold)**: Used in Shops to perform "Deck Adds." Buying a GachaBall with Gold adds it to your Run Inventory. 
+    - **Efficiency Penalty & Dilution**: Every non-synergistic unit added to the deck serves as a "dilution" of the draw pool, making it mathematically harder to draw specific "Engine" or "Anchor" pieces during battle.
+    - **Mitigation Systems**: Shop and Event nodes provide **Remove** and **Transform** mechanics as the primary tools for maintaining a "Lean" deck and maximizing the Average Value per Token spent.
+- **Battle Economy (Tokens)**: Earned via Flashcards. Used only during battle to "Realize" the value of your Run Inventory by drawing from Gacha Machines.
+
+### 6.3 Deck Curation vs. Power Creep
+In Flashcard Heroes, power is not just about having more units, but about the **Density of Synergy**. A smaller, high-synergy deck is often more powerful than a large deck of high-stat units due to the predictable nature of the draw pool. Players must constantly weigh the benefit of a new addition against the dilution of their core strategy.
 
 7. Battle System
 7. Battle System: The Tactical Puzzle

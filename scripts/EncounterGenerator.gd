@@ -1,6 +1,8 @@
 # res://scripts/EncounterGenerator.gd
 extends Node
 
+const C = preload("res://scripts/Constants.gd")
+
 var director: WeightedPoolDirector = WeightedPoolDirector.new()
 var director_run_state: DirectorRunState = DirectorRunState.new()
 
@@ -277,8 +279,9 @@ func _create_resource_pools(include_trinkets: bool) -> Dictionary:
 	
 	if include_trinkets:
 		for trinket in Database.trinkets.values():
-			if not trinket.is_player_exclusive:
-				available_trinkets.append(trinket)
+			if trinket.is_player_exclusive:
+				continue
+			available_trinkets.append(trinket)
 	
 	# Sort by cost ascending for optimization algorithms
 	available_units.sort_custom(func(a, b): return a.cost < b.cost)
@@ -330,13 +333,57 @@ func _assemble_encounter(build: Dictionary, id_prefix: String, reserve_position_
 		possible_parents.pick_random().items.append(item_def.id)
 	
 	# Assign trinkets
+	_append_required_trait_trinkets(encounter)
 	for trinket_def in build.trinkets:
+		if encounter.enemy_trinket_ids.size() >= MAX_TRINKETS:
+			break
+		if encounter.enemy_trinket_ids.has(trinket_def.id):
+			continue
 		encounter.enemy_trinket_ids.append(trinket_def.id)
 	
 	# Validate
 	assert(_validate_encounter(encounter), "Generated encounter failed validation")
 	
 	return encounter
+
+func _append_required_trait_trinkets(encounter: EncounterDefinition) -> void:
+	var soul_counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+
+	for placement in encounter.enemy_placements:
+		var unit_def = Database.get_definition(placement.id)
+		_accumulate_trait_souls(soul_counts, unit_def)
+		for item_id in placement.get("items", []):
+			var item_def = Database.get_definition(item_id)
+			_accumulate_trait_souls(soul_counts, item_def)
+
+	for trait_name in C.TRAIT_SORT_ORDER:
+		if encounter.enemy_trinket_ids.size() >= MAX_TRINKETS:
+			break
+		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
+		var levels: Array = trait_def.get("levels", [])
+		if levels.is_empty():
+			continue
+		var min_required := int(levels[0].get("min", 999))
+		if int(soul_counts.get(trait_name, 0)) < min_required:
+			continue
+		var trinket_id: StringName = trait_def.get("trinket_id", &"")
+		if trinket_id == &"" or encounter.enemy_trinket_ids.has(trinket_id):
+			continue
+		encounter.enemy_trinket_ids.append(trinket_id)
+
+func _accumulate_trait_souls(counts: Dictionary, definition: Resource) -> void:
+	if not is_instance_valid(definition) or not ("tags" in definition):
+		return
+	for tag in definition.tags:
+		match tag:
+			&"SOUL_FIRE":
+				counts["FIRE"] += 1
+			&"SOUL_EARTH":
+				counts["EARTH"] += 1
+			&"SOUL_WATER":
+				counts["WATER"] += 1
+			&"SOUL_AIR":
+				counts["AIR"] += 1
 
 
 ## Validates that the generated encounter is valid.

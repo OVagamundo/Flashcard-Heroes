@@ -375,8 +375,12 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	
 	# Configure visual style: Use 128px ball (matches slot size)
 	anim_ball.force_inventory_mode = true
-	anim_ball.custom_minimum_size = Vector2(128, 128)
-	anim_ball.size = Vector2(128, 128)
+	var target_rect_size: Vector2 = target_slot.get_global_rect().size
+	var target_visual_size := minf(target_rect_size.x, target_rect_size.y)
+	if target_visual_size <= 0.0:
+		target_visual_size = 96.0
+	anim_ball.custom_minimum_size = Vector2(target_visual_size, target_visual_size)
+	anim_ball.size = Vector2(target_visual_size, target_visual_size)
 	
 	# Populate with visual data
 	anim_ball.populate(null, visual_data)

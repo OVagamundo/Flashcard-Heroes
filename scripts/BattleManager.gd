@@ -1716,6 +1716,13 @@ func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 			return true
 	return false
 
+func _team_has_trait_trinket(team: String, trait_name: String) -> bool:
+	var trait_definition: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
+	var trinket_id: StringName = trait_definition.get("trinket_id", &"")
+	if trinket_id == &"":
+		return false
+	return _has_team_trinket(team == "PLAYER", trinket_id)
+
 ## Find a unit with the intercept_lethal tag on the specified team.
 ## Returns the unit with highest HP, or null if none available.
 ## This enables any unit with the tag to protect allies, not just Guardian Sentinel.
@@ -1785,7 +1792,11 @@ func _calculate_active_traits(team: String) -> Dictionary:
 						counts["WATER"] += 1
 					elif tag == &"SOUL_AIR":
 						counts["AIR"] += 1
-					
+
+	for trait_name in C.TRAIT_SORT_ORDER:
+		if not _team_has_trait_trinket(team, trait_name):
+			counts[trait_name] = 0
+
 	return counts
 
 ## Lock current active traits into snapshot.

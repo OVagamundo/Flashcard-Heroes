@@ -127,6 +127,8 @@ const SLOT_SIZE_BASE: int = 96
 const SLOT_SIZE_2X: int = 192
 const UNIT_SPRITE_SIZE: int = 128
 const SLOT_CENTER_OFFSET: int = 32 # (192-128)/2
+const PLAYER_TRINKET_CAP: int = 20
+const ENEMY_TRINKET_CAP: int = 5
 
 # --- Ability System Priority Bands ---
 # Priority determines the resolution order of abilities triggering simultaneously.
@@ -176,10 +178,14 @@ const WINDOW_END_BATTLE = &"EndBattlePopup"
 const WINDOW_FLASHCARD = &"FlashcardMinigame"
 const WINDOW_RESULTS = &"ResultsPopup"
 
+const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "AIR"]
+
 # --- Trait Definitions ---
 const TRAIT_DEFINITIONS = {
 	"FIRE": {
 		"display_name_key": "trait.fire.name",
+		"trinket_id": &"trinket_trait_fire",
+		"icon_path": "res://assets/sprites/items/FireEmblem.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.fire.3"},
 			{"min": 5, "desc_key": "trait.fire.5"},
@@ -189,6 +195,8 @@ const TRAIT_DEFINITIONS = {
 	},
 	"EARTH": {
 		"display_name_key": "trait.earth.name",
+		"trinket_id": &"trinket_trait_earth",
+		"icon_path": "res://assets/sprites/items/EarthEmblem.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.earth.3"},
 			{"min": 5, "desc_key": "trait.earth.5"},
@@ -198,12 +206,16 @@ const TRAIT_DEFINITIONS = {
 	},
 	"WATER": {
 		"display_name_key": "trait.water.name",
+		"trinket_id": &"trinket_trait_water",
+		"icon_path": "res://assets/sprites/items/WaterEmblem.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.water.2"}
 		]
 	},
 	"AIR": {
 		"display_name_key": "trait.air.name",
+		"trinket_id": &"trinket_trait_air",
+		"icon_path": "res://assets/sprites/items/AirEmblem.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.air.2"}
 		]
