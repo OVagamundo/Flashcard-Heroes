@@ -621,8 +621,7 @@ func _populate_player_trinkets() -> void:
 			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 				continue
 			child.queue_free()
-		# Use 1x scale for player trinkets (compact 128x128 display, native 64x64 texture)
-		# NOTE: TopArea slots are 128x128 which can't fit 2x Battle Mode (192x192)
+		# Keep top-HUD trinkets in their compact inspection size so a full second row fits cleanly.
 		if slot_view.has_method("set_size_scale"):
 			slot_view.set_size_scale(1.0)
 		var loc = LocationIdentifier.new()

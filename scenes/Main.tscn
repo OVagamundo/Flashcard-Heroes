@@ -183,7 +183,7 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 
 [node name="TopAreaSpacer" type="Control" parent="ContentArea/SubViewport/VBoxContainer"]
-custom_minimum_size = Vector2(0, 144)
+custom_minimum_size = Vector2(0, 232)
 layout_mode = 2
 mouse_filter = 2
 
@@ -211,7 +211,7 @@ mouse_filter = 2
 
 [node name="TopArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 144)
+custom_minimum_size = Vector2(0, 232)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -219,29 +219,41 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_top")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea"]
+[node name="TopRows" type="VBoxContainer" parent="HUDLayer/HUDContainer/TopArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="StatsRow" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows"]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="LeftStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer"]
+[node name="LeftStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 40
 alignment = 0
 mouse_filter = 2
 
-[node name="LeftMargin" type="Control" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats"]
+[node name="LeftMargin" type="Control" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats"]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="GoldGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats"]
+[node name="GoldGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
 
-[node name="GoldIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
+[node name="GoldIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/GoldGroup"]
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 mouse_filter = 2
@@ -249,7 +261,7 @@ texture = ExtResource("8_gold_coin")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="GoldLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/GoldGroup"]
+[node name="GoldLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/GoldGroup"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
@@ -259,13 +271,13 @@ theme_override_font_sizes/font_size = 48
 text = "0"
 vertical_alignment = 1
 
-[node name="TokenGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats"]
+[node name="TokenGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 mouse_filter = 2
 
-[node name="TokenIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
+[node name="TokenIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 2
 mouse_filter = 2
@@ -273,24 +285,24 @@ texture = ExtResource("9_token_coin")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TokensLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/LeftStats/TokenGroup"]
+[node name="TokensLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "0"
 vertical_alignment = 1
 
-[node name="CenterStats" type="CenterContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer"]
+[node name="CenterStats" type="CenterContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="CenterContent" type="VBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/CenterStats"]
+[node name="CenterContent" type="VBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats"]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="DaysLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
+[node name="DaysLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -300,38 +312,85 @@ text = "Day 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="FlashcardProgressBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/CenterStats/CenterContent"]
+[node name="FlashcardProgressBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(480, 10)
 layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 1
 
-[node name="RightStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer"]
+[node name="RightStats" type="Control" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="PlayerTrinketBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 4
-alignment = 1
 mouse_filter = 2
 
-[node name="TrinketSlot0" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
+[node name="PlayerTrinketBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+alignment = 0
+mouse_filter = 2
 
-[node name="TrinketSlot1" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
+[node name="TrinketSlot0" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
 
-[node name="TrinketSlot2" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
+[node name="TrinketSlot1" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
 
-[node name="TrinketSlot3" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
+[node name="TrinketSlot2" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
 
-[node name="TrinketSlot4" parent="HUDLayer/HUDContainer/TopArea/HBoxContainer/RightStats/PlayerTrinketBar" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(128, 128)
+[node name="TrinketSlot3" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot4" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot5" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot6" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot7" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot8" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot9" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot10" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot11" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot12" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot13" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot14" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot15" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot16" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot17" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot18" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot19" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
 
 [node name="BottomArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
 unique_name_in_owner = true

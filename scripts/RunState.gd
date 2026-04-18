@@ -189,7 +189,7 @@ func get_container(container_name: StringName) -> DataContainer:
 		_containers[container_name] = FixedArrayContainer.new(5)
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
-		_containers[container_name] = FixedArrayContainer.new(5)
+		_containers[container_name] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		return _containers[container_name]
 	
 	return null
@@ -765,7 +765,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		_containers[container_name] = FixedArrayContainer.new(39)
 
 	# Create player trinket container
-	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(5)
+	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 
 	# NOTE: Player trinkets are now obtained exclusively through boss victories.
 	# No starter trinkets are given - the player earns them by progressing.
@@ -969,7 +969,7 @@ func from_save_dict(data: Dictionary) -> void:
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
 			container = FixedArrayContainer.new(5)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
-			container = FixedArrayContainer.new(5)
+			container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		else:
 			container = FixedArrayContainer.new(max(5, uuids.size()))
 		# Populate container with saved UUIDs

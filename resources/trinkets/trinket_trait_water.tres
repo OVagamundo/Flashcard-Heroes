@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/WaterEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_water"
+name_key = "trinket.trait_water.name"
+description_key = "trinket.trait_water.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"WATER"
+ability_definitions = Array[Resource]([])

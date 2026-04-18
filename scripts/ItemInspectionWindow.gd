@@ -2,6 +2,7 @@ class_name ItemInspectionWindow
 extends "res://scripts/InspectionWindow.gd"
 
 const _InputUtils = preload("res://scripts/InputUtils.gd")
+const C = preload("res://scripts/Constants.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -59,51 +60,55 @@ func populate(context: Dictionary) -> void:
 		name_key = item_def.name_key
 	
 	name_label.text = tr(name_key)
-	# Omit base flavor description for items; we will show only stats and abilities.
-	
-	# Add item effect description (only for GachaBallDefinition items)
-	var effect_desc = ""
-	if item_def is GachaBallDefinition:
-		if item_def.bonus_hp > 0 and item_def.bonus_pwr > 0:
-			effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
-		elif item_def.bonus_hp > 0:
-			effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
-		elif item_def.bonus_pwr > 0:
-			effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
-	
-	# Build abilities section: list all abilities with name and localized description
-	var abilities_block := ""
-	if "ability_definitions" in item_def and item_def.ability_definitions.size() > 0:
-		var abilities_lines: Array[String] = []
-		for ability in item_def.ability_definitions:
-			if not is_instance_valid(ability):
-				continue
-			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
-			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
-			if is_instance_valid(_instance):
-				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
-				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
-			
-			if not ability_name.is_empty() or not ability_desc.is_empty():
-				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
-		abilities_block = "\n".join(abilities_lines)
 
-	var full_text: String = ""
-	if not effect_desc.is_empty():
-		full_text += effect_desc
-	if not abilities_block.is_empty():
-		if not full_text.is_empty():
-			full_text += "\n"
-		full_text += abilities_block
-	if not full_text.is_empty():
-		full_text += "\n[url=effect]EFFECTS[/url]"
+	var trait_id := _get_linked_trait_id(item_def)
+	var full_text := ""
+	if not trait_id.is_empty():
+		full_text = _build_trait_trinket_description(trait_id)
+		description_label.set_meta("effect_definition", null)
 	else:
-		full_text = "[url=effect]EFFECTS[/url]"
+		# Omit base flavor description for items; we will show only stats and abilities.
+		var effect_desc = ""
+		if item_def is GachaBallDefinition:
+			if item_def.bonus_hp > 0 and item_def.bonus_pwr > 0:
+				effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
+			elif item_def.bonus_hp > 0:
+				effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
+			elif item_def.bonus_pwr > 0:
+				effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
+		
+		# Build abilities section: list all abilities with name and localized description
+		var abilities_block := ""
+		if "ability_definitions" in item_def and item_def.ability_definitions.size() > 0:
+			var abilities_lines: Array[String] = []
+			for ability in item_def.ability_definitions:
+				if not is_instance_valid(ability):
+					continue
+				var ability_name := tr(ability.name_key) if "name_key" in ability else ""
+				var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+				if is_instance_valid(_instance):
+					ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
+					ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
+				
+				if not ability_name.is_empty() or not ability_desc.is_empty():
+					abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+			abilities_block = "\n".join(abilities_lines)
+
+		if not effect_desc.is_empty():
+			full_text += effect_desc
+		if not abilities_block.is_empty():
+			if not full_text.is_empty():
+				full_text += "\n"
+			full_text += abilities_block
+		if not full_text.is_empty():
+			full_text += "\n[url=effect]EFFECTS[/url]"
+		else:
+			full_text = "[url=effect]EFFECTS[/url]"
+		
+		# Store the full definition for the child window to use.
+		description_label.set_meta("effect_definition", item_def)
 
 	description_label.text = full_text.strip_edges()
-	
-	# Store the full definition for the child window to use.
-	description_label.set_meta("effect_definition", item_def)
 	
 	_update_recipe_display(item_def)
 
@@ -121,6 +126,86 @@ func _reset_window_size() -> void:
 	if is_instance_valid(self):
 		custom_minimum_size = Vector2.ZERO
 		size = Vector2.ZERO
+
+func _get_linked_trait_id(item_def: Resource) -> String:
+	if not is_instance_valid(item_def):
+		return ""
+	if "linked_trait_id" in item_def and item_def.linked_trait_id != &"":
+		return String(item_def.linked_trait_id)
+	for trait_name in C.TRAIT_SORT_ORDER:
+		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
+		if trait_def.get("trinket_id", &"") == item_def.id:
+			return trait_name
+	return ""
+
+func _build_trait_trinket_description(trait_id: String) -> String:
+	var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_id, {})
+	if trait_def.is_empty():
+		return ""
+
+	var current_count := _get_trait_count_for_context(trait_id)
+	var lines: Array[String] = []
+	for level in trait_def.get("levels", []):
+		var min_req := int(level.get("min", 0))
+		var is_active := current_count >= min_req
+		var color_tag := "[color=#FFFF00]" if is_active else "[color=#888888]"
+		var prefix := "* " if is_active else "- "
+		lines.append("%s%s%d: %s[/color]" % [color_tag, prefix, min_req, tr(level.get("desc_key", ""))])
+
+	return "\n".join(lines)
+
+func _get_trait_count_for_context(trait_id: String) -> int:
+	if GameManager.is_in_battle:
+		var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(battle_manager):
+			var team := _get_trait_team_for_context()
+			var active_traits: Dictionary = battle_manager.get_active_traits(team)
+			return int(active_traits.get(trait_id, 0))
+	return _get_run_trait_count(trait_id)
+
+func _get_trait_team_for_context() -> String:
+	if is_instance_valid(_location) and _location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
+		return "ENEMY"
+	return "PLAYER"
+
+func _get_run_trait_count(trait_id: String) -> int:
+	if not is_instance_valid(GameManager.run_state):
+		return 0
+
+	var counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	var lineup = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_LINEUP)
+	if not is_instance_valid(lineup):
+		return 0
+
+	for unit_uuid in lineup.get_all_non_empty_uuids():
+		var unit = GameManager.run_state.get_instance_by_uuid(unit_uuid)
+		if not is_instance_valid(unit):
+			continue
+		var unit_def = unit.get_definition()
+		_accumulate_trait_tags(counts, unit_def)
+		for item_uuid in unit.equipped_item_uuids:
+			if item_uuid.is_empty():
+				continue
+			var item_inst = GameManager.run_state.get_instance_by_uuid(item_uuid)
+			if not is_instance_valid(item_inst):
+				continue
+			_accumulate_trait_tags(counts, item_inst.get_definition())
+
+	return int(counts.get(trait_id, 0))
+
+func _accumulate_trait_tags(counts: Dictionary, definition: Resource) -> void:
+	if not is_instance_valid(definition) or not ("tags" in definition):
+		return
+	for tag in definition.tags:
+		match tag:
+			&"SOUL_FIRE":
+				counts["FIRE"] += 1
+			&"SOUL_EARTH":
+				counts["EARTH"] += 1
+			&"SOUL_WATER":
+				counts["WATER"] += 1
+			&"SOUL_AIR":
+				counts["AIR"] += 1
 
 func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(recipe_container):

@@ -203,10 +203,14 @@ static func setup_enemy_trinkets(state: RefCounted, encounter_def: Resource) -> 
 	if not is_instance_valid(et_container):
 		return
 	var slot_index := 0
-	var trinket_ids = encounter_def.get("enemy_trinket_ids")
-	if not trinket_ids is Array:
-		return
+	var trinket_ids: Array = []
+	var encounter_trinket_ids = encounter_def.get("enemy_trinket_ids")
+	if encounter_trinket_ids is Array:
+		trinket_ids.assign(encounter_trinket_ids)
+	_append_missing_enemy_trait_trinkets(encounter_def, trinket_ids, et_container.get_size())
 	for trinket_id in trinket_ids:
+		if slot_index >= et_container.get_size():
+			break
 		var trinket_def = Database.get_definition(trinket_id)
 		if not is_instance_valid(trinket_def):
 			continue
@@ -217,6 +221,50 @@ static func setup_enemy_trinkets(state: RefCounted, encounter_def: Resource) -> 
 		state.update_instance_location(trinket_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, slot_index)
 		state.enemy_trinkets.append(trinket_inst)
 		slot_index += 1
+
+static func _append_missing_enemy_trait_trinkets(encounter_def: Resource, trinket_ids: Array, max_slots: int) -> void:
+	var soul_counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	var placements = encounter_def.get("enemy_placements")
+	if not placements is Array:
+		return
+
+	for placement in placements:
+		var unit_def = Database.get_definition(placement.get("id", placement.get("unit_id", "")))
+		_accumulate_trait_souls(soul_counts, unit_def)
+		var equipment = placement.get("equipment", placement.get("items", []))
+		for item_data in equipment:
+			var item_id = item_data if item_data is StringName or item_data is String else item_data.get("id", "")
+			var item_def = Database.get_definition(item_id)
+			_accumulate_trait_souls(soul_counts, item_def)
+
+	for trait_name in C.TRAIT_SORT_ORDER:
+		if trinket_ids.size() >= max_slots:
+			break
+		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
+		var levels: Array = trait_def.get("levels", [])
+		if levels.is_empty():
+			continue
+		var min_required := int(levels[0].get("min", 999))
+		if int(soul_counts.get(trait_name, 0)) < min_required:
+			continue
+		var trinket_id: StringName = trait_def.get("trinket_id", &"")
+		if trinket_id == &"" or trinket_ids.has(trinket_id):
+			continue
+		trinket_ids.append(trinket_id)
+
+static func _accumulate_trait_souls(counts: Dictionary, definition: Resource) -> void:
+	if not is_instance_valid(definition) or not ("tags" in definition):
+		return
+	for tag in definition.tags:
+		match tag:
+			&"SOUL_FIRE":
+				counts["FIRE"] += 1
+			&"SOUL_EARTH":
+				counts["EARTH"] += 1
+			&"SOUL_WATER":
+				counts["WATER"] += 1
+			&"SOUL_AIR":
+				counts["AIR"] += 1
 
 static func setup_player_trinkets(state: RefCounted) -> void:
 	if not is_instance_valid(GameManager.run_state):

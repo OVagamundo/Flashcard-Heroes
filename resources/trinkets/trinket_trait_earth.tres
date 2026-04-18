@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/EarthEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_earth"
+name_key = "trinket.trait_earth.name"
+description_key = "trinket.trait_earth.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"EARTH"
+ability_definitions = Array[Resource]([])

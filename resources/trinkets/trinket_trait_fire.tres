@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/FireEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_fire"
+name_key = "trinket.trait_fire.name"
+description_key = "trinket.trait_fire.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"FIRE"
+ability_definitions = Array[Resource]([])

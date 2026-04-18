@@ -322,6 +322,14 @@ trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,"Grants +1 HP and +1 PWR to Tier 1 units when drawn.","Concede +1 HP e +1 PWR a unidades Nível 1 ao serem sacadas."
 ability.royal_insignia.name,Royal Blessing,Bênção Real
 ability.royal_insignia.desc,"When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 1 é sacada, concede +1 HP e +1 PWR."
+trinket.trait_fire.name,Fire Sigil,Sigilo de Fogo
+trinket.trait_fire.desc,"Enables the Fire trait whenever your team has enough Fire souls.","Ativa o traço de Fogo sempre que sua equipe tiver almas de Fogo suficientes."
+trinket.trait_earth.name,Earth Sigil,Sigilo de Terra
+trinket.trait_earth.desc,"Enables the Earth trait whenever your team has enough Earth souls.","Ativa o traço de Terra sempre que sua equipe tiver almas de Terra suficientes."
+trinket.trait_water.name,Water Sigil,Sigilo de Água
+trinket.trait_water.desc,"Enables the Water trait whenever your team has enough Water souls.","Ativa o traço de Água sempre que sua equipe tiver almas de Água suficientes."
+trinket.trait_air.name,Air Sigil,Sigilo de Ar
+trinket.trait_air.desc,"Enables the Air trait whenever your team has enough Air souls.","Ativa o traço de Ar sempre que sua equipe tiver almas de Ar suficientes."
 trait.fire.name,Fire,Fogo
 trait.fire.3,"Apply 1 Burn on attack.","Aplica 1 Queimadura ao atacar."
 trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total 2)."

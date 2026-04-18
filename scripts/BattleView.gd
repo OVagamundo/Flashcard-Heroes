@@ -16,17 +16,17 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
 
-# Trait Containers (Created programmatically)
-var player_traits: Control
-var enemy_traits: Control
-var _player_trait_anchor: Control
-var _enemy_trait_anchor: Control
-var _trait_hud_root: Control
+var player_traits: Control = null
+var enemy_traits: Control = null
+var _player_trait_anchor: Control = null
+var _enemy_trait_anchor: Control = null
+var _trait_hud_root: Control = null
 
 const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "AIR"]
 const TRAIT_HUD_Y: float = 10.0
 const TRAIT_TRACKER_SPACING: float = 8.0
 const TRAIT_SCREEN_MARGIN: float = 24.0
+const BATTLE_CONTENT_TOP_PADDING: float = 152.0
 
 # Combat Controls
 @onready var combat_controls_panel: PanelContainer = %CombatControlsPanel
@@ -80,78 +80,9 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 func _ready() -> void:
-	# --- LAYOUT FIX INJECTION ---
-	# Force Top Alignment and Insert Spacers to guarantee gap below Top Bar
-	# Reverting to 240px spacer (proven safe from bottom clipping)
-	# and raising HUD to 10px (Absolute Top) to clear unit slots.
-	var team_areas = get_node_or_null("TeamAreas")
-	if team_areas:
-		# Player Area Fix
-		var player_area_node = team_areas.get_node_or_null("PlayerArea")
-		if player_area_node and player_area_node is BoxContainer:
-			player_area_node.alignment = BoxContainer.ALIGNMENT_BEGIN
-			var spacer = Control.new()
-			spacer.custom_minimum_size = Vector2(0, 240) # 240px Top Gap
-			spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			player_area_node.add_child(spacer)
-			player_area_node.move_child(spacer, 0)
-			
-		# Enemy Area Fix
-		var enemy_area_node = team_areas.get_node_or_null("EnemyArea")
-		if enemy_area_node and enemy_area_node is BoxContainer:
-			enemy_area_node.alignment = BoxContainer.ALIGNMENT_BEGIN
-			var spacer = Control.new()
-			spacer.custom_minimum_size = Vector2(0, 240) # 240px Top Gap
-			spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			enemy_area_node.add_child(spacer)
-			enemy_area_node.move_child(spacer, 0)
-
-	# ----------------------------
-	# TRAIT HUD LAYER
-	# ----------------------------
-	var trait_layer = Control.new()
-	trait_layer.name = "TraitHUD"
-	trait_layer.layout_mode = 1
-	trait_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	trait_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	trait_layer.z_index = 100
-	add_child(trait_layer)
-	
-	# Player Traits Container (Floating HUD)
-	player_traits = Control.new()
-	player_traits.name = "PlayerTraits"
-	player_traits.layout_mode = 1
-	player_traits.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	player_traits.position = Vector2.ZERO
-	
-	# Enemy Traits Container (Floating HUD)
-	enemy_traits = Control.new()
-	enemy_traits.name = "EnemyTraits"
-	enemy_traits.layout_mode = 1
-	enemy_traits.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	enemy_traits.position = Vector2.ZERO
-	
-	_trait_hud_root = trait_layer
-	
-	# Player Side (Left)
-	_player_trait_anchor = Control.new()
-	_player_trait_anchor.layout_mode = 1 # Anchors
-	_player_trait_anchor.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_player_trait_anchor.position = Vector2(160, TRAIT_HUD_Y)
-	_trait_hud_root.add_child(_player_trait_anchor)
-	_player_trait_anchor.add_child(player_traits)
-	
-	# Enemy Side (Right)
-	_enemy_trait_anchor = Control.new()
-	_enemy_trait_anchor.layout_mode = 1
-	_enemy_trait_anchor.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_enemy_trait_anchor.position = Vector2(0, TRAIT_HUD_Y)
-	_trait_hud_root.add_child(_enemy_trait_anchor)
-	_enemy_trait_anchor.add_child(enemy_traits)
-	# ----------------------------
-
-		
-	# ----------------------------
+	# Main.tscn reserves the large HUD regions, and battle still needs a modest
+	# internal top offset so the board sits cleanly inside the middle slot.
+	_apply_battle_vertical_padding()
 
 	# Guard against duplicate BattleView instances which would cause multiple
 	# emissions of draw_gacha_requested per click.
@@ -192,6 +123,7 @@ func _ready() -> void:
 	_initialize_slots(player_bench, &"PlayerBench")
 	_initialize_slots(enemy_lineup, &"EnemyLineup")
 	_initialize_slots(enemy_trinket_bar, &"EnemyTrinkets")
+	_position_combat_controls()
 
 	# The initial draw is now handled directly in _ready to avoid race conditions.
 	# Subsequent updates will be handled by the battle_inventory_changed signal.
@@ -226,6 +158,43 @@ func _ready() -> void:
 	
 	if is_instance_valid(_battle_animator) and _battle_animator.has_signal("combat_step_reached"):
 		_battle_animator.combat_step_reached.connect(_on_combat_step_reached)
+
+func _apply_battle_vertical_padding() -> void:
+	var team_areas = get_node_or_null("TeamAreas")
+	if not is_instance_valid(team_areas):
+		return
+	for area_name in ["PlayerArea", "EnemyArea"]:
+		var area := team_areas.get_node_or_null(area_name) as BoxContainer
+		if not is_instance_valid(area):
+			continue
+		area.alignment = BoxContainer.ALIGNMENT_BEGIN
+		var spacer := Control.new()
+		spacer.custom_minimum_size = Vector2(0.0, BATTLE_CONTENT_TOP_PADDING)
+		spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		area.add_child(spacer)
+		area.move_child(spacer, 0)
+
+func _position_combat_controls() -> void:
+	if not is_instance_valid(combat_controls_panel):
+		return
+	var controls_parent := combat_controls_panel.get_parent()
+	if not is_instance_valid(controls_parent):
+		return
+	var controls_row := combat_controls_panel.get_node_or_null("OuterVBox/ControlsRow") as HBoxContainer
+	if is_instance_valid(controls_row):
+		controls_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	var target_height := 80.0
+	if is_instance_valid(discard_pile_button):
+		target_height = maxf(target_height, discard_pile_button.get_combined_minimum_size().y)
+	var content_min_size := combat_controls_panel.get_combined_minimum_size()
+	combat_controls_panel.custom_minimum_size = Vector2(
+		maxf(420.0, content_min_size.x + 16.0),
+		maxf(target_height, content_min_size.y + 8.0)
+	)
+	combat_controls_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	combat_controls_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	if combat_controls_panel.get_index() != 0:
+		controls_parent.move_child(combat_controls_panel, 0)
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	"""Called when battle state changes - triggers entry animation on battle start"""
@@ -319,10 +288,6 @@ func _redraw_board() -> void:
 	_populate_container(player_bench, "PlayerBench", false)
 	_populate_container(enemy_lineup, "EnemyLineup", true)
 	_populate_enemy_trinkets()
-	
-	_update_traits("PLAYER")
-	_update_traits("ENEMY")
-	call_deferred("_refresh_trait_hud_positions")
 
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):

@@ -109,7 +109,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
@@ -130,7 +130,7 @@ alignment = 1
 
 [node name="Tier1Machine" type="Control" parent="VBoxContainer/MachinesArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 200)
+custom_minimum_size = Vector2(400, 170)
 layout_mode = 2
 mouse_filter = 0
 
@@ -167,9 +167,9 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 100.0
-offset_top = 30.0
+offset_top = 22.0
 offset_right = 210.0
-offset_bottom = 110.0
+offset_bottom = 94.0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
@@ -184,7 +184,7 @@ text = "1 Token"
 
 [node name="Tier2Machine" type="Control" parent="VBoxContainer/MachinesArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 200)
+custom_minimum_size = Vector2(400, 170)
 layout_mode = 2
 mouse_filter = 0
 
@@ -221,9 +221,9 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 100.0
-offset_top = 30.0
+offset_top = 22.0
 offset_right = 210.0
-offset_bottom = 110.0
+offset_bottom = 94.0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
@@ -238,7 +238,7 @@ text = "2 Tokens"
 
 [node name="Tier3Machine" type="Control" parent="VBoxContainer/MachinesArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 200)
+custom_minimum_size = Vector2(400, 170)
 layout_mode = 2
 mouse_filter = 0
 
@@ -275,9 +275,9 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 100.0
-offset_top = 30.0
+offset_top = 22.0
 offset_right = 210.0
-offset_bottom = 110.0
+offset_bottom = 94.0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
@@ -294,12 +294,12 @@ text = "3 Tokens"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(350, 80)
+custom_minimum_size = Vector2(350, 64)
 theme_override_colors/font_color = Color(0.3, 0.9, 0.5, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_fonts/font = ExtResource("3_label_font")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "Study (+Tokens)"
 
 [node name="PrizeLineup" type="HBoxContainer" parent="VBoxContainer"]
@@ -329,11 +329,11 @@ custom_minimum_size = Vector2(192, 192)
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(200, 60)
+custom_minimum_size = Vector2(200, 48)
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_constants/outline_size = 0
 theme_override_fonts/font = ExtResource("3_label_font")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "Leave"
 
 [node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]

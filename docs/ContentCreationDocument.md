@@ -60,7 +60,14 @@ The game follows a mandatory **Hybrid Architecture** that separates **Data Truth
 | **The Index** | `DataContainer` | A positional index (Array of UUIDs) that allows O(1) lookups. It does NOT own the data, only the *location* of the data. |
 | **The Bridge** | `LocationIdentifier` | A universal key `{container, index, unit_uuid}` used to bridge Managers and Views. |
 
-### 2. The Golden Rules of State
+### 2. Tier-Based Strategic Roles
+Content design should move away from generic "Weak vs. Strong" tiers toward functional board roles:
+
+- **Tier 1 & 2 (The Engines)**: Designed for high **Interaction Surplus**. These units have low baked-in stats but complex scaling abilities. They are cheap to realize (1–2 Tokens) and serve as the fuel for the team engine.
+- **Tier 3 (The Anchors)**: Designed for high **Stat Density**. They provide massive baked-in packages and 4 item slots to create "Board Stability." They have the highest "Gold-per-Token" realization rate (4 Gold value for 3 Tokens).
+- **The Carry (Tier-Agnostic)**: A "Carry" is any unit where the Interaction Surplus (from Traits, Trinkets, and Items) makes them the primary value-driver. Even a Tier 1 unit can be a Carry if its scaling synergy is properly fueled.
+
+### 3. The Golden Rules of State
 
 1.  **The Instance is King**: If `GachaBallInstance` says HP is 50, and the UI says 40, the Instance is right.
 2.  **Atomic Transactions**: Any operation moving an instance (move, swap, equip) must update both the **Index** (`DataContainer`) and the **Truth** (`GachaBallInstance` location property) in a single underlying transaction.
@@ -350,12 +357,10 @@ When multiple summons occur simultaneously (e.g. Soul Echo + Last Wish):
 Use these checklists **BEFORE** marking any implementation as complete.
 
 ### 1. New Unit Checklist
-- [ ] **Stats Validated**: 
-    - Tier 2/3 Stats = Sum of Ingredients - 1 (or -2)? **NO**. 
-    - **Rule**: Tier 2 Stats = Sum of Tier 1 Ingredients (approx). 
-    - *Example*: Knight (3/3) = Apprentice (2/1) + Squire (1/2). Wait, that's exactly equal.
-    - *Example*: Doppelganger (2/2) = Protector (1/1) + Protector (1/1). Exactly equal.
-    - **Verify**: Base HP/PWR matches the design intent or recipe sum.
+- [ ] **Stats Validated**: Ensure that the unit HP and PWR equals the exact sum of its recipe parents (ingredients). This ensures the "Reciprocal Stat Conservation" rule is maintained during merging/tier-ups.
+- [ ] **Scaling vs. Package Density**: 
+    - Is this an **Engine** (High Interaction Surplus) or an **Anchor** (High Stat Density)?
+    - Does the ability complexity match the role?
 - [ ] **Tier & Cost Integrity**: 
     -  matches filename ().
     -  equals  (Cost 1/2/3).
