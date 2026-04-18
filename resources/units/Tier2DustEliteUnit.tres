@@ -1,12 +1,11 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/units/Tier2DustEliteUnit.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_summon"]
-[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_turn.tres" id="4_turn"]
-[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_death.tres" id="5_death"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_death.tres" id="4_death"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_growth.tres" id="5_growth"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_hurt.tres" id="6_hurt"]
-[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_attack.tres" id="7_attack"]
 
 [resource]
 script = ExtResource("1_script")
@@ -20,8 +19,8 @@ tier = 2
 cost = 4
 category = &"UNIT"
 
-base_hp = 3
-base_pwr = 1
+base_hp = 4
+base_pwr = 4
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_summon"), ExtResource("5_death")])
+ability_definitions = Array[Resource]([ExtResource("3_summon"), ExtResource("4_death"), ExtResource("5_growth"), ExtResource("6_hurt")])

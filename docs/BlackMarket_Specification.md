@@ -59,7 +59,7 @@ The Black Market uses a two-stage interactive overlay system managed by `Main.gd
 | `ui.black_market_title` | Black Market | Mercado Negro |
 | `ui.drop_zone_remove` | Remove | Remover |
 | `ui.drop_zone_transform` | Transform | Transformar |
-| `ui.bm_instruction` | Move the gacha ball here... | Mova a gacha ball para cá... |
+| `ui.bm_instruction` | Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory. | Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário. |
 
 ---
 

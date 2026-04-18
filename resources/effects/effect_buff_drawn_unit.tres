@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 parameters = {
-"hp_amount": 2,
-"pwr_amount": 2,
+"hp_amount": 1,
+"pwr_amount": 1,
 "tier_filter": 1
 }
 target_type = &"NONE"

@@ -29,17 +29,26 @@ Main.tscn (Shell)
 
 | Element | Size | Notes |
 |---------|------|-------|
-| Battle slot | 192x192px | 2x scale, units 128x128 centered |
+| Battle slot | 192x192px | 2x scale. Opaque background (Alpha 1.0). Units positioned to stand on the floor. |
 | Inventory slot | 192x192px | Glass overlay, unit 128x128 centered |
 | TopArea trinket slot | 128x128px | Standard icon size |
 | Gacha machines | 260px height | Fixed bottom bar |
 | Top gap spacer | 144px | Defines the HUD vertical boundary |
+| Title Screen Buttons | - | 50px offset towards bottom to clear logo. |
 
 **Critical:** `BattleView._initialize_slots()` overrides scene placeholders with SlotViews.
 ### GachaBall Animation & Spawning
 The game uses two distinct methods for GachaBall movement:
 1. **Draw Animation (Machine → Bench)**: When a player spends tokens, the ball animates along a Catmull-Rom spline starting from the **specific GachaMachine's knob position** and ending at the target `SlotView`.
-2. **Pool Population (Top-down Gravity)**: Inside the Physics Drawers (Battle Inventory/Discard), balls spawn at the **top-center** with a random X-stagger and fall naturally. Spawning is sequential (0.15s interval) to prevent overlap explosions.
+2. **Elite Summon (World → HUD)**: When an Elite unit summons a minion directly to the inventory, it uses the **Kinematic Projectile Standard**. The ball grows from 0.3x to 1.5x instantly at launch to maximize impact.
+3. **Pool Population (Top-down Gravity)**: Inside the Physics Drawers (Battle Inventory/Discard), balls spawn at the **top-center** with a random X-stagger and fall naturally. Spawning is sequential (0.15s interval) to prevent overlap explosions.
+
+### Kinematic Projectile Standard
+For high-fidelity transitions involving screen-space movement (Gacha Draws, Elite Summons), the system uses a **Kinematic Projectile** model instead of standard Bezier curves:
+- **Linear Horizontal Velocity**: $X = \text{lerp}(start, end, t)$. This ensures constant movement speed across the screen.
+- **Parabolic Vertical Arc**: $Y = \text{lerp}(start, end, t) - (4.0 \cdot H \cdot t \cdot (1.0 - t))$. This simulates uniform gravitational acceleration, where $H$ is the peak arc height.
+- **Visual Impact**: Transitions land with a frame-synchronous impact (machine bounce or landing squash) and matching audio hooks.
+
 - **Scaling**: All slots maintain their 192px baseline asset scale.
 
 ---
@@ -96,7 +105,7 @@ To ensure absolute visibility of contextual information, all windows managed by 
 The application maintains a strict four-tier UI hierarchy to resolve all occlusion issues:
 1. **BackgroundUILayer (40)**: Persistent inventory windows (Run/Battle) and Discard Pile.
 2. **HUDLayer (60)**: Gacha Machine textures, count labels, and top/bottom panel buttons.
-3. **EffectsLayer (90)**: Global VFX and transitions.
+3. **EffectsLayer (90)**: Global VFX, transitions, and parabolic projectiles. Crucial for **HUD-to-World** transitions (like machine bounces) as it resides on a separate CanvasLayer that bypasses internal viewport clipping.
 4. **ModalLayer (120)**: Inspection windows, pop-ups, tutorials, and minigames.
 *Note: This ensures the "physical" UI (Inventory) slides out behind the Gacha Machines, while pop-ups always render on top of both.*
 

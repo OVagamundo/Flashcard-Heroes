@@ -388,7 +388,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				# Elite encounter - uses standard daily budget (has free elite unit)
 				# Pass history for weighted pity system
 				var budget: int = daily_budget
-				encounter_def = EncounterGenerator.generate_elite_encounter(budget, run_state.elite_encounter_history)
+				encounter_def = EncounterGenerator.generate_elite_encounter(budget, run_state.elite_encounter_history, run_state.last_elite_id)
 				
 				# Record encounter in history immediately upon generation/selection
 				var elite_id = encounter_def.get_meta("elite_boss_id")

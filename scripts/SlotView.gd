@@ -28,11 +28,15 @@ func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
 func _ready() -> void:
+	# Reset node modulation to ensure transparency isn't coming from scene state
+	self.modulate = Color.WHITE
+	self.self_modulate = Color.WHITE
+	
 	# Configure the slot background using properties to render the texture
 	_background_style = StyleBoxTexture.new()
 	_background_style.texture = load("res://assets/ui/textures/slot.png")
-	# Default neutral tint
-	_background_style.modulate_color = Color(0.5, 0.5, 0.5, 0.6)
+	# Default neutral tint (no alpha changes as requested)
+	_background_style.modulate_color = Color(0.5, 0.5, 0.5)
 	add_theme_stylebox_override("panel", _background_style)
 	
 	# Connect to granular stat change signal for targeted updates
@@ -66,13 +70,13 @@ func set_slot_color(container_name: StringName) -> void:
 	# Tint the slot background texture based on container type
 	match container_name:
 		&"PlayerLineup":
-			_background_style.modulate_color = Color(0.3, 0.5, 0.8, 0.8)
+			_background_style.modulate_color = Color(0.3, 0.5, 0.8)
 		&"PlayerBench":
-			_background_style.modulate_color = Color(0.3, 0.7, 0.3, 0.8)
+			_background_style.modulate_color = Color(0.3, 0.7, 0.3)
 		&"EnemyLineup":
-			_background_style.modulate_color = Color(0.8, 0.3, 0.3, 0.8)
+			_background_style.modulate_color = Color(0.8, 0.3, 0.3)
 		_:
-			_background_style.modulate_color = Color(0.5, 0.5, 0.5, 0.6)
+			_background_style.modulate_color = Color(0.5, 0.5, 0.5)
 
 func _exit_tree() -> void:
 	if SignalBus.unit_stat_changed.is_connected(_on_unit_stat_changed):
