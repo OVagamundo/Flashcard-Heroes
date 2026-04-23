@@ -6,7 +6,7 @@ class_name TutorialPopup
 ## Supports dynamic positioning relative to anchors (e.g. "display above")
 ## Automatically handles platform-specific text (.mouse vs .touch suffixes)
 
-const BUTTON_FONT = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+const BUTTON_FONT = preload("res://assets/fonts/static/NotoSansJP-Bold.ttf")
 const WINDOW_MARGIN: float = 30.0 # Distance from screen edges or anchor
 
 @onready var background_blocker: Control = $BackgroundBlocker
@@ -191,7 +191,12 @@ func _update_page_display() -> void:
 			page_text = tr(page_text)
 	
 	# Parse BBCode for rich text formatting
-	text_label.text = page_text
+	# Collapse multiple newlines to remove empty lines between paragraphs as requested
+	var collapsed_text = page_text
+	var regex = RegEx.new()
+	regex.compile("\\n\\s*\\n+")
+	collapsed_text = regex.sub(collapsed_text, "\n", true)
+	text_label.text = collapsed_text
 	
 	# Handle per-page anchors if anchor_path is provided
 	if page.has("anchor_path") and not page.get("anchor_path", "").is_empty():
@@ -208,7 +213,9 @@ func _update_page_display() -> void:
 	# Show appropriate buttons
 	var is_last_page := _current_page >= _pages.size() - 1
 	next_button.visible = not is_last_page
+	next_button.text = tr("tutorial.btn.next")
 	got_it_button.visible = is_last_page
+	got_it_button.text = tr("tutorial.btn.got_it")
 
 
 func _update_page_indicator() -> void:

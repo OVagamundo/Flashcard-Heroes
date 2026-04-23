@@ -7,22 +7,25 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var name_label: Label = $HBoxContainer/VBoxContainer/NameLabel
 @onready var count_label: Label = $HBoxContainer/VBoxContainer/CountLabel
 
+var _current_trait_id: String = ""
+
 func populate(trait_name: String, count: int, is_active: bool) -> void:
 	# Set Icon based on trait name
+	_current_trait_id = trait_name
 	if is_instance_valid(icon_rect):
 		match trait_name:
 			"FIRE":
 				icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket7A.png")
-				if is_instance_valid(name_label): name_label.text = "Fire"
+				if is_instance_valid(name_label): name_label.text = tr("trait.fire.name")
 			"EARTH":
 				icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket6A.png")
-				if is_instance_valid(name_label): name_label.text = "Earth"
+				if is_instance_valid(name_label): name_label.text = tr("trait.earth.name")
 			"WATER":
 				icon_rect.texture = preload("res://assets/sprites/items/WaterEmblem.png")
-				if is_instance_valid(name_label): name_label.text = "Water"
+				if is_instance_valid(name_label): name_label.text = tr("trait.water.name")
 			"AIR":
 				icon_rect.texture = preload("res://assets/sprites/items/AirEmblem.png")
-				if is_instance_valid(name_label): name_label.text = "Air"
+				if is_instance_valid(name_label): name_label.text = tr("trait.air.name")
 			_:
 				if is_instance_valid(name_label): name_label.text = trait_name
 	
@@ -75,16 +78,8 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		# Get trait name from label (reverse from display name to ID)
-		var trait_name = ""
-		match name_label.text:
-			"Fire": trait_name = "FIRE"
-			"Earth": trait_name = "EARTH"
-			"Water": trait_name = "WATER"
-			"Air": trait_name = "AIR"
-		
-		if not trait_name.is_empty():
+		if not _current_trait_id.is_empty():
 			# S6/W2: Clicking UI element clears selection
 			SignalBus.emit_signal("selection_clear_requested")
-			SignalBus.emit_signal("trait_inspection_requested", trait_name, self)
+			SignalBus.emit_signal("trait_inspection_requested", _current_trait_id, self)
 			accept_event()

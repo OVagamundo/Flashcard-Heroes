@@ -79,7 +79,11 @@ func populate(context: Dictionary) -> void:
 		
 		text += "%s%s%d: %s%s\n" % [color_tag, prefix, min_req, desc_text, end_tag]
 	
-	description_label.text = text
+	var final_text = text.strip_edges()
+	var regex = RegEx.new()
+	regex.compile("\\n\\s*\\n+")
+	final_text = regex.sub(final_text, "\n", true)
+	description_label.text = final_text
 	
 	_reset_window_size()
 	

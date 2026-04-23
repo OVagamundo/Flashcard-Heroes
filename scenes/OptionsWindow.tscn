@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/OptionsWindow.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/ui/game_theme.tres" id="2_theme"]
-[ext_resource type="FontFile" uid="uid://cl64dwatceoc5" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_font"]
 
 [node name="OptionsWindow" type="Control"]
 layout_mode = 3
@@ -20,10 +19,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -150.0
-offset_right = 200.0
-offset_bottom = 150.0
+offset_left = -400.0
+offset_top = -400.0
+offset_right = 400.0
+offset_bottom = 400.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("2_theme")
@@ -45,8 +44,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 24
+
 text = "Options"
 horizontal_alignment = 1
 
@@ -59,21 +57,19 @@ layout_mode = 2
 theme_override_constants/separation = 15
 
 [node name="LanguageLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/LanguageContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 14
+
 text = "Language:"
 vertical_alignment = 1
 
 [node name="LanguageDropdown" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/LanguageContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 40)
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
 theme = ExtResource("2_theme")
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
 
 [node name="SpacerGraphics" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 10)
@@ -84,30 +80,18 @@ unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_theme")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 14
-button_pressed = true
-text = "Fullscreen"
 
 [node name="CRTCheckbox" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_theme")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 14
-button_pressed = true
-text = "CRT Display Effect"
 
 [node name="GlowCheckbox" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_theme")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 14
-button_pressed = true
-text = "Glow Effect"
 
 [node name="GlowDebugContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -118,28 +102,23 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
-text = "Glow Debug:"
 vertical_alignment = 1
 
 [node name="GlowDebugDropdown" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/GlowDebugContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 40)
+custom_minimum_size = Vector2(300, 60)
 layout_mode = 2
 theme = ExtResource("2_theme")
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
 
 [node name="SpacerAudio" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="AudioLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 14
+
 text = "Audio Settings"
 horizontal_alignment = 1
 
@@ -147,18 +126,18 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MasterControl"]
+[node name="MasterLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MasterControl"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
+
 text = "Master:"
 vertical_alignment = 1
 
 [node name="MasterSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/MasterControl"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
@@ -169,18 +148,18 @@ value = 1.0
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MusicControl"]
+[node name="MusicLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MusicControl"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
+
 text = "Music:"
 vertical_alignment = 1
 
 [node name="MusicSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/MusicControl"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
@@ -191,18 +170,18 @@ value = 1.0
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SFXControl"]
+[node name="SFXLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SFXControl"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
+
 text = "SFX:"
 vertical_alignment = 1
 
 [node name="SFXSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/SFXControl"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(180, 0)
+custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 4
 max_value = 1.0
@@ -216,11 +195,10 @@ size_flags_vertical = 3
 
 [node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(300, 80)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("2_theme")
 theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 14
+
 text = "Confirm"

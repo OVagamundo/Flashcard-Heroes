@@ -132,7 +132,6 @@ script = ExtResource("2_cdefg")
 [node name="ScreenShake" type="Node" parent="."]
 script = ExtResource("13_screenshake")
 
-
 [node name="BattleLogOverlay" parent="." instance=ExtResource("6_battle_log_overlay")]
 
 [node name="SelectionClearArea" type="Control" parent="."]
@@ -143,7 +142,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3_selclear")
-
 
 [node name="ContentArea" type="SubViewportContainer" parent="."]
 unique_name_in_owner = true
@@ -254,7 +252,8 @@ theme_override_constants/separation = 8
 mouse_filter = 2
 
 [node name="GoldIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/GoldGroup"]
-custom_minimum_size = Vector2(96, 96)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("8_gold_coin")
@@ -264,10 +263,11 @@ stretch_mode = 5
 [node name="GoldLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/GoldGroup"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"HUDLabel"
 theme_override_colors/font_color = Color(1, 0.843, 0, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 48
+
 text = "0"
 vertical_alignment = 1
 
@@ -278,7 +278,8 @@ theme_override_constants/separation = 8
 mouse_filter = 2
 
 [node name="TokenIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
-custom_minimum_size = Vector2(96, 96)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("9_token_coin")
@@ -288,7 +289,8 @@ stretch_mode = 5
 [node name="TokensLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 48
+theme_type_variation = &"HUDLabel"
+
 text = "0"
 vertical_alignment = 1
 
@@ -305,9 +307,10 @@ alignment = 1
 [node name="DaysLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"HUDLabel"
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 48
+
 text = "Day 1"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -459,7 +462,7 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 42
+
 text = "x0"
 horizontal_alignment = 1
 vertical_alignment = 2
@@ -512,7 +515,7 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 42
+
 text = "x0"
 horizontal_alignment = 1
 vertical_alignment = 2
@@ -565,7 +568,7 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 42
+
 text = "x0"
 horizontal_alignment = 1
 vertical_alignment = 2
@@ -582,8 +585,6 @@ layer = 120
 
 [node name="GlowWorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_glow")
-
-
 
 [node name="PostProcessLayer" type="CanvasLayer" parent="."]
 layer = 130

@@ -1,9 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://c1w8nqy5cqrct"]
 
 [ext_resource type="Script" path="res://scripts/EffectInspectionWindow.gd" id="1_v452y"]
-[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_label_font"]
-[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator.ttf" id="3_body_font"]
-
 
 [node name="EffectInspectionWindow" type="PanelContainer"]
 anchors_preset = 8
@@ -29,14 +26,14 @@ mouse_filter = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 2
 
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -44,8 +41,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_label_font")
-theme_override_font_sizes/font_size = 24
+
 text = "Effect Name"
 horizontal_alignment = 1
 
@@ -58,8 +54,9 @@ custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_fonts/normal_font = ExtResource("3_body_font")
-theme_override_font_sizes/normal_font_size = 32
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+
 bbcode_enabled = true
 text = "This is the detailed description of the effect."
 fit_content = true

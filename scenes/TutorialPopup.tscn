@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/TutorialPopup.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
-[ext_resource type="FontFile" uid="uid://cqq68f74egtp1" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="3_font"]
+
 [ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/ui/game_theme.tres" id="4_theme"]
 
 [node name="TutorialPopup" type="Control"]
@@ -26,10 +26,10 @@ color = Color(0, 0, 0, 0.75)
 
 [node name="PopupPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(600, 0)
+custom_minimum_size = Vector2(700, 0)
 layout_mode = 0
-offset_right = 600.0
-offset_bottom = 245.0
+offset_right = 700.0
+offset_bottom = 180.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel"]
 layout_mode = 2
@@ -37,10 +37,10 @@ theme_override_constants/separation = 0
 
 [node name="HeaderArea" type="MarginContainer" parent="PopupPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 5
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="HeaderHBox" type="HBoxContainer" parent="PopupPanel/VBoxContainer/HeaderArea"]
 layout_mode = 2
@@ -50,27 +50,27 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"HeaderLabel"
-theme_override_font_sizes/font_size = 20
+
 text = "TUTORIAL"
 horizontal_alignment = 1
 
 [node name="ContentMargin" type="MarginContainer" parent="PopupPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 25
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 25
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel/VBoxContainer/ContentMargin"]
 layout_mode = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 4
 
 [node name="TextLabel" type="RichTextLabel" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_fonts/normal_font = ExtResource("3_font")
-theme_override_font_sizes/normal_font_size = 16
-theme_override_constants/line_separation = 6
+
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
 bbcode_enabled = true
 text = "Tutorial text here..."
 fit_content = true
@@ -79,27 +79,23 @@ fit_content = true
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 10
+theme_override_constants/separation = 4
 
 [node name="ButtonContainer" type="HBoxContainer" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 20
+theme_override_constants/separation = 8
 
 [node name="NextButton" type="Button" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer/ButtonContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(120, 45)
+custom_minimum_size = Vector2(250, 80)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
 text = "Next"
 
 [node name="GotItButton" type="Button" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer/ButtonContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(120, 45)
+custom_minimum_size = Vector2(250, 80)
 layout_mode = 2
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
 text = "Got it!"
 
 [node name="PointerLine" type="Line2D" parent="."]

@@ -1,8 +1,6 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/BattleLogOverlay.gd" id="1"]
-[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_label_font"]
-[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator.ttf" id="3_body_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.15, 0.17, 0.22, 0.9)
@@ -60,8 +58,7 @@ size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 1
-theme_override_fonts/font = ExtResource("2_label_font")
-theme_override_font_sizes/font_size = 10
+
 text = "⋮⋮ Battle Log"
 vertical_alignment = 1
 
@@ -91,8 +88,7 @@ custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_fonts/normal_font = ExtResource("3_body_font")
-theme_override_font_sizes/normal_font_size = 14
+
 bbcode_enabled = true
 fit_content = true
 scroll_active = false

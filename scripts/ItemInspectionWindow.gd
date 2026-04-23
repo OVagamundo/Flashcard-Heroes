@@ -63,11 +63,16 @@ func populate(context: Dictionary) -> void:
 
 	var trait_id := _get_linked_trait_id(item_def)
 	var full_text := ""
+	
 	if not trait_id.is_empty():
 		full_text = _build_trait_trinket_description(trait_id)
 		description_label.set_meta("effect_definition", null)
 	else:
-		# Omit base flavor description for items; we will show only stats and abilities.
+		# Base flavor description for trinkets (often contains passive effect info)
+		var base_desc = ""
+		if item_def is TrinketDefinition:
+			base_desc = tr(item_def.description_key)
+		
 		var effect_desc = ""
 		if item_def is GachaBallDefinition:
 			if item_def.bonus_hp > 0 and item_def.bonus_pwr > 0:
@@ -94,12 +99,16 @@ func populate(context: Dictionary) -> void:
 					abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 			abilities_block = "\n".join(abilities_lines)
 
+		if not base_desc.is_empty():
+			full_text += base_desc
 		if not effect_desc.is_empty():
+			if not full_text.is_empty(): full_text += "\n"
 			full_text += effect_desc
 		if not abilities_block.is_empty():
 			if not full_text.is_empty():
 				full_text += "\n"
 			full_text += abilities_block
+		
 		if not full_text.is_empty():
 			full_text += "\n[url=effect]EFFECTS[/url]"
 		else:
@@ -108,7 +117,11 @@ func populate(context: Dictionary) -> void:
 		# Store the full definition for the child window to use.
 		description_label.set_meta("effect_definition", item_def)
 
-	description_label.text = full_text.strip_edges()
+	var final_text = full_text.strip_edges()
+	var regex = RegEx.new()
+	regex.compile("\\n\\s*\\n+")
+	final_text = regex.sub(final_text, "\n", true)
+	description_label.text = final_text
 	
 	_update_recipe_display(item_def)
 

@@ -118,4 +118,3 @@ shape = SubResource("RectangleShape2D_lid3")
 [node name="DropTimer" type="Timer" parent="PhysicsRoot/Tier3Tray"]
 wait_time = 0.12
 
-

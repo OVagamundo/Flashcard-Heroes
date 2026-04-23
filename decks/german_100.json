@@ -1,7 +1,9 @@
 {
     "deck_id": "german_100",
     "display_name": "German Casual Conversations",
+    "display_name_pt": "Conversas Casuais em Alemão",
     "description": "100 highly useful words and expressions for casual German conversation",
+    "description_pt": "100 palavras e expressões altamente úteis para conversas casuais em alemão",
     "cards": [
         { "id": "GER_CASUAL_001", "question": "Halt", "answer": "Just / Kind of (particle)", "explanation": "Das ist halt so. (That's just the way it is.)" },
         { "id": "GER_CASUAL_002", "question": "Mal", "answer": "Just / Once (particle)", "explanation": "Schau mal! (Just look!)" },

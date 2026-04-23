@@ -1,8 +1,8 @@
 [gd_resource type="Theme" format=3 uid="uid://bvuqtb8gv6two"]
 
-[ext_resource type="FontFile" uid="uid://cqq68f74egtp1" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_label"]
-[ext_resource type="FontFile" uid="uid://b6jfteph66ip4" path="res://assets/fonts/pixel_operator/PixelOperator.ttf" id="4_body"]
-[ext_resource type="FontFile" uid="uid://bgmllqp18ix7j" path="res://assets/fonts/karmatic-arcade/ka1.ttf" id="5_title"]
+[ext_resource type="FontFile" path="res://assets/fonts/noto_sans_bold_composite.tres" id="2_label"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Regular.ttf" id="4_body"]
+[ext_resource type="FontFile" path="res://assets/fonts/noto_sans_black_composite.tres" id="5_title"]
 [ext_resource type="Texture2D" uid="uid://cnfam3q3gdtsg" path="res://assets/ui/textures/button_v4_disabled.png" id="btn_disabled_tex"]
 [ext_resource type="Texture2D" uid="uid://1shrkoxxmwr7" path="res://assets/ui/textures/button_v4_hover.png" id="btn_hover_tex"]
 [ext_resource type="Texture2D" uid="uid://ci0dtfqgwb5s1" path="res://assets/ui/textures/button_v4_normal.png" id="btn_normal_tex"]
@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://cdh4q1heaqf1n" path="res://assets/ui/textures/input_v4.png" id="line_edit_tex"]
 [ext_resource type="Texture2D" uid="uid://bqgyw2pqupqfd" path="res://assets/ui/textures/panel_v4.png" id="panel_tex"]
 [ext_resource type="Texture2D" uid="uid://dw6pf678qykba" path="res://assets/ui/textures/bar_v4_bg.png" id="prog_bg_tex"]
-[ext_resource type="Texture2D" uid="uid://1mxh42sgj3h3" path="res://assets/ui/textures/bar_v4_health.png" id="prog_fill_tex"]
 [ext_resource type="Texture2D" uid="uid://3ojmmhsxiok6" path="res://assets/ui/textures/slider_v4_grabber.png" id="slider_grabber_tex"]
 [ext_resource type="Texture2D" uid="uid://bp3slm462cvhk" path="res://assets/ui/textures/slider_v4_track.png" id="slider_track_tex"]
 [ext_resource type="Texture2D" uid="uid://djr0m56uajjo" path="res://assets/ui/textures/tab_v4_active.png" id="tab_active_tex"]
@@ -20,53 +19,57 @@
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
 texture = ExtResource("panel_tex")
-texture_margin_left = 6.0
-texture_margin_top = 6.0
-texture_margin_right = 6.0
-texture_margin_bottom = 6.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_disabled"]
 texture = ExtResource("btn_disabled_tex")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_hover"]
 texture = ExtResource("btn_hover_tex")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_normal"]
 texture = ExtResource("btn_normal_tex")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_pressed"]
 texture = ExtResource("btn_pressed_tex")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_slider_track"]
 texture = ExtResource("slider_track_tex")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_line_edit"]
 content_margin_left = 8.0
 texture = ExtResource("line_edit_tex")
-texture_margin_left = 6.0
-texture_margin_top = 6.0
-texture_margin_right = 6.0
-texture_margin_bottom = 6.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prog_bg"]
 texture = ExtResource("prog_bg_tex")
@@ -76,34 +79,35 @@ texture_margin_right = 3.0
 texture_margin_bottom = 3.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prog_fill"]
-texture = ExtResource("prog_fill_tex")
+texture = ExtResource("prog_bg_tex")
 texture_margin_left = 3.0
 texture_margin_top = 3.0
 texture_margin_right = 3.0
 texture_margin_bottom = 3.0
+modulate_color = Color(0.8, 0.2, 0.2, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tab_active"]
 content_margin_left = 10.0
 content_margin_right = 10.0
 texture = ExtResource("tab_active_tex")
-texture_margin_left = 6.0
-texture_margin_top = 6.0
-texture_margin_right = 6.0
-texture_margin_bottom = 2.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tab_inactive"]
 content_margin_left = 10.0
 content_margin_right = 10.0
 texture = ExtResource("tab_inactive_tex")
-texture_margin_left = 6.0
-texture_margin_top = 6.0
-texture_margin_right = 6.0
-texture_margin_bottom = 2.0
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 8.0
 modulate_color = Color(0.8, 0.8, 0.8, 1)
 
 [resource]
-default_font = ExtResource("2_label")
-default_font_size = 18
+default_font = ExtResource("5_title")
+default_font_size = 22
 AcceptDialog/styles/panel = SubResource("StyleBoxTexture_panel")
 Button/colors/font_color = Color(0.15, 0.1, 0.08, 1)
 Button/colors/font_disabled_color = Color(0.5, 0.5, 0.5, 1)
@@ -111,8 +115,8 @@ Button/colors/font_hover_color = Color(0.2, 0.12, 0.1, 1)
 Button/colors/font_outline_color = Color(0, 0, 0, 0)
 Button/colors/font_pressed_color = Color(0.15, 0.1, 0.08, 1)
 Button/constants/outline_size = 0
-Button/font_sizes/font_size = 18
-Button/fonts/font = ExtResource("2_label")
+Button/font_sizes/font_size = 36
+Button/fonts/font = ExtResource("5_title")
 Button/styles/disabled = SubResource("StyleBoxTexture_btn_disabled")
 Button/styles/focus = SubResource("StyleBoxTexture_btn_hover")
 Button/styles/hover = SubResource("StyleBoxTexture_btn_hover")
@@ -129,15 +133,20 @@ HeaderLabel/base_type = &"Label"
 HeaderLabel/colors/font_color = Color(0.98, 0.96, 0.92, 1)
 HeaderLabel/colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 HeaderLabel/constants/outline_size = 4
-HeaderLabel/font_sizes/font_size = 32
+HeaderLabel/font_sizes/font_size = 64
 HeaderLabel/fonts/font = ExtResource("5_title")
 Label/colors/font_color = Color(0.98, 0.96, 0.92, 1)
 Label/colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+Label/constants/line_spacing = -4
 Label/constants/outline_size = 4
-Label/font_sizes/font_size = 18
-Label/fonts/font = ExtResource("2_label")
+Label/font_sizes/font_size = 28
+Label/fonts/font = ExtResource("5_title")
+HUDLabel/base_type = &"Label"
+HUDLabel/font_sizes/font_size = 48
+HUDLabel/fonts/font = ExtResource("5_title")
 LineEdit/colors/font_color = Color(0.98, 0.96, 0.92, 1)
-LineEdit/fonts/font = ExtResource("4_body")
+LineEdit/font_sizes/font_size = 28
+LineEdit/fonts/font = ExtResource("5_title")
 LineEdit/styles/focus = SubResource("StyleBoxTexture_line_edit")
 LineEdit/styles/normal = SubResource("StyleBoxTexture_line_edit")
 OptionButton/colors/font_color = Color(0.15, 0.17, 0.22, 1)
@@ -158,8 +167,14 @@ PopupMenu/styles/panel = SubResource("StyleBoxTexture_panel")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_prog_bg")
 ProgressBar/styles/fill = SubResource("StyleBoxTexture_prog_fill")
 RichTextLabel/colors/default_color = Color(0.1, 0.1, 0.1, 1)
-RichTextLabel/font_sizes/normal_font_size = 16
-RichTextLabel/fonts/normal_font = ExtResource("4_body")
+RichTextLabel/constants/line_separation = -4
+RichTextLabel/constants/p_separation = 0
+RichTextLabel/font_sizes/normal_font_size = 26
+RichTextLabel/fonts/bold_font = ExtResource("5_title")
+RichTextLabel/fonts/bold_italics_font = ExtResource("5_title")
+RichTextLabel/fonts/italics_font = ExtResource("5_title")
+RichTextLabel/fonts/mono_font = ExtResource("5_title")
+RichTextLabel/fonts/normal_font = ExtResource("5_title")
 TabContainer/colors/font_selected_color = Color(0.98, 0.96, 0.92, 1)
 TabContainer/colors/font_unselected_color = Color(0.6, 0.58, 0.55, 1)
 TabContainer/styles/panel = SubResource("StyleBoxTexture_panel")

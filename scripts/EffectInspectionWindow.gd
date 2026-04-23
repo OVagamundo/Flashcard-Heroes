@@ -78,7 +78,11 @@ func populate(context: Dictionary) -> void:
 		return
 
 	name_label.text = tr(name_key)
-	description_label.text = tr(desc_key)
+	var final_text = tr(desc_key).strip_edges()
+	var regex = RegEx.new()
+	regex.compile("\\n\\s*\\n+")
+	final_text = regex.sub(final_text, "\n", true)
+	description_label.text = final_text
 	_reset_window_size()
 
 func _reset_window_size() -> void:

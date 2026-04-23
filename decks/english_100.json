@@ -1,7 +1,9 @@
 {
     "deck_id": "english_100",
     "display_name": "English Casual Vocab (Beginner)",
+    "display_name_pt": "Vocabulário Casual de Inglês (Iniciante)",
     "description": "100 most used English words for casual conversations",
+    "description_pt": "As 100 palavras de inglês mais usadas para conversas casuais",
     "cards": [
         { "id": "ENG_VOCAB_001", "question": "Actually", "answer": "Na verdade / De fato", "explanation": "Actually, I'm already here. (Na verdade, já estou aqui.)" },
         { "id": "ENG_VOCAB_002", "question": "Anyway", "answer": "De qualquer forma / Enfim", "explanation": "Anyway, let's go. (Enfim, vamos lá.)" },

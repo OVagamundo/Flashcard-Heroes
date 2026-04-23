@@ -43,8 +43,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_disconnect_signals()
-	if _flash_tween and _flash_tween.is_valid():
-		_flash_tween.kill()
+	_kill_active_tweens()
 	# Reset sprite scale on cleanup
 	_reset_sprite_scale()
 
@@ -160,6 +159,35 @@ func _restore_move_layout_state() -> void:
 func _reset_icon_scale() -> void:
 	_reset_sprite_scale()
 
+## Centralize tween cleanup to prevent engine-level list corruption
+## CRITICAL: When killing flash/move tweens, also restore layout state that
+## would have been restored by their finished callbacks. Without this,
+## top_level remains true and position stays at (0,0).
+func _kill_active_tweens() -> void:
+	if _flash_tween and _flash_tween.is_valid():
+		_flash_tween.kill()
+		_flash_tween = null
+		# Restore flash layout state (normally done in _on_flash_tween_finished)
+		if is_instance_valid(_view):
+			_view.top_level = false
+			if _flash_original_position != Vector2.ZERO:
+				_view.global_position = _flash_original_position
+				_flash_original_position = Vector2.ZERO
+			_reset_sprite_scale()
+	if _color_tween and _color_tween.is_valid():
+		_color_tween.kill()
+		_color_tween = null
+	if _deform_tween and _deform_tween.is_valid():
+		_deform_tween.kill()
+		_deform_tween = null
+		_reset_sprite_scale()
+	if _move_tween and _move_tween.is_valid():
+		_move_tween.kill()
+		_move_tween = null
+		# Restore move layout state (normally done in _on_unit_move finished callback)
+		_restore_move_layout_state()
+
+
 # =============================================================================
 # Helper to ensure pivot is set correctly before animation
 # Uses BOTTOM-CENTER pivot so squish/stretch appears grounded at feet
@@ -177,11 +205,15 @@ func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_kill_active_tweens()
+	
 	var start_pos: Vector2 = _view.position
 	var bump_target := start_pos + (direction.normalized() * AC.BUMP_DISTANCE)
 	
 	_view.position = start_pos
 	var tween = _view.create_tween()
+	# Assign to _move_tween so it can be tracked/killed
+	_move_tween = tween 
 	tween.tween_property(_view, "position", bump_target, AC.scaled(AC.BUMP_FORWARD_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_view, "position", start_pos, AC.scaled(AC.BUMP_RETURN_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.finished.connect(_on_bump_tween_finished)
@@ -196,10 +228,13 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_kill_active_tweens()
+	
 	var original_position: Vector2 = _view.position
 	var levitate_target := Vector2(original_position.x, original_position.y - AC.DEATH_LEVITATE_HEIGHT)
 	
 	var fade_tween = _view.create_tween()
+	_move_tween = fade_tween
 	fade_tween.set_parallel(true)
 	
 	fade_tween.tween_property(_view, "position", levitate_target, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -222,6 +257,8 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_kill_active_tweens()
+	
 	var sprite := _get_sprite()
 	_ensure_pivot() # Set bottom-center pivot on sprite
 	
@@ -238,6 +275,7 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 		mat.set_shader_parameter("alpha_multiplier", 0.0)
 	
 	var fade_tween = _view.create_tween()
+	_move_tween = fade_tween
 	
 	# Phase 1: Drop + fade in (parallel)
 	fade_tween.set_parallel(true)
@@ -268,6 +306,8 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_kill_active_tweens()
+	
 	var sprite := _get_sprite()
 	_melee_origin_position = _view.global_position
 	_original_z_index = _view.z_index
@@ -280,6 +320,7 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	var windup_pos = _melee_origin_position - (direction_to_target * AC.MELEE_WINDUP_DISTANCE)
 	
 	var tween = _view.create_tween()
+	_move_tween = tween
 	
 	# Windup: Move back + SQUISH sprite (narrow & tall)
 	tween.set_parallel(true)
@@ -309,9 +350,6 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	
 	tween.finished.connect(_on_melee_lunge_tween_finished)
 
-# =============================================================================
-# SELECTION FEEDBACK
-# =============================================================================
 # =============================================================================
 # SELECTION FEEDBACK
 # =============================================================================
@@ -354,10 +392,13 @@ func _on_unit_melee_return(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_kill_active_tweens()
+	
 	var sprite := _get_sprite()
 	_ensure_pivot() # Set bottom-center pivot on sprite
 	
 	var tween = _view.create_tween()
+	_move_tween = tween
 	
 	# Return: STRETCH sprite during jump back
 	if is_instance_valid(sprite):
@@ -400,16 +441,11 @@ func _flash_unit_color(flash_color: Color) -> void:
 		return
 	
 	# CRITICAL: Kill ALL tweens that modify scale to prevent conflicts
-	if _flash_tween and _flash_tween.is_valid():
-		_flash_tween.kill()
-		_view.top_level = false # Re-attach to parent first
-		_view.global_position = _flash_original_position # Restore to true origin
-		_view.modulate = Color.WHITE
-		if _get_active_material():
-			_get_active_material().set_shader_parameter("flash_intensity", 0.0)
-	if _deform_tween and _deform_tween.is_valid():
-		_deform_tween.kill()
+	_kill_active_tweens()
 	_reset_sprite_scale()
+	
+	# Re-attach to parent first
+	_view.top_level = false 
 	
 	# NOW capture the resting position as origin (guaranteed correct)
 	var original_position: Vector2 = _view.global_position
@@ -497,15 +533,15 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
+	_kill_active_tweens()
+	
 	var original_position: Vector2 = _view.position
 	var levitate_target := Vector2(original_position.x, original_position.y - AC.LETHAL_SAVE_LEVITATE_HEIGHT)
 	
 	var mat = _get_active_material()
 	
-	if _flash_tween and _flash_tween.is_valid():
-		_flash_tween.kill()
-	
 	var save_tween = _view.create_tween()
+	_move_tween = save_tween
 	
 	# Phase 1: Float up while turning golden
 	save_tween.set_parallel(true)
@@ -549,6 +585,7 @@ func animate_leap_to(target_center: Vector2) -> void:
 	var mid_y = min(_guardian_original_position.y, target_pos.y) - AC.GUARDIAN_ARC_HEIGHT
 	
 	var tween = _view.create_tween()
+	_move_tween = tween
 	
 	_ensure_pivot() # Recalculate pivot with current size
 	
@@ -582,6 +619,7 @@ func animate_leap_return() -> void:
 		return
 	
 	var tween = _view.create_tween()
+	_move_tween = tween
 	
 	_ensure_pivot() # Recalculate pivot with current size
 	
@@ -616,7 +654,6 @@ func _on_unit_color_flash(unit_uuid: String, flash_color: Color, duration: float
 	if not mat:
 		return
 	
-	# Kill existing color tween
 	if _color_tween and _color_tween.is_valid():
 		_color_tween.kill()
 	
@@ -644,14 +681,8 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 	if not is_instance_valid(sprite):
 		return
 	
-	# Kill ALL tweens that modify scale to prevent conflicts
 	if _deform_tween and _deform_tween.is_valid():
 		_deform_tween.kill()
-	if _flash_tween and _flash_tween.is_valid():
-		_flash_tween.kill()
-		_view.top_level = false # Restore from flash's detached state
-		_view.global_position = _flash_original_position
-	_reset_sprite_scale()
 	
 	_deform_tween = _view.create_tween()
 	

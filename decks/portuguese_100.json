@@ -1,7 +1,9 @@
 {
     "deck_id": "portuguese_100",
     "display_name": "Portuguese Irregular Verbs (Casual)",
+    "display_name_pt": "Verbos Irregulares em Português",
     "description": "100 most used irregular verb conjugations for casual conversation",
+    "description_pt": "As 100 conjugações de verbos irregulares mais usadas para conversas casuais",
     "cards": [
         { "id": "PORT_IRREG_001", "question": "Faço", "answer": "I do / I make", "explanation": "Eu faço isso depois. (I'll do this later.)" },
         { "id": "PORT_IRREG_002", "question": "Faz", "answer": "You do / He/She does / Makes", "explanation": "Você faz muita falta! (You are greatly missed!)" },

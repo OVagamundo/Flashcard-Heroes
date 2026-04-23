@@ -10,10 +10,11 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
 @onready var reroll_button: Button = %RerollButton
 @onready var leave_button: Button = %LeaveButton
-@onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
+@onready var title_label: Label = %TitleLabel
 
 var _current_shop_instances: Array = []
 var _selected_cost: int = 0
+var _price_tag_nodes: Array[Control] = []
 var _current_reroll_cost: int = 1
 
 func _ready() -> void:
@@ -48,7 +49,7 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
-	leave_button.text = tr("ui.back_to_path")
+	leave_button.text = tr("ui.leave")
 
 func populate(context: Dictionary) -> void:
 	_current_shop_instances = context.get("shop_instances", [])
@@ -86,50 +87,8 @@ func populate(context: Dictionary) -> void:
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
 			slot_view.set_content(visual_data, true, false, false)
 			# Note: SlotView.set_content now propagates interaction context automatically
-		
-		# Always create a price tag for each slot
-		if is_instance_valid(inst_for_slot):
-			var price_panel = PanelContainer.new()
-			var style = StyleBoxFlat.new()
-			style.bg_color = Color("#f1d533") # Bright yellow background
-			style.border_color = Color("#000000") # Black border
-			style.border_width_left = 2
-			style.border_width_right = 2
-			style.border_width_top = 2
-			style.border_width_bottom = 2
-			style.corner_radius_top_left = 6
-			style.corner_radius_top_right = 6
-			style.corner_radius_bottom_right = 6
-			style.corner_radius_bottom_left = 6
-			style.content_margin_left = 12
-			style.content_margin_right = 12
-			style.content_margin_top = 6
-			style.content_margin_bottom = 6
-			price_panel.add_theme_stylebox_override("panel", style)
-			
-			# Align to bottom center
-			price_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-			price_panel.size_flags_vertical = Control.SIZE_SHRINK_END
-			# Offset slightly downward to hang off the gachaball graphic
-			price_panel.position.y += 20
-			price_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			price_panel.z_index = 5 # Ensure it renders above the gachaball
-			
-			var price_label = Label.new()
-			var shop_def = inst_for_slot.get_definition()
-			var price = GameManager.get_item_cost(shop_def)
-			price_label.text = tr("ui.gold_price") % price
-			
-			price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			price_label.add_theme_color_override("font_color", Color("#262b44")) # Dark blue/black text
-			price_label.add_theme_constant_override("outline_size", 0) # Remove outline
-			price_label.add_theme_font_size_override("font_size", 18)
-			
-			price_panel.add_child(price_label)
-			slot_view.add_child(price_panel)
 	
-	# Wait one frame for layout to complete, then animate entry
-	await get_tree().process_frame
+	_update_fixed_price_tags()
 	_animate_staggered_entry()
 	
 	# Show shop tutorial
@@ -163,6 +122,72 @@ func _animate_staggered_entry() -> void:
 					ball_view.play_landing_bounce()
 			)
 			ball_index += 1
+			
+
+func _update_fixed_price_tags() -> void:
+	const TAG_W := 84.0
+	const TAG_H := 38.0
+	
+	if _price_tag_nodes.is_empty():
+		for i in range(3):
+			var tag = _create_price_tag_node(TAG_W, TAG_H)
+			add_child(tag)
+			_price_tag_nodes.append(tag)
+	
+	# Wait for layout to settle so global_position is accurate
+	await get_tree().process_frame
+	
+	var slot_nodes = slots_container.get_children()
+	for i in range(slot_nodes.size()):
+		if i >= _price_tag_nodes.size(): break
+		
+		var tag = _price_tag_nodes[i]
+		var slot = slot_nodes[i]
+		var inst = _find_instance_for_slot(i)
+		
+		# Pinned to the slot's top-right corner in the Shop scene
+		# This ensures they stay put even when balls are dragged
+		tag.global_position = slot.global_position + Vector2(slot.size.x - TAG_W, 0)
+		
+		var lbl = tag.get_node("PriceLabel")
+		if is_instance_valid(inst):
+			var price = GameManager.get_item_cost(inst.get_definition())
+			lbl.text = tr("ui.gold_price") % price
+		else:
+			lbl.text = "Sold!"
+
+func _create_price_tag_node(w: float, h: float) -> Control:
+	var tag_wrapper = Control.new()
+	tag_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag_wrapper.z_index = 5
+	tag_wrapper.size = Vector2(w, h)
+	
+	# Proportional background texture
+	var tag_texture = TextureRect.new()
+	tag_texture.name = "PriceTagTexture"
+	tag_texture.texture = load("res://assets/ui/textures/PriceTag.png")
+	tag_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tag_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tag_texture.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tag_texture.set_offsets_preset(Control.PRESET_FULL_RECT)
+	tag_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag_wrapper.add_child(tag_texture)
+	
+	# Price label
+	var price_label = Label.new()
+	price_label.name = "PriceLabel"
+	price_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	price_label.set_offsets_preset(Control.PRESET_FULL_RECT)
+	price_label.offset_left = 18 # Clear the hole graphic
+	price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	price_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	price_label.add_theme_color_override("font_color", Color("#000000"))
+	price_label.add_theme_constant_override("outline_size", 0)
+	price_label.add_theme_font_size_override("font_size", 16)
+	price_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag_wrapper.add_child(price_label)
+	
+	return tag_wrapper
 
 
 func _find_instance_for_slot(slot_index: int) -> GachaBallInstance:

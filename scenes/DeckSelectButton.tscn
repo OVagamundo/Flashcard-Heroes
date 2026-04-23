@@ -1,7 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://deck_select_button"]
 
 [ext_resource type="Script" path="res://scripts/DeckSelectButton.gd" id="1_script"]
-[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.15, 0.17, 0.22, 0.9)
@@ -43,8 +42,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 12
+
 text = "Deck Name"
 horizontal_alignment = 1
 
@@ -54,8 +52,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 1
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 10
+
 text = "0 cards"
 horizontal_alignment = 1
 
