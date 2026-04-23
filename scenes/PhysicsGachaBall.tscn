@@ -5,7 +5,6 @@
 [ext_resource type="AudioStream" uid="uid://x7wjpxtgr6u" path="res://assets/audio/sfx/ui/click1.ogg" id="3_audio"]
 [ext_resource type="PhysicsMaterial" uid="uid://b0p6yxy7d6w6x" path="res://resources/physics/GachaBallMaterial.tres" id="4_material"]
 
-
 [sub_resource type="CircleShape2D" id="CircleShape2D_7xh3p"]
 radius = 48.0
 

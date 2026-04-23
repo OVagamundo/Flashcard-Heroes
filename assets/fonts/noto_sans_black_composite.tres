@@ -1,0 +1,15 @@
+[gd_resource type="FontFile" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/noto_sans/NotoSans-Black.ttf" id="1_latin"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Black.ttf" id="2_jp"]
+
+[resource]
+fallbacks = Array[Font]([ExtResource("2_jp")])
+cache/0/16/0/antialiasing = 1
+cache/0/16/0/generate_mipmaps = false
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = 0.0

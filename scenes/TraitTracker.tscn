@@ -22,10 +22,10 @@ alignment = 1
 
 [node name="NameLabel" type="Label" parent="HBoxContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+
 text = "Trait"
 
 [node name="CountLabel" type="Label" parent="HBoxContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
+
 text = "0 / 3"

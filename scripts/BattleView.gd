@@ -9,7 +9,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
-@onready var player_bench: HBoxContainer = get_node("TeamAreas/PlayerArea/BenchAndInventory/PlayerBench")
+@onready var player_bench: HBoxContainer = %PlayerBench
 @onready var enemy_lineup: HBoxContainer = %EnemyLineupContainer
 
 @onready var discard_pile_button: Button = %DiscardPileButton
@@ -30,6 +30,7 @@ const BATTLE_CONTENT_TOP_PADDING: float = 152.0
 
 # Combat Controls
 @onready var combat_controls_panel: PanelContainer = %CombatControlsPanel
+@onready var speed_label: Label = %SpeedLabel
 @onready var pause_btn: Button = %PauseBtn
 @onready var speed_1x_btn: Button = %Speed1xBtn
 @onready var speed_2x_btn: Button = %Speed2xBtn
@@ -160,41 +161,36 @@ func _ready() -> void:
 		_battle_animator.combat_step_reached.connect(_on_combat_step_reached)
 
 func _apply_battle_vertical_padding() -> void:
-	var team_areas = get_node_or_null("TeamAreas")
+	var team_areas = %TeamAreas
 	if not is_instance_valid(team_areas):
 		return
 	for area_name in ["PlayerArea", "EnemyArea"]:
 		var area := team_areas.get_node_or_null(area_name) as BoxContainer
 		if not is_instance_valid(area):
 			continue
-		area.alignment = BoxContainer.ALIGNMENT_BEGIN
-		var spacer := Control.new()
-		spacer.custom_minimum_size = Vector2(0.0, BATTLE_CONTENT_TOP_PADDING)
-		spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		area.add_child(spacer)
-		area.move_child(spacer, 0)
+		
+		# Use engine-level centering biasing towards the top via a bottom spacer.
+		# This raises the board by exactly 15px to hit the shelf centers in the background.
+		area.alignment = BoxContainer.ALIGNMENT_CENTER
+		var bottom_spacer := Control.new()
+		bottom_spacer.custom_minimum_size = Vector2(0.0, 30.0)
+		bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		area.add_child(bottom_spacer)
 
 func _position_combat_controls() -> void:
 	if not is_instance_valid(combat_controls_panel):
 		return
-	var controls_parent := combat_controls_panel.get_parent()
+	var controls_parent = combat_controls_panel.get_parent()
 	if not is_instance_valid(controls_parent):
 		return
 	var controls_row := combat_controls_panel.get_node_or_null("OuterVBox/ControlsRow") as HBoxContainer
 	if is_instance_valid(controls_row):
 		controls_row.alignment = BoxContainer.ALIGNMENT_BEGIN
-	var target_height := 80.0
-	if is_instance_valid(discard_pile_button):
-		target_height = maxf(target_height, discard_pile_button.get_combined_minimum_size().y)
-	var content_min_size := combat_controls_panel.get_combined_minimum_size()
-	combat_controls_panel.custom_minimum_size = Vector2(
-		maxf(420.0, content_min_size.x + 16.0),
-		maxf(target_height, content_min_size.y + 8.0)
-	)
+	
+	# Allow the control row to sit naturally on the right without fixed width or shrink-begin overrides
+	combat_controls_panel.custom_minimum_size = Vector2.ZERO
 	combat_controls_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	combat_controls_panel.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	if combat_controls_panel.get_index() != 0:
-		controls_parent.move_child(combat_controls_panel, 0)
+	combat_controls_panel.size_flags_horizontal = Control.SIZE_FILL
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	"""Called when battle state changes - triggers entry animation on battle start"""
@@ -223,6 +219,9 @@ func _update_localized_text() -> void:
 			discard_pile_button.text = tr("ui.discard_pile_count") % discard_count
 		else:
 			discard_pile_button.text = tr("ui.discard_pile")
+	
+	if is_instance_valid(speed_label):
+		speed_label.text = tr("battle.speed.label")
 
 
 func _animate_initial_unit_entry() -> void:

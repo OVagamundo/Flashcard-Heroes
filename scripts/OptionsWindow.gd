@@ -161,8 +161,17 @@ func _populate_language_dropdown() -> void:
 	language_dropdown.select(selected_idx)
 
 func _update_labels() -> void:
+	if not is_node_ready():
+		return
+		
+	# Localize text labels
+	%MasterLabel.text = tr("options.audio.master")
+	%MusicLabel.text = tr("options.audio.music")
+	%SFXLabel.text = tr("options.audio.sfx")
+	%LanguageLabel.text = tr("options.language")
+	
+	close_button.text = tr("ui.close")
 	title_label.text = tr("ui.options")
-	close_button.text = tr("ui.confirm")
 	
 	if crt_checkbox:
 		crt_checkbox.text = tr("ui.crt_effect")
@@ -172,25 +181,14 @@ func _update_labels() -> void:
 	
 	if glow_checkbox:
 		glow_checkbox.text = tr("ui.glow_effect")
-
+	
 	if glow_debug_label:
 		var translated := tr("ui.glow_debug")
 		glow_debug_label.text = translated if translated != "ui.glow_debug" else "Glow Debug:"
-	
-	# Update Audio label texts if we want to localize those (e.g. Master, Music, SFX)
-	# For now, using inline localization, but ideally should be added to CSV.
+		
 	if has_node("%AudioLabel"):
 		get_node("%AudioLabel").text = tr("ui.audio_settings") if tr("ui.audio_settings") != "ui.audio_settings" else "Audio Settings"
 	
-	var master_label = find_child("MasterControl").get_child(0) if find_child("MasterControl") else null
-	if master_label: master_label.text = tr("ui.master_volume") if tr("ui.master_volume") != "ui.master_volume" else "Master:"
-		
-	var music_label = find_child("MusicControl").get_child(0) if find_child("MusicControl") else null
-	if music_label: music_label.text = tr("ui.music_volume") if tr("ui.music_volume") != "ui.music_volume" else "Music:"
-		
-	var sfx_label = find_child("SFXControl").get_child(0) if find_child("SFXControl") else null
-	if sfx_label: sfx_label.text = tr("ui.sfx_volume") if tr("ui.sfx_volume") != "ui.sfx_volume" else "SFX:"
-		
 	# Re-populate dropdown with translated names
 	var current_idx := language_dropdown.selected
 	_populate_language_dropdown()

@@ -298,7 +298,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						
 						# CRITICAL: Add to tree BEFORE populate so @onready vars work!
 						anim_capsule.top_level = true
-						main_node.add_child(anim_capsule)
+						if not anim_capsule.is_inside_tree():
+							main_node.add_child(anim_capsule)
 						
 						anim_capsule.force_inventory_mode = true # Ensure system capsule overlay is used
 						var new_snapshot = payload.get("new_unit_snapshot", {})
@@ -347,34 +348,45 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
 						var slot_view = lineup_container.get_child(index)
 						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
-						slot_view.add_child(new_view)
-						
-						var new_snapshot = payload.get("new_unit_snapshot", {})
-						if not new_snapshot.is_empty():
-							var new_location = LocationIdentifier.new(container_tag, index)
-							new_view.populate(new_location, new_snapshot, false, false)
-							new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+						# Defensive: if slot already has a GachaBallView, skip this summon entirely
+						# NOTE: SlotView always has indicator/background children, so we must
+						# check for GachaBallView specifically, not just any child.
+						var has_existing_unit := false
+						for child in slot_view.get_children():
+							if child is GachaBallView:
+								has_existing_unit = true
+								break
+						if has_existing_unit:
+							new_view.queue_free()
+						else:
+							slot_view.add_child(new_view)
 							
-							_visual_registry[new_unit_uuid] = new_view
-							
-							# Register dynamic position
-							await get_tree().process_frame
-							var rect = new_view.get_global_rect()
-							_position_snapshot[new_unit_uuid] = {
-								"position": rect.position,
-								"size": rect.size,
-								"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-							}
-							
-							if arc_completed:
-								# If we arced, just snap the unit in and bounce
-								new_view.play_landing_bounce()
-							else:
-								# Standard fade in
-								if SignalBus.has_signal("unit_summon_fade"):
-									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
-									Audio.play_sfx("combat_summon")
-									await wait_for_animation_completion("summon_fade", new_unit_uuid)
+							var new_snapshot = payload.get("new_unit_snapshot", {})
+							if not new_snapshot.is_empty():
+								var new_location = LocationIdentifier.new(container_tag, index)
+								new_view.populate(new_location, new_snapshot, false, false)
+								new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+								
+								_visual_registry[new_unit_uuid] = new_view
+								
+								# Register dynamic position
+								await get_tree().process_frame
+								var rect = new_view.get_global_rect()
+								_position_snapshot[new_unit_uuid] = {
+									"position": rect.position,
+									"size": rect.size,
+									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+								}
+								
+								if arc_completed:
+									# If we arced, just snap the unit in and bounce
+									new_view.play_landing_bounce()
+								else:
+									# Standard fade in
+									if SignalBus.has_signal("unit_summon_fade"):
+										SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
+										Audio.play_sfx("combat_summon")
+										await wait_for_animation_completion("summon_fade", new_unit_uuid)
 				
 				# Wait a tiny bit for the machine bounce to feel solid
 				if arc_completed:

@@ -42,7 +42,7 @@ func _init(tree: SceneTree) -> void:
 
 func _connect_signals() -> void:
 	# Connect once to all animation completion signals
-	if SignalBus.unit_flash_finished.is_connected(_on_animation_finished):
+	if SignalBus.unit_flash_finished.is_connected(_on_flash_finished):
 		return # Already connected
 	
 	SignalBus.unit_flash_finished.connect(_on_flash_finished)

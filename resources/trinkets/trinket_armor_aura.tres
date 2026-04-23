@@ -7,8 +7,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"trinket_armor_aura"
-name_key = "Armor Aura"
-description_key = "At turn start, all allies gain 3 Armor. Armor absorbs damage before HP and clears at turn end."
+name_key = "trinket.armor_aura.name"
+description_key = "trinket.armor_aura.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
 is_player_exclusive = false

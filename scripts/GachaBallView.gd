@@ -32,13 +32,13 @@ enum HoverFxMode {
 
 @onready var icon_rect: TextureRect = %Icon
 @onready var item_grid: GridContainer = %ItemGrid
-@onready var hp_container: Control = %HPContainer
-@onready var pwr_container: Control = %PWRContainer
-@onready var burn_container: Control = %BurnContainer # Renamed from PoisonContainer
+@onready var hp_container: HBoxContainer = %HPContainer
+@onready var pwr_container: HBoxContainer = %PWRContainer
+@onready var burn_container: HBoxContainer = %BurnContainer
 @onready var hp_label: Label = %HPLabel
 @onready var pwr_label: Label = %PWRLabel
-@onready var burn_label: Label = %BurnLabel # Renamed from PoisonLabel
-@onready var armor_container: Control = %ArmorContainer
+@onready var burn_label: Label = %BurnLabel
+@onready var armor_container: HBoxContainer = %ArmorContainer
 @onready var armor_label: Label = %ArmorLabel
 @onready var equipped_items_container: HBoxContainer = %EquippedItemsContainer
 @onready var equipped_items_row: HBoxContainer = %EquippedItemsRow
@@ -1100,13 +1100,25 @@ func _create_status_icon(status_id: StringName, parent: Node, animate: bool = tr
 	if not is_instance_valid(status_def):
 		return
 	
-	# Scale relative to the original 2x design
-	var container_size = 24.0 * max(1.0, _size_scale)
-	var font_size = int(12.0 * max(1.0, _size_scale))
-	var outline_size = int(2.0 * max(1.0, _size_scale))
+	# Unified Scaling Math
+	# Battle (2.0 scale): Icon=32, Font=32, Outline=8
+	# Window (1.0 scale): Icon=24, Font=14, Outline=4
+	var container_size = 8.0 * _size_scale + 16.0
+	var font_size = int(18.0 * _size_scale - 4.0)
+	var outline_size = int(4.0 * _size_scale)
+	
+	# Create HBoxContainer for Icon + Label
+	var hbox = HBoxContainer.new()
+	hbox.name = str(status_id) + "Container"
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 4)
+	
+	# Apply plastic pill background
+	_apply_plastic_pill_style(hbox)
 	
 	# Create TextureRect for icon
 	var status_icon_rect = TextureRect.new()
+	status_icon_rect.name = "Icon"
 	status_icon_rect.custom_minimum_size = Vector2(container_size, container_size)
 	status_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -1115,27 +1127,28 @@ func _create_status_icon(status_id: StringName, parent: Node, animate: bool = tr
 	# Create label for stack count
 	var label = Label.new()
 	label.name = "Label"
-	label.layout_mode = 1
-	label.anchors_preset = Control.PRESET_FULL_RECT
+	label.layout_mode = 2
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_color_override("font_color", Color.WHITE)
 	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	label.add_theme_constant_override("outline_size", outline_size)
 	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
 	
-	status_icon_rect.add_child(label)
-	parent.add_child(status_icon_rect)
+	hbox.add_child(status_icon_rect)
+	hbox.add_child(label)
+	parent.add_child(hbox)
 	
 	# Store reference
-	_status_icon_nodes[status_id] = status_icon_rect
+	_status_icon_nodes[status_id] = hbox
 	
 	# Animate in
-	status_icon_rect.scale = Vector2.ONE # default
+	hbox.scale = Vector2.ONE # default
 	if animate:
-		status_icon_rect.scale = Vector2.ZERO # Start scaled down for animation
+		hbox.scale = Vector2.ZERO # Start scaled down for animation
 		var tween = create_tween()
-		tween.tween_property(status_icon_rect, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(hbox, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 ## Animate a status effect change (for non-burn effects)
 func animate_status_change(status_id: StringName, new_stacks: int) -> void:
@@ -1193,7 +1206,12 @@ func _pop_container(container: Control) -> void:
 			existing.kill()
 	
 	# Set pivot to center for proper scaling
-	container.pivot_offset = container.size / 2
+	# Set pivot to center for proper scaling
+	# Since HBoxContainers may have zero size before first draw, ensure we use a fallback
+	if container.size == Vector2.ZERO:
+		container.pivot_offset = container.custom_minimum_size / 2
+	else:
+		container.pivot_offset = container.size / 2
 	
 	# Create pop tween (same pattern as token/gold: scale 2.0x then elastic back + color flash)
 	var pop_tween = create_tween()
@@ -1844,24 +1862,104 @@ func _setup_battle_stats_layout() -> void:
 	%StatsOverlay.visible = false
 	%StatsUnderlay.visible = true
 	
-	# Move Main Stats to Row1 (with 32x32 size)
+	# Move Main Stats to Row1
 	if hp_container.get_parent() != %Row1:
 		hp_container.reparent(%Row1)
 		pwr_container.reparent(%Row1)
-		hp_container.custom_minimum_size = Vector2(32, 32)
-		pwr_container.custom_minimum_size = Vector2(32, 32)
-	
+		
+	# Apply plastic pill style to main stat containers
+	_apply_plastic_pill_style(hp_container)
+	_apply_plastic_pill_style(pwr_container)
+		
+	# Apply bold colored styles for battle
+	# Battle (2.0 scale): Icon=32, Font=32, Outline=8
+	var standard_font_size = 32
+	var standard_outline_size = 8
+	var standard_icon_size = Vector2(32, 32)
 
-	# Move Secondary Stats to Row2 (with 32x32 size)
+	hp_label.add_theme_color_override("font_color", Color.RED)
+	hp_label.add_theme_color_override("font_outline_color", Color.WHITE)
+	hp_label.add_theme_constant_override("outline_size", standard_outline_size)
+	hp_label.add_theme_font_size_override("font_size", standard_font_size)
+	
+	pwr_label.add_theme_color_override("font_color", Color.BLACK)
+	pwr_label.add_theme_color_override("font_outline_color", Color.WHITE)
+	pwr_label.add_theme_constant_override("outline_size", standard_outline_size)
+	pwr_label.add_theme_font_size_override("font_size", standard_font_size)
+
+	# Position much closer to unit base (5px gap)
+	# Increased offset slightly to account for thicker font height
+	%StatsUnderlay.offset_top = -28
+	%StatsUnderlay.offset_bottom = -28
+	
+	# Standardize all icons
+	var hp_icon = %HPIcon
+	var pwr_icon = %PWRIcon
+	if hp_icon: hp_icon.custom_minimum_size = standard_icon_size
+	if pwr_icon: pwr_icon.custom_minimum_size = standard_icon_size
+
+	# Move Secondary Stats to Row2
 	if burn_container.get_parent() != %Row2:
 		burn_container.reparent(%Row2)
 		armor_container.reparent(%Row2)
-		burn_container.custom_minimum_size = Vector2(32, 32)
-		armor_container.custom_minimum_size = Vector2(32, 32)
+	
+	# Apply plastic pill style to status containers
+	_apply_plastic_pill_style(burn_container)
+	_apply_plastic_pill_style(armor_container)
+	
+	burn_container.custom_minimum_size = Vector2.ZERO
+	armor_container.custom_minimum_size = Vector2.ZERO
+	
+	var burn_icon = %BurnIcon
+	var armor_icon = %ArmorIcon
+	if burn_icon: burn_icon.custom_minimum_size = standard_icon_size
+	if armor_icon: armor_icon.custom_minimum_size = standard_icon_size
+	
+	burn_label.add_theme_color_override("font_color", Color.WHITE)
+	burn_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	burn_label.add_theme_constant_override("outline_size", standard_outline_size)
+	burn_label.add_theme_font_size_override("font_size", standard_font_size)
+	burn_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	
+	armor_label.add_theme_color_override("font_color", Color.WHITE)
+	armor_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	armor_label.add_theme_constant_override("outline_size", standard_outline_size)
+	armor_label.add_theme_font_size_override("font_size", standard_font_size)
+	armor_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+
+## Apply a realistic rounded "plastic pill" background to a container
+func _apply_plastic_pill_style(container: HBoxContainer) -> void:
+	if not is_instance_valid(container): return
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.45) # Semi-transparent dark
+	
+	# Scale aesthetics based on _size_scale
+	var radius = int(6.0 * _size_scale) # 12 in battle, 6 in inventory
+	var h_margin = int(4.0 * _size_scale)
+	var v_margin = int(1.0 * _size_scale)
+	
+	style.set_corner_radius_all(radius)
+	style.content_margin_left = h_margin + 2
+	style.content_margin_right = h_margin + 4
+	style.content_margin_top = v_margin
+	style.content_margin_bottom = v_margin
+	
+	# Subtle inner glow/border for the plastic look
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_color = Color(1, 1, 1, 0.15) # Barely visible white shine
+	
+	container.add_theme_stylebox_override("panel", style)
+	
+	# Update separation for uniform look
+	var separation = int(3.0 * _size_scale)
+	container.add_theme_constant_override("separation", separation)
 
 func _setup_overlay_stats_layout() -> void:
 	if not %StatsOverlay: return
 	
+	# In overlay/inventory mode, we also want the new styling but scaled
 	%StatsUnderlay.visible = false
 	%StatsOverlay.visible = true
 	
@@ -1870,32 +1968,78 @@ func _setup_overlay_stats_layout() -> void:
 	
 	if not top_container or not bottom_container: return
 	
-	# Scale relative to the original 2x design (so at 1x scale, sizes are half)
-	# Default sizes for 2x scale: container=48, font=24, outline=4
-	var container_size = 24.0 * max(1.0, _size_scale)
-	var font_size = int(12.0 * max(1.0, _size_scale))
-	var outline_size = int(2.0 * max(1.0, _size_scale))
+	# Unified Scaling Math
+	# Battle (2.0 scale): Icon=32, Font=32, Outline=8
+	# Window (1.0 scale): Icon=24, Font=14, Outline=4
+	var container_size = 8.0 * _size_scale + 16.0
+	var font_size = int(18.0 * _size_scale - 4.0)
+	var outline_size = int(4.0 * _size_scale)
+	
+	# Positioning in Overlay: closer to base
+	# Slot is SLOT_SIZE_BASE * _size_scale.
+	# Unit bottom is (SLOT_SIZE_BASE/2 + UNIT_SPRITE_SIZE/4) * _size_scale = (48+32) * _size_scale = 80 * _size_scale
+	# 5px gap -> 85 * _size_scale
+	top_container.anchors_preset = Control.PRESET_CENTER_TOP
+	top_container.offset_top = 85 * _size_scale
 	
 	# Move Main Stats back to Top Container and scale
 	if hp_container.get_parent() != top_container:
 		hp_container.reparent(top_container)
 		pwr_container.reparent(top_container)
 		
-	hp_container.custom_minimum_size = Vector2(container_size, container_size)
-	pwr_container.custom_minimum_size = Vector2(container_size, container_size)
+	# Apply plastic pill style
+	_apply_plastic_pill_style(hp_container)
+	_apply_plastic_pill_style(pwr_container)
+	
+	hp_container.custom_minimum_size = Vector2.ZERO
+	pwr_container.custom_minimum_size = Vector2.ZERO
+	
+	var hp_icon = %HPIcon
+	var pwr_icon = %PWRIcon
+	if hp_icon: hp_icon.custom_minimum_size = Vector2(container_size, container_size)
+	if pwr_icon: pwr_icon.custom_minimum_size = Vector2(container_size, container_size)
+	
+	hp_label.add_theme_color_override("font_color", Color.RED)
+	hp_label.add_theme_color_override("font_outline_color", Color.WHITE)
 	hp_label.add_theme_font_size_override("font_size", font_size)
-	pwr_label.add_theme_font_size_override("font_size", font_size)
 	hp_label.add_theme_constant_override("outline_size", outline_size)
+	hp_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	
+	pwr_label.add_theme_color_override("font_color", Color.BLACK)
+	pwr_label.add_theme_color_override("font_outline_color", Color.WHITE)
+	pwr_label.add_theme_font_size_override("font_size", font_size)
 	pwr_label.add_theme_constant_override("outline_size", outline_size)
+	pwr_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+
+	# Apply to bottom row (Burn, Armor) as well
+	burn_label.add_theme_font_size_override("font_size", font_size)
+	burn_label.add_theme_constant_override("outline_size", outline_size)
+	burn_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	_apply_plastic_pill_style(burn_container)
+	
+	armor_label.add_theme_font_size_override("font_size", font_size)
+	armor_label.add_theme_constant_override("outline_size", outline_size)
+	armor_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	_apply_plastic_pill_style(armor_container)
 
 	# Move Secondary Stats back to Bottom Container and scale
 	if burn_container.get_parent() != bottom_container:
 		burn_container.reparent(bottom_container)
 		armor_container.reparent(bottom_container)
-		
-	burn_container.custom_minimum_size = Vector2(container_size, container_size)
-	armor_container.custom_minimum_size = Vector2(container_size, container_size)
+	
+	# Apply plastic pill style
+	_apply_plastic_pill_style(burn_container)
+	_apply_plastic_pill_style(armor_container)
+	
+	burn_container.custom_minimum_size = Vector2.ZERO
+	armor_container.custom_minimum_size = Vector2.ZERO
+	
+	var burn_icon = %BurnIcon
+	var armor_icon = %ArmorIcon
+	if burn_icon: burn_icon.custom_minimum_size = Vector2(container_size, container_size)
+	if armor_icon: armor_icon.custom_minimum_size = Vector2(container_size, container_size)
+	
 	burn_label.add_theme_font_size_override("font_size", font_size)
-	armor_label.add_theme_font_size_override("font_size", font_size)
 	burn_label.add_theme_constant_override("outline_size", outline_size)
+	armor_label.add_theme_font_size_override("font_size", font_size)
 	armor_label.add_theme_constant_override("outline_size", outline_size)

@@ -1,13 +1,14 @@
-[gd_scene load_steps=8 format=3 uid="uid://c8qj2qj2qj2q"]
+[gd_scene load_steps=9 format=3 uid="uid://c8qj2qj2qj2q"]
 
 [ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 [ext_resource type="Script" path="res://scripts/BattleAnimator.gd" id="2_battle_animator_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 [ext_resource type="Script" path="res://scripts/TestEnvironmentManager.gd" id="5_testenv"]
-[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="6_label_font"]
-[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="7_stat_font"]
+
 [ext_resource type="Texture2D" path="res://assets/ui/BGs/battle.png" id="8_bg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_controls"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -38,14 +39,11 @@ script = ExtResource("1_battle_manager_script")
 script = ExtResource("2_battle_animator_script")
 
 [node name="TeamAreas" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -57,13 +55,13 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 80
-alignment = 0
+alignment = 1
 
 [node name="PlayerLineup" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 1
@@ -143,31 +141,19 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="DummyDiscardArea" type="Control" parent="TeamAreas/PlayerArea"]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Control3" type="Control" parent="TeamAreas/PlayerArea"]
-layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 2
-
-
-
 [node name="EnemyArea" type="VBoxContainer" parent="TeamAreas"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 80
-alignment = 0
+alignment = 1
 
 [node name="EnemyLineupContainer" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 1
@@ -208,9 +194,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 mouse_filter = 2
-mouse_filter = 2
 theme_override_constants/separation = 10
-alignment = 0
+alignment = 1
 
 [node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
 unique_name_in_owner = true
@@ -249,129 +234,104 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-
-[node name="ButtonMargins" type="MarginContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="DiscardArea" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins"]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+[node name="BottomControlRow" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -82.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/separation = 10
-alignment = 1
+alignment = 2
 
-[node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 0
-theme_override_fonts/font = ExtResource("6_label_font")
-theme_override_font_sizes/font_size = 12
-text = "Discard Pile (0)"
-
-[node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_fonts/font = ExtResource("6_label_font")
-theme_override_font_sizes/font_size = 14
-text = "End Turn"
-
-
-
-[node name="EnemyDummyDiscard" type="Control" parent="TeamAreas/EnemyArea"]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="Control3" type="Control" parent="TeamAreas/EnemyArea"]
-layout_mode = 2
-size_flags_vertical = 3
-mouse_filter = 2
-
-[node name="CombatControlsPanel" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
+[node name="CombatControlsPanel" type="PanelContainer" parent="BottomControlRow"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(420, 80)
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxEmpty_controls")
 
-[node name="OuterVBox" type="VBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel"]
+[node name="OuterVBox" type="VBoxContainer" parent="BottomControlRow/CombatControlsPanel"]
 layout_mode = 2
 alignment = 1
 
-[node name="ControlsRow" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox"]
+[node name="ControlsRow" type="HBoxContainer" parent="BottomControlRow/CombatControlsPanel/OuterVBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
 
-[node name="SpeedLabel" type="Label" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="SpeedLabel" type="Label" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
-theme_override_font_sizes/font_size = 13
 text = "Speed:"
 
-[node name="PauseBtn" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="PauseBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 28)
+custom_minimum_size = Vector2(72, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
 text = "||"
 
-[node name="Speed1xBtn" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="Speed1xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 28)
+custom_minimum_size = Vector2(72, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
 text = "1x"
 
-[node name="Speed2xBtn" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="Speed2xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 28)
+custom_minimum_size = Vector2(72, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
 text = "2x"
 
-[node name="Speed3xBtn" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="Speed3xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 28)
+custom_minimum_size = Vector2(72, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
 text = "3x"
 
-[node name="VSeparator" type="VSeparator" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="VSeparator" type="VSeparator" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 2
 
-[node name="StepButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox/ControlsRow"]
+[node name="StepButton" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(90, 28)
+custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
 text = "Next Step ⏭"
 
-[node name="StepDescLabel" type="Label" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea/CombatControlsPanel/OuterVBox"]
+[node name="StepDescLabel" type="Label" parent="BottomControlRow/CombatControlsPanel/OuterVBox"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.85, 0.6, 1)
-theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 
+[node name="DiscardPileButton" type="Button" parent="BottomControlRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 54)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 1
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Discard Pile (0)"
+
+[node name="EndTurnButton" type="Button" parent="BottomControlRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 54)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "End Turn"
 
 [node name="TestEnvironmentManager" type="Control" parent="."]
 script = ExtResource("5_testenv")

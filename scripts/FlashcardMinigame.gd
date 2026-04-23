@@ -18,8 +18,8 @@ const COLOR_FLASH_INCORRECT := Color(0.9, 0.2, 0.2)
 
 # Load fonts
 const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
-const BUTTON_FONT = preload("res://assets/fonts/DotGothic16/DotGothic16-Regular.ttf")
-const WESTERN_FONT = preload("res://assets/fonts/pixel_operator/PixelOperatorSC.ttf")
+const BUTTON_FONT = preload("res://assets/fonts/static/NotoSansJP-Bold.ttf")
+const WESTERN_FONT = preload("res://assets/fonts/static/NotoSansJP-Bold.ttf")
 
 @onready var main_panel: Panel = %MainPanel
 @onready var question_label: Label = %QuestionLabel
@@ -323,6 +323,28 @@ func _update_localized_text() -> void:
 	got_it_button.text = tr("ui.ready")
 	priority_cards_label.text = tr("ui.priority_cards")
 	
+	# Refresh current card content if active
+	if not _current_question_id.is_empty():
+		var card_data: Dictionary = Database.get_flashcard_definition(_current_question_id)
+		if not card_data.is_empty():
+			question_label.text = card_data.get("question", "Error: No question")
+			
+	# Refresh choice buttons
+	if _current_choices.size() > 0:
+		for i in range(mini(choices_grid.get_child_count(), _current_choices.size())):
+			var button = choices_grid.get_child(i)
+			var choice_id = _current_choices[i]
+			var choice_data = Database.get_flashcard_definition(choice_id)
+			if not choice_data.is_empty():
+				button.text = choice_data.get("answer", "Error")
+				
+	# Refresh introduction labels if currently introducing a card
+	if _is_introducing_new_card and not _current_question_id.is_empty():
+		var card_data: Dictionary = Database.get_flashcard_definition(_current_question_id)
+		if not card_data.is_empty():
+			intro_answer_label.text = card_data.get("answer", "Error")
+			intro_explanation_label.text = card_data.get("explanation", "")
+	
 	if _is_introducing_new_card:
 		intro_question_label.text = tr("ui.intro_new_card") # Default if not updated by card info
 		# Re-trigger card info update to refresh localized answer/explanation if needed
@@ -512,7 +534,7 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 				button.add_theme_font_size_override("font_size", 48)
 			else:
 				button.add_theme_font_override("font", WESTERN_FONT)
-				button.add_theme_font_size_override("font_size", 42) # Specific for PixelOperatorSC
+				button.add_theme_font_size_override("font_size", 34) # Adjusted for Noto Sans Bold
 			
 			button.add_theme_color_override("font_color", COLOR_COOL_BLACK)
 			button.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)

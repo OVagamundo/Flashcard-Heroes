@@ -315,7 +315,11 @@ func _update_description() -> void:
 		full_text += "\n" + abilities_block
 	full_text += "\n[url=effect]EFFECTS[/url]"
 
-	description_label.text = full_text.strip_edges()
+	var final_text = full_text.strip_edges()
+	var regex = RegEx.new()
+	regex.compile("\\n\\s*\\n+")
+	final_text = regex.sub(final_text, "\n", true)
+	description_label.text = final_text
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
 ## Granular stat change handler - updates description when any stat changes

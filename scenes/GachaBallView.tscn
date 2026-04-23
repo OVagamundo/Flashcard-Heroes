@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 [ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
-[ext_resource type="FontFile" path="res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf" id="3_stat_font"]
+
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
@@ -86,8 +86,6 @@ unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-
-
 [node name="EquippedItemsWrapper" type="Control" parent="."]
 layout_mode = 2
 mouse_filter = 2
@@ -116,7 +114,13 @@ offset_bottom = 48.0
 grow_horizontal = 2
 alignment = 1
 
-[node name="HPContainer" type="TextureRect" parent="StatsOverlay/StatsContainer"]
+[node name="HPContainer" type="HBoxContainer" parent="StatsOverlay/StatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="HPIcon" type="TextureRect" parent="StatsOverlay/StatsContainer/HPContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
@@ -126,22 +130,25 @@ stretch_mode = 5
 
 [node name="HPLabel" type="Label" parent="StatsOverlay/StatsContainer/HPContainer"]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_stat_font")
-theme_override_font_sizes/font_size = 24
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PWRContainer" type="TextureRect" parent="StatsOverlay/StatsContainer"]
+[node name="PWRContainer" type="HBoxContainer" parent="StatsOverlay/StatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PWRIcon" type="TextureRect" parent="StatsOverlay/StatsContainer/PWRContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
@@ -151,17 +158,14 @@ stretch_mode = 5
 
 [node name="PWRLabel" type="Label" parent="StatsOverlay/StatsContainer/PWRContainer"]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_stat_font")
-theme_override_font_sizes/font_size = 24
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -192,10 +196,15 @@ grow_vertical = 0
 alignment = 1
 theme_override_constants/separation = 2
 
-
-[node name="BurnContainer" type="TextureRect" parent="StatsOverlay/BottomStatsContainer"]
+[node name="BurnContainer" type="HBoxContainer" parent="StatsOverlay/BottomStatsContainer"]
 unique_name_in_owner = true
 visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="BurnIcon" type="TextureRect" parent="StatsOverlay/BottomStatsContainer/BurnContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 texture = ExtResource("6_icon_burn")
@@ -204,24 +213,24 @@ stretch_mode = 5
 
 [node name="BurnLabel" type="Label" parent="StatsOverlay/BottomStatsContainer/BurnContainer"]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_stat_font")
-theme_override_font_sizes/font_size = 24
+theme_override_constants/outline_size = 6
+
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ArmorContainer" type="TextureRect" parent="StatsOverlay/BottomStatsContainer"]
+[node name="ArmorContainer" type="HBoxContainer" parent="StatsOverlay/BottomStatsContainer"]
 unique_name_in_owner = true
 visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="ArmorIcon" type="TextureRect" parent="StatsOverlay/BottomStatsContainer/ArmorContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 texture = ExtResource("7_icon_armor")
@@ -230,17 +239,11 @@ stretch_mode = 5
 
 [node name="ArmorLabel" type="Label" parent="StatsOverlay/BottomStatsContainer/ArmorContainer"]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("3_stat_font")
-theme_override_font_sizes/font_size = 24
+theme_override_constants/outline_size = 6
+
 text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1

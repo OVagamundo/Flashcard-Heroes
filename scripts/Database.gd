@@ -122,6 +122,14 @@ func get_flashcard_definition(card_id: StringName) -> Dictionary:
 		var pt_expl = def.get("explanation_pt", "")
 		if not pt_expl.is_empty():
 			def["explanation"] = pt_expl
+		
+		var pt_answer = def.get("answer_pt", "")
+		if not pt_answer.is_empty():
+			def["answer"] = pt_answer
+			
+		var pt_question = def.get("question_pt", "")
+		if not pt_question.is_empty():
+			def["question"] = pt_question
 	return def
 
 ## Returns all hero definitions
@@ -138,13 +146,21 @@ func get_hero_definitions() -> Array[GachaBallDefinition]:
 ## Returns metadata for all available decks
 func get_all_deck_metadata() -> Array[Dictionary]:
 	var deck_meta: Array[Dictionary] = []
+	var is_pt = TranslationServer.get_locale().begins_with("pt")
 	
 	for deck_id in deck_definitions:
 		var deck = deck_definitions[deck_id]
+		var display_name = deck.get("display_name", deck_id)
+		var description = deck.get("description", "")
+		
+		if is_pt:
+			display_name = deck.get("display_name_pt", display_name)
+			description = deck.get("description_pt", description)
+			
 		deck_meta.append({
 			"deck_id": deck.deck_id,
-			"display_name": deck.display_name,
-			"description": deck.get("description", "")
+			"display_name": display_name,
+			"description": description
 		})
 	
 	return deck_meta
@@ -212,7 +228,9 @@ func _load_flashcard_definitions() -> void:
 								# Store card definition globally
 								flashcard_definitions[card_id] = {
 									"question": card.question,
+									"question_pt": card.get("question_pt", ""),
 									"answer": card.answer,
+									"answer_pt": card.get("answer_pt", ""),
 									"explanation": card.get("explanation", ""),
 									"explanation_pt": card.get("explanation_pt", "")
 								}
@@ -221,7 +239,9 @@ func _load_flashcard_definitions() -> void:
 						deck_definitions[deck_id] = {
 							"deck_id": deck_id,
 							"display_name": deck_data.get("display_name", deck_id),
+							"display_name_pt": deck_data.get("display_name_pt", ""),
 							"description": deck_data.get("description", ""),
+							"description_pt": deck_data.get("description_pt", ""),
 							"card_ids": card_ids
 						}
 				else:
