@@ -8,6 +8,7 @@ const _InputUtils = preload("res://scripts/InputUtils.gd")
 # It behaves as a standard inspection window (contextual, auto-closing).
 
 @onready var title_label: Label = %TitleLabel
+const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 @onready var icon_rect: TextureRect = %Icon
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var internal_background: ColorRect = $InternalBackground
@@ -51,6 +52,8 @@ func populate(context: Dictionary) -> void:
 
 	var def = C.TRAIT_DEFINITIONS[_trait_id]
 	title_label.text = tr(def.display_name_key)
+	title_label.add_theme_font_override("font", BOLD_FONT)
+	title_label.add_theme_font_size_override("font_size", 32)
 	
 	# Set icon (reusing internal preload logic or passing texture)
 	# For simplicity, we'll try to get it from the source view if it has one, or hardcode mapping
@@ -77,7 +80,7 @@ func populate(context: Dictionary) -> void:
 		
 		var desc_text = tr(level.desc_key)
 		
-		text += "%s%s%d: %s%s\n" % [color_tag, prefix, min_req, desc_text, end_tag]
+		text += "%s[b]%s%d[/b]: %s%s\n" % [color_tag, prefix, min_req, desc_text, end_tag]
 	
 	var final_text = text.strip_edges()
 	var regex = RegEx.new()

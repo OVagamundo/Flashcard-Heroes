@@ -6,6 +6,7 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
+const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
@@ -85,6 +86,15 @@ func populate(context: Dictionary) -> void:
 	_setup_stable_anchor()
 
 	name_label.text = tr(unit_definition.display_name_key)
+	name_label.add_theme_font_override("font", BOLD_FONT)
+	name_label.add_theme_font_size_override("font_size", 32)
+	
+	var title_color = Color(0, 0.4, 0.8, 1) # Default blue
+	match unit_definition.tier:
+		1: title_color = Color.YELLOW
+		2: title_color = Color.MAGENTA
+		3: title_color = Color.CYAN
+	name_label.add_theme_color_override("font_color", title_color)
 	# Description content is built in _update_description()
 	_update_description()
 
@@ -283,10 +293,7 @@ func _update_description() -> void:
 		return
 	
 
-	# Basic attack description (always present for units)
-	var basic_attack_desc = tr("ability.basic_attack.desc")
-	# Replace placeholder with numeric damage and PWR hint (e.g., 2 (PWR))
-	basic_attack_desc = basic_attack_desc.replace("(PWR)", "%s (PWR)" % str(_instance.current_pwr))
+
 
 	# Build abilities section: list all abilities with name and localized description
 	var abilities_lines: Array[String] = []
@@ -310,10 +317,10 @@ func _update_description() -> void:
 			abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 
 	var abilities_block := "\n".join(abilities_lines)
-	var full_text: String = basic_attack_desc
-	if not abilities_block.is_empty():
-		full_text += "\n" + abilities_block
-	full_text += "\n[url=effect]EFFECTS[/url]"
+	var full_text: String = abilities_block
+	if not full_text.is_empty():
+		full_text += "\n"
+	full_text += "[url=effect]EFFECTS[/url]"
 
 	var final_text = full_text.strip_edges()
 	var regex = RegEx.new()
@@ -524,20 +531,27 @@ func _update_recipe_display() -> void:
 		var tex = TextureRect.new()
 		if "icon" in def and def.icon != null:
 			tex.texture = def.icon
-		tex.custom_minimum_size = Vector2(48, 48)
+		tex.custom_minimum_size = Vector2(96, 96)
 		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex.mouse_filter = MOUSE_FILTER_IGNORE
 		return tex
 	
-	var _make_label = func(txt: String) -> Label:
+	var _make_label = func(txt: String) -> Control:
+		var container = CenterContainer.new()
+		container.custom_minimum_size = Vector2(32, 96)
+		container.mouse_filter = MOUSE_FILTER_IGNORE
+		
 		var lbl = Label.new()
 		lbl.text = txt
-		lbl.add_theme_font_size_override("font_size", 24)
-		lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+		lbl.add_theme_font_override("font", BOLD_FONT)
+		lbl.add_theme_font_size_override("font_size", 32)
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.mouse_filter = MOUSE_FILTER_IGNORE
-		return lbl
+		
+		container.add_child(lbl)
+		return container
 	
 	recipe_container.add_child(_make_icon.call(def_a))
 	recipe_container.add_child(_make_label.call("+"))
@@ -562,14 +576,13 @@ func _update_trait_display() -> void:
 		
 		var fire_icon = TextureRect.new()
 		fire_icon.texture = preload("res://assets/sprites/items/FireEmblem.png")
-		fire_icon.custom_minimum_size = Vector2(48, 48)
+		fire_icon.custom_minimum_size = Vector2(96, 96)
 		fire_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		fire_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
 		var fire_label = Label.new()
 		fire_label.text = "x%d" % trait_counts["FIRE"]
-		fire_label.add_theme_font_size_override("font_size", 20)
-		fire_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		fire_label.add_theme_font_size_override("font_size", 32)
 		fire_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		
 		fire_container.add_child(fire_icon)
@@ -583,14 +596,13 @@ func _update_trait_display() -> void:
 		
 		var earth_icon = TextureRect.new()
 		earth_icon.texture = preload("res://assets/sprites/items/EarthEmblem.png")
-		earth_icon.custom_minimum_size = Vector2(48, 48)
+		earth_icon.custom_minimum_size = Vector2(96, 96)
 		earth_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		earth_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
 		var earth_label = Label.new()
 		earth_label.text = "x%d" % trait_counts["EARTH"]
-		earth_label.add_theme_font_size_override("font_size", 20)
-		earth_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		earth_label.add_theme_font_size_override("font_size", 32)
 		earth_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		
 		earth_container.add_child(earth_icon)
@@ -604,14 +616,13 @@ func _update_trait_display() -> void:
 		
 		var water_icon = TextureRect.new()
 		water_icon.texture = preload("res://assets/sprites/items/WaterEmblem.png")
-		water_icon.custom_minimum_size = Vector2(48, 48)
+		water_icon.custom_minimum_size = Vector2(96, 96)
 		water_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		water_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
 		var water_label = Label.new()
 		water_label.text = "x%d" % trait_counts["WATER"]
-		water_label.add_theme_font_size_override("font_size", 20)
-		water_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		water_label.add_theme_font_size_override("font_size", 32)
 		water_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		
 		water_container.add_child(water_icon)
@@ -625,14 +636,13 @@ func _update_trait_display() -> void:
 		
 		var air_icon = TextureRect.new()
 		air_icon.texture = preload("res://assets/sprites/items/AirEmblem.png")
-		air_icon.custom_minimum_size = Vector2(48, 48)
+		air_icon.custom_minimum_size = Vector2(96, 96)
 		air_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		air_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
 		var air_label = Label.new()
 		air_label.text = "x%d" % trait_counts["AIR"]
-		air_label.add_theme_font_size_override("font_size", 20)
-		air_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
+		air_label.add_theme_font_size_override("font_size", 32)
 		air_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		
 		air_container.add_child(air_icon)

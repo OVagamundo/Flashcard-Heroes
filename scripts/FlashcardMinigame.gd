@@ -18,10 +18,14 @@ const COLOR_FLASH_INCORRECT := Color(0.9, 0.2, 0.2)
 
 # Load fonts
 const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
-const BUTTON_FONT = preload("res://assets/fonts/static/NotoSansJP-Bold.ttf")
-const WESTERN_FONT = preload("res://assets/fonts/static/NotoSansJP-Bold.ttf")
+const BUTTON_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
+const WESTERN_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
+const PANEL_TEXTURE = preload("res://assets/ui/textures/panel_v4.png")
+const BUTTON_NORMAL_TEXTURE = preload("res://assets/ui/textures/button_v4_normal.png")
+const BUTTON_HOVER_TEXTURE = preload("res://assets/ui/textures/button_v4_hover.png")
+const BUTTON_PRESSED_TEXTURE = preload("res://assets/ui/textures/button_v4_pressed.png")
 
-@onready var main_panel: Panel = %MainPanel
+@onready var main_panel: PanelContainer = %MainPanel
 @onready var question_label: Label = %QuestionLabel
 @onready var choices_grid: GridContainer = %ChoicesGrid
 @onready var timer_label: Label = %TimerLabel
@@ -48,7 +52,7 @@ var _displayed_card_id: StringName = &"" # Currently displayed in intro popup (m
 var _current_question_id: StringName = &""
 var _current_choices: Array[StringName] = []
 var _current_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
-var _panel_style: StyleBoxFlat = null
+var _panel_style: StyleBox = null
 
 # Token counter references for live update
 var _token_group: Control = null
@@ -171,12 +175,25 @@ func _setup_question_label_style() -> void:
 	question_label.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
 	question_label.add_theme_constant_override("outline_size", 8)
 	
-	# Also style the intro question label
+	# Also style the intro labels
 	intro_question_label.add_theme_font_override("font", JAPANESE_FONT)
-	intro_question_label.add_theme_font_size_override("font_size", 72)
+	intro_question_label.add_theme_font_size_override("font_size", 64) # Reduced to prevent wrapping
 	intro_question_label.add_theme_color_override("font_color", COLOR_COOL_BLACK)
 	intro_question_label.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
-	intro_question_label.add_theme_constant_override("outline_size", 6)
+	intro_question_label.add_theme_constant_override("outline_size", 8)
+	
+	intro_answer_label.add_theme_font_override("font", JAPANESE_FONT)
+	intro_answer_label.add_theme_font_size_override("font_size", 64) # Match question font size
+	intro_answer_label.add_theme_color_override("font_color", Color.WHITE)
+	intro_answer_label.add_theme_color_override("font_outline_color", COLOR_COOL_BLACK)
+	intro_answer_label.add_theme_constant_override("outline_size", 8)
+	
+	var intro_arrow = %IntroArrow
+	intro_arrow.add_theme_font_override("font", JAPANESE_FONT)
+	intro_arrow.add_theme_font_size_override("font_size", 64)
+	intro_arrow.add_theme_color_override("font_color", COLOR_COOL_BLACK)
+	intro_arrow.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
+	intro_arrow.add_theme_constant_override("outline_size", 4)
 
 func populate(context: Dictionary) -> void:
 	"""Called by WindowManager when the modal window is opened"""
@@ -258,7 +275,8 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 	var card_data = Database.get_flashcard_definition(card_id)
 	if not card_data.is_empty():
 		intro_question_label.text = card_data.get("question", "Error: No question")
-		intro_answer_label.text = card_data.get("answer", "Error")
+		var answer_text = card_data.get("answer", "Error")
+		intro_answer_label.text = answer_text if _is_japanese(answer_text) else answer_text.to_upper()
 		var explanation = card_data.get("explanation", "")
 		if explanation.is_empty():
 			explanation = tr("ui.no_explanation")
@@ -342,7 +360,8 @@ func _update_localized_text() -> void:
 	if _is_introducing_new_card and not _current_question_id.is_empty():
 		var card_data: Dictionary = Database.get_flashcard_definition(_current_question_id)
 		if not card_data.is_empty():
-			intro_answer_label.text = card_data.get("answer", "Error")
+			var answer_text = card_data.get("answer", "Error")
+			intro_answer_label.text = answer_text if _is_japanese(answer_text) else answer_text.to_upper()
 			intro_explanation_label.text = card_data.get("explanation", "")
 	
 	if _is_introducing_new_card:
@@ -371,34 +390,51 @@ func _populate_priority_cards() -> void:
 		
 		var button := Button.new()
 		button.text = card_data.get("question", "?")
-		button.custom_minimum_size = Vector2(70, 50)
+		button.custom_minimum_size = Vector2(100, 80) # Larger buttons as requested
 		
-		# Style with mastery color background
+		# Style with theme button textures and mastery color modulation
 		var mastery_color = FlashcardProgress.MASTERY_COLORS[clampi(mastery_level, FlashcardProgress.MASTERY_MIN, FlashcardProgress.MASTERY_MAX)]
-		var style = StyleBoxFlat.new()
-		style.bg_color = mastery_color
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_left = 4
-		style.corner_radius_bottom_right = 4
-		button.add_theme_stylebox_override("normal", style)
-		button.add_theme_stylebox_override("hover", style)
-		button.add_theme_stylebox_override("pressed", style)
+		
+		var normal_style = StyleBoxTexture.new()
+		normal_style.texture = BUTTON_NORMAL_TEXTURE
+		normal_style.modulate_color = mastery_color
+		normal_style.texture_margin_left = 20
+		normal_style.texture_margin_right = 20
+		normal_style.texture_margin_top = 20
+		normal_style.texture_margin_bottom = 20
+		
+		var hover_style = StyleBoxTexture.new()
+		hover_style.texture = BUTTON_HOVER_TEXTURE
+		hover_style.modulate_color = mastery_color.lightened(0.2)
+		hover_style.texture_margin_left = 20
+		hover_style.texture_margin_right = 20
+		hover_style.texture_margin_top = 20
+		hover_style.texture_margin_bottom = 20
+		
+		var pressed_style = StyleBoxTexture.new()
+		pressed_style.texture = BUTTON_PRESSED_TEXTURE
+		pressed_style.modulate_color = mastery_color.darkened(0.2)
+		pressed_style.texture_margin_left = 20
+		pressed_style.texture_margin_right = 20
+		pressed_style.texture_margin_top = 20
+		pressed_style.texture_margin_bottom = 20
+		
+		button.add_theme_stylebox_override("normal", normal_style)
+		button.add_theme_stylebox_override("hover", hover_style)
+		button.add_theme_stylebox_override("pressed", pressed_style)
 		
 		# Font styling
 		button.add_theme_font_override("font", JAPANESE_FONT)
-		button.add_theme_font_size_override("font_size", 28)
+		button.add_theme_font_size_override("font_size", 36) # Larger font
 		button.add_theme_color_override("font_color", COLOR_COOL_BLACK)
 		button.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
-		button.add_theme_constant_override("outline_size", 2)
+		button.add_theme_constant_override("outline_size", 3)
 		
 		# Highlight the currently displayed card
 		if card_id == _displayed_card_id:
-			style.border_width_top = 3
-			style.border_width_bottom = 3
-			style.border_width_left = 3
-			style.border_width_right = 3
-			style.border_color = COLOR_WARM_WHITE
+			normal_style.modulate_color = mastery_color.lightened(0.4)
+			# Add a border-like effect using content margins or similar if needed, 
+			# but modulation is usually enough with the texture
 		
 		button.pressed.connect(_on_priority_card_clicked.bind(card_id))
 		priority_cards_container.add_child(button)
@@ -564,21 +600,25 @@ func _update_panel_to_mastery_color(card_id: StringName) -> void:
 	_update_panel_color(_current_mastery_color)
 
 func _setup_panel_style() -> void:
-	"""Create a StyleBoxFlat for the panel to allow dynamic color changes"""
 	if not is_instance_valid(main_panel):
 		return
 	
-	_panel_style = StyleBoxFlat.new()
-	_panel_style.bg_color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
-	_panel_style.corner_radius_top_left = 8
-	_panel_style.corner_radius_top_right = 8
-	_panel_style.corner_radius_bottom_left = 8
-	_panel_style.corner_radius_bottom_right = 8
+	var style = StyleBoxTexture.new()
+	style.texture = PANEL_TEXTURE
+	style.texture_margin_left = 20
+	style.texture_margin_right = 20
+	style.texture_margin_top = 20
+	style.texture_margin_bottom = 20
+	style.modulate_color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
+	
+	_panel_style = style
 	main_panel.add_theme_stylebox_override("panel", _panel_style)
 
 func _update_panel_color(color: Color) -> void:
-	"""Set the panel's background color"""
-	if is_instance_valid(_panel_style):
+	"""Set the panel's background color by modulating the texture"""
+	if _panel_style is StyleBoxTexture:
+		_panel_style.modulate_color = color
+	elif _panel_style is StyleBoxFlat:
 		_panel_style.bg_color = color
 
 func _on_choice_selected(selected_answer_id: StringName) -> void:
@@ -645,12 +685,14 @@ func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> voi
 	if not is_instance_valid(_panel_style):
 		return
 	
+	var prop = "modulate_color" if _panel_style is StyleBoxTexture else "bg_color"
+	
 	# Immediately set to flash color
-	_panel_style.bg_color = flash_color
+	_panel_style.set(prop, flash_color)
 	
 	# Tween to the target (next question's mastery) color
 	var tween: Tween = create_tween()
-	tween.tween_property(_panel_style, "bg_color", target_color, FLASH_FADE_DURATION).set_delay(FLASH_DURATION)
+	tween.tween_property(_panel_style, prop, target_color, FLASH_FADE_DURATION).set_delay(FLASH_DURATION)
 
 func _flash_timer_bar_correct() -> void:
 	"""Flash the timer bar white"""

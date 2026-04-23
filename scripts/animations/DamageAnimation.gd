@@ -302,21 +302,21 @@ func _spawn_floating_pwr_damage(_animator: Node, target_uuid: String, amount: in
 			found_pos = true
 			
 	if found_pos:
-		# Manual spawn to set custom color (Black)
+		# Use status effect style for PWR loss (size 32, black)
 		var damage_number = VFXFactory.create_damage_number()
 		var effects_layer = VFXFactory.get_effects_layer()
-		var color = Color(0.1, 0.1, 0.1) # Black (not fully 0 to avoid invisibility issues on black bg)
+		var color = Color(0.0, 0.0, 0.0) # Pure Black
 		
 		if is_instance_valid(effects_layer):
 			var offset = VFXFactory.get_viewport_offset()
 			effects_layer.add_child(damage_number)
-			damage_number.setup(amount, spawn_pos + offset, color)
+			damage_number.setup_stat(amount, spawn_pos + offset, color)
 			damage_number.play()
 		elif is_instance_valid(_animator):
 			var battle_view = _animator.get_tree().get_first_node_in_group("battle_view")
 			if is_instance_valid(battle_view):
 				battle_view.add_child(damage_number)
-				damage_number.setup(amount, spawn_pos, color)
+				damage_number.setup_stat(amount, spawn_pos, color)
 				damage_number.play()
 			else:
 				damage_number.queue_free()

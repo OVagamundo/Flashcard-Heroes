@@ -63,12 +63,15 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if stat == "burn_stacks":
 			flash_color = Color(1.0, 0.4, 0.0) # Orange
 			animator.apply_burn_stack(target_uuid, new_val)
+			_spawn_floating_status(animator, target_uuid, amount, "burn")
 		elif stat == "armor_stacks":
 			flash_color = Color(0.5, 0.5, 0.5) # Pure Grey
 			animator.apply_armor_stack(target_uuid, new_val)
+			_spawn_floating_status(animator, target_uuid, amount, "armor")
 		elif stat == "spikes_stacks" or stat == "spikes":
 			flash_color = Color(0.8, 0.1, 0.1) # Reddish for spikes
 			animator.apply_spikes_stack(target_uuid, new_val)
+			_spawn_floating_status(animator, target_uuid, amount, "spikes")
 		else:
 			# Generic status effect
 			flash_color = Color(0.7, 0.7, 0.7)
@@ -95,3 +98,20 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	elif stat == "spikes_stacks" or stat == "spikes": projectile_stat = "spikes"
 	
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, projectile_stat)
+
+func _spawn_floating_status(animator: Node, target_uuid: String, amount: int, type: String) -> void:
+	var view = animator._visual_registry.get(target_uuid)
+	var spawn_pos = Vector2.ZERO
+	var found_pos = false
+	
+	if is_instance_valid(view) and view.is_inside_tree():
+		spawn_pos = view.global_position + (view.size * Vector2(0.5, 0.3))
+		found_pos = true
+	else:
+		var snap = animator.get_snapshot_position(target_uuid)
+		if not snap.is_empty():
+			spawn_pos = Vector2(snap.position.x + snap.size.x / 2, snap.position.y + snap.size.y * 0.3)
+			found_pos = true
+			
+	if found_pos and amount != 0:
+		VFXFactory.spawn_status_effect_number_on_layer(abs(amount), type, spawn_pos)
