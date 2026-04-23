@@ -261,9 +261,9 @@ ui.exit_game,Exit Game,Sair do Jogo
 tutorial.loadout,"Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run.","Escolha seu herói e deck de flashcards. Heróis têm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck é o baralho de flashcards que será usado por toda a jogatina."
 tutorial.path_choice_intro.title,"Path choice","Escolha do caminho"
 tutorial.path_choice_1,"Choose your next encounter! Every encounter counts as one day and enemies get stronger each day. Make it count!","Escolha sua proxima parada! Cada parada conta como um dia e seus adversarios ficam mais fortes a cada dia. Escolha bem!"
-tutorial.gacha_inspect_run.title,"Journey Inventory","Suas Cápsulas"
-tutorial.gacha_inspect_run.mouse,"This is your current inventory. Hover over or click a GachaBall to inspect it. You can merge two GachaBalls of the same tier if you’ve already unlocked the resulting unit in this playthrough—just click or drag one onto another.","Aqui estão suas cápsulas. Passe o cursor ou clique em uma GachaBall para inspecioná-la. Você pode fundir duas GachaBalls do mesmo nível se já tiver desbloqueado a unidade resultante nesta partida — basta clicar ou arrastar uma sobre a outra."
-tutorial.gacha_inspect_run.touch,"This is your current inventory. Tap or tap and hold a GachaBall to inspect it. You can merge two GachaBalls of the same tier if you’ve already unlocked the resulting unit in this playthrough—just tap or drag one onto another.","Aqui estão suas cápsulas. Toque ou toque e segure uma GachaBall para inspecioná-la. Você pode fundir duas GachaBalls do mesmo nível se já tiver desbloqueado a unidade resultante nesta partida — basta tocar ou arrastar uma sobre a outra."
+tutorial.gacha_inspect_run.title,"Gacha Collection","Coleção Gacha"
+tutorial.gacha_inspect_run.mouse,"This is your current collection. Hover over or click a GachaBall to inspect it. You can merge two GachaBalls of the same tier if you’ve already unlocked the resulting GachaBall in this playthrough—just click or drag one onto another. You unlock GachaBalls by getting them during the game.","Esta é a sua coleção atual. Passe o cursor ou clique em uma GachaBall para inspecioná-la. Você pode fundir duas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida — basta clicar ou arrastar uma sobre a outra. Você desbloqueia GachaBalls ao obtê-las durante o jogo."
+tutorial.gacha_inspect_run.touch,"This is your current collection. Tap or tap and hold a GachaBall to inspect it. You can merge two GachaBalls of the same tier if you’ve already unlocked the resulting GachaBall in this playthrough—just tap or drag one onto another. You unlock GachaBalls by getting them during the game.","Esta é a sua coleção atual. Toque ou toque e segure uma GachaBall para inspecioná-la. Você pode fundir duas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida — basta tocar ou arrastar uma sobre a outra. Você desbloqueia GachaBalls ao obtê-las durante o jogo."
 tutorial.gacha_inspect_battle,"Merging or destroying gachaballs in battle only affects the current encounter. Your permanent collection remains unchanged. Each battle resets your gachaballs to their base state.","Fundir ou destruir gachaballs em batalha afeta apenas o encontro atual. Sua coleção permanente permanece inalterada. Cada batalha redefine seus gachaballs para seu estado base."
 tutorial.shop,"Spend Gold to expand your collection. Reroll the stock if you're looking for something specific, but be warned: the price rises with every roll!","Gaste Ouro para expandir sua coleção. Rerole o estoque se estiver procurando algo específico, mas cuidado: o preço sobe a cada rolagem!"
 tutorial.rest_site,"A moment of respite. Master the flashcard minigame to earn tokens, then spend them on these machines for permanent Hero upgrades.","Um momento de descanso. Domine o minigame de flashcards para ganhar fichas e use-as nestas máquinas para upgrades permanentes do Herói."
@@ -330,14 +330,14 @@ trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,"Grants +1 HP and +1 PWR to Tier 1 units when drawn.","Concede +1 HP e +1 PWR a unidades Nível 1 ao serem sacadas."
 ability.royal_insignia.name,Royal Blessing,Bênção Real
 ability.royal_insignia.desc,"When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 1 é sacada, concede +1 HP e +1 PWR."
-trinket.trait_fire.name,Fire Sigil,Sigilo de Fogo
-trinket.trait_fire.desc,"Enables the Fire trait whenever your team has enough Fire souls.","Ativa o traço de Fogo sempre que sua equipe tiver almas de Fogo suficientes."
-trinket.trait_earth.name,Earth Sigil,Sigilo de Terra
-trinket.trait_earth.desc,"Enables the Earth trait whenever your team has enough Earth souls.","Ativa o traço de Terra sempre que sua equipe tiver almas de Terra suficientes."
-trinket.trait_water.name,Water Sigil,Sigilo de Água
-trinket.trait_water.desc,"Enables the Water trait whenever your team has enough Water souls.","Ativa o traço de Água sempre que sua equipe tiver almas de Água suficientes."
-trinket.trait_air.name,Air Sigil,Sigilo de Ar
-trinket.trait_air.desc,"Enables the Air trait whenever your team has enough Air souls.","Ativa o traço de Ar sempre que sua equipe tiver almas de Ar suficientes."
+trinket.trait_fire.name,Fire Trait,Sinergia de Fogo
+trinket.trait_fire.desc,"Enables the Fire trait whenever your team has enough Fire souls.","Ativa a sinergia de Fogo sempre que sua equipe tiver almas de Fogo suficientes."
+trinket.trait_earth.name,Earth Trait,Sinergia de Terra
+trinket.trait_earth.desc,"Enables the Earth trait whenever your team has enough Earth souls.","Ativa a sinergia de Terra sempre que sua equipe tiver almas de Terra suficientes."
+trinket.trait_water.name,Water Trait,Sinergia de Água
+trinket.trait_water.desc,"Enables the Water trait whenever your team has enough Water souls.","Ativa a sinergia de Água sempre que sua equipe tiver almas de Água suficientes."
+trinket.trait_air.name,Air Trait,Sinergia de Ar
+trinket.trait_air.desc,"Enables the Air trait whenever your team has enough Air souls.","Ativa a sinergia de Ar sempre que sua equipe tiver almas de Ar suficientes."
 trait.fire.name,Fire,Fogo
 trait.fire.3,"Apply 1 Burn on attack.","Aplica 1 Queimadura ao atacar."
 trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total 2)."
@@ -349,17 +349,17 @@ trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliado
 trait.earth.7,"All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura."
 trait.earth.9,"All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura."
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
-item.emblem_fire.desc,"Adds a [b]Soul Fire[/b] trait to this unit. Grants +2 PWR.","Adiciona o atributo de alma [b]Alma de Fogo[/b] a esta unidade. Concede +2 PWR."
+item.emblem_fire.desc,"Grants the [b]Fire[/b] trait to this unit. Grants +2 PWR.","Concede a sinergia [b]Fogo[/b] a esta unidade. Concede +2 PWR."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
-item.emblem_earth.desc,"Adds a [b]Soul Earth[/b] trait to this unit. Grants +4 HP.","Adiciona o atributo de alma [b]Alma de Terra[/b] a esta unidade. Concede +4 HP."
+item.emblem_earth.desc,"Grants the [b]Earth[/b] trait to this unit. Grants +4 HP.","Concede a sinergia [b]Terra[/b] a esta unidade. Concede +4 HP."
 trait.water.name,Water,Água
 trait.water.2,"Water units heal adjacent allies 1 HP at start of turn.","Unidades de Água curam aliados adjacentes em 1 HP no início do turno."
 trait.air.name,Air,Ar
 trait.air.2,"Air units steal 1 PWR from the opposite enemy at start of turn.","Unidades de Ar roubam 1 PWR do inimigo oposto no início do turno."
 item.emblem_water.name,Water Emblem,Emblema de Água
-item.emblem_water.desc,"Adds a [b]Soul Water[/b] trait to this unit. Grants +2 HP and +1 PWR.","Adiciona o atributo de alma [b]Alma de Água[/b] a esta unidade. Concede +2 HP e +1 PWR."
+item.emblem_water.desc,"Grants the [b]Water[/b] trait to this unit. Grants +2 HP and +1 PWR.","Concede a sinergia [b]Água[/b] a esta unidade. Concede +2 HP e +1 PWR."
 item.emblem_air.name,Air Emblem,Emblema de Ar
-item.emblem_air.desc,"When equipped, this unit counts as an Air unit. Grants +1 PWR and +2 HP.","Quando equipado, esta unidade conta como uma unidade de Ar. Concede +1 PWR e +2 HP."
+item.emblem_air.desc,"Grants the [b]Air[/b] trait to this unit. Grants +1 PWR and +2 HP.","Concede a sinergia [b]Ar[/b] a esta unidade. Concede +1 PWR e +2 HP."
 item.potion_t1.name,Minor Healing Potion,Poção de Cura Menor
 item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.
 ability.potion_t1.name,Drink,Beber

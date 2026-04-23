@@ -19,6 +19,20 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 		label.add_theme_color_override("font_color", Color.RED)
 	elif stat == "pwr":
 		label.add_theme_color_override("font_color", Color.BLACK)
+	elif stat == "burn":
+		label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0)) # Orange
+	elif stat == "spikes":
+		label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.0)) # Green
+	elif stat == "armor":
+		label.add_theme_color_override("font_color", Color(0.0, 0.6, 1.0)) # Blue
+	
+	# Apply Black font and matching outline to unit stat labels
+	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	label.add_theme_constant_override("outline_size", 8)
+	label.add_theme_color_override("font_outline_color", Color.WHITE)
+	
+	# Apply 1.5x scale for battle presence
+	self.scale = Vector2(1.5, 1.5)
 	
 	position = start_pos
 	visible = true

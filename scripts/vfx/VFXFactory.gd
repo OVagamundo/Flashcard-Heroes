@@ -35,13 +35,23 @@ func get_effects_layer() -> Node:
 	return get_tree().get_first_node_in_group("effects_layer")
 
 ## Calculate viewport offset for correct VFX positioning
-## Returns Vector2.ZERO if no offset needed
+## Returns Vector2.ZERO if no offset needed (e.g. layer is in same viewport as content)
 func get_viewport_offset() -> Vector2:
+	var effects_layer = get_effects_layer()
+	if not is_instance_valid(effects_layer):
+		return Vector2.ZERO
+		
 	var battle_view = get_tree().get_first_node_in_group("battle_view")
 	if is_instance_valid(battle_view):
-		var viewport = battle_view.get_viewport()
-		if viewport and viewport.get_parent() is Control:
-			return viewport.get_parent().global_position
+		var battle_viewport = battle_view.get_viewport()
+		var effects_viewport = effects_layer.get_viewport()
+		
+		# If they are in different viewports (e.g. EffectsLayer is on root, Battle is in SubViewport)
+		# we need to compensate for the SubViewportContainer's position.
+		if battle_viewport != effects_viewport:
+			if battle_viewport and battle_viewport.get_parent() is Control:
+				return battle_viewport.get_parent().global_position
+				
 	return Vector2.ZERO
 
 ## Spawn a projectile on the effects layer with proper positioning
@@ -91,6 +101,26 @@ func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: boo
 			damage_number.play()
 		else:
 			damage_number.queue_free()
+
+## Spawn a floating status effect number (Burn, Spikes, Armor) on the effects layer
+func spawn_status_effect_number_on_layer(amount: int, type: String, spawn_pos: Vector2) -> void:
+	var vfx = create_damage_number() # Reusing the same scene
+	var effects_layer = get_effects_layer()
+	
+	if is_instance_valid(effects_layer):
+		var offset = get_viewport_offset()
+		effects_layer.add_child(vfx)
+		vfx.setup_status_effect(amount, type, spawn_pos + offset)
+		vfx.play()
+	else:
+		# Fallback to battle view
+		var battle_view = get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view):
+			battle_view.add_child(vfx)
+			vfx.setup_status_effect(amount, type, spawn_pos)
+			vfx.play()
+		else:
+			vfx.queue_free()
 
 ## Launch a projectile from source to target using animator position snapshots.
 ## Handles position resolution, self-cast detection, and projectile spawning.

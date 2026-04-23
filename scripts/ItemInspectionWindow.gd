@@ -5,6 +5,7 @@ const _InputUtils = preload("res://scripts/InputUtils.gd")
 const C = preload("res://scripts/Constants.gd")
 
 @onready var name_label: Label = %NameLabel
+const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var separator: HSeparator = %HSeparator
@@ -60,6 +61,16 @@ func populate(context: Dictionary) -> void:
 		name_key = item_def.name_key
 	
 	name_label.text = tr(name_key)
+	name_label.add_theme_font_override("font", BOLD_FONT)
+	name_label.add_theme_font_size_override("font_size", 32)
+	
+	var title_color = Color(0, 0.4, 0.8, 1) # Default blue
+	if item_def is GachaBallDefinition:
+		match item_def.tier:
+			1: title_color = Color.YELLOW
+			2: title_color = Color.MAGENTA
+			3: title_color = Color.CYAN
+	name_label.add_theme_color_override("font_color", title_color)
 
 	var trait_id := _get_linked_trait_id(item_def)
 	var full_text := ""
@@ -70,7 +81,9 @@ func populate(context: Dictionary) -> void:
 	else:
 		# Base flavor description for trinkets (often contains passive effect info)
 		var base_desc = ""
-		if item_def is TrinketDefinition:
+		if item_def.get("description_key") and item_def.description_key != "":
+			base_desc = tr(item_def.description_key)
+		elif item_def is TrinketDefinition:
 			base_desc = tr(item_def.description_key)
 		
 		var effect_desc = ""
@@ -247,20 +260,27 @@ func _update_recipe_display(item_def: Resource) -> void:
 		var tex = TextureRect.new()
 		if "icon" in def and def.icon != null:
 			tex.texture = def.icon
-		tex.custom_minimum_size = Vector2(48, 48)
+		tex.custom_minimum_size = Vector2(96, 96)
 		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex.mouse_filter = MOUSE_FILTER_IGNORE
 		return tex
 	
-	var _make_label = func(txt: String) -> Label:
+	var _make_label = func(txt: String) -> Control:
+		var container = CenterContainer.new()
+		container.custom_minimum_size = Vector2(32, 96)
+		container.mouse_filter = MOUSE_FILTER_IGNORE
+		
 		var lbl = Label.new()
 		lbl.text = txt
-		lbl.add_theme_font_size_override("font_size", 24)
-		lbl.add_theme_color_override("font_color", Color(0.2, 0.2, 0.2, 1))
+		lbl.add_theme_font_override("font", BOLD_FONT)
+		lbl.add_theme_font_size_override("font_size", 32)
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.mouse_filter = MOUSE_FILTER_IGNORE
-		return lbl
+		
+		container.add_child(lbl)
+		return container
 	
 	recipe_container.add_child(_make_icon.call(def_a))
 	recipe_container.add_child(_make_label.call("+"))

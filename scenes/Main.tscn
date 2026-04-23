@@ -171,6 +171,9 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
+[node name="EffectsLayer" type="CanvasLayer" parent="ContentArea/SubViewport" groups=["effects_layer"]]
+layer = 90
+
 [node name="VBoxContainer" type="VBoxContainer" parent="ContentArea/SubViewport"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -572,9 +575,6 @@ theme_override_constants/outline_size = 4
 text = "x0"
 horizontal_alignment = 1
 vertical_alignment = 2
-
-[node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
-layer = 90
 
 [node name="BackgroundUILayer" type="CanvasLayer" parent="." groups=["background_ui_layer"]]
 layer = 87
