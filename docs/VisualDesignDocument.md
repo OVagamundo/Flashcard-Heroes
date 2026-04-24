@@ -54,7 +54,7 @@ Tier 3: A more complex blend or subtle pattern using the unit's constituent colo
 Stats Display:
 No Labels. The card will display only two numerical values for HP and Power.
 Visual Distinction: The values must be visually distinct. HP should be in a different color then Power. they should both have the same weight.
-Font: Must use a clear, monochromatic, pixel-art friendly font.
+Font: Must use the **32px Black Composite** font for all critical numerical and descriptive values in combat and inspection windows.
 
 ### 6.1 Unit View Elements
 Visual rules for dynamic elements overlaid on the unit view during gameplay.
@@ -85,6 +85,11 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 - **Power Steal (Soul Siphon):**
     - **Visual:** Uses "Damage" language. Red/Black number popping off the unit.
     - **Feedback:** Unit performs "Hurt" reaction (shake/flash) just like taking HP damage, even though it is PWR loss.
+
+**Global VFX & Layering:**
+- **Layer 150 (GlobalVFXLayer)**: All currency (Gold Coins) and screen-space transitions (Gachaball Draws) must render on this layer.
+- **Occlusion**: This layer resides above the HUD, Contextual Windows, and Modal Layer, ensuring coins and effects are never hidden by UI containers.
+- **Z-Index**: Individual VFX nodes should maintain a baseline `z_index` of 5 on this layer for internal layering.
 
 7. Appendix A: The Gachamon Design Checklist
 To design any unit, follow this exact process to ensure 100% compliance with the guidelines.

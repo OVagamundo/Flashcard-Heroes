@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectApplyStatus_Burn"]
+script = ExtResource("2_effect")
+parameters = {"amount": {"use_source_pwr": true}, "status_id": "burn"}
+target_type = &"ATTACK_TARGET"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_pyro_attack_burn"
+name_key = "ability.hero_pyro_attack_burn.name"
+description_key = "ability.hero_pyro_attack_burn.desc"
+trigger = &"on_attack"
+replaces_basic_attack = true
+execute_on_lethal = false
+effects = Array[Resource]([SubResource("EffectApplyStatus_Burn")])

@@ -2,8 +2,6 @@
 extends Node
 
 const INSPECTION_WINDOW_MARGIN = 20.0
-const ACTION_BUTTON_AVOID_MARGIN = 12.0
-const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
 var _window_scenes: Dictionary = {
 	# --- Hermetic Modals (Managed by _modal_stack, use open_modal_window) ---
@@ -31,6 +29,7 @@ var _active_inspection_group: Array[Control] = []
 var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
 var _background_ui_layer: CanvasLayer = null
+var _vfx_layer: CanvasLayer = null
 
 var _persistent_inventory_window: Control = null
 var _persistent_battle_inventory_window: Control = null
@@ -346,6 +345,7 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control) -> vo
 	var pos_hint: String = payload.get("positioning_hint", "")
 	if pos_hint != "":
 		context["positioning_hint"] = pos_hint
+		
 	_open_contextual_window(context)
 
 # Public API for GIR (Rule W3 - Window Pruning).
@@ -496,6 +496,12 @@ func _open_contextual_window(context: Dictionary) -> void:
 		return
 
 	var window_instance = _window_scenes[window_type].instantiate()
+	
+	# ENFORCE WIDTH IMMEDIATELY: Set the desired width before adding to tree or populating.
+	# This ensures all height calculations (fit_content) are based on the final width from frame 1.
+	if window_instance is InspectionWindow:
+		window_instance.custom_minimum_size = Vector2(480, 0)
+		
 	_get_modal_layer().add_child(window_instance)
 	
 	# CRITICAL: Do NOT use hide() here. Hidden nodes often skip layout calculations in Godot 4.
@@ -512,9 +518,6 @@ func _open_contextual_window(context: Dictionary) -> void:
 	
 	window_instance.z_index = 100 # Render above local z-index elevations
 	window_instance.set_meta("window_type", window_type) # Tag for identification
-	var action_button_avoid_scope: StringName = StringName(context.get(ACTION_BUTTON_AVOID_SCOPE_META, &""))
-	if action_button_avoid_scope != &"":
-		window_instance.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, action_button_avoid_scope)
 	
 	_register_window(window_instance, false) # Register as NON-modal.
 	_active_inspection_group.push_back(window_instance)
@@ -542,9 +545,9 @@ func _open_contextual_window(context: Dictionary) -> void:
 
 func _deferred_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = "") -> void:
 	if not is_instance_valid(window): return
-	# Ensure layout has settled for the newly added window before measuring.
-	# We wait THREE frames because inspection windows wait TWO frames to shrink to content,
+	# We wait FOUR frames because inspection windows wait THREE frames to shrink to content,
 	# and we want to measure their final settled dimensions.
+	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -705,11 +708,6 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 		context = {"source_view": source_view, "effect_definition": effect_def}
 	else: return {}
 
-	if is_instance_valid(loc) and loc.container in [&"Shop", &"Rewards"]:
-		# Keep reward/shop inspection windows above the selected slot so they do not
-		# cover the action buttons needed to confirm or buy the selection.
-		payload["positioning_hint"] = "top_center_over_anchor"
-		payload[ACTION_BUTTON_AVOID_SCOPE_META] = loc.container
 
 	payload["window_type"] = window_type
 	payload["context"] = context
@@ -748,6 +746,7 @@ func stop_tracking_window(window_id: int) -> void:
 			anchor.item_rect_changed.disconnect(tracking_info["geom_callable"])
 		if anchor.is_connected("tree_exited", tracking_info["freed_callable"]):
 			anchor.tree_exited.disconnect(tracking_info["freed_callable"])
+	
 	_tracked_windows.erase(window_id)
 
 func _on_inspection_anchor_moved(window_id: int, anchor_id: int, pos_hint: String = "") -> void:
@@ -823,9 +822,8 @@ func _calculate_window_position(source_view: Control, new_window: Control) -> Ve
 	var place_right: bool = src.get_center().x <= vp_center.x
 	var x: float = (src.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (src.position.x - win_sz.x - INSPECTION_WINDOW_MARGIN)
 	
-	# Vertical alignment: align to top if source is on the top half; else align bottom
-	var align_top: bool = src.get_center().y <= vp_center.y
-	var y: float = src.position.y if align_top else (src.end.y - win_sz.y)
+	# Vertical: align the window's base (bottom) with the source center
+	var y: float = src.get_center().y - win_sz.y
 	
 	return _clamp_window_to_viewport(Vector2(x, y), win_sz)
 
@@ -841,8 +839,8 @@ func _calculate_child_window_position_from_anchor(parent_window: Control, anchor
 	var place_right: bool = anchor_rect.get_center().x <= vp_center.x
 	var x: float = (anchor_rect.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (anchor_rect.position.x - child_sz.x - INSPECTION_WINDOW_MARGIN)
 	
-	var align_top: bool = anchor_rect.get_center().y <= vp_center.y
-	var y: float = anchor_rect.position.y if align_top else (anchor_rect.end.y - child_sz.y)
+	# Vertical: align the window's base (bottom) with the anchor center
+	var y: float = anchor_rect.get_center().y - child_sz.y
 	
 	return _clamp_window_to_viewport(Vector2(x, y), child_sz)
 
@@ -960,6 +958,14 @@ func _find_canvas_layer(node: Node) -> CanvasLayer:
 	return null
 
 func _get_window_size(window: Control) -> Vector2:
+	# For inspection windows, combined_minimum_size is much more reliable than 'size'
+	# during the first few frames of population/layout.
+	if window is InspectionWindow:
+		var min_sz := window.get_combined_minimum_size()
+		if min_sz != Vector2.ZERO:
+			# Enforce our 480 width even in the measurement phase
+			return Vector2(maxf(min_sz.x, 480.0), min_sz.y)
+			
 	var sz := window.size
 	if sz == Vector2.ZERO:
 		# Use combined minimum size as a reliable fallback before layout settles
@@ -1007,150 +1013,7 @@ func _calculate_contextual_window_position(anchor: Control, parent_window: Contr
 		var vp_size: Vector2 = Vector2(viewport_rect.size)
 		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
 	
-	return _resolve_action_button_safe_position(window, position, anchor)
-
-func _resolve_action_button_safe_position(window: Control, desired_pos: Vector2, anchor: Control = null) -> Vector2:
-	var window_size: Vector2 = _get_window_size(window)
-	var clamped_desired: Vector2 = _clamp_window_to_viewport(desired_pos, window_size)
-	var avoid_scope: StringName = _get_action_button_avoid_scope(window)
-	if avoid_scope == &"":
-		return clamped_desired
-	
-	var blocked_rects: Array[Rect2] = _get_visible_action_button_rects(window, avoid_scope)
-	if blocked_rects.is_empty():
-		return clamped_desired
-	
-	var desired_rect: Rect2 = Rect2(clamped_desired, window_size)
-	if not _rect_overlaps_any(desired_rect, blocked_rects):
-		return clamped_desired
-	
-	var candidates: Array[Vector2] = []
-	_append_unique_window_candidate(candidates, clamped_desired)
-	
-	var anchor_rect: Rect2 = Rect2()
-	var has_anchor_rect: bool = is_instance_valid(anchor)
-	if has_anchor_rect:
-		anchor_rect = _get_screen_rect(anchor)
-		_append_unique_window_candidate(candidates, _calculate_top_center_over_anchor(anchor, window))
-		_append_unique_window_candidate(candidates, _calculate_left_of_anchor(anchor, window))
-		_append_unique_window_candidate(candidates, _calculate_window_position(anchor, window))
-		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-			Vector2(anchor_rect.get_center().x - window_size.x / 2.0, anchor_rect.end.y + INSPECTION_WINDOW_MARGIN),
-			window_size
-		))
-	
-	for blocked_rect in blocked_rects:
-		if not desired_rect.intersects(blocked_rect):
-			continue
-		
-		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-			Vector2(clamped_desired.x, blocked_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN),
-			window_size
-		))
-		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-			Vector2(clamped_desired.x, blocked_rect.end.y + INSPECTION_WINDOW_MARGIN),
-			window_size
-		))
-		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-			Vector2(blocked_rect.position.x - window_size.x - INSPECTION_WINDOW_MARGIN, clamped_desired.y),
-			window_size
-		))
-		_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-			Vector2(blocked_rect.end.x + INSPECTION_WINDOW_MARGIN, clamped_desired.y),
-			window_size
-		))
-		
-		if has_anchor_rect:
-			var centered_x: float = anchor_rect.get_center().x - window_size.x / 2.0
-			_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-				Vector2(centered_x, blocked_rect.position.y - window_size.y - INSPECTION_WINDOW_MARGIN),
-				window_size
-			))
-			_append_unique_window_candidate(candidates, _clamp_window_to_viewport(
-				Vector2(centered_x, blocked_rect.end.y + INSPECTION_WINDOW_MARGIN),
-				window_size
-			))
-	
-	var best_pos: Vector2 = clamped_desired
-	var best_overlap: float = INF
-	var best_distance: float = INF
-	for candidate in candidates:
-		var clamped_candidate: Vector2 = _clamp_window_to_viewport(candidate, window_size)
-		var overlap_area: float = _total_overlap_area(Rect2(clamped_candidate, window_size), blocked_rects)
-		var distance_score: float = clamped_candidate.distance_squared_to(clamped_desired)
-		if overlap_area < best_overlap - 0.01:
-			best_overlap = overlap_area
-			best_distance = distance_score
-			best_pos = clamped_candidate
-		elif is_equal_approx(overlap_area, best_overlap) and distance_score < best_distance:
-			best_distance = distance_score
-			best_pos = clamped_candidate
-	
-	return best_pos
-
-func _get_action_button_avoid_scope(window: Control) -> StringName:
-	if not is_instance_valid(window):
-		return &""
-	if not window.has_meta(ACTION_BUTTON_AVOID_SCOPE_META):
-		return &""
-	return StringName(window.get_meta(ACTION_BUTTON_AVOID_SCOPE_META))
-
-func _get_visible_action_button_rects(exclude_window: Control, avoid_scope: StringName) -> Array[Rect2]:
-	var rects: Array[Rect2] = []
-	var nodes: Array[Node] = [get_tree().root]
-	var viewport_rect: Rect2 = get_viewport().get_visible_rect()
-	
-	while not nodes.is_empty():
-		var node: Node = nodes.pop_back() as Node
-		for child in node.get_children():
-			nodes.push_back(child)
-		
-		if not (node is BaseButton):
-			continue
-		
-		var button: BaseButton = node as BaseButton
-		if not is_instance_valid(button) or not button.is_visible_in_tree():
-			continue
-		if not button.has_meta(ACTION_BUTTON_AVOID_SCOPE_META):
-			continue
-		var button_scope: StringName = StringName(button.get_meta(ACTION_BUTTON_AVOID_SCOPE_META))
-		if button_scope != avoid_scope:
-			continue
-		if button.mouse_filter == Control.MOUSE_FILTER_IGNORE:
-			continue
-		if is_instance_valid(exclude_window) and exclude_window.is_ancestor_of(button):
-			continue
-		
-		var rect: Rect2 = _get_screen_rect(button)
-		if rect.size == Vector2.ZERO:
-			continue
-		rect = rect.grow(ACTION_BUTTON_AVOID_MARGIN)
-		if not rect.intersects(viewport_rect):
-			continue
-		rects.append(rect)
-	
-	return rects
-
-func _rect_overlaps_any(rect: Rect2, blocked_rects: Array[Rect2]) -> bool:
-	for blocked_rect in blocked_rects:
-		if rect.intersects(blocked_rect):
-			return true
-	return false
-
-func _total_overlap_area(rect: Rect2, blocked_rects: Array[Rect2]) -> float:
-	var area: float = 0.0
-	for blocked_rect in blocked_rects:
-		if not rect.intersects(blocked_rect):
-			continue
-		var overlap: Rect2 = rect.intersection(blocked_rect)
-		area += overlap.size.x * overlap.size.y
-	return area
-
-func _append_unique_window_candidate(candidates: Array[Vector2], candidate: Vector2) -> void:
-	for existing in candidates:
-		if existing.distance_squared_to(candidate) < 1.0:
-			return
-	candidates.append(candidate)
+	return position
 
 func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):
@@ -1161,6 +1024,17 @@ func _get_modal_layer() -> CanvasLayer:
 			_modal_layer.layer = 120 # Standardized Modal Layer
 			get_tree().root.add_child(_modal_layer)
 	return _modal_layer
+
+func get_vfx_layer() -> CanvasLayer:
+	if not is_instance_valid(_vfx_layer):
+		_vfx_layer = get_tree().get_first_node_in_group("vfx_layer")
+		if not is_instance_valid(_vfx_layer):
+			_vfx_layer = CanvasLayer.new()
+			_vfx_layer.name = "GlobalVFXLayer"
+			_vfx_layer.layer = 150 # Above all UI
+			get_tree().root.add_child(_vfx_layer)
+			_vfx_layer.add_to_group("vfx_layer")
+	return _vfx_layer
 
 func _get_background_ui_layer() -> CanvasLayer:
 	if not is_instance_valid(_background_ui_layer):

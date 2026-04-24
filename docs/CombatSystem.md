@@ -64,6 +64,12 @@ graph TD
     *   **Rule:** Effects must **NEVER** set properties (e.g., `current_hp`) directly.
     *   **Purpose:** This function updates the data model *and* returns the absolute value required for the `CombatEvent` visual payload, ensuring the snapshot is accurate.
 
+### Gold Coin VFX & Layering
+Currency animations follow strict directionality and layering rules:
+- **Gain (Combat)**: Gold flies from the **killed unit** (source) to the HUD icon. Logic uses `killed_uuid` in the combat event context to identify the origin.
+- **Spend (Shop/Market)**: Gold flies from the **HUD icon** to the action button (Remove/Transform/Buy).
+- **Layering**: All currency and gachaball animations are parented to the `GlobalVFXLayer` (CanvasLayer 150) to ensure they render above all HUD and inventory containers.
+
 ### 0-Damage Visual Feedback
 To ensure consistent game feel, units with 0 PWR (like Dust Minions) still trigger visual feedback when they attack.
 - **Rule**: `EffectHandlers.handle_damage_effect` always includes hit targets in the `damaged_uuids` list of an `EffectResult`.

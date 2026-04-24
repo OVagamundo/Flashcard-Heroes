@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectApplyStatus_Armor"]
+script = ExtResource("2_effect")
+parameters = {"status_id": "armor", "amount": 1}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectApplyStatus_Spikes"]
+script = ExtResource("2_effect")
+parameters = {"status_id": "spikes", "amount": 1}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_bastion_ally_death_spikes_armor"
+name_key = "ability.hero_bastion_ally_death_spikes_armor.name"
+description_key = "ability.hero_bastion_ally_death_spikes_armor.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectApplyStatus_Armor"), SubResource("EffectApplyStatus_Spikes")])

@@ -63,6 +63,9 @@ func set_slot_color(container_name: StringName) -> void:
 		# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
 		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
 		_background_style.expand_margin_bottom = -15.0
+	elif container_name == &"EquippedItem": # C.CONTAINER_EQUIPPED_ITEM
+		_background_style.texture = load("res://assets/ui/textures/ItemSlot.png")
+		_background_style.expand_margin_bottom = 0.0
 	else:
 		_background_style.texture = load("res://assets/ui/textures/slot.png")
 		_background_style.expand_margin_bottom = 0.0
@@ -186,7 +189,7 @@ func populate(loc: LocationIdentifier) -> void:
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 ## Set the content of this slot using VisualData
-func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_click_inspect: bool = false, is_enemy: bool = false) -> void:
+func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy: bool = false) -> void:
 	# Clear existing content (preserve indicator and background)
 	# Clear existing content (preserve indicator)
 	for child in get_children():
@@ -217,7 +220,7 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	add_child(view)
 	
 	# Populate the view with visual data
-	view.populate(_location, visual_data, is_inspectable, single_click_inspect)
+	view.populate(_location, visual_data, is_inspectable)
 	var def_id: StringName = visual_data.get("definition_id", &"")
 	view.set_is_enemy(is_enemy, def_id)
 	
@@ -231,8 +234,8 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, single_cl
 	# But trusting _interaction_mode from the slot is the correct architectural approach.
 	view.set_interaction_context(effective_mode, entity_type, _window_group_id)
 	
-	# If inspection only, disable dragging functionality (interactive flag controls drag in GachaBallView)
-	if effective_mode == &"INSPECTION_ONLY":
+	# If inspection or selection only, disable dragging functionality (interactive flag controls drag in GachaBallView)
+	if effective_mode in [&"INSPECTION_ONLY", &"SELECTION_ONLY"]:
 		view.set_is_interactive(false)
 	else:
 		view.set_is_interactive(true)

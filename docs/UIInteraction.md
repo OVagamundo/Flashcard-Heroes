@@ -24,6 +24,7 @@ Main.tscn (Shell)
 ├── ModalLayer (CanvasLayer - Layer 120)
 │   └── Inspection Windows, Popups, Tutorials
 ├── EffectsLayer (CanvasLayer - Layer 90)
+├── GlobalVFXLayer (CanvasLayer - Layer 150)
 └── CursorLayer (Software Overlay - Layer 1024)
 ```
 
@@ -87,7 +88,7 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | Type | Examples | Blocker | Behavior |
 |------|----------|---------|----------|
 | **Hermetic Modals** | FlashcardMinigame, EndBattlePopup | Yes | Blocks all input, self-closing |
-| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). |
+| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). Features standardized **32px Black Composite** fonts and `ItemSlot.png` for unit item grids. |
 | **Contextual (Fixed)** | InventoryWindow, DiscardPile | No | Centered, closes on outside click |
 
 ### Window Layout & Sizing
@@ -105,9 +106,9 @@ To ensure absolute visibility of contextual information, all windows managed by 
 The application maintains a strict four-tier UI hierarchy to resolve all occlusion issues:
 1. **BackgroundUILayer (40)**: Persistent inventory windows (Run/Battle) and Discard Pile.
 2. **HUDLayer (60)**: Gacha Machine textures, count labels, and top/bottom panel buttons.
-3. **EffectsLayer (90)**: Global VFX, transitions, and parabolic projectiles. Crucial for **HUD-to-World** transitions (like machine bounces) as it resides on a separate CanvasLayer that bypasses internal viewport clipping.
+3. **GlobalVFXLayer (150)**: High-priority currency animations (Gold Gain/Spend) and global transitions. Resides above all modal UI to ensure visibility.
 4. **ModalLayer (120)**: Inspection windows, pop-ups, tutorials, and minigames.
-*Note: This ensures the "physical" UI (Inventory) slides out behind the Gacha Machines, while pop-ups always render on top of both.*
+*Note: This ensures the "physical" UI (Inventory) slides out behind the Gacha Machines, while pop-ups always render on top of both, and global effects (coins) fly above everything.*
 
 ---
 

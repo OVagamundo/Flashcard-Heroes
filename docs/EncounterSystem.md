@@ -61,6 +61,11 @@ Bosses don't have a cost, they are free.
 | Boss | Daily budget × 0.85 | Boss unit is FREE | Full budget for supports |
 | Summons | Daily budget × 0.33 | Cap for Boss/Elite reinforcements per turn |
 
+### Boss Battle Scheduling
+Boss battles are triggered by **Flashcard Mastery Progression** rather than a fixed day count:
+- **Trigger**: Occurs every time 20% of the total Flashcard deck has been unlocked/introduced (20%, 40%, 60%, 80%, 100%).
+- **Behavior**: Overrides the standard node generation to force a Boss encounter.
+
 ## Encounter Generation Algorithm
 
 The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm that guarantees 100% budget spending.

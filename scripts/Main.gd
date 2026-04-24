@@ -54,7 +54,7 @@ var _current_content_node: Node = null
 
 # Confirm drop zone overlay (covers bottom area for Reward/Shop confirm)
 var _confirm_drop_zone: PanelContainer = null
-var _confirm_drop_zone_label: Label = null
+var _confirm_drop_zone_label: RichTextLabel = null
 var _confirm_drop_zone_mode: StringName = &"" # &"Rewards" or &"Shop"
 var _confirm_drop_zone_visible: bool = false
 var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for restoring selection on drop
@@ -63,8 +63,8 @@ var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for r
 var _bm_drop_zone_container: PanelContainer = null
 var _bm_remove_zone: PanelContainer = null
 var _bm_transform_zone: PanelContainer = null
-var _bm_remove_label: Label = null
-var _bm_transform_label: Label = null
+var _bm_remove_label: RichTextLabel = null
+var _bm_transform_label: RichTextLabel = null
 var _bm_drop_zones_visible: bool = false
 var _bm_drop_zone_drag_context: InteractionContext = null
 var _bm_instruction_overlay: PanelContainer = null
@@ -72,7 +72,7 @@ var _bm_instruction_label: Label = null
 var _bm_instruction_visible: bool = false
 
 func _ready() -> void:
-	GameManager.register_main_node(self ) # Register self with GameManager
+	GameManager.register_main_node(self) # Register self with GameManager
 	
 	# Connect knob buttons to draw functionality
 	knob_button_1.pressed.connect(func(): _on_draw_button_pressed(knob_button_1, 1))
@@ -186,14 +186,8 @@ func _on_content_area_gui_input(event: InputEvent) -> void:
 		context.entity_type = &"GLOBAL_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 0 # Main game area
-		# FIXME: This interferes with SubViewport interaction handling (bubbling from SubViewportContainer)
-		# effectively overriding all clicks in BattleView with a DESELECT.
-		# Since BattleView has its own background handler that correctly respects STOP filters,
-		# we can disable this catch-all.
 		# SignalBus.emit_signal("interaction_context_received", context)
 	elif InputUtils.is_primary_pointer_release(event) and GlobalInteractionRouter.is_drag_active():
-		# Do NOT forcibly end drag on background release here; drop targets manage drag end.
-		# This was canceling drag before GIR processed battle board drop targets.
 		pass
 
 ## Explicit handler for UI overlays (Top Bar, etc.) that should act as "Background"
@@ -285,7 +279,6 @@ func _on_path_choice_scene_requested() -> void:
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
 
-	
 func _on_reward_scene_requested(context: Dictionary) -> void:
 	clear_content_area()
 	var instance = REWARD_SCENE.instantiate()
@@ -298,7 +291,6 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 	
 	if instance.has_method("populate"):
 		instance.populate(context)
-
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
@@ -634,7 +626,7 @@ func _populate_player_trinkets() -> void:
 		var instance = GameManager.get_instance_from_location(loc)
 		if is_instance_valid(instance):
 			var visual_data = VisualDataAdapter.create_visual_data(instance)
-			slot_view.set_content(visual_data, true, true, false)
+			slot_view.set_content(visual_data, true, false)
 			if slot_view.get_child_count() > 0:
 				var view = slot_view.get_child(0)
 				if view is GachaBallView and view.has_method("set_interaction_context"):
@@ -715,8 +707,6 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	else:
 		pass
 
-
-
 ## Update the inventory count labels on all three gacha machines
 func _update_machine_counts() -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -771,14 +761,15 @@ func _build_confirm_drop_zone() -> void:
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_confirm_drop_zone.add_child(center)
 	
-	_confirm_drop_zone_label = Label.new()
-	_confirm_drop_zone_label.text = "Get"
-	_confirm_drop_zone_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_confirm_drop_zone_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_confirm_drop_zone_label.add_theme_font_size_override("font_size", 52)
-	_confirm_drop_zone_label.add_theme_color_override("font_color", Color(0.35, 0.35, 0.32, 0.85))
+	_confirm_drop_zone_label = RichTextLabel.new()
+	_confirm_drop_zone_label.bbcode_enabled = true
+	_confirm_drop_zone_label.fit_content = true
+	_confirm_drop_zone_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_confirm_drop_zone_label.custom_minimum_size = Vector2(800, 0)
+	_confirm_drop_zone_label.add_theme_color_override("default_color", Color(0.35, 0.35, 0.32, 0.85))
 	_confirm_drop_zone_label.add_theme_color_override("font_outline_color", Color(0.15, 0.17, 0.22, 0.3))
 	_confirm_drop_zone_label.add_theme_constant_override("outline_size", 2)
+	_confirm_drop_zone_label.add_theme_font_size_override("normal_font_size", 42)
 	_confirm_drop_zone_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	center.add_child(_confirm_drop_zone_label)
 	
@@ -805,11 +796,11 @@ func show_confirm_drop_zone(mode: StringName) -> void:
 	
 	# Set label text based on mode
 	if mode == &"Rewards":
-		_confirm_drop_zone_label.text = tr("ui.drop_zone_get")
+		_confirm_drop_zone_label.text = "[center]" + tr("ui.drop_zone_get_multi") + "[/center]"
 	elif mode == &"Shop":
-		_confirm_drop_zone_label.text = tr("ui.drop_zone_buy")
+		_confirm_drop_zone_label.text = "[center]" + tr("ui.drop_zone_buy_multi") + "[/center]"
 	else:
-		_confirm_drop_zone_label.text = tr("ui.confirm")
+		_confirm_drop_zone_label.text = "[center]" + tr("ui.confirm") + "[/center]"
 	
 	if _confirm_drop_zone_visible:
 		return # Already showing
@@ -926,7 +917,6 @@ func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 	if _check_bm_drag_drop_on_zones_with_context(saved_bm_ctx):
 		return
 	
-	
 	if _confirm_drop_zone_mode == &"":
 		return
 	
@@ -986,17 +976,17 @@ func _build_black_market_drop_zones() -> void:
 	_bm_drop_zone_container.add_child(hbox)
 	
 	# Left zone: Transform
-	_bm_transform_zone = _create_bm_zone_panel(tr("ui.drop_zone_transform"), Color(0.93, 0.96, 0.98, 0.95))
+	_bm_transform_zone = _create_bm_zone_panel(tr("ui.drop_zone_transform_multi"), Color(0.93, 0.96, 0.98, 0.95))
 	_bm_transform_zone.name = "TransformZone"
-	_bm_transform_label = _bm_transform_zone.get_child(0).get_child(0) as Label
+	_bm_transform_label = _bm_transform_zone.get_child(0).get_child(0) as RichTextLabel
 	hbox.add_child(_bm_transform_zone)
 	_bm_transform_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_bm_transform_zone.gui_input.connect(_on_bm_transform_zone_gui_input)
 	
 	# Right zone: Remove
-	_bm_remove_zone = _create_bm_zone_panel(tr("ui.drop_zone_remove"), Color(0.98, 0.93, 0.93, 0.95))
+	_bm_remove_zone = _create_bm_zone_panel(tr("ui.drop_zone_remove_multi"), Color(0.98, 0.93, 0.93, 0.95))
 	_bm_remove_zone.name = "RemoveZone"
-	_bm_remove_label = _bm_remove_zone.get_child(0).get_child(0) as Label
+	_bm_remove_label = _bm_remove_zone.get_child(0).get_child(0) as RichTextLabel
 	hbox.add_child(_bm_remove_zone)
 	_bm_remove_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_bm_remove_zone.gui_input.connect(_on_bm_remove_zone_gui_input)
@@ -1060,14 +1050,14 @@ func _update_programmatic_labels() -> void:
 	"""Update all programmatically created labels with current localized text."""
 	if is_instance_valid(_confirm_drop_zone_label):
 		if _confirm_drop_zone_mode == &"Rewards":
-			_confirm_drop_zone_label.text = tr("ui.drop_zone_get")
+			_confirm_drop_zone_label.text = "[center]" + tr("ui.drop_zone_get_multi") + "[/center]"
 		elif _confirm_drop_zone_mode == &"Shop":
-			_confirm_drop_zone_label.text = tr("ui.drop_zone_buy")
+			_confirm_drop_zone_label.text = "[center]" + tr("ui.drop_zone_buy_multi") + "[/center]"
 			
 	if is_instance_valid(_bm_transform_label):
-		_bm_transform_label.text = tr("ui.drop_zone_transform")
+		_bm_transform_label.text = "[center]" + tr("ui.drop_zone_transform_multi") + "[/center]"
 	if is_instance_valid(_bm_remove_label):
-		_bm_remove_label.text = tr("ui.drop_zone_remove")
+		_bm_remove_label.text = "[center]" + tr("ui.drop_zone_remove_multi") + "[/center]"
 	if is_instance_valid(_bm_instruction_label):
 		_bm_instruction_label.text = tr("ui.bm_instruction")
 
@@ -1087,12 +1077,14 @@ func _create_bm_zone_panel(text: String, bg_color: Color) -> PanelContainer:
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(center)
 	
-	var label = Label.new()
-	label.text = text
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 48)
-	label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.28, 0.85))
+	var label = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.custom_minimum_size = Vector2(400, 0)
+	label.text = "[center]" + text + "[/center]"
+	label.add_theme_font_size_override("normal_font_size", 32)
+	label.add_theme_color_override("default_color", Color(0.3, 0.3, 0.28, 0.85))
 	label.add_theme_color_override("font_outline_color", Color(0.15, 0.17, 0.22, 0.3))
 	label.add_theme_constant_override("outline_size", 2)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE

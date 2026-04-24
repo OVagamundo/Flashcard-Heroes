@@ -1,5 +1,5 @@
 class_name TraitInspectionWindow
-extends "res://scripts/InspectionWindow.gd"
+extends InspectionWindow
 
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 
@@ -17,13 +17,32 @@ const C = preload("res://scripts/Constants.gd")
 
 var _source_view: Control
 var _trait_id: String
-var _stable_anchor: Control
 
 func _ready() -> void:
-	# Ensure the window root receives clicks for local pruning (Rule W3)
+	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
-	# Allow rich text interactions
-	description_label.mouse_filter = MOUSE_FILTER_PASS
+	# Configure child controls to allow bubbling so the root can prune children on generic clicks
+	_configure_mouse_filters()
+
+## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
+func _configure_mouse_filters() -> void:
+	var stack: Array = [self]
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		for child in node.get_children():
+			if child is Control:
+				# Keep nodes with their own logic at STOP
+				if child == internal_background or child == description_label:
+					(child as Control).mouse_filter = MOUSE_FILTER_STOP
+				else:
+					(child as Control).mouse_filter = MOUSE_FILTER_PASS
+				stack.append(child)
+
+	
+	# Zero out internal minimums so they don't force a height from old .tscn values
+	for child in [description_label, title_label, icon_rect]:
+		if is_instance_valid(child):
+			child.custom_minimum_size = Vector2.ZERO
 	
 	if is_instance_valid(internal_background):
 		internal_background.mouse_filter = MOUSE_FILTER_STOP
@@ -89,34 +108,19 @@ func populate(context: Dictionary) -> void:
 	description_label.text = final_text
 	
 	_reset_window_size()
-	
-	_setup_stable_anchor()
 
 func _reset_window_size() -> void:
-	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
-		custom_minimum_size = Vector2.ZERO
-		size = Vector2.ZERO
-
-## Set up stable anchor pattern for robust positioning (copied from ItemInspectionWindow)
-func _setup_stable_anchor() -> void:
-	if is_instance_valid(_source_view):
-		_stable_anchor = _source_view
-		if is_instance_valid(_stable_anchor):
-			_stable_anchor.item_rect_changed.connect(_on_anchor_moved)
-			_stable_anchor.tree_exited.connect(_on_anchor_freed)
-
-func _on_anchor_moved() -> void:
-	# TraitTracker is likely moving due to screen resize or HUD logic
-	# We rely on WindowManager or manual updates.
-	# But WindowManager tracks "tracked windows".
-	# If we are using child window logic, WindowManager handles it?
-	# WindowManager's _track_inspection_anchor is ONLY for root windows that have an anchor view.
-	# TraitWindow IS a root window (no parent window).
-	# So WindowManager WILL track it if we pass anchor_view in _open_contextual_window.
-	pass
-
-func _on_anchor_freed() -> void:
-	WindowManager.request_close_inspection_window(self, &"ANCHOR_FREED")
+		# Enforce shrinking on EVERY container in the hierarchy
+		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var margin_container = get_node_or_null("MarginContainer")
+		if margin_container:
+			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
+		if vbox:
+			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			
+		custom_minimum_size = Vector2(480, 0)
+		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		reset_size()

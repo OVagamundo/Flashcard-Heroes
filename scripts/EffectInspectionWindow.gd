@@ -1,5 +1,5 @@
 class_name EffectInspectionWindow
-extends "res://scripts/InspectionWindow.gd"
+extends InspectionWindow
 
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 
@@ -7,14 +7,32 @@ const _InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 
 func _ready() -> void:
-	# Ensure the window root consumes clicks so they don't fall through to the true background
+	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
-	# Bubble non-link clicks on description to the root so local prune runs
-	description_label.mouse_filter = MOUSE_FILTER_PASS
+	# Configure child controls to allow bubbling so the root can prune children on generic clicks
+	_configure_mouse_filters()
+
+## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
+func _configure_mouse_filters() -> void:
+	var stack: Array = [self]
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		for child in node.get_children():
+			if child is Control:
+				# Keep the internal background STOP to capture clicks anywhere in the window
+				if child == $InternalBackground:
+					(child as Control).mouse_filter = MOUSE_FILTER_STOP
+				else:
+					(child as Control).mouse_filter = MOUSE_FILTER_PASS
+				stack.append(child)
+
+	
+	# Zero out internal minimums so they don't force a height from old .tscn values
+	for child in [description_label, name_label]:
+		if is_instance_valid(child):
+			child.custom_minimum_size = Vector2.ZERO
 	# Cover the entire window for background clicks inside the window area
 	$InternalBackground.gui_input.connect(_on_internal_background_clicked)
-	# Configure child controls to bubble clicks to the root (except the internal background)
-	_configure_mouse_filters()
 
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants (do not close self)
@@ -30,19 +48,6 @@ func _on_internal_background_clicked(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		accept_event()
 
-## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
-func _configure_mouse_filters() -> void:
-	var stack: Array = [self]
-	while not stack.is_empty():
-		var node = stack.pop_back()
-		for child in node.get_children():
-			if child is Control:
-				# Keep the internal background STOP to capture clicks anywhere in the window
-				if child == $InternalBackground:
-					(child as Control).mouse_filter = MOUSE_FILTER_STOP
-				else:
-					(child as Control).mouse_filter = MOUSE_FILTER_PASS
-				stack.append(child)
 
 
 func populate(context: Dictionary) -> void:
@@ -86,12 +91,20 @@ func populate(context: Dictionary) -> void:
 	_reset_window_size()
 
 func _reset_window_size() -> void:
-	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
-		custom_minimum_size = Vector2.ZERO
-		size = Vector2.ZERO
+		# Enforce shrinking on EVERY container in the hierarchy
+		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var margin_container = get_node_or_null("MarginContainer")
+		if margin_container:
+			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
+		if vbox:
+			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			
+		custom_minimum_size = Vector2(480, 0)
+		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		reset_size()
 
 func get_location() -> LocationIdentifier:
 	return null

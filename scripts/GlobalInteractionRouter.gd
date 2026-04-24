@@ -412,6 +412,10 @@ func _handle_hover_exit(context: InteractionContext) -> void:
 	if _is_drag_active: return
 	# Respect suppression (brief L147, L329: do not close outside suppression guard)
 	if _is_close_suppressed_now(): return
+	
+	# Do not close if the game is paused (e.g., by a TutorialPopup) to prevent 
+	# the hover target from emitting a mouse_exited when the tree halts.
+	if get_tree().paused: return
 
 	# Close ONLY the topmost window — NOT all windows.
 	# The hover-opened inspection is always the top of _active_inspection_group.
@@ -549,6 +553,14 @@ func _handle_selection_only(context: InteractionContext) -> Array[Command]:
 	# Default: always change selection in selection-only contexts
 	commands.append(Command.new(CommandType.DESELECT))
 	commands.append(Command.new(CommandType.SELECT, {"context": context}))
+	
+	# IMPROVEMENT: Also open the inspection window on the first click (matches fully interactive behavior).
+	# This solves the "2 taps to select" issue on mobile and provides immediate feedback.
+	commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+		"context": context,
+		"anchor_view_id": context.source_view_instance_id,
+		"lock": true
+	}))
 	
 	return commands
 

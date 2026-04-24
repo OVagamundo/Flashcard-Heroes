@@ -77,13 +77,17 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 		if not Database.flashcard_definitions.has(card_id):
 			return
 	
+	# NEW: Expand deck at START of minigame session
+	# This ensures +1 card is introduced every time the player studies.
+	run_state.check_deck_expansion()
+	
 	self._run_state_ref = run_state
-	self._active_deck_ids = active_deck.duplicate()
+	self._active_deck_ids = run_state.active_deck_ids.duplicate()
 	
 	# Open the flashcard minigame modal window
 	_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {
 		"run_state": run_state,
-		"active_deck": active_deck
+		"active_deck": self._active_deck_ids
 	})
 
 func get_next_question() -> Dictionary:
@@ -129,9 +133,8 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	# Store results before cleanup
 	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
-	# Check for deck expansion (new cards) if user mastered current ones
-	if is_instance_valid(_run_state_ref):
-		_run_state_ref.check_deck_expansion()
+	# Deck expansion now happens at the START of the minigame session
+	# to ensure a new card is introduced immediately.
 	
 	# CRITICAL: Close the window - FlashcardManager owns the minigame lifecycle
 	# This ensures the window closes regardless of what encounter started it

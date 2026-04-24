@@ -1,5 +1,5 @@
 class_name ItemInspectionWindow
-extends "res://scripts/InspectionWindow.gd"
+extends InspectionWindow
 
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 const C = preload("res://scripts/Constants.gd")
@@ -14,14 +14,34 @@ const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
-var _stable_anchor: Control = null # Stable anchor for positioning
 
 func _ready() -> void:
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
-	# Allow non-link clicks to bubble to the window root so it can prune children
-	description_label.mouse_filter = MOUSE_FILTER_PASS
+	# Configure child controls to allow bubbling so the root can prune children on generic clicks
+	_configure_mouse_filters()
+
+## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
+func _configure_mouse_filters() -> void:
+	var stack: Array = [self]
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		for child in node.get_children():
+			if child is Control:
+				# Keep nodes with their own logic at STOP
+				if child == internal_background or child == description_label:
+					(child as Control).mouse_filter = MOUSE_FILTER_STOP
+				else:
+					(child as Control).mouse_filter = MOUSE_FILTER_PASS
+				stack.append(child)
+
+	
+	# Zero out internal minimums so they don't force a height from old .tscn values
+	for child in [description_label, name_label, recipe_container, separator]:
+		if is_instance_valid(child):
+			child.custom_minimum_size = Vector2.ZERO
+	
 	# Keep gui_input connected but do not consume non-link clicks (see handler below)
 	description_label.gui_input.connect(_on_description_gui_input)
 
@@ -50,8 +70,6 @@ func populate(context: Dictionary) -> void:
 		WindowManager.request_close_inspection_window(self , &"INVALID_DEFINITION")
 		return
 
-	# Set up stable anchor pattern
-	_setup_stable_anchor()
 
 	var name_key: String
 	if item_def is GachaBallDefinition:
@@ -78,6 +96,9 @@ func populate(context: Dictionary) -> void:
 	if not trait_id.is_empty():
 		full_text = _build_trait_trinket_description(trait_id)
 		description_label.set_meta("effect_definition", null)
+		
+		# Trigger tutorial for traits (deferred to allow window to position itself)
+		_trigger_trait_tutorial()
 	else:
 		# Base flavor description for trinkets (often contains passive effect info)
 		var base_desc = ""
@@ -146,18 +167,39 @@ func populate(context: Dictionary) -> void:
 	_reset_window_size()
 
 func _reset_window_size() -> void:
-	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
-		custom_minimum_size = Vector2.ZERO
-		size = Vector2.ZERO
+		if is_instance_valid(recipe_container) and not recipe_container.visible:
+			recipe_container.custom_minimum_size = Vector2.ZERO
+		
+		# Enforce shrinking on EVERY container in the hierarchy
+		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var margin_container = get_node_or_null("MarginContainer")
+		if margin_container:
+			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
+		if vbox:
+			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			
+		custom_minimum_size = Vector2(480, 0)
+		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		reset_size()
 
 func _get_linked_trait_id(item_def: Resource) -> String:
 	if not is_instance_valid(item_def):
 		return ""
 	if "linked_trait_id" in item_def and item_def.linked_trait_id != &"":
 		return String(item_def.linked_trait_id)
+	
+	# Check for trait tags (Emblems)
+	if "tags" in item_def:
+		for tag in item_def.tags:
+			match tag:
+				&"SOUL_FIRE": return "FIRE"
+				&"SOUL_EARTH": return "EARTH"
+				&"SOUL_WATER": return "WATER"
+				&"SOUL_AIR": return "AIR"
+
 	for trait_name in C.TRAIT_SORT_ORDER:
 		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
 		if trait_def.get("trinket_id", &"") == item_def.id:
@@ -322,79 +364,17 @@ func _on_internal_background_gui_input(_event: InputEvent) -> void:
 func get_location() -> LocationIdentifier:
 	return _location
 
-## Set up stable anchor pattern for robust positioning
-func _setup_stable_anchor() -> void:
-	if is_instance_valid(_source_view):
-		# Find the nearest stable container (SlotView or PanelContainer)
-		_stable_anchor = _find_stable_anchor(_source_view)
-		if is_instance_valid(_stable_anchor):
-			# Connect to anchor movement for dynamic positioning
-			_stable_anchor.item_rect_changed.connect(_on_anchor_moved)
-			_stable_anchor.tree_exited.connect(_on_anchor_freed)
-
-## Find stable anchor for positioning
-func _find_stable_anchor(original_anchor: Control) -> Control:
-	# If the original anchor is already a stable container, use it
-	if original_anchor.get_class() == "SlotView" or original_anchor.get_class() == "PanelContainer":
-		return original_anchor
-		
-	# Otherwise, find the nearest stable container parent
-	var current = original_anchor
-	while is_instance_valid(current) and current != get_tree().root:
-		if current.get_class() == "SlotView" or current.get_class() == "PanelContainer":
-			return current
-		current = current.get_parent()
-		
-	# If no stable container found, fall back to the original anchor
-	return original_anchor
-
-## Handle anchor movement for dynamic positioning
-func _on_anchor_moved() -> void:
-	if is_instance_valid(_stable_anchor):
-		# Reposition window relative to anchor
-		global_position = _calculate_position_relative_to_anchor()
-
-## Handle anchor being freed
-func _on_anchor_freed() -> void:
-	# Defer briefly to allow UI to settle (e.g., during inventory reflow) before deciding to close.
-	# This avoids premature self-closing that can bypass WindowManager suppression during actions.
-	var self_ref = self
-	await get_tree().create_timer(0.25).timeout
-	if not is_instance_valid(self_ref) or not is_instance_valid(self ):
+func _trigger_trait_tutorial() -> void:
+	# Wait for WindowManager to finish positioning this window (it defers for 4 frames)
+	for i in range(5):
+		await get_tree().process_frame
+	
+	if not is_instance_valid(self) or not is_inside_tree():
 		return
-	# Try to re-establish a stable anchor from the current source view
-	_setup_stable_anchor()
-	if not is_instance_valid(_stable_anchor):
-		WindowManager.request_close_inspection_window(self , &"ANCHOR_LOST_NO_STABLE")
-
-## Calculate position relative to stable anchor
-func _calculate_position_relative_to_anchor() -> Vector2:
-	if not is_instance_valid(_stable_anchor):
-		return global_position
-	
-	var anchor_rect = _stable_anchor.get_global_rect()
-	var window_size = size
-	var viewport_rect = get_viewport().get_visible_rect()
-	
-	# Try to position to the right of the anchor
-	var pos_right = Vector2(anchor_rect.end.x + 20, anchor_rect.position.y)
-	if viewport_rect.encloses(Rect2(pos_right, window_size)):
-		return pos_right
-	
-	# Try to position below the anchor
-	var pos_below = Vector2(anchor_rect.position.x, anchor_rect.end.y + 20)
-	if viewport_rect.encloses(Rect2(pos_below, window_size)):
-		return pos_below
-	
-	# Try to position above the anchor
-	var pos_above = Vector2(anchor_rect.position.x, anchor_rect.position.y - window_size.y - 20)
-	if viewport_rect.encloses(Rect2(pos_above, window_size)):
-		return pos_above
-	
-	# Fallback: position to the left of the anchor
-	var pos_left = Vector2(anchor_rect.position.x - window_size.x - 20, anchor_rect.position.y)
-	if viewport_rect.encloses(Rect2(pos_left, window_size)):
-		return pos_left
-	
-	# Last resort: position in the top-right corner of the anchor
-	return Vector2(anchor_rect.end.x - window_size.x - 20, anchor_rect.position.y + 20)
+		
+	TutorialManager.show_tutorial(&"traits", [
+		{
+			"text": tr("tutorial.traits"),
+			"anchor_side": "AUTO_HORIZONTAL" # Attempt to place next to the inspection window without overlapping
+		}
+	], self)

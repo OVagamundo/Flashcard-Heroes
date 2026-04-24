@@ -54,13 +54,13 @@ When `start_minigame` is called:
 
 1. **Card Introduction (if applicable):** 
    
-   **Initial 10 Cards:** The first 10 cards form the active deck at run start. They are formally introduced via the new card popup **one by one, in order**, each time a minigame is started until all 10 have been introduced. This initial sequential introduction happens **even if the player does not have the mastery levels required** for deck expansion.
+   **Initial 6 Cards:** The first 6 cards (5 starting + 1 from the first minigame) form the active deck at run start. They are formally introduced via the new card popup **one by one, in order**, each time a minigame is started until all 6 have been introduced. This initial sequential introduction happens **even if the player does not have the mastery levels required** for deck expansion.
    
-   **Deck Expansion (Cards 11+):** New cards beyond the initial 10 are added to the active deck one at a time whenever the player has leveled *all* currently active cards to at least **Mastery Level 3**. When a new card is added, the new card popup shows it.
+   **Deck Expansion (Cards 7+):** New cards beyond the initial 6 are added to the active deck one at a time whenever the player has leveled *all* currently active cards to at least **Mastery Level 3**. When a new card is added, the new card popup shows it.
    
    **Priority Cards Preview:** The popup displays 10 clickable card buttons at the bottom showing the highest-priority cards from the active deck (sorted by SRS weight without RNG). Each button is colored according to its mastery level. Clicking a button switches the main display to show that card's information. This allows players to preview or study cards before they are formally introduced.
 
-2. **Start Timer:** 7-second session begins. The modal window disables all other interactions.
+2. **Start Timer:** A session begins with the title **"Get Tokens!"** ("Ganhar Fichas!" in Portuguese). The modal window disables all other interactions.
 
 3. **Question Loop:**
    - **Select Question:** Uses SRS algorithm (see Section 5).
@@ -98,9 +98,11 @@ Question selection uses weighted random selection with three priority factors:
 - Size: 120pt
 - Color: Cool black `Color(0.15, 0.17, 0.22)` with warm white outline `Color(0.98, 0.96, 0.92)`
 
-**Panel Color:**
-- Matches the current question's mastery level color.
-- Changes after each answer to reflect the new question's mastery.
+**Question & Answer Layout:**
+- **Structure**: Uses a side-by-side layout for Question and Answer labels.
+- **Font**: Must use **32px Black Composite** font for clarity.
+- **Tints**: The entire panel inherits a color tint based on the current card's **Mastery Level** (e.g., Red for Level 1, Blue for Level 5).
+- **Style**: Uses textured theme buttons for the 2x3 answer grid.
 
 **Flash Feedback:**
 - Correct: Flash white (0.15s)

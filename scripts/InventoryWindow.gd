@@ -227,6 +227,7 @@ func _initialize_grids_if_needed() -> void:
 			continue
 			
 		var slot_count = 39 # HARDCAP: Staggered grid max capacity at 0 padding
+		grid_node.bottom_padding = 24.0 # Add space for overflowing HP/PWR stats at the bottom
 		for i in range(slot_count):
 			var slot_view = _SlotView.instantiate()
 			# Use 1x scale for inventory window
@@ -315,16 +316,7 @@ func _populate_grids() -> void:
 			if is_instance_valid(instance):
 				# Use adapter to create visual data
 				var visual_data = VisualDataAdapter.create_visual_data(instance)
-				slot_view.set_content(visual_data, true, false, false)
-				
-				# Configure interaction context - find GachaBallView among children
-				var gacha_view: GachaBallView = null
-				for child in slot_view.get_children():
-					if child is GachaBallView:
-						gacha_view = child
-						break
-				if is_instance_valid(gacha_view):
-					gacha_view.set_interaction_context(&"FULLY_INTERACTIVE", instance.get_definition().category, 0)
+				slot_view.set_content(visual_data, true, false)
 
 func get_window_to_animate() -> Control:
 	if is_instance_valid(panel_container):

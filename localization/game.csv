@@ -171,7 +171,7 @@ ui.continue,Continue,Continuar
 ui.return_to_path,Return to Path,Voltar ao Caminho
 ui.shop,Shop,Loja
 ui.buy,Buy,Comprar
-ui.reroll,Reroll (1 Gold),Rerolar (1 Ouro)
+ui.reroll,Reroll (1 Gold),Novas Opções (1 Ouro)
 ui.back_to_path,Back to the Path,Voltar ao Caminho
 ui.end_turn,Battle!,Lutar!
 ui.discard_pile,Discard Pile,Pilha de Descarte
@@ -204,7 +204,7 @@ ui.training_complete,Training Complete!,Treinamento Completo!
 ui.no_gains,No gains this time.,Nenhum ganho desta vez.
 ui.hero_gained,Your Hero gained +%d %s.,Seu Herói ganhou +%d %s.
 ui.buy_gold,Buy (%d Gold),Comprar (%d Ouro)
-ui.reroll_gold,Reroll (%d Gold),Rerolar (%d Ouro)
+ui.reroll_gold,Reroll (%d Gold),Novas Opções (%d Ouro)
 ui.gold_price,%d Gold,%d Ouro
 ui.tier_1,Tier 1,Nível 1
 ui.tier_2,Tier 2,Nível 2
@@ -215,7 +215,7 @@ ui.final_statistics,Final Statistics,Estatísticas Finais
 ui.days_survived,Days Survived,Dias Sobrevividos
 ui.bosses_defeated,Bosses Defeated,Chefes Derrotados
 ui.gold_earned,Gold Earned,Ouro Ganho
-ui.take_gold_amount,+%d Gold,+%d Ouro
+ui.take_gold_amount,Take %d Gold instead,Prefiro %d de Ouro
 ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
 ui.tokens_count,Tokens: %d,Fichas: %d
 ui.day,Day %d,Dia %d
@@ -249,7 +249,7 @@ ui.no_explanation,No explanation available,Nenhuma explicação disponível
 ui.study,Study (+Tokens),Estudar (+Fichas)
 ui.stat_prize,Stat Prize,Prêmio de Atributo
 ui.show_tutorials,Show Tutorials & Tooltips,Mostrar Tutoriais e Dicas
-ui.review_title,Review time!,Hora da Revisão!
+ui.review_title,Get Tokens!,Ganhar Fichas!
 ui.skip,SKIP,PULAR
 ui.priority_cards,Priority Cards (click to preview):,Cartas de Prioridade (clique para prévia):
 ui.ready,Ready!,Pronto!
@@ -268,7 +268,7 @@ tutorial.gacha_inspect_battle,"Merging or destroying gachaballs in battle only a
 tutorial.shop,"Spend Gold to expand your collection. Reroll the stock if you're looking for something specific, but be warned: the price rises with every roll!","Gaste Ouro para expandir sua coleção. Rerole o estoque se estiver procurando algo específico, mas cuidado: o preço sobe a cada rolagem!"
 tutorial.rest_site,"A moment of respite. Master the flashcard minigame to earn tokens, then spend them on these machines for permanent Hero upgrades.","Um momento de descanso. Domine o minigame de flashcards para ganhar fichas e use-as nestas máquinas para upgrades permanentes do Herói."
 tutorial.new_card_intro.title,"New Card and Review time!","Novo Flashcard e Revisão!"
-tutorial.new_card_intro,"This is when new flashcards are added to your Mastery Deck.\n\nYou get one per mini game session if conditions are met.\n\nYou start with 6 flashcards already unlocked, so try to remember at least a few before starting the mini-game.\n\nYour battle resources depend on it!","Aqui é onde novos flashcards são adicionados ao seu Deck de Domínio.\n\nVocê recebe um por sessão de mini-jogo, dependendo de certas condições.\n\nVocê começa com 6 flashcards já desbloqueados.\n\nTente memorizar alguns antes de começar o mini-jogo.\n\nSeus recursos na batalha dependem disso."
+tutorial.new_card_intro,"This is when new flashcards are added to your Mastery Deck.\n\nA new one will be added every mini game session.\n\nYou start with 6 flashcards already unlocked, so try to remember at least a few before starting the mini-game.\n\nYour battle resources depend on it!","Aqui é onde novos flashcards são adicionados ao seu Deck de Domínio.\n\nUm novo será adicionado a cada mini game.\n\nVocê começa com 6 flashcards já desbloqueados.\n\nTente memorizar alguns antes de começar o mini-jogo.\n\nSeus recursos na batalha dependem disso."
 tutorial.battle_management_intro.title,Tokens and Gacha Machines,Fichas e Máquinas de Gacha
 tutorial.battle_management,"Use your tokens to pull Units and Items from the Gacha Machines below!\n\nEach machine has a different cost. Spend your tokens wisely!","Use suas fichas nas Máquinas de Gacha abaixo para obter unidades e itens!\n\nCada máquina tem um custo diferente. Gaste suas fichas com sabedoria!"
 tutorial.first_draw.title,Building your team,Montando sua equipe
@@ -436,6 +436,10 @@ ui.drop_zone_get,Get,Pegar
 ui.drop_zone_buy,Buy,Comprar
 ui.drop_zone_remove,Remove,Remover
 ui.drop_zone_transform,Transform,Transformar
+ui.drop_zone_get_multi,"Drag or click here to\n[font_size=72]GET[/font_size]","Arraste ou clique aqui para\n[font_size=72]PEGAR[/font_size]"
+ui.drop_zone_buy_multi,"Drag or click here to\n[font_size=72]BUY[/font_size]","Arraste ou clique aqui para\n[font_size=72]COMPRAR[/font_size]"
+ui.drop_zone_remove_multi,"Drag or click here to\n[font_size=72]REMOVE[/font_size]","Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]"
+ui.drop_zone_transform_multi,"Drag or click here to\n[font_size=72]TRANSFORM[/font_size]","Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]"
 ui.bm_instruction,"Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory.","Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário."
 ability_dust_elite_spawn_enemy_death.name,Dust Pulse (Enemy Death),Pulso de Poeira (Morte Inimiga)
 ability_dust_elite_spawn_enemy_death.desc,Spawns a Dust unit when an Enemy dies.,Invoca um Recruta de Poeira quando um Inimigo morre.
@@ -460,4 +464,18 @@ ui.tutorial_title,Tutorial,Tutorial
 ui.end_turn,End Turn,Encerrar Turno
 ui.discard_pile,Discard Pile,Pilha de Descarte
 ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
+tutorial.traits.title,Traits,Sinergias
+tutorial.traits,"Traits are special buffs and effects that happen according to how many souls or certain trait units of that trait you have on your battle lineup.\n\nInspect units to see what traits they have.","Sinergias são efeitos e bônus especiais que são ativados conforme o número de Almas ou unidades de um mesmo tipo que você possui em seu time.\n\nToque nas unidades para conferir quais Sinergias elas possuem."
+hero_avenger.name,Avenger,Vingador
+hero_avenger.desc,"A fierce warrior who strikes when allies fall.","Um guerreiro feroz que ataca quando aliados caem."
+ability.hero_avenger_ally_death_attack.name,Leap Attack,Ataque com Salto
+ability.hero_avenger_ally_death_attack.desc,"When an ally dies, leap and attack the frontmost enemy.","Quando um aliado morre, salta e ataca o inimigo da frente."
+hero_bastion.name,Bastion,Bastião
+hero_bastion.desc,"A steadfast defender who grows stronger as allies fall.","Um defensor inabalável que fica mais forte conforme seus aliados caem."
+ability.hero_bastion_ally_death_spikes_armor.name,Fortify,Fortificar
+ability.hero_bastion_ally_death_spikes_armor.desc,"When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.","Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
+hero_pyro.name,Pyromancer,Piromante
+hero_pyro.desc,"A fiery mage who incinerates enemies instead of striking them.","Um mago ardente que incinera os inimigos em vez de atacá-los."
+ability.hero_pyro_attack_burn.name,Incinerate,Incinerar
+ability.hero_pyro_attack_burn.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acúmulos de Queimadura iguais ao seu Poder."
 

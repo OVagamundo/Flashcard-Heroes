@@ -71,7 +71,7 @@ func populate(context: Dictionary) -> void:
 
 		var loc = LocationIdentifier.new(&"Shop", i)
 		slot_view.populate(loc)
-		slot_view.set_interaction_context(&"SELECTION_ONLY", 0)
+		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
@@ -85,7 +85,7 @@ func populate(context: Dictionary) -> void:
 			
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
-			slot_view.set_content(visual_data, true, false, false)
+			slot_view.set_content(visual_data, true)
 			# Note: SlotView.set_content now propagates interaction context automatically
 	
 	_update_fixed_price_tags()
@@ -116,7 +116,9 @@ func _animate_staggered_entry() -> void:
 			
 			# Schedule delayed reveal with bounce
 			var delay = ball_index * AnimationConstants.ENTRY_STAGGER_DELAY
-			get_tree().create_timer(delay).timeout.connect(func():
+			var wait_tween = ball_view.create_tween()
+			wait_tween.tween_interval(delay)
+			wait_tween.tween_callback(func():
 				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 					ball_view.icon_rect.scale = Vector2.ONE
 					ball_view.play_landing_bounce()
@@ -253,9 +255,11 @@ func _on_buy_pressed() -> void:
 			if is_instance_valid(def) and def.category == &"TRINKET":
 				tier = 3
 			
+			var ball_uuid = instance.ball_uuid
+			
 			# Animate gold coins then purchase, then animate gachaball
 			_animate_gold_spend(_selected_cost, reroll_button, func():
-				SignalBus.emit_signal("shop_purchase_requested", instance.ball_uuid, _selected_cost)
+				SignalBus.emit_signal("shop_purchase_requested", ball_uuid, _selected_cost)
 				# AUDIO HOOK: Buy
 				Audio.play_sfx("shop_buy")
 				# After purchase, animate gachaball to machine
@@ -331,11 +335,8 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 	
 	for i in range(coins_to_spawn):
 		var coin_vfx = GoldCoinVFXScene.new()
-		var effects_layer = main_node.get_node_or_null("EffectsLayer")
-		if is_instance_valid(effects_layer):
-			effects_layer.add_child(coin_vfx)
-		else:
-			add_child(coin_vfx)
+		var effects_layer = WindowManager.get_vfx_layer()
+		effects_layer.add_child(coin_vfx)
 		
 		# Connect to trigger button reaction
 		coin_vfx.coin_landed.connect(_on_gold_landed_on_button.bind(target_button))
@@ -348,8 +349,9 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 	
 	# Wait for animations then call completion callback
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
-	await get_tree().create_timer(total_wait).timeout
-	on_complete.call()
+	var wait_tween = create_tween()
+	wait_tween.tween_interval(total_wait)
+	wait_tween.tween_callback(on_complete)
 
 func _on_gold_landed_on_button(_target_pos: Vector2, button: Button) -> void:
 	"""React when a gold coin lands on a button - flash and bounce"""
@@ -398,11 +400,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	Audio.play_sfx("ui_drag_drop")
 	
 	# Add to effects layer
-	var effects_layer = main_node.get_node_or_null("EffectsLayer")
-	if effects_layer:
-		effects_layer.add_child(anim_ball)
-	else:
-		add_child(anim_ball)
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
 	
 	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
 	anim_ball.force_inventory_mode = true

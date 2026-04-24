@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Effect that grants gold to the player when triggered.
 ## Primarily used for gold-on-kill abilities.
 
-func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], _battle_manager: Node, context: Dictionary) -> Variant:
 	var amount: int = int(parameters.get("amount", 1))
 	var is_simulation: bool = context.get("is_simulation", false)
 	
@@ -15,17 +15,32 @@ func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Nod
 		if is_instance_valid(GameManager.run_state):
 			GameManager.run_state.add_gold(amount)
 		
-		# NEW: Return EffectResult with LOG_MESSAGE event
 		var result := EffectResult.new()
+		# Add log message for history
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Gained %d gold!" % amount
 		}))
+		
+		# If available, use the killed_uuid from context as the origin.
+		var origin_uuid = context.get("killed_uuid", source_uuid)
+		if origin_uuid == source_uuid and not targets.is_empty():
+			origin_uuid = targets[0]
+		
+		result.add_event(CombatEvent.new(CombatEvent.Type.GOLD_GAIN, {
+			"source_uuid": source_uuid,
+			"target_uuids": targets,
+			"amount": amount,
+			"visual_payload": {
+				"amount": amount,
+				"origin_uuid": origin_uuid
+			}
+		}))
+		
 		result.state_applied = true
 		return result
 	
-	# Non-simulation: actually add gold to RunState
+	# Non-simulation: actually add gold to RunState (for legacy/direct calls)
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.add_gold(amount)
-		# Gained gold from kill
 	
 	return amount

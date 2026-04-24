@@ -1,6 +1,8 @@
+# res://scripts/Reward.gd
 extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
@@ -82,7 +84,7 @@ func populate(context: Dictionary) -> void:
 		# 3. Populate the SlotView itself, making it a valid interactive target.
 		slot_view.populate(loc)
 		# Set up interaction context for the slot
-		slot_view.set_interaction_context(&"SELECTION_ONLY", 0)
+		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 		
 		# 4. Get the instance for this slot from the context data.
 		var inst: GachaBallInstance = null
@@ -93,7 +95,7 @@ func populate(context: Dictionary) -> void:
 		if is_instance_valid(inst):
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(inst)
-			slot_view.set_content(visual_data, true, false, false)
+			slot_view.set_content(visual_data, true)
 
 	# Wait one frame for layout to complete, then animate entry
 	await get_tree().process_frame
@@ -205,23 +207,29 @@ func _on_confirm_pressed() -> void:
 				_animate_gachaball_to_machine(start_pos, visual_data, tier)
 
 func _on_gold_pressed() -> void:
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
+	# Disable button during animation
+	gold_button.disabled = true
 	
-	# Hide old buttons and drop zone overlay, show the back button
-	var main_node_ref = GameManager._active_main_node
-	if is_instance_valid(main_node_ref) and main_node_ref.has_method("hide_confirm_drop_zone"):
-		main_node_ref.hide_confirm_drop_zone()
-	gold_button.visible = false
-	back_to_path_button.visible = true
+	# Animate gold coins from button to counter then emit signal
+	_animate_gold_receive(_gold_amount, gold_button, func():
+		SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
+		
+		# Hide old buttons and drop zone overlay, show the back button
+		var main_node_ref = GameManager._active_main_node
+		if is_instance_valid(main_node_ref) and main_node_ref.has_method("hide_confirm_drop_zone"):
+			main_node_ref.hide_confirm_drop_zone()
+		gold_button.visible = false
+		back_to_path_button.visible = true
 
-	# Clear selection and remove all reward GachaBalls (mirror confirm behavior)
-	SignalBus.emit_signal("selection_clear_requested")
-	for slot_view in choices_container.get_children():
-		for child in slot_view.get_children():
-			# Skip the indicator overlay
-			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
-				continue
-			child.queue_free()
+		# Clear selection and remove all reward GachaBalls (mirror confirm behavior)
+		SignalBus.emit_signal("selection_clear_requested")
+		for slot_view in choices_container.get_children():
+			for child in slot_view.get_children():
+				# Skip the indicator overlay
+				if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
+					continue
+				child.queue_free()
+	)
 
 func _on_back_to_path_pressed() -> void:
 	# Hide the drop zone overlay before leaving
@@ -270,13 +278,10 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	Audio.play_sfx("ui_drag_drop")
 	
 	# Add to effects layer
-	var effects_layer = main_node.get_node_or_null("EffectsLayer")
-	if effects_layer:
-		effects_layer.add_child(anim_ball)
-	else:
-		add_child(anim_ball)
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
 	
-	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
+	# Configure visual style
 	anim_ball.force_inventory_mode = true
 	anim_ball.custom_minimum_size = Vector2(192, 192)
 	anim_ball.size = Vector2(192, 192)
@@ -308,7 +313,7 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	)
 	
 	# Use tween_method to animate along the Bezier curve
-	var tween = create_tween()
+	var tween = anim_ball.create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
 	# Nearly linear easing: smooth and fast
@@ -367,13 +372,10 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	var anim_ball = GachaBallViewScene.instantiate()
 	
 	# Add to effects layer
-	var effects_layer = main_node.get_node_or_null("EffectsLayer")
-	if effects_layer:
-		effects_layer.add_child(anim_ball)
-	else:
-		add_child(anim_ball)
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
 	
-	# Configure visual style: Use 128px ball (matches slot size)
+	# Configure visual style
 	anim_ball.force_inventory_mode = true
 	var target_rect_size: Vector2 = target_slot.get_global_rect().size
 	var target_visual_size := minf(target_rect_size.x, target_rect_size.y)
@@ -438,3 +440,66 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 		# NOW emit the delayed signal to add the trinket to RunState
 		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
 	)
+
+func _animate_gold_receive(amount: int, source_button: Button, on_complete: Callable) -> void:
+	"""Animate gold coins flying from source button to gold counter in Main"""
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		on_complete.call()
+		return
+	
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group):
+		on_complete.call()
+		return
+	
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon):
+		gold_icon = gold_group
+		
+	var gold_rect = gold_icon.get_global_rect()
+	var target_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	
+	var btn_rect = source_button.get_global_rect()
+	var start_pos = Vector2(
+		btn_rect.position.x + btn_rect.size.x / 2,
+		btn_rect.position.y + btn_rect.size.y / 2
+	)
+	
+	# CONVERSION: Button is in SubViewport, animations are in Screen Space (Main)
+	if is_instance_valid(main_node):
+		var content_area = main_node.get_node_or_null("%ContentArea")
+		if is_instance_valid(content_area):
+			start_pos += content_area.global_position
+	
+	# Spawn gold coins with stagger
+	var coins_to_spawn = mini(amount, 5) # Cap for visual clarity
+	var stagger_delay = 0.08
+	
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScene.new()
+		var effects_layer = WindowManager.get_vfx_layer()
+		effects_layer.add_child(coin_vfx)
+		
+		# Connect to trigger counter reaction (Main.gd handles gold_changed signal usually, but we want visual pop)
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			Audio.play_sfx("coin_land")
+			if is_instance_valid(gold_group):
+				var tween = gold_group.create_tween()
+				gold_group.pivot_offset = gold_group.size / 2.0
+				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
+				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
+		)
+		
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
+		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+
+	# Wait for animations then call completion callback
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	var wait_tween = create_tween()
+	wait_tween.tween_interval(total_wait)
+	wait_tween.tween_callback(on_complete)
