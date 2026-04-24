@@ -48,7 +48,6 @@ var _instance_uuid: String
 var _is_selected: bool = false
 var _is_inspectable: bool = true
 var _is_interactive: bool = true
-var _single_click_inspect: bool = false
 
 # Local input state to disambiguate click vs drag
 var _pressed_pending_click: bool = false
@@ -273,12 +272,11 @@ func get_instance_uuid() -> String:
 func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
-func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true, single_click_inspect: bool = false) -> void:
+func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true) -> void:
 	self._location = loc
 	self._instance_uuid = visual_data.get("uuid", "")
 	self._bound_uuid = visual_data.get("uuid", "")
 	self._is_inspectable = is_inspectable
-	self._single_click_inspect = single_click_inspect
 	if is_instance_valid(_hover_tween):
 		_hover_tween.kill()
 	if is_instance_valid(_press_tween):

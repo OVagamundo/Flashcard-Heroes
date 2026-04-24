@@ -1,5 +1,5 @@
 class_name UnitInspectionWindow
-extends "res://scripts/InspectionWindow.gd"
+extends InspectionWindow
 
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
@@ -21,7 +21,6 @@ var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _is_enemy_context: bool = false
 var _window_group_id: int = 1 # Inspection window group
-var _stable_anchor: Control = null # Stable anchor for positioning
 
 func _ready() -> void:
 	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
@@ -48,6 +47,26 @@ func _ready() -> void:
 
 	# Configure child controls to allow bubbling so the root can prune children on generic clicks
 	_configure_mouse_filters()
+
+## Recursively set mouse filters to PASS for child controls that should bubble to the root
+func _configure_mouse_filters() -> void:
+	var stack: Array = [ self ]
+	while not stack.is_empty():
+		var node = stack.pop_back()
+		for child in node.get_children():
+			if child is Control:
+				# Skip nodes that have explicit handlers or must remain STOP
+				if child == internal_background or child == item_grid or child == description_label:
+					pass
+				else:
+					(child as Control).mouse_filter = MOUSE_FILTER_PASS
+				stack.append(child)
+
+	
+	# Zero out internal minimums so they don't force a height from old .tscn values
+	for child in [%DescriptionLabel, %NameLabel, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
+		if is_instance_valid(child):
+			child.custom_minimum_size = Vector2.ZERO
 
 func _exit_tree() -> void:
 	if SignalBus.is_connected("battle_inventory_changed", _on_inventory_changed):
@@ -82,8 +101,6 @@ func populate(context: Dictionary) -> void:
 
 	_inspected_unit_uuid = _instance.ball_uuid
 
-	# Set up stable anchor pattern
-	_setup_stable_anchor()
 
 	name_label.text = tr(unit_definition.display_name_key)
 	name_label.add_theme_font_override("font", BOLD_FONT)
@@ -111,94 +128,28 @@ func populate(context: Dictionary) -> void:
 	_reset_window_size()
 
 func _reset_window_size() -> void:
-	# Defer for TWO frames to ensure Godot's layout engine has settled all queue_free and fit_content operations
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
-		custom_minimum_size = Vector2.ZERO
-		size = Vector2.ZERO
+		# Zero out hidden containers completely to ensure they contribute NO height
+		for container in [item_grid, recipe_container, trait_icons_container, separator]:
+			if is_instance_valid(container) and not container.visible:
+				container.custom_minimum_size = Vector2.ZERO
+		
+		# Enforce shrinking on EVERY container in the hierarchy
+		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var margin_container = get_node_or_null("MarginContainer")
+		if margin_container:
+			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
+		if vbox:
+			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+			
+		custom_minimum_size = Vector2(480, 0)
+		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		reset_size()
 		# Let WindowManager know we have settled so it can refine the position if needed
 		# (Note: Standard contextual window positioning happens in WindowManager)
 
-## Set up stable anchor pattern for robust positioning
-func _setup_stable_anchor() -> void:
-	if is_instance_valid(_source_view):
-		# Find the nearest stable container (SlotView or PanelContainer)
-		_stable_anchor = _find_stable_anchor(_source_view)
-		if is_instance_valid(_stable_anchor):
-			# Connect to anchor movement for dynamic positioning
-			_stable_anchor.item_rect_changed.connect(_on_anchor_moved)
-			_stable_anchor.tree_exited.connect(_on_anchor_freed)
-
-## Find stable anchor for positioning
-func _find_stable_anchor(original_anchor: Control) -> Control:
-	# If the original anchor is already a stable container, use it
-	if original_anchor.get_class() == "SlotView" or original_anchor.get_class() == "PanelContainer":
-		return original_anchor
-	
-	# Otherwise, find the nearest stable container parent
-	var current = original_anchor
-	while is_instance_valid(current) and current != get_tree().root:
-		if current.get_class() == "SlotView" or current.get_class() == "PanelContainer":
-			return current
-		current = current.get_parent()
-	
-	# If no stable container found, fall back to the original anchor
-	return original_anchor
-
-## Handle anchor movement for dynamic positioning
-func _on_anchor_moved() -> void:
-	if is_instance_valid(_stable_anchor):
-		# Reposition window relative to anchor
-		global_position = _calculate_position_relative_to_anchor()
-
-## Handle anchor being freed
-func _on_anchor_freed() -> void:
-	# Defer briefly to allow UI to settle (e.g., during inventory reflow) before deciding to close.
-	# This avoids premature self-closing that bypasses WindowManager suppression during actions.
-	var self_ref = self
-	var tree = get_tree()
-	if not is_instance_valid(tree):
-		return
-	await tree.create_timer(0.25).timeout
-	if not is_instance_valid(self_ref) or not is_instance_valid(self ):
-		return
-	# Try to re-establish a stable anchor from the current source view
-	_setup_stable_anchor()
-	if not is_instance_valid(_stable_anchor):
-		WindowManager.request_close_inspection_window(self , &"ANCHOR_LOST_NO_STABLE")
-
-## Calculate position relative to stable anchor
-func _calculate_position_relative_to_anchor() -> Vector2:
-	if not is_instance_valid(_stable_anchor):
-		return global_position
-	
-	var anchor_rect = _stable_anchor.get_global_rect()
-	var window_size = size
-	var viewport_rect = get_viewport().get_visible_rect()
-	
-	# Try to position to the right of the anchor
-	var pos_right = Vector2(anchor_rect.end.x + 20, anchor_rect.position.y)
-	if viewport_rect.encloses(Rect2(pos_right, window_size)):
-		return pos_right
-	
-	# Try to position below the anchor
-	var pos_below = Vector2(anchor_rect.position.x, anchor_rect.end.y + 20)
-	if viewport_rect.encloses(Rect2(pos_below, window_size)):
-		return pos_below
-	
-	# Try to position above the anchor
-	var pos_above = Vector2(anchor_rect.position.x, anchor_rect.position.y - window_size.y - 20)
-	if viewport_rect.encloses(Rect2(pos_above, window_size)):
-		return pos_above
-	
-	# Fallback: position to the left of the anchor
-	var pos_left = Vector2(anchor_rect.position.x - window_size.x - 20, anchor_rect.position.y)
-	if viewport_rect.encloses(Rect2(pos_left, window_size)):
-		return pos_left
-	
-	# Last resort: position in the top-right corner of the anchor
-	return Vector2(anchor_rect.end.x - window_size.x - 20, anchor_rect.position.y + 20)
 
 
 func _rebuild_item_grid() -> void:
@@ -258,6 +209,7 @@ func _rebuild_item_grid() -> void:
 		loc.index = i
 		loc.unit_uuid = _instance.ball_uuid
 		slot_view.populate(loc) # This makes the empty slot a valid drop target.
+		slot_view.set_slot_color(loc.container) # Ensure correct texture (ItemSlot.png)
 		
 		# Set interaction context for the slot
 		var slot_interaction_mode = &"INSPECTION_ONLY" if _is_enemy_context else &"FULLY_INTERACTIVE"
@@ -275,7 +227,7 @@ func _rebuild_item_grid() -> void:
 			
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(item_instance)
-			slot_view.set_content(visual_data, true, single_click_inspect, false)
+			slot_view.set_content(visual_data, true, _is_enemy_context)
 			
 			if slot_view.get_child_count() > 0:
 				var gacha_view = slot_view.get_child(0)
@@ -411,19 +363,6 @@ func _on_description_meta_clicked(meta) -> void:
 			get_viewport().set_input_as_handled()
 			accept_event()
 
-## Recursively set mouse filters to PASS for child controls that should bubble to the root
-func _configure_mouse_filters() -> void:
-	var stack: Array = [ self ]
-	while not stack.is_empty():
-		var node = stack.pop_back()
-		for child in node.get_children():
-			if child is Control:
-				# Skip nodes that have explicit handlers or must remain STOP
-				if child == internal_background or child == item_grid or child == description_label:
-					pass
-				else:
-					(child as Control).mouse_filter = MOUSE_FILTER_PASS
-				stack.append(child)
 
 func _on_description_gui_input(_event: InputEvent) -> void:
 	if not is_instance_valid(_instance):

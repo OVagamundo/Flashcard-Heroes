@@ -17,6 +17,11 @@ extends Container
 		v_separation = value
 		queue_sort()
 
+@export var bottom_padding: float = 0.0:
+	set(value):
+		bottom_padding = value
+		queue_sort()
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_SORT_CHILDREN:
 		_sort_staggered_children()
@@ -132,6 +137,6 @@ func _get_minimum_size() -> Vector2:
 	
 	var min_w = columns * cell_size.x + (columns - 1) * h_separation
 	
-	var min_h = rows * cell_size.y + (rows - 1) * v_separation
+	var min_h = rows * cell_size.y + (rows - 1) * v_separation + bottom_padding
 	
 	return Vector2(min_w, min_h)

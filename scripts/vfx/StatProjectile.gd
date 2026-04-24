@@ -15,12 +15,22 @@ var _is_moving: bool = false
 func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
 	# Visual setup
 	label.text = "%d" % value
+	icon.visible = false # Hide icon by default
+	label.visible = true # Show label by default
+	
+	# Handle specific stat visuals
 	if stat == "hp":
 		label.add_theme_color_override("font_color", Color.RED)
 	elif stat == "pwr":
 		label.add_theme_color_override("font_color", Color.BLACK)
 	elif stat == "burn":
 		label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0)) # Orange
+		# Use FireBall texture for burn projectiles
+		var fireball_tex = load("res://assets/ui/textures/FireBall.png")
+		if fireball_tex:
+			icon.texture = fireball_tex
+			icon.visible = true
+			label.visible = false # Hide number if using fireball texture as requested
 	elif stat == "spikes":
 		label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.0)) # Green
 	elif stat == "armor":
@@ -101,6 +111,12 @@ func _process(delta: float) -> void:
 	# Explicit Euler Integration
 	position += _velocity * delta
 	_velocity.y += _gravity * delta
+	
+	# Rotate to face direction of travel (only if using an icon like the fireball)
+	if icon.visible:
+		rotation = _velocity.angle()
+	else:
+		rotation = 0.0
 	
 	# Check for completion
 	if _time >= _duration:

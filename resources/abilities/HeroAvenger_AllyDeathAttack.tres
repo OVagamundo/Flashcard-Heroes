@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="BasicAttackEffect_1"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"FRONTMOST_ENEMY"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_avenger_ally_death_attack"
+name_key = "ability.hero_avenger_ally_death_attack.name"
+description_key = "ability.hero_avenger_ally_death_attack.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("BasicAttackEffect_1")])

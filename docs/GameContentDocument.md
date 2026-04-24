@@ -18,8 +18,11 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 ### Player Heroes
 | ID | Name | Tier | Stats | Slots | Abilities |
 |---|---|---|---|---|---|
-| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill.<br>**Scavenger's Resolve** (`on_ally_death`): Gain +1 HP and +1 PWR when an ally dies.<br>**Quick Wits** (Minigame): +0.8s on correct answer, -0.2s on incorrect. |
-| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 5 tokens at start of battle and Rest Sites (Passive).<br>**Temporal Aura**: At start of each turn, grants +2 HP to units in front and +2 PWR to units behind (Passive).<br>**Time Dilation** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
+| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill (originates from victim).<br>**Scavenger's Resolve** (`on_ally_death`): Gain +1 HP and +1 PWR when an ally dies.<br>**Quick Wits** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
+| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 10 tokens at start of battle and Rest Sites (Passive).<br>**Temporal Aura**: At start of each turn, grants +2 HP to units in front and +2 PWR to units behind (Passive).<br>**Time Dilation** (Minigame): +1.5s on correct answer, -0.8s on incorrect. |
+| `hero_avenger` | Avenger | 0 | 6 HP / 2 PWR | 5 | **Leap Attack** (`on_ally_death`): Leap and attack the frontmost enemy. |
+| `hero_bastion` | Bastion | 0 | 10 HP / 2 PWR | 5 | **Fortify** (`on_ally_death`): Gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. |
+| `hero_pyro` | Pyromancer | 0 | 8 HP / 2 PWR | 5 | **Incinerate** (`on_attack`): Instead of damage, apply Burn stacks equal to PWR. |
 
 ### Tier 1 Units (Cost: 1)
 | ID | Name | Stats | Slots | Souls | Abilities |
@@ -120,7 +123,7 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_aegis` | Aegis | `on_hurt` | Prevents lethal damage once per battle (leaves unit at 1 HP). |
 | `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
 | `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |
-| `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+2 HP/+2 PWR** to any **Tier 1** unit entering the board. |
+| `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+1 HP/+1 PWR** to any **Tier 1** unit entering the board. |
 | `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** ally to die each turn. |
 | `trinket_vengeance` | Vengeance | `on_ally_death` | Grants **+1 HP** and **+1 PWR** to a random ally. |
 
@@ -178,4 +181,4 @@ The game allocates a precise amount of gold for enemy recruitment every day. The
 
 ### Progression Scaling
 - **Elite battles** occur randomly on the path.
-- **Boss battles** occur every **10 days**.
+- **Boss battles** occur every time **20% of the Flashcard deck** is unlocked (20%, 40%, 60%, 80%, 100%).

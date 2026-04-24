@@ -142,7 +142,7 @@ func _populate_hero_slot() -> void:
 	var visual_data = VisualDataAdapter.create_visual_data(hero)
 	
 	if hero_slot.has_method("set_content"):
-		hero_slot.set_content(visual_data, true, false, false)
+		hero_slot.set_content(visual_data, true, false)
 	
 	# Animate hero entry after layout is ready
 	await get_tree().process_frame
@@ -163,7 +163,9 @@ func _animate_hero_entry() -> void:
 		ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
 		
 		# Animate reveal with bounce (small delay for polish)
-		get_tree().create_timer(0.05).timeout.connect(func():
+		var wait_tween = ball_view.create_tween()
+		wait_tween.tween_interval(0.05)
+		wait_tween.tween_callback(func():
 			if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 				ball_view.icon_rect.scale = Vector2.ONE
 				ball_view.play_landing_bounce()
@@ -355,7 +357,7 @@ func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
 func _populate_prize_slot(slot_index: int, prize_data: Dictionary) -> void:
 	var slot = prize_lineup.get_child(slot_index + 1)
 	if slot.has_method("set_content"):
-		slot.set_content(_create_prize_visual_data(prize_data), true, false, false)
+		slot.set_content(_create_prize_visual_data(prize_data), true, false)
 	_add_stat_label_to_slot(slot, prize_data)
 
 func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
@@ -462,7 +464,7 @@ func _clear_prize_slot(prize_index: int) -> void:
 	var label_container = slot.get_node_or_null("StatLabelContainer")
 	if label_container: label_container.queue_free()
 	if slot.has_method("set_content"):
-		slot.set_content({}, false, false, false)
+		slot.set_content({}, false, false)
 
 func _auto_apply_oldest_prize() -> void:
 	if _prizes.is_empty(): return

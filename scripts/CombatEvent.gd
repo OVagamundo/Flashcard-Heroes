@@ -18,7 +18,8 @@ enum Type {
 	LETHAL_SAVE, # Aegis Charm: unit saved from lethal damage, floats up gold then lands
 	GUARDIAN_INTERCEPT, # Guardian Sentinel: leaps to ally's position to intercept lethal damage
 	KAMIKAZE_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
-	TRANSFORM # Mimic: hop and vanish
+	TRANSFORM, # Mimic: hop and vanish
+	GOLD_GAIN # Payload: { "amount": int }
 }
 
 var type: Type

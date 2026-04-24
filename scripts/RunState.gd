@@ -754,10 +754,13 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 			progress.mastery_level = FlashcardProgress.MASTERY_MIN # Start at level 1 (Very Hard)
 			flashcard_progress[card_id] = progress
 	
-	# Populate the initial active deck with the first 6 cards
-	# Required for minigame distractors (needs 6 cards minimum)
-	for i in range(min(6, deck_card_ids.size())):
+	# Populate the initial active deck with the first 5 cards
+	# We start with 5 and the first minigame will immediately add the 6th card
+	for i in range(min(5, deck_card_ids.size())):
 		active_deck_ids.append(deck_card_ids[i])
+	
+	# Initial 5 cards are considered "introduced" to start expansion immediately
+	cards_presented_count = 5
 	
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
@@ -827,6 +830,33 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
 				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
 			]
+		&"hero_avenger":
+			return [
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
+				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
+				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
+				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
+				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
+				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
+			]
+		&"hero_bastion":
+			return [
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
+				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
+				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
+				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
+				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
+				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
+			]
+		&"hero_pyro":
+			return [
+				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
+				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
+				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
+				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
+				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
+				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
+			]
 		&"hero":
 			# Generic hero: 2 copies of selected units/items per tier
 			return [
@@ -848,45 +878,22 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 			]
 
 func check_deck_expansion() -> bool:
-	"""Checks if the active deck should be expanded based on mastery/progress.
-	Adds 1 new card if all currently active cards have reached at least mastery level 3."""
+	"""Every time this is called, add EXACTLY ONE new card if available.
+	The mastery check has been removed as per user request for linear progression."""
 	if deck_def_id == &"":
-		return false
-	
-	# CRITICAL: Do not expand deck until all initial 10 cards have been formally introduced
-	# via the new card popup. The minigame uses all 6 cards for questions immediately,
-	# but the popup introduces them one-by-one tracked by cards_presented_count.
-	if cards_presented_count < 6:
 		return false
 	
 	var full_deck = Database.get_cards_for_deck(deck_def_id)
 	if full_deck.is_empty() or active_deck_ids.size() >= full_deck.size():
 		return false
 	
-	# Check if current active deck is 'mastered' (all cards at least level 3)
-	var all_mastered = true
-	for id in active_deck_ids:
-		# If progress missing, we haven't seen it
-		if not flashcard_progress.has(id):
-			all_mastered = false
-			break
-		
-		# Gate adding new cards until all current ones are at least level 3 mastery
-		var progress = flashcard_progress[id]
-		if progress.mastery_level < 3:
-			all_mastered = false
-			break
+	for i in range(full_deck.size()):
+		var card_id = full_deck[i]
+		if not active_deck_ids.has(card_id):
+			active_deck_ids.append(card_id)
+			SignalBus.emit_signal("run_data_changed")
+			return true
 	
-	if all_mastered:
-		# Add EXACTLY ONE new card (the next available one from full_deck)
-		# This ensures cards are introduced one by one as the user learns.
-		for i in range(full_deck.size()):
-			var card_id = full_deck[i]
-			if not active_deck_ids.has(card_id):
-				active_deck_ids.append(card_id)
-				SignalBus.emit_signal("run_data_changed")
-				return true
-			
 	return false
 
 # ------------------------------------------------------------------

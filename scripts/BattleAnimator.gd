@@ -13,6 +13,8 @@ var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vect
 var _pending_guardian_return: String = "" # UUID of Guardian needing to return after damage
 var _tracker: AnimationCompletionTracker # Animation completion tracking
 
+const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
+
 # --- Speed Control ---
 # Speed factor is stored in AnimationConstants.speed_factor (static var)
 
@@ -364,7 +366,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							var new_snapshot = payload.get("new_unit_snapshot", {})
 							if not new_snapshot.is_empty():
 								var new_location = LocationIdentifier.new(container_tag, index)
-								new_view.populate(new_location, new_snapshot, false, false)
+								new_view.populate(new_location, new_snapshot, false)
 								new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
 								
 								_visual_registry[new_unit_uuid] = new_view
@@ -425,6 +427,12 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Transform animation not found in registry!")
+
+			CombatEvent.Type.GOLD_GAIN:
+				var payload = event.visual_payload
+				var amount = int(payload.get("amount", 0))
+				var origin_uuid = payload.get("origin_uuid", "")
+				await _animate_gold_gain(origin_uuid, amount)
 
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
@@ -622,3 +630,57 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 			info["description"] = event.get_type_name()
 	
 	return info
+
+func _animate_gold_gain(origin_uuid: String, amount: int) -> void:
+	"""Animate gold coins flying from a unit to the gold counter at the top"""
+	# 1. Get origin position from snapshot
+	var pos_data = _position_snapshot.get(origin_uuid, {})
+	if pos_data.is_empty():
+		return
+	var start_pos = pos_data["center"]
+	
+	# 2. Get target position (GoldGroup in Main)
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		return
+	
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group):
+		return
+	
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon):
+		gold_icon = gold_group
+		
+	var gold_rect = gold_icon.get_global_rect()
+	var target_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	
+	# Spawn gold coins with stagger
+	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
+	var stagger_delay = 0.08
+	
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScene.new()
+		var effects_layer = WindowManager.get_vfx_layer()
+		effects_layer.add_child(coin_vfx)
+		
+		# Connect to trigger counter reaction
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			Audio.play_sfx("coin_land")
+			if is_instance_valid(gold_group):
+				var tween = gold_group.create_tween()
+				gold_group.pivot_offset = gold_group.size / 2.0
+				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
+				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
+		)
+		
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
+		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+
+	# Wait for animations
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	await get_tree().create_timer(total_wait).timeout

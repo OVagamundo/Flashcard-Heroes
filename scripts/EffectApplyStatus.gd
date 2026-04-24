@@ -11,7 +11,8 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 	var result := EffectResult.new()
 	
 	var status_id_str = parameters.get("status_id", "")
-	var amount = int(parameters.get("amount", 0))
+	var raw_amount = parameters.get("amount")
+	var amount = StatScaling.calculate(raw_amount, _context, "EffectApplyStatus")
 	
 	if status_id_str == "" or amount <= 0:
 		return result

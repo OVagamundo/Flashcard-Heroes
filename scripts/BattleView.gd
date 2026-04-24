@@ -261,7 +261,9 @@ func _animate_initial_unit_entry() -> void:
 			
 			# Schedule delayed reveal with bounce
 			var delay = i * AnimationConstants.ENTRY_STAGGER_DELAY
-			get_tree().create_timer(delay).timeout.connect(func():
+			var wait_tween = create_tween()
+			wait_tween.tween_interval(delay)
+			wait_tween.tween_callback(func():
 				if is_instance_valid(target_node):
 					target_node.scale = Vector2.ONE
 				if is_instance_valid(ball_view):
@@ -338,7 +340,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			
 			# Use SlotView's set_content to populate the view
 			# This handles instantiation and population of GachaBallView internally
-			slot.set_content(visual_data, true, is_enemy, is_enemy)
+			slot.set_content(visual_data, true, is_enemy)
 			
 			# EnemyLineup must be inspection-only: configure GachaBallView accordingly
 			# Note: We need to access the child view to set interaction context if needed,
@@ -367,7 +369,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				slot.populate(loc)
 				slot.set_meta("location_identifier", loc)
 				# Ensure it's empty
-				slot.set_content({}, false, false, false)
+				slot.set_content({}, false, false)
 				# EnemyLineup must be inspection-only: configure SlotView accordingly
 				if container_name == &"EnemyLineup":
 					# In test mode, allow full interaction with enemy slots
@@ -511,7 +513,7 @@ func _populate_enemy_trinkets() -> void:
 			var instance = battle_manager.enemy_trinkets[i]
 			if is_instance_valid(instance):
 				var visual_data = VisualDataAdapter.create_visual_data(instance)
-				slot_view.set_content(visual_data, true, true, false)
+				slot_view.set_content(visual_data, true, false)
 				if slot_view.get_child_count() > 0:
 					# Find GachaBallView among children (indicator TextureRect may also be present)
 					var view: GachaBallView = null

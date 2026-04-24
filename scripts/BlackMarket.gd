@@ -1,8 +1,10 @@
+# res://scripts/BlackMarket.gd
 extends Control
 
 const BASE_REMOVE_COST: int = 5
 const TRANSFORM_COST_GOLD: int = 5
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
@@ -68,17 +70,6 @@ func _get_remove_cost() -> int:
 		return GameManager.run_state.get_black_market_remove_cost()
 	return BASE_REMOVE_COST
 
-func _spend_gold_or_reject(amount: int, rejection_target: Control) -> bool:
-	if not is_instance_valid(GameManager.run_state):
-		return false
-	if GameManager.run_state.spend_gold(amount):
-		return true
-
-	var main_node = GameManager._active_main_node
-	var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-	RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
-	return false
-
 func _is_run_inventory_source(source_loc: LocationIdentifier) -> bool:
 	return String(source_loc.container).begins_with("RunInventoryT")
 
@@ -115,21 +106,31 @@ func _on_remove_requested() -> void:
 	var main_node = GameManager._active_main_node
 	var remove_target = main_node.get_bm_remove_zone() if is_instance_valid(main_node) and main_node.has_method("get_bm_remove_zone") else null
 	var remove_cost := _get_remove_cost()
-	if not _spend_gold_or_reject(remove_cost, remove_target if is_instance_valid(remove_target) else open_inventory_button):
+	
+	# Check if enough gold first
+	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < remove_cost:
+		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		var target = remove_target if is_instance_valid(remove_target) else open_inventory_button
+		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
 		return
 
 	_action_in_progress = true
+	
+	# Animate gold spend first
+	var animation_target = remove_target if is_instance_valid(remove_target) else open_inventory_button
+	_animate_gold_spend(remove_cost, animation_target, func():
+		# Actually spend gold and remove the instance
+		if GameManager.run_state.spend_gold(remove_cost):
+			GameManager.run_state.remove_instance(item_data.uuid)
+			if GameManager.run_state.has_method("increase_black_market_remove_cost"):
+				GameManager.run_state.increase_black_market_remove_cost()
 
-	# Remove the instance
-	GameManager.run_state.remove_instance(item_data.uuid)
-	if GameManager.run_state.has_method("increase_black_market_remove_cost"):
-		GameManager.run_state.increase_black_market_remove_cost()
-
-	# Clear selection
-	SignalBus.emit_signal("selection_clear_requested")
-	Audio.play_sfx("ui_drag_drop")
-
-	_action_in_progress = false
+			# Clear selection
+			SignalBus.emit_signal("selection_clear_requested")
+			Audio.play_sfx("ui_drag_drop")
+		
+		_action_in_progress = false
+	)
 
 func _on_transform_requested() -> void:
 	if _action_in_progress:
@@ -147,45 +148,59 @@ func _on_transform_requested() -> void:
 
 	var main_node = GameManager._active_main_node
 	var transform_target = main_node.get_bm_transform_zone() if is_instance_valid(main_node) and main_node.has_method("get_bm_transform_zone") else null
-	if not _spend_gold_or_reject(TRANSFORM_COST_GOLD, transform_target if is_instance_valid(transform_target) else open_inventory_button):
+	
+	# Check if enough gold first
+	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRANSFORM_COST_GOLD:
+		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		var target = transform_target if is_instance_valid(transform_target) else open_inventory_button
+		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
 		return
 
 	_action_in_progress = true
 
-	# Animation starts from the Transform zone (where the user clicked/dropped)
-	var start_pos := Vector2.ZERO
-	if is_instance_valid(transform_target):
-		start_pos = transform_target.get_global_rect().get_center()
+	# Animate gold spend first
+	var animation_target = transform_target if is_instance_valid(transform_target) else open_inventory_button
+	_animate_gold_spend(TRANSFORM_COST_GOLD, animation_target, func():
+		# Actually spend gold
+		if not GameManager.run_state.spend_gold(TRANSFORM_COST_GOLD):
+			_action_in_progress = false
+			return
 
-	# Hide source view during animation
-	var source_view = _find_ball_view_for_location(source_location)
-	if is_instance_valid(source_view):
-		source_view.visible = false
-		source_view.modulate.a = 0.0
+		# Animation starts from the Transform zone (where the user clicked/dropped)
+		var start_pos := Vector2.ZERO
+		if is_instance_valid(transform_target):
+			start_pos = transform_target.get_global_rect().get_center()
 
-	# Remove old instance
-	GameManager.run_state.remove_instance(item_data.uuid)
+		# Hide source view during animation
+		var source_view = _find_ball_view_for_location(source_location)
+		if is_instance_valid(source_view):
+			source_view.visible = false
+			source_view.modulate.a = 0.0
 
-	# Create new instance
-	var new_instance := GachaBallInstance.new()
-	new_instance.initialize(result_definition)
-	GameManager.run_state.add_instance(new_instance, source_location.container, source_location.index)
-	GameManager.run_state.unlock_recipe_for_result(result_definition.id)
+		# Remove old instance
+		GameManager.run_state.remove_instance(item_data.uuid)
 
-	# Clear selection
-	SignalBus.emit_signal("selection_clear_requested")
+		# Create new instance
+		var new_instance := GachaBallInstance.new()
+		new_instance.initialize(result_definition)
+		GameManager.run_state.add_instance(new_instance, source_location.container, source_location.index)
+		GameManager.run_state.unlock_recipe_for_result(result_definition.id)
 
-	# Wait for views to update then animate
-	var target_view := await _prepare_transform_target_view(source_location)
-	if start_pos != Vector2.ZERO and is_instance_valid(target_view):
-		await _animate_transform_to_slot(VisualDataAdapter.create_visual_data(new_instance), start_pos, target_view)
-	elif is_instance_valid(target_view):
-		target_view.visible = true
-		target_view.modulate.a = 1.0
-		if target_view.has_method("play_landing_bounce"):
-			target_view.play_landing_bounce()
+		# Clear selection
+		SignalBus.emit_signal("selection_clear_requested")
 
-	_action_in_progress = false
+		# Wait for views to update then animate
+		var target_view := await _prepare_transform_target_view(source_location)
+		if start_pos != Vector2.ZERO and is_instance_valid(target_view):
+			await _animate_transform_to_slot(VisualDataAdapter.create_visual_data(new_instance), start_pos, target_view)
+		elif is_instance_valid(target_view):
+			target_view.visible = true
+			target_view.modulate.a = 1.0
+			if target_view.has_method("play_landing_bounce"):
+				target_view.play_landing_bounce()
+
+		_action_in_progress = false
+	)
 
 func _draw_transform_definition(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
 	var eligible: Array[GachaBallDefinition] = []
@@ -238,16 +253,13 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	var end_center := target_view.get_global_rect().get_center()
 
 	var anim_ball = GachaBallViewScene.instantiate()
-	var effects_layer = main_node.get_node_or_null("EffectsLayer")
-	if is_instance_valid(effects_layer):
-		effects_layer.add_child(anim_ball)
-	else:
-		add_child(anim_ball)
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
 
 	anim_ball.force_inventory_mode = true
 	anim_ball.custom_minimum_size = Vector2(128, 128)
 	anim_ball.size = Vector2(128, 128)
-	anim_ball.populate(null, visual_data, false, false)
+	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	anim_ball.global_position = start_center - anim_ball.pivot_offset
@@ -277,6 +289,63 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	target_view.modulate.a = 1.0
 	if target_view.has_method("play_landing_bounce"):
 		target_view.play_landing_bounce()
+
+func _animate_gold_spend(amount: int, target_control: Control, on_complete: Callable) -> void:
+	"""Animate gold coins flying from gold counter to target control"""
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		on_complete.call()
+		return
+	
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group):
+		on_complete.call()
+		return
+	
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon):
+		gold_icon = gold_group
+		
+	var gold_rect = gold_icon.get_global_rect()
+	var start_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	
+	var target_rect = target_control.get_global_rect()
+	var end_pos = Vector2(
+		target_rect.position.x + target_rect.size.x / 2,
+		target_rect.position.y + target_rect.size.y / 2
+	)
+	
+	# Spawn gold coins with stagger
+	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
+	var stagger_delay = 0.08
+	
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScene.new()
+		var effects_layer = WindowManager.get_vfx_layer()
+		effects_layer.add_child(coin_vfx)
+		
+		# Connect to trigger target reaction
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			Audio.play_sfx("coin_land")
+			if is_instance_valid(target_control):
+				var tween = target_control.create_tween()
+				target_control.pivot_offset = target_control.size / 2.0
+				tween.tween_property(target_control, "scale", Vector2(1.1, 1.1), 0.05)
+				tween.tween_property(target_control, "scale", Vector2(1.0, 1.0), 0.1)
+		)
+		
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
+		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+
+	# Wait for animations then call completion callback
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	var wait_tween = create_tween()
+	wait_tween.tween_interval(total_wait)
+	wait_tween.tween_callback(on_complete)
 
 func _show_black_market_tutorial() -> void:
 	TutorialManager.show_tutorial(&"black_market_intro", [

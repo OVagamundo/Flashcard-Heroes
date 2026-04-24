@@ -140,6 +140,16 @@ func _reposition_window() -> void:
 			"BELOW":
 				target_x = anchor_rect.get_center().x - (panel_size.x / 2.0)
 				target_y = anchor_rect.end.y + WINDOW_MARGIN
+			"AUTO_HORIZONTAL":
+				target_y = anchor_rect.get_center().y - (panel_size.y / 2.0)
+				var left_x = anchor_rect.position.x - panel_size.x - WINDOW_MARGIN
+				var right_x = anchor_rect.end.x + WINDOW_MARGIN
+				
+				# If left fits on screen, use it. Otherwise, use right.
+				if left_x >= WINDOW_MARGIN:
+					target_x = left_x
+				else:
+					target_x = right_x
 			_: # Default to ABOVE (or if side is unknown)
 				target_x = anchor_rect.get_center().x - (panel_size.x / 2.0)
 				target_y = anchor_rect.position.y - panel_size.y - WINDOW_MARGIN
