@@ -14,9 +14,24 @@ const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
+var _long_press_timer: Timer
+var _last_meta_at_pointer = null
+var _locked_meta = null
+var _last_child_window_id: int = -1
 
 func _ready() -> void:
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
+	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
+	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
+	
+	_long_press_timer = Timer.new()
+	_long_press_timer.one_shot = true
+	_long_press_timer.wait_time = 0.32
+	_long_press_timer.timeout.connect(_on_long_press_timeout)
+	add_child(_long_press_timer)
+	
+	if WindowManager.has_signal("window_closed"):
+		WindowManager.window_closed.connect(_on_window_manager_window_closed)
 	# Ensure the window root receives clicks for local pruning
 	mouse_filter = MOUSE_FILTER_STOP
 	# Configure child controls to allow bubbling so the root can prune children on generic clicks
@@ -143,13 +158,11 @@ func populate(context: Dictionary) -> void:
 				full_text += "\n"
 			full_text += abilities_block
 		
-		if not full_text.is_empty():
-			full_text += "\n[url=effect]EFFECTS[/url]"
-		else:
-			full_text = "[url=effect]EFFECTS[/url]"
-		
-		# Store the full definition for the child window to use.
+		# Store the full definition for the child window to use (if generic effect link is clicked, though we removed it)
 		description_label.set_meta("effect_definition", item_def)
+
+	if not full_text.is_empty():
+		full_text = DescriptionParser.parse(full_text)
 
 	var final_text = full_text.strip_edges()
 	var regex = RegEx.new()
@@ -328,16 +341,41 @@ func _update_recipe_display(item_def: Resource) -> void:
 	recipe_container.add_child(_make_label.call("+"))
 	recipe_container.add_child(_make_icon.call(def_b))
 	recipe_container.visible = true
+
 func _on_description_meta_clicked(meta) -> void:
+	if _locked_meta == meta:
+		# Toggle off: close child and unlock
+		_locked_meta = null
+		WindowManager.close_children_of(self )
+	else:
+		_locked_meta = meta
+		_handle_effect_meta_interaction(meta)
+
+func _on_description_meta_hover_started(meta) -> void:
+	if _locked_meta != null:
+		return
+	_last_meta_at_pointer = meta
+	_handle_effect_meta_interaction(meta)
+
+func _on_description_meta_hover_ended(_meta) -> void:
+	_last_meta_at_pointer = null
+
+func _on_long_press_timeout() -> void:
+	var meta = _last_meta_at_pointer
+	if meta == null:
+		meta = description_label.get_meta_at_point(description_label.get_local_mouse_position())
+	
+	if meta:
+		_handle_effect_meta_interaction(meta)
+
+func _handle_effect_meta_interaction(meta) -> void:
 	if meta == "effect":
 		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
-			# Open EffectInspection as a CHILD contextual window anchored to this window.
-			# Provide context so WindowManager can pick the correct parent (e.g., UnitInspection).
 			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
 			var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
 			var inside_unit: bool = parent_win is UnitInspectionWindow
-			WindowManager.open_child_contextual_window(
+			var win = WindowManager.open_child_contextual_window(
 				&"EffectInspection",
 				self ,
 				{
@@ -346,17 +384,52 @@ func _on_description_meta_clicked(meta) -> void:
 					"target_parent_window_id": parent_id
 				}
 			)
-			# Prevent this click from propagating as a WINDOW_BACKGROUND/global click
+			if win:
+				_last_child_window_id = win.get_instance_id()
 			get_viewport().set_input_as_handled()
 			accept_event()
+	elif str(meta).begins_with("effect_"):
+		var effect_type = str(meta).replace("effect_", "")
+		var name_key = "STATUS_" + effect_type.to_upper()
+		var desc_key = "STATUS_" + effect_type.to_upper() + "_DESC"
+		
+		var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
+		var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
+		var inside_unit: bool = parent_win is UnitInspectionWindow
+		
+		var win = WindowManager.open_child_contextual_window(
+			&"EffectInspection",
+			self ,
+			{
+				"effect_definition": {
+					"name_key": name_key,
+					"description_key": desc_key
+				},
+				"is_inside_unit_inspection": inside_unit,
+				"target_parent_window_id": parent_id
+			}
+		)
+		if win:
+			_last_child_window_id = win.get_instance_id()
+		get_viewport().set_input_as_handled()
+		accept_event()
 
-func _on_description_gui_input(_event: InputEvent) -> void:
-	# No-op: non-link clicks should bubble to the window root to trigger pruning.
-	# Link clicks are handled in _on_description_meta_clicked and are consumed there.
+func _on_window_manager_window_closed(window: Control) -> void:
+	if window.get_instance_id() == _last_child_window_id:
+		_locked_meta = null
+		_last_child_window_id = -1
+
+func _on_description_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		if event.pressed:
+			_long_press_timer.start()
+		else:
+			_long_press_timer.stop()
 	pass
 
 func _on_internal_background_gui_input(_event: InputEvent) -> void:
 	if _InputUtils.is_primary_pointer_press(_event):
+		_locked_meta = null # Unlock on background click
 		WindowManager.handle_inspection_background_click(self )
 		get_viewport().set_input_as_handled()
 		accept_event()

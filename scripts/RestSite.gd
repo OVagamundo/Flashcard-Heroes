@@ -480,6 +480,19 @@ func _refresh_all_prize_slots() -> void:
 	for p in _prizes: _populate_prize_slot(p.slot_index, p)
 
 func _on_leave_pressed() -> void:
+	# Disable all interactions during auto-collection
+	leave_button.disabled = true
+	study_button.disabled = true
+	tier1_draw_button.disabled = true
+	tier2_draw_button.disabled = true
+	tier3_draw_button.disabled = true
+	
+	# Collect remaining prizes one by one
+	while not _prizes.is_empty():
+		var prize = _prizes[0]
+		# Use the slot_index stored in the prize dictionary
+		await _apply_prize(prize.slot_index)
+	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
