@@ -231,14 +231,14 @@ func _open_inspection_window(loc: LocationIdentifier, source_view: Control) -> v
 	open_inspection_window(loc, source_view)
 
 # Public API: open a child contextual window anchored to an existing window/view.
-func open_child_contextual_window(window_type: StringName, anchor_view: Control, populate_ctx: Dictionary = {}) -> void:
-	if not is_instance_valid(anchor_view): return
+func open_child_contextual_window(window_type: StringName, anchor_view: Control, populate_ctx: Dictionary = {}) -> Control:
+	if not is_instance_valid(anchor_view): return null
 	var context: Dictionary = {
 		"window_type": window_type,
 		"anchor_view": anchor_view,
 		"populate_context": populate_ctx,
 	}
-	_open_contextual_window(context)
+	return _open_contextual_window(context)
 
 # Public entry point for the Discard Pile Window.
 func open_discard_pile_window() -> void:
@@ -472,12 +472,12 @@ func request_close_inspection_window(window: Control, _cause: StringName = &"") 
 # --- CORE INTERNAL LOGIC ---
 
 # This unified function handles the creation and management of ALL Contextual Windows.
-func _open_contextual_window(context: Dictionary) -> void:
+func _open_contextual_window(context: Dictionary) -> Control:
 	# Block contextual windows triggered by user input during COMBAT.
 	# This preserves strict input blocking while allowing true modals via open_modal_window.
 	var gir := get_tree().get_first_node_in_group("global_interaction_router")
 	if is_instance_valid(gir) and gir.has_method("is_combat_locked") and gir.is_combat_locked():
-		return
+		return null
 	var window_type: StringName = context.get("window_type")
 	var anchor_view: Control = context.get("anchor_view", null)
 	var populate_context: Dictionary = context.get("populate_context", {})
@@ -538,6 +538,8 @@ func _open_contextual_window(context: Dictionary) -> void:
 		if loc == null:
 			loc = populate_context.get("target_location")
 		_track_inspection_anchor(window_instance, anchor_view, loc, pos_hint)
+	
+	return window_instance
 
 
 # --- HELPER FUNCTIONS ---

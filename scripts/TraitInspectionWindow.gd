@@ -17,10 +17,25 @@ const C = preload("res://scripts/Constants.gd")
 
 var _source_view: Control
 var _trait_id: String
+var _long_press_timer: Timer
+var _last_meta_at_pointer = null
+var _locked_meta = null
+var _last_child_window_id: int = -1
 
 func _ready() -> void:
-	# Ensure the window root receives clicks for local pruning
-	mouse_filter = MOUSE_FILTER_STOP
+	description_label.meta_clicked.connect(_on_description_meta_clicked)
+	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
+	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
+	
+	_long_press_timer = Timer.new()
+	_long_press_timer.one_shot = true
+	_long_press_timer.wait_time = 0.32
+	_long_press_timer.timeout.connect(_on_long_press_timeout)
+	add_child(_long_press_timer)
+	
+	if WindowManager.has_signal("window_closed"):
+		WindowManager.window_closed.connect(_on_window_manager_window_closed)
+	
 	# Configure child controls to allow bubbling so the root can prune children on generic clicks
 	_configure_mouse_filters()
 
@@ -56,9 +71,18 @@ func _gui_input(event: InputEvent) -> void:
 
 func _on_internal_background_gui_input(event: InputEvent) -> void:
 	if _InputUtils.is_primary_pointer_press(event):
+		_locked_meta = null
 		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
+
+func _on_description_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton or event is InputEventScreenTouch:
+		if event.pressed:
+			_long_press_timer.start()
+		else:
+			_long_press_timer.stop()
+	pass
 
 func populate(context: Dictionary) -> void:
 	_source_view = context.get("source_view")
@@ -105,7 +129,7 @@ func populate(context: Dictionary) -> void:
 	var regex = RegEx.new()
 	regex.compile("\\n\\s*\\n+")
 	final_text = regex.sub(final_text, "\n", true)
-	description_label.text = final_text
+	description_label.text = DescriptionParser.parse(final_text)
 	
 	_reset_window_size()
 
@@ -124,3 +148,60 @@ func _reset_window_size() -> void:
 		custom_minimum_size = Vector2(480, 0)
 		size = Vector2.ZERO # Force immediate recalculation of minimum size
 		reset_size()
+
+func _on_description_meta_clicked(meta) -> void:
+	if _locked_meta == meta:
+		_locked_meta = null
+		WindowManager.close_children_of(self )
+	else:
+		_locked_meta = meta
+		_handle_effect_meta_interaction(meta)
+
+func _on_description_meta_hover_started(meta) -> void:
+	if _locked_meta != null:
+		return
+	_last_meta_at_pointer = meta
+	_handle_effect_meta_interaction(meta)
+
+func _on_description_meta_hover_ended(_meta) -> void:
+	_last_meta_at_pointer = null
+
+func _on_long_press_timeout() -> void:
+	var meta = _last_meta_at_pointer
+	if meta == null:
+		meta = description_label.get_meta_at_point(description_label.get_local_mouse_position())
+	
+	if meta:
+		_handle_effect_meta_interaction(meta)
+
+func _handle_effect_meta_interaction(meta) -> void:
+	if str(meta).begins_with("effect_"):
+		var effect_type = str(meta).replace("effect_", "")
+		var name_key = "STATUS_" + effect_type.to_upper()
+		var desc_key = "STATUS_" + effect_type.to_upper() + "_DESC"
+		
+		# Open EffectInspection as a CHILD contextual window anchored to this window.
+		var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
+		var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
+		
+		var win = WindowManager.open_child_contextual_window(
+			&"EffectInspection",
+			self ,
+			{
+				"effect_definition": {
+					"name_key": name_key,
+					"description_key": desc_key
+				},
+				"is_inside_unit_inspection": false,
+				"target_parent_window_id": parent_id
+			}
+		)
+		if win:
+			_last_child_window_id = win.get_instance_id()
+		get_viewport().set_input_as_handled()
+		accept_event()
+
+func _on_window_manager_window_closed(window: Control) -> void:
+	if window.get_instance_id() == _last_child_window_id:
+		_locked_meta = null
+		_last_child_window_id = -1

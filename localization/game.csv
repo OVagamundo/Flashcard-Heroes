@@ -299,7 +299,7 @@ tooltip.train_hp,Spend tokens from the minigame to permanently increase hero HP.
 tooltip.train_pwr,Spend tokens from the minigame to permanently increase hero PWR.,Gaste fichas do minigame para aumentar permanentemente o PWR do herói.
 ui.continue,Continue,Continuar
 ui.choose_your_hero,Choose Your Hero,Escolha Seu Herói
-ui.choose_your_deck,Choose Your Flashcard Deck,Escolha Seu Deck de Flashcards
+ui.choose_your_deck,Choose Your Deck,Escolha Seu Deck
 ui.locked_hero,Locked,Bloqueado
 ui.cards,cards,cartas
 ui.ability,Ability,Habilidade
@@ -320,12 +320,12 @@ unit_t3_f.name,Warden,Guardião Protetor
 unit_t3_f.desc,A protective guardian that empowers newly summoned allies.,Um guardião protetor que fortalece aliados recém-invocados.
 ability.unit_tier3f_summon_blessing.name,Summon Blessing,Bênção de Invocação
 ability.unit_tier3f_summon_blessing.desc,"When an ally unit is summoned, grant it +3 HP.","Quando uma unidade aliada é invocada, concede +3 HP."
-STATUS_BURN,Burn,Queimadura
-STATUS_BURN_DESC,"Deals damage equal to burn stacks at end of turn, then halves.","Causa dano igual às pilhas de queimadura no fim do turno, depois divide pela metade."
+STATUS_BURN,Burn,Chamas
+STATUS_BURN_DESC,Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.,Causa dano igual ao valor de Chamas ao final do turno. Após o dano o valor cai pela metade.
 STATUS_ARMOR,Armor,Armadura
-STATUS_ARMOR_DESC,"Absorbs damage before HP. Clears at end of turn.","Absorve dano antes do HP. Limpa no fim do turno."
+STATUS_ARMOR_DESC,Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.,Armadura: Absorve uma quantidade de dano igual ao valor de Armadura. Desaparece ao final do turno.
 STATUS_SPIKES,Spikes,Espinhos
-STATUS_SPIKES_DESC,"Deals stacks as damage to attacker when hit, then loses 1 stack.","Causa pilhas como dano ao atacante quando atingido, então perde 1 pilha."
+STATUS_SPIKES_DESC,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.,Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação.
 trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,"Grants +1 HP and +1 PWR to Tier 1 units when drawn.","Concede +1 HP e +1 PWR a unidades Nível 1 ao serem sacadas."
 ability.royal_insignia.name,Royal Blessing,Bênção Real
@@ -339,10 +339,10 @@ trinket.trait_water.desc,"Enables the Water trait whenever your team has enough 
 trinket.trait_air.name,Air Trait,Sinergia de Ar
 trinket.trait_air.desc,"Enables the Air trait whenever your team has enough Air souls.","Ativa a sinergia de Ar sempre que sua equipe tiver almas de Ar suficientes."
 trait.fire.name,Fire,Fogo
-trait.fire.3,"Apply 1 Burn on attack.","Aplica 1 Queimadura ao atacar."
-trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 Queimadura Extra (Total 2)."
-trait.fire.7,"Start of Turn: Apply 2 Burn to ALL enemies.","Início do Turno: Aplica 2 Queimadura a TODOS inimigos."
-trait.fire.9,"Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.","Chama do Traidor: Ataques causam dano bônus igual às pilhas de Queimadura do alvo."
+trait.fire.3,"Apply 1 Burn on attack.","Aplica 1 de Chamas ao atacar."
+trait.fire.5,"Apply +1 Extra Burn (Total 2).","Aplica +1 de Chamas Extra (Total 2)."
+trait.fire.7,"Start of Turn: Apply 2 Burn to ALL enemies.","Início do Turno: Aplica 2 de Chamas a TODOS inimigos."
+trait.fire.9,"Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.","Chama do Traidor: Ataques causam dano bônus igual às pilhas de Chamas do alvo."
 trait.earth.name,Earth,Terra
 trait.earth.3,"All Allies gain 1 Armor. Earth units gain 2 Armor.","Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura."
 trait.earth.5,"All Allies gain 2 Armor. Earth units gain 4 Armor.","Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura."
@@ -477,5 +477,5 @@ ability.hero_bastion_ally_death_spikes_armor.desc,"When an ally dies, gain 1 Arm
 hero_pyro.name,Pyromancer,Piromante
 hero_pyro.desc,"A fiery mage who incinerates enemies instead of striking them.","Um mago ardente que incinera os inimigos em vez de atacá-los."
 ability.hero_pyro_attack_burn.name,Incinerate,Incinerar
-ability.hero_pyro_attack_burn.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acúmulos de Queimadura iguais ao seu Poder."
+ability.hero_pyro_attack_burn.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
 

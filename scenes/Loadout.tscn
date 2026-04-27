@@ -57,212 +57,192 @@ texture = ExtResource("4_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="MainContent" type="VBoxContainer" parent="."]
+[node name="MainContent" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
+offset_left = 60.0
 offset_top = 40.0
-offset_right = -40.0
-offset_bottom = -100.0
+offset_right = -60.0
+offset_bottom = -120.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 60
+
+[node name="DeckColumn" type="VBoxContainer" parent="MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 20
 
-[node name="HeroRow" type="HBoxContainer" parent="MainContent"]
+[node name="DeckSelection" type="VBoxContainer" parent="MainContent/DeckColumn"]
 layout_mode = 2
-size_flags_vertical = 0
-theme_override_constants/separation = 40
-
-[node name="HeroLeftSection" type="VBoxContainer" parent="MainContent/HeroRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.2
+size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="HeroTitle" type="Label" parent="MainContent/HeroRow/HeroLeftSection"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HeaderLabel"
-theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-
-text = "Choose Your Hero"
-
-[node name="HeroScroll" type="ScrollContainer" parent="MainContent/HeroRow/HeroLeftSection"]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="HeroGrid" type="GridContainer" parent="MainContent/HeroRow/HeroLeftSection/HeroScroll"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 16
-columns = 3
-
-[node name="HeroInfoPanel" type="PanelContainer" parent="MainContent/HeroRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(360, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.8
-theme_override_styles/panel = SubResource("StyleBoxFlat_hero_panel")
-
-[node name="HeroInfoContent" type="VBoxContainer" parent="MainContent/HeroRow/HeroInfoPanel"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroRow/HeroInfoPanel/HeroInfoContent"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(128, 128)
-layout_mode = 2
-size_flags_horizontal = 4
-texture_filter = 3
-expand_mode = 1
-stretch_mode = 5
-
-[node name="HeroName" type="Label" parent="MainContent/HeroRow/HeroInfoPanel/HeroInfoContent"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-
-text = "Select a Hero"
-horizontal_alignment = 1
-
-[node name="HeroStats" type="Label" parent="MainContent/HeroRow/HeroInfoPanel/HeroInfoContent"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 2
-
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="MainContent/HeroRow/HeroInfoPanel/HeroInfoContent"]
-layout_mode = 2
-
-[node name="HeroDescription" type="RichTextLabel" parent="MainContent/HeroRow/HeroInfoPanel/HeroInfoContent"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
-
-bbcode_enabled = true
-text = "Choose a hero to see their details."
-fit_content = true
-scroll_active = false
-
-[node name="HeroAbilities" type="RichTextLabel" parent="MainContent/HeroRow/HeroInfoPanel/HeroInfoContent"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_colors/default_color = Color(0.7, 0.85, 1, 1)
-
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
-
-[node name="TopSpacer" type="Control" parent="MainContent"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="DeckRow" type="HBoxContainer" parent="MainContent"]
-layout_mode = 2
-size_flags_vertical = 0
-theme_override_constants/separation = 40
-
-[node name="DeckLeftSection" type="VBoxContainer" parent="MainContent/DeckRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.2
-theme_override_constants/separation = 12
-
-[node name="DeckTitle" type="Label" parent="MainContent/DeckRow/DeckLeftSection"]
+[node name="DeckTitle" type="Label" parent="MainContent/DeckColumn/DeckSelection"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
 theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
+text = "Choose Your Deck"
+horizontal_alignment = 1
 
-text = "Choose Your Flashcard Deck"
-
-[node name="DeckScroll" type="ScrollContainer" parent="MainContent/DeckRow/DeckLeftSection"]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="DeckGrid" type="GridContainer" parent="MainContent/DeckRow/DeckLeftSection/DeckScroll"]
+[node name="DeckGrid" type="GridContainer" parent="MainContent/DeckColumn/DeckSelection"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
+size_flags_vertical = 2
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 columns = 1
 
-[node name="DeckInfoPanel" type="PanelContainer" parent="MainContent/DeckRow"]
+[node name="DeckInfoPanel" type="PanelContainer" parent="MainContent/DeckColumn"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.8
-size_flags_vertical = 0
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_deck_panel")
 
-[node name="DeckInfoContent" type="VBoxContainer" parent="MainContent/DeckRow/DeckInfoPanel"]
+[node name="DeckInfoContent" type="VBoxContainer" parent="MainContent/DeckColumn/DeckInfoPanel"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="DeckName" type="Label" parent="MainContent/DeckRow/DeckInfoPanel/DeckInfoContent"]
+[node name="DeckName" type="Label" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.9, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
-
 text = "Select a Deck"
 horizontal_alignment = 1
 
-[node name="DeckStats" type="Label" parent="MainContent/DeckRow/DeckInfoPanel/DeckInfoContent"]
+[node name="DeckStats" type="Label" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+layout_mode = 2
+
+[node name="DeckDescription" type="RichTextLabel" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
+bbcode_enabled = true
+text = "Choose a deck to see its details."
+fit_content = true
+scroll_active = false
+
+[node name="HeroColumn" type="VBoxContainer" parent="MainContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="HeroSelection" type="VBoxContainer" parent="MainContent/HeroColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="HeroTitle" type="Label" parent="MainContent/HeroColumn/HeroSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Choose Your Hero"
+horizontal_alignment = 1
+
+[node name="HeroGrid" type="GridContainer" parent="MainContent/HeroColumn/HeroSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 3
+
+[node name="HeroInfoPanel" type="PanelContainer" parent="MainContent/HeroColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hero_panel")
+
+[node name="HeroInfoContent" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderBox" type="HBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameStatsBox" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="HeroName" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox/NameStatsBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "Select a Hero"
+
+[node name="HeroStats" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox/NameStatsBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="MainContent/DeckRow/DeckInfoPanel/DeckInfoContent"]
+[node name="HSeparator" type="HSeparator" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
 layout_mode = 2
 
-[node name="DeckDescription" type="RichTextLabel" parent="MainContent/DeckRow/DeckInfoPanel/DeckInfoContent"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="HeroDescription" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer/VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
-
 bbcode_enabled = true
-text = "Choose a deck to see its details."
+text = "Choose a hero to see their details."
 fit_content = true
 scroll_active = false
 
-[node name="BottomSpacer" type="Control" parent="MainContent"]
+[node name="HeroAbilities" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.7, 0.85, 1, 1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
 
 [node name="BottomBar" type="HBoxContainer" parent="."]
 layout_mode = 1
