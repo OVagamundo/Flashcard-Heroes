@@ -22,6 +22,11 @@ const ACTION_LAND = preload("res://assets/audio/sfx/action/land.ogg")
 const ACTION_HIT = preload("res://assets/audio/sfx/action/hit.ogg")
 const ACTION_WHOOSH = preload("res://assets/audio/sfx/action/whoosh.ogg")
 
+# Status-specific SFX (Newly added)
+const STATUS_BURN = preload("res://assets/audio/sfx/action/burn.mp3")
+const STATUS_ARMOR = preload("res://assets/audio/sfx/action/armor.mp3")
+const STATUS_SPIKES = preload("res://assets/audio/sfx/action/spikes.mp3")
+
 # BGM - Each scene has its own track
 const BGM_TITLE = preload("res://assets/audio/bgm/title.ogg")
 const BGM_LOADOUT = preload("res://assets/audio/bgm/loadout.ogg")
@@ -81,6 +86,11 @@ const SOUNDS: Dictionary = {
 	# Minigame
 	"minigame_correct": ACTION_BUFF,
 	"minigame_incorrect": UI_ERROR,
+	
+	# Status Effects
+	"status_burn": STATUS_BURN,
+	"status_armor": STATUS_ARMOR,
+	"status_spikes": STATUS_SPIKES,
 	
 	# BGM (keys for convenience)
 	"bgm_menu": BGM_MENU,

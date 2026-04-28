@@ -969,10 +969,14 @@ func animate_burn_change(target_stacks: int) -> void: # Renamed from animate_poi
 			burn_container.scale = Vector2.ZERO
 			var tween = create_tween()
 			tween.tween_property(burn_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tween.tween_callback(_pop_container.bind(burn_container))
+			tween.tween_callback(func(): 
+				_pop_container(burn_container)
+				Audio.play_sfx("status_burn", randf_range(0.95, 1.05))
+			)
 		elif target_stacks > old_stacks:
 			# Stacks increased: pop the container
 			_pop_container(burn_container)
+			Audio.play_sfx("status_burn", randf_range(0.95, 1.05))
 		
 		# Always flash label on change
 		_flash_label(burn_label)
@@ -998,10 +1002,14 @@ func animate_armor_change(target_stacks: int) -> void:
 			armor_container.scale = Vector2.ZERO
 			var tween = create_tween()
 			tween.tween_property(armor_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tween.tween_callback(_pop_container.bind(armor_container))
+			tween.tween_callback(func():
+				_pop_container(armor_container)
+				Audio.play_sfx("status_armor", randf_range(0.95, 1.05))
+			)
 		elif target_stacks > old_stacks:
 			# Stacks increased: pop the container
 			_pop_container(armor_container)
+			Audio.play_sfx("status_armor", randf_range(0.95, 1.05))
 		
 		# Always flash label on change
 		_flash_label(armor_label)
@@ -1078,6 +1086,8 @@ func _update_dynamic_status_icons(animate: bool = true) -> void:
 						# Add visual feedback
 						if stacks > visual_current:
 							_pop_container(icon_node)
+							if status_id == &"spikes":
+								Audio.play_sfx("status_spikes", randf_range(0.95, 1.05))
 						_flash_label(label)
 					else:
 						label.text = str(stacks)

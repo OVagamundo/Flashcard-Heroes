@@ -7,6 +7,8 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var merge_button: Button = %MergeButton
 @onready var swap_button: Button = %SwapButton
+@onready var title_label: Label = %Label
+@onready var result_image: TextureRect = %ResultImage
 
 var _source_location: LocationIdentifier
 var _target_location: LocationIdentifier
@@ -68,9 +70,19 @@ func populate(context: Dictionary) -> void:
 		# Ensure we don't connect the signal multiple times if populate were ever called again.
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
 			merge_button.pressed.connect(_on_merge_pressed)
+			
+		var recipe = Database.recipes.get(_recipe_id)
+		if recipe and recipe.result_id:
+			var result_def = Database.get_definition(recipe.result_id)
+			if result_def and result_def.icon:
+				result_image.texture = result_def.icon
+				result_image.visible = true
+				title_label.visible = false
 	else:
 		# No valid recipe. The button should be disabled.
 		merge_button.disabled = true
+		result_image.visible = false
+		title_label.visible = true
 
 func _on_merge_pressed() -> void:
 	# This function is now a dedicated handler for the merge button press.
