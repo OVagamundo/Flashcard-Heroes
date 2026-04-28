@@ -3,9 +3,9 @@
 [ext_resource type="Script" uid="uid://bvq7fjdylgfqr" path="res://scripts/ChoiceWindow.gd" id="1_stuvw"]
 
 [node name="ChoiceWindow" type="PanelContainer"]
-custom_minimum_size = Vector2(300, 150)
+custom_minimum_size = Vector2(300, 220)
 offset_right = 300.0
-offset_bottom = 150.0
+offset_bottom = 220.0
 mouse_filter = 1
 script = ExtResource("1_stuvw")
 
@@ -15,12 +15,22 @@ theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
 text = "Choose Action"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="ResultImage" type="TextureRect" parent="VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
