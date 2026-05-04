@@ -37,6 +37,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
 const REWARD_SCENE = preload("res://scenes/Reward.tscn")
+const REWARD_ELITE_SCENE = preload("res://scenes/RewardElite.tscn")
 
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
 
@@ -66,6 +67,13 @@ var _bm_transform_zone: PanelContainer = null
 var _bm_remove_label: RichTextLabel = null
 var _bm_transform_label: RichTextLabel = null
 var _bm_drop_zones_visible: bool = false
+var _reward_drop_zone_container: PanelContainer = null
+var _reward_collect_zone: PanelContainer = null
+var _reward_sell_zone: PanelContainer = null
+var _reward_collect_label: RichTextLabel = null
+var _reward_sell_label: RichTextLabel = null
+var _reward_drop_zones_visible: bool = false
+
 var _bm_drop_zone_drag_context: InteractionContext = null
 var _bm_instruction_overlay: PanelContainer = null
 var _bm_instruction_label: Label = null
@@ -144,6 +152,7 @@ func _ready() -> void:
 	_build_confirm_drop_zone()
 	# Build the black market split drop zones
 	_build_black_market_drop_zones()
+	_build_reward_drop_zones()
 
 	SignalBus.emit_signal("path_choice_scene_requested")
 
@@ -281,12 +290,26 @@ func _on_path_choice_scene_requested() -> void:
 
 func _on_reward_scene_requested(context: Dictionary) -> void:
 	clear_content_area()
-	var instance = REWARD_SCENE.instantiate()
+	var scene_to_use = REWARD_SCENE
+	
+	# Determine if this is an Elite/Boss reward (based on metadata or TRINKETS)
+	var is_special = context.get("is_special_victory", false)
+	if not is_special:
+		var rewards_list = context.get("reward_instances", [])
+		if rewards_list.size() > 0:
+			var r_inst = rewards_list[0]
+			if is_instance_valid(r_inst):
+				var r_def = r_inst.get_definition()
+				if is_instance_valid(r_def) and r_def.category == &"TRINKET":
+					is_special = true
+	
+	if is_special:
+		scene_to_use = REWARD_ELITE_SCENE
+	
+	var instance = scene_to_use.instantiate()
 	_current_content_node = instance
-	# Correctly parent the new scene inside the SceneSlot
 	scene_slot.add_child(instance)
 	
-	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
 	
 	if instance.has_method("populate"):
@@ -784,6 +807,7 @@ func _build_confirm_drop_zone() -> void:
 	_confirm_drop_zone.gui_input.connect(_on_confirm_drop_zone_gui_input)
 	
 	# Start hidden
+	_confirm_drop_zone.set_script(load("res://scripts/utils/DropZone.gd"))
 	_confirm_drop_zone.visible = false
 	_confirm_drop_zone.modulate.a = 0.0
 
@@ -831,8 +855,11 @@ func hide_confirm_drop_zone() -> void:
 func _on_confirm_drop_zone_gui_input(event: InputEvent) -> void:
 	"""Handle click on the confirm drop zone overlay."""
 	if InputUtils.is_primary_pointer_press(event):
+		# Gating: if we are currently dragging, ignore the raw gui_input press.
+		if _drop_zone_drag_context != null:
+			return
 		if _confirm_drop_zone_mode != &"":
-			SignalBus.emit_signal("confirm_drop_zone_activated")
+			SignalBus.emit_signal("confirm_drop_zone_activated", false, Vector2.ZERO)
 			# Play confirm sound
 			Audio.play_sfx("ui_click")
 		get_viewport().set_input_as_handled()
@@ -841,7 +868,7 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 	"""Show/hide drop zones based on current context and selection."""
 	# Handle Reward/Shop
 	if new_location and new_location.container == &"Rewards":
-		show_confirm_drop_zone(&"Rewards")
+		show_reward_drop_zones()
 	elif new_location and new_location.container == &"Shop":
 		show_confirm_drop_zone(&"Shop")
 	else:
@@ -865,9 +892,11 @@ func _deferred_maybe_hide_drop_zone() -> void:
 		return
 	var sel = GlobalInteractionRouter.get_current_selection()
 	if sel and is_instance_valid(sel.location):
-		if sel.location.container == &"Rewards" or sel.location.container == &"Shop":
+		if sel.location.container == &"Shop":
 			return
 	hide_confirm_drop_zone()
+	if not (sel and is_instance_valid(sel.location) and sel.location.container == &"Rewards"):
+		hide_reward_drop_zones()
 
 func _deferred_maybe_hide_bm_drop_zones() -> void:
 	"""Hide BM drop zones and show instruction if no relevant selection or drag is active."""
@@ -917,6 +946,10 @@ func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 	if _check_bm_drag_drop_on_zones_with_context(saved_bm_ctx):
 		return
 	
+	# Check Reward zones
+	if _check_reward_drag_drop_on_zones_with_context(saved_ctx):
+		return
+	
 	if _confirm_drop_zone_mode == &"":
 		return
 	
@@ -932,7 +965,7 @@ func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 			SignalBus.emit_signal("selection_changed", saved_ctx.location)
 			
 			# Drag ended over the drop zone — trigger confirm!
-			SignalBus.emit_signal("confirm_drop_zone_activated")
+			SignalBus.emit_signal("confirm_drop_zone_activated", true, mouse_pos)
 			Audio.play_sfx("ui_click")
 			return
 	
@@ -1072,6 +1105,7 @@ func _create_bm_zone_panel(text: String, bg_color: Color) -> PanelContainer:
 	style.corner_radius_bottom_right = 0
 	panel.add_theme_stylebox_override("panel", style)
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.set_script(load("res://scripts/utils/DropZone.gd"))
 	
 	var center = CenterContainer.new()
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1148,13 +1182,19 @@ func hide_black_market_instruction() -> void:
 
 func _on_bm_remove_zone_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		SignalBus.emit_signal("black_market_remove_zone_activated")
+		# Gating: ignore raw press if currently dragging
+		if _bm_drop_zone_drag_context != null:
+			return
+		SignalBus.emit_signal("black_market_remove_zone_activated", false, Vector2.ZERO)
 		Audio.play_sfx("ui_click")
 		get_viewport().set_input_as_handled()
 
 func _on_bm_transform_zone_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		SignalBus.emit_signal("black_market_transform_zone_activated")
+		# Gating: ignore raw press if currently dragging
+		if _bm_drop_zone_drag_context != null:
+			return
+		SignalBus.emit_signal("black_market_transform_zone_activated", false, Vector2.ZERO)
 		Audio.play_sfx("ui_click")
 		get_viewport().set_input_as_handled()
 
@@ -1172,7 +1212,7 @@ func _check_bm_drag_drop_on_zones_with_context(context: InteractionContext) -> b
 		# Restore selection so handlers can find the item
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
-		SignalBus.emit_signal("black_market_remove_zone_activated")
+		SignalBus.emit_signal("black_market_remove_zone_activated", true, mouse_pos)
 		Audio.play_sfx("ui_click")
 		return true
 	
@@ -1180,7 +1220,7 @@ func _check_bm_drag_drop_on_zones_with_context(context: InteractionContext) -> b
 	if is_instance_valid(_bm_transform_zone) and _bm_transform_zone.get_global_rect().has_point(mouse_pos):
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
-		SignalBus.emit_signal("black_market_transform_zone_activated")
+		SignalBus.emit_signal("black_market_transform_zone_activated", true, mouse_pos)
 		Audio.play_sfx("ui_click")
 		return true
 	
@@ -1193,3 +1233,129 @@ func get_bm_remove_zone() -> Control:
 ## Public API: Get the BM Transform zone node (for rejection feedback)
 func get_bm_transform_zone() -> Control:
 	return _bm_transform_zone
+
+# =============================================================================
+# REWARD DROP ZONES
+# =============================================================================
+
+func _build_reward_drop_zones() -> void:
+	_reward_drop_zone_container = PanelContainer.new()
+	_reward_drop_zone_container.name = "RewardDropZones"
+	
+	_reward_drop_zone_container.layout_mode = 1
+	_reward_drop_zone_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_reward_drop_zone_container.custom_minimum_size = Vector2(0, 260)
+	_reward_drop_zone_container.offset_top = -260
+	_reward_drop_zone_container.offset_bottom = 0
+	
+	var container_style = StyleBoxFlat.new()
+	container_style.bg_color = Color(0, 0, 0, 0)
+	_reward_drop_zone_container.add_theme_stylebox_override("panel", container_style)
+	_reward_drop_zone_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	var hbox = HBoxContainer.new()
+	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hbox.add_theme_constant_override("separation", 8)
+	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_reward_drop_zone_container.add_child(hbox)
+	
+	_reward_collect_zone = _create_bm_zone_panel(tr("Drag or click here to add it to your collection"), Color(0.93, 0.98, 0.93, 0.95))
+	_reward_collect_zone.name = "CollectZone"
+	_reward_collect_label = _reward_collect_zone.get_child(0).get_child(0) as RichTextLabel
+	hbox.add_child(_reward_collect_zone)
+	_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_reward_collect_zone.gui_input.connect(_on_reward_collect_zone_gui_input)
+	
+	_reward_sell_zone = _create_bm_zone_panel(tr("Drag or click here to sell it"), Color(0.98, 0.93, 0.93, 0.95))
+	_reward_sell_zone.name = "SellZone"
+	_reward_sell_label = _reward_sell_zone.get_child(0).get_child(0) as RichTextLabel
+	hbox.add_child(_reward_sell_zone)
+	_reward_sell_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_reward_sell_zone.gui_input.connect(_on_reward_sell_zone_gui_input)
+	
+	var hud_container = bottom_area.get_parent()
+	if is_instance_valid(hud_container):
+		hud_container.add_child(_reward_drop_zone_container)
+		_reward_drop_zone_container.z_index = 5
+	
+	_reward_drop_zone_container.visible = false
+	_reward_drop_zone_container.modulate.a = 0.0
+
+func _on_reward_collect_zone_gui_input(event: InputEvent) -> void:
+	if InputUtils.is_primary_pointer_release(event) or InputUtils.is_primary_pointer_press(event):
+		# If we are currently dragging, ignore the raw gui_input release.
+		# The drag_ended signal will handle the activation with proper context.
+		if _drop_zone_drag_context != null:
+			return
+		SignalBus.emit_signal("reward_collect_zone_activated", false, Vector2.ZERO)
+		get_viewport().set_input_as_handled()
+
+func _on_reward_sell_zone_gui_input(event: InputEvent) -> void:
+	if InputUtils.is_primary_pointer_release(event) or InputUtils.is_primary_pointer_press(event):
+		# If we are currently dragging, ignore the raw gui_input release.
+		if _drop_zone_drag_context != null:
+			return
+		SignalBus.emit_signal("reward_sell_zone_activated", false, Vector2.ZERO)
+		get_viewport().set_input_as_handled()
+
+func show_reward_drop_zones() -> void:
+	if not is_instance_valid(_reward_drop_zone_container): return
+	if _reward_drop_zones_visible: return
+	_reward_drop_zones_visible = true
+	_reward_drop_zone_container.visible = true
+	var tween = create_tween()
+	tween.tween_property(_reward_drop_zone_container, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+func hide_reward_drop_zones() -> void:
+	if not is_instance_valid(_reward_drop_zone_container): return
+	if not _reward_drop_zones_visible: return
+	_reward_drop_zones_visible = false
+	var tween = create_tween()
+	tween.tween_property(_reward_drop_zone_container, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		if is_instance_valid(_reward_drop_zone_container) and not _reward_drop_zones_visible:
+			_reward_drop_zone_container.visible = false
+	)
+
+func _check_reward_drag_drop_on_zones_with_context(context: InteractionContext) -> bool:
+	"""Check if a drag ended over one of the Reward zones. Returns true if handled."""
+	if not _reward_drop_zones_visible or not is_instance_valid(_reward_drop_zone_container):
+		return false
+	if context == null:
+		return false
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	
+	# Check Collect zone
+	if is_instance_valid(_reward_collect_zone) and _reward_collect_zone.get_global_rect().has_point(mouse_pos):
+		GlobalInteractionRouter.set_current_selection(context)
+		SignalBus.emit_signal("selection_changed", context.location)
+		SignalBus.emit_signal("reward_collect_zone_activated", true, mouse_pos)
+		Audio.play_sfx("ui_click")
+		return true
+	
+	# Check Sell zone
+	if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.get_global_rect().has_point(mouse_pos):
+		GlobalInteractionRouter.set_current_selection(context)
+		SignalBus.emit_signal("selection_changed", context.location)
+		SignalBus.emit_signal("reward_sell_zone_activated", true, mouse_pos)
+		Audio.play_sfx("ui_click")
+		return true
+	
+	return false
+	
+## Public API: Get the Reward Collect zone node
+## Public API: Get a Gacha Machine node by tier
+func get_gacha_machine(tier: int) -> Control:
+	match tier:
+		1: return gacha_machine_1
+		2: return gacha_machine_2
+		3: return gacha_machine_3
+	return null
+
+func get_reward_collect_zone() -> Control:
+	return _reward_collect_zone
+
+## Public API: Get the Reward Sell zone node
+func get_reward_sell_zone() -> Control:
+	return _reward_sell_zone

@@ -62,15 +62,16 @@ Centralized interpretation of user intent to decouple Views from Logic:
 -   **Global Interaction Router (GIR):** The entry point for all UI input. It translates raw `InteractionContext` into a `CommandQueue`.
     -   (See `docs/UIInteraction.md` for selection/interaction rules)
     -   **O(1) Domain Mapping:** Maps containers to functional groups (`BattleBoard`, `InventoryGrid`, etc.) to determine valid interactions.
--   **Window Manager:** Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization and enforces a strict five-tier layering system:
+-   **Window Manager**: Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization and enforces a strict six-tier layering system:
     - **BackgroundUILayer (40)**: Inventory and Trays.
     - **HUDLayer (60)**: Persistent HUD and Gacha Machines.
-    - **EffectsLayer (90)**: Global VFX.
     - **ModalLayer (120)**: Pop-ups and Inspections.
     - **PostProcessLayer (130)**: Full-screen shaders (Glow/CRT).
+    - **GlobalVFXLayer (150)**: High-priority currency animations (Gold Gain/Spend) and global transitions.
     - **CursorLayer (1024)**: Software Cursor (Sprite2D).
--   **Inventory Manager:** Stateless executor of `REQUEST_ACTION` commands. It bridges the GIR and the data owners (RunState/BattleManager).
--   **Audio System:** Decoupled SFX/BGM management via semantic IDs (`unit_hop`, `ui_click`).
+-   **Interactive Overlays**: Programmatic service zones (Shop, Black Market, Rewards) that use the `DropZone.gd` component to provide native Godot drag-and-drop stability. They feature a **VFX Proxy** system to eliminate visual gaps during animated transactions.
+-   **Inventory Manager**: Stateless executor of `REQUEST_ACTION` commands. It bridges the GIR and the data owners (RunState/BattleManager).
+-   **Audio System**: Decoupled SFX/BGM management via semantic IDs (`unit_hop`, `ui_click`).
     -   (See `docs/AudioSystem.md`)
 
 ---

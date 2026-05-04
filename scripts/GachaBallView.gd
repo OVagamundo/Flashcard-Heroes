@@ -1753,8 +1753,10 @@ func _notification(what: int) -> void:
 		# Reset deformation first so we start animation from a clean state (scale 1.0)
 		_reset_drag_deformation()
 		
-		# Restore visibility
-		modulate.a = 1.0
+		# Restore visibility ONLY if the drag failed.
+		# If it was successful, the state refresh will handle the view's ultimate fate.
+		if not combined_success:
+			modulate.a = 1.0
 		
 		# If drag was NOT successful (dropped on nothing OR rejected by logic), bounce back
 		if was_dragging_me and not combined_success:

@@ -21,8 +21,8 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	var popup = ItemPopupScene.instantiate()
 	var battle_view = animator.get_tree().get_first_node_in_group("battle_view")
 	if is_instance_valid(battle_view):
-		battle_view.add_child(popup)
 		popup.position = spawn_pos
+		battle_view.add_child(popup)
 		popup.setup(item_name) # Add icon texture if available
 		popup.play()
 		

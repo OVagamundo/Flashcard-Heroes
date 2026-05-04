@@ -665,6 +665,9 @@ func _animate_gold_gain(origin_uuid: String, amount: int) -> void:
 	for i in range(coins_to_spawn):
 		var coin_vfx = GoldCoinVFXScene.new()
 		var effects_layer = WindowManager.get_vfx_layer()
+		
+		# Set position before add_child to prevent one-frame flash at (0,0)
+		coin_vfx.position = start_pos
 		effects_layer.add_child(coin_vfx)
 		
 		# Connect to trigger counter reaction

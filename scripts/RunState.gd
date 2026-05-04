@@ -740,6 +740,11 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		self.hero_instance.initialize(hero_def)
 		# Register hero via atomic API in the first lineup slot
 		add_instance(self.hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+		
+	# Test-mode: Timekeeper starts with 1000 gold
+	if hero_def_id == &"hero_timekeeper":
+		gold = 1000
+		SignalBus.emit_signal("gold_changed", gold)
 	
 	# Initialize flashcard progress for the selected deck
 	var deck_card_ids = Database.get_cards_for_deck(deck_id)
@@ -803,22 +808,13 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	match hero_id:
 		&"hero_timekeeper":
-			# 2 of ALL units and items across all 3 tiers (for testing)
+			# Only one of each Tier 3 gachaball (testing)
 			return [
-				# Tier 1
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b", &"unit_t1_c", &"unit_t1_c", &"unit_t1_d", &"unit_t1_d",
-				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b", &"item_potion_t1", &"item_potion_t1",
-				# Tier 2
-				&"unit_t2_a", &"unit_t2_a", &"unit_t2_b", &"unit_t2_b", &"unit_t2_c", &"unit_t2_c", &"unit_t2_d", &"unit_t2_d", &"unit_t2_e", &"unit_t2_e", &"unit_t2_f", &"unit_t2_g", &"unit_t2_g", &"unit_t2_h", &"unit_t2_h", &"unit_t2_i", &"unit_t2_i", &"unit_t2_j", &"unit_t2_j",
-				&"item_t2_a", &"item_t2_a", &"item_t2_b", &"item_t2_b", &"item_t2_c", &"item_t2_c",
-				&"item_potion_spikes", &"item_potion_spikes", &"item_potion_heroism", &"item_potion_heroism", &"consumable_potion_plunder", &"consumable_potion_plunder",
-				# Tier 3
-				&"unit_t3_a", &"unit_t3_a", &"unit_t3_b", &"unit_t3_b", &"unit_t3_c", &"unit_t3_c",
-				&"unit_t3_d", &"unit_t3_d", &"unit_t3_e", &"unit_t3_e", &"unit_t3_f", &"unit_t3_f", &"unit_t3_g", &"unit_t3_g", &"unit_t3_h", &"unit_t3_h",
-				&"item_t3_a", &"item_t3_a", &"item_t3_b", &"item_t3_b", &"item_t3_c", &"item_t3_c",
-				&"item_t3_d", &"item_t3_d", &"item_t3_e", &"item_t3_e", &"item_t3_f", &"item_t3_f",
-				&"item_emblem_fire", &"item_emblem_fire", &"item_emblem_earth", &"item_emblem_earth",
-				&"item_emblem_water", &"item_emblem_water", &"item_emblem_air", &"item_emblem_air"
+				&"unit_t3_a", &"unit_t3_b", &"unit_t3_c", &"unit_t3_d", 
+				&"unit_t3_e", &"unit_t3_f", &"unit_t3_g", &"unit_t3_h",
+				&"item_t3_a", &"item_t3_b", &"item_t3_c", &"item_t3_d", 
+				&"item_t3_e", &"item_t3_f",
+				&"item_emblem_fire", &"item_emblem_earth", &"item_emblem_water", &"item_emblem_air"
 			]
 		&"hero_bounty_hunter":
 			# Bounty Hunter: 4 of each Tier 1 gachaball (32 total)

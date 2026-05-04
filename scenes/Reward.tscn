@@ -5,6 +5,81 @@
 
 [ext_resource type="Texture2D" path="res://assets/ui/BGs/reward.png" id="4_bg"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.14, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.98, 0.96, 0.92, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_hover"]
+bg_color = Color(0.98, 0.96, 0.92, 0.15)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.98, 0.96, 0.92, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 4
+expand_margin_top = 4
+expand_margin_right = 4
+expand_margin_bottom = 4
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_pressed"]
+bg_color = Color(0.98, 0.96, 0.92, 0.25)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.88, 0.86, 0.82, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0.15, 0.17, 0.22, 0.8)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_disabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.5, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 2
+
 [node name="Reward" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -28,53 +103,242 @@ stretch_mode = 6
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 5.0
+offset_right = 600.0
+offset_bottom = 540.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+alignment = 0
+
+[node name="MachinesArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Tier1Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
-alignment = 1
+mouse_filter = 2
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
-layout_mode = 2
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tier 1"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "Tier 1 prizes\n(1 Token)"
 
-text = "Choose Your Reward"
+[node name="Tier2Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tier 2"
 horizontal_alignment = 1
 
-[node name="RewardChoicesContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "Tier 2 prizes\n(2 Tokens)"
+
+[node name="Tier3Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -28.0
+offset_right = 60.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.7, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tier 3"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "Tier 3 prizes\n(3 Tokens)"
+
+[node name="StudyButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(350, 80)
+theme_override_colors/font_color = Color(0.3, 0.9, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Study (+Tokens)"
+
+[node name="SlotsRow" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = 30.0
+offset_right = 960.0
+offset_bottom = 222.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="PrizeLineup" type="HBoxContainer" parent="SlotsRow"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="RewardSlot0" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+
+[node name="PrizeSlot0" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
 custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
 
-[node name="RewardSlot1" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+[node name="PrizeSlot1" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
 custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
 
-[node name="RewardSlot2" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+[node name="PrizeSlot2" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
 custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
 
-[node name="ActionButtonsContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 30
-alignment = 1
+[node name="PrizeSlot3" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
 
-[node name="TakeGoldButton" type="Button" parent="VBoxContainer/ActionButtonsContainer"]
+[node name="PrizeSlot4" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="LeaveButton" type="Button" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-text = "Take Gold Instead"
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 152.0
+offset_right = -20.0
+offset_bottom = 222.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "Leave"
 
-[node name="BackToPathButton" type="Button" parent="VBoxContainer/ActionButtonsContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "Back to the Path"
+[node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
+layer = 90

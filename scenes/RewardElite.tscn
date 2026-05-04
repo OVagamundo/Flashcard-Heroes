@@ -1,0 +1,149 @@
+[gd_scene format=3 uid="uid://cyg3u5nj7ots4"]
+
+[ext_resource type="Script" uid="uid://b3av4xdg8f56s" path="res://scripts/RewardElite.gd" id="1_reward_script"]
+[ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/BGs/reward.png" id="4_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.14, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.98, 0.96, 0.92, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_hover"]
+bg_color = Color(0.98, 0.96, 0.92, 0.15)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.98, 0.96, 0.92, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 4
+expand_margin_top = 4
+expand_margin_right = 4
+expand_margin_bottom = 4
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_pressed"]
+bg_color = Color(0.98, 0.96, 0.92, 0.25)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.88, 0.86, 0.82, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0.15, 0.17, 0.22, 0.8)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_disabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.5, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 2
+
+[node name="Reward" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_reward_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Choose Your Elite Reward"
+horizontal_alignment = 1
+
+[node name="RewardChoicesContainer" type="HBoxContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="RewardSlot0" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="RewardSlot1" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="RewardSlot2" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="ActionButtonsContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="TakeGoldButton" type="Button" parent="VBoxContainer/ActionButtonsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Take Gold Instead"
+
+[node name="BackToPathButton" type="Button" parent="VBoxContainer/ActionButtonsContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Back to the Path"
+

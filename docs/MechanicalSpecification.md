@@ -485,6 +485,24 @@ Tier 3:
     - Base cost: 1 Gold.
     - Escalation: +1 Gold per reroll during the same visit.
     - Reset: Resets to 1 Gold on next shop entry.
+    - **Stock Type**: Draws exclusively from the World Pool (all unlocked definitions of the appropriate tier).
+
+## 13.3 Black Market Node
+- **Primary Actions**:
+    - **Remove**: Permanently deletes a Gachaball from the run collection.
+    - **Transform**: Replaces a Gachaball with a random one of the same tier.
+- **Cost Structure**:
+    - **Remove**: Base cost **5 Gold**. Cost increases by **+1 Gold** for each subsequent removal during the run.
+    - **Transform**: Flat fee of **5 Gold**. Cost does not escalate.
+
+## 13.4 Post-Battle Reward Sequence (PrizeLineup)
+After victory, the player enters the Reward scene:
+- **Prize Lineup**: 5 random GachaBalls (Units/Items/Trinkets) are displayed.
+- **Service Area**: 
+    - **Collect**: Free of charge. Item moves to Run Inventory.
+    - **Sell**: Item is discarded in exchange for Gold (based on tier value).
+- **Auto-Collection**: If the player attempts to leave the scene with uncollected items, the system automatically triggers sequential collection for all remaining prizes to prevent accidental reward loss.
+- **Machine Interaction**: The Gacha Machines remain active for spending tokens banked during the final battle turn. Any remaining tokens are lost upon leaving this scene.
 
 # 14. UI/UX Hierarchy & Inspection
 
