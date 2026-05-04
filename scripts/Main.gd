@@ -289,6 +289,7 @@ func _on_path_choice_scene_requested() -> void:
 		_update_day_label(GameManager.run_state.day)
 
 func _on_reward_scene_requested(context: Dictionary) -> void:
+	print("[Main] _on_reward_scene_requested called with context keys: ", context.keys())
 	clear_content_area()
 	var scene_to_use = REWARD_SCENE
 	
@@ -304,16 +305,26 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 					is_special = true
 	
 	if is_special:
+		print("[Main] Detected Special/Elite victory. Using REWARD_ELITE_SCENE")
 		scene_to_use = REWARD_ELITE_SCENE
 	
+	print("[Main] Instantiating reward scene...")
 	var instance = scene_to_use.instantiate()
+	if not is_instance_valid(instance):
+		print("[Main] ERROR: Failed to instantiate reward scene!")
+		return
+		
+	print("[Main] Instance created: ", instance.name)
 	_current_content_node = instance
 	scene_slot.add_child(instance)
 	
 	_sync_scene_background(instance)
 	
 	if instance.has_method("populate"):
+		print("[Main] Calling populate() on reward scene instance")
 		instance.populate(context)
+	else:
+		print("[Main] WARNING: Reward scene instance has no populate() method")
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
@@ -1301,6 +1312,39 @@ func _on_reward_sell_zone_gui_input(event: InputEvent) -> void:
 func show_reward_drop_zones() -> void:
 	if not is_instance_valid(_reward_drop_zone_container): return
 	if _reward_drop_zones_visible: return
+	
+	# Update labels based on selected content (Trinket vs GachaBall)
+	var is_trinket := false
+	var selection = GlobalInteractionRouter.get_current_selection()
+	if selection and selection.location and selection.location.container == &"Rewards":
+		var inst = GameManager.get_reward_instance(selection.location.index)
+		if inst:
+			var def = inst.get_definition()
+			if is_instance_valid(def) and def.category == &"TRINKET":
+				is_trinket = true
+	
+	var locale = TranslationServer.get_locale().left(2)
+	
+	if is_trinket:
+		# For Elite rewards, we hide the sell zone and expand the collect zone
+		_reward_sell_zone.visible = false
+		_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		
+		var get_text = "Drop the Trinket here to get it!"
+		if locale == "pt": get_text = "Arraste o Amuleto aqui pra adquirir ele!"
+		_reward_collect_label.text = "[center]" + get_text + "[/center]"
+	else:
+		_reward_sell_zone.visible = true
+		_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		
+		var get_text = tr("ui.drop_zone_get_multi")
+		if get_text == "ui.drop_zone_get_multi": get_text = "Drag or click here to add it to your collection"
+		_reward_collect_label.text = "[center]" + get_text + "[/center]"
+		
+		var sell_text = tr("ui.drop_zone_sell_multi")
+		if sell_text == "ui.drop_zone_sell_multi": sell_text = "Drag or click here to sell it"
+		_reward_sell_label.text = "[center]" + sell_text + "[/center]"
+	
 	_reward_drop_zones_visible = true
 	_reward_drop_zone_container.visible = true
 	var tween = create_tween()
@@ -1335,7 +1379,7 @@ func _check_reward_drag_drop_on_zones_with_context(context: InteractionContext) 
 		return true
 	
 	# Check Sell zone
-	if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.get_global_rect().has_point(mouse_pos):
+	if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.visible and _reward_sell_zone.get_global_rect().has_point(mouse_pos):
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
 		SignalBus.emit_signal("reward_sell_zone_activated", true, mouse_pos)

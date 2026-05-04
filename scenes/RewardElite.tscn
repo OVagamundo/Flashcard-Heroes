@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cyg3u5nj7ots4"]
 
-[ext_resource type="Script" uid="uid://b3av4xdg8f56s" path="res://scripts/RewardElite.gd" id="1_reward_script"]
+[ext_resource type="Script" uid="uid://cmx3ghx0fqaqp" path="res://scripts/RewardElite.gd" id="1_reward_script"]
 [ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
 
 [ext_resource type="Texture2D" path="res://assets/ui/BGs/reward.png" id="4_bg"]

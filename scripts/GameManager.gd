@@ -89,6 +89,7 @@ func _on_new_game_requested() -> void:
 		return
 
 func _on_battle_ended(results: Dictionary) -> void:
+	print("[GameManager] _on_battle_ended called with results: ", results)
 	# Centralize post-battle handling per GIR.
 	# 1) Flip global battle state off and broadcast.
 	is_in_battle = false
@@ -97,27 +98,34 @@ func _on_battle_ended(results: Dictionary) -> void:
 	
 	# Track boss defeat
 	if is_victory and run_state.current_boss_level > 0:
+		print("[GameManager] Boss victory detected! Level: ", run_state.current_boss_level)
 		run_state.bosses_defeated += 1
 		
 		# Check for Boss 5 victory (run complete)
 		if run_state.current_boss_level == 5:
 			_show_run_complete_popup()
 			return
-		# Note: current_boss_level is reset AFTER reward generation
-		# so _on_battle_won_rewards_pending can detect boss victory
-	
-	# Track elite defeat (no run completion check, just stats)
-	if is_victory and run_state.current_elite_level > 0:
-		run_state.elites_defeated += 1
-	
+
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
+		# Track boss defeat before resetting levels
+		var is_boss = run_state.current_boss_level > 0
+		var is_elite = run_state.current_elite_level > 0
+		
+		if is_boss:
+			run_state.bosses_defeated += 1
+		if is_elite:
+			run_state.elites_defeated += 1
+			
+		run_state.total_enemies_defeated += 1
+		
+		# Emit the signal BEFORE resetting the levels so _on_battle_won_rewards_pending 
+		# can correctly detect that this was a special victory.
+		print("[GameManager] Victory confirmed, emitting battle_won_rewards_pending")
 		SignalBus.emit_signal("battle_won_rewards_pending")
-	
-	# Reset boss/elite level AFTER reward generation so trinkets are offered
-	if run_state.current_boss_level > 0:
+		
+		# Now reset levels
 		run_state.current_boss_level = 0
-	if run_state.current_elite_level > 0:
 		run_state.current_elite_level = 0
 	
 	# 4) Open the hermetic end-of-battle modal.
@@ -195,6 +203,13 @@ func _on_battle_won_rewards_pending() -> void:
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 
+func get_reward_instance(index: int) -> GachaBallInstance:
+	if not is_instance_valid(_temporary_reward_container):
+		return null
+	var uuid = _temporary_reward_container.get_uuid(index)
+	if uuid:
+		return _temporary_reward_master_dict.get(uuid)
+	return null
 
 func _on_return_to_title() -> void:
 	# Clear the run state and any pending rewards when returning to the title screen
@@ -205,15 +220,25 @@ func _on_return_to_title() -> void:
 
 
 func _on_battle_victory_acknowledged() -> void:
+	print("[GameManager] _on_battle_victory_acknowledged called")
 	if _is_processing_victory:
+		print("[GameManager] Victory already being processed, ignoring redundant request")
 		return # Debounce guard
 	_is_processing_victory = true
 	
 	# Day should only increment when path choice scene loads, not here
 	
 	# Calculate gold reward based on reward type
-	if run_state.current_boss_level > 0:
-		# Boss rewards: fixed 10 gold alternative
+	# We check both the persisted flag AND the actual pool content for robustness
+	var contains_trinkets := false
+	for inst in _temporary_reward_master_dict.values():
+		var def = inst.get_definition()
+		if is_instance_valid(def) and (def is TrinketDefinition or def.get("category") == &"TRINKET"):
+			contains_trinkets = true
+			break
+			
+	if _is_special_reward_pool or contains_trinkets:
+		print("[GameManager] Special reward detected (Flag: %s, Trinkets: %s). Awarding 10 gold." % [_is_special_reward_pool, contains_trinkets])
 		_temporary_gold_reward = 10
 	else:
 		# Regular rewards: calculate from cost (average cost of the 3 rewards)
@@ -222,10 +247,13 @@ func _on_battle_victory_acknowledged() -> void:
 			var def = inst.get_definition()
 			if is_instance_valid(def):
 				sum_costs += get_item_cost(def)
+		
 		_temporary_gold_reward = max(1, int(round(float(sum_costs) / 3.0)))
+		print("[GameManager] Regular reward detected. Sum costs: %d, Final gold: %d" % [sum_costs, _temporary_gold_reward])
 
 	# Signal the UI to display the pre-generated rewards.
 	var context: Dictionary = get_pending_rewards()
+	print("[GameManager] Requesting reward scene with context keys: ", context.keys(), " is_special: ", context.get("is_special_victory"))
 	SignalBus.emit_signal("reward_scene_requested", context)
 
 func _on_reward_chosen(payload) -> void:
@@ -269,6 +297,7 @@ func _on_reward_chosen(payload) -> void:
 	# DO NOT emit path_choice_scene_requested here anymore.
 	
 	_is_processing_victory = false
+	_is_special_reward_pool = false
 
 ## Temporary debug function to inspect the pending reward master dictionary
 # Removed redundant functions that were replaced by the new temporary instance system
