@@ -11,23 +11,24 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 @onready var gold_button: Button = %TakeGoldButton
 @onready var back_to_path_button: Button = %BackToPathButton
 
-var _reward_uuids: Array[String] = []
-var _gold_amount: int = 0
+var _reward_instances: Array = []
+var _gold_amount: int = 10 # Default to 10 for Elite rewards
+var _action_in_progress: bool = false
+var _staggered_entry_timer: SceneTreeTimer = null
+var _original_reward_instances: Array = [] 
 
 func _ready() -> void:
-	# AUDIO HOOK: Reward BGM
+	print("[RewardElite] _ready called")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
 	
 	SignalBus.selection_changed.connect(_on_selection_changed)
 	SignalBus.reward_stock_refreshed.connect(populate)
-	SignalBus.confirm_drop_zone_activated.connect(_on_confirm_pressed)
+	SignalBus.reward_collect_zone_activated.connect(_on_collect_pressed)
+	
 	gold_button.pressed.connect(_on_gold_pressed)
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
-	
-	# Add global input handling for closing inspection windows
 	gui_input.connect(_on_gui_input)
 	
-	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
 	_mark_reward_action_buttons()
@@ -37,77 +38,63 @@ func _mark_reward_action_buttons() -> void:
 	_mark_action_button_for_inspection_avoidance(back_to_path_button)
 
 func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
-	if not is_instance_valid(button):
-		return
-	button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
+	if is_instance_valid(button):
+		button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
 
 func _update_localized_text() -> void:
-	title_label.text = tr("ui.choose_reward")
-	back_to_path_button.text = tr("ui.back_to_path")
-	# Gold button text is set in populate() with the amount
-
-# This is a public function called by Main.gd at the correct time.
-func populate(context: Dictionary) -> void:
-	# This function now accepts a context dictionary with reward instances and gold amount.
-	# Get reward instances and gold amount from the context
-	var reward_instances: Array = context.get("reward_instances", [])
-	_gold_amount = context.get("gold_amount", 0)
-
-	# Derive the UUIDs from the instances passed in the context
-	_reward_uuids.clear()
-	for inst in reward_instances:
-		if is_instance_valid(inst):
-			_reward_uuids.append(inst.ball_uuid)
+	var locale = TranslationServer.get_locale().left(2)
+	if locale == "pt":
+		title_label.text = "Escolha seu Amuleto"
+		back_to_path_button.text = "Voltar ao Caminho"
+	else:
+		title_label.text = "Choose Your Trinket"
+		back_to_path_button.text = tr("ui.back_to_path")
 	
 	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
+
+func populate(context: Dictionary) -> void:
+	print("[RewardElite] populate called")
+	_reward_instances = context.get("reward_instances", [])
+	_original_reward_instances = _reward_instances.duplicate()
 	
-	gold_button.visible = true
-	back_to_path_button.visible = false # Only show after a choice is made
-
-
+	# HARDCODE FIX: Elite rewards ALWAYS give 10 gold.
+	_gold_amount = 10 
+	
+	_update_localized_text()
+	
 	var slot_nodes = choices_container.get_children()
-
 	for i in range(slot_nodes.size()):
 		var slot_view = slot_nodes[i]
-		# Set size scale for inventory-style rendering (2.0 = 192px slots)
-		slot_view.set_size_scale(2.0)
-		# 1. Clear any old GachaBallView from the persistent slot (preserve indicators).
-		for child in slot_view.get_children():
-			# Skip the indicator overlay (TextureRect with z_index 10)
-			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
-				continue
-			child.queue_free()
-		
-		# 2. Create the location identifier for this slot.
-		var loc = LocationIdentifier.new(&"Rewards", i)
+		if i < _reward_instances.size():
+			var inst = _reward_instances[i]
+			if is_instance_valid(inst):
+				var loc = LocationIdentifier.new(&"Rewards", i)
+				slot_view.populate(loc)
+				
+				var visual_data = VisualDataAdapter.create_visual_data(inst)
+				slot_view.set_content(visual_data, true, false)
+				slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
+				slot_view.set_size_scale(2.0)
+				slot_view.visible = true
+			else:
+				slot_view.visible = false
+		else:
+			slot_view.visible = false
+	
+	back_to_path_button.visible = false
+	gold_button.visible = true
+	
+	_staggered_entry_timer = get_tree().create_timer(0.2)
+	_staggered_entry_timer.timeout.connect(_on_staggered_entry_timer_timeout)
 
-		# 3. Populate the SlotView itself, making it a valid interactive target.
-		slot_view.populate(loc)
-		# Set up interaction context for the slot
-		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
-		
-		# 4. Get the instance for this slot from the context data.
-		var inst: GachaBallInstance = null
-		if i < reward_instances.size():
-			inst = reward_instances[i]
-
-		# 5. If an instance exists, create its view and add it as a child to the SlotView.
-		if is_instance_valid(inst):
-			# Use adapter to create visual data
-			var visual_data = VisualDataAdapter.create_visual_data(inst)
-			slot_view.set_content(visual_data, true)
-
-	# Wait one frame for layout to complete, then animate entry
+func _on_staggered_entry_timer_timeout() -> void:
 	await get_tree().process_frame
 	_animate_staggered_entry()
 
 func _animate_staggered_entry() -> void:
-	"""Animate reward choices appearing one-by-one with landing bounce"""
 	var slot_nodes = choices_container.get_children()
 	var ball_index: int = 0
-	
 	for slot_view in slot_nodes:
-		# Find GachaBallView in slot
 		var ball_view: GachaBallView = null
 		for child in slot_view.get_children():
 			if child is GachaBallView:
@@ -115,74 +102,138 @@ func _animate_staggered_entry() -> void:
 				break
 		
 		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-			# Hide initially
 			ball_view.icon_rect.scale = Vector2.ZERO
 			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
-			
-			# Schedule delayed reveal with bounce
-			var delay = ball_index * 0.1 # Stagger
-			
-			# Use tween instead of timer to bind to node lifecycle
-			if is_instance_valid(ball_view):
-				var tween = ball_view.create_tween()
-				tween.tween_interval(delay)
-				tween.tween_callback(func():
-					if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-						ball_view.icon_rect.scale = Vector2.ONE
-						ball_view.play_landing_bounce()
-				)
+			var delay = ball_index * 0.1 
+			var tween = ball_view.create_tween()
+			tween.tween_interval(delay)
+			tween.tween_callback(func():
+				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
+					ball_view.icon_rect.scale = Vector2.ONE
+					ball_view.play_landing_bounce()
+			)
 			ball_index += 1
 
-
-func _on_selection_changed(new_location: LocationIdentifier) -> void:
+func _on_selection_changed(_new_location: LocationIdentifier) -> void:
 	pass
 
-func _on_confirm_pressed(_is_drag: bool = false, _mouse_pos: Vector2 = Vector2.ZERO) -> void:
+func _get_selected_prize() -> Dictionary:
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
+	if selected_ctx == null: return {}
 	var selected_loc = selected_ctx.location if selected_ctx else null
-	if selected_loc and selected_loc.container == &"Rewards":
-		var uuid = _reward_uuids[selected_loc.index]
+	if not is_instance_valid(selected_loc) or selected_loc.container != &"Rewards": return {}
+	
+	if selected_loc.index < 0 or selected_loc.index >= _reward_instances.size():
+		return {}
 		
-		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
-		
-		# Hide old buttons and drop zone overlay, show the back button
-		var main_node_ref = GameManager._active_main_node
-		if is_instance_valid(main_node_ref) and main_node_ref.has_method("hide_confirm_drop_zone"):
-			main_node_ref.hide_confirm_drop_zone()
-		gold_button.visible = false
-		back_to_path_button.visible = true
-		
-		# Clear selection and remove all reward GachaBalls
-		SignalBus.emit_signal("selection_clear_requested")
-		for sv in choices_container.get_children():
-			for child in sv.get_children():
-				if child is GachaBallView:
-					child.queue_free()
+	var instance = _reward_instances[selected_loc.index]
+	if not is_instance_valid(instance): return {}
+	
+	return {"location": selected_loc, "instance": instance, "uuid": instance.ball_uuid}
+
+func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	if _action_in_progress: return
+	var prize_data = _get_selected_prize()
+	if prize_data.is_empty(): return
+	
+	_action_in_progress = true
+	var loc = prize_data.location
+	var instance = prize_data.instance
+	
+	_clear_reward_slot(loc.index)
+	SignalBus.emit_signal("selection_clear_requested")
+	
+	var raw_pos = _get_slot_global_center(loc.index)
+	if is_drag:
+		raw_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	
+	var visual_data = VisualDataAdapter.create_visual_data(instance)
+	var target_trinket_slot: int = 0
+	if is_instance_valid(GameManager.run_state):
+		var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+		if trinket_container and trinket_container.has_method("find_first_empty_slot"):
+			target_trinket_slot = max(0, trinket_container.find_first_empty_slot())
+	
+	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
+		GameManager._active_main_node.hide_reward_drop_zones()
+	
+	# Mapping for collection vfx (must stay global as it flies to Main bar)
+	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
+	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot)
+	
+	if is_instance_valid(GameManager.run_state):
+		GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+		GameManager.run_state.unlock_recipe_for_result(instance.get_definition().id)
+	
+	_complete_choice()
+	_action_in_progress = false
 
 func _on_gold_pressed() -> void:
-	# Disable button during animation
+	if _action_in_progress: return
+	_action_in_progress = true
 	gold_button.disabled = true
 	
-	_animate_gold_receive(_gold_amount, gold_button, func():
-		SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
-		
-		var main_node_ref = GameManager._active_main_node
-		if is_instance_valid(main_node_ref) and main_node_ref.has_method("hide_confirm_drop_zone"):
-			main_node_ref.hide_confirm_drop_zone()
-		gold_button.visible = false
-		back_to_path_button.visible = true
+	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
+		GameManager._active_main_node.hide_reward_drop_zones()
+	
+	var screen_pos = _get_absolute_screen_pos(gold_button.get_global_rect().get_center())
+	var vfx_start_pos = _map_screen_to_vfx_viewport(screen_pos)
+	
+	await _animate_gold_receive(_gold_amount, vfx_start_pos)
+	
+	if is_instance_valid(GameManager.run_state):
+		GameManager.run_state.add_gold(_gold_amount)
+	
+	_complete_choice()
+	_action_in_progress = false
 
-		SignalBus.emit_signal("selection_clear_requested")
-		for slot_view in choices_container.get_children():
-			for child in slot_view.get_children():
+func _complete_choice() -> void:
+	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
+	gold_button.visible = false
+	back_to_path_button.visible = true
+	
+	# Use a single master tween to ensure strict sequential execution
+	var master_tween = create_tween()
+	
+	for i in range(_original_reward_instances.size()):
+		var slot_nodes = choices_container.get_children()
+		if i < slot_nodes.size():
+			var slot = slot_nodes[i]
+			var ball: Control = null
+			for child in slot.get_children():
 				if child is GachaBallView:
-					child.queue_free()
-	)
+					ball = child
+					break
+			
+			if ball and ball.visible:
+				# Move and Fade in parallel
+				master_tween.tween_property(ball, "position:y", ball.position.y - 120, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				master_tween.parallel().tween_property(ball, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+				
+				# Cleanup callback
+				master_tween.tween_callback(ball.queue_free)
+				
+				# Stagger interval before the NEXT ball starts
+				master_tween.tween_interval(0.15)
+	
+	_reward_instances.clear()
+
+func _clear_reward_slot(index: int) -> void:
+	var slot_nodes = choices_container.get_children()
+	if index >= 0 and index < slot_nodes.size():
+		var slot_view = slot_nodes[index]
+		if slot_view.has_method("set_content"):
+			slot_view.set_content({}, false)
+
+func _get_slot_global_center(index: int) -> Vector2:
+	var slot_nodes = choices_container.get_children()
+	if index >= 0 and index < slot_nodes.size() and is_instance_valid(slot_nodes[index]):
+		return slot_nodes[index].get_global_rect().get_center()
+	return Vector2.ZERO
 
 func _on_back_to_path_pressed() -> void:
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):
-		main_node.hide_confirm_drop_zone()
+	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
+		GameManager._active_main_node.hide_reward_drop_zones()
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
@@ -191,58 +242,68 @@ func _on_gui_input(event: InputEvent) -> void:
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.location = null
-		context.entity_uuid = ""
 		context.entity_type = &"WINDOW_BACKGROUND"
-		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 0
-		
 		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
-func _animate_gold_receive(amount: int, source_button: Button, on_complete: Callable) -> void:
+func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int) -> void:
 	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		on_complete.call()
-		return
+	if not is_instance_valid(main_node): return
+	var trinket_bar = main_node.get_node_or_null("%PlayerTrinketBar")
+	if not is_instance_valid(trinket_bar) or trinket_bar.get_child_count() == 0: return
 	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		on_complete.call()
-		return
+	var target_slot = trinket_bar.get_child(clampi(target_slot_index, 0, trinket_bar.get_child_count() - 1))
+	var end_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(target_slot.get_global_rect().get_center(), target_slot.get_viewport()))
 	
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon):
-		gold_icon = gold_group
-		
-	var gold_rect = gold_icon.get_global_rect()
-	var target_pos = gold_rect.get_center()
+	var anim_ball = GachaBallViewScene.instantiate()
+	WindowManager.get_vfx_layer().add_child(anim_ball)
+	anim_ball.top_level = true
+	anim_ball.z_index = 100
+	anim_ball.custom_minimum_size = Vector2(96, 96)
+	anim_ball.size = Vector2(96, 96)
+	anim_ball.populate(null, visual_data)
+	anim_ball.pivot_offset = Vector2(48, 48)
 	
-	var btn_rect = source_button.get_global_rect()
-	var start_pos = btn_rect.get_center()
-	
-	# Spawn gold coins with stagger
-	var coins_to_spawn = mini(amount, 5) 
-	var stagger_delay = 0.08
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		WindowManager.get_vfx_layer().add_child(coin_vfx)
-		
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-			if is_instance_valid(gold_group):
-				var tween = gold_group.create_tween()
-				gold_group.pivot_offset = gold_group.size / 2.0
-				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
-				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
-		)
-		
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+	var control_point = Vector2((start_pos.x + end_pos.x) / 2.0, min(start_pos.y, end_pos.y) - 400)
+	var tween = create_tween()
+	tween.tween_method(func(t: float):
+		var eased_t = pow(t, 0.55)
+		var current_scale = lerp(2.0, 1.0, t) 
+		var inv_t = 1.0 - eased_t
+		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
+		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
+		anim_ball.scale = Vector2(current_scale, current_scale)
+	, 0.0, 1.0, 0.45)
+	await tween.finished
+	anim_ball.queue_free()
 
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
-	var wait_tween = create_tween()
-	wait_tween.tween_interval(total_wait)
-	wait_tween.tween_callback(on_complete)
+func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node): return
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group): return
+	
+	var target_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(gold_group.get_global_rect().get_center(), gold_group.get_viewport()))
+	var coins = mini(amount, 5)
+	for i in range(coins):
+		var coin = GoldCoinVFXScene.new()
+		WindowManager.get_vfx_layer().add_child(coin)
+		coin.coin_landed.connect(func(_p):
+			var t = gold_group.create_tween()
+			gold_group.pivot_offset = gold_group.size / 2.0
+			t.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
+			t.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
+		)
+		coin.play(start_pos + Vector2(randf_range(-15, 15), randf_range(-8, 8)), target_pos, i * 0.08)
+	await get_tree().create_timer((coins - 1) * 0.08 + 0.45).timeout
+
+func _map_screen_to_vfx_viewport(screen_pos: Vector2) -> Vector2:
+	var vfx_layer = WindowManager.get_vfx_layer()
+	if is_instance_valid(vfx_layer):
+		var vp = vfx_layer.get_viewport()
+		return (vp.get_screen_transform() * vp.get_canvas_transform()).affine_inverse() * screen_pos
+	return screen_pos
+
+func _get_absolute_screen_pos(pos: Vector2, vp: Viewport = null) -> Vector2:
+	if not vp: vp = get_viewport()
+	return vp.get_screen_transform() * (vp.get_canvas_transform() * pos) if is_instance_valid(vp) else pos
