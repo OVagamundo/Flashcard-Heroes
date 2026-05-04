@@ -67,6 +67,8 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
 | **S8** Hover Boundary | When a base inventory is open, hovers outside it are blocked |
+| **S9** Locked Inspection| Status effect keywords in descriptions can be clicked to "lock" their inspection window open. Clicking outside or re-toggling closes it. |
+| **S10** Outcome Preview | Merge/Swap modals display a visual preview of the resulting unit/item to provide clear feedback before confirmation. |
 
 ---
 
@@ -88,8 +90,8 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | Type | Examples | Blocker | Behavior |
 |------|----------|---------|----------|
 | **Hermetic Modals** | FlashcardMinigame, EndBattlePopup | Yes | Blocks all input, self-closing |
-| **Contextual (Dynamic)** | UnitInspection, ItemInspection | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). Features standardized **32px Black Composite** fonts and `ItemSlot.png` for unit item grids. |
-| **Contextual (Fixed)** | InventoryWindow, DiscardPile | No | Centered, closes on outside click |
+| **Contextual (Dynamic)** | UnitInspection, ItemInspection, TutorialOverlay | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). Features standardized **32px Black Composite** fonts and `ItemSlot.png` for unit item grids. |
+| **Contextual (Fixed)** | InventoryWindow, DiscardPile, MergeModal | No | Centered, closes on outside click. Merge modals feature **Result Previews**. |
 
 ### Window Layout & Sizing
 To prevent persistent layout "bloat" and ensure windows correctly shrink to their content:
@@ -212,8 +214,10 @@ The inventory drawer movements are synchronized with physical jolts:
 ### 5.5 Interactive Overlays
 To streamline interactions in Reward, Shop, and Black Market scenes, the game uses **Interactive Overlays** instead of modal choice windows.
 - **Implementation**: Managed programmatically by `Main.gd`.
-- **Mode 1: Unified Confirm**: A single warm-white zone (`_confirm_drop_zone`) used for Rewards ("Get") and Shops ("Buy"). Appears when any valid item is selected or dragged.
+- **Mode 1: Unified Confirm**: A single warm-white zone (`_confirm_drop_zone`) used for Rewards ("Get") and Shops ("Buy").
 - **Mode 2: Split Action Zones**: Two side-by-side zones used for the Black Market ("Transform" / "Remove").
+- **Native Drag-Drop**: All overlays use `DropZone.gd` to integrate with Godot's built-in drag-and-drop system. This prevents "snap-back" glitches by reporting successful drops to the engine.
+- **VFX Proxy Pipeline**: To ensure fluid visuals during gold-spending animations, a static "proxy" view of the gachaball is spawned at the drop point until the financial transaction completes and the final movement animation begins.
 - **UI Context**: Overlays are anchored to the `BottomArea` and render on the `HUDLayer` (Z-index 5) to ensure they are always accessible above machine bases.
 - **Input Flow**: Supports both **click-to-click** (click item -> click zone) and **drag-and-drop** (drag item -> drop on zone) interchangeably.
 

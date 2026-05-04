@@ -67,8 +67,9 @@ graph TD
 ### Gold Coin VFX & Layering
 Currency animations follow strict directionality and layering rules:
 - **Gain (Combat)**: Gold flies from the **killed unit** (source) to the HUD icon. Logic uses `killed_uuid` in the combat event context to identify the origin.
-- **Spend (Shop/Market)**: Gold flies from the **HUD icon** to the action button (Remove/Transform/Buy).
-- **Layering**: All currency and gachaball animations are parented to the `GlobalVFXLayer` (CanvasLayer 150) to ensure they render above all HUD and inventory containers.
+- **Spend (Shop/Market)**: Gold flies from the **HUD icon** to the action point (Remove/Transform/Buy).
+- **Layering**: All currency, floating damage numbers, and gachaball animations are parented to the `GlobalVFXLayer` (CanvasLayer 150) to ensure they render above all HUD and inventory containers.
+- **Floating Text**: Damage and heal numbers are spawned exactly at the target's center. To prevent "clustering," text uses a slight random X-offset (±15px) and a consistent upward drift.
 
 ### 0-Damage Visual Feedback
 To ensure consistent game feel, units with 0 PWR (like Dust Minions) still trigger visual feedback when they attack.
@@ -108,6 +109,7 @@ Every effect and reaction has a priority value (defined in `AbilityDefinition`).
 | Priority | Constant | Usage | Examples |
 |----------|----------|-------|----------|
 | 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 220 | `PRIORITY_DOPPLEGANGER` | Post-death duplication | Doppleganger |
 | 210 | `PRIORITY_SOUL_ECHO` | High-priority Resurrection | Soul Echo |
 | 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
 | 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |

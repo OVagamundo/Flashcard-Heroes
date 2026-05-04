@@ -557,20 +557,38 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
 	if not is_instance_valid(window): return
 
-	var position := _calculate_contextual_window_position(anchor, parent_window, window, pos_hint)
+	# Safety check for anchor and parent which might have been freed during the await
+	var safe_anchor: Control = anchor if is_instance_valid(anchor) else null
+	var safe_parent: Control = parent_window if is_instance_valid(parent_window) else null
+	
+	# If the anchor was valid when we started but is now invalid (freed), we should close the window
+	# unless it was null to begin with.
+	if anchor != null and safe_anchor == null:
+		request_close_inspection_window(window, &"ANCHOR_FREED_ASYNC")
+		return
+
+	var position := _calculate_contextual_window_position(safe_anchor, safe_parent, window, pos_hint)
 
 	# Set position in screen space accounting for canvas transforms
 	_set_window_screen_position(window, position)
 	# Second pass: after the window is visible and fully laid out, finalize position
-	call_deferred("_finalize_position", window, anchor, parent_window, pos_hint)
+	call_deferred("_finalize_position", window, safe_anchor, safe_parent, pos_hint)
 
 func _finalize_position(window: Control, anchor: Control, parent_window: Control, pos_hint: String = "") -> void:
 	if not is_instance_valid(window): return
 	await get_tree().process_frame
 	
-	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
+	# ASYNC SAFETY CHECK: Window or dependencies might have been freed during the await frame
 	if not is_instance_valid(window): return
-	var position := _calculate_contextual_window_position(anchor, parent_window, window, pos_hint)
+	
+	var safe_anchor: Control = anchor if is_instance_valid(anchor) else null
+	var safe_parent: Control = parent_window if is_instance_valid(parent_window) else null
+	
+	if anchor != null and safe_anchor == null:
+		request_close_inspection_window(window, &"ANCHOR_FREED_ASYNC")
+		return
+
+	var position := _calculate_contextual_window_position(safe_anchor, safe_parent, window, pos_hint)
 	_set_window_screen_position(window, position)
 	_set_window_screen_position(window, position)
 	_animate_window_open(window)

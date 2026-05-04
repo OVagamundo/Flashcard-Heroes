@@ -62,6 +62,7 @@ func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, en
 	
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
+		projectile.position = start_pos + offset
 		effects_layer.add_child(projectile)
 		projectile.setup(amount, stat, start_pos + offset, end_pos + offset, is_self_cast)
 		return projectile
@@ -69,6 +70,7 @@ func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, en
 		# Fallback to battle view
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
 		if is_instance_valid(battle_view):
+			projectile.position = start_pos
 			battle_view.add_child(projectile)
 			projectile.setup(amount, stat, start_pos, end_pos, is_self_cast)
 			return projectile
@@ -83,6 +85,7 @@ func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: boo
 	
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
+		damage_number.position = spawn_pos + offset
 		effects_layer.add_child(damage_number)
 		if is_armor:
 			damage_number.setup_armor(amount, spawn_pos + offset)
@@ -93,6 +96,7 @@ func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: boo
 		# Fallback to battle view
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
 		if is_instance_valid(battle_view):
+			damage_number.position = spawn_pos
 			battle_view.add_child(damage_number)
 			if is_armor:
 				damage_number.setup_armor(amount, spawn_pos)
@@ -109,6 +113,7 @@ func spawn_status_effect_number_on_layer(amount: int, type: String, spawn_pos: V
 	
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
+		vfx.position = spawn_pos + offset
 		effects_layer.add_child(vfx)
 		vfx.setup_status_effect(amount, type, spawn_pos + offset)
 		vfx.play()
@@ -116,8 +121,30 @@ func spawn_status_effect_number_on_layer(amount: int, type: String, spawn_pos: V
 		# Fallback to battle view
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
 		if is_instance_valid(battle_view):
+			vfx.position = spawn_pos
 			battle_view.add_child(vfx)
 			vfx.setup_status_effect(amount, type, spawn_pos)
+			vfx.play()
+		else:
+			vfx.queue_free()
+
+## Spawn a floating stat number (size 32) on the effects layer
+func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = Color.WHITE) -> void:
+	var vfx = create_damage_number()
+	var effects_layer = get_effects_layer()
+	
+	if is_instance_valid(effects_layer):
+		var offset = get_viewport_offset()
+		vfx.position = spawn_pos + offset
+		effects_layer.add_child(vfx)
+		vfx.setup_stat(amount, spawn_pos + offset, color)
+		vfx.play()
+	else:
+		var battle_view = get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view):
+			vfx.position = spawn_pos
+			battle_view.add_child(vfx)
+			vfx.setup_stat(amount, spawn_pos, color)
 			vfx.play()
 		else:
 			vfx.queue_free()

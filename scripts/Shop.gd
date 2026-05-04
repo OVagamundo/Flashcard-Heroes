@@ -60,6 +60,9 @@ func populate(context: Dictionary) -> void:
 
 	for i in range(slot_nodes.size()):
 		var slot_view = slot_nodes[i]
+		# Ensure slot is visible and has full alpha (resets after any purchase-hiding)
+		slot_view.visible = true
+		slot_view.modulate.a = 1.0
 		# Set size scale for inventory-style rendering (2.0 = 192px slots)
 		slot_view.set_size_scale(2.0)
 		# Clear any previous content (except indicator overlay)
@@ -209,7 +212,7 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 
 	_selected_cost = 0
 
-func _on_buy_pressed() -> void:
+func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	# Get the currently selected location from the new InteractionManager
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
 	var selected_loc = selected_ctx.location if selected_ctx else null
@@ -234,16 +237,23 @@ func _on_buy_pressed() -> void:
 			# Capture slot position and visual data BEFORE purchase
 			var slot_nodes = slots_container.get_children()
 			var slot_view = slot_nodes[selected_loc.index] if selected_loc.index < slot_nodes.size() else null
-			var start_pos: Vector2 = Vector2.ZERO
+			var slot_center: Vector2 = Vector2.ZERO
 			if is_instance_valid(slot_view):
-				start_pos = slot_view.get_global_rect().get_center()
+				slot_center = slot_view.get_global_rect().get_center()
 				# CONVERSION: Slot is in SubViewport, animations are in Screen Space (Main)
-				# get_global_rect() in a SubViewport is relative to that Viewport.
 				var main_node = GameManager._active_main_node
 				if is_instance_valid(main_node):
 					var content_area = main_node.get_node_or_null("%ContentArea")
 					if is_instance_valid(content_area):
-						start_pos += content_area.global_position
+						slot_center += content_area.global_position
+			
+			# Determine interaction point: drop point for drag, slot center for click
+			var interaction_pos = slot_center
+			if is_drag:
+				if mouse_pos.is_zero_approx():
+					interaction_pos = get_viewport().get_mouse_position()
+				else:
+					interaction_pos = mouse_pos
 			
 			# Capture visual data and tier before purchase clears the instance
 			var visual_data = VisualDataAdapter.create_visual_data(instance)
@@ -255,15 +265,29 @@ func _on_buy_pressed() -> void:
 			if is_instance_valid(def) and def.category == &"TRINKET":
 				tier = 3
 			
+			# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
+			# We only hide the child GachaBallView so the slot background remains visible
+			var source_anchor = WindowManager.find_view_for_location(selected_loc)
+			if is_instance_valid(source_anchor):
+				for child in source_anchor.get_children():
+					if child is GachaBallView:
+						child.modulate.a = 0.0
+						child.visible = false
+			
+			# Create the VFX gachaball immediately so it stays visible during the coin animation
+			var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
+			
 			var ball_uuid = instance.ball_uuid
 			
 			# Animate gold coins then purchase, then animate gachaball
-			_animate_gold_spend(_selected_cost, reroll_button, func():
+			_animate_gold_spend(_selected_cost, interaction_pos, func():
 				SignalBus.emit_signal("shop_purchase_requested", ball_uuid, _selected_cost)
 				# AUDIO HOOK: Buy
 				Audio.play_sfx("shop_buy")
-				# After purchase, animate gachaball to machine
-				_animate_gachaball_to_machine(start_pos, visual_data, tier)
+				
+				# After purchase, animate the already-visible VFX gachaball to machine
+				_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
+				
 				# Hide the drop zone after purchase
 				var mn = GameManager._active_main_node
 				if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
@@ -285,16 +309,25 @@ func _on_reroll_pressed() -> void:
 	
 	# Disable button during animation
 	reroll_button.disabled = true
+	
+	var target_pos = reroll_button.get_global_rect().get_center()
+	# Button is in SubViewport
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		var content_area = main_node.get_node_or_null("%ContentArea")
+		if is_instance_valid(content_area):
+			target_pos += content_area.global_position
+			
 	# Animate gold coins then reroll
-	_animate_gold_spend(_current_reroll_cost, reroll_button, func():
+	_animate_gold_spend(_current_reroll_cost, target_pos, func():
 		SignalBus.emit_signal("shop_reroll_requested")
 		# AUDIO HOOK: Reroll
 		Audio.play_sfx("shop_reroll")
 		reroll_button.disabled = false
 	)
 
-func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callable) -> void:
-	"""Animate gold coins flying from gold counter to target button"""
+func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
+	"""Animate gold coins flying from gold counter to target position"""
 	# Find gold counter in Main
 	var main_node = GameManager._active_main_node
 	if not is_instance_valid(main_node):
@@ -317,17 +350,7 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 		gold_rect.position.y + gold_rect.size.y / 2
 	)
 	
-	var btn_rect = target_button.get_global_rect()
-	var target_pos = Vector2(
-		btn_rect.position.x + btn_rect.size.x / 2,
-		btn_rect.position.y + btn_rect.size.y / 2
-	)
-	
-	# CONVERSION: Button is in SubViewport, animations are in Screen Space (Main)
-	if is_instance_valid(main_node):
-		var content_area = main_node.get_node_or_null("%ContentArea")
-		if is_instance_valid(content_area):
-			target_pos += content_area.global_position
+	# target_pos is already in screen coordinates (passed from caller)
 	
 	# Spawn gold coins with stagger
 	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
@@ -338,8 +361,11 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 		var effects_layer = WindowManager.get_vfx_layer()
 		effects_layer.add_child(coin_vfx)
 		
-		# Connect to trigger button reaction
-		coin_vfx.coin_landed.connect(_on_gold_landed_on_button.bind(target_button))
+		# Connect to trigger counter pop and landing sound
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			Audio.play_sfx("coin_land")
+			# No target button feedback here anymore as we might be targeting a point in space
+		)
 		
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
@@ -353,114 +379,74 @@ func _animate_gold_spend(amount: int, target_button: Button, on_complete: Callab
 	wait_tween.tween_interval(total_wait)
 	wait_tween.tween_callback(on_complete)
 
-func _on_gold_landed_on_button(_target_pos: Vector2, button: Button) -> void:
-	"""React when a gold coin lands on a button - flash and bounce"""
-	# AUDIO HOOK: Coin Land
-	Audio.play_sfx("coin_land")
+func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallView:
+	"""Create a static VFX gachaball at a specific screen position."""
+	var anim_ball = GachaBallViewScene.instantiate()
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
 	
-	if not is_instance_valid(button):
-		return
+	anim_ball.force_inventory_mode = true
+	# Use 2.0 scale (192x192) to match the Shop's slot scale
+	anim_ball.custom_minimum_size = Vector2(192, 192)
+	anim_ball.size = Vector2(192, 192)
+	anim_ball.populate(null, visual_data, false)
+	anim_ball.set_is_interactive(false)
 	
-	# Set pivot for scaling from center
-	button.pivot_offset = button.size / 2
-	
-	# Create bounce and flash effect
-	var reaction_tween = create_tween()
-	reaction_tween.set_parallel(true)
-	
-	# Quick scale bounce
-	reaction_tween.tween_property(button, "scale", Vector2(1.05, 0.95), 0.03)
-	reaction_tween.tween_property(button, "scale", Vector2(0.97, 1.03), 0.05).set_delay(0.03)
-	reaction_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.08).set_trans(Tween.TRANS_ELASTIC)
-	
-	# Flash bright gold
-	var flash_color = Color(1.3, 1.2, 0.8, 1.0)
-	reaction_tween.tween_property(button, "modulate", flash_color, 0.03)
-	reaction_tween.tween_property(button, "modulate", Color.WHITE, 0.1).set_delay(0.03)
+	anim_ball.pivot_offset = anim_ball.size / 2.0
+	anim_ball.global_position = pos - anim_ball.pivot_offset
+	return anim_ball
 
-func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, tier: int) -> void:
-	"""Animate a gachaball from its shop slot to the corresponding tier machine"""
+func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vector2, tier: int) -> void:
+	if not is_instance_valid(anim_ball):
+		return
+		
 	var main_node = GameManager._active_main_node
 	if not is_instance_valid(main_node):
+		anim_ball.queue_free()
 		return
 	
 	# Get target machine position
-	var machine = main_node.get_node_or_null("%%GachaMachine%d" % tier)
+	var machine = main_node.get_gacha_machine(tier)
 	if not is_instance_valid(machine):
+		anim_ball.queue_free()
 		return
 	
 	var end_pos: Vector2 = machine.get_global_rect().get_center()
 	# Offset target position DOWN slightly (towards coin slot area)
 	end_pos.y = machine.get_global_rect().position.y + machine.get_global_rect().size.y * 0.4
 	
-	# Spawn animated ball
-	var anim_ball = GachaBallViewScene.instantiate()
-	
 	# AUDIO HOOK: Ball toss sound at animation start
 	Audio.play_sfx("ui_drag_drop")
 	
-	# Add to effects layer
-	var effects_layer = WindowManager.get_vfx_layer()
-	effects_layer.add_child(anim_ball)
-	
-	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
-	anim_ball.force_inventory_mode = true
-	anim_ball.custom_minimum_size = Vector2(192, 192)
-	anim_ball.size = Vector2(192, 192)
-	
-	# Populate with visual data
-	anim_ball.populate(null, visual_data)
-	
-	# Set pivot to center for proper centering during animation
-	anim_ball.pivot_offset = anim_ball.size / 2.0
-	
 	# For animation, track CENTER position and derive global_position from it
-	# Start exactly centered on the ball in the slot
 	var start_center: Vector2 = start_pos
 	var end_center: Vector2 = end_pos
 	
-	# FIXED SIZE: No scale changes, constant 1.0 scale throughout
-	var constant_scale := 1.0
-	anim_ball.scale = Vector2(constant_scale, constant_scale)
-	anim_ball.global_position = start_center - (anim_ball.pivot_offset * constant_scale)
-	
 	# Arc parameters - fast and smooth
-	var arc_height := 200.0 # Peak height above the highest point
-	var duration := 0.45 # Faster animation
+	var arc_height := 200.0
+	var duration := 0.45
 	
-	# Quadratic Bezier curve for natural arc
 	var control_point := Vector2(
-		(start_center.x + end_center.x) / 2.0, # Horizontally centered
-		min(start_center.y, end_center.y) - arc_height # Above both points
+		(start_center.x + end_center.x) / 2.0,
+		min(start_center.y, end_center.y) - arc_height
 	)
 	
-	# Use tween_method to animate along the Bezier curve
-	# IMPORTANT: Bind tween to anim_ball, NOT self (the Shop).
-	# This ensures the animation completes even if the Shop is freed.
 	var tween = anim_ball.create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
-	# Nearly linear easing: smooth and fast
 	tween.tween_method(func(t: float):
-		# Almost linear: pow(t, 1.05) - very subtle ease for natural feel
 		var eased_t = pow(t, 1.05)
-		
-		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
 		var inv_t = 1.0 - eased_t
 		var pos = (inv_t * inv_t * start_center) + \
 				  (2.0 * inv_t * eased_t * control_point) + \
 				  (eased_t * eased_t * end_center)
 		
-		# Position ball so its CENTER is at pos (constant scale)
-		anim_ball.global_position = pos - (anim_ball.pivot_offset * constant_scale)
+		anim_ball.global_position = pos - anim_ball.pivot_offset
 	, 0.0, 1.0, duration)
 	
-	# Clean up and trigger machine bounce when ball lands
 	tween.tween_callback(func():
-		# AUDIO HOOK: Ball land sound
 		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
-		# Trigger machine bounce (safety check if main_node is still the same)
 		if is_instance_valid(main_node) and main_node.has_method("trigger_machine_bounce"):
 			main_node.trigger_machine_bounce(tier)
 	)

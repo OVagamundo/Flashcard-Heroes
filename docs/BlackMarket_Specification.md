@@ -44,12 +44,22 @@ The Black Market uses a two-stage interactive overlay system managed by `Main.gd
 ---
 
 ## 4. Visual Feedback & Animations
-- **Rejection**: If gold is insufficient, the specific zone panel (Transform or Remove) performs a horizontal shake animation (Rejection Feedback).
-- **Success (Remove)**: Unit is deleted; inventory state updates.
-- **Success (Transform)**:
-    - Old unit is deleted.
-    - New unit is spawned.
-    - **Arc Animation**: The new gachaball performs a parabolic jump starting from the **center of the Transform zone** and ending at the inventory slot of the original unit.
+The Black Market follows a strict **"Financial Confirmation First"** animation pipeline to ensure visual clarity during transactions.
+
+### 4.1 Transaction Sequence (Unified Pipeline)
+Regardless of the interaction method (click or drag), all successful actions follow this sequence:
+1. **Immediate Hiding**: The source gachaball in the inventory slot is hidden (`modulate.a = 0.0`) to prevent "snap-back" glitches.
+2. **VFX Proxy Spawning**: A static VFX gachaball is instantiated at the interaction point (the mouse drop position or the slot center). This ensures the item remains visible while the gold is processed.
+3. **Gold Spending**: Gold coins fly from the HUD counter to the interaction point.
+4. **Action Animation**: Once coins land, the VFX proxy performs the final movement:
+    - **Remove**: Performs a "Death Fade" (levitates 100px while fading out over 0.6s), matching combat parity.
+    - **Transform**: Performs a parabolic jump to the inventory slot.
+5. **UI Restoration**: The target inventory slot is updated and its visibility is restored (`modulate.a = 1.0`).
+
+### 4.2 Feedback Types
+- **Rejection**: If gold is insufficient, the specific zone panel (Transform or Remove) performs a horizontal shake animation. The source gachaball's visibility is restored immediately.
+- **Success (Remove)**: Parity with combat death animations (dissolve/fade) ensures a high-quality feel for unit deletion.
+- **Success (Transform)**: Parabolic jump ensures the player's eye tracks the new unit back to their inventory.
 
 ---
 

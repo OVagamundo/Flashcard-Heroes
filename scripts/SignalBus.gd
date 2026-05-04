@@ -337,13 +337,23 @@ signal reward_reroll_requested
 
 ## Emitted when the confirm drop zone overlay is activated (clicked or drop received)
 ## Used by Reward and Shop scenes to trigger confirm/buy actions
-signal confirm_drop_zone_activated
+signal confirm_drop_zone_activated(is_drag: bool, mouse_position: Vector2)
 
-## Emitted when the Black Market "Remove" drop zone is activated
-signal black_market_remove_zone_activated
+# Black Market signals
+signal black_market_remove_zone_activated(is_drag: bool, mouse_position: Vector2)
+signal black_market_transform_zone_activated(is_drag: bool, mouse_position: Vector2)
 
-## Emitted when the Black Market "Transform" drop zone is activated
-signal black_market_transform_zone_activated
+# Reward Scene signals
+## Emitted when the collect zone is activated
+## @param is_drag: bool - Whether the activation was via drag-and-drop
+## @param mouse_position: Vector2 - The screen position of the mouse at activation
+signal reward_collect_zone_activated(is_drag: bool, mouse_position: Vector2)
+
+## Emitted when the sell zone is activated
+## @param is_drag: bool - Whether the activation was via drag-and-drop
+## @param mouse_position: Vector2 - The screen position of the mouse at activation
+signal reward_sell_zone_activated(is_drag: bool, mouse_position: Vector2)
+
 
 # -----------------------------------------------------------------------------
 # INTERACTION SYSTEM SIGNALS

@@ -24,7 +24,7 @@ Audio.play_music(SoundRegistry.BGM_BATTLE)
 
 ### 3. AudioManager Features
 - **SFX Pool**: 16 pre-instantiated `AudioStreamPlayer` nodes prevent stutter
-- **Pitch Variance**: Random 0.95-1.05 pitch for natural sound variety
+- **Naturalistic Pitch Scaling**: Random pitch variance (±0.05 to ±0.15 depending on effect) is applied within `VFXFactory.gd` rather than globally, ensuring thematic consistency (e.g. heavy clanks stay low, small sizzles vary more).
 - **BGM Crossfade**: 0.1s fade between music tracks
 - **BGM Prewarming**: All BGM streams are touched on startup for instant playback
 - **Looping**: OGG Vorbis streams are automatically set to loop
@@ -61,6 +61,9 @@ Audio.play_music(SoundRegistry.BGM_BATTLE)
 | `combat_buff` | Combat buff | `action/buff.ogg` |
 | `combat_death` | Unit dies | `combat/step.ogg` |
 | `combat_summon` | Unit summoned | `action/land.ogg` |
+| `status_armor` | Armor applied/absorbed | `status/armor_clank.ogg` |
+| `status_burn` | Burn DOT damage | `status/fire_sizzle.ogg` |
+| `status_spikes` | Thorns/Spikes damage | `status/sharp_prick.ogg` |
 
 #### Inventory Sounds
 | Sound ID | Description | Audio File |

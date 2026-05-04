@@ -1082,8 +1082,9 @@ func _end_drag_visuals(was_handled: bool) -> void:
 		_drag_source_view.modulate.a = 1.0 # Restore visibility
 	# If handled (consumed), let the game logic destroy/move it, but if it remains, ensure it's visible
 	elif is_instance_valid(_drag_source_view):
-		# Even if handled, we should restore alpha in case the view is reused/pooled
-		_drag_source_view.modulate.a = 1.0
+		# Even if handled, we should ensure it remains hidden so game logic can animate/remove it.
+		# The view will be restored via populate() if it is repurposed.
+		pass
 		
 	if is_instance_valid(_drag_placeholder):
 		_drag_placeholder.queue_free()

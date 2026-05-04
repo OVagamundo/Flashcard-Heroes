@@ -96,7 +96,7 @@ func _get_selected_inventory_item() -> Dictionary:
 		"uuid": instance.ball_uuid
 	}
 
-func _on_remove_requested() -> void:
+func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	if _action_in_progress:
 		return
 	var item_data = _get_selected_inventory_item()
@@ -116,11 +116,36 @@ func _on_remove_requested() -> void:
 
 	_action_in_progress = true
 	
+	# Determine interaction point: drop point for drag, slot center for click
+	var interaction_pos = Vector2.ZERO
+	if is_drag:
+		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		# Find the slot center
+		var slot_view = WindowManager.find_view_for_location(item_data.location)
+		if is_instance_valid(slot_view):
+			interaction_pos = slot_view.get_global_rect().get_center()
+	
+	# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
+	# We only hide the child GachaBallView so the slot background remains visible
+	var source_anchor = WindowManager.find_view_for_location(item_data.location)
+	if is_instance_valid(source_anchor):
+		for child in source_anchor.get_children():
+			if child is GachaBallView:
+				child.modulate.a = 0.0
+				child.visible = false
+				
+	# Create the VFX gachaball immediately so it stays visible during the coin animation
+	var visual_data = VisualDataAdapter.create_visual_data(item_data.instance)
+	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
+
 	# Animate gold spend first
-	var animation_target = remove_target if is_instance_valid(remove_target) else open_inventory_button
-	_animate_gold_spend(remove_cost, animation_target, func():
+	_animate_gold_spend(remove_cost, interaction_pos, func():
 		# Actually spend gold and remove the instance
 		if GameManager.run_state.spend_gold(remove_cost):
+			# Play removal animation using the already-visible VFX ball
+			_animate_gachaball_removal_vfx(vfx_ball)
+			
 			GameManager.run_state.remove_instance(item_data.uuid)
 			if GameManager.run_state.has_method("increase_black_market_remove_cost"):
 				GameManager.run_state.increase_black_market_remove_cost()
@@ -132,7 +157,7 @@ func _on_remove_requested() -> void:
 		_action_in_progress = false
 	)
 
-func _on_transform_requested() -> void:
+func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	if _action_in_progress:
 		return
 	var item_data = _get_selected_inventory_item()
@@ -158,24 +183,52 @@ func _on_transform_requested() -> void:
 
 	_action_in_progress = true
 
+	# Determine interaction point: drop point for drag, slot center for click
+	var interaction_pos = Vector2.ZERO
+	if is_drag:
+		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		var slot_view = WindowManager.find_view_for_location(item_data.location)
+		if is_instance_valid(slot_view):
+			interaction_pos = slot_view.get_global_rect().get_center()
+
+	# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
+	# We only hide the child GachaBallView so the slot background remains visible
+	var source_anchor = _find_ball_view_for_location(source_location)
+	if is_instance_valid(source_anchor):
+		# If it's already a ball view, hide it. If it's a slot, hide children.
+		if source_anchor is GachaBallView:
+			source_anchor.modulate.a = 0.0
+			source_anchor.visible = false
+		else:
+			for child in source_anchor.get_children():
+				if child is GachaBallView:
+					child.modulate.a = 0.0
+					child.visible = false
+
+	# Create the VFX gachaball immediately so it stays visible during the coin animation
+	var visual_data = VisualDataAdapter.create_visual_data(item_data.instance)
+	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
+
 	# Animate gold spend first
-	var animation_target = transform_target if is_instance_valid(transform_target) else open_inventory_button
-	_animate_gold_spend(TRANSFORM_COST_GOLD, animation_target, func():
+	_animate_gold_spend(TRANSFORM_COST_GOLD, interaction_pos, func():
 		# Actually spend gold
 		if not GameManager.run_state.spend_gold(TRANSFORM_COST_GOLD):
 			_action_in_progress = false
+			# Restore visibility if spend failed and remove vfx ball
+			if is_instance_valid(source_anchor):
+				source_anchor.visible = true
+				source_anchor.modulate.a = 1.0
+				for child in source_anchor.get_children():
+					if child is GachaBallView:
+						child.visible = true
+						child.modulate.a = 1.0
+			if is_instance_valid(vfx_ball):
+				vfx_ball.queue_free()
 			return
 
-		# Animation starts from the Transform zone (where the user clicked/dropped)
-		var start_pos := Vector2.ZERO
-		if is_instance_valid(transform_target):
-			start_pos = transform_target.get_global_rect().get_center()
-
-		# Hide source view during animation
-		var source_view = _find_ball_view_for_location(source_location)
-		if is_instance_valid(source_view):
-			source_view.visible = false
-			source_view.modulate.a = 0.0
+		# Animation starts from the interaction point
+		var start_pos = interaction_pos
 
 		# Remove old instance
 		GameManager.run_state.remove_instance(item_data.uuid)
@@ -189,15 +242,18 @@ func _on_transform_requested() -> void:
 		# Clear selection
 		SignalBus.emit_signal("selection_clear_requested")
 
-		# Wait for views to update then animate
+		# Wait for views to update then animate using the vfx_ball
 		var target_view := await _prepare_transform_target_view(source_location)
 		if start_pos != Vector2.ZERO and is_instance_valid(target_view):
-			await _animate_transform_to_slot(VisualDataAdapter.create_visual_data(new_instance), start_pos, target_view)
-		elif is_instance_valid(target_view):
-			target_view.visible = true
-			target_view.modulate.a = 1.0
-			if target_view.has_method("play_landing_bounce"):
-				target_view.play_landing_bounce()
+			await _animate_transform_to_slot_vfx(vfx_ball, visual_data, start_pos, target_view)
+		else:
+			# Fallback if no target view, just cleanup vfx ball
+			if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+			if is_instance_valid(target_view):
+				target_view.visible = true
+				target_view.modulate.a = 1.0
+				if target_view.has_method("play_landing_bounce"):
+					target_view.play_landing_bounce()
 
 		_action_in_progress = false
 	)
@@ -257,8 +313,9 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	effects_layer.add_child(anim_ball)
 
 	anim_ball.force_inventory_mode = true
-	anim_ball.custom_minimum_size = Vector2(128, 128)
-	anim_ball.size = Vector2(128, 128)
+	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.custom_minimum_size = Vector2(96, 96)
+	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)
 	anim_ball.pivot_offset = anim_ball.size / 2.0
@@ -290,8 +347,97 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	if target_view.has_method("play_landing_bounce"):
 		target_view.play_landing_bounce()
 
-func _animate_gold_spend(amount: int, target_control: Control, on_complete: Callable) -> void:
-	"""Animate gold coins flying from gold counter to target control"""
+func _animate_gachaball_removal(instance: GachaBallInstance, pos: Vector2) -> void:
+	"""Animate a gachaball being removed with a death fade effect at the specified position"""
+	if not is_instance_valid(instance):
+		return
+		
+	var visual_data = VisualDataAdapter.create_visual_data(instance)
+	var ball_uuid = instance.ball_uuid
+	
+	
+func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallView:
+	"""Create a static VFX gachaball at a specific screen position."""
+	var anim_ball = GachaBallViewScene.instantiate()
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
+	
+	anim_ball.force_inventory_mode = true
+	anim_ball.set_size_scale(1.0)
+	anim_ball.custom_minimum_size = Vector2(96, 96)
+	anim_ball.size = Vector2(96, 96)
+	anim_ball.populate(null, visual_data, false)
+	anim_ball.set_is_interactive(false)
+	
+	anim_ball.pivot_offset = anim_ball.size / 2.0
+	anim_ball.global_position = pos - anim_ball.pivot_offset
+	return anim_ball
+
+func _animate_gachaball_removal_vfx(vfx_ball: GachaBallView) -> void:
+	if not is_instance_valid(vfx_ball):
+		return
+		
+	# Direct implementation of the "Death Fade" (levitate + fade).
+	var duration = 0.6
+	var levitate_height = 100.0
+	
+	var tween = vfx_ball.create_tween()
+	tween.set_parallel(true)
+	
+	# Phase 1: Levitate up
+	var target_pos = vfx_ball.position + Vector2(0, -levitate_height)
+	tween.tween_property(vfx_ball, "position", target_pos, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	# Phase 2: Fade out
+	tween.tween_property(vfx_ball, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	
+	# Cleanup
+	tween.set_parallel(false)
+	tween.tween_callback(vfx_ball.queue_free)
+
+func _animate_transform_to_slot_vfx(vfx_ball: GachaBallView, _visual_data: Dictionary, start_pos: Vector2, target_slot: Control) -> void:
+	if not is_instance_valid(vfx_ball) or not is_instance_valid(target_slot):
+		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		return
+
+	# Animation sequence for transformation (same as shop purchase jump)
+	var end_pos = target_slot.get_global_rect().get_center()
+	
+	# Ensure correct z-index
+	vfx_ball.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
+	
+	var control_point = Vector2((start_pos.x + end_pos.x) / 2.0, min(start_pos.y, end_pos.y) - 200)
+	var tween = vfx_ball.create_tween()
+	
+	tween.tween_method(func(t: float):
+		var eased_t = pow(t, 0.55)
+		var inv_t = 1.0 - eased_t
+		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
+		vfx_ball.global_position = pos - vfx_ball.pivot_offset
+	, 0.0, 1.0, 0.45)
+	
+	await tween.finished
+	vfx_ball.queue_free()
+	
+	# Restore visibility of the actual view now that the animation view is gone
+	if is_instance_valid(target_slot):
+		target_slot.visible = true
+		target_slot.modulate.a = 1.0
+		# If it's a slot, also ensure children are visible
+		for child in target_slot.get_children():
+			if child is Control:
+				child.visible = true
+				child.modulate.a = 1.0
+		
+		if target_slot.has_method("play_landing_bounce"):
+			target_slot.play_landing_bounce()
+		elif target_slot.get_child_count() > 0:
+			var view = target_slot.get_child(0)
+			if view.has_method("play_landing_bounce"):
+				view.play_landing_bounce()
+
+func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
+	"""Animate gold coins flying from gold counter to target position"""
 	var main_node = GameManager._active_main_node
 	if not is_instance_valid(main_node):
 		on_complete.call()
@@ -312,11 +458,7 @@ func _animate_gold_spend(amount: int, target_control: Control, on_complete: Call
 		gold_rect.position.y + gold_rect.size.y / 2
 	)
 	
-	var target_rect = target_control.get_global_rect()
-	var end_pos = Vector2(
-		target_rect.position.x + target_rect.size.x / 2,
-		target_rect.position.y + target_rect.size.y / 2
-	)
+	var end_pos = target_pos # Already in screen coordinates
 	
 	# Spawn gold coins with stagger
 	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
@@ -327,14 +469,10 @@ func _animate_gold_spend(amount: int, target_control: Control, on_complete: Call
 		var effects_layer = WindowManager.get_vfx_layer()
 		effects_layer.add_child(coin_vfx)
 		
-		# Connect to trigger target reaction
+		# Connect to trigger counter pop and landing sound
 		coin_vfx.coin_landed.connect(func(_pos: Vector2):
 			Audio.play_sfx("coin_land")
-			if is_instance_valid(target_control):
-				var tween = target_control.create_tween()
-				target_control.pivot_offset = target_control.size / 2.0
-				tween.tween_property(target_control, "scale", Vector2(1.1, 1.1), 0.05)
-				tween.tween_property(target_control, "scale", Vector2(1.0, 1.0), 0.1)
+			# No target control reaction here anymore as we might be targeting a point in space
 		)
 		
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))

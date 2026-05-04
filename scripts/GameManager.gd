@@ -66,7 +66,8 @@ func get_pending_rewards() -> Dictionary:
 	return {
 		"reward_instances": _temporary_reward_master_dict.values(),
 		"gold_amount": _temporary_gold_reward,
-		"reroll_cost": _reward_reroll_cost
+		"reroll_cost": _reward_reroll_cost,
+		"is_special_victory": _is_special_reward_pool
 	}
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
