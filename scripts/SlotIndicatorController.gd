@@ -285,11 +285,6 @@ func _get_equip_targets(item_instance: GachaBallInstance, _source_loc: LocationI
 	if GameManager.is_test_mode:
 		allowed_containers.append(&"EnemyLineup")
 	
-	# Check if item is already equipped - if so, it can only move within the same unit
-	if not item_instance.equipped_on_uuid.is_empty():
-		# Already equipped - can only show equipped slots on the same unit
-		return equip_targets
-	
 	for container_name in allowed_containers:
 		var container = data_owner.get_container(container_name)
 		if not is_instance_valid(container):
@@ -309,14 +304,7 @@ func _get_equip_targets(item_instance: GachaBallInstance, _source_loc: LocationI
 			if not is_instance_valid(unit_def) or unit_def.category != &"UNIT":
 				continue
 			
-			# Check if unit has empty equipment slots
-			var has_empty_slot = false
-			for slot_uuid in unit_instance.equipped_item_uuids:
-				if slot_uuid.is_empty():
-					has_empty_slot = true
-					break
-			
-			if has_empty_slot:
+			if not unit_instance.equipped_item_uuids.is_empty():
 				var target_loc = LocationIdentifier.new()
 				target_loc.container = container_name
 				target_loc.index = i

@@ -49,17 +49,13 @@ func get_dynamic_weight_multiplier(state) -> float:
 ## The category of the GachaBall, must be "UNIT" or "ITEM".
 @export var category: StringName
 
-## The number of item slots this GachaBall has. Computed based on tier for UNITS.
+## The number of item slots this GachaBall has.
+## Units are restricted to a single shared item slot.
 var item_slot_count: int:
 	get:
 		if category != &"UNIT":
 			return 0
-		match tier:
-			0: return 4
-			1: return 1
-			2: return 2
-			3: return 4
-			_: return 0
+		return 1
 
 ## The base health points for a UNIT.
 @export var base_hp: int = 0

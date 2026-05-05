@@ -149,9 +149,7 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	# Determine slot
 	var target_slot := slot_index
 	if target_slot < 0:
-		target_slot = unit.equipped_item_uuids.find("")
-		if target_slot == -1:
-			return result
+		target_slot = 0
 	if target_slot >= unit.equipped_item_uuids.size():
 		return result
 	
@@ -179,16 +177,13 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	if not existing_uuid.is_empty():
 		var existing := state.get_instance(existing_uuid)
 		if is_instance_valid(existing):
-			existing.equipped_on_uuid = ""
-			existing.equipped_slot_index = -1
-			var inv := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-			if is_instance_valid(inv):
-				var empty := inv.find_first_empty_slot()
-				if empty != -1:
-					inv.set_uuid(empty, existing.ball_uuid)
-					state.update_instance_location(existing.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
-				else:
-					return result
+			var discard_result := move_instance_to_discard(state, existing)
+			if not discard_result.success:
+				return result
+			for changed_uuid in discard_result.changed_unit_uuids:
+				result.add_unit_change(changed_uuid)
+			if discard_result.inventory_changed:
+				result.inventory_changed = true
 	
 	# Equip item
 	unit.equipped_item_uuids[target_slot] = item.ball_uuid

@@ -21,7 +21,6 @@ var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayCo
 var _temporary_gold_reward: int = 0
 var _is_processing_victory: bool = false # Prevents multiple reward processing
 var _reward_reroll_cost: int = 1 # Reward reroll cost (resets per battle)
-var _is_special_reward_pool: bool = false # Persist reward type for rerolls
 
 # Temporary shop state
 var _temporary_shop_master_dict: Dictionary = {}
@@ -67,7 +66,7 @@ func get_pending_rewards() -> Dictionary:
 		"reward_instances": _temporary_reward_master_dict.values(),
 		"gold_amount": _temporary_gold_reward,
 		"reroll_cost": _reward_reroll_cost,
-		"is_special_victory": _is_special_reward_pool
+		"is_special_victory": run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	}
 
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
@@ -108,25 +107,17 @@ func _on_battle_ended(results: Dictionary) -> void:
 
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
-		# Track boss defeat before resetting levels
-		var is_boss = run_state.current_boss_level > 0
-		var is_elite = run_state.current_elite_level > 0
-		
-		if is_boss:
+		if run_state.current_boss_level > 0:
 			run_state.bosses_defeated += 1
-		if is_elite:
+		if run_state.current_elite_level > 0:
 			run_state.elites_defeated += 1
 			
 		run_state.total_enemies_defeated += 1
 		
-		# Emit the signal BEFORE resetting the levels so _on_battle_won_rewards_pending 
-		# can correctly detect that this was a special victory.
-		print("[GameManager] Victory confirmed, emitting battle_won_rewards_pending")
+		# Emit the signal. The levels are NOT reset here, ensuring that 
+		# _on_battle_won_rewards_pending can correctly identify the encounter type.
+		print("[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: ", run_state.current_elite_level)
 		SignalBus.emit_signal("battle_won_rewards_pending")
-		
-		# Now reset levels
-		run_state.current_boss_level = 0
-		run_state.current_elite_level = 0
 	
 	# 4) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
@@ -157,13 +148,8 @@ func _on_battle_start_requested(_encounter_def: EncounterDefinition) -> void:
 
 func _on_battle_won_rewards_pending() -> void:
 	# Detect if this was a boss or elite victory (both get trinket rewards)
-	var is_boss_victory = run_state.current_boss_level > 0
-	var is_elite_victory = run_state.current_elite_level > 0
-	var is_special_victory = is_boss_victory or is_elite_victory
-	
-	# Persist this flag for rerolls (since boss level is reset immediately after)
-	_is_special_reward_pool = is_special_victory
-	print("[RewardDebug] Victory rewards pending. Special Pool: ", _is_special_reward_pool, " BossLvl: ", run_state.current_boss_level, " EliteLvl: ", run_state.current_elite_level)
+	var is_special_victory = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
+	print("[RewardDebug] Victory rewards pending. Special: ", is_special_victory)
 	
 	# Reset reward reroll cost for new rewards
 	_reward_reroll_cost = 1
@@ -229,7 +215,7 @@ func _on_battle_victory_acknowledged() -> void:
 	# Day should only increment when path choice scene loads, not here
 	
 	# Calculate gold reward based on reward type
-	# We check both the persisted flag AND the actual pool content for robustness
+	var is_special = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	var contains_trinkets := false
 	for inst in _temporary_reward_master_dict.values():
 		var def = inst.get_definition()
@@ -237,8 +223,8 @@ func _on_battle_victory_acknowledged() -> void:
 			contains_trinkets = true
 			break
 			
-	if _is_special_reward_pool or contains_trinkets:
-		print("[GameManager] Special reward detected (Flag: %s, Trinkets: %s). Awarding 10 gold." % [_is_special_reward_pool, contains_trinkets])
+	if is_special or contains_trinkets:
+		print("[GameManager] Special reward detected. Awarding 10 gold.")
 		_temporary_gold_reward = 10
 	else:
 		# Regular rewards: calculate from cost (average cost of the 3 rewards)
@@ -291,13 +277,11 @@ func _on_reward_chosen(payload) -> void:
 	# --- TRANSITION LOGIC REMOVED ---
 	# The scene transition is now handled by the new button in Reward.gd.
 	# We still need to clean up the temporary data and signal that the run data has changed.
-	_temporary_reward_master_dict.clear()
-	_temporary_reward_container = null
-	# Atomic APIs used above already emitted run_data_changed if needed
-	# DO NOT emit path_choice_scene_requested here anymore.
-	
 	_is_processing_victory = false
-	_is_special_reward_pool = false
+	
+	# Reset levels ONLY AFTER the choice is processed and data is cleared
+	run_state.current_boss_level = 0
+	run_state.current_elite_level = 0
 
 ## Temporary debug function to inspect the pending reward master dictionary
 # Removed redundant functions that were replaced by the new temporary instance system
@@ -544,13 +528,12 @@ func _on_reward_reroll_requested() -> void:
 
 func _generate_reward_stock() -> void:
 	# Regenerate rewards (reroll functionality)
-	# Use persisted flag because current_boss_level is reset after battle end
-	print("[RewardDebug] generate_reward_stock. is_special_pool: ", _is_special_reward_pool)
+	print("[RewardDebug] generate_reward_stock. Special: ", run_state.current_boss_level > 0 or run_state.current_elite_level > 0)
 	
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
-	if _is_special_reward_pool:
+	if run_state.current_boss_level > 0 or run_state.current_elite_level > 0:
 		# Boss/Elite rewards: 3 random trinkets using Director
 		var all_trinkets = Database.trinkets.values().duplicate()
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)

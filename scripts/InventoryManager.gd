@@ -34,16 +34,8 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 			allowed_containers.append(&"EnemyLineup")
 		
 		# Items can be equipped from InventoryGrid OR BattleBoard (unified bench holds both units and items)
-		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard"
+		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard" or s_group == &"EquippedGrid"
 		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and is_valid_source and target_loc.container in allowed_containers:
-			# Check if unit has available equip slots
-			var has_empty_slot = early_target_instance.equipped_item_uuids.find("") != -1
-			if not has_empty_slot:
-				# Unit is full - treat as invalid action
-				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-				GlobalInteractionRouter.end_drag(false)
-				return
-			
 			# Use atomic equip API
 			var owner = _get_data_owner()
 			if is_instance_valid(owner):
@@ -62,10 +54,10 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 				var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
 				if is_instance_valid(parent_unit):
 					# If slot already occupied, fall through to swap logic later
-					# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard (only to empty slot)
+					# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard.
 					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
-					var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard"
-					if is_valid_source2 and target_loc.index < parent_unit.equipped_item_uuids.size() and parent_unit.equipped_item_uuids[target_loc.index] == "":
+					var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard" or s_group2 == &"EquippedGrid"
+					if is_valid_source2 and target_loc.index < parent_unit.equipped_item_uuids.size():
 						# Use atomic equip with explicit slot
 						data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
 						GlobalInteractionRouter.end_drag(true)
@@ -343,12 +335,14 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		return
 
 	var empty_slot_idx = unit_instance.equipped_item_uuids.find("")
-	if empty_slot_idx == -1:
+	if empty_slot_idx == -1 and unit_instance.equipped_item_uuids.is_empty():
 		# We need the locations for the invalid action, but we don't have them here.
 		# This is a rare case where the equip logic itself fails.
 		GlobalInteractionRouter.end_drag(false)
 		SignalBus.emit_signal("selection_clear_requested")
 		return
+	if empty_slot_idx == -1:
+		empty_slot_idx = 0
 
 	# Use atomic equip API (slot resolved above)
 	var owner = _get_data_owner()
@@ -379,6 +373,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	# Collect items equipped on parents (if any) to equip onto a UNIT result later
 	# MergeManager returns the list of items that should be equipped.
 	var all_parent_items: Array = merge_result.get("items_to_equip", [])
+	var parent_items_to_discard: Array = merge_result.get("items_to_discard", [])
 
 	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
@@ -433,6 +428,14 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			if not is_instance_valid(it):
 				continue
 			data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
+
+	for discarded_item in parent_items_to_discard:
+		if not is_instance_valid(discarded_item):
+			continue
+		if GameManager.is_in_battle and data_owner.has_method("bm_move_instance_to_discard"):
+			data_owner.bm_move_instance_to_discard(discarded_item.ball_uuid)
+		else:
+			data_owner.remove_instance(discarded_item.ball_uuid)
 
 	# (removals were performed earlier for all non-same-unit item merges)
 	
@@ -567,7 +570,7 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid"
+		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid" or s_group == &"EquippedGrid"
 
 
 	if target_container_name.begins_with("RunInventoryT"):

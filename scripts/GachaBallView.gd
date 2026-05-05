@@ -31,7 +31,6 @@ enum HoverFxMode {
 }
 
 @onready var icon_rect: TextureRect = %Icon
-@onready var item_grid: GridContainer = %ItemGrid
 @onready var hp_container: HBoxContainer = %HPContainer
 @onready var pwr_container: HBoxContainer = %PWRContainer
 @onready var burn_container: HBoxContainer = %BurnContainer
@@ -40,8 +39,8 @@ enum HoverFxMode {
 @onready var burn_label: Label = %BurnLabel
 @onready var armor_container: HBoxContainer = %ArmorContainer
 @onready var armor_label: Label = %ArmorLabel
-@onready var equipped_items_container: HBoxContainer = %EquippedItemsContainer
-@onready var equipped_items_row: HBoxContainer = %EquippedItemsRow
+@onready var equipped_item_icon_rect: TextureRect = %EquippedItemIcon
+@onready var level_label: Label = %LevelLabel
 
 var _location: LocationIdentifier
 var _instance_uuid: String
@@ -67,6 +66,8 @@ var _visual_spikes_stacks: int = 0 # Spikes stacks - deals damage back to attack
 var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
 var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
 var _visual_equipped_items: Array = [] # Equipped item data: [{uuid, icon, definition_id}]
+var _visual_equipped_item_icon: Texture2D = null
+var _visual_level: int = 0
 var _bound_uuid: String = "" # UUID bound during populate()
 var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
 
@@ -320,6 +321,8 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	if _visual_spikes_stacks > 0:
 		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	_visual_equipped_items = visual_data.get("equipped_items", []) # Array of {uuid, icon, definition_id}
+	_visual_equipped_item_icon = visual_data.get("equipped_item_icon")
+	_visual_level = int(visual_data.get("tier", 0))
 	
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
@@ -473,8 +476,12 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
 	# Sync spikes to dynamic status effects for icon display
 	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
+	_visual_equipped_items = visual_data.get("equipped_items", _visual_equipped_items)
+	_visual_equipped_item_icon = visual_data.get("equipped_item_icon", _visual_equipped_item_icon)
+	_visual_level = int(visual_data.get("tier", _visual_level))
 	_update_stats()
 	_update_dynamic_status_icons(false) # explicit: do not animate on hard refresh
+	_update_item_slots()
 
 func set_is_enemy(is_enemy: bool, _definition_id: StringName = &"") -> void:
 	if is_instance_valid(icon_rect):
@@ -1239,18 +1246,8 @@ func _pop_container(container: Control) -> void:
 	pop_tween.tween_property(container, "modulate", Color.WHITE, 0.2).set_delay(0.05)
 
 func _update_item_slots() -> void:
-	# REDESIGNED: Now shows status effects instead of item icons
-	# Clear existing displays
-	for child in item_grid.get_children():
-		child.queue_free()
-	
-	# Only show status effects for units
-	if _entity_type != &"UNIT":
-		return
-	
-	# Status effects are now displayed via permanent labels (burn_label)
-	# Update equipped items display
-	_update_equipped_items_display()
+	_update_level_display()
+	_update_equipped_item_icon()
 
 ## Setup click handlers for status effect icons (burn/armor)
 ## Opens a tooltip window when clicked
@@ -1301,72 +1298,24 @@ func _open_status_effect_tooltip(status_id: StringName, anchor: Control) -> void
 	WindowManager.open_child_contextual_window(&"EffectInspection", anchor, populate_ctx)
 
 ## Update the equipped items display showing icons on the left side (behind the unit)
-func _update_equipped_items_display() -> void:
-	# Use the scene-defined EquippedItemsOverlay container
-	var items_overlay = get_node_or_null("%EquippedItemsOverlay")
-	
-	# Clean up old dynamic containers if they exist
-	var old_side = get_node_or_null("EquippedItemsSide")
-	var old_left = get_node_or_null("EquippedItemsLeft")
-	var old_right = get_node_or_null("EquippedItemsRight")
-	if is_instance_valid(old_side): old_side.queue_free()
-	if is_instance_valid(old_left): old_left.queue_free()
-	if is_instance_valid(old_right): old_right.queue_free()
-	
-	if not is_instance_valid(items_overlay):
+func _update_equipped_item_icon() -> void:
+	if not is_instance_valid(equipped_item_icon_rect):
 		return
-	
-	# Clear existing icons
-	for child in items_overlay.get_children():
-		child.queue_free()
-	
-	# Only show for units in battle context (not items or trinkets)
+	if _entity_type != &"UNIT" or not is_instance_valid(_visual_equipped_item_icon):
+		equipped_item_icon_rect.texture = null
+		equipped_item_icon_rect.visible = false
+		return
+	equipped_item_icon_rect.texture = _visual_equipped_item_icon
+	equipped_item_icon_rect.visible = true
+
+func _update_level_display() -> void:
+	if not is_instance_valid(level_label):
+		return
 	if _entity_type != &"UNIT":
-		items_overlay.visible = false
+		level_label.visible = false
 		return
-	
-	# Only show in battle context where we have equipped item data
-	if _visual_equipped_items.is_empty():
-		items_overlay.visible = false
-		return
-	
-	items_overlay.visible = true
-	
-	# Calculate icon size to fill slot height with small gaps
-	# Slot height: 192px, 4 items max, 3 gaps of 2px each = 6px total gaps
-	# (192 - 6) / 4 = 46.5px, round to 45px for nice numbers
-	var icon_size: int = 45
-	
-	# Create non-clickable icons for each equipped item
-	for item_data in _visual_equipped_items:
-		if item_data.is_empty():
-			continue
-		
-		var item_icon: Texture2D = item_data.get("icon")
-		var item_uuid: String = item_data.get("uuid", "")
-		
-		if not is_instance_valid(item_icon) or item_uuid.is_empty():
-			continue
-		
-		# Create the item icon texture with white outline
-		var item_rect = TextureRect.new()
-		item_rect.texture = item_icon
-		item_rect.custom_minimum_size = Vector2(icon_size, icon_size)
-		item_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		item_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		item_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE # Non-clickable
-		
-		# Apply white outline shader for visibility
-		var outline_material = load("res://assets/shaders/sprite_outline.gdshader")
-		if outline_material:
-			var mat = ShaderMaterial.new()
-			mat.shader = outline_material
-			mat.set_shader_parameter("outline_color", Color.WHITE)
-			mat.set_shader_parameter("outline_width", 2.0)
-			mat.set_shader_parameter("outline_enabled", true)
-			item_rect.material = mat
-		
-		items_overlay.add_child(item_rect)
+	level_label.text = "LV. %d" % maxi(_visual_level, 1)
+	level_label.visible = true
 
 ## Handle click on an equipped item icon
 func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
