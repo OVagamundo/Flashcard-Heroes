@@ -583,7 +583,7 @@ func increase_black_market_remove_cost() -> void:
 
 
 func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
-	# Equips an item onto a unit, filling first empty slot if not specified.
+	# Equips an item onto a unit. Units now use a single slot, so default equips replace.
 	if item_uuid.is_empty() or unit_uuid.is_empty():
 		return false
 	var item := get_instance_by_uuid(item_uuid)
@@ -593,9 +593,7 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 	# Determine slot
 	var target_slot := slot_index
 	if target_slot < 0:
-		target_slot = unit.equipped_item_uuids.find("")
-		if target_slot == -1:
-			return false
+		target_slot = 0
 	if target_slot >= unit.equipped_item_uuids.size():
 		return false
 	# If the item is currently equipped (same or different unit), clear the previous mapping
@@ -620,6 +618,7 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 	if not existing_uuid.is_empty():
 		var existing_item := get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
+			unit.unequip_item_bonus(existing_item)
 			existing_item.equipped_on_uuid = ""
 			existing_item.equipped_slot_index = -1
 			# Place into PlayerBench (or any available appropriate container)
@@ -632,7 +631,7 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 					existing_item.location_slot_index = empty
 				else:
 					return false
-		unit.equipped_item_uuids[target_slot] = item.ball_uuid
+	unit.equipped_item_uuids[target_slot] = item.ball_uuid
 	item.equipped_on_uuid = unit.ball_uuid
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
@@ -808,14 +807,30 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	match hero_id:
 		&"hero_timekeeper":
-			# Only one of each Tier 3 gachaball (testing)
-			return [
-				&"unit_t3_a", &"unit_t3_b", &"unit_t3_c", &"unit_t3_d", 
-				&"unit_t3_e", &"unit_t3_f", &"unit_t3_g", &"unit_t3_h",
-				&"item_t3_a", &"item_t3_b", &"item_t3_c", &"item_t3_d", 
-				&"item_t3_e", &"item_t3_f",
-				&"item_emblem_fire", &"item_emblem_earth", &"item_emblem_water", &"item_emblem_air"
-			]
+			# Timekeeper is the developer/testing hero.
+			# Requirement: 2 copies of all mergeable entities, 1 of non-mergeable.
+			var starters: Array[StringName] = []
+			
+			# 1. Identify all mergeable component IDs from the recipes database
+			var mergeable_ids: Dictionary = {}
+			for recipe in Database.recipes.values():
+				if recipe is MergeRecipe:
+					mergeable_ids[recipe.ingredient_a_id] = true
+					mergeable_ids[recipe.ingredient_b_id] = true
+			
+			# 2. Add Units
+			for unit_id in Database.units.keys():
+				starters.append(unit_id)
+				if mergeable_ids.has(unit_id):
+					starters.append(unit_id)
+					
+			# 3. Add Items
+			for item_id in Database.items.keys():
+				starters.append(item_id)
+				if mergeable_ids.has(item_id):
+					starters.append(item_id)
+					
+			return starters
 		&"hero_bounty_hunter":
 			# Bounty Hunter: 4 of each Tier 1 gachaball (32 total)
 			return [

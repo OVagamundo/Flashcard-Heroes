@@ -25,7 +25,7 @@ var location_slot_index: int = -1
 # --- Relationship Properties ---
 var equipped_on_uuid: String = ""
 var equipped_slot_index: int = -1
-# Up to 3 equipped items (by UUID). Empty string indicates empty slot.
+# Equipped items (by UUID). Units currently support a single slot.
 var equipped_item_uuids: Array[String] = []
 
 # --- Dynamic State Properties ---

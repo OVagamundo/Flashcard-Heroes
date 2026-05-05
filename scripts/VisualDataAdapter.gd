@@ -74,6 +74,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		
 		# Equipped items (for units only)
 		"equipped_items": equipped_items_data,
+		"equipped_item_icon": equipped_items_data[0]["icon"] if not equipped_items_data.is_empty() else null,
 		
 		# Metadata
 		"is_player_owned": true, # Default, might need adjustment if we have enemy specific logic
