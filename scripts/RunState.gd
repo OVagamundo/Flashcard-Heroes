@@ -774,6 +774,18 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 
+	# POC TEST: Give the Timekeeper a special Prismatic Apprentice
+	# Moved here so containers are guaranteed to exist.
+
+	if hero_def_id == &"hero_timekeeper":
+		var apprentice_def = Database.get_definition(&"unit_t1_a")
+		if apprentice_def:
+			var prismatic_inst = GachaBallInstance.new()
+			prismatic_inst.initialize(apprentice_def)
+			prismatize_unit(prismatic_inst)
+			# Add to Tier 1 Run Inventory so it ends up in the Battle Inventory draw pool
+			add_instance(prismatic_inst, &"RunInventoryT1", -1)
+
 	# NOTE: Player trinkets are now obtained exclusively through boss victories.
 	# No starter trinkets are given - the player earns them by progressing.
 
@@ -906,6 +918,35 @@ func check_deck_expansion() -> bool:
 			return true
 	
 	return false
+
+func prismatize_unit(instance: GachaBallInstance) -> void:
+	"""POC Helper: Transforms a unit instance into a Prismatic variant with boosted stats and abilities."""
+	if not is_instance_valid(instance):
+		return
+		
+	instance.variant_id = &"prismatic"
+	
+	# Apply Stat Boosts (+2 HP, +2 PWR)
+	instance.base_hp_modifier += 2
+	instance.base_pwr_modifier += 2
+	
+	# Sync current stats
+	var def = instance.get_definition()
+	if is_instance_valid(def):
+		instance.current_hp = def.base_hp + instance.base_hp_modifier
+		instance.current_pwr = def.base_pwr + instance.base_pwr_modifier
+	
+	# Inject Ability: Tiger Spirit (Extra Attack)
+	var tiger_spirit_def = Database.get_ability_definition(&"item_tier1b_extra_attack")
+	if is_instance_valid(tiger_spirit_def):
+		# Check if already has it to prevent duplicates
+		var has_ability = false
+		for ab in instance.abilities:
+			if ab.id == tiger_spirit_def.id:
+				has_ability = true
+				break
+		if not has_ability:
+			instance.abilities.append(tiger_spirit_def.duplicate(true))
 
 # ------------------------------------------------------------------
 # Serialization (Save/Load)

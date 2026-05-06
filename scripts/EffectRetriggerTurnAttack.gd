@@ -35,20 +35,22 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var is_player = battle_manager._is_player_unit(attacker)
 	var target = battle_manager._get_frontmost_target(is_player)
 	if not is_instance_valid(target):
-		# No front enemy found, skipping
+		if OS.is_debug_build():
+			print("[TigerSpirit] Skip: No valid targets left.")
 		return EffectResult.empty() if is_simulation else null
 
-	# --- CONDITION CHECK: Target has more HP or more PWR ---
-	# User Request: "Tiger spirit should attack again ONLY if target has more hp or more pwr"
+	# LOGIC CHECK: Only trigger if target has more HP or PWR (Tiger Spirit's defining trait)
 	var target_has_more_hp = target.current_hp > attacker.current_hp
 	var target_has_more_pwr = target.current_pwr > attacker.current_pwr
 	
 	if not (target_has_more_hp or target_has_more_pwr):
-		# Condition not met - target is weaker or equal, skipping extra attack
+		if OS.is_debug_build():
+			print("[TigerSpirit] Skip: Target (%d HP, %d PWR) is not stronger than Attacker (%d HP, %d PWR)." % [target.current_hp, target.current_pwr, attacker.current_hp, attacker.current_pwr])
 		return EffectResult.empty() if is_simulation else null
-	
-	# Performing FRESH turn action
-	
+
+	if OS.is_debug_build():
+		print("[TigerSpirit] Triggering Extra Attack for unit:", attacker.ball_uuid)
+
 	# --- BUILD CONTEXT FOR FRESH TURN ACTION ---
 	# Use CAUSE_ABILITY_RETRIGGER to prevent Tiger's Spirit from self-triggering
 	# (Tiger's Spirit requires CAUSE_TURN)

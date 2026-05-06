@@ -78,6 +78,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		
 		# Metadata
 		"is_player_owned": true, # Default, might need adjustment if we have enemy specific logic
+		"variant_id": instance.variant_id,
 	}
 	
 	# Handle specific definition types if needed (e.g. if icon is stored differently)

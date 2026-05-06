@@ -448,6 +448,29 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	
 	_update_stats()
 	_update_dynamic_status_icons(false) # explicit: do not animate on populate
+	
+	# Apply Prismatic Variant Visuals
+	var variant = visual_data.get("variant_id", &"")
+	if variant == &"prismatic":
+		var prismatic_shader = load("res://assets/shaders/prismatic_foil.gdshader")
+		if prismatic_shader:
+			var mat = ShaderMaterial.new()
+			mat.shader = prismatic_shader
+			if is_instance_valid(icon_rect):
+				icon_rect.material = mat
+				icon_rect.modulate = Color(1.2, 1.2, 1.2, 1.0) # Subtle brightness boost
+				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+				if unit_sprite:
+					unit_sprite.material = mat
+	else:
+		# Cleanup for non-prismatic (important for recycled UI slots)
+		if is_instance_valid(icon_rect):
+			icon_rect.material = null
+			icon_rect.modulate = Color.WHITE
+			var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+			if unit_sprite:
+				unit_sprite.material = null
+	
 	visible = true
 
 	# Add gachaball overlay for inventory windows
@@ -1314,8 +1337,27 @@ func _update_level_display() -> void:
 	if _entity_type != &"UNIT":
 		level_label.visible = false
 		return
+	_apply_level_label_style()
 	level_label.text = "LV. %d" % maxi(_visual_level, 1)
 	level_label.visible = true
+
+func _apply_level_label_style() -> void:
+	if not is_instance_valid(level_label):
+		return
+	if _is_run_inventory_context():
+		level_label.add_theme_font_size_override("font_size", 12)
+		level_label.add_theme_constant_override("outline_size", 2)
+		level_label.offset_left = -40.0
+		level_label.offset_top = 5.0
+		level_label.offset_right = -4.0
+		level_label.offset_bottom = 20.0
+	else:
+		level_label.add_theme_font_size_override("font_size", 16)
+		level_label.add_theme_constant_override("outline_size", 3)
+		level_label.offset_left = -54.0
+		level_label.offset_top = 6.0
+		level_label.offset_right = -6.0
+		level_label.offset_bottom = 24.0
 
 ## Handle click on an equipped item icon
 func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
@@ -1756,6 +1798,14 @@ func _has_overlay_heuristic() -> bool:
 		if "Shop" in p.name: return true
 		if "Reward" in p.name: return true
 		if "DiscardPile" in p.name: return true
+		p = p.get_parent()
+	return false
+
+func _is_run_inventory_context() -> bool:
+	var p: Node = self
+	while p:
+		if p.name == "PersistentInventoryWindow":
+			return true
 		p = p.get_parent()
 	return false
 
