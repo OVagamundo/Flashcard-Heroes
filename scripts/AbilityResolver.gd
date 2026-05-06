@@ -335,7 +335,9 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if not _should_unit_respond(trigger, instance_uuid, instance, context, battle_manager):
 			continue
 
-		for ability in definition.ability_definitions:
+		# Process all abilities (base + injected) from the instance's duplicate array
+		# Rationale: instance.abilities is populated from definition during initialize()
+		for ability in instance.abilities:
 			if ability.trigger == trigger:
 				_process_ability(ability, instance_uuid, battle_manager, context)
 

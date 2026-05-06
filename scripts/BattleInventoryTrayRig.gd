@@ -212,7 +212,7 @@ func _spawn_ball(inst) -> void:
 	ball.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 	
 	var def = inst.get_definition()
-	ball.populate(inst.ball_uuid, def.category, inst.get_location(), def.icon)
+	ball.populate(inst.ball_uuid, def.category, inst.get_location(), def.icon, inst.variant_id)
 	
 	# Turn interpolation on to smooth Godot rigid jitter
 	ball.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON

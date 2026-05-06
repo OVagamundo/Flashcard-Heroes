@@ -9,6 +9,7 @@ extends Resource
 var definition_id: StringName
 var ball_uuid: String
 var origin_uuid: String = "" # UUID of the permanent instance this battle copy was created from.
+var variant_id: StringName = &"" # Unique instance variant (e.g. &"prismatic")
 
 # --- State Properties ---
 var current_hp: int
@@ -64,6 +65,7 @@ func create_battle_copy() -> GachaBallInstance:
 	copy.abilities = self.abilities.duplicate(true)
 	copy.dynamic_tags = self.dynamic_tags.duplicate(true)
 	copy.status_effects = self.status_effects.duplicate(true)
+	copy.variant_id = self.variant_id
 	
 	# Copy progression modifiers
 	copy.base_hp_modifier = self.base_hp_modifier
@@ -373,6 +375,7 @@ func to_save_dict() -> Dictionary:
 		"equipped_item_uuids": equipped_item_uuids.duplicate(),
 		"dynamic_tags": _serialize_tags(),
 		"status_effects": status_effects.duplicate(),
+		"variant_id": String(variant_id),
 	}
 
 ## Restores this instance from a saved Dictionary.
@@ -402,6 +405,8 @@ func from_save_dict(data: Dictionary) -> void:
 	status_effects.clear()
 	for key in saved_effects.keys():
 		status_effects[StringName(str(key))] = saved_effects[key]
+	
+	variant_id = StringName(data.get("variant_id", ""))
 	
 	# Re-initialize abilities from definition
 	var def = get_definition()

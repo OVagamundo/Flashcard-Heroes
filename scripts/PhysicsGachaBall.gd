@@ -10,7 +10,8 @@ static var next_allowed_clack_time: int = 0
 var instance_uuid: String
 var location: LocationIdentifier
 var entity_type: StringName
-var _pending_texture: Texture2D
+var _pending_texture: Texture2D = null
+var _pending_variant: StringName = &""
 
 @onready var capsule_sprite: Sprite2D = $CapsuleSprite
 @onready var icon_sprite: Sprite2D = $IconSprite
@@ -53,9 +54,14 @@ func _ready() -> void:
 		CRTEffect.glow_toggled.connect(_on_global_glow_toggled)
 	_refresh_capsule_local_glow()
 	
-	if _pending_texture and is_instance_valid(icon_sprite):
+	if _pending_texture:
 		icon_sprite.texture = _pending_texture
+		_adjust_icon_scale()
 		_pending_texture = null
+		
+	if _pending_variant != &"":
+		_apply_variant_visuals(_pending_variant)
+		_pending_variant = &""
 		_adjust_icon_scale()
 
 func _exit_tree() -> void:
@@ -63,7 +69,7 @@ func _exit_tree() -> void:
 	if CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
 		CRTEffect.glow_toggled.disconnect(_on_global_glow_toggled)
 
-func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D) -> void:
+func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D, variant: StringName = &"") -> void:
 	instance_uuid = uuid
 	entity_type = type
 	location = loc
@@ -73,6 +79,26 @@ func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Text
 			_adjust_icon_scale()
 		else:
 			_pending_texture = tex
+	
+	# Apply Prismatic Variant Visuals
+	if variant != &"":
+		if is_node_ready() and is_instance_valid(icon_sprite):
+			_apply_variant_visuals(variant)
+		else:
+			_pending_variant = variant
+
+func _apply_variant_visuals(variant: StringName) -> void:
+	if variant == &"prismatic":
+		var prismatic_shader = load("res://assets/shaders/prismatic_foil.gdshader")
+		if prismatic_shader:
+			var mat = ShaderMaterial.new()
+			mat.shader = prismatic_shader
+			if icon_sprite:
+				icon_sprite.material = mat
+				icon_sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
+			if capsule_sprite:
+				capsule_sprite.material = mat
+				capsule_sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
 
 func _adjust_icon_scale() -> void:
 	if not is_instance_valid(icon_sprite) or not icon_sprite.texture:
