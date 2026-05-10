@@ -91,14 +91,14 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			# SPECIAL: PWR->HP Conversion (e.g., Templar)
 			# Redirect positive PWR buffs to HP if unit has specific tag
 			var tgt_def = tgt.get_definition()
-			if stat == "pwr" and amount > 0 and is_instance_valid(tgt_def) and "tags" in tgt_def:
-				if tgt_def.tags.has(&"CONVERT_PWR_TO_HP"):
+			if stat == "pwr" and amount > 0:
+				if tgt.has_tag(&"CONVERT_PWR_TO_HP"):
 					tgt_stat = "hp"
 					# Amount remains the same (1:1 conversion)
 					
 					# Process this target individually to ensure correct visuals (HP Heal event instead of PWR Buff)
 					var old_hp = tgt.current_hp
-					var max_hp = tgt_def.base_hp
+					var max_hp = tgt_def.base_hp if is_instance_valid(tgt_def) and "base_hp" in tgt_def else tgt.current_hp
 					var new_hp = battle_manager.apply_stat_delta(tgt, "hp", tgt_amount)
 					
 					# Log message for conversion

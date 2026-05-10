@@ -67,7 +67,8 @@ var _visual_status_effects: Dictionary = {} # Generic: status_id -> stacks
 var _status_icon_nodes: Dictionary = {} # Dynamic icon nodes: status_id -> TextureRect
 var _visual_equipped_items: Array = [] # Equipped item data: [{uuid, icon, definition_id}]
 var _visual_equipped_item_icon: Texture2D = null
-var _visual_level: int = 0
+var _visual_level: int = 1
+var _visual_tier: int = 1
 var _bound_uuid: String = "" # UUID bound during populate()
 var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
 
@@ -322,7 +323,10 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	_visual_equipped_items = visual_data.get("equipped_items", []) # Array of {uuid, icon, definition_id}
 	_visual_equipped_item_icon = visual_data.get("equipped_item_icon")
-	_visual_level = int(visual_data.get("tier", 0))
+	
+	var attributes = visual_data.get("attributes", {})
+	_visual_level = str(attributes.get(&"level", 1)).to_int()
+	_visual_tier = str(attributes.get(&"tier", visual_data.get("tier", 1))).to_int()
 	
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
@@ -449,27 +453,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_update_stats()
 	_update_dynamic_status_icons(false) # explicit: do not animate on populate
 	
-	# Apply Prismatic Variant Visuals
-	var variant = visual_data.get("variant_id", &"")
-	if variant == &"prismatic":
-		var prismatic_shader = load("res://assets/shaders/prismatic_foil.gdshader")
-		if prismatic_shader:
-			var mat = ShaderMaterial.new()
-			mat.shader = prismatic_shader
-			if is_instance_valid(icon_rect):
-				icon_rect.material = mat
-				icon_rect.modulate = Color(1.2, 1.2, 1.2, 1.0) # Subtle brightness boost
-				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-				if unit_sprite:
-					unit_sprite.material = mat
-	else:
-		# Cleanup for non-prismatic (important for recycled UI slots)
-		if is_instance_valid(icon_rect):
-			icon_rect.material = null
-			icon_rect.modulate = Color.WHITE
-			var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-			if unit_sprite:
-				unit_sprite.material = null
+	# Apply visual layers from component system (replaces legacy variant_id check)
+	var visual_layers = visual_data.get("visual_layers", [])
+	_apply_visual_layers(visual_layers)
 	
 	visible = true
 
@@ -501,10 +487,62 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	_visual_equipped_items = visual_data.get("equipped_items", _visual_equipped_items)
 	_visual_equipped_item_icon = visual_data.get("equipped_item_icon", _visual_equipped_item_icon)
-	_visual_level = int(visual_data.get("tier", _visual_level))
+	
+	var attributes = visual_data.get("attributes", {})
+	_visual_level = int(attributes.get(&"level", _visual_level))
+	_visual_tier = int(attributes.get(&"tier", visual_data.get("tier", _visual_tier)))
 	_update_stats()
 	_update_dynamic_status_icons(false) # explicit: do not animate on hard refresh
 	_update_item_slots()
+	# Re-apply visual layers on refresh (e.g. mid-battle prismatic change)
+	var refresh_layers = visual_data.get("visual_layers", [])
+	_apply_visual_layers(refresh_layers)
+
+## Apply visual component layers (shader effects, modulate) from the component system.
+## This replaces the legacy variant_id == "prismatic" check.
+func _apply_visual_layers(layers: Array) -> void:
+	if not is_instance_valid(icon_rect):
+		return
+
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+
+	if layers.is_empty():
+		# No visual layers — reset to clean state (important for recycled UI slots)
+		icon_rect.material = null
+		icon_rect.modulate = Color.WHITE
+		if unit_sprite:
+			unit_sprite.material = null
+		return
+
+	# Apply the first shader layer found (currently only one shader layer is expected)
+	var shader_applied := false
+	for layer in layers:
+		var shader_res: Shader = layer.get("shader")
+		var shader_path: String = layer.get("shader_path", "")
+		var shader_params: Dictionary = layer.get("shader_params", {})
+		var modulate_color: Color = layer.get("modulate", Color.WHITE)
+
+		# Resolve shader from path if not preloaded
+		if not is_instance_valid(shader_res) and not shader_path.is_empty():
+			shader_res = load(shader_path)
+
+		if is_instance_valid(shader_res) and not shader_applied:
+			var mat = ShaderMaterial.new()
+			mat.shader = shader_res
+			for param_name in shader_params:
+				mat.set_shader_parameter(param_name, shader_params[param_name])
+			icon_rect.material = mat
+			icon_rect.modulate = modulate_color
+			if unit_sprite:
+				unit_sprite.material = mat
+			shader_applied = true
+
+	if not shader_applied:
+		# Layers exist but none had shaders — reset material
+		icon_rect.material = null
+		icon_rect.modulate = Color.WHITE
+		if unit_sprite:
+			unit_sprite.material = null
 
 func set_is_enemy(is_enemy: bool, _definition_id: StringName = &"") -> void:
 	if is_instance_valid(icon_rect):

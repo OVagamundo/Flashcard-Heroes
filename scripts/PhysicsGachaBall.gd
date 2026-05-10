@@ -11,7 +11,7 @@ var instance_uuid: String
 var location: LocationIdentifier
 var entity_type: StringName
 var _pending_texture: Texture2D = null
-var _pending_variant: StringName = &""
+var _pending_visual_layers: Array = []
 
 @onready var capsule_sprite: Sprite2D = $CapsuleSprite
 @onready var icon_sprite: Sprite2D = $IconSprite
@@ -59,9 +59,9 @@ func _ready() -> void:
 		_adjust_icon_scale()
 		_pending_texture = null
 		
-	if _pending_variant != &"":
-		_apply_variant_visuals(_pending_variant)
-		_pending_variant = &""
+	if _pending_visual_layers.size() > 0:
+		_apply_visual_layers(_pending_visual_layers)
+		_pending_visual_layers.clear()
 		_adjust_icon_scale()
 
 func _exit_tree() -> void:
@@ -69,7 +69,7 @@ func _exit_tree() -> void:
 	if CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
 		CRTEffect.glow_toggled.disconnect(_on_global_glow_toggled)
 
-func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D, variant: StringName = &"") -> void:
+func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D, visual_layers: Array = []) -> void:
 	instance_uuid = uuid
 	entity_type = type
 	location = loc
@@ -80,25 +80,45 @@ func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Text
 		else:
 			_pending_texture = tex
 	
-	# Apply Prismatic Variant Visuals
-	if variant != &"":
+	# Apply visual layers from component system (replaces legacy variant_id check)
+	if visual_layers.size() > 0:
 		if is_node_ready() and is_instance_valid(icon_sprite):
-			_apply_variant_visuals(variant)
+			_apply_visual_layers(visual_layers)
 		else:
-			_pending_variant = variant
+			_pending_visual_layers = visual_layers
 
-func _apply_variant_visuals(variant: StringName) -> void:
-	if variant == &"prismatic":
-		var prismatic_shader = load("res://assets/shaders/prismatic_foil.gdshader")
-		if prismatic_shader:
+func _apply_visual_layers(layers: Array) -> void:
+	if layers.is_empty():
+		if icon_sprite:
+			icon_sprite.material = null
+			icon_sprite.modulate = Color.WHITE
+		if capsule_sprite:
+			capsule_sprite.material = null
+			capsule_sprite.modulate = Color.WHITE
+		return
+
+	# Apply the first shader layer found
+	for layer in layers:
+		var shader_res: Shader = layer.get("shader")
+		var shader_path: String = layer.get("shader_path", "")
+		var shader_params: Dictionary = layer.get("shader_params", {})
+		var modulate_color: Color = layer.get("modulate", Color.WHITE)
+
+		if not is_instance_valid(shader_res) and not shader_path.is_empty():
+			shader_res = load(shader_path)
+
+		if is_instance_valid(shader_res):
 			var mat = ShaderMaterial.new()
-			mat.shader = prismatic_shader
+			mat.shader = shader_res
+			for param_name in shader_params:
+				mat.set_shader_parameter(param_name, shader_params[param_name])
 			if icon_sprite:
 				icon_sprite.material = mat
-				icon_sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
+				icon_sprite.modulate = modulate_color
 			if capsule_sprite:
 				capsule_sprite.material = mat
-				capsule_sprite.modulate = Color(1.2, 1.2, 1.2, 1.0)
+				capsule_sprite.modulate = modulate_color
+			return  # Only apply first shader layer
 
 func _adjust_icon_scale() -> void:
 	if not is_instance_valid(icon_sprite) or not icon_sprite.texture:

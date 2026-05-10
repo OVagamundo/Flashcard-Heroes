@@ -289,42 +289,26 @@ func _on_path_choice_scene_requested() -> void:
 		_update_day_label(GameManager.run_state.day)
 
 func _on_reward_scene_requested(context: Dictionary) -> void:
-	print("[Main] _on_reward_scene_requested called with context keys: ", context.keys())
 	clear_content_area()
 	var scene_to_use = REWARD_SCENE
 	
-	# Determine if this is an Elite/Boss reward (based on metadata or TRINKETS)
+	# Determine if this is an Elite/Boss reward
 	var is_special = context.get("is_special_victory", false)
-	if not is_special:
-		var rewards_list = context.get("reward_instances", [])
-		if rewards_list.size() > 0:
-			var r_inst = rewards_list[0]
-			if is_instance_valid(r_inst):
-				var r_def = r_inst.get_definition()
-				if is_instance_valid(r_def) and r_def.category == &"TRINKET":
-					is_special = true
 	
 	if is_special:
-		print("[Main] Detected Special/Elite victory. Using REWARD_ELITE_SCENE")
 		scene_to_use = REWARD_ELITE_SCENE
 	
-	print("[Main] Instantiating reward scene...")
 	var instance = scene_to_use.instantiate()
 	if not is_instance_valid(instance):
-		print("[Main] ERROR: Failed to instantiate reward scene!")
 		return
 		
-	print("[Main] Instance created: ", instance.name)
 	_current_content_node = instance
 	scene_slot.add_child(instance)
 	
 	_sync_scene_background(instance)
 	
 	if instance.has_method("populate"):
-		print("[Main] Calling populate() on reward scene instance")
 		instance.populate(context)
-	else:
-		print("[Main] WARNING: Reward scene instance has no populate() method")
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating

@@ -372,11 +372,10 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	
 	var loc = prize_data.location
 	var instance = prize_data.instance
-	var def = instance.get_definition()
-	var tier = int(def.tier) if "tier" in def else 1
-	var level = 1 # Assuming level 1 for drawn rewards
-	var gold_yield = int(tier * level * 0.5)
-	if gold_yield < 1: gold_yield = 1
+	
+	# NEW: Use the dynamic gold value from the instance (half value, min 1 gold)
+	var unit_value = instance.get_gold_value()
+	var gold_yield = max(1, int(unit_value * 0.5))
 	
 	_clear_prize_slot(loc.index)
 	SignalBus.emit_signal("selection_clear_requested")

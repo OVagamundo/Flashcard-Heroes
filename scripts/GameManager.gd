@@ -19,7 +19,6 @@ var director_run_state: DirectorRunState = DirectorRunState.new()
 var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
-var _is_processing_victory: bool = false # Prevents multiple reward processing
 var _reward_reroll_cost: int = 1 # Reward reroll cost (resets per battle)
 
 # Temporary shop state
@@ -206,25 +205,12 @@ func _on_return_to_title() -> void:
 
 
 func _on_battle_victory_acknowledged() -> void:
-	print("[GameManager] _on_battle_victory_acknowledged called")
-	if _is_processing_victory:
-		print("[GameManager] Victory already being processed, ignoring redundant request")
-		return # Debounce guard
-	_is_processing_victory = true
-	
 	# Day should only increment when path choice scene loads, not here
 	
 	# Calculate gold reward based on reward type
 	var is_special = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
-	var contains_trinkets := false
-	for inst in _temporary_reward_master_dict.values():
-		var def = inst.get_definition()
-		if is_instance_valid(def) and (def is TrinketDefinition or def.get("category") == &"TRINKET"):
-			contains_trinkets = true
-			break
 			
-	if is_special or contains_trinkets:
-		print("[GameManager] Special reward detected. Awarding 10 gold.")
+	if is_special:
 		_temporary_gold_reward = 10
 	else:
 		# Regular rewards: calculate from cost (average cost of the 3 rewards)
@@ -235,11 +221,9 @@ func _on_battle_victory_acknowledged() -> void:
 				sum_costs += get_item_cost(def)
 		
 		_temporary_gold_reward = max(1, int(round(float(sum_costs) / 3.0)))
-		print("[GameManager] Regular reward detected. Sum costs: %d, Final gold: %d" % [sum_costs, _temporary_gold_reward])
 
 	# Signal the UI to display the pre-generated rewards.
 	var context: Dictionary = get_pending_rewards()
-	print("[GameManager] Requesting reward scene with context keys: ", context.keys(), " is_special: ", context.get("is_special_victory"))
 	SignalBus.emit_signal("reward_scene_requested", context)
 
 func _on_reward_chosen(payload) -> void:
@@ -277,7 +261,6 @@ func _on_reward_chosen(payload) -> void:
 	# --- TRANSITION LOGIC REMOVED ---
 	# The scene transition is now handled by the new button in Reward.gd.
 	# We still need to clean up the temporary data and signal that the run data has changed.
-	_is_processing_victory = false
 	
 	# Reset levels ONLY AFTER the choice is processed and data is cleared
 	run_state.current_boss_level = 0
@@ -292,15 +275,31 @@ func _on_reward_chosen(payload) -> void:
 ## Central helper to calculate the gold cost of a definition based on the 1/2/4 economy model.
 func get_item_cost(def: Resource) -> int:
 	if not is_instance_valid(def): return 1
+	
 	var tier: int = 1
 	if "tier" in def:
 		tier = int(def.tier)
+	
+	# Trinkets are valued as Tier 3 base
 	if "category" in def and def.category == &"TRINKET":
 		tier = 3
 	
-	if tier >= 3: return 4
-	elif tier == 2: return 2
-	return 1
+	# Base cost per tier: T1=1, T2=2, T3+=4
+	var base_cost: int = 1
+	if tier >= 3:
+		base_cost = 4
+	elif tier == 2:
+		base_cost = 2
+	
+	# Valuation scales by 2^(Level-1)
+	# T1L1=1, T1L2=2, T1L3=4
+	# T3L1=4, T3L2=8, T3L3=16
+	var level: int = 1
+	if "level" in def:
+		level = int(def.level)
+		
+	var multiplier: int = int(pow(2, level - 1))
+	return base_cost * multiplier
 
 ## Central authoritative function to find any instance by its UUID.
 ## This should be used instead of direct lookups in BattleManager or RunState.

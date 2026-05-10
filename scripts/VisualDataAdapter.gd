@@ -55,6 +55,8 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 						"definition_id": item_instance.definition_id
 					})
 
+	var visual_layers := _create_visual_layers(instance, all_instances)
+
 	var data = {
 		"uuid": instance.ball_uuid,
 		"definition_id": instance.definition_id,
@@ -78,7 +80,14 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		
 		# Metadata
 		"is_player_owned": true, # Default, might need adjustment if we have enemy specific logic
-		"variant_id": instance.variant_id,
+		"attributes": {
+			"tier": instance.get_attribute(&"tier", all_instances),
+			"level": instance.get_attribute(&"level", all_instances),
+			"rarity": instance.get_attribute(&"rarity", all_instances),
+			"category": instance.get_attribute(&"category", all_instances),
+		},
+		"active_tags": instance.get_active_tags(all_instances),
+		"visual_layers": visual_layers,
 	}
 	
 	# Handle specific definition types if needed (e.g. if icon is stored differently)
@@ -88,3 +97,26 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 
 static func create_empty_visual_data() -> Dictionary:
 	return {}
+
+static func _create_visual_layers(instance: GachaBallInstance, all_instances: Dictionary) -> Array:
+	var layers: Array = []
+	for component in instance.get_active_components(all_instances):
+		if not component is VisualComponent:
+			continue
+		var visual_component := component as VisualComponent
+		layers.append({
+			"component_id": visual_component.id,
+			"source_type": visual_component.source_type,
+			"source_id": visual_component.source_id,
+			"shader": visual_component.shader,
+			"shader_path": visual_component.shader_path,
+			"shader_params": visual_component.shader_params.duplicate(true),
+			"modulate": visual_component.modulate,
+			"overlay_icon": visual_component.overlay_icon,
+			"vfx_scene": visual_component.vfx_scene,
+			"layer": visual_component.layer,
+		})
+	layers.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("layer", 0)) < int(b.get("layer", 0))
+	)
+	return layers

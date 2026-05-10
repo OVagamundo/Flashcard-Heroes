@@ -56,16 +56,17 @@ The game follows a mandatory **Hybrid Architecture** that separates **Data Truth
 
 | Concept | Class | Responsibility |
 |---------|-------|----------------|
-| **The Truth** | `GachaBallInstance` | The single source of truth for all mutable data (stats, status, properties). **Never duplicate this data.** |
+| **The Truth** | `GachaBallInstance` | A stateful composition container and the single source of truth for all mutable data (stats, components, location). **Never duplicate this data.** |
+| **The Component** | `GachaBallComponent` | Source-aware modifications (Stat, Ability, Tag, Visual) that explain *why* an instance has its current properties. |
 | **The Index** | `DataContainer` | A positional index (Array of UUIDs) that allows O(1) lookups. It does NOT own the data, only the *location* of the data. |
 | **The Bridge** | `LocationIdentifier` | A universal key `{container, index, unit_uuid}` used to bridge Managers and Views. |
 
 ### 2. Tier-Based Strategic Roles
 Content design should move away from generic "Weak vs. Strong" tiers toward functional board roles:
 
-- **Tier 1 & 2 (The Engines)**: Designed for high **Interaction Surplus**. These units have low baked-in stats but complex scaling abilities. They are cheap to realize (1–2 Tokens) and serve as the fuel for the team engine.
-- **Tier 3 (The Anchors)**: Designed for high **Stat Density**. They provide massive baked-in packages and 4 item slots to create "Board Stability." They have the highest "Gold-per-Token" realization rate (4 Gold value for 3 Tokens).
-- **The Carry (Tier-Agnostic)**: A "Carry" is any unit where the Interaction Surplus (from Traits, Trinkets, and Items) makes them the primary value-driver. Even a Tier 1 unit can be a Carry if its scaling synergy is properly fueled.
+- **Tier 1 & 2 (The Engines)**: Designed for high **Interaction Surplus**. These units have low baked-in stats but complex scaling abilities. They are cheap to realize (T1L1 = 1 Gold) and serve as the fuel for the team engine.
+- **Tier 3 (The Anchors)**: Designed for high **Stat Density**. They provide massive baked-in packages and serve as the ultimate multiplicative chassis for high-tier equipment to create "Board Stability." They have the highest "Gold-per-Token" realization rate (T3L1 = 4 Gold).
+- **The Carry (Tier-Agnostic)**: A "Carry" is any unit where the Interaction Surplus (from Traits, Trinkets, and Items) makes them the primary value-driver. Even a Tier 1 unit can be a Carry if its scaling synergy is properly fueled. Leveling up further increases their Carry potential (+1 stat per level gained).
 
 ### 3. The Golden Rules of State
 
@@ -80,10 +81,10 @@ Content design should move away from generic "Weak vs. Strong" tiers toward func
 
 | System | Role | Key Components |
 |--------|------|----------------|
-| **Data Domain** | The raw state of the game. | `RunState`, `GachaBallDefinition`, `GachaBallInstance` |
+| **Data Domain** | The raw state of the game. | `RunState`, `GachaBallDefinition`, `GachaBallInstance`, `GachaBallComponent` |
 | **Battle System** | Simulation and Orchestration. | `BattleManager`, `CombatSimulator`, `EffectHandlers` |
-| **Ability System** | Trigger processing and Effect execution. | `AbilityResolver`, `EffectDefinition` |
-| **Presentation** | Visual feedback and User Interface. | `BattleAnimator`, `GachaBallView`, `BattleView` |
+| **Ability System** | Unified trigger processing and Effect execution. | `AbilityResolver` (Unified Query), `EffectDefinition` |
+| **Presentation** | Visual feedback and User Interface. | `BattleAnimator`, `GachaBallView`, `BattleView`, `VisualDataAdapter` |
 
 ---
 
@@ -357,13 +358,15 @@ When multiple summons occur simultaneously (e.g. Soul Echo + Last Wish):
 Use these checklists **BEFORE** marking any implementation as complete.
 
 ### 1. New Unit Checklist
-- [ ] **Stats Validated**: Ensure that the unit HP and PWR equals the exact sum of its recipe parents (ingredients). This ensures the "Reciprocal Stat Conservation" rule is maintained during merging/tier-ups.
+- [ ] **Stats Validated**: Ensure the unit's Tier and Level are correctly set in the `.tres` file.
+- [ ] **Evolution Chain**: 
+    - Is this a unique level definition (Lv 1 -> Lv 2 -> Lv 3)?
+    - Does it have a self-merge recipe defined for the previous level?
 - [ ] **Scaling vs. Package Density**: 
     - Is this an **Engine** (High Interaction Surplus) or an **Anchor** (High Stat Density)?
-    - Does the ability complexity match the role?
 - [ ] **Tier & Cost Integrity**: 
-    -  matches filename ().
-    -  equals  (Cost 1/2/3).
+    - `tier` matches filename and intended container.
+    - `cost` follows the formula: `BaseTierCost * 2^(Level-1)` (e.g., T1L1=1, T1L2=2, T1L3=4; T3L1=4, T3L2=8, T3L3=16).
 - [ ] **Category**: Set to `&"UNIT"`.
 - [ ] **Soul Tags**: 
     - MUST include elemental souls corresponding to ingredients.

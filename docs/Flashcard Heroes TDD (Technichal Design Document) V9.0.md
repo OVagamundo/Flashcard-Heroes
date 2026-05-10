@@ -7,9 +7,10 @@
 ### 1.1 The Definitive Hybrid Architecture
 The game follows a mandatory hybrid architecture that separates data truth from positional indexing. All systems must adhere to these three rules:
 
-1.  **The Instance is the Source of Truth:** `GachaBallInstance` is the single source of truth for all mutable data (stats, status, location properties). Caching or duplicating this data elsewhere is prohibited.
-2.  **The Container is a Positional Index:** `DataContainer` (Lineups, Benches, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
-3.  **The Golden Rule of State Synchronization:** Any operation moving an instance (move, swap, equip) must update both the Index (`DataContainer`) and the Truth (`GachaBallInstance`) in a single atomic transaction.
+1.  **The Instance is the Source of Truth:** `GachaBallInstance` is a stateful composition container and the single source of truth for an individual gachaball's state (stats, components, location).
+2.  **Component-Based Composition:** All modifications to a gachaball (equipment, buffs, levels, rarity) are represented as source-aware components, allowing for deterministic resolution and inspection.
+3.  **The Container is a Positional Index:** `DataContainer` (Lineups, Benches, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
+4.  **The Golden Rule of State Synchronization:** Any operation moving an instance (move, swap, equip) must update both the Index (`DataContainer`) and the Truth (`GachaBallInstance`) in a single atomic transaction.
 
 ---
 
@@ -27,8 +28,9 @@ The game follows a mandatory hybrid architecture that separates data truth from 
 -   **`GachaBallDefinition.gd`**: Immutable template for units/items. Contains stats, abilities, cost, and temporal prerequisites (`min_day`, `max_day`). Inherits from `WeightableEntity`.
     -   **Computed Slots**: `item_slot_count` is now automatically computed based on Tier (0:4, 1:1, 2:2, 3:4).
 -   **`TrinketDefinition.gd`**: Immutable template for trinkets. Now inherits from `WeightableEntity` to support Director-based reward generation.
--   **`GachaBallInstance.gd`**: Mutable state of a specific gachaball.
--   **`FlashcardDefinition.gd` & `FlashcardProgress.gd`**: loaded JSON data and run-specific mastery tracking.
+-   **`GachaBallInstance.gd`**: Stateful composition container representing an individual gachaball. Manages its own components and live stats.
+-   **`GachaBallComponent.gd`**: Base class for all instance modifications (Stat, Ability, Tag, Visual).
+-   **`VisualDataAdapter.gd`**: Logic-to-View bridge that converts instance component stacks into rendered visual layers.
 -   **`LocationIdentifier`**: Universal key `{container, index, unit_uuid}` used to bridge Managers and Views.
 
 ### 2.2 Location Registry
@@ -51,7 +53,7 @@ Core logic is partitioned to ensure Single Responsibility:
         - `EffectHandlers`: Conversion of simulation results into `CombatEvent` payloads.
         - `BattleState`: Atomic mutations and container persistence.
     -   **Snapshotting:** Before playback, a value-based snapshot is captured. Views query this snapshot to ensure visual consistency regardless of underlying state mutations.
--   **Ability System:** A broadcast-based system where `AbilityResolver` converts triggers into effects using an O(N) single-pass bucketing algorithm for efficiency.
+-   **Ability System:** A source-aware broadcast system. `AbilityResolver` queries `get_active_ability_entries()` to process abilities from units, items, and temporary effects in a unified priority pass.
     -   (See `docs/AbilityExecutionPipeline.md`)
 -   **Encounter System:** A budget-based generator (`3 + (Day-1)`) that guarantees 100% budget spend using a greedy fill algorithm.
     -   (See `docs/EncounterSystem.md`)
@@ -83,8 +85,11 @@ Centralized interpretation of user intent to decouple Views from Logic:
 2.  **GIR** maps source/target to functional groups and validates the transition.
 3.  **GIR** generates a `REQUEST_ACTION` command.
 4.  **InventoryManager** receives the command and requests a `MergeRecipe` from `MergeManager`.
-5.  **MergeManager** calculates the result (Sum of parents - equipped bonuses).
-6.  **InventoryManager** executes the atomic mutation on the `DataOwner` (RunState or BattleManager).
+5.  **MergeManager** calculates the result using the "Evolutionary Merge" model.
+6.  **Merge Inheritance:** The new instance inherits a "stat surplus" from parents via a persistent `StatComponent` with the `MERGE_INHERITANCE` source.
+    - **Tier Evolution**: Additive (Parent A + Parent B).
+    - **Leveling**: Evolutionary (Base + Sum of Extra Stats + 1).
+7.  **InventoryManager** executes the atomic mutation on the `DataOwner` (RunState or BattleManager).
 
 ### 4.2 Combat Broadcast Pattern
 1.  `BattleManager` detects a trigger event (e.g., `TRIGGER_ON_ATTACK`).
@@ -93,8 +98,8 @@ Centralized interpretation of user intent to decouple Views from Logic:
 4.  `CombatSimulator` executes the resulting effects and generates the `TurnLog`.
 
 ### 4.3 Progression & Unlocks
--   **Recipe Unlocks:** Merge recipes stay locked in `RunState` until the result is first acquired. `MergeManager` checks `RunState.is_recipe_unlocked()` before allowing a merge.
--   **Stat Scaling:** `GachaBallInstance.recalculate_stats` is designed to be cumulative. It preserves current health/power deltas during merges and tier-ups, allowing for infinite growth without clamping to base values.
+-   **Stat Resolution:** `GachaBallInstance` resolves effective stats by aggregating base definition values with active `StatComponents`. 
+-   **Attribute Resolution:** Attributes like `tier`, `level`, and `rarity` are queried through `get_attribute()`, ensuring that dynamic changes (e.g., a "Level Up" buff) are correctly reflected.
 
 ---
 

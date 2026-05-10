@@ -16,48 +16,48 @@ When merging units, all abilities from both parent units are retained in the res
 Units are the primary actors in battle. They have Health (HP) and Power (PWR) stats, can equip items, and possess abilities.
 
 ### Player Heroes
-| ID | Name | Tier | Stats | Slots | Abilities |
+| ID | Name | Tier | Stats | Abilities |
+|---|---|---|---|---|
+| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | **Bounty**: Gain 1 Gold on kill (originates from victim).<br>**Scavenger's Resolve** (`on_ally_death`): Gain +1 HP and +1 PWR when an ally dies.<br>**Quick Wits** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
+| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | **Time Warp**: Gains 10 tokens at start of battle and Rest Sites (Passive).<br>**Temporal Aura**: At start of each turn, grants +2 HP to units in front and +2 PWR to units behind (Passive).<br>**Time Dilation** (Minigame): +1.5s on correct answer, -0.8s on incorrect. |
+| `hero_avenger` | Avenger | 0 | 6 HP / 2 PWR | **Leap Attack** (`on_ally_death`): Leap and attack the frontmost enemy. |
+| `hero_bastion` | Bastion | 0 | 10 HP / 2 PWR | **Fortify** (`on_ally_death`): Gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. |
+| `hero_pyro` | Pyromancer | 0 | 8 HP / 2 PWR | **Incinerate** (`on_attack`): Instead of damage, apply Burn stacks equal to PWR. |
+
+### Tier 1 Units (Cost: 1 * 2^(L-1))
+| ID | Name | Stats | Souls | Abilities |
+|---|---|---|---|---|
+| `unit_t1_a` | Apprentice | 2 HP / 1 PWR | 1 Earth | **Resilience** (`on_hurt`): Heal self by (PWR). |
+| `unit_t1_b` | Squire | 1 HP / 2 PWR | 1 Fire | **Retaliation** (`on_hurt`): Counter-attack for (PWR) damage. |
+| `unit_t1_c` | Protector | 1 HP / 1 PWR | 1 Water | **Guardian's Grace** (`on_ally_hurt`): When ally directly in front takes damage, heal them for (PWR). |
+| `unit_t1_d` | Empath | 1 HP / 1 PWR | 1 Wind | **Empathic Link** (`on_death`): On death, grant total current PWR to ally behind. |
+
+### Tier 2 Units (Cost: 2 * 2^(L-1))
+| ID | Name | Merge Recipe | Stats | Souls | Abilities |
 |---|---|---|---|---|---|
-| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | 5 | **Bounty**: Gain 1 Gold on kill (originates from victim).<br>**Scavenger's Resolve** (`on_ally_death`): Gain +1 HP and +1 PWR when an ally dies.<br>**Quick Wits** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
-| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | 5 | **Time Warp**: Gains 10 tokens at start of battle and Rest Sites (Passive).<br>**Temporal Aura**: At start of each turn, grants +2 HP to units in front and +2 PWR to units behind (Passive).<br>**Time Dilation** (Minigame): +1.5s on correct answer, -0.8s on incorrect. |
-| `hero_avenger` | Avenger | 0 | 6 HP / 2 PWR | 5 | **Leap Attack** (`on_ally_death`): Leap and attack the frontmost enemy. |
-| `hero_bastion` | Bastion | 0 | 10 HP / 2 PWR | 5 | **Fortify** (`on_ally_death`): Gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. |
-| `hero_pyro` | Pyromancer | 0 | 8 HP / 2 PWR | 5 | **Incinerate** (`on_attack`): Instead of damage, apply Burn stacks equal to PWR. |
+| `unit_t2_a` | Paladin | **Apprentice + Apprentice** | 4 HP / 2 PWR | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain +2 HP before taking damage. |
+| `unit_t2_b` | Berserker | **Squire + Squire** | 2 HP / 4 PWR | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind. |
+| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain +1 HP / +1 PWR. |
+| `unit_t2_d` | Templar | **Protector + Empath** | 2 HP / X PWR | 1 Water, 1 Wind | **Gacha Power** (`passive`): PWR is equal to Gacha Tokens (Min 1). PWR buffs convert to HP. |
+| `unit_t2_e` | Mimic | **Protector + Protector** | 2 HP / 2 PWR | 2 Water | **Mirror Transformation** (`on_turn_start`): Transforms into the base unit of the enemy in the mirror slot. |
+| `unit_t2_f` | Merchant | **Apprentice + Empath** | X HP / X PWR | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`, `on_battle_start`): Initial PWR equals your current Gold when drawn or spawned. |
+| `unit_t2_g` | Shadow Cloner | **Empath + Empath** | 3 HP / 3 PWR | 1 Wind | **Buff Echo** (`on_stat_increased`): Repeats any buff (HP/PWR) received by an adjacent ally. |
+| `unit_t2_h` | Hermit | **Protector + Empath** | 4 HP / 2 PWR | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only): Gains +1 HP and +1 PWR per empty slot. (Unlocked on Day 10+ for encounter generator) |
+| `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 2 HP / 2 PWR | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain **+1 Armor and +1 Spike**. |
+| `unit_t2_j` | Steam Wisp | **Squire + Protector** | 1 HP / 3 PWR | 1 Fire, 1 Water | **Scald** (`on_healed`): When healed, deal equal damage to the front enemy. |
 
-### Tier 1 Units (Cost: 1)
-| ID | Name | Stats | Slots | Souls | Abilities |
+### Tier 3 Units (Gold Cost: 4 * 2^(L-1) | Draw Cost: 3 Tokens)
+| ID | Name | Merge Recipe | Stats | Souls | Abilities |
 |---|---|---|---|---|---|
-| `unit_t1_a` | Apprentice | 2 HP / 1 PWR | 1 | 1 Earth | **Resilience** (`on_hurt`): Heal self by (PWR). |
-| `unit_t1_b` | Squire | 1 HP / 2 PWR | 1 | 1 Fire | **Retaliation** (`on_hurt`): Counter-attack for (PWR) damage. |
-| `unit_t1_c` | Protector | 1 HP / 1 PWR | 1 | 1 Water | **Guardian's Grace** (`on_ally_hurt`): When ally directly in front takes damage, heal them for (PWR). |
-| `unit_t1_d` | Empath | 1 HP / 1 PWR | 1 | 1 Wind | **Empathic Link** (`on_death`): On death, grant total current PWR to ally behind. |
-
-### Tier 2 Units (Cost: 2)
-| ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
-|---|---|---|---|---|---|---|
-| `unit_t2_a` | Paladin | **Apprentice + Apprentice** | 4 HP / 2 PWR | 2 | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain +2 HP before taking damage. |
-| `unit_t2_b` | Berserker | **Squire + Squire** | 2 HP / 4 PWR | 2 | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind. |
-| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 2 | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain +1 HP / +1 PWR. |
-| `unit_t2_d` | Templar | **Protector + Empath** | 2 HP / X PWR | 2 | 1 Water, 1 Wind | **Gacha Power** (`passive`): PWR is equal to Gacha Tokens (Min 1). PWR buffs convert to HP. |
-| `unit_t2_e` | Mimic | **Protector + Protector** | 2 HP / 2 PWR | 2 | 2 Water | **Mirror Transformation** (`on_turn_start`): Transforms into the base unit of the enemy in the mirror slot. |
-| `unit_t2_f` | Merchant | **Apprentice + Empath** | X HP / X PWR | 2 | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`, `on_battle_start`): Initial PWR equals your current Gold when drawn or spawned. |
-| `unit_t2_g` | Shadow Cloner | **Empath + Empath** | 3 HP / 3 PWR | 2 | 1 Wind | **Buff Echo** (`on_stat_increased`): Repeats any buff (HP/PWR) received by an adjacent ally. |
-| `unit_t2_h` | Hermit | **Protector + Empath** | 4 HP / 2 PWR | 2 | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only): Gains +1 HP and +1 PWR per empty slot. (Unlocked on Day 10+ for encounter generator) |
-| `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 2 HP / 2 PWR | 2 | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain **+1 Armor and +1 Spike**. |
-| `unit_t2_j` | Steam Wisp | **Squire + Protector** | 1 HP / 3 PWR | 2 | 1 Fire, 1 Water | **Scald** (`on_healed`): When healed, deal equal damage to the front enemy. |
-
-### Tier 3 Units (Gold Cost: 4 | Draw Cost: 3 Tokens)
-| ID | Name | Merge Recipe | Stats | Slots | Souls | Abilities |
-|---|---|---|---|---|---|---|
-| `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in the opposite mirror slot. If empty, targets the backmost enemy. |
-| `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 | 4 Earth | **Guardian Sacrifice** (`on_before_damage`): Leaps to intercept lethal damage on allies. |
-| `unit_t3_c` | Necromancer | **Paladin + Berserker** | 5 HP / 5 PWR | 4 | 2 Fire, 2 Earth | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death. |
-| `unit_t3_d` | Warden | **Knight + Knight** | 6 HP / 6 PWR | 4 | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): Grants +1 HP/+1 PWR to adjacent allies. |
-| `unit_t3_e` | Assassin | **Berserker + Knight** | 5 HP / 7 PWR | 4 | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies when they are summoned. |
-| `unit_t3_f` | Summoner | **Paladin + Knight** | 7 HP / 5 PWR | 4 | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies when they are summoned. |
-| `unit_t3_g` | Phantom Wayfarer | **Shadow Cloner + Shadow Cloner** | 6 HP / 6 PWR | 4 | 4 Wind | **Quiet Meditation** (`on_turn_start`): If on bench, gain +3 HP/+3 PWR. **[Player Exclusive]** |
-| `unit_t3_h` | Fusion Warden | **Steam Wisp + Shadow Cloner** | 4 HP / 6 PWR | 4 | 1 Fire, 1 Water, 2 Wind | **Convergence Surge** (`on_merge`): Whenever a merge happens on the battle board (bench or lineup, unit or item), if on the battle board, gain +2 HP/+2 PWR. |
-| `unit_t3_i` | Doppleganger | N/A | 3 HP / 3 PWR | 4 | — | **Mirrored Might** (`passive`): +3 PWR for every other Doppleganger in the Battle Pool.<br>**Clone Split** (`on_death`): Spawn an additional Doppleganger into the Discard Pile. **[Player Exclusive]** |
+| `unit_t3_a` | Duelist | **Berserker + Berserker** | 4 HP / 8 PWR | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in the opposite mirror slot. If empty, targets the backmost enemy. |
+| `unit_t3_b` | Guardian | **Paladin + Paladin** | 6 HP / 4 PWR | 4 Earth | **Guardian Sacrifice** (`on_before_damage`): Leaps to intercept lethal damage on allies. |
+| `unit_t3_c` | Necromancer | **Paladin + Berserker** | 5 HP / 5 PWR | 2 Fire, 2 Earth | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death. |
+| `unit_t3_d` | Warden | **Knight + Knight** | 6 HP / 6 PWR | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): Grants +1 HP/+1 PWR to adjacent allies. |
+| `unit_t3_e` | Assassin | **Berserker + Knight** | 5 HP / 7 PWR | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies when they are summoned. |
+| `unit_t3_f` | Summoner | **Paladin + Knight** | 7 HP / 5 PWR | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies when they are summoned. |
+| `unit_t3_g` | Phantom Wayfarer | **Shadow Cloner + Shadow Cloner** | 6 HP / 6 PWR | 4 Wind | **Quiet Meditation** (`on_turn_start`): If on bench, gain +3 HP/+3 PWR. **[Player Exclusive]** |
+| `unit_t3_h` | Fusion Warden | **Steam Wisp + Shadow Cloner** | 4 HP / 6 PWR | 1 Fire, 1 Water, 2 Wind | **Convergence Surge** (`on_merge`): Whenever a merge happens on the battle board (bench or lineup, unit or item), if on the battle board, gain +2 HP/+2 PWR. |
+| `unit_t3_i` | Doppleganger | N/A | 3 HP / 3 PWR | — | **Mirrored Might** (`passive`): +3 PWR for every other Doppleganger in the Battle Pool.<br>**Clone Split** (`on_death`): Spawn an additional Doppleganger into the Discard Pile. **[Player Exclusive]** |
 
 ### Enemies
 | ID | Name | Stats | Type | Abilities |
@@ -180,7 +180,7 @@ The game allocates a precise amount of gold for enemy recruitment every day. The
 - **Elite Battle**: `Daily Budget`. Elite nodes contain boss-tier units and grant **Trinket Rewards**.
 - **Boss Battle**: `Daily Budget`.
     - **Boss Unit**: Free (does not consume budget).
-    - **Boss Summons**: Use half of the daily budget. Summons can spawn with randomly equipped items.
+    - **Boss Summons**: Use one-third (33%) of the daily budget. Summons can spawn with randomly equipped items.
 
 ### Progression Scaling
 - **Elite battles** occur randomly on the path.

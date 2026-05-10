@@ -69,6 +69,7 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | **S8** Hover Boundary | When a base inventory is open, hovers outside it are blocked |
 | **S9** Locked Inspection| Status effect keywords in descriptions can be clicked to "lock" their inspection window open. Clicking outside or re-toggling closes it. |
 | **S10** Outcome Preview | Merge/Swap modals display a visual preview of the resulting unit/item to provide clear feedback before confirmation. |
+| **S11** Source-Aware Inspection | Unit and Item inspection windows now expose the underlying component stack. Components (Stats, Abilities, Tags, Visuals) are displayed with their source (Base Definition, Equipment, Merge Inheritance, Rarity, etc.). Modules can be clicked for nested inspection. |
 
 ---
 
@@ -90,7 +91,7 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | Type | Examples | Blocker | Behavior |
 |------|----------|---------|----------|
 | **Hermetic Modals** | FlashcardMinigame, EndBattlePopup | Yes | Blocks all input, self-closing |
-| **Contextual (Dynamic)** | UnitInspection, ItemInspection, TutorialOverlay | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). Features standardized **32px Black Composite** fonts and `ItemSlot.png` for unit item grids. |
+| **Contextual (Dynamic)** | UnitInspection, ItemInspection, TutorialOverlay | No | Positioned adjacent to anchor. Uses **"Show-before-Measure"** (alpha 0.0 for 3 frames) to ensure physical shrinking before positioning. Plays bouncy overshoot (1.0 -> 1.04 -> 1.0) and closes instantly (`queue_free`). Features standardized **32px Black Composite** fonts and `ItemSlot.png` for unit item grids. **Source-Aware**: Unit inspections show every active source of modification (StatComponents, AbilityComponents, etc.). |
 | **Contextual (Fixed)** | InventoryWindow, DiscardPile, MergeModal | No | Centered, closes on outside click. Merge modals feature **Result Previews**. |
 
 ### Window Layout & Sizing
