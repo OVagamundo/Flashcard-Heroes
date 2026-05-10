@@ -312,8 +312,7 @@ func modify_unit_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0)
 	SignalBus.emit_signal("run_data_changed")
 	return true
 func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int = 0) -> bool:
-	"""Permanently modifies a unit's base stats in its definition and updates current stats accordingly.
-	Used for permanent progression changes like training at rest sites."""
+	"""Permanently modifies a unit's base stats via a StatComponent and updates current stats."""
 	if unit_uuid.is_empty():
 		push_error("modify_unit_base_stats: Empty unit_uuid")
 		return false
@@ -331,20 +330,19 @@ func modify_unit_base_stats(unit_uuid: String, hp_delta: int = 0, pwr_delta: int
 	var old_hp = inst.current_hp
 	var old_pwr = inst.current_pwr
 
-	# Modify progression base stats in the instance itself (these persist across the entire run)
-	if hp_delta != 0:
-		inst.base_hp_modifier += hp_delta
-	if pwr_delta != 0:
-		inst.base_pwr_modifier += pwr_delta
+	# Add stat modification through the component system
+	inst.add_or_update_stat_component(
+		&"permanent_base_upgrade",
+		&"PERMANENT_UPGRADE",
+		"modify_unit_base_stats",
+		hp_delta,
+		pwr_delta,
+		false
+	)
 
-	# Update current stats to reflect the new base stats
-	# Preserve current HP if it's higher than the new base (e.g., from temporary healing)
-	var new_base_hp = unit_def.base_hp + inst.base_hp_modifier
-	var new_base_pwr = unit_def.base_pwr + inst.base_pwr_modifier
-	var new_hp = max(inst.current_hp, new_base_hp)
-	var new_pwr = new_base_pwr
-	inst.current_hp = new_hp
-	inst.current_pwr = new_pwr
+	# Update current stats: apply the delta directly to preserve battle damage
+	inst.current_hp += hp_delta
+	inst.current_pwr += pwr_delta
 
 	if OS.is_debug_build():
 		_validate_state_consistency()
@@ -832,12 +830,23 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 			
 			# 2. Add Units
 			for unit_id in Database.units.keys():
+				var def = Database.units[unit_id]
+				if not def: continue
+				# Filter out enemy-only units (Bosses, Elites, and Dust)
+				if def.tags.has(&"BOSS") or def.tags.has(&"ELITE") or "Dust" in String(unit_id):
+					continue
+					
 				starters.append(unit_id)
 				if mergeable_ids.has(unit_id):
 					starters.append(unit_id)
 					
 			# 3. Add Items
 			for item_id in Database.items.keys():
+				var def = Database.items[item_id]
+				if not def: continue
+				if def.tags.has(&"BOSS") or def.tags.has(&"ELITE"):
+					continue
+					
 				starters.append(item_id)
 				if mergeable_ids.has(item_id):
 					starters.append(item_id)
@@ -923,30 +932,7 @@ func prismatize_unit(instance: GachaBallInstance) -> void:
 	"""POC Helper: Transforms a unit instance into a Prismatic variant with boosted stats and abilities."""
 	if not is_instance_valid(instance):
 		return
-		
-	instance.variant_id = &"prismatic"
-	
-	# Apply Stat Boosts (+2 HP, +2 PWR)
-	instance.base_hp_modifier += 2
-	instance.base_pwr_modifier += 2
-	
-	# Sync current stats
-	var def = instance.get_definition()
-	if is_instance_valid(def):
-		instance.current_hp = def.base_hp + instance.base_hp_modifier
-		instance.current_pwr = def.base_pwr + instance.base_pwr_modifier
-	
-	# Inject Ability: Tiger Spirit (Extra Attack)
-	var tiger_spirit_def = Database.get_ability_definition(&"item_tier1b_extra_attack")
-	if is_instance_valid(tiger_spirit_def):
-		# Check if already has it to prevent duplicates
-		var has_ability = false
-		for ab in instance.abilities:
-			if ab.id == tiger_spirit_def.id:
-				has_ability = true
-				break
-		if not has_ability:
-			instance.abilities.append(tiger_spirit_def.duplicate(true))
+	instance.apply_prismatic_variant()
 
 # ------------------------------------------------------------------
 # Serialization (Save/Load)

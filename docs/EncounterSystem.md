@@ -24,9 +24,9 @@ The Encounter System is responsible for defining, generating, and instantiating 
 The system uses a unified "Gold Standard" to convert character stats into economic value, guiding both the Encounter Generator budget and unit balancing.
 
 **1 Gold (or 1 Token) buys approximately:**
-- **3 HP** (Durability focus)
-- **2 PWR** (Offensive/Scaling focus)
-- **2 to 3 Mixed points** (Balanced profile)
+- **3 HP** (Durability focus) at T1L1.
+- **2 PWR** (Offensive/Scaling focus) at T1L1.
+- **Leveling** adds exactly **+1 Stat Point** to both HP and PWR per level.
 
 ### Stat Hierarchy
 **PWR is valued significantly higher than HP.** 
@@ -46,9 +46,9 @@ Tiered units and items have the following budget costs:
 
 | Tier | Value (Gold) | Cost (tokens)|
 |------|--------------|--------------|
-|   1  | 1            | 1            |
-|   2  | 2            | 2            |
-|   3  | 4            | 3            |
+|   1  | 1 * 2^(L-1)  | 1            |
+|   2  | 2 * 2^(L-1)  | 2            |
+|   3  | 4 * 2^(L-1)  | 3            |
 
 Bosses don't have a cost, they are free.
 

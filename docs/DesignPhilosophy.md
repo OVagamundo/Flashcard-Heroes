@@ -18,14 +18,14 @@ For the content design team, understanding the Gold Standard is not merely a mat
 
 The elegance of the Gold Standard lies in its rejection of fractional balancing. We do not tweak values by 10% or adjust costs by 0.5 gold. The tiers are absolute buckets of value:
 
-| Tier Designation | Gold Cost | Merge Value | Item Slots | Enemy Budget (XP) | Removal Cost Scaling |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Tier 1** | 1 | 1 | 1 | 1 | 1x |
-| **Tier 2** | 2 | 2 | 2 | 2 | 2x |
-| **Tier 3** | 4 | 4 | 4 | 4 | 4x |
-| **Tier 0 (Hero)** | - | - | 4 | - | - |
+| Tier Designation | Base Gold Cost | Level Multiplier | Enemy Budget (XP) | Removal Cost Scaling |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tier 1** | 1 | x2 per Level | 1 | 1x |
+| **Tier 2** | 2 | x2 per Level | 2 | 2x |
+| **Tier 3** | 4 | x2 per Level | 4 | 4x |
+| **Tier 0 (Hero)** | - | - | - | - |
 
-This table serves as the immutable law of the game's economy. When designing a new unit, the first question is not "What does it do?" but "Which bucket does it fill?". The strict adherence to these integers creates a "solvability" that players find rewarding; they can calculate the exact opportunity cost of every action without hidden variables. A Tier 3 unit represents a significant commitment—not just in gold, but in the opportunity cost of the four Tier 1 units that were sacrificed or forgone to create it.
+This table serves as the immutable law of the game's economy. The total Gold Cost of an instance is calculated as: **Base Tier Cost × 2^(Level - 1)**. When designing a new unit, the first question is not "What does it do?" but "Which bucket does it fill?". The strict adherence to these integers creates a "solvability" that players find rewarding; they can calculate the exact opportunity cost of every action without hidden variables. A Tier 3 unit represents a significant commitment—not just in its base gold cost, but in the cumulative opportunity cost of its ancestors.
 
 > [!NOTE]
 > **Economy Disclaimer**: The 1–2–4 hierarchy applies strictly to the Gold economy (Shop and Encounter Generation). Battle draw costs follow a separate 1–2–3 Token hierarchy (Tier 1: 1, Tier 2: 2, Tier 3: 3) for battle-pacing reasons.
@@ -34,14 +34,7 @@ The **removal cost scaling (1x/2x/4x)** is particularly critical for content pac
 
 ### 1.2 The Cost-Power Divergence
 
-While the cost curve is linear (1 -> 2 -> 4), the power curve is designed to be **sigmoid or geometric**, specifically driven by the interaction between **Base Stats** and **Item Slots**.
-
-*   A Tier 1 unit has **1 Item Slot**.
-*   A Tier 2 unit has **2 Item Slots**.
-*   A Tier 3 unit has **4 Item Slots**.
-*   The **Hero (Tier 0)** has **4 Item Slots**.
-
-This is not a linear progression; it is a capability jump that allows for combinatorial explosions. A Tier 1 unit can hold a sword (+Attack). A Tier 3 unit can hold a sword, a shield, a haste potion, and a lifesteal amulet. The synergy between these four items creates a "Gestalt" effect where the whole is greater than the sum of its parts.
+This is not a linear progression; it is a capability jump where higher tiers provide significantly more efficient base stats and complex abilities while maintaining a shared constraint of **1 Item Slot**. This forces the player to make high-stakes decisions about which unit receives a powerful item, rather than diluting power across multiple slots.
 
 **For content creation, this means:**
 *   **Tier 1 content** must be stat-dense but mechanically simple. They are the "raw materials."
@@ -62,46 +55,42 @@ To ensure high replayability, units across different tiers must not simply be st
 Tier 1 units, or "Peasants," are the most cost-efficient sources of raw stats in the game. In the early game, the player is constrained by Gold and Tokens, but has ample Board Space (slots on the battlefield). Therefore, the optimal strategy is to fill the board with cheap, efficient bodies.
 
 **Design Guidelines for Tier 1:**
-*   **Stat Efficiency:** A Tier 1 unit should provide the best "Stats per Gold" ratio in the game. If a T1 costs 1 Gold and has 10 Attack, a T3 (costing 4 Gold) should not have 40 Attack. It should have perhaps 24 Attack. This inefficiency in higher tiers forces the player to rely on T1 swarms for early survival.
+*   **Stat Efficiency:** A Tier 1 unit should provide the best "Stats per Gold" ratio in the game. If a T1 costs 1 Gold and has 10 Power, a Tier 3 (costing 4 Gold base) should not have 40 Power. It should have perhaps 24 Power. This inefficiency in higher tiers forces the player to rely on T1 swarms for early survival.
 *   **Simplicity:** T1 units operate without complex setup. Their abilities should be unconditional: "Deal X Damage," "Block X Damage," "Generate 1 Token."
-*   **The Cultivation Canvas:** Because T1 units are cheap, they are the safest targets for risky "Cultivation" items. If a player uses a "Mutagen" potion that has a 50% chance to give +10 ATK and a 50% chance to kill the unit, they will use it on a 1-Gold T1, never on a 4-Gold T3. Content designers must create T1 units that have "High Risk/High Reward" trait slots to encourage this behavior.
+*   **The Cultivation Canvas:** Because T1 units are cheap, they are the safest targets for risky "Cultivation" items. If a player uses a "Mutagen" potion that has a 50% chance to give +10 PWR and a 50% chance to kill the unit, they will use it on a 1-Gold T1, never on a high-level T3. Content designers must create T1 units that have "High Risk/High Reward" trait slots to encourage this behavior.
 
 **Archetype Example: The Scavenger Rat.**
 *   **Stats:** Low HP, High Speed.
 *   **Ability:** "Pilfer" - Generates 1 Gold on kill.
 *   **Design Intent:** This unit is weak in combat but accelerates the economy. It demands to be "Cultivated" with HP buffs so it can survive long enough to trigger its gold generation.
 
-### 2.2 Tier 2: The Transitional Bridge
-*   **Role:** Trait Locking, Mid-Game Pivot, Hybrid Efficiency.
-*   **Constraint:** 2 Item Slots (The "Combo" Tier).
-
-Tier 2 represents the awkward middle adolescence of the unit. It requires merging two T1s. In the Gold Standard, it costs 2 Gold. It serves as the "Checkpoint" for the Cultivation system.
+Tier 2 represents the middle of the unit progression. It requires merging two T1s. In the Gold Standard, it costs 2 Gold. It serves as the "Checkpoint" for the Cultivation system.
 
 **Design Guidelines for Tier 2:**
-*   **The 2-Slot Synergy:** With two slots, T2 units introduce the first layer of combinatorial depth. Designers should create T2 units that specifically bridge two disparate archetypes. A T2 "Spell-Sword" might have synergies for both Magic items and Melee weapons, encouraging the player to merge a T1 Mage and a T1 Warrior.
+*   **Synergy Bridge:** T2 units introduce the first layer of combinatorial depth. Designers should create T2 units that specifically bridge two disparate archetypes. 
 *   **Stat Consolidation:** T2 is used to free up board space without sacrificing too much efficiency. It effectively compresses two tiles into one.
-*   **Trait Inheritance:** T2 is where temporary buffs should become "locked in." If a T1 has a temporary "Rage" token, merging it into a T2 should convert that Rage into permanent Base Attack. This makes the timing of the merge a critical decision.
+*   **Trait Inheritance:** T2 is where temporary buffs should become "locked in." If a T1 has a temporary "Rage" token, merging it into a T2 should convert that Rage into permanent Base Power. This makes the timing of the merge a critical decision.
 
 **Archetype Example: The Shield-Bearer.**
-*   **Stats:** High HP, Low Attack.
+*   **Stats:** High HP, Low Power.
 *   **Ability:** "Phalanx" - Grants its Armor value to the unit directly behind it.
 *   **Design Intent:** This unit cares about positioning and equipment. It encourages the player to stack Armor items in its two slots, not for its own survival, but to buff the T3 carry standing behind it.
 
 ### 2.3 Tier 3: The Lords of Slot Efficiency
 *   **Role:** Late Game Carry, Exodia Enabler, Stat Compression.
-*   **Constraint:** Low Stat/Gold Efficiency, High Item Capacity.
+*   **Constraint:** Low Stat/Gold Efficiency, Multiplicative Item Utility.
 
 Tier 3 units are the endgame. When the board is full (Unit Cap Reached), the only way to increase power is to upgrade existing units to T3. They provide the highest "Stats per Tile" density.
 
 **Design Guidelines for Tier 3:**
-*   **The Multiplicative Chassis:** T3 abilities should essentially be mathematical multipliers for items. While T1s have additive abilities ("Deal +5 Damage"), T3s should have multiplicative ones ("Deal Double Damage for each equipped Weapon"). This leverages the 4-slot inventory.
-*   **The "Cultivated" Requirement:** A T3 unit merged from "fresh" (un-buffed) units should be underwhelming—perhaps even weaker than the four T1s that made it. This is a deliberate design choice to punish "lazy" merging. A T3 unit is only powerful if it inherits the cultivated stats of its ancestors. This enforces the "Cultivation" loop as the dominant strategy.
-*   **Board Space Economy:** T3 units are the solution to the "Board Space" resource crisis. Designers must treat Board Space as a resource as valuable as Gold. T3s are "Space Compressors."
+*   **The Multiplicative Chassis:** Tier 3 abilities should essentially be mathematical multipliers for their single equipped item. While T1s have additive abilities ("Deal +5 Damage"), T3s should have multiplicative ones ("Deal Double Damage with the equipped Item"). This leverages the single-slot efficiency.
+*   **The "Cultivated" Requirement:** A Tier 3 unit merged from "fresh" (un-buffed) units should be underwhelming. A Tier 3 unit is only powerful if it inherits the cultivated stats of its ancestors. This enforces the "Cultivation" loop as the dominant strategy.
+*   **Board Space Economy:** Tier 3 units are the solution to the "Board Space" resource crisis. Designers must treat Board Space as a resource as valuable as Gold. Tier 3s are "Space Compressors."
 
 **Archetype Example: The Hydra.**
 *   **Stats:** Moderate.
-*   **Ability:** "Polycephaly" - Can equip 4 Weapons. Attacks once with EACH equipped weapon per turn.
-*   **Design Intent:** This unit is useless without items. With 4 daggers, it attacks 4 times. With 4 Greatswords, it wipes the board. It justifies the T3 cost solely through its item interaction.
+*   **Ability:** "Polycephaly" - Multiplies the PWR and HP bonuses of the equipped item by 4x.
+*   **Design Intent:** This unit is useless without an item. With a single Dagger, it gains massive value. It justifies the Tier 3 cost solely through its item interaction.
 
 ---
 
@@ -111,27 +100,32 @@ The defining unique selling point (USP) of Flashcard Heroes is the Cultivation m
 
 ### 3.1 The Inheritance Formula
 
-To ensure the game remains a solvable puzzle rather than a black box of RNG, the inheritance logic must be strictly additive and deterministic.
+To ensure the game remains a solvable puzzle rather than a black box of RNG, the inheritance logic follows two distinct paths:
 
-**The Formula for Merging (Child Unit $C$ from Parents $A$ and $B$):**
-$$HP_C = HP_A + HP_B$$
-$$ATK_C = ATK_A + ATK_B$$
+**1. Tier Evolution (Merging different units):**
+Inheritance is strictly additive. The resulting unit inherits the sum of all inherent stats from both parents.
+$$HP_{Result} = TotalHP_A + TotalHP_B$$
+$$PWR_{Result} = TotalPWR_A + TotalPWR_B$$
 
-However, the "Cultivation" rule implies that $HP_A$ and $HP_B$ are not the base stats of the unit type, but the **current stats of the specific unit instance**, including permanent buffs consumed during their lifecycle.
+**2. Leveling (Merging identical units):**
+Leveling preserves the base identity of the unit while adding a flat progression bonus.
+$$HP_{Result} = BaseHP + ExtraStats_A + ExtraStats_B + 1$$
+$$PWR_{Result} = BasePWR + ExtraStats_A + ExtraStats_B + 1$$
+*("ExtraStats" refers to accumulated surpluses from previous tier merges or permanent buffs).*
 
 **The "Protein Shake" Theorem:**
 Imagine an item "Protein Shake" (Cost 1 Gold) that grants +5 Permanent HP.
 
-*   **Scenario A (Late Application):** Player buys a T3 unit (Base HP 100). Applies 1 Shake. Final HP = 105. Cost = 5 Gold.
-*   **Scenario B (Early Cultivation):** Player buys four T1 units (Base HP 25 each). Applies 1 Shake to each (Cost 4 Gold).
-    *   T1s are now 30 HP each.
-    *   Merge two T1s -> T2. HP = $30 + 30 = 60$. (Assuming TierModifier = 1 for simplicity of additive conservation).
-    *   Merge two T2s -> T3. HP = $60 + 60 = 120$.
-    *   **Result:** The Cultivated T3 has 120 HP vs the Fresh T3's 105 HP.
+*   **Scenario A (Late Application):** Player buys a Tier 3 unit (Base HP 100). Applies 1 Shake. Final HP = 105. Total Investment = 5 Gold.
+*   **Scenario B (Early Cultivation):** Player buys four Tier 1 units (Base HP 2 each). Applies 1 Shake to each (Total Cost 4 Gold).
+    *   T1s are now 7 HP each (Base 2 + Shake 5).
+    *   Leveling two T1s -> T1L2. HP = $2 (\text{Base}) + 5 (\text{Extra A}) + 5 (\text{Extra B}) + 1 (\text{Level Bonus}) = 13$ HP.
+    *   Leveling two T1L2s -> T1L3. HP = $2 (\text{Base}) + 11 (\text{Extra A}) + 11 (\text{Extra B}) + 1 (\text{Level Bonus}) = 25$ HP.
+*   **Result:** The Cultivated T1L3 has 25 HP, whereas a "Fresh" T1L3 would have only 4 HP (Base 2 + Level Bonus 2).
 
-**Implication:** Early investment yields compound returns via the merge process.
+**Implication:** Early investment in "Extra Stats" yields massive returns as they are preserved and compounded through the leveling chain, whereas Base Stats are kept in check to prevent exponential identity bloat.
 
-**Design Constraint:** Content creators must design "Consumable" items that are inefficient if used once, but efficient if multiplied through merging. This creates a "long-term planning" reward loop.
+**Design Constraint:** Content creators must design "Consumable" items that are inefficient if used once on a high-level unit, but highly efficient if cultivated from Level 1. This creates a "long-term planning" reward loop.
 
 ### 3.2 Genealogical Traits
 
@@ -140,7 +134,7 @@ Beyond raw stats, cultivation allows for "Trait Splicing." This is a massive vec
 *   **Mechanism:** Certain T1 units have "Hereditary Passives." When merged, the Child retains the passive.
 *   **Example:**
     *   Parent A (T1 Goblin): "Greed" (Gain 1 Gold on kill).
-    *   Parent B (T1 Orc): "Rage" (+1 ATK when hit).
+    *   Parent B (T1 Orc): "Rage" (+1 PWR when hit).
     *   Child (T2 Hybrid): Has both Greed and Rage.
 *   **Replayability:** Players will spend hours discovering "Recipes." "What happens if I merge a Fire Elemental with a Water Elemental?"
 
@@ -152,7 +146,7 @@ The "Inventory Loop" constraint mentions a "Battle Snapshot." This creates a cri
 
 *   **Persistence:** Cultivation is permanent. If a unit is buffed and merged in the Battle Snapshot, does it persist to the Run Inventory?
 *   **Rule:** Merging Crystallizes Power.
-    *   If you apply a temporary "Battle Token" buff (+10 ATK for this battle) to a unit, and then MERGE that unit during the battle, the new Merged Unit treats that +10 ATK as part of its Base Stats.
+    *   If you apply a temporary "Battle Token" buff (+10 PWR for this battle) to a unit, and then MERGE that unit during the battle, the new Merged Unit treats that +10 PWR as part of its Base Stats.
     *   This allows players to use temporary resources (Tokens) to gain permanent power (Gold Value).
 *   **Balance Risk:** This is extremely powerful.
 *   **Counter-Balance:** Merging costs Gold (indirectly via opportunity cost) or Board Space. Also, the prompt implies "Tokens bank," so spending Tokens to buff->merge depletes the bank for future boss fights.
@@ -168,8 +162,8 @@ The inventory system in Flashcard Heroes deviates from the standard "Exhaust" me
 2.  **Hand (Battle Buffer):** Cards drawn and ready to play.
 3.  **Discard (Recycle Bin):** Cards used or discarded.
 
-**The Machine:** "Machines recycle discards (never empty)."
-This implies that the deck is a flowing river. The player's goal is to increase the current (Draw Speed) to see their best cards more often.
+**The Machine:** "Machines DO NOT recycle discards."
+This implies that the deck is a finite resource. Once a card is discarded, it is gone for the remainder of the battle. The player's goal is to maximize the value of each draw, as the supply is strictly limited.
 
 ### 4.2 The Physics of "Digging"
 
@@ -185,9 +179,9 @@ This implies that the deck is a flowing river. The player's goal is to increase 
 
 ### 4.3 Slot Efficiency vs. Deck Velocity
 
-A critical tension exists between the T3 Unit (needs 4 items) and the Deck Size.
+A critical tension exists between the T3 Unit and the Deck Size.
 
-*   To fuel a T3 unit, you need 4 Item Cards in your deck.
+*   To fuel a T3 unit, you need a high-quality Item Card in your deck.
 *   Adding 4 Item Cards "dilutes" the deck, reducing the chance of drawing the T3 unit itself.
 
 **Solution:** Tutors and Cantrips.
@@ -200,7 +194,7 @@ A critical tension exists between the T3 Unit (needs 4 items) and the Deck Size.
 "Tokens bank between turns." This is a key tactical lever. It introduces Micro-Pacing within a battle.
 
 *   **The Saving Throw:** Players can play "skinny" (spending few tokens) during easy turns to bank a massive reservoir of Tokens for a future turn.
-*   **The Nova Turn:** On a Boss fight, the player spends 50 Tokens to dig through their deck 10 times, assembling the perfect "Exodia" T3 unit with 4 specific items.
+*   **The Nova Turn:** On a Boss fight, the player spends 50 Tokens to dig through their deck 10 times, assembling the perfect "Exodia" T3 unit with its ideal high-tier item.
 
 **Content Design:** Enemies must be designed to punish both extremes.
 *   **Punish Hoarding:** "Thief" enemies that steal Banked Tokens on hit.
@@ -220,10 +214,10 @@ Combat in Flashcard Heroes is described as "Player First (Alpha Strike)" with "N
 *   **Health as a Resource:** Player HP is only lost when the Alpha Strike fails.
 *   **Design Consequence:** Enemy HP must be calibrated carefully.
 
-**Breakpoint Design:** Enemies should have HP thresholds that correspond to standard Unit Attack values.
-*   Tier 1 Standard: 5 Attack.
+**Breakpoint Design:** Enemies should have HP thresholds that correspond to standard Unit Power values.
+*   Tier 1 Standard: 5 Power.
 *   Tier 1 Enemy HP: Should be 5 (One-shot), 6 (Survives with 1 HP), or 10 (Two-shot).
-*   An enemy with 6 HP is infinitely more dangerous than an enemy with 5 HP against a standard T1 unit. This 1 HP difference drives the need for "Cultivation" (+1 Attack Buffs).
+*   An enemy with 6 HP is infinitely more dangerous than an enemy with 5 HP against a standard T1 unit. This 1 HP difference drives the need for "Cultivation" (+1 Power Buffs).
 
 ### 5.2 Readable Unit Logic (The No-Arrow Rule)
 
@@ -238,14 +232,14 @@ Without UI arrows, unit behavior must be rigidly predictable. The complexity mus
 *   **Unit:** Pikeman (T1).
 *   **Behavior:** Attacks Forward.
 *   **Trait:** "Reach" - If the forward enemy dies, the Pikeman can attack a second time against the unit behind it (Excess damage trample).
-*   **Readability:** The player knows exactly what will happen. "If I buff my Pikeman to 10 Attack, he kills the front Goblin (5 HP) and hits the Orc behind it (5 HP). I take no damage."
+*   **Readability:** The player knows exactly what will happen. "If I buff my Pikeman to 10 Power, he kills the front Goblin (5 HP) and hits the Orc behind it (5 HP). I take no damage."
 
 ### 5.3 Single-Player Survival Loop
 
 The prompt mentions "Single-player survival loop." This implies the player's avatar or "Health Pool" is the fail state. Defense is proactive. Since there are no "Taunt" mechanics in the traditional sense (UI arrows), "Blocking" usually means "Killing the enemy before they hit you."
 
 *   **Armor/Shields:** These should be "Ablative."
-*   **Design Preference:** Flat Reduction. "Armor 2" reduces all incoming hits by 2. This makes the unit immune to "Swarm" enemies (1 Attack) but vulnerable to "Heavy Hitters" (10 Attack). This creates clear counter-play.
+*   **Design Preference:** Flat Reduction. "Armor 2" reduces all incoming hits by 2. This makes the unit immune to "Swarm" enemies (1 Power) but vulnerable to "Heavy Hitters" (10 Power). This creates clear counter-play.
 
 ---
 
@@ -293,7 +287,7 @@ Replayability in Flashcard Heroes does not come from random events, but from the
 
 ### 7.1 The "Perfect Specimen" Goal
 
-Players will set their own goals: "Can I build a unit with 1000 Attack?"
+Players will set their own goals: "Can I build a unit with 1000 Power?"
 This requires understanding the Merge Math. It creates a "Clicker Game" loop inside the strategy game. "I need to farm 10 more Tokens to buy 2 more Whetstones to merge my T1s..."
 
 ### 7.2 The "Infinite" Turn
@@ -317,8 +311,8 @@ Every unit must have the following tags defined:
 | :--- | :--- | :--- | :--- |
 | **Tier** | Int | {1, 2, 4} | Determines Cost, Merge Value, XP, Slots. |
 | **BaseHP** | Int | >0 | Health Pool. |
-| **BaseATK** | Int | >0 | Damage per hit. |
-| **Slots** | Int | 1/2/4 (Tier) | Number of item slots. Computed automatically based on Tier (0:4, 1:1, 2:2, 3:4). |
+| **BasePWR** | Int | >0 | Damage per hit. |
+| **Slots** | Int | 1 | Number of item slots. All units are restricted to 1 slot. |
 | **Family** | Enum | {Martial, Magic, Bestial} | Determines valid "Mutations" or Merge compatibilities. |
 | **MergeBehavior** | Script | Logic | What happens on merge? (Default: Add stats. Override: "Keep Highest HP"). |
 
@@ -328,9 +322,9 @@ Enemies must be designed to challenge specific player strategies (Cultivation vs
 
 | Enemy Archetype | Threat | Counter-Strategy |
 | :--- | :--- | :--- |
-| **The Wall** | High Armor, Low ATK. | Cultivated T3 (High single-hit damage to pierce armor). |
+| **The Wall** | High Armor, Low PWR. | Cultivated T3 (High single-hit damage to pierce armor). |
 | **The Swarm** | Low HP, High Unit Count. | Cleave/Area Damage (T2/T3 with AoE items). |
-| **The Assassin** | High ATK, Low HP, Targets Backline. | Defensive T1 Swarm (Body blocking) or Taunt. |
+| **The Assassin** | High PWR, Low HP, Targets Backline. | Defensive T1 Swarm (Body blocking) or Taunt. |
 | **The Corruptor** | Adds "Curse" cards to Deck. | Digging/Velocity (Cycle past the curses) or Removal. |
 
 ### 8.3 Item Design Heuristics

@@ -212,7 +212,21 @@ func _spawn_ball(inst) -> void:
 	ball.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
 	
 	var def = inst.get_definition()
-	ball.populate(inst.ball_uuid, def.category, inst.get_location(), def.icon, inst.variant_id)
+	# Build visual layers from instance components for component-driven rendering
+	var visual_layers: Array = []
+	for component in inst.get_active_components({}):
+		if component is VisualComponent:
+			visual_layers.append({
+				"shader": component.shader,
+				"shader_path": component.shader_path,
+				"shader_params": component.shader_params.duplicate(true),
+				"modulate": component.modulate,
+				"layer": component.layer,
+			})
+	visual_layers.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("layer", 0)) < int(b.get("layer", 0))
+	)
+	ball.populate(inst.ball_uuid, def.category, inst.get_location(), def.icon, visual_layers)
 	
 	# Turn interpolation on to smooth Godot rigid jitter
 	ball.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON

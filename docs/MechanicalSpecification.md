@@ -100,9 +100,9 @@ Battle-temporary state:
 
 ### Tier Gold Cost (Shop & Encounter Generator)
 
-* Tier 1 = 1 Gold
-* Tier 2 = 2 Gold
-* Tier 3 = 4 Gold
+* Tier 1 = 1 Gold × 2^(Level-1)
+* Tier 2 = 2 Gold × 2^(Level-1)
+* Tier 3 = 4 Gold × 2^(Level-1)
 
 ---
 
@@ -176,13 +176,13 @@ During Management Phase, the player may:
    * Change formation (Board/Bench).
 
 5. **Equip/use Items**
-   * Drag item from **Bench** to unit with available slot.
+   * Drag item from **Bench** to unit.
    * Drag consumable item to use on units.
 
-6. **Manage Equipped Items (same unit only)**
-   * Move within unit slots.
-   * Swap within same unit.
-   * Merge items if recipe is unlocked.
+6. **Equipping Rules**
+   * Drag item from **Bench/Inventory** to a unit.
+   * If the unit already has an item, the existing item is **discarded** (moved to the discard pile).
+
 
 7. **Merge Units**
    * On bench or board.
@@ -232,16 +232,8 @@ If a container overflows, the system normally moves the instance to the Discard 
 ## 6.7 Discard Pile Jolt
 When the Discard Pile window is opened, a horizontal impulse of **Vector2(-500, 0)** is applied to all balls. This ensuring the pile doesn't form static "stalagmites" and encourages dense, efficient packing.
 
-## 6.8 Reshuffle Rule
-
-Reshuffle occurs only:
-
-* During Management Phase.
-* Only when a specific Tier pool becomes empty.
-* Only cards of that Tier are moved from the shared Discard Pile back into that Tier pool.
-* Other Tier pools remain unchanged.
-
-When a unit is reshuffled into a Tier pool, its stats are restored to its base values.
+## 6.8 The Permanent Discard
+Units and items moved to the Shared Discard Pile are **removed from the active draw pool** for the remainder of the battle. There is no automatic reshuffle mechanic. Once a Tier pool is empty, it remains empty.
 
 ---
 
@@ -286,7 +278,7 @@ The player may inspect the exact contents of each Tier pool and manually calcula
 * No dodge
 * No hidden modifiers
 
-All stat changes are persistent until modified again. There is no max stats, only base stats and current stats.
+All stat changes are persistent until modified again. Stats are resolved from a base definition modified by an active stack of source-aware components (StatComponents). There is no max HP cap.
 
 ---
 
@@ -346,35 +338,34 @@ No randomness involved.
 
 ---
 
-## 9.2 Merge Formula
+## 9.2 Evolutionary Merge Formula
 
-Merging uses **current stats**, not base stats.
+Merging uses **current stats** to calculate a "stat inheritance" for the result.
 
-If A and B merge:
+If two identical units of Level N (e.g., Tiger Lv. 1 + Tiger Lv. 1) merge:
+1. They transform into a unique higher-level definition (Tiger Lv. 2).
+2. The result inherits the "stat surplus" from both parents via a persistent **Merge Inheritance StatComponent**.
+    - **Tier Evolution**: Inherent stats are summed (Parent A + Parent B).
+    - **Leveling**: Unit keeps original base stats plus a flat **+1 Stat Point per level gained**, and sums "Extra Stats" (inheritance/buffs) from parents.
 
-HP_result = HP_A + HP_B
-PWR_result = PWR_A + PWR_B
-
-* Damage is preserved.
+* Damage/Health progress is preserved.
 * Buffs are preserved.
 * Reductions are preserved.
-* Status effects are combined.
-* Equipped items are preserved.
+* Status effects are combined into the new instance.
+* All equipped items are transferred to the result.
 
-  * If both have same status (e.g., Burn), stacks are added.
-
-No multiplier exists beyond additive conservation.
-
-Tier progression:
-
-* Tier 1 + Tier 1 → Tier 2
-* Tier 2 + Tier 2 → Tier 3
+Tier progression follows the evolutionary chain:
+* Level 1 + Level 1 → Level 2 (Same Tier)
+* Specific recipes may trigger Tier transitions (e.g., Tier 1 + Tier 1 → Tier 2 Unit).
 
 ---
 
 ## 9.3 Item Transfer
 
-All equipped items transfer to result.
+During a merge, only **one item** is transferred to the resulting unit.
+* **Target Priority**: If the target unit (the one being dropped onto) has an equipped item, that item is transferred to the result.
+* **Source Fallback**: If the target unit is empty but the source unit has an item, the source's item is transferred.
+* **Discard**: Any secondary items that are not transferred are **discarded**.
 
 ---
 
@@ -405,9 +396,9 @@ Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. Th
 
 * No max HP/PWR cap.
 * Healing or buffing increases current HP/PWR.
-* HP can scale infinitely.
-* PWR can scale infinitely.
-* No stat decay unless modified.
+* Stats are calculated as: `Base (from definition) + Modifiers (from components)`.
+* Persistent progress (training, merge inheritance) is stored in the component stack.
+* Live deltas (damage, healing) mutate the `current_hp` directly.
 
 ---
 
@@ -444,9 +435,8 @@ Player can inspect and calculate manually.
 
 Merging:
 
-* Reduces unit count.
-* Increases slot efficiency.
-* Increases stat density and item slot density.
+* Increases unit density.
+* Increases stat density and item quality focus.
 * Alters reshuffle composition.
 
 Irreversible during battle.
@@ -523,7 +513,7 @@ Rules for locking and closing inspection modals:
 The following must remain true for solvability and balance:
 
 1. **Board Value Equation**: Board Value is the sum of all Unit Base Packages plus the Interaction Surplus.
-    - *Unit Base Package*: Baked-in stats and item slots provided by a unit's tier.
+    - *Unit Base Package*: Baked-in stats and the single item slot provided by the unit definition.
     - *Interaction Surplus*: Value generated by synergies, abilities, and buffs that allow the board to exceed its initial budget.
 2. **The Gold Standard**: 1 Gold/Token buys approximately 3 HP or 2 PWR.
 3. **Stat Hierarchy**: PWR > HP. PWR is the primary variable for scaling multiplicative abilities.
@@ -531,18 +521,18 @@ The following must remain true for solvability and balance:
     - **Run Economy (Deck Curation)**: Gold spent on "Deck Adds." Dilution reduces draw reliability.
     - **Battle Economy (Realization)**: Tokens spent to realize the value of the curated deck.
 5. **Mitigation First**: Remove and Transform mechanics are essential to maintain a "Lean" deck.
-6. **Tier Costs**: Tier Gold cost remains 1-2-4; Tier Token draw cost remains 1-2-3.
+6. **Tier Costs**: Tier Gold cost is `BaseTierCost * 2^(Level-1)` (1-2-4 base); Tier Token draw cost remains 1-2-3 (level agnostic).
 7. **Damage Determinism**: Damage remains deterministic (PWR = Damage).
 8. **Information Transparency**: Full pool and board transparency at all times.
-9. **Reshuffle**: Reshuffle triggers only when a tier pool is empty.
+9. **Discard**: All discards are permanent for the duration of the battle encounter. There is no automatic reshuffle.
 10. **Hero Death**: Hero death = immediate run loss.
 
-## 15.1 Tier-Based Item Slot Constraints
-Item slot counts are strictly computed based on unit Tier:
-     - Tier 0 (Hero): 4 Slots
+## 15.1 Unified Item Slot Constraint
+All units (including the Hero) are restricted to **one single item slot**.
+     - Tier 0 (Hero): 1 Slot
      - Tier 1: 1 Slot
-     - Tier 2: 2 Slots
-     - Tier 3: 4 Slots
+     - Tier 2: 1 Slot
+     - Tier 3: 1 Slot
 
 Breaking these changes game identity.
 

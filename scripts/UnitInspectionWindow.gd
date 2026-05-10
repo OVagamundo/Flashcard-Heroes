@@ -96,7 +96,7 @@ func _exit_tree() -> void:
 func _gui_input(event: InputEvent) -> void:
 	# Local background-click handling: prune only this window's descendants.
 	if _InputUtils.is_primary_pointer_press(event):
-		WindowManager.handle_inspection_background_click(self )
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 
 func populate(context: Dictionary) -> void:
@@ -106,12 +106,12 @@ func populate(context: Dictionary) -> void:
 	_is_enemy_context = context.get("is_enemy_context", false)
 
 	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
-		WindowManager.request_close_inspection_window(self , &"INVALID_CONTEXT")
+		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
 		return
 
 	var unit_definition = _instance.get_definition()
 	if not is_instance_valid(unit_definition):
-		WindowManager.request_close_inspection_window(self , &"INVALID_DEFINITION")
+		WindowManager.request_close_inspection_window(self, &"INVALID_DEFINITION")
 		return
 
 	_inspected_unit_uuid = _instance.ball_uuid
@@ -260,13 +260,13 @@ func _update_description() -> void:
 		return
 	
 
-
-
 	# Build abilities section: list all abilities with name and localized description
 	var abilities_lines: Array[String] = []
 	var seen_ability_names: Dictionary = {}
+	var all_instances_db := _get_all_instances_db()
 	
-	for ability_def: AbilityDefinition in unit_definition.ability_definitions:
+	for entry in _instance.get_active_ability_entries(all_instances_db):
+		var ability_def: AbilityDefinition = entry.get("ability_def")
 		if not ability_def or ability_def.id == &"basic_attack":
 			continue
 		
@@ -295,6 +295,31 @@ func _update_description() -> void:
 			full_text += "\n\n"
 		full_text += abilities_block
 	
+	# --- Source-Aware Stat Breakdown ---
+	var breakdown = _instance.get_stat_breakdown(all_instances_db)
+	var breakdown_lines: Array[String] = []
+	breakdown_lines.append("\n[color=gray][i]--- Stat Breakdown ---[/i][/color]")
+	
+	var hp_line = "[b]HP[/b]: %d" % breakdown.current.hp
+	var hp_parts: Array[String] = []
+	hp_parts.append("%d Base" % breakdown.base.hp)
+	if breakdown.persistent.hp != 0: hp_parts.append("%+d Merge" % breakdown.persistent.hp)
+	if breakdown.equipment.hp != 0: hp_parts.append("%+d Item" % breakdown.equipment.hp)
+	if breakdown.battle.hp != 0: hp_parts.append("%+d Battle" % breakdown.battle.hp)
+	if hp_parts.size() > 1: hp_line += " (%s)" % ", ".join(hp_parts)
+	breakdown_lines.append(hp_line)
+	
+	var pwr_line = "[b]PWR[/b]: %d" % breakdown.current.pwr
+	var pwr_parts: Array[String] = []
+	pwr_parts.append("%d Base" % breakdown.base.pwr)
+	if breakdown.persistent.pwr != 0: pwr_parts.append("%+d Merge" % breakdown.persistent.pwr)
+	if breakdown.equipment.pwr != 0: pwr_parts.append("%+d Item" % breakdown.equipment.pwr)
+	if breakdown.battle.pwr != 0: pwr_parts.append("%+d Battle" % breakdown.battle.pwr)
+	if pwr_parts.size() > 1: pwr_line += " (%s)" % ", ".join(pwr_parts)
+	breakdown_lines.append(pwr_line)
+	
+	full_text += "\n" + "\n".join(breakdown_lines)
+
 	if not full_text.is_empty():
 		full_text = DescriptionParser.parse(full_text)
 
@@ -317,13 +342,13 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 			_reset_window_size()
 
 func _on_inventory_changed() -> void:
-	if not is_instance_valid(self ):
+	if not is_instance_valid(self):
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
 	var all_instances: Dictionary = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
-		WindowManager.request_close_inspection_window(self , &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
+		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
 		return
 	
 	# The unit still exists, so we just need to refresh the item grid.
@@ -335,7 +360,7 @@ func _on_inventory_changed() -> void:
 	_reset_window_size()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
-	if not is_instance_valid(self ):
+	if not is_instance_valid(self):
 		return
 	
 	# Only update if the changed unit is the one we're inspecting
@@ -346,7 +371,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	var all_instances = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 	if not is_instance_valid(current_instance):
-		WindowManager.request_close_inspection_window(self , &"INSTANCE_MISSING_AFTER_UNIT_INV_CHANGE")
+		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_UNIT_INV_CHANGE")
 		return
 	
 	# The unit still exists, so we just need to refresh the item grid.
@@ -370,7 +395,7 @@ func _get_all_instances_db() -> Dictionary:
 func _on_description_meta_clicked(meta) -> void:
 	if _locked_meta == meta:
 		_locked_meta = null
-		WindowManager.close_children_of(self )
+		WindowManager.close_children_of(self)
 	else:
 		_locked_meta = meta
 		_handle_effect_meta_interaction(meta)
@@ -398,11 +423,11 @@ func _handle_effect_meta_interaction(meta) -> void:
 	if meta == "effect":
 		var definition: Variant = description_label.get_meta("effect_definition")
 		if definition:
-			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
+			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
 			var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
 			var win = WindowManager.open_child_contextual_window(
 				&"EffectInspection",
-				self ,
+				self,
 				{
 					"effect_definition": definition.ability_definitions,
 					"is_inside_unit_inspection": true,
@@ -418,12 +443,12 @@ func _handle_effect_meta_interaction(meta) -> void:
 		var name_key = "STATUS_" + effect_type.to_upper()
 		var desc_key = "STATUS_" + effect_type.to_upper() + "_DESC"
 		
-		var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
+		var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
 		var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
 		
 		var win = WindowManager.open_child_contextual_window(
 			&"EffectInspection",
-			self ,
+			self,
 			{
 				"effect_definition": {
 					"name_key": name_key,
@@ -458,14 +483,14 @@ func _on_description_gui_input(event: InputEvent) -> void:
 func _on_internal_background_gui_input(event: InputEvent) -> void:
 	if _InputUtils.is_primary_pointer_press(event):
 		_locked_meta = null
-		WindowManager.handle_inspection_background_click(self )
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
 
 func _on_item_grid_gui_input(event: InputEvent) -> void:
 	if _InputUtils.is_primary_pointer_press(event):
 		_locked_meta = null
-		WindowManager.handle_inspection_background_click(self )
+		WindowManager.handle_inspection_background_click(self)
 		get_viewport().set_input_as_handled()
 		accept_event()
 
@@ -479,45 +504,16 @@ func _calculate_unit_trait_counts() -> Dictionary:
 	if not is_instance_valid(_instance):
 		return counts
 	
-	# Count traits from unit's definition tags
-	var unit_def = _instance.get_definition()
-	if is_instance_valid(unit_def) and "tags" in unit_def:
-		for tag in unit_def.tags:
-			if tag == &"SOUL_FIRE":
-				counts["FIRE"] += 1
-			elif tag == &"SOUL_EARTH":
-				counts["EARTH"] += 1
-			elif tag == &"SOUL_WATER":
-				counts["WATER"] += 1
-			elif tag == &"SOUL_AIR":
-				counts["AIR"] += 1
-	
-	# Count traits from equipped items (emblems)
 	var all_instances_db = _get_all_instances_db()
-	if all_instances_db.is_empty():
-		return counts
-	
-	for item_uuid in _instance.equipped_item_uuids:
-		if item_uuid.is_empty():
-			continue
-		
-		var item_instance = all_instances_db.get(item_uuid)
-		if not is_instance_valid(item_instance):
-			continue
-		
-		var item_def = item_instance.get_definition()
-		if not is_instance_valid(item_def) or not "tags" in item_def:
-			continue
-		
-		for tag in item_def.tags:
-			if tag == &"SOUL_FIRE":
-				counts["FIRE"] += 1
-			elif tag == &"SOUL_EARTH":
-				counts["EARTH"] += 1
-			elif tag == &"SOUL_WATER":
-				counts["WATER"] += 1
-			elif tag == &"SOUL_AIR":
-				counts["AIR"] += 1
+	for tag in _instance.get_active_tags(all_instances_db):
+		if tag == &"SOUL_FIRE":
+			counts["FIRE"] += 1
+		elif tag == &"SOUL_EARTH":
+			counts["EARTH"] += 1
+		elif tag == &"SOUL_WATER":
+			counts["WATER"] += 1
+		elif tag == &"SOUL_AIR":
+			counts["AIR"] += 1
 	
 	return counts
 

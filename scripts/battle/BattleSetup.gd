@@ -82,6 +82,15 @@ static func create_battle_copies_from_run_state(state: RefCounted) -> Dictionary
 					item_instance.equipped_on_uuid = battle_inst.ball_uuid
 					item_instance.equipped_slot_index = i
 
+	for battle_uuid in state.get_all_instances():
+		var battle_inst: GachaBallInstance = state.get_instance(battle_uuid)
+		if not is_instance_valid(battle_inst):
+			continue
+		var battle_def = battle_inst.get_definition()
+		if is_instance_valid(battle_def) and battle_def.category == &"UNIT":
+			battle_inst.current_hp = battle_inst.get_effective_starting_hp(state.get_all_instances())
+			battle_inst.current_pwr = battle_inst.get_effective_starting_pwr(state.get_all_instances())
+
 	return permanent_to_battle_uuid_map
 
 static func place_instances_from_run_state(state: RefCounted, permanent_to_battle_uuid_map: Dictionary) -> void:

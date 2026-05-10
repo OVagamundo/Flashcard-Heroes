@@ -1,4 +1,4 @@
-Flashcard Heroes - Game Design Document (V5.1 - Definitive)
+Flashcard Heroes - Game Design Document (V6.0 - Component Refactor)
 1. Game Overview
 **Flashcard Heroes** is a single-player roguelike deckbuilder, auto-battler (inspired by *Super Auto Pets* and *Slay the Spire*) that integrates an *Anki*-style spaced repetition system as resource generation mechanic. Players build a collection of **GachaBalls** (Units and Items) to survive encounters and defeat bosses.
 
@@ -20,11 +20,12 @@ Timed mini-game that generates **Gacha Tokens** for use in the current encounter
 - **Spaced Repetition**: An *Anki*-style weighted algorithm ensures cards with lower Mastery and more time since last used appear more frequently. The same card will not appear twice in a row and there's a small random factor to keep it from being too predictable.
 
 5. GachaBall System
-**GachaBalls** are the collectible Units and Items that form your "deck".
-- **Units**: Creatures with HP and PWR stats and abilities. HP and PWR scale up to a 99 max cap; healing additive.
-- **Items**: Equipment and consumables that provide stat bonuses or effects. Consumables are single-use per encounter, some can be single use per run.
-- **Attributes**: Tiers (1-3), Rarity (Common-Legendary), and Tags (Fire, Water, Earth, Air, Light, Dark, Attacker, Defender, Support, etc.) for synergies.
-    - **Item Slots**: Automatically computed based on Tier: Tier 1 (1 slot), Tier 2 (2 slots), Tier 3 (4 slots), and Hero (4 slots).
+**GachaBalls** are source-aware, component-composed instances that form your "deck".
+- **Units**: Creatures with HP and PWR stats and abilities. HP and PWR scale; healing is additive. Units are composed of components that define their stats, abilities, and visual effects.
+- **Items**: Equipment and consumables that provide stat bonuses or effects via component injection. Consumables are single-use per encounter, some can be single use per run.
+- **Attributes**: Tiers (1-3), Rarity (Normal, Prismatic, etc.), and Level are treated as attributes queried from the active component stack. Tags (Fire, Water, Earth, Air, etc.) provide synergies and are dynamically resolvable.
+    - **Item Slots**: All units (including the Hero) are restricted to a single item slot.
+    - **Evolutionary Levels**: Every level (e.g., Lv. 1 Tiger, Lv. 2 Tiger) is a unique unit definition. Leveling up is a transformation from one definition to another.
 
 6. Inventories & Drawing
 - **Run Inventory**: Your persistent collection (deck) for the run.
@@ -41,9 +42,9 @@ The game operates on a dual-economy system that defines encounter difficulty and
 
 | Tier | Gold Cost (Shop) | Draw Cost (Tokens) | Note |
 | :--- | :--- | :--- | :--- |
-| **Tier 1** | 1 Gold | 1 Token | Basic units/items. |
-| **Tier 2** | 2 Gold | 2 Tokens | Advanced synergies. |
-| **Tier 3** | 4 Gold | 3 Tokens | Elite/Boss power levels. |
+| **Tier 1** | 1 Gold × 2^(L-1) | 1 Token | Basic units/items. |
+| **Tier 2** | 2 Gold × 2^(L-1) | 2 Tokens | Advanced synergies. |
+| **Tier 3** | 4 Gold × 2^(L-1) | 3 Tokens | Elite/Boss power levels. |
 
 - **Run Economy (Gold)**: Used in Shops to perform "Deck Adds." Buying a GachaBall with Gold adds it to your Run Inventory. 
     - **Efficiency Penalty & Dilution**: Every non-synergistic unit added to the deck serves as a "dilution" of the draw pool, making it mathematically harder to draw specific "Engine" or "Anchor" pieces during battle.
@@ -66,11 +67,14 @@ Battles are deterministic contests where the outcome is decided during the **Man
 
 *Note: Technical details on the event-driven ability system (triggers like `ON_ATTACK`, `ON_HURT`) and the O(N) resolution pipeline are documented in the [TDD](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/Flashcard%20Heroes%20TDD%20%28Technichal%20Design%20Document%29%20V9.0.md).*
 8. Merge System
-Combining GachaBalls is a tool that can be used to increase adaptibilty to the enemy's formation by creating new units and items with specific abilities and to manipulate the probabilities of drawing specific units and items in the next turns since merging changes the pool of available gachaballs in each tier pool.
+Combining GachaBalls is a tool that can be used to increase adaptibilty to the enemy's formation and evolve units into more powerful definitions.
 - **Recipes**: Valid combinations are defined by recipes. Recipes are **locked** until the result is first acquired in the run.
-- **In-Battle Merge**: Done in the bench or lineup. Consumes two temporary balls to create a Tiered version for the current battle only. Result units inherit all equipped items. changes in the pool via merge only affect the current battle pool.
+- **Evolutionary Merge**: Merging two identical units (e.g., Tiger Lv. 1 + Tiger Lv. 1) transforms them into a unique higher-level definition (Tiger Lv. 2). 
+- **In-Battle Merge**: Done in the bench or lineup. Consumes two temporary balls to create the evolved version for the current battle only. Result units inherit all equipped items.
 - **Permanent Merge**: Done in the Run Inventory; permanently consumes two balls to create an upgraded one.
-- **Rules**: Merging combines current stats and status effects (e.g., Burn stacks).
+- **Stat Inheritance**: Result units inherit a "stat surplus" from their parents via a persistent **Merge Inheritance Component**.
+    - **Tier Evolution**: Parents' stats are added together.
+    - **Leveling**: Unit keeps its original base stats plus a flat **+1 Stat Point per level gained**, and sums only the "Extra Stats" (inheritance/buffs) from parents.
 
 9. Core Entities & Systems
 - **Hero Unit**: Your central character. HP = Run Health. restricted to the PlayerLineup.

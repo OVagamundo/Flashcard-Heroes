@@ -3,6 +3,8 @@ extends Node
 
 ## A dedicated, stateless helper to handle all merge logic calculations.
 
+const C = preload("res://scripts/Constants.gd")
+
 func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, all_instances_db: Dictionary) -> Dictionary:
 	if not instance_a or not instance_b:
 		return {}
@@ -18,35 +20,64 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	var merged_instance := GachaBallInstance.new()
 	merged_instance.initialize(result_definition)
 	
-	# Update stats to be the sum of the parents' current stats
-	var total_hp = instance_a.current_hp + instance_b.current_hp
-	var total_pwr = instance_a.current_pwr + instance_b.current_pwr
+	# Determine if this is a "Level Up" (Self-Merge) or a "Tier Evolution"
+	var is_level_up: bool = recipe.is_self_merge
 	
-	merged_instance.current_hp = total_hp
-	merged_instance.current_pwr = total_pwr
+	# Initial combined stats (excluding items, handled below)
+	var total_hp: int = instance_a.current_hp + instance_b.current_hp
+	var total_pwr: int = instance_a.current_pwr + instance_b.current_pwr
 	
-	# Gather equipped items from source and target.
+	# Subtract bonuses from all parent items to avoid double-dipping.
+	# We want the inherent stats (Base + Inherent Extra), and then items will be re-applied.
 	var source_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_a, all_instances_db)
 	var target_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_b, all_instances_db)
 	var all_parent_items: Array[GachaBallInstance] = []
 	all_parent_items.append_array(source_items)
 	all_parent_items.append_array(target_items)
 
-	# Subtract bonuses from all parent items to avoid double-dipping when they are re-equipped.
-	# We want the new unit to inherit (Base + Buffs/Damage), and then let the items add their bonuses back.
 	for item in all_parent_items:
 		var item_def = item.get_definition()
 		if is_instance_valid(item_def):
 			total_hp -= item_def.bonus_hp
 			total_pwr -= item_def.bonus_pwr
 
-	merged_instance.current_hp = total_hp
-	merged_instance.current_pwr = total_pwr
+	# Apply New Stat Logic
+	var final_hp: int
+	var final_pwr: int
 	
-	# Set permanent progression modifiers so that creating a battle copy retains the summed stats
-	# The definition provides base stats; any surplus goes into the modifier.
-	merged_instance.base_hp_modifier = total_hp - result_definition.base_hp
-	merged_instance.base_pwr_modifier = total_pwr - result_definition.base_pwr
+	if is_level_up:
+		# LEVELING LOGIC: Keeps base stats + Sum(Extra Stats) + 1
+		# Inherent_Extra = Total_Inherent - ParentA_Base - ParentA_LevelBonus - ParentB_Base - ParentB_LevelBonus
+		var base_a = instance_a.get_definition_base_hp()
+		var level_bonus_a = int(instance_a.get_attribute(&"level")) - 1
+		var base_b = instance_b.get_definition_base_hp()
+		var level_bonus_b = int(instance_b.get_attribute(&"level")) - 1
+		
+		# Formula: Result = Result_Base + (Extras_A + Extras_B) + (Result_Level - 1)
+		# Which simplifies to: total_hp - Parent_Base - Parent_LevelBonus + 1
+		final_hp = total_hp - base_a - level_bonus_a + 1
+		
+		var pwr_base_a = instance_a.get_definition_base_pwr()
+		final_pwr = total_pwr - pwr_base_a - level_bonus_a + 1
+	else:
+		# TIER EVOLUTION LOGIC: Additive (A + B)
+		final_hp = total_hp
+		final_pwr = total_pwr
+
+	merged_instance.current_hp = final_hp
+	merged_instance.current_pwr = final_pwr
+	
+	# Store surplus stats (above the new definition's base) as a merge inheritance component.
+	var surplus_hp: int = final_hp - result_definition.base_hp
+	var surplus_pwr: int = final_pwr - result_definition.base_pwr
+	merged_instance.add_or_update_stat_component(
+		&"merge_inheritance",
+		&"MERGE_INHERITANCE",
+		String(recipe.id),
+		surplus_hp,
+		surplus_pwr,
+		false
+	)
 
 	# Target item has priority. If target is empty, inherit source item.
 	var items_to_equip: Array[GachaBallInstance] = []
@@ -72,59 +103,43 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 
 func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
 	# --- CONTEXT-AWARE VALIDATION ---
-	# TDD 4.3.III.3: Merging is not allowed between different interaction contexts.
-	# Use GIR functional groups (e.g., PlayerBench and PlayerLineup are both "BattleBoard").
 	var src_group: StringName = GlobalInteractionRouter.get_context_group(source_loc.container)
 	var tgt_group: StringName = GlobalInteractionRouter.get_context_group(target_loc.container)
 	if src_group != tgt_group:
-		# Exception: allow merges that target an equipped item slot (handled by InventoryManager as needed).
 		if not (target_loc.container == C.CONTAINER_EQUIPPED_ITEM and source_loc.container != C.CONTAINER_EQUIPPED_ITEM):
 			return null
 
-	# Get definitions for both instances
 	var def_a = instance_a.get_definition()
 	var def_b = instance_b.get_definition()
 	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
 		return null
 
-	# Merging across different tiers is not allowed. Skip if either definition lacks tier.
-	if not (def_a is GachaBallDefinition) or not (def_b is GachaBallDefinition):
-		return null
-	if def_a.tier != def_b.tier:
-		return null
-
 	for recipe_key in Database.recipes:
 		var recipe: MergeRecipe = Database.recipes[recipe_key]
 		
-		# For a valid merge, the categories of the ingredients must match.
 		if def_a.category != def_b.category:
 			continue
 
 		if recipe.is_self_merge:
 			if instance_a.definition_id == recipe.ingredient_a_id and instance_a.definition_id == instance_b.definition_id:
-				# Check if recipe is unlocked before returning
 				if not _is_recipe_unlocked(recipe.id):
 					continue
 				return recipe
 		else: # Check for A+B or B+A
 			if (instance_a.definition_id == recipe.ingredient_a_id and instance_b.definition_id == recipe.ingredient_b_id) or \
 			   (instance_a.definition_id == recipe.ingredient_b_id and instance_b.definition_id == recipe.ingredient_a_id):
-				# Check if recipe is unlocked before returning
 				if not _is_recipe_unlocked(recipe.id):
 					continue
 				return recipe
 				
 	return null
 
-# Helper to check if a recipe is unlocked in the current run
 func _is_recipe_unlocked(recipe_id: StringName) -> bool:
-	# Access RunState via GameManager (standard pattern in codebase)
 	var run_state = GameManager.run_state
 	if not is_instance_valid(run_state):
-		return false # No run state means no unlocks
+		return false
 	return run_state.is_recipe_unlocked(recipe_id)
 
-# The function now accepts the master instance database directly, removing the ambiguous context dictionary.
 func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instances_db: Dictionary) -> Array[GachaBallInstance]:
 	var equipped_items: Array[GachaBallInstance] = []
 	if not is_instance_valid(unit_instance) or unit_instance.equipped_item_uuids.is_empty():
@@ -132,9 +147,21 @@ func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instance
 
 	for item_uuid in unit_instance.equipped_item_uuids:
 		if not item_uuid.is_empty():
-			# This is now a direct, unambiguous lookup.
 			var item_instance: GachaBallInstance = all_instances_db.get(item_uuid)
 			if is_instance_valid(item_instance):
 				equipped_items.push_back(item_instance)
 
 	return equipped_items
+
+## Performs an evolution by merging the instance with a 'phantom' copy of itself.
+func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Dictionary) -> Dictionary:
+	var recipe = Database.get_self_merge_recipe(instance.definition_id)
+	if not recipe:
+		return {}
+		
+	# Create a temporary secondary instance to act as the second parent
+	var template_instance := GachaBallInstance.new()
+	template_instance.initialize(instance.get_definition())
+	
+	# Perform the merge. We use the instance's own location as a placeholder.
+	return calculate_merge_result(instance, template_instance, instance.get_location(), instance.get_location(), all_instances_db)

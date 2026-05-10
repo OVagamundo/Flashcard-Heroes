@@ -12,8 +12,8 @@ The Day counter advances by one each time the player resolves a node on the path
 The Day value is the primary input for the Encounter Budget System, which dynamically generates enemy teams for non-boss battles.
 Encounter Budget System
 This system ensures that the challenge of battle nodes scales directly with the player's progress through a run.
-Budget Formula: `5 + 3 * (Day - 1)` Gold
-Elite/Boss Multipliers: For ELITE or BOSS support units, the total budget is calculated similarly but may use multipliers (Standard: 1.3x for Elite).
+Budget Formula: `3 + (Day - 1)` Gold
+Elite/Boss Multipliers: For ELITE or BOSS support units, the total budget is **0.85x** of the daily budget (since the Elite/Boss unit itself is free).
 Scheduling: Bosses appear when the player reaches specific deck unlock thresholds (every 20%: 20%, 40%, 60%, 80%, 100%).
 Generator's Role: The EncounterGenerator uses this budget to "purchase" a team of units and items from the pool of all available GachaBallDefinition resources. For more details, see docs/EncounterSystem.md.
 Effect of Scaling: As the Day counter increases, the budget grows, resulting in enemy teams that are progressively more powerful. In later days, players will face enemies that have:

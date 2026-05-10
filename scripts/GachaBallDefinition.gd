@@ -43,6 +43,9 @@ func get_dynamic_weight_multiplier(state) -> float:
 ## The power level or tier of this GachaBall (0-3).
 @export_range(0, 3) var tier: int
 
+## The level of this GachaBall (e.g., 1 for basic, 2 for evolved).
+@export var level: int = 1
+
 ## The cost to purchase this GachaBall in the shop or for encounter generation.
 @export var cost: int = 1
 

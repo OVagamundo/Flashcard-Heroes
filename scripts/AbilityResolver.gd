@@ -298,9 +298,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if not is_instance_valid(instance):
 			continue
 		var definition = instance.get_definition()
-		if not is_instance_valid(definition) or not ("ability_definitions" in definition):
-			continue
-		if definition.ability_definitions.is_empty():
+		if not is_instance_valid(definition) or not ("category" in definition):
 			continue
 
 		if definition.category == &"UNIT":
@@ -311,7 +309,10 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 				continue
 			# Check if item has matching ability for this trigger
 			var has_matching = false
-			for ability in definition.ability_definitions:
+			for entry in instance.get_active_ability_entries(all_instances):
+				var ability: AbilityDefinition = entry.get("ability_def")
+				if not is_instance_valid(ability):
+					continue
 				if ability.trigger == trigger:
 					has_matching = true
 					break
@@ -335,11 +336,15 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		if not _should_unit_respond(trigger, instance_uuid, instance, context, battle_manager):
 			continue
 
-		# Process all abilities (base + injected) from the instance's duplicate array
-		# Rationale: instance.abilities is populated from definition during initialize()
-		for ability in instance.abilities:
+		# Process all abilities from the component system (definition + injected + persistent)
+		for entry in instance.get_active_ability_entries(all_instances):
+			if entry.get("source_type") == &"EQUIPMENT":
+				continue
+			var ability: AbilityDefinition = entry.get("ability_def")
+			if not is_instance_valid(ability):
+				continue
 			if ability.trigger == trigger:
-				_process_ability(ability, instance_uuid, battle_manager, context)
+				_process_ability(ability, entry.get("source_instance_uuid", instance_uuid), battle_manager, context)
 
 
 	# Phase 2: Process equipped item abilities (sorted by slot for deterministic order)
@@ -347,11 +352,14 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 	
 	for item_data in equipped_item_instances:
 		var instance_uuid: String = item_data.instance_uuid
-		var definition = item_data.definition
-		
-		for ability in definition.ability_definitions:
+		var item_instance: GachaBallInstance = item_data.instance
+
+		for entry in item_instance.get_active_ability_entries(all_instances):
+			var ability: AbilityDefinition = entry.get("ability_def")
+			if not is_instance_valid(ability):
+				continue
 			if ability.trigger == trigger:
-				_process_ability(ability, instance_uuid, battle_manager, context)
+				_process_ability(ability, entry.get("source_instance_uuid", instance_uuid), battle_manager, context)
 
 	# Phase 3: Process trinket abilities
 	for data in trinket_instances:
@@ -368,11 +376,14 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		var trinket_context = context.duplicate()
 		trinket_context["team"] = trinket_team
 		
-		for ability in definition.ability_definitions:
+		for entry in instance.get_active_ability_entries(all_instances):
+			var ability: AbilityDefinition = entry.get("ability_def")
+			if not is_instance_valid(ability):
+				continue
 			if ability.trigger == trigger:
 				# Trinkets are team-based, not unit-based. The trinket itself is the source.
 				# This avoids dead-unit edge cases and is semantically correct.
-				_process_ability(ability, instance_uuid, battle_manager, trinket_context)
+				_process_ability(ability, entry.get("source_instance_uuid", instance_uuid), battle_manager, trinket_context)
 
 
 ## Process a single ability and create EffectRequests for its effects.

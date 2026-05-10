@@ -91,33 +91,12 @@ static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstan
 static func has_lethal_counter_abilities(unit: GachaBallInstance, battle_instances: Dictionary) -> bool:
 	assert(is_instance_valid(unit), "has_lethal_counter_abilities: unit is null")
 	
-	var definition := unit.get_definition()
-	if not is_instance_valid(definition):
-		return false
-	
-	# Check unit's own abilities for execute_on_lethal flag
-	for ability in definition.ability_definitions:
+	for entry in unit.get_active_ability_entries(battle_instances):
+		var ability: AbilityDefinition = entry.get("ability_def")
 		if not is_instance_valid(ability):
 			continue
-		# Only check on_hurt abilities (damage reactions)
 		if ability.trigger == &"on_hurt" and ability.execute_on_lethal:
 			return true
-	
-	# Check equipped items for on_hurt abilities with execute_on_lethal
-	for item_uuid in unit.equipped_item_uuids:
-		if item_uuid.is_empty():
-			continue
-		var item_instance: GachaBallInstance = battle_instances.get(item_uuid, null)
-		if not is_instance_valid(item_instance):
-			continue
-		var item_def = item_instance.get_definition()
-		if not is_instance_valid(item_def):
-			continue
-		for ability in item_def.ability_definitions:
-			if not is_instance_valid(ability):
-				continue
-			if ability.trigger == &"on_hurt" and ability.execute_on_lethal:
-				return true
 	
 	return false
 

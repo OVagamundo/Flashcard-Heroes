@@ -133,20 +133,20 @@ func populate(context: Dictionary) -> void:
 		
 		# Build abilities section: list all abilities with name and localized description
 		var abilities_block := ""
-		if "ability_definitions" in item_def and item_def.ability_definitions.size() > 0:
-			var abilities_lines: Array[String] = []
-			for ability in item_def.ability_definitions:
-				if not is_instance_valid(ability):
-					continue
-				var ability_name := tr(ability.name_key) if "name_key" in ability else ""
-				var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
-				if is_instance_valid(_instance):
-					ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
-					ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
-				
-				if not ability_name.is_empty() or not ability_desc.is_empty():
-					abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
-			abilities_block = "\n".join(abilities_lines)
+		var abilities_lines: Array[String] = []
+		for entry in _instance.get_active_ability_entries(_get_all_instances_db()):
+			var ability: AbilityDefinition = entry.get("ability_def")
+			if not is_instance_valid(ability):
+				continue
+			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
+			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+			if is_instance_valid(_instance):
+				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
+				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
+			
+			if not ability_name.is_empty() or not ability_desc.is_empty():
+				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+		abilities_block = "\n".join(abilities_lines)
 
 		if not base_desc.is_empty():
 			full_text += base_desc
@@ -198,6 +198,12 @@ func _reset_window_size() -> void:
 		size = Vector2.ZERO # Force immediate recalculation of minimum size
 		reset_size()
 
+func _get_all_instances_db() -> Dictionary:
+	if GameManager.is_in_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		return bm.get_all_instances() if is_instance_valid(bm) else {}
+	return GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
+
 func _get_linked_trait_id(item_def: Resource) -> String:
 	if not is_instance_valid(item_def):
 		return ""
@@ -205,13 +211,13 @@ func _get_linked_trait_id(item_def: Resource) -> String:
 		return String(item_def.linked_trait_id)
 	
 	# Check for trait tags (Emblems)
-	if "tags" in item_def:
-		for tag in item_def.tags:
-			match tag:
-				&"SOUL_FIRE": return "FIRE"
-				&"SOUL_EARTH": return "EARTH"
-				&"SOUL_WATER": return "WATER"
-				&"SOUL_AIR": return "AIR"
+	var tags := _instance.get_active_tags(_get_all_instances_db()) if is_instance_valid(_instance) else []
+	for tag in tags:
+		match tag:
+			&"SOUL_FIRE": return "FIRE"
+			&"SOUL_EARTH": return "EARTH"
+			&"SOUL_WATER": return "WATER"
+			&"SOUL_AIR": return "AIR"
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
@@ -262,31 +268,21 @@ func _get_run_trait_count(trait_id: String) -> int:
 		var unit = GameManager.run_state.get_instance_by_uuid(unit_uuid)
 		if not is_instance_valid(unit):
 			continue
-		var unit_def = unit.get_definition()
-		_accumulate_trait_tags(counts, unit_def)
-		for item_uuid in unit.equipped_item_uuids:
-			if item_uuid.is_empty():
-				continue
-			var item_inst = GameManager.run_state.get_instance_by_uuid(item_uuid)
-			if not is_instance_valid(item_inst):
-				continue
-			_accumulate_trait_tags(counts, item_inst.get_definition())
+		for tag in unit.get_active_tags(GameManager.run_state.get_all_instances()):
+			_accumulate_trait_tag(counts, tag)
 
 	return int(counts.get(trait_id, 0))
 
-func _accumulate_trait_tags(counts: Dictionary, definition: Resource) -> void:
-	if not is_instance_valid(definition) or not ("tags" in definition):
-		return
-	for tag in definition.tags:
-		match tag:
-			&"SOUL_FIRE":
-				counts["FIRE"] += 1
-			&"SOUL_EARTH":
-				counts["EARTH"] += 1
-			&"SOUL_WATER":
-				counts["WATER"] += 1
-			&"SOUL_AIR":
-				counts["AIR"] += 1
+func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
+	match tag:
+		&"SOUL_FIRE":
+			counts["FIRE"] += 1
+		&"SOUL_EARTH":
+			counts["EARTH"] += 1
+		&"SOUL_WATER":
+			counts["WATER"] += 1
+		&"SOUL_AIR":
+			counts["AIR"] += 1
 
 func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(recipe_container):

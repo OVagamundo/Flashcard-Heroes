@@ -357,16 +357,9 @@ func bm_move_instance_to_discard(uuid: String) -> bool:
 	
 	return result.success
 
-func bm_reshuffle_discard_pile(tier_to_reshuffle: int) -> bool:
-	var moved := _reshuffle_tier_from_discard(tier_to_reshuffle)
-	if not moved:
-		return false
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-	_emit_battle_inventory_changed()
-	# Ensure InventoryWindow grids reflect reshuffled draw pools immediately
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
-	return true
+func bm_reshuffle_discard_pile(_tier_to_reshuffle: int) -> bool:
+	# Automatic reshuffle feature has been removed.
+	return false
 
 func bm_draw_gacha_instance(tier: int) -> bool:
 	var cost := tier
@@ -377,9 +370,9 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	var tier_pool := get_instances_in_container(container_tag)
 	
 	# If pool is empty, try reshuffling first
+	# If pool is empty, the draw fails (No automatic reshuffle)
 	if tier_pool.is_empty():
-		if not _reshuffle_tier_from_discard(tier):
-			return false
+		return false
 	
 	# Attempt to draw
 	var draw_result := InventoryOperations.draw_from_tier(_state, tier, 5)
@@ -402,8 +395,9 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	_emit_battle_inventory_changed()
 	
 	# If pool emptied, trigger reshuffle for next draw
+	# If pool emptied, next draw will fail until/if a retrieval mechanic is added.
 	if draw_result.pool_emptied:
-		_reshuffle_tier_from_discard(tier)
+		pass
 	
 	return true
 
@@ -1012,23 +1006,12 @@ func _get_adjacent_allies(source_instance: GachaBallInstance) -> Array[GachaBall
 func _get_ability_definition(ability_id: StringName, source: GachaBallInstance) -> AbilityDefinition:
 	if not is_instance_valid(source):
 		return null
-	
-	# Check unit's own abilities
-	for ability in source.abilities:
-		if ability.id == ability_id:
-			return ability
-	
-	# Check equipped items' abilities
-	for item_uuid in source.equipped_item_uuids:
-		if item_uuid.is_empty():
-			continue
-		var item_inst = get_instance_by_uuid(item_uuid)
-		if not is_instance_valid(item_inst):
-			continue
-		for ability in item_inst.abilities:
-			if ability.id == ability_id:
-				return ability
-	
+
+	for entry in source.get_active_ability_entries(get_all_instances()):
+		var ability_def: AbilityDefinition = entry.get("ability_def")
+		if is_instance_valid(ability_def) and ability_def.id == ability_id:
+			return ability_def
+
 	return null
 
 ## Trigger on_hurt event for a unit that took damage.
@@ -1761,37 +1744,8 @@ func _calculate_active_traits(team: String) -> Dictionary:
 		if not is_instance_valid(unit) or unit.current_hp <= 0:
 			continue
 		
-		# Definition tags are baked-in (e.g., ["SOUL_FIRE", "SOUL_FIRE"])
-		var def = unit.get_definition()
-		if is_instance_valid(def) and "tags" in def:
-			for tag in def.tags:
-				if tag == &"SOUL_FIRE":
-					counts["FIRE"] += 1
-				elif tag == &"SOUL_EARTH":
-					counts["EARTH"] += 1
-				elif tag == &"SOUL_WATER":
-					counts["WATER"] += 1
-				elif tag == &"SOUL_AIR":
-					counts["AIR"] += 1
-		
-		# Check equipped items for trait tags (Emblems)
-		for item_uuid in unit.equipped_item_uuids:
-			if item_uuid.is_empty():
-				continue
-			var item_inst = get_instance(item_uuid)
-			if not is_instance_valid(item_inst):
-				continue
-			var item_def = item_inst.get_definition()
-			if is_instance_valid(item_def) and "tags" in item_def:
-				for tag in item_def.tags:
-					if tag == &"SOUL_FIRE":
-						counts["FIRE"] += 1
-					elif tag == &"SOUL_EARTH":
-						counts["EARTH"] += 1
-					elif tag == &"SOUL_WATER":
-						counts["WATER"] += 1
-					elif tag == &"SOUL_AIR":
-						counts["AIR"] += 1
+		for tag in unit.get_active_tags(get_all_instances()):
+			_accumulate_trait_tag(counts, tag)
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		if not _team_has_trait_trinket(team, trait_name):
@@ -1808,26 +1762,18 @@ func _lock_traits() -> void:
 func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
 	if not is_instance_valid(unit):
 		return false
-	var def = unit.get_definition()
-	if not is_instance_valid(def) or not "tags" in def:
-		return false
 	var target_tag = StringName("SOUL_" + trait_name)
-	if def.tags.has(target_tag):
-		return true
+	return unit.get_active_tags(get_all_instances()).has(target_tag)
 
-	# Check equipped items for trait tags (Emblems)
-	for item_uuid in unit.equipped_item_uuids:
-		if item_uuid.is_empty():
-			continue
-		var item_inst = get_instance(item_uuid)
-		if not is_instance_valid(item_inst):
-			continue
-		var item_def = item_inst.get_definition()
-		if is_instance_valid(item_def) and "tags" in item_def:
-			if item_def.tags.has(target_tag):
-				return true
-	
-	return false
+func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
+	if tag == &"SOUL_FIRE":
+		counts["FIRE"] += 1
+	elif tag == &"SOUL_EARTH":
+		counts["EARTH"] += 1
+	elif tag == &"SOUL_WATER":
+		counts["WATER"] += 1
+	elif tag == &"SOUL_AIR":
+		counts["AIR"] += 1
 
 ## Apply start-of-turn effects for active traits (e.g., Earth Armor)
 ## Apply start-of-turn effects for active traits (e.g., Earth Armor)

@@ -360,8 +360,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
 	var recipe: MergeRecipe = Database.recipes.get(recipe_id)
-	var result_def = Database.get_definition(recipe.result_id)
-	if not is_instance_valid(result_def): return
+	# var result_def = Database.get_definition(recipe.result_id)
+	# Line removed
 
 	# Use MergeManager to calculate the result (including stat inheritance logic)
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
@@ -369,6 +369,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		return
 
 	var new_instance: GachaBallInstance = merge_result["merged_instance"]
+	var result_def = new_instance.get_definition()
+	if not is_instance_valid(result_def): return
 	
 	# Collect items equipped on parents (if any) to equip onto a UNIT result later
 	# MergeManager returns the list of items that should be equipped.
