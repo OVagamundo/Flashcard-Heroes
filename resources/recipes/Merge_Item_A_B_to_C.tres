@@ -7,6 +7,6 @@ script = ExtResource("1_script")
 id = &"merge_item_a_b_to_c"
 ingredient_a_id = &"item_t1_a"
 ingredient_b_id = &"item_t1_b"
-result_id = &"item_c"
+result_id = &"item_t2_c"
 is_self_merge = false
 merge_type = &"ITEM"

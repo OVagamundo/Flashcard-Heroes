@@ -3,7 +3,6 @@ class_name GachaBallView
 extends PanelContainer
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
-const GachaBallCapsuleGlow = preload("res://scripts/GachaBallCapsuleGlow.gd")
 
 # Size scale constants for different contexts
 const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
@@ -15,9 +14,6 @@ const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaballcapsule.png"
 # Path-choice-style hover motion for selectable gachaballs.
 const HOVER_SCALE: float = 0.12
 const PRESS_SQUASH: float = 0.10
-const MAX_TILT_DEGREES: float = 2.4
-const MAX_PITCH_DEGREES: float = 1.2
-const POINTER_BLEND_SPEED: float = 12.0
 const INVENTORY_BRIGHTNESS_BOOST: float = 0.18
 const INVENTORY_TRANSFORM_FACTOR: float = 0.92
 const INVENTORY_OVERLAY_INSET_PX: float = 0.0
@@ -90,10 +86,7 @@ var _hover_tween: Tween = null
 var _press_tween: Tween = null
 var _hover_amount: float = 0.0
 var _press_amount: float = 0.0
-var _pointer_uv: Vector2 = Vector2(0.5, 0.5)
 var _is_hovered: bool = false
-var _tilt_degrees: float = 0.0
-var _pitch_degrees: float = 0.0
 var _base_z_index: int = 0
 var _slot_view_ref: Control = null
 var _slot_base_z_index: int = 0
@@ -153,9 +146,7 @@ func _ready() -> void:
 	_touch_long_press_timer.timeout.connect(_on_touch_long_press_timeout)
 	add_child(_touch_long_press_timer)
 
-	if not CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
-		CRTEffect.glow_toggled.connect(_on_global_glow_toggled)
-	_refresh_capsule_local_glow()
+
 
 func _process(delta: float) -> void:
 	if _needs_hover_visual_update():
@@ -250,8 +241,6 @@ func _exit_tree() -> void:
 		mouse_entered.disconnect(_on_mouse_entered)
 	if mouse_exited.is_connected(_on_mouse_exited):
 		mouse_exited.disconnect(_on_mouse_exited)
-	if CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
-		CRTEffect.glow_toggled.disconnect(_on_global_glow_toggled)
 
 	# If this view is being freed during a drag, centrally end the drag ONLY if it is the source
 	if GlobalInteractionRouter.is_drag_active():
@@ -292,9 +281,6 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	z_index = _base_z_index
 	if is_instance_valid(_slot_view_ref):
 		_slot_view_ref.z_index = _slot_base_z_index
-	_pointer_uv = Vector2(0.5, 0.5)
-	_tilt_degrees = 0.0
-	_pitch_degrees = 0.0
 	scale = Vector2.ONE
 	rotation = 0.0
 	modulate.a = 1.0
@@ -462,7 +448,6 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	# Add gachaball overlay for inventory windows
 	if _has_overlay_heuristic():
 		_create_gachaball_overlay()
-		_refresh_capsule_local_glow()
 
 	# Set tooltip from localization key
 	var loc_key: String = visual_data.get("display_name_key", "")
@@ -613,7 +598,6 @@ func _start_touch_long_press(local_pos: Vector2) -> void:
 	_touch_press_active = true
 	_touch_long_press_triggered = false
 	_touch_press_position = local_pos
-	_update_pointer_uv(local_pos)
 	if is_instance_valid(_touch_long_press_timer):
 		_touch_long_press_timer.start()
 
@@ -763,7 +747,6 @@ func _build_drag_preview_visual() -> Control:
 			overlay_preview.position = offset
 			preview_container.add_child(overlay_preview)
 			preview_container.move_child(overlay_preview, 0)
-			GachaBallCapsuleGlow.apply_to_texture_rect(overlay_preview)
 
 		if _is_selected and icon_rect.material:
 			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
@@ -810,13 +793,6 @@ func _set_hover_amount(value: float) -> void:
 func _set_press_amount(value: float) -> void:
 	_press_amount = clampf(value, 0.0, 1.0)
 
-func _update_pointer_uv(local_pos: Vector2) -> void:
-	var safe_size = Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
-	_pointer_uv = Vector2(
-		clampf(local_pos.x / safe_size.x, 0.0, 1.0),
-		clampf(local_pos.y / safe_size.y, 0.0, 1.0)
-	)
-
 func _update_hover_animation(delta: float) -> void:
 	var mode: int = _get_hover_fx_mode()
 	if _is_dragging or GlobalInteractionRouter.is_drag_active():
@@ -825,32 +801,11 @@ func _update_hover_animation(delta: float) -> void:
 	if mode == HoverFxMode.OFF and _is_hovered:
 		_set_hover_state(false, false)
 
-	var blend: float = minf(1.0, delta * POINTER_BLEND_SPEED)
-	var target_pointer := Vector2(0.5, 0.5)
-	if mode != HoverFxMode.OFF and _is_hovered:
-		var safe_size = Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
-		var local_pos = get_local_mouse_position()
-		target_pointer = Vector2(
-			clampf(local_pos.x / safe_size.x, 0.0, 1.0),
-			clampf(local_pos.y / safe_size.y, 0.0, 1.0)
-		)
-	_pointer_uv = _pointer_uv.lerp(target_pointer, blend)
+	_apply_hover_visuals(mode)
 
-	_apply_hover_visuals(mode, blend)
-
-func _apply_hover_visuals(mode: int, blend: float) -> void:
+func _apply_hover_visuals(mode: int) -> void:
 	pivot_offset = size / 2.0
 	var transform_factor: float = INVENTORY_TRANSFORM_FACTOR if mode == HoverFxMode.INVENTORY_SPHERE else 1.0
-
-	var pointer_x = (_pointer_uv.x - 0.5) * 2.0
-	var pointer_y = (_pointer_uv.y - 0.5) * 2.0
-	var target_tilt = pointer_x * MAX_TILT_DEGREES * _hover_amount * transform_factor
-	var target_pitch = - pointer_y * MAX_PITCH_DEGREES * _hover_amount * transform_factor
-
-	_tilt_degrees = lerpf(_tilt_degrees, target_tilt, blend)
-	_pitch_degrees = lerpf(_pitch_degrees, target_pitch, blend)
-	var z_rotation = _tilt_degrees + (_pitch_degrees * 0.22)
-	rotation = lerp_angle(rotation, deg_to_rad(z_rotation), blend)
 
 	var hover_scale = 1.0 + (HOVER_SCALE * _hover_amount * transform_factor)
 	var press_scale = 1.0 - (PRESS_SQUASH * _press_amount * transform_factor)
@@ -858,6 +813,7 @@ func _apply_hover_visuals(mode: int, blend: float) -> void:
 	var stretch_y = 1.0 - (_press_amount * 0.06 * transform_factor)
 	var final_scale = hover_scale * press_scale
 	scale = Vector2(final_scale * stretch_x, final_scale * stretch_y)
+	rotation = 0.0
 
 	_apply_inventory_brightness(mode)
 
@@ -1440,8 +1396,6 @@ func _create_gachaball_overlay() -> void:
 	# Check if overlay already exists (prevent duplication on repopulate)
 	var existing_overlay = get_node_or_null("GachaBallOverlay") as Sprite2D
 	if is_instance_valid(existing_overlay):
-		GachaBallCapsuleGlow.apply_to_sprite(existing_overlay)
-		_refresh_capsule_local_glow()
 		return
 	
 	# Load the overlay texture
@@ -1469,21 +1423,13 @@ func _create_gachaball_overlay() -> void:
 	# capsule under the icon/unit, selection ring above it.
 	add_child(overlay)
 	move_child(overlay, 1)
-	GachaBallCapsuleGlow.apply_to_sprite(overlay)
-	_refresh_capsule_local_glow()
 	
 	# Ensure clipping is disabled so glow can spill outside the bounding box
 	clip_contents = false
 	if get_parent() is Control:
 		get_parent().clip_contents = false
 
-func _refresh_capsule_local_glow(enabled: bool = CRTEffect.is_glow_enabled()) -> void:
-	var overlay = get_node_or_null("GachaBallOverlay") as Sprite2D
-	if is_instance_valid(overlay):
-		GachaBallCapsuleGlow.set_sprite_glow_enabled(overlay, enabled)
 
-func _on_global_glow_toggled(enabled: bool) -> void:
-	_refresh_capsule_local_glow(enabled)
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)
@@ -1571,7 +1517,6 @@ func _has_point(point: Vector2) -> bool:
 func _gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_motion(event):
 		var pointer_pos = InputUtils.get_event_position(event)
-		_update_pointer_uv(pointer_pos)
 		if event is InputEventScreenDrag and _touch_press_active and not _touch_long_press_triggered:
 			if pointer_pos.distance_to(_touch_press_position) > InputUtils.TOUCH_DRAG_THRESHOLD_PX:
 				_stop_touch_long_press()

@@ -1,6 +1,5 @@
 [gd_scene load_steps=12 format=3 uid="uid://crndwktdbp0rc"]
 
-[ext_resource type="Shader" path="res://assets/shaders/color_glow_post_process.gdshader" id="1_glow"]
 [ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
 [ext_resource type="Script" uid="uid://ban2qfgbvx5bs" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
@@ -14,32 +13,7 @@
 [ext_resource type="Script" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
 [ext_resource type="Texture2D" uid="uid://scjvpm7p8kjd" path="res://assets/ui/textures/Knob.png" id="100_knob"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_post"]
-shader = ExtResource("1_glow")
-shader_parameter/target_color = Color(1, 0.945098, 0.909804, 1)
-shader_parameter/tolerance = 0.005
-shader_parameter/glow_intensity = 4.0
-shader_parameter/glow_color = Color(1, 0.945098, 0.909804, 1)
 
-[sub_resource type="Environment" id="Environment_glow"]
-background_mode = 3
-glow_enabled = false
-glow_intensity = 2.0
-glow_strength = 1.5
-glow_bloom = 0.5
-glow_hdr_threshold = 1.0
-glow_hdr_scale = 2.0
-glow_hdr_luminance_cap = 12.0
-glow_levels/1 = 1.0
-glow_levels/2 = 1.0
-glow_levels/3 = 0.0
-glow_levels/4 = 0.0
-glow_levels/5 = 0.0
-glow_levels/6 = 0.0
-glow_levels/7 = 0.0
-glow_levels/5 = 0.0
-glow_levels/6 = 0.0
-glow_levels/7 = 0.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
 bg_color = Color(0.15, 0.17, 0.22, 0)
@@ -583,19 +557,3 @@ layer = 87
 unique_name_in_owner = true
 layer = 120
 
-[node name="GlowWorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_glow")
-
-[node name="PostProcessLayer" type="CanvasLayer" parent="."]
-layer = 130
-
-[node name="ColorGlowRect" type="ColorRect" parent="PostProcessLayer"]
-material = SubResource("ShaderMaterial_post")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = 4000.0
-offset_bottom = 4000.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2

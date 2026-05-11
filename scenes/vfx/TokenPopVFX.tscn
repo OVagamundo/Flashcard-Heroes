@@ -2,15 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/vfx/TokenPopVFX.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/ui/textures/token_100yen.png" id="2_token"]
-[ext_resource type="Shader" path="res://assets/shaders/color_glow_material.gdshader" id="1_gjw4s"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_v7b81"]
-shader = ExtResource("1_gjw4s")
-shader_parameter/target_color = Color(1, 0.945098, 0.909804, 1)
-shader_parameter/tolerance = 5.0
-shader_parameter/glow_intensity = 4.0
-shader_parameter/glow_color = Color(1, 0.945098, 0.909804, 1)
-
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparkle"]
 emission_shape = 1
 emission_sphere_radius = 10.0
