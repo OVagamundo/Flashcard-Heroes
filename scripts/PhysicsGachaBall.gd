@@ -2,7 +2,6 @@ class_name PhysicsGachaBall
 extends RigidBody2D
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
-const GachaBallCapsuleGlow = preload("res://scripts/GachaBallCapsuleGlow.gd")
 
 # Shared across all balls
 static var next_allowed_clack_time: int = 0
@@ -42,7 +41,6 @@ func _ready() -> void:
 	_orig_capsule_scale = capsule_sprite.scale
 	_adjust_capsule_scale()
 	_orig_icon_scale = icon_sprite.scale
-	GachaBallCapsuleGlow.apply_to_sprite(capsule_sprite)
 
 	_touch_long_press_timer = Timer.new()
 	_touch_long_press_timer.one_shot = true
@@ -50,10 +48,6 @@ func _ready() -> void:
 	_touch_long_press_timer.timeout.connect(_on_touch_long_press_timeout)
 	add_child(_touch_long_press_timer)
 
-	if not CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
-		CRTEffect.glow_toggled.connect(_on_global_glow_toggled)
-	_refresh_capsule_local_glow()
-	
 	if _pending_texture:
 		icon_sprite.texture = _pending_texture
 		_adjust_icon_scale()
@@ -66,8 +60,6 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_stop_touch_long_press()
-	if CRTEffect.glow_toggled.is_connected(_on_global_glow_toggled):
-		CRTEffect.glow_toggled.disconnect(_on_global_glow_toggled)
 
 func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D, visual_layers: Array = []) -> void:
 	instance_uuid = uuid
@@ -150,12 +142,6 @@ func spawn_in(duration: float) -> void:
 	tween.tween_property(col_poly, "scale", Vector2(1.0, 1.0), duration)\
 			.set_trans(Tween.TRANS_QUAD)\
 			.set_ease(Tween.EASE_OUT)
-
-func _refresh_capsule_local_glow(enabled: bool = CRTEffect.is_glow_enabled()) -> void:
-	GachaBallCapsuleGlow.set_sprite_glow_enabled(capsule_sprite, enabled)
-
-func _on_global_glow_toggled(enabled: bool) -> void:
-	_refresh_capsule_local_glow(enabled)
 
 # Replaced physics _input_event with the standard Control gui_input
 func _on_gui_input(event: InputEvent) -> void:

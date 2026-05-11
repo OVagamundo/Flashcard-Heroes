@@ -40,7 +40,6 @@ VFXFactory="*res://scripts/vfx/VFXFactory.gd"
 SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
 TutorialManager="*res://scripts/TutorialManager.gd"
 SaveManager="*res://scripts/SaveManager.gd"
-CRTEffect="*res://scripts/CRTEffect.gd"
 CursorManager="*res://scripts/CursorManager.gd"
 
 [debug]

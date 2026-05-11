@@ -10,7 +10,11 @@ func _ready() -> void:
 
 # --- Main Action Handler ---
 
-func _on_try_inventory_action(source_loc, target_loc) -> void:
+func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
+	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
+		GlobalInteractionRouter.end_drag(false)
+		return
+
 	# Early-case: Allow equipping items onto units even across functional groups
 	var early_source_instance = _get_instance_at_location(source_loc)
 	var early_target_instance = _get_instance_at_location(target_loc)
@@ -44,7 +48,6 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 			SignalBus.emit_signal("inventory_action_completed", [early_target_instance.ball_uuid])
 			return
 
-
 	# Early-case: Allow equipping items by dropping onto an equipped_item slot (empty or same-unit slot)
 	if is_instance_valid(early_source_instance) and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		var sdef2 = early_source_instance.get_definition()
@@ -53,16 +56,21 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 			if is_instance_valid(data_owner):
 				var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
 				if is_instance_valid(parent_unit):
-					# If slot already occupied, fall through to swap logic later
-					# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard.
-					var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
-					var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard" or s_group2 == &"EquippedGrid"
-					if is_valid_source2 and target_loc.index < parent_unit.equipped_item_uuids.size():
-						# Use atomic equip with explicit slot
-						data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
-						GlobalInteractionRouter.end_drag(true)
-						SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
-						return
+					# If slot already occupied, fall through to swap/merge logic later
+					var slot_is_empty = true
+					if target_loc.index < parent_unit.equipped_item_uuids.size():
+						slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
+					
+					if slot_is_empty:
+						# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard.
+						var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
+						var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard" or s_group2 == &"EquippedGrid"
+						if is_valid_source2:
+							# Use atomic equip with explicit slot
+							data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+							GlobalInteractionRouter.end_drag(true)
+							SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
+							return
 
 	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
 	var source_context_group = GlobalInteractionRouter.get_context_group(source_loc.container)
@@ -115,7 +123,6 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 
 	var data_owner: Object = _get_data_owner()
 	if not is_instance_valid(data_owner): return
-
 	var all_instances_db = data_owner.get_all_instances()
 
 	# Case 3: Same-slot drop (return to original position) - trigger bounce, no action

@@ -8,7 +8,6 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var content_area: SubViewportContainer = %ContentArea
 @onready var scene_background: TextureRect = %SceneBackground
 @onready var scene_slot: MarginContainer = %SceneSlot
-@onready var color_glow_rect: ColorRect = $PostProcessLayer/ColorGlowRect
 
 # Gacha machine containers
 @onready var gacha_machine_1: Control = %GachaMachine1
@@ -137,15 +136,6 @@ func _ready() -> void:
 	SignalBus.drag_started.connect(_on_drag_started_for_drop_zone)
 	SignalBus.drag_ended.connect(_on_drag_ended_for_drop_zone)
 	
-	CRTEffect.glow_toggled.connect(func(enabled: bool):
-		if is_instance_valid(color_glow_rect):
-			color_glow_rect.visible = enabled
-	)
-	CRTEffect.glow_debug_view_changed.connect(_apply_glow_debug_view)
-	if is_instance_valid(color_glow_rect):
-		color_glow_rect.visible = CRTEffect.is_glow_enabled()
-	_apply_glow_debug_view(CRTEffect.get_glow_debug_view())
-
 	_on_battle_state_changed(false)
 	
 	# Build the confirm drop zone overlay (programmatic, not in .tscn)
@@ -174,14 +164,6 @@ func _exit_tree() -> void:
 		SignalBus.drag_started.disconnect(_on_drag_started_for_drop_zone)
 	if SignalBus.drag_ended.is_connected(_on_drag_ended_for_drop_zone):
 		SignalBus.drag_ended.disconnect(_on_drag_ended_for_drop_zone)
-
-func _apply_glow_debug_view(view: int) -> void:
-	if not is_instance_valid(color_glow_rect):
-		return
-	var glow_material := color_glow_rect.material as ShaderMaterial
-	if glow_material == null:
-		return
-	glow_material.set_shader_parameter("debug_view", view)
 
 func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area
