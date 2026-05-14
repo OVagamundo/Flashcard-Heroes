@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/items/Tier3ItemE.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://bxxp0m25s1y6e" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c6lbnp8hd8g86" path="res://assets/Realistic/sprites/items/Tier3ItemE.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/ItemTier3E_DeathDamage.tres" id="3_ability"]
 
 [resource]

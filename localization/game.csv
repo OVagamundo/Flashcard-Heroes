@@ -478,4 +478,14 @@ hero_pyro.name,Pyromancer,Piromante
 hero_pyro.desc,"A fiery mage who incinerates enemies instead of striking them.","Um mago ardente que incinera os inimigos em vez de atacá-los."
 ability.hero_pyro_attack_burn.name,Incinerate,Incinerar
 ability.hero_pyro_attack_burn.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
-
+options.art_style,Art Style,Estilo de Arte
+options.style.realistic,Realistic,Realista
+options.style.pixelart,Pixel Art,Pixel Art
+ui.surprise_node,Surprise Event,Evento Surpresa
+ui.utg_title,Unit Training Ground,Campo de Treinamento
+ui.utg_btn,TRAINING,TREINAMENTO
+ui.utg_instruction,"Drag or select your unit to start your training.\nClick anywhere to close the inventory.","Arraste ou selecione uma unidade para iniciar o treinamento.\nClique em qualquer lugar para fechar o inventário."
+ui.utg_drop_hp,"Drag or Click here to\n[font_size=72]TRAIN HP[/font_size]\n(cost: 5 gold)","Arraste ou clique aqui para\n[font_size=72]TREINAR HP[/font_size]\n(custo: 5 ouro)"
+ui.utg_drop_pwr,"Drag or Click here to\n[font_size=72]TRAIN PWR[/font_size]\n(cost: 5 gold)","Arraste ou clique aqui para\n[font_size=72]TREINAR PWR[/font_size]\n(custo: 5 ouro)"
+ui.utg_popup_title,Use your Tokens to train!,Use suas Fichas para treinar!
+ui.utg_done,Done!,Pronto!

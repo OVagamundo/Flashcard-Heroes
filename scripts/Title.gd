@@ -6,6 +6,7 @@ extends Control
 @onready var exit_button: Button = %ExitButton
 @onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
 @onready var continue_button: Button = %ContinueButton
+@onready var background: TextureRect = $Background
 
 func _input(event: InputEvent) -> void:
 	# Debug Header: Reset tutorials with Shift+T
@@ -21,6 +22,14 @@ func _ready() -> void:
 	print("[Title] Ready. TutorialManager.tutorials_enabled: ", TutorialManager.tutorials_enabled)
 	# AUDIO HOOK: Title BGM
 	Audio.play_music(SoundRegistry.BGM_TITLE)
+	
+	if background and background.texture:
+		var original_bg: Texture2D = background.texture
+		background.texture = ArtStyleManager.get_themed_texture(original_bg)
+		ArtStyleManager.style_changed.connect(func():
+			if background and is_instance_valid(original_bg):
+				background.texture = ArtStyleManager.get_themed_texture(original_bg)
+		)
 	
 	# Continue button - only visible if save exists
 	if SaveManager.has_save():

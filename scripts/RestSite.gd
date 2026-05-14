@@ -342,7 +342,7 @@ func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictiona
 	anim_ball.queue_free()
 
 func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
-	var icon_tex = preload("res://assets/ui/textures/gachaballcapsule.png")
+	var icon_tex = preload("res://assets/Realistic/ui/textures/gachaballcapsule.png")
 	return {
 		"uuid": "prize_%d" % prize_data.slot_index,
 		"icon": icon_tex,

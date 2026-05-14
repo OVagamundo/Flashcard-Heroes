@@ -6,7 +6,7 @@ extends Node2D
 ## Token pops up with a satisfying arc, spins, and flies to the token counter
 ## Includes scale bounce, gold glow trail, and satisfying landing effects
 
-const TOKEN_TEXTURE = preload("res://assets/ui/textures/token_100yen.png")
+const TOKEN_TEXTURE = preload("res://assets/Realistic/ui/textures/token_100yen.png")
 
 # Animation parameters - tuned for satisfying "juice"
 const INITIAL_SCALE := 0.1875 # Start small for dramatic pop (texture is 4x original)

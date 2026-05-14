@@ -5,7 +5,7 @@ extends Node2D
 ## Token spend animation - token is TOSSED from counter to gacha machine
 ## Natural parabolic arc like throwing a coin into a machine slot
 
-const TOKEN_TEXTURE = preload("res://assets/ui/textures/token_100yen.png")
+const TOKEN_TEXTURE = preload("res://assets/Realistic/ui/textures/token_100yen.png")
 
 # Animation parameters - tuned for satisfying "toss" feel
 const COIN_SCALE := 0.375 # 0.375 * 256px = 96px, matching top bar icon perfectly (texture is 4x original)

@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
 
-[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/items/WaterEmblem.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://dm26eyl3nccdc" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c3riljvualfop" path="res://assets/Realistic/sprites/items/WaterEmblem.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")

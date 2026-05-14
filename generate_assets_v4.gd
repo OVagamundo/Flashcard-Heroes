@@ -29,7 +29,7 @@ const C_INPUT_BG = Color("2d2420") # Very dark wood
 
 func _init():
 	print("Starting V4 Asset Generation (High Fidelity)...")
-	var path = "res://assets/ui/textures/"
+	var path = "res://assets/Realistic/ui/textures/"
 	var dir = DirAccess.open(path)
 	if not dir:
 		DirAccess.make_dir_recursive_absolute(path)
@@ -299,6 +299,6 @@ func is_border(x, y, w, h) -> bool:
 	return false
 
 func save_image(img: Image, filename: String):
-	var path = "res://assets/ui/textures/" + filename
+	var path = "res://assets/Realistic/ui/textures/" + filename
 	img.save_png(path)
 	print("Generated: " + path)

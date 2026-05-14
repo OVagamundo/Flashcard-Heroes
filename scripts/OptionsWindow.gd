@@ -4,6 +4,7 @@ extends Control
 ## Options window for game settings, including language selection
 
 @onready var language_dropdown: OptionButton = %LanguageDropdown
+@onready var art_style_dropdown: OptionButton = %ArtStyleDropdown
 @onready var close_button: Button = %CloseButton
 @onready var title_label: Label = %TitleLabel
 
@@ -21,11 +22,14 @@ const LANGUAGES = [
 func _ready() -> void:
 	close_button.pressed.connect(_on_close_pressed)
 	language_dropdown.item_selected.connect(_on_language_selected)
+	if art_style_dropdown:
+		art_style_dropdown.item_selected.connect(_on_art_style_selected)
 	
 	# Connect to locale changes to update the window's own text
 	SignalBus.locale_changed.connect(_update_labels)
 	
 	_populate_language_dropdown()
+	_populate_art_style_dropdown()
 	_update_labels()
 	
 	_init_graphics_settings()
@@ -140,6 +144,8 @@ func _update_labels() -> void:
 	%MusicLabel.text = tr("options.audio.music")
 	%SFXLabel.text = tr("options.audio.sfx")
 	%LanguageLabel.text = tr("options.language")
+	if has_node("%ArtStyleLabel"):
+		%ArtStyleLabel.text = tr("options.art_style") if tr("options.art_style") != "options.art_style" else "Art Style"
 	
 	close_button.text = tr("ui.close")
 	title_label.text = tr("ui.options")
@@ -154,6 +160,41 @@ func _update_labels() -> void:
 	_populate_language_dropdown()
 	if current_idx >= 0 and current_idx < language_dropdown.item_count:
 		language_dropdown.select(current_idx)
+		
+	if art_style_dropdown:
+		var style_idx := art_style_dropdown.selected
+		_populate_art_style_dropdown()
+		if style_idx >= 0 and style_idx < art_style_dropdown.item_count:
+			art_style_dropdown.select(style_idx)
+
+func _populate_art_style_dropdown() -> void:
+	if not is_instance_valid(art_style_dropdown): return
+	art_style_dropdown.clear()
+	
+	var styles = ArtStyleManager.get_available_styles()
+	var selected_idx = 0
+	
+	for i in range(styles.size()):
+		var style = styles[i]
+		# Try to localize the style name (e.g., options.style.pixelart)
+		var loc_key = "options.style." + style.to_lower()
+		var display_name = tr(loc_key)
+		if display_name == loc_key:
+			# No translation found, use the folder name formatted nicely
+			display_name = style.capitalize()
+		
+		art_style_dropdown.add_item(display_name)
+		art_style_dropdown.set_item_metadata(i, style)
+		
+		if style == ArtStyleManager.current_style:
+			selected_idx = i
+			
+	art_style_dropdown.select(selected_idx)
+
+func _on_art_style_selected(index: int) -> void:
+	var style = art_style_dropdown.get_item_metadata(index)
+	if style:
+		ArtStyleManager.set_style(style)
 
 func _on_language_selected(index: int) -> void:
 	if index < 0 or index >= LANGUAGES.size():

@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
 
-[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
-[ext_resource type="Texture2D" path="res://assets/sprites/trinkets/Trinket4A.png" id="2_icon"]
-[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
-[ext_resource type="Script" path="res://scripts/EffectPreventLethal.gd" id="4_effect"]
+[ext_resource type="Script" uid="uid://dm26eyl3nccdc" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" uid="uid://l10opx4o0c3n" path="res://assets/Realistic/sprites/trinkets/Trinket4A.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://uog0floyg7ub" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+[ext_resource type="Script" uid="uid://b5h3k4a7qmkc7" path="res://scripts/EffectPreventLethal.gd" id="4_effect"]
 
 [sub_resource type="Resource" id="Effect_Aegis_1"]
 script = ExtResource("4_effect")

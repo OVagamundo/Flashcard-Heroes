@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script_ability"]
-[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect_script"]
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="3_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/units/Tier2unitF.png" id="4_icon"]
+[ext_resource type="Script" uid="uid://uog0floyg7ub" path="res://scripts/AbilityDefinition.gd" id="1_script_ability"]
+[ext_resource type="Script" uid="uid://budykbgy48pk" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect_script"]
+[ext_resource type="Script" uid="uid://bxxp0m25s1y6e" path="res://scripts/GachaBallDefinition.gd" id="3_script"]
+[ext_resource type="Texture2D" uid="uid://dsdgofctxmtu4" path="res://assets/Realistic/sprites/units/Tier2unitF.png" id="4_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="5_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres" id="6_ability_gold"]
 

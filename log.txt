@@ -1,372 +1,125 @@
 Godot Engine v4.6.1.stable.official.14d19694e - https://godotengine.org
-OpenGL API 4.1 Metal - 90.5 - Compatibility - Using Device: Apple - Apple M4
+Vulkan 1.4.323 - Forward+ - Using Device #0: Intel - Intel(R) Graphics
 
-WARNING: res://scenes/PhysicsGachaBall.tscn:4 - ext_resource, invalid UID: uid://dfnj2025edov3 - using text path instead: res://assets/ui/textures/gachaballcapsule.png
+WARNING: res://scenes/PhysicsGachaBall.tscn:4 - ext_resource, invalid UID: uid://dfnj2025edov3 - using text path instead: res://assets/Realistic/ui/textures/gachaballcapsule.png
    at: load (scene/resources/resource_format_text.cpp:500)
-WARNING: res://scenes/DiscardPileWindow.tscn:5 - ext_resource, invalid UID: uid://coytkb7iik7e - using text path instead: res://assets/ui/textures/DiscardPileContainer.png
+WARNING: res://scenes/PhysicsGachaBall.tscn:5 - ext_resource, invalid UID: uid://x7wjpxtgr6u - using text path instead: res://assets/audio/sfx/ui/click1.ogg
+   at: load (scene/resources/resource_format_text.cpp:500)
+WARNING: res://scenes/PhysicsGachaBall.tscn:6 - ext_resource, invalid UID: uid://b0p6yxy7d6w6x - using text path instead: res://resources/physics/GachaBallMaterial.tres
+   at: load (scene/resources/resource_format_text.cpp:500)
+WARNING: res://scenes/vfx/StatProjectile.tscn:4 - ext_resource, invalid UID: uid://notosansblack - using text path instead: res://assets/fonts/static/NotoSansJP-Black.ttf
+   at: load (scene/resources/resource_format_text.cpp:500)
+WARNING: res://scenes/vfx/FloatingDamageNumber.tscn:4 - ext_resource, invalid UID: uid://notosansblack - using text path instead: res://assets/fonts/static/NotoSansJP-Black.ttf
+   at: load (scene/resources/resource_format_text.cpp:500)
+WARNING: res://scenes/DiscardPileWindow.tscn:5 - ext_resource, invalid UID: uid://coytkb7iik7e - using text path instead: res://assets/Realistic/ui/textures/DiscardPileContainer.png
    at: load (scene/resources/resource_format_text.cpp:500)
    GDScript backtrace (most recent call first):
        [0] @implicit_new (res://scripts/WindowManager.gd:6)
-WARNING: res://resources/items/item_emblem_earth.tres:3 - ext_resource, invalid UID: uid://bg2j5z5z5z5z5 - using text path instead: res://assets/sprites/items/EarthEmblem.png
+WARNING: res://resources/items/item_emblem_earth.tres:3 - ext_resource, invalid UID: uid://bg2j5z5z5z5z5 - using text path instead: res://assets/Realistic/sprites/items/EarthEmblem.png
    at: load (scene/resources/resource_format_text.cpp:500)
    GDScript backtrace (most recent call first):
-       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [0] _load_resources_from_path (res://scripts/Database.gd:82)
        [1] _ready (res://scripts/Database.gd:24)
 WARNING: res://resources/items/item_emblem_earth.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
    at: load (scene/resources/resource_format_text.cpp:500)
    GDScript backtrace (most recent call first):
-       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [0] _load_resources_from_path (res://scripts/Database.gd:82)
        [1] _ready (res://scripts/Database.gd:24)
-WARNING: res://resources/items/item_emblem_fire.tres:3 - ext_resource, invalid UID: uid://bg2j4y4y4y4y4 - using text path instead: res://assets/sprites/items/FireEmblem.png
+WARNING: res://resources/items/item_emblem_fire.tres:3 - ext_resource, invalid UID: uid://bg2j4y4y4y4y4 - using text path instead: res://assets/Realistic/sprites/items/FireEmblem.png
    at: load (scene/resources/resource_format_text.cpp:500)
    GDScript backtrace (most recent call first):
-       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [0] _load_resources_from_path (res://scripts/Database.gd:82)
        [1] _ready (res://scripts/Database.gd:24)
 WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid UID: uid://c8q7y5y5y5y5y - using text path instead: res://scripts/GachaBallDefinition.gd
    at: load (scene/resources/resource_format_text.cpp:500)
    GDScript backtrace (most recent call first):
-       [0] _load_resources_from_path (res://scripts/Database.gd:59)
+       [0] _load_resources_from_path (res://scripts/Database.gd:82)
        [1] _ready (res://scripts/Database.gd:24)
-[Title] Ready. TutorialManager.tutorials_enabled: false
-[TutorialManager] Requesting tutorial: loadout_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
-'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+[Title] Ready. TutorialManager.tutorials_enabled: true
+[SaveManager] Run loaded successfully (Day 13)
+WARNING: Setting node name 'KnobButton' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
+'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
-WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine2/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
-'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+       [0] _change_scene_to (res://scripts/SceneManager.gd:100)
+WARNING: Setting node name 'CountLabel' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2/CountLabel', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
+'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
-WARNING: Setting node name 'KnobButton' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/KnobButton', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
-'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+       [0] _change_scene_to (res://scripts/SceneManager.gd:100)
+WARNING: Setting node name 'KnobButton' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3/KnobButton', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
+'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
-WARNING: Setting node name 'CountLabel' to be unique within scene for 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
-'VBoxContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
-   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2229)
+       [0] _change_scene_to (res://scripts/SceneManager.gd:100)
+WARNING: Setting node name 'CountLabel' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3/CountLabel', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel'.
+'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/CountLabel' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _change_scene_to (res://scripts/SceneManager.gd:101)
-[SaveManager] Run saved successfully (Day 1)
+       [0] _change_scene_to (res://scripts/SceneManager.gd:100)
+[PathChoice] Loading from save, skipping day advance. Current Day: 13
 [TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Tutorials disabled
+[TutorialManager] Blocked: Already completed
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:442)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:121)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:442)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:121)
+[TutorialManager] Requesting tutorial: gambling_den_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 14)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 15)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+Warning: Instance has invalid stats, resetting from definition
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 16)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
 [TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Tutorials disabled
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_b_1773176151_12_14939
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1773176151_12_14939
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[ItemInspection] Ability: item_tier1b_extra_attack | Key: ability.item_tier1b_extra_attack.desc | Desc: When attacking, if target has more HP than holder then perform an extra attack.
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_b_1773176151_12_14939
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1773176151_12_14939
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_b_1773176151_12_14939
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1773176151_12_14939
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_b_1773176151_12_14939
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1773176151_12_14939
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[ItemInspection] Ability: item_tier2b_bloodlust | Key: ability.item_tier2b_bloodlust.desc | Desc: When the holder defeats an enemy, they act again immediately.
-[ItemInspection] Ability: item_tier2c_passive_heal | Key: ability.item_tier2c_passive_heal.desc | Desc: When hurt, Heal this unit by 1 HP and gain 1 PWR.
-[ItemInspection] Ability: ability_grant_heroism | Key: ability.grant_heroism.desc | Desc: Grants +3 HP, +3 PWR, and 3 Armor stacks.
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_potion_heroism_1773176151_44_55923
-DEBUG_INPUT: Emitting DRAG_START. Entity: CONSUMABLE | UUID: item_potion_heroism_1773176151_44_55923
-DEBUG_GIR: DRAG_START intercepted for CONSUMABLE
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_potion_spikes_1773176151_41_96686
-DEBUG_INPUT: Emitting DRAG_START. Entity: CONSUMABLE | UUID: item_potion_spikes_1773176151_41_96686
-DEBUG_GIR: DRAG_START intercepted for CONSUMABLE
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[EncounterGen] Budget: 6, Spent: 6, Units: 2, Items: 0, Trinkets: 0
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
-[BattleLog] [1:1] ═══ TURN 1 ═══ 
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_dust_t1_1778789206_9_35560
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_dust_t1_1778789206_9_35560
+DEBUG_GIR: DRAG_START intercepted for UNIT
 [TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-[FlashcardManager] _on_minigame_complete called. Correct: 8
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 2 }
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 1 }
 [FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] Mimic heals The Storm Herald for 1 HP (trait_water_heal) (HP: 6→7)
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Tutorials disabled
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:757)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
-       [3] _animate_token_spend (res://scripts/Main.gd:339)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:757)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
-       [3] _animate_token_spend (res://scripts/Main.gd:339)
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:3] Templar grants Templar +10 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=10 targets=1
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:757)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
-       [3] _animate_token_spend (res://scripts/Main.gd:339)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[AnimationCompletionTracker] Timeout for unit_t2_d_1773176171 type 7
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:4] Templar grants Templar -2 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-2 targets=1
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t2_d_1773176171_104_69692
-   at: push_warning (core/variant/variant_utility.cpp:1034)
-   GDScript backtrace (most recent call first):
-       [0] apply_pwr_delta (res://scripts/BattleAnimator.gd:370)
-       [1] execute (res://scripts/animations/BuffAnimation.gd:74)
-       [2] _process (res://scripts/vfx/StatProjectile.gd:90)
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:757)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
-       [3] _animate_token_spend (res://scripts/Main.gd:339)
-[AnimationCompletionTracker] Timeout for unit_t2_d_1773176171 type 7
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:5] Templar grants Templar -2 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-2 targets=1
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_a_1773176171_99_39931
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_a_1773176171_99_39931
+       [0] _create_vfx_gachaball (res://scripts/UnitTrainingGround.gd:484)
+       [1] _on_popup_done (res://scripts/UnitTrainingGround.gd:449)
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_dust_t3_1778789206_11_75800
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_dust_t3_1778789206_11_75800
 DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:757)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:402)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1639)
-       [3] _animate_token_spend (res://scripts/Main.gd:339)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Tutorials disabled
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:6] Templar grants Templar -3 PWR (ability_unit_t2_d_power) 
-[BuffAnimation] execute() called - stat='pwr' amount=-3 targets=1
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_emblem_wind_1773176171_164_43952
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_emblem_wind_1773176171_164_43952
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[ItemInspection] Ability: ability_consumable_potion_t1 | Key: ability.potion_t1.desc | Desc: Restores 4 HP.
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_potion_t1_1773176171_96_59191
-DEBUG_INPUT: Emitting DRAG_START. Entity: CONSUMABLE | UUID: item_potion_t1_1773176171_96_59191
-DEBUG_GIR: DRAG_START intercepted for CONSUMABLE
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:7] Guardian heals Guardian for 4 HP 
-[BattleLog] [1:8] Guardian heals Guardian for 4 HP (ability_consumable_potion_t1) (HP: 4→8)
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_d_1773176171_104_69692
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_d_1773176171_104_69692
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_e_1773176171_106_69193
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_e_1773176171_106_69193
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_boss_3_ally_growth Prio:0 Src:boss_3_1773176171_167_13471
-[CS] Draining reaction: ability_boss_3_ally_growth Prio:0 Src:boss_3_1773176171_167_13471
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_boss_3_ally_growth Prio:0 Src:boss_3_1773176171_167_13471
-[CS] Draining reaction: ability_boss_3_ally_growth Prio:0 Src:boss_3_1773176171_167_13471
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier2a_defensive_stance Prio:10 Src:unit_t2_a_1773176171_99_39931
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:9] Guardian deals 2 dmg to Shadow Striker 
-[BattleLog] [1:10] Guardian attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 4→2)
-[DamageAnimation] Executing for targets: ["unit_t3_a_1773176171_165_74944"] source: unit_t2_a_1773176171_99_39931 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_a_1773176171 type 5
-[BattleLog] [1:11] Templar deals 3 dmg to Shadow Striker 
-[BattleLog] [1:12] Templar attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 2→-1)
-[DamageAnimation] Executing for targets: ["unit_t3_a_1773176171_165_74944"] source: unit_t2_d_1773176171_104_69692 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_d_1773176171 type 5
-[BattleLog] [1:13] └─ unit_t3_... is defeated! 
-[BattleLog] [1:14] The Storm Herald absorbs the soul of a fallen ally (+3 HP) 
-[BattleLog] [1:15] The Storm Herald heals The Storm Herald for 3 HP (ability_boss_3_ally_growth, on_ally_death) (HP: 7→10)
-[BattleLog] [1:16] The Storm Herald grows stronger from death (+2 PWR) 
-[BattleLog] [1:17] The Storm Herald grants The Storm Herald +2 PWR (ability_boss_3_ally_growth, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:18] Mimic deals 2 dmg to Mimic 
-[BattleLog] [1:19] Mimic attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t2_e_1773176171_166_59381"] source: unit_t2_e_1773176171_106_69193 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_e_1773176171 type 5
-[BattleLog] [1:20] └─ unit_t2_... is defeated! 
-[BattleLog] [1:21] The Storm Herald absorbs the soul of a fallen ally (+3 HP) 
-[BattleLog] [1:22] The Storm Herald heals The Storm Herald for 3 HP (ability_boss_3_ally_growth, on_ally_death) (HP: 10→13)
-[BattleLog] [1:23] The Storm Herald grows stronger from death (+2 PWR) 
-[BattleLog] [1:24] The Storm Herald grants The Storm Herald +2 PWR (ability_boss_3_ally_growth, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
-[BattleLog] [1:25] Timekeeper deals 3 dmg to The Storm Herald 
-[BattleLog] [1:26] Timekeeper attacks The Storm Herald for 3 damage (basic_attack, on_attack) (HP: 13→10)
-[DamageAnimation] Executing for targets: ["boss_3_1773176171_167_13471"] source: hero_timekeeper_1773176171_83_40822 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1773 type 5
-[BattleLog] [1:27] Guardian heals Guardian for 2 HP 
-[BattleLog] [1:28] Guardian heals Guardian for 2 HP (unit_tier2a_defensive_stance, on_before_damage) (HP: 8→10)
-[BattleLog] [1:29] The Storm Herald deals 10 dmg to Guardian 
-[BattleLog] [1:30] The Storm Herald attacks Guardian for 10 damage (basic_attack, on_attack) (HP: 10→0)
-[DamageAnimation] Executing for targets: ["unit_t2_a_1773176171_99_39931"] source: boss_3_1773176171_167_13471 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for boss_3_1773176171_16 type 5
-[BattleLog] [1:31] └─ Guardian is defeated! 
-[TutorialManager] Requesting blocking tutorial: unit_death_intro
-[TutorialManager] Blocked: Tutorials disabled
-[EncounterGen] Budget: 2, Spent: 2, Units: 1, Items: 0, Trinkets: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:32] └─ The Storm Herald summons New Unit! 
-[BattleLog] [2:1] ═══ TURN 2 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Tutorials disabled
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2641)
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 8
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_gachaball (res://scripts/UnitTrainingGround.gd:484)
+       [1] _on_popup_done (res://scripts/UnitTrainingGround.gd:449)
+[SaveManager] Run saved successfully (Day 17)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed

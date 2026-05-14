@@ -185,7 +185,7 @@ const TRAIT_DEFINITIONS = {
 	"FIRE": {
 		"display_name_key": "trait.fire.name",
 		"trinket_id": &"trinket_trait_fire",
-		"icon_path": "res://assets/sprites/items/FireEmblem.png",
+		"icon_path": "res://assets/Realistic/sprites/items/FireEmblem.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.fire.3"},
 			{"min": 5, "desc_key": "trait.fire.5"},
@@ -196,7 +196,7 @@ const TRAIT_DEFINITIONS = {
 	"EARTH": {
 		"display_name_key": "trait.earth.name",
 		"trinket_id": &"trinket_trait_earth",
-		"icon_path": "res://assets/sprites/items/EarthEmblem.png",
+		"icon_path": "res://assets/Realistic/sprites/items/EarthEmblem.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.earth.3"},
 			{"min": 5, "desc_key": "trait.earth.5"},
@@ -207,7 +207,7 @@ const TRAIT_DEFINITIONS = {
 	"WATER": {
 		"display_name_key": "trait.water.name",
 		"trinket_id": &"trinket_trait_water",
-		"icon_path": "res://assets/sprites/items/WaterEmblem.png",
+		"icon_path": "res://assets/Realistic/sprites/items/WaterEmblem.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.water.2"}
 		]
@@ -215,7 +215,7 @@ const TRAIT_DEFINITIONS = {
 	"AIR": {
 		"display_name_key": "trait.air.name",
 		"trinket_id": &"trinket_trait_air",
-		"icon_path": "res://assets/sprites/items/AirEmblem.png",
+		"icon_path": "res://assets/Realistic/sprites/items/AirEmblem.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.air.2"}
 		]

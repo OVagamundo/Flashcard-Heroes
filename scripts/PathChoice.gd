@@ -71,7 +71,8 @@ func _setup_normal_nodes() -> void:
 		{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "weight": 40},
 		{"type": "REST", "subtype": "", "name": "ui.rest_node", "weight": 40},
 		{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "weight": 50},
-		{"type": "GOLD", "subtype": "", "name": "ui.gambling_den_node", "weight": 60}
+		{"type": "GOLD", "subtype": "", "name": "ui.gambling_den_node", "weight": 60},
+		{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "weight": 40}
 	]
 	
 	var pool: Array[PathNodeDefinition] = []

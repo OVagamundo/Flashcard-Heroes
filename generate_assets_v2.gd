@@ -16,10 +16,10 @@ const COLOR_ACCENT = Color("ffd700") # Gold
 
 func _init():
 	print("Starting asset generation...")
-	var dir = DirAccess.open("res://assets/ui/textures")
+	var dir = DirAccess.open("res://assets/Realistic/ui/textures")
 	if not dir:
 		print("Creating directory...")
-		DirAccess.make_dir_recursive_absolute("res://assets/ui/textures")
+		DirAccess.make_dir_recursive_absolute("res://assets/Realistic/ui/textures")
 	
 	# 1. Panels
 	generate_9slice_rect("panel_32x32.png", 32, 32, COLOR_PANEL_BG, COLOR_PANEL_BORDER, 2)
@@ -208,6 +208,6 @@ func generate_checkbox(filename, checked):
 	save_image(img, filename)
 
 func save_image(img: Image, filename: String):
-	var path = "res://assets/ui/textures/" + filename
+	var path = "res://assets/Realistic/ui/textures/" + filename
 	img.save_png(path)
 	print("Generated: " + path)

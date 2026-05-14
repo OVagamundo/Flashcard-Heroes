@@ -21,8 +21,8 @@ func _ready() -> void:
 	leave_button.pressed.connect(_on_leave_pressed)
 	gui_input.connect(_on_gui_input)
 	SignalBus.locale_changed.connect(_update_localized_text)
-	SignalBus.black_market_remove_zone_activated.connect(_on_remove_requested)
-	SignalBus.black_market_transform_zone_activated.connect(_on_transform_requested)
+	SignalBus.action_drop_zone_2_activated.connect(_on_remove_requested)
+	SignalBus.action_drop_zone_1_activated.connect(_on_transform_requested)
 	_update_localized_text()
 	set_process(true)
 	call_deferred("_show_black_market_tutorial")
@@ -30,17 +30,17 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if SignalBus.locale_changed.is_connected(_update_localized_text):
 		SignalBus.locale_changed.disconnect(_update_localized_text)
-	if SignalBus.black_market_remove_zone_activated.is_connected(_on_remove_requested):
-		SignalBus.black_market_remove_zone_activated.disconnect(_on_remove_requested)
-	if SignalBus.black_market_transform_zone_activated.is_connected(_on_transform_requested):
-		SignalBus.black_market_transform_zone_activated.disconnect(_on_transform_requested)
+	if SignalBus.action_drop_zone_2_activated.is_connected(_on_remove_requested):
+		SignalBus.action_drop_zone_2_activated.disconnect(_on_remove_requested)
+	if SignalBus.action_drop_zone_1_activated.is_connected(_on_transform_requested):
+		SignalBus.action_drop_zone_1_activated.disconnect(_on_transform_requested)
 	# Hide the BM drop zones when leaving
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("hide_black_market_instruction"):
-			main_node.hide_black_market_instruction()
-		if main_node.has_method("hide_black_market_drop_zones"):
-			main_node.hide_black_market_drop_zones()
+		if main_node.has_method("hide_action_instruction"):
+			main_node.hide_action_instruction()
+		if main_node.has_method("hide_split_action_drop_zones"):
+			main_node.hide_split_action_drop_zones()
 
 func _process(_delta: float) -> void:
 	# Track inventory open state to show/hide BM drop zones
@@ -50,13 +50,13 @@ func _process(_delta: float) -> void:
 		var main_node = GameManager._active_main_node
 		if is_instance_valid(main_node):
 			if is_open:
-				if main_node.has_method("show_black_market_instruction"):
-					main_node.show_black_market_instruction()
+				if main_node.has_method("show_action_instruction"):
+					main_node.show_action_instruction()
 			else:
-				if main_node.has_method("hide_black_market_instruction"):
-					main_node.hide_black_market_instruction()
-				if main_node.has_method("hide_black_market_drop_zones"):
-					main_node.hide_black_market_drop_zones()
+				if main_node.has_method("hide_action_instruction"):
+					main_node.hide_action_instruction()
+				if main_node.has_method("hide_split_action_drop_zones"):
+					main_node.hide_split_action_drop_zones()
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.black_market_title")
@@ -104,7 +104,7 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 		return
 
 	var main_node = GameManager._active_main_node
-	var remove_target = main_node.get_bm_remove_zone() if is_instance_valid(main_node) and main_node.has_method("get_bm_remove_zone") else null
+	var remove_target = main_node.get_action_zone_2() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_2") else null
 	var remove_cost := _get_remove_cost()
 	
 	# Check if enough gold first
@@ -172,7 +172,7 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 		return
 
 	var main_node = GameManager._active_main_node
-	var transform_target = main_node.get_bm_transform_zone() if is_instance_valid(main_node) and main_node.has_method("get_bm_transform_zone") else null
+	var transform_target = main_node.get_action_zone_1() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_1") else null
 	
 	# Check if enough gold first
 	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRANSFORM_COST_GOLD:
@@ -503,10 +503,10 @@ func _on_leave_pressed() -> void:
 	# Hide BM zones before leaving
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("hide_black_market_instruction"):
-			main_node.hide_black_market_instruction()
-		if main_node.has_method("hide_black_market_drop_zones"):
-			main_node.hide_black_market_drop_zones()
+		if main_node.has_method("hide_action_instruction"):
+			main_node.hide_action_instruction()
+		if main_node.has_method("hide_split_action_drop_zones"):
+			main_node.hide_split_action_drop_zones()
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 

@@ -26,7 +26,7 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 	elif stat == "burn":
 		label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0)) # Orange
 		# Use FireBall texture for burn projectiles
-		var fireball_tex = load("res://assets/ui/textures/FireBall.png")
+		var fireball_tex = load("res://assets/Realistic/ui/textures/FireBall.png")
 		if fireball_tex:
 			icon.texture = fireball_tex
 			icon.visible = true
