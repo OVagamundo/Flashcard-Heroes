@@ -15,16 +15,16 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 	if is_instance_valid(icon_rect):
 		match trait_name:
 			"FIRE":
-				icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket7A.png")
+				icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket7A.png")
 				if is_instance_valid(name_label): name_label.text = tr("trait.fire.name")
 			"EARTH":
-				icon_rect.texture = preload("res://assets/sprites/trinkets/Trinket6A.png")
+				icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket6A.png")
 				if is_instance_valid(name_label): name_label.text = tr("trait.earth.name")
 			"WATER":
-				icon_rect.texture = preload("res://assets/sprites/items/WaterEmblem.png")
+				icon_rect.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
 				if is_instance_valid(name_label): name_label.text = tr("trait.water.name")
 			"AIR":
-				icon_rect.texture = preload("res://assets/sprites/items/AirEmblem.png")
+				icon_rect.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
 				if is_instance_valid(name_label): name_label.text = tr("trait.air.name")
 			_:
 				if is_instance_valid(name_label): name_label.text = trait_name

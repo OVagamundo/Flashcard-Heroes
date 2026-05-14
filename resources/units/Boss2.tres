@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/units/boss02.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://bxxp0m25s1y6e" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://mndahqmjjv48" path="res://assets/Realistic/sprites/units/boss02.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_boss_2_summon.tres" id="3_ability"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_boss_2_passive_token_drain.tres" id="4_passive"]
 

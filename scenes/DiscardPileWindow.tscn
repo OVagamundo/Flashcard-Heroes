@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
 [ext_resource type="PackedScene" uid="uid://cy8x8i0j8wab5" path="res://scenes/PhysicsTierContainer.tscn" id="2_physics_tier"]
-[ext_resource type="Texture2D" uid="uid://coytkb7iik7e" path="res://assets/ui/textures/DiscardPileContainer.png" id="3_container_tex"]
+[ext_resource type="Texture2D" uid="uid://coytkb7iik7e" path="res://assets/Realistic/ui/textures/DiscardPileContainer.png" id="3_container_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
 size = Vector2(2000, 4000)

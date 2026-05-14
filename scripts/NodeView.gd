@@ -32,14 +32,15 @@ const MAX_PERSPECTIVE_Y: float = 0.15
 
 # Texture paths
 const CARD_TEXTURES = {
-	"BATTLE": "res://assets/ui/textures/BattlePath.png",
-	"SHOP": "res://assets/ui/textures/ShopCard.png",
-	"BLACK_MARKET": "res://assets/ui/textures/BlackMarketPath.png",
-	"REST": "res://assets/ui/textures/RestSitePath.png",
-	"DOJO": "res://assets/ui/textures/trainingGroundspath.png",
-	"GOLD": "res://assets/ui/textures/GamblingDenPath.png",
-	"BOSS": "res://assets/ui/textures/BossPath.png",
-	"ELITE": "res://assets/ui/textures/EliteBattlePath.png"
+	"BATTLE": "res://assets/Realistic/ui/textures/BattlePath.png",
+	"SHOP": "res://assets/Realistic/ui/textures/ShopCard.png",
+	"BLACK_MARKET": "res://assets/Realistic/ui/textures/BlackMarketPath.png",
+	"REST": "res://assets/Realistic/ui/textures/RestSitePath.png",
+	"DOJO": "res://assets/Realistic/ui/textures/trainingGroundspath.png",
+	"GOLD": "res://assets/Realistic/ui/textures/GamblingDenPath.png",
+	"BOSS": "res://assets/Realistic/ui/textures/BossPath.png",
+	"ELITE": "res://assets/Realistic/ui/textures/EliteBattlePath.png",
+	"SURPRISE": "res://assets/Realistic/ui/textures/SurprisePath.png"
 }
 
 func populate(node_def) -> void:
@@ -75,6 +76,8 @@ func populate(node_def) -> void:
 		bg_color = Color(0.4, 0.2, 0.6) # Dojo Purple
 	elif type == "GOLD":
 		bg_color = Color(0.6, 0.5, 0.2) # Gold Yellow/Brown
+	elif type == "SURPRISE":
+		bg_color = Color(0.2, 0.6, 0.4) # Surprise Green/Teal
 	
 	var bg_rect = get_node_or_null("BackgroundColor")
 	if bg_rect:
@@ -113,7 +116,7 @@ func populate(node_def) -> void:
 		label.visible = true
 	
 	# Allow supported path nodes to be enabled.
-	disabled = not (node_def.node_type in [&"BATTLE", &"SHOP", &"BLACK_MARKET", &"REST", &"DOJO", &"GOLD"])
+	disabled = not (node_def.node_type in [&"BATTLE", &"SHOP", &"BLACK_MARKET", &"REST", &"DOJO", &"GOLD", &"SURPRISE"])
 	_refresh_interaction_state()
 
 func _on_pressed() -> void:

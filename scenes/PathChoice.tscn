@@ -1,7 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://jsungguqbxwp"]
+[gd_scene format=3 uid="uid://jsungguqbxwp"]
 
 [ext_resource type="Script" uid="uid://cv7wf0v0mfp2j" path="res://scripts/PathChoice.gd" id="1_defgh"]
-[ext_resource type="Texture2D" path="res://assets/ui/BGs/pathScene.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://braufkyw8u5em" path="res://assets/Realistic/ui/BGs/pathScene.png" id="2_bg"]
 
 [node name="PathChoice" type="Control"]
 layout_mode = 3

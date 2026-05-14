@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://dsgh5wwasg7xe"]
+[gd_scene format=3 uid="uid://dsgh5wwasg7xe"]
 
 [ext_resource type="Script" uid="uid://bfplyre8ei412" path="res://scripts/Loadout.gd" id="1_bcdef"]
-
-[ext_resource type="Texture2D" path="res://assets/ui/BGs/loadout.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://bcn2xuwrl3302" path="res://assets/Realistic/ui/BGs/loadout.png" id="4_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hero_panel"]
 bg_color = Color(0.1, 0.12, 0.18, 0.95)

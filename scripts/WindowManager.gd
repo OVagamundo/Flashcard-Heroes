@@ -128,11 +128,12 @@ func _on_battle_state_changed_wm(is_in_battle: bool) -> void:
 # --- PUBLIC API ---
 
 # This function is ONLY for true "Hermetic Modals" that halt game flow.
-func open_modal_window(type: StringName, context: Dictionary = {}) -> Control:
+func open_modal_window(type: StringName, context: Dictionary = {}, preserve_windows: bool = false) -> Control:
 	if not _window_scenes.has(type):
 		push_error("[WindowManager] ERROR: Window type not found in _window_scenes: " + str(type))
 		return null
-	_close_all_windows() # True modals are exclusive.
+	if not preserve_windows:
+		_close_all_windows() # True modals are exclusive.
 
 	var window_instance = _window_scenes[type].instantiate()
 	_get_modal_layer().add_child(window_instance)

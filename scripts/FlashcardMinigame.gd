@@ -20,10 +20,10 @@ const COLOR_FLASH_INCORRECT := Color(0.9, 0.2, 0.2)
 const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
 const BUTTON_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
 const WESTERN_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
-const PANEL_TEXTURE = preload("res://assets/ui/textures/panel_v4.png")
-const BUTTON_NORMAL_TEXTURE = preload("res://assets/ui/textures/button_v4_normal.png")
-const BUTTON_HOVER_TEXTURE = preload("res://assets/ui/textures/button_v4_hover.png")
-const BUTTON_PRESSED_TEXTURE = preload("res://assets/ui/textures/button_v4_pressed.png")
+const PANEL_TEXTURE = preload("res://assets/Realistic/ui/textures/panel_v4.png")
+const BUTTON_NORMAL_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_normal.png")
+const BUTTON_HOVER_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_hover.png")
+const BUTTON_PRESSED_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_pressed.png")
 
 @onready var main_panel: PanelContainer = %MainPanel
 @onready var question_label: Label = %QuestionLabel

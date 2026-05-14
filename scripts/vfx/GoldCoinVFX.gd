@@ -29,7 +29,7 @@ func _ready() -> void:
 	add_child(_coin_sprite)
 	
 	# Use the gold coin texture
-	var texture = load("res://assets/ui/textures/gold_coin.png")
+	var texture = load("res://assets/Realistic/ui/textures/gold_coin.png")
 	if texture:
 		_coin_sprite.texture = texture
 	_coin_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)

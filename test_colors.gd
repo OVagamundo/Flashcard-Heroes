@@ -1,8 +1,8 @@
 extends SceneTree
 
 func _init():
-	_check_image("res://assets/ui/textures/token_100yen.png")
-	_check_image("res://assets/ui/textures/gachaball.png")
+	_check_image("res://assets/Realistic/ui/textures/token_100yen.png")
+	_check_image("res://assets/Realistic/ui/textures/gachaball.png")
 	quit()
 
 func _check_image(path: String):

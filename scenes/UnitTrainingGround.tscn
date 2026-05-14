@@ -1,0 +1,92 @@
+[gd_scene format=3 uid="uid://dtraining_ground1"]
+
+[ext_resource type="Script" path="res://scripts/UnitTrainingGround.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b5psw7hqvxxi6" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
+
+[node name="UnitTrainingGround" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StandardUI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+	[node name="TitleLabel" type="Label" parent="StandardUI"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 5
+	anchor_left = 0.5
+	anchor_right = 0.5
+	offset_left = -600.0
+	offset_top = 5.0
+	offset_right = 600.0
+	offset_bottom = 65.0
+	grow_horizontal = 2
+	theme_type_variation = &"HeaderLabel"
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 4
+	text = "UNIT TRAINING GROUND"
+	horizontal_alignment = 1
+
+	[node name="OpenInventoryButton" type="Button" parent="StandardUI"]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(560, 90)
+	layout_mode = 1
+	anchors_preset = 8
+	anchor_left = 0.5
+	anchor_top = 0.5
+	anchor_right = 0.5
+	anchor_bottom = 0.5
+	offset_left = -280.0
+	offset_top = 132.0
+	offset_right = 280.0
+	offset_bottom = 222.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 3
+	text = "TRAINING"
+
+	[node name="LeaveButton" type="Button" parent="."]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(300, 70)
+	layout_mode = 1
+	anchors_preset = 6
+	anchor_left = 1.0
+	anchor_top = 0.5
+	anchor_right = 1.0
+	anchor_bottom = 0.5
+	offset_left = -320.0
+	offset_top = 152.0
+	offset_right = -20.0
+	offset_bottom = 222.0
+	grow_horizontal = 0
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 3
+	text = "Leave"

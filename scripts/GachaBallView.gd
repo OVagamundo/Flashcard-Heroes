@@ -9,7 +9,7 @@ const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
 const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
 
 # Gachaball overlay texture path for inventory items
-const GACHABALL_OVERLAY_PATH = "res://assets/ui/textures/gachaballcapsule.png"
+const GACHABALL_OVERLAY_PATH = "res://assets/Realistic/ui/textures/gachaballcapsule.png"
 
 # Path-choice-style hover motion for selectable gachaballs.
 const HOVER_SCALE: float = 0.12
@@ -139,6 +139,7 @@ func _ready() -> void:
 	# Hover-to-Inspect (PC only): emit HOVER events for GIR
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	
 
 	_touch_long_press_timer = Timer.new()
 	_touch_long_press_timer.one_shot = true
@@ -736,7 +737,7 @@ func _build_drag_preview_visual() -> Control:
 	preview_container.add_child(preview)
 
 	if _has_overlay_heuristic():
-		var overlay_texture = load(GACHABALL_OVERLAY_PATH)
+		var overlay_texture = ArtStyleManager.get_themed_texture(load(GACHABALL_OVERLAY_PATH))
 		if overlay_texture:
 			var overlay_preview = TextureRect.new()
 			overlay_preview.texture = overlay_texture
@@ -1399,7 +1400,7 @@ func _create_gachaball_overlay() -> void:
 		return
 	
 	# Load the overlay texture
-	var overlay_texture: Texture2D = load(GACHABALL_OVERLAY_PATH)
+	var overlay_texture: Texture2D = ArtStyleManager.get_themed_texture(load(GACHABALL_OVERLAY_PATH))
 	if not is_instance_valid(overlay_texture):
 		return
 	

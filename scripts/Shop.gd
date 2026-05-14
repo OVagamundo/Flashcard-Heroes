@@ -170,7 +170,7 @@ func _create_price_tag_node(w: float, h: float) -> Control:
 	# Proportional background texture
 	var tag_texture = TextureRect.new()
 	tag_texture.name = "PriceTagTexture"
-	tag_texture.texture = load("res://assets/ui/textures/PriceTag.png")
+	tag_texture.texture = load("res://assets/Realistic/ui/textures/PriceTag.png")
 	tag_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tag_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	tag_texture.set_anchors_preset(Control.PRESET_FULL_RECT)

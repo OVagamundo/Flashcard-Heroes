@@ -27,10 +27,33 @@ func _ready() -> void:
 	_load_resources_from_path("res://resources/recipes/", recipes)
 	_load_resources_from_path("res://resources/abilities/", abilities)
 	_load_resources_from_path("res://resources/abilities/consumables/", abilities)
+	
+	_apply_global_textures()
+	ArtStyleManager.style_changed.connect(_apply_global_textures)
 
 	
 	# Load flashcard definitions from JSON
 	_load_flashcard_definitions()
+
+func _apply_global_textures() -> void:
+	for dict in [units, items, trinkets, recipes, abilities]:
+		for def in dict.values():
+			if not is_instance_valid(def): continue
+			
+			for prop in def.get_property_list():
+				if prop.type == TYPE_OBJECT:
+					var val = def.get(prop.name)
+					if val is Texture2D:
+						# Ensure we store the original texture before modifying it
+						var meta_key = "original_" + prop.name
+						if not def.has_meta(meta_key):
+							def.set_meta(meta_key, val)
+							
+						var original = def.get_meta(meta_key)
+						if original:
+							var new_tex = ArtStyleManager.get_themed_texture(original)
+							if new_tex != val:
+								def.set(prop.name, new_tex)
 
 # -----------------------------
 # Public API

@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dkqt6token_pop"]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/vfx/TokenPopVFX.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/ui/textures/token_100yen.png" id="2_token"]
+[ext_resource type="Script" uid="uid://np7656db8h0c" path="res://scripts/vfx/TokenPopVFX.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://rkatef3c1vco" path="res://assets/Realistic/ui/textures/token_100yen.png" id="2_token"]
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparkle"]
 emission_shape = 1
 emission_sphere_radius = 10.0

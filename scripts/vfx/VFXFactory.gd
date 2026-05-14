@@ -30,8 +30,12 @@ func create_item_popup() -> Node:
 # HELPER METHODS
 # -----------------------------------------------------------------------------
 
-## Get the effects layer for rendering VFX above the battle view
+## Get the effects layer for rendering VFX above all content and UI
 func get_effects_layer() -> Node:
+	if WindowManager.has_method("get_vfx_layer"):
+		return WindowManager.get_vfx_layer()
+	var vfx_layer = get_tree().get_first_node_in_group("vfx_layer")
+	if is_instance_valid(vfx_layer): return vfx_layer
 	return get_tree().get_first_node_in_group("effects_layer")
 
 ## Calculate viewport offset for correct VFX positioning
@@ -42,7 +46,7 @@ func get_viewport_offset() -> Vector2:
 		return Vector2.ZERO
 		
 	var battle_view = get_tree().get_first_node_in_group("battle_view")
-	if is_instance_valid(battle_view):
+	if is_instance_valid(battle_view) and battle_view.is_visible_in_tree():
 		var battle_viewport = battle_view.get_viewport()
 		var effects_viewport = effects_layer.get_viewport()
 		

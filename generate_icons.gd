@@ -12,7 +12,7 @@ const C_POWER_OUTLINE = Color("002171")
 
 func _init():
 	print("Starting Icon Generation V6 (Balanced)...")
-	var path = "res://assets/ui/textures/"
+	var path = "res://assets/Realistic/ui/textures/"
 	
 	# 1. Wide Heart (64x64) - Tuned to hold "99"
 	generate_heart("icon_heart_bg.png")
@@ -129,6 +129,6 @@ func process_pixel_art(img: Image, fill_col, shade_col, outline_col):
 					img.set_pixel(x, y, fill_col.lightened(0.4))
 
 func save_image(img: Image, filename: String):
-	var path = "res://assets/ui/textures/" + filename
+	var path = "res://assets/Realistic/ui/textures/" + filename
 	img.save_png(path)
 	print("Generated: " + path)

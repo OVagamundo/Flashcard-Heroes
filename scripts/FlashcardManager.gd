@@ -84,11 +84,11 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 	self._run_state_ref = run_state
 	self._active_deck_ids = run_state.active_deck_ids.duplicate()
 	
-	# Open the flashcard minigame modal window
+	# Open the flashcard minigame modal window (preserve existing windows like inventory)
 	_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {
 		"run_state": run_state,
 		"active_deck": self._active_deck_ids
-	})
+	}, true)
 
 func get_next_question() -> Dictionary:
 	"""Gets the next question using SRS algorithm"""

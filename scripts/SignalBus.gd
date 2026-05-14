@@ -339,9 +339,9 @@ signal reward_reroll_requested
 ## Used by Reward and Shop scenes to trigger confirm/buy actions
 signal confirm_drop_zone_activated(is_drag: bool, mouse_position: Vector2)
 
-# Black Market signals
-signal black_market_remove_zone_activated(is_drag: bool, mouse_position: Vector2)
-signal black_market_transform_zone_activated(is_drag: bool, mouse_position: Vector2)
+# Split Action Drop Zone signals (Used by Black Market, Unit Training, etc.)
+signal action_drop_zone_1_activated(is_drag: bool, mouse_position: Vector2)
+signal action_drop_zone_2_activated(is_drag: bool, mouse_position: Vector2)
 
 # Reward Scene signals
 ## Emitted when the collect zone is activated

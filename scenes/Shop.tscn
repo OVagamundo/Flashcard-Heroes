@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://shop_scene_uid"]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/Shop.gd" id="1_shop_script"]
+[ext_resource type="Script" uid="uid://dgins7nekbrtc" path="res://scripts/Shop.gd" id="1_shop_script"]
 [ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
-
-[ext_resource type="Texture2D" path="res://assets/ui/BGs/shop.png" id="5_bg"]
+[ext_resource type="Texture2D" uid="uid://dt647by1eh2qf" path="res://assets/Realistic/ui/BGs/shop.png" id="5_bg"]
 
 [node name="Shop" type="Control"]
 layout_mode = 3

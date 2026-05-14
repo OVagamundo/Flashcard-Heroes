@@ -545,7 +545,7 @@ func _update_recipe_display() -> void:
 	# Build: [Icon A] [+] [Icon B]
 	var _make_icon = func(def: Resource) -> TextureRect:
 		var tex = TextureRect.new()
-		if "icon" in def and def.icon != null:
+		if def and def.icon:
 			tex.texture = def.icon
 		tex.custom_minimum_size = Vector2(96, 96)
 		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
@@ -591,7 +591,7 @@ func _update_trait_display() -> void:
 		fire_container.add_theme_constant_override("separation", 4)
 		
 		var fire_icon = TextureRect.new()
-		fire_icon.texture = preload("res://assets/sprites/items/FireEmblem.png")
+		fire_icon.texture = preload("res://assets/Realistic/sprites/items/FireEmblem.png")
 		fire_icon.custom_minimum_size = Vector2(96, 96)
 		fire_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		fire_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -611,7 +611,7 @@ func _update_trait_display() -> void:
 		earth_container.add_theme_constant_override("separation", 4)
 		
 		var earth_icon = TextureRect.new()
-		earth_icon.texture = preload("res://assets/sprites/items/EarthEmblem.png")
+		earth_icon.texture = preload("res://assets/Realistic/sprites/items/EarthEmblem.png")
 		earth_icon.custom_minimum_size = Vector2(96, 96)
 		earth_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		earth_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -631,7 +631,7 @@ func _update_trait_display() -> void:
 		water_container.add_theme_constant_override("separation", 4)
 		
 		var water_icon = TextureRect.new()
-		water_icon.texture = preload("res://assets/sprites/items/WaterEmblem.png")
+		water_icon.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
 		water_icon.custom_minimum_size = Vector2(96, 96)
 		water_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		water_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -651,7 +651,7 @@ func _update_trait_display() -> void:
 		air_container.add_theme_constant_override("separation", 4)
 		
 		var air_icon = TextureRect.new()
-		air_icon.texture = preload("res://assets/sprites/items/AirEmblem.png")
+		air_icon.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
 		air_icon.custom_minimum_size = Vector2(96, 96)
 		air_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		air_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

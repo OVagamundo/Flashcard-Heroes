@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://cvorou27dlts"]
 
 [ext_resource type="Script" uid="uid://6d52omscjhhr" path="res://scripts/Title.gd" id="1_abcde"]
-[ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/ui/game_theme.tres" id="3_iyajp"]
-
-[ext_resource type="Texture2D" uid="uid://bg8vsrtl5v5tu" path="res://assets/ui/BGs/tittle.png" id="4_bg"]
+[ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/styles/game_theme.tres" id="3_iyajp"]
+[ext_resource type="Texture2D" uid="uid://dvsq0rhxxvgai" path="res://assets/Realistic/ui/BGs/tittle.png" id="4_bg"]
 
 [node name="Title" type="Control" unique_id=652401031]
 layout_mode = 3
@@ -93,6 +92,5 @@ size_flags_horizontal = 4
 theme = ExtResource("3_iyajp")
 theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 0
-
 button_pressed = true
 text = "Show Tutorials & Tooltips"

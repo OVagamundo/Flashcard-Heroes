@@ -309,10 +309,10 @@ func _update_recipe_display(item_def: Resource) -> void:
 	
 	var _make_icon = func(def: Resource) -> TextureRect:
 		var tex = TextureRect.new()
-		if "icon" in def and def.icon != null:
+		if def and def.icon:
 			tex.texture = def.icon
+			tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		tex.custom_minimum_size = Vector2(96, 96)
-		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex.mouse_filter = MOUSE_FILTER_IGNORE
 		return tex

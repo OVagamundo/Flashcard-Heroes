@@ -20,7 +20,7 @@ const C_INPUT_BG = Color("3e2723") # Dark recessed wood
 
 func _init():
 	print("Starting V3 Asset Generation (Wood & Gold)...")
-	var path = "res://assets/ui/textures/"
+	var path = "res://assets/Realistic/ui/textures/"
 	var dir = DirAccess.open(path)
 	if not dir:
 		DirAccess.make_dir_recursive_absolute(path)
@@ -241,6 +241,6 @@ func draw_frame(img, x, y, w, h, thick, col_base, col_light, col_dark):
 		for j in range(rect_h): img.set_pixel(rect_x + rect_w - 1, rect_y + j, col_dark)
 
 func save_image(img: Image, filename: String):
-	var path = "res://assets/ui/textures/" + filename
+	var path = "res://assets/Realistic/ui/textures/" + filename
 	img.save_png(path)
 	print("Generated: " + path)

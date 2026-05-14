@@ -15,7 +15,7 @@ var _size_scale: float = 2.0 # Default to battle scale
 # Indicator overlay for valid drop targets
 var _indicator: TextureRect = null
 var _indicator_tween: Tween = null
-const INDICATOR_TEXTURE = preload("res://assets/ui/textures/Indicator.png")
+const INDICATOR_TEXTURE = preload("res://assets/Realistic/ui/textures/Indicator.png")
 # Base slot size at 1x scale
 const BASE_SLOT_SIZE: int = 96
 
@@ -34,7 +34,7 @@ func _ready() -> void:
 	
 	# Configure the slot background using properties to render the texture
 	_background_style = StyleBoxTexture.new()
-	_background_style.texture = load("res://assets/ui/textures/slot.png")
+	_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slot.png"))
 	# Default neutral tint (no alpha changes as requested)
 	_background_style.modulate_color = Color(0.5, 0.5, 0.5)
 	add_theme_stylebox_override("panel", _background_style)
@@ -58,16 +58,16 @@ func set_slot_color(container_name: StringName) -> void:
 	var is_battle_slot = (container_name == &"PlayerLineup" or container_name == &"EnemyLineup" or container_name == &"PlayerBench" or container_name == &"EnemyBench" or container_name == &"EnemyTrinkets" or container_name == &"PlayerTrinkets")
 	
 	if is_battle_slot:
-		_background_style.texture = load("res://assets/ui/textures/slotBattle.png")
+		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotBattle.png"))
 		# Expand the top margin instead so the base stays at the bottom to touch the unit's feet
 		# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
 		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
 		_background_style.expand_margin_bottom = -15.0
 	elif container_name == &"EquippedItem": # C.CONTAINER_EQUIPPED_ITEM
-		_background_style.texture = load("res://assets/ui/textures/ItemSlot.png")
+		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/ItemSlot.png"))
 		_background_style.expand_margin_bottom = 0.0
 	else:
-		_background_style.texture = load("res://assets/ui/textures/slot.png")
+		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slot.png"))
 		_background_style.expand_margin_bottom = 0.0
 		
 	# Tint the slot background texture based on container type
@@ -113,7 +113,7 @@ func _notification(_what) -> void:
 ## Create the indicator overlay (called in _ready)
 func _create_indicator() -> void:
 	_indicator = TextureRect.new()
-	_indicator.texture = INDICATOR_TEXTURE
+	_indicator.texture = ArtStyleManager.get_themed_texture(INDICATOR_TEXTURE)
 	_indicator.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_indicator.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE

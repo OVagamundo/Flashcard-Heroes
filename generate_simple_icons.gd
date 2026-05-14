@@ -93,6 +93,6 @@ func generate_icon(filename, bitmap, color):
 					for dx in range(scale):
 						img.set_pixel(x * scale + dx, y * scale + dy, color)
 						
-	var path = "res://assets/ui/textures/" + filename
+	var path = "res://assets/Realistic/ui/textures/" + filename
 	img.save_png(path)
 	print("Saved: " + path)
