@@ -855,9 +855,18 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 	else:
 		call_deferred("_deferred_maybe_hide_drop_zone")
 	
-	# Handle Black Market
+	# Handle Black Market / Training Ground
 	if _action_instruction_visible or _split_action_drop_zones_visible:
-		if new_location and String(new_location.container).begins_with("RunInventoryT"):
+		var is_inventory_source = new_location and String(new_location.container).begins_with("RunInventoryT")
+		
+		# Validation: If we are in training mode (recognized by labels), only show for units
+		var is_valid_for_training = true
+		if _action_zone_1_text == tr("ui.utg_drop_hp"):
+			var sel = GlobalInteractionRouter.get_current_selection()
+			if sel and sel.entity_type != &"UNIT":
+				is_valid_for_training = false
+
+		if is_inventory_source and is_valid_for_training:
 			# "Upgrade" to action zones
 			show_split_action_drop_zones()
 			# Don't call hide_action_instruction yet, let the show method handle it or do it here
@@ -887,7 +896,11 @@ func _deferred_maybe_hide_action_drop_zones() -> void:
 	# Only hide if no selection and no drag
 	var sel = GlobalInteractionRouter.get_current_selection()
 	if sel and is_instance_valid(sel.location) and String(sel.location.container).begins_with("RunInventoryT"):
-		return
+		# If in training mode, still hide if not a unit
+		if _action_zone_1_text == tr("ui.utg_drop_hp") and sel.entity_type != &"UNIT":
+			pass # Continue to hide
+		else:
+			return
 		
 	if _action_drop_zone_drag_context != null:
 		return
@@ -909,6 +922,12 @@ func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 			show_confirm_drop_zone(&"Shop")
 		elif (_action_instruction_visible or _split_action_drop_zones_visible) and String(origin_context.location.container).begins_with("RunInventoryT"):
 			# Dragging from inventory while Black Market context is active
+			
+			# Validation: If we are in training mode, only show for units
+			if _action_zone_1_text == tr("ui.utg_drop_hp"):
+				if origin_context.entity_type != &"UNIT":
+					return
+					
 			_action_drop_zone_drag_context = origin_context
 			show_split_action_drop_zones()
 			# Instant hide instruction

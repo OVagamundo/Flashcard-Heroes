@@ -67,10 +67,16 @@ func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, en
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
 		projectile.position = start_pos + offset
+		
+		# Ensure it's on top of all other items in the same layer
+		if projectile is CanvasItem:
+			projectile.z_index = 100 
+			
 		effects_layer.add_child(projectile)
 		projectile.setup(amount, stat, start_pos + offset, end_pos + offset, is_self_cast)
 		return projectile
 	else:
+		push_warning("[VFXFactory] No global effects layer found, falling back to battle view")
 		# Fallback to battle view
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
 		if is_instance_valid(battle_view):
@@ -90,6 +96,11 @@ func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: boo
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
 		damage_number.position = spawn_pos + offset
+		
+		# Ensure it's on top of all other items in the same layer
+		if damage_number is CanvasItem:
+			damage_number.z_index = 100
+			
 		effects_layer.add_child(damage_number)
 		if is_armor:
 			damage_number.setup_armor(amount, spawn_pos + offset)
@@ -118,10 +129,13 @@ func spawn_status_effect_number_on_layer(amount: int, type: String, spawn_pos: V
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
 		vfx.position = spawn_pos + offset
+		if vfx is CanvasItem:
+			vfx.z_index = 100
 		effects_layer.add_child(vfx)
 		vfx.setup_status_effect(amount, type, spawn_pos + offset)
 		vfx.play()
 	else:
+		push_warning("[VFXFactory] No global effects layer found for status number")
 		# Fallback to battle view
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
 		if is_instance_valid(battle_view):
@@ -140,10 +154,13 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 	if is_instance_valid(effects_layer):
 		var offset = get_viewport_offset()
 		vfx.position = spawn_pos + offset
+		if vfx is CanvasItem:
+			vfx.z_index = 100
 		effects_layer.add_child(vfx)
 		vfx.setup_stat(amount, spawn_pos + offset, color)
 		vfx.play()
 	else:
+		push_warning("[VFXFactory] No global effects layer found for stat number")
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
 		if is_instance_valid(battle_view):
 			vfx.position = spawn_pos

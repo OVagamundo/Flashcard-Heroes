@@ -292,16 +292,13 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						
 						# Initial setup - REUSING EXACT SYSTEM PROPORTIONS
 						var anim_capsule = preload("res://scenes/GachaBallView.tscn").instantiate()
+						var effects_layer = WindowManager.get_vfx_layer()
+						effects_layer.add_child(anim_capsule)
+						
+						# Fix warning: Reset anchors before setting size
+						anim_capsule.anchors_preset = Control.PRESET_TOP_LEFT
+						
 						anim_capsule.set_size_scale(1.0) # Matches 96px Inventory Standard
-						
-						# Standard UI setup to prevent expansion
-						anim_capsule.custom_minimum_size = Vector2(96, 96)
-						anim_capsule.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-						
-						# CRITICAL: Add to tree BEFORE populate so @onready vars work!
-						anim_capsule.top_level = true
-						if not anim_capsule.is_inside_tree():
-							main_node.add_child(anim_capsule)
 						
 						anim_capsule.force_inventory_mode = true # Ensure system capsule overlay is used
 						var new_snapshot = payload.get("new_unit_snapshot", {})

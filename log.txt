@@ -60,66 +60,32 @@ WARNING: Setting node name 'CountLabel' to be unique within scene for 'HUDLayer/
 [PathChoice] Loading from save, skipping day advance. Current Day: 13
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 14)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
 WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] load_content (res://scripts/Main.gd:241)
-       [1] _on_node_selected (res://scripts/GameManager.gd:442)
+       [1] _on_node_selected (res://scripts/GameManager.gd:436)
        [2] _on_node_selected (res://scripts/PathChoice.gd:121)
 WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] load_content (res://scripts/Main.gd:241)
-       [1] _on_node_selected (res://scripts/GameManager.gd:442)
+       [1] _on_node_selected (res://scripts/GameManager.gd:436)
        [2] _on_node_selected (res://scripts/PathChoice.gd:121)
-[TutorialManager] Requesting tutorial: gambling_den_intro
-[TutorialManager] Blocked: Already completed
-[SaveManager] Run saved successfully (Day 14)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
-[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Requesting tutorial: training_grounds_intro
 [TutorialManager] Blocked: Already completed
 [SaveManager] Run saved successfully (Day 15)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Blocked: Already completed
-[SaveManager] Run saved successfully (Day 16)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
 [TutorialManager] Requesting tutorial: gacha_inspect_run
-[TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_dust_t1_1778789206_9_35560
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_dust_t1_1778789206_9_35560
-DEBUG_GIR: DRAG_START intercepted for UNIT
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 5
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 1 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _create_vfx_gachaball (res://scripts/UnitTrainingGround.gd:484)
-       [1] _on_popup_done (res://scripts/UnitTrainingGround.gd:449)
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_dust_t3_1778789206_11_75800
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_dust_t3_1778789206_11_75800
-DEBUG_GIR: DRAG_START intercepted for UNIT
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 8
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _create_vfx_gachaball (res://scripts/UnitTrainingGround.gd:484)
-       [1] _on_popup_done (res://scripts/UnitTrainingGround.gd:449)
-[SaveManager] Run saved successfully (Day 17)
-[TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed

@@ -239,13 +239,18 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 		GameManager.run_state.add_instance(new_instance, source_location.container, source_location.index)
 		GameManager.run_state.unlock_recipe_for_result(result_definition.id)
 
+		# Update the VFX ball to show the NEW transformed unit
+		var new_visual_data = VisualDataAdapter.create_visual_data(new_instance)
+		if is_instance_valid(vfx_ball):
+			vfx_ball.populate(null, new_visual_data, false)
+
 		# Clear selection
 		SignalBus.emit_signal("selection_clear_requested")
 
 		# Wait for views to update then animate using the vfx_ball
 		var target_view := await _prepare_transform_target_view(source_location)
 		if start_pos != Vector2.ZERO and is_instance_valid(target_view):
-			await _animate_transform_to_slot_vfx(vfx_ball, visual_data, start_pos, target_view)
+			await _animate_transform_to_slot_vfx(vfx_ball, new_visual_data, start_pos, target_view)
 		else:
 			# Fallback if no target view, just cleanup vfx ball
 			if is_instance_valid(vfx_ball): vfx_ball.queue_free()
@@ -312,6 +317,9 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
 
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
 	anim_ball.custom_minimum_size = Vector2(96, 96)
@@ -362,6 +370,9 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
 	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	
 	anim_ball.force_inventory_mode = true
 	anim_ball.set_size_scale(1.0)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
@@ -410,7 +421,7 @@ func _animate_transform_to_slot_vfx(vfx_ball: GachaBallView, _visual_data: Dicti
 	var tween = vfx_ball.create_tween()
 	
 	tween.tween_method(func(t: float):
-		var eased_t = pow(t, 0.55)
+		var eased_t = pow(t, 1.05)
 		var inv_t = 1.0 - eased_t
 		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
 		vfx_ball.global_position = pos - vfx_ball.pivot_offset
@@ -480,7 +491,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 
 	# Wait for animations then call completion callback
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
 	var wait_tween = create_tween()
 	wait_tween.tween_interval(total_wait)
 	wait_tween.tween_callback(on_complete)

@@ -251,6 +251,10 @@ func _animate_prize_draw(machine: Control, slot_index: int, instance: GachaBallI
 	
 	var anim_ball = GachaBallViewScene.instantiate()
 	WindowManager.get_vfx_layer().add_child(anim_ball)
+	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	
 	anim_ball.top_level = true
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
@@ -439,6 +443,10 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	Audio.play_sfx("ui_drag_drop")
 	
 	WindowManager.get_vfx_layer().add_child(anim_ball)
+	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	
 	anim_ball.top_level = true
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
@@ -493,6 +501,10 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	
 	var anim_ball = GachaBallViewScene.instantiate()
 	WindowManager.get_vfx_layer().add_child(anim_ball)
+	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	
 	anim_ball.top_level = true
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
@@ -554,7 +566,7 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 	
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
 	await get_tree().create_timer(total_wait).timeout
 
 func _on_leave_pressed() -> void:

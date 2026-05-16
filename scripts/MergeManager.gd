@@ -20,8 +20,8 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	var merged_instance := GachaBallInstance.new()
 	merged_instance.initialize(result_definition)
 	
-	# Determine if this is a "Level Up" (Self-Merge) or a "Tier Evolution"
-	var is_level_up: bool = recipe.is_self_merge
+	# Determine if this is a "Level Up" (Self-Merge with same result) or a "Tier Evolution"
+	var is_level_up: bool = recipe.is_self_merge and recipe.result_id == instance_a.definition_id
 	
 	# Initial combined stats (excluding items, handled below)
 	var total_hp: int = instance_a.current_hp + instance_b.current_hp
