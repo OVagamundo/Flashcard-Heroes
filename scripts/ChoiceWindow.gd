@@ -67,6 +67,11 @@ func populate(context: Dictionary) -> void:
 	if _recipe_id:
 		# A valid recipe exists. Enable the button and connect its signal.
 		merge_button.disabled = false
+		
+		# MERGE ENCOUNTER: Disable if not enough gold
+		if MergeManager.is_merge_encounter_active():
+			if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 5:
+				merge_button.disabled = true
 		# Ensure we don't connect the signal multiple times if populate were ever called again.
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
 			merge_button.pressed.connect(_on_merge_pressed)

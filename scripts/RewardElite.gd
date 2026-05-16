@@ -14,8 +14,8 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 var _reward_instances: Array = []
 var _gold_amount: int = 10 # Default to 10 for Elite rewards
 var _action_in_progress: bool = false
-var _staggered_entry_timer: SceneTreeTimer = null
 var _original_reward_instances: Array = [] 
+var _is_first_populate: bool = true
 
 func _ready() -> void:
 	add_to_group("reward_scene")
@@ -109,29 +109,48 @@ func populate(context: Dictionary) -> void:
 				slot_view.populate(loc)
 				
 				var visual_data = VisualDataAdapter.create_visual_data(inst)
-				slot_view.set_content(visual_data, true, false)
+				var ball_view = slot_view.set_content(visual_data, true, false)
+				
+				# HIDE IMMEDIATELY (both visibility and scale)
+				if is_instance_valid(ball_view):
+					ball_view.visible = false
+					ball_view.scale = Vector2.ZERO
 				slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 				slot_view.set_size_scale(2.0)
 				slot_view.visible = true
 			else:
 				slot_view.visible = false
-		else:
-			slot_view.visible = false
-	
-	back_to_path_button.visible = false
+	back_to_path_button.visible = true
+	back_to_path_button.modulate.a = 0.0
+	back_to_path_button.disabled = true
 	gold_button.visible = false # Keep hidden, replaced by Sell zone
 	
-	_staggered_entry_timer = get_tree().create_timer(0.2)
-	_staggered_entry_timer.timeout.connect(_on_staggered_entry_timer_timeout)
-
-func _on_staggered_entry_timer_timeout() -> void:
-	await get_tree().process_frame
 	_animate_staggered_entry()
 
+# Replaced by direct call in populate
+func _on_staggered_entry_timer_timeout() -> void:
+	pass
+
 func _animate_staggered_entry() -> void:
+	"""Animate trinkets appearing one-by-one with landing bounce"""
 	var slot_nodes = choices_container.get_children()
+	
+	# STAGE 2: Wait before starting the population sequence
+	# Only wait a short time on first entry (per USER request)
+	if _is_first_populate:
+		await get_tree().create_timer(0.5).timeout
+		_is_first_populate = false
+	else:
+		# Just a tiny delay for subsequent refreshes to let layout settle
+		await get_tree().process_frame
+	
+	# STAGE 3: Wait for layout to settle so icon_rect.size is populated
+	# This is critical for play_landing_bounce() which skips if size is zero.
+	await get_tree().process_frame
+	
 	var ball_index: int = 0
 	for slot_view in slot_nodes:
+		# Find GachaBallView in slot
 		var ball_view: GachaBallView = null
 		for child in slot_view.get_children():
 			if child is GachaBallView:
@@ -139,14 +158,17 @@ func _animate_staggered_entry() -> void:
 				break
 		
 		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-			ball_view.icon_rect.scale = Vector2.ZERO
+			# Ensure pivot is centered based on now-valid size
 			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
-			var delay = ball_index * 0.1 
-			var tween = ball_view.create_tween()
-			tween.tween_interval(delay)
-			tween.tween_callback(func():
-				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-					ball_view.icon_rect.scale = Vector2.ONE
+			
+			# Schedule delayed reveal with landing bounce
+			var delay = ball_index * AnimationConstants.ENTRY_STAGGER_DELAY
+			var wait_tween = ball_view.create_tween()
+			wait_tween.tween_interval(delay)
+			wait_tween.tween_callback(func():
+				if is_instance_valid(ball_view):
+					ball_view.visible = true
+					ball_view.scale = Vector2.ZERO
 					ball_view.play_landing_bounce()
 			)
 			ball_index += 1
@@ -251,31 +273,29 @@ func _on_gold_pressed() -> void:
 func _complete_choice() -> void:
 	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
 	gold_button.visible = false
-	back_to_path_button.visible = true
 	
-	# Use a single master tween to ensure strict sequential execution
-	var master_tween = create_tween()
+	# Reveal navigation button via modulation to prevent layout shifts
+	back_to_path_button.modulate.a = 1.0
+	back_to_path_button.disabled = false
 	
-	for i in range(_original_reward_instances.size()):
-		var slot_nodes = choices_container.get_children()
-		if i < slot_nodes.size():
-			var slot = slot_nodes[i]
-			var ball: Control = null
-			for child in slot.get_children():
-				if child is GachaBallView:
-					ball = child
-					break
-			
-			if ball and ball.visible:
-				# Move and Fade in parallel
-				master_tween.tween_property(ball, "position:y", ball.position.y - 120, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-				master_tween.parallel().tween_property(ball, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-				
-				# Cleanup callback
-				master_tween.tween_callback(ball.queue_free)
-				
-				# Stagger interval before the NEXT ball starts
-				master_tween.tween_interval(0.15)
+	# Animate unselected balls flying away (parallel staggered)
+	var slot_nodes = choices_container.get_children()
+	for i in range(slot_nodes.size()):
+		var slot = slot_nodes[i]
+		var ball: Control = null
+		for child in slot.get_children():
+			if child is GachaBallView:
+				ball = child
+				break
+		
+		if is_instance_valid(ball) and ball.visible and ball.modulate.a > 0.1:
+			var delay = i * 0.1
+			var ball_tween = create_tween()
+			ball_tween.tween_interval(delay)
+			# Move and Fade in parallel, faster duration (0.4s)
+			ball_tween.tween_property(ball, "position:y", ball.position.y - 120, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			ball_tween.parallel().tween_property(ball, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			ball_tween.tween_callback(ball.queue_free)
 	
 	_reward_instances.clear()
 

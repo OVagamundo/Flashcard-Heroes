@@ -871,7 +871,7 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 			if sel and sel.entity_type != &"UNIT":
 				is_valid_for_training = false
 
-		if is_inventory_source and is_valid_for_training:
+		if is_inventory_source and is_valid_for_training and not MergeManager.is_merge_encounter_active():
 			# "Upgrade" to action zones
 			show_split_action_drop_zones()
 			# Don't call hide_action_instruction yet, let the show method handle it or do it here
@@ -938,7 +938,7 @@ func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 		elif origin_context.location.container == &"Shop":
 			_drop_zone_drag_context = origin_context
 			show_confirm_drop_zone(&"Shop")
-		elif (_action_instruction_visible or _split_action_drop_zones_visible) and String(origin_context.location.container).begins_with("RunInventoryT"):
+		elif (_action_instruction_visible or _split_action_drop_zones_visible) and String(origin_context.location.container).begins_with("RunInventoryT") and not MergeManager.is_merge_encounter_active():
 			# Dragging from inventory while Black Market context is active
 			
 			# Validation: If we are in training mode, only show for units

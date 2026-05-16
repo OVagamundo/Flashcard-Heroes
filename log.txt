@@ -11,6 +11,8 @@ WARNING: res://scenes/vfx/StatProjectile.tscn:4 - ext_resource, invalid UID: uid
    at: load (scene/resources/resource_format_text.cpp:500)
 WARNING: res://scenes/vfx/FloatingDamageNumber.tscn:4 - ext_resource, invalid UID: uid://notosansblack - using text path instead: res://assets/fonts/static/NotoSansJP-Black.ttf
    at: load (scene/resources/resource_format_text.cpp:500)
+WARNING: res://scenes/MergeEncounter.tscn:3 - ext_resource, invalid UID: uid://cl8m3p7y8k2pw - using text path instead: res://scripts/MergeEncounter.gd
+   at: load (scene/resources/resource_format_text.cpp:500)
 WARNING: res://scenes/DiscardPileWindow.tscn:5 - ext_resource, invalid UID: uid://coytkb7iik7e - using text path instead: res://assets/Realistic/ui/textures/DiscardPileContainer.png
    at: load (scene/resources/resource_format_text.cpp:500)
    GDScript backtrace (most recent call first):
@@ -66,7 +68,6 @@ WARNING: AudioManager: Sound not found: ui_button_click
        [0] play_sfx (res://scripts/AudioManager.gd:33)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
-[EncounterGenerator] Elite weighting: [300.0, 200.0, 100.0] (Last: ) Picked: unit_dust_elite_t3
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
@@ -78,8 +79,10 @@ WARNING: AudioManager: Sound not found: ui_button_click
        [0] play_sfx (res://scripts/AudioManager.gd:33)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
-[FlashcardManager] _on_minigame_complete called. Correct: 9
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 9, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 3
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [TutorialManager] Requesting tutorial: battle_management_intro
@@ -121,6 +124,8 @@ WARNING: AudioManager: Sound not found: ui_button_click
        [0] play_sfx (res://scripts/AudioManager.gd:33)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
@@ -137,6 +142,8 @@ If you want to set size, change the anchors or consider using set_deferred().
        [3] _animate_token_spend (res://scripts/Main.gd:397)
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
@@ -153,40 +160,10 @@ If you want to set size, change the anchors or consider using set_deferred().
        [3] _animate_token_spend (res://scripts/Main.gd:397)
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:392)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1615)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:392)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1615)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1778945784_29_00210
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1778945784_29_00210
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_dust_t1_1778965537_69_85526
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_dust_t1_1778965537_69_85526
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -194,164 +171,47 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:392)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1615)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1778965537_128_33614
+[CS] Draining reaction: unit_tier1a_passive_heal Prio:0 Src:unit_t1_a_1778965537_129_89724
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1778965537_128_33614
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:2] Dust Minion (T1) deals 1 dmg to Apprentice 
+[BattleLog] [1:3] Dust Minion (T1) attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1778965537_129_89724"] source: unit_dust_t1_1778965537_69_85526 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_dust_t1_1778965 type 5
+[BattleLog] [1:4] Apprentice heals Apprentice for 1 HP 
+[BattleLog] [1:5] unit_t1_... heals unit_t1_... for 1 HP (unit_tier1a_passive_heal, on_hurt) (HP: 1→2)
+[BattleLog] [1:6] Timekeeper deals 2 dmg to Apprentice 
+[BattleLog] [1:7] Timekeeper attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1778965537_129_89724"] source: hero_timekeeper_1778965537_67_14193 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_timekeeper_1778 type 5
+[BattleLog] [1:8] └─ unit_t1_... is defeated! 
+[BattleLog] [1:9] Apprentice deals 1 dmg to Dust Minion (T1) 
+[BattleLog] [1:10] Apprentice attacks Dust Minion (T1) for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_dust_t1_1778965537_69_85526"] source: unit_t1_a_1778965537_127_60327 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1778965537 type 5
+[BattleLog] [1:11] └─ Dust Minion (T1) is defeated! 
+[BattleLog] [1:12] Protector deals 1 dmg to Timekeeper 
+[BattleLog] [1:13] Protector attacks Timekeeper for 1 damage (basic_attack, on_attack) (HP: 50→49)
+[DamageAnimation] Executing for targets: ["hero_timekeeper_1778965537_67_14193"] source: unit_t1_c_1778965537_128_33614 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1778965537 type 5
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [2:1] ═══ TURN 2 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1778945784_41_14295
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1778945784_41_14295
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1778945784_41_14295
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1778945784_41_14295
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1778945784_28_08174
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1778945784_28_08174
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:392)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1615)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1778945784_33_09328
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1778945784_33_09328
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1778945784_29_00210
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1778945784_29_00210
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1778945784_33_09328
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1778945784_33_09328
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1778945784_39_48466
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1778945784_39_48466
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_a_1778945784_43_56415
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1778945784_43_56415
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1778945784_52_83039
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1778945784_51_26952
-[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1778945784_53_00301
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1778945784_53_00301
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] Empath deals 1 dmg to Empath 
-[BattleLog] [1:3] Empath attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
-[DamageAnimation] Executing for targets: ["unit_t1_d_1778945784_51_26952"] source: unit_t1_d_1778945784_41_14295 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_d_1778945784 type 5
-[BattleLog] [1:4] └─ unit_t1_... is defeated! 
-[BattleLog] [1:5] └─ unit_dus... summons New Unit! 
-[BattleLog] [1:6] Dust Elite spawned a Dust unit in the player inventory. 
-[BattleLog] [1:7] Empath deals 1 dmg to Protector 
-[BattleLog] [1:8] Empath attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1778945784_52_83039"] source: unit_t1_d_1778945784_39_48466 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_d_1778945784 type 5
-[BattleLog] [1:9] └─ unit_t1_... is defeated! 
-[BattleLog] [1:10] └─ unit_dus... summons New Unit! 
-[BattleLog] [1:11] Dust Elite spawned a Dust unit in the player inventory. 
-[BattleLog] [1:12] Apprentice deals 1 dmg to Dust Overlord (T3) 
-[BattleLog] [1:13] Apprentice attacks unit_dus... for 1 damage (basic_attack, on_attack) (HP: 5→4)
-[DamageAnimation] Executing for targets: ["unit_dust_elite_t3_1778945784_53_00301"] source: unit_t1_a_1778945784_28_08174 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1778945784 type 5
-[BattleLog] [1:14] Squire deals 2 dmg to Dust Overlord (T3) 
-[BattleLog] [1:15] Squire attacks unit_dus... for 2 damage (basic_attack, on_attack) (HP: 4→2)
-[DamageAnimation] Executing for targets: ["unit_dust_elite_t3_1778945784_53_00301"] source: unit_t1_b_1778945784_33_09328 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1778945784 type 5
-[BattleLog] [1:16] Avenger deals 2 dmg to Dust Overlord (T3) 
-[BattleLog] [1:17] Avenger attacks unit_dus... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_dust_elite_t3_1778945784_53_00301"] source: hero_avenger_1778945784_26_25525 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_avenger_1778945 type 5
-[BattleLog] [1:18] └─ unit_dus... is defeated! 
-[BattleLog] [1:19] Battle ended 
-[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
-[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
-[RewardDebug] Victory rewards pending. Special: true
-[RewardElite] populate called
