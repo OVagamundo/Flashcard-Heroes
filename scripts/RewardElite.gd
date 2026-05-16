@@ -18,20 +18,57 @@ var _staggered_entry_timer: SceneTreeTimer = null
 var _original_reward_instances: Array = [] 
 
 func _ready() -> void:
-	print("[RewardElite] _ready called")
+	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
 	
 	SignalBus.selection_changed.connect(_on_selection_changed)
 	SignalBus.reward_stock_refreshed.connect(populate)
 	SignalBus.reward_collect_zone_activated.connect(_on_collect_pressed)
+	SignalBus.reward_sell_zone_activated.connect(_on_sell_pressed)
 	
 	gold_button.pressed.connect(_on_gold_pressed)
+	gold_button.visible = false # Replaced by Sell drop zone
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
 	gui_input.connect(_on_gui_input)
 	
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
 	_mark_reward_action_buttons()
+	
+	_show_initial_instruction()
+
+func _show_initial_instruction() -> void:
+	if is_instance_valid(GameManager._active_main_node):
+		if GameManager._active_main_node.has_method("show_action_instruction"):
+			GameManager._active_main_node.show_action_instruction(tr("ui.reward_elite_instruction"))
+
+func _exit_tree() -> void:
+	# Cleanup overlays when leaving
+	if is_instance_valid(GameManager._active_main_node):
+		if GameManager._active_main_node.has_method("hide_action_instruction"):
+			GameManager._active_main_node.hide_action_instruction()
+		if GameManager._active_main_node.has_method("hide_reward_drop_zones"):
+			GameManager._active_main_node.hide_reward_drop_zones()
+
+var _last_inventory_open: bool = false
+func _process(_delta: float) -> void:
+	var is_open := WindowManager.is_run_inventory_window_open()
+	if is_open != _last_inventory_open:
+		_last_inventory_open = is_open
+		var main_node = GameManager._active_main_node
+		if is_instance_valid(main_node):
+			if is_open:
+				if main_node.has_method("hide_action_instruction"):
+					main_node.hide_action_instruction()
+				if main_node.has_method("hide_reward_drop_zones"):
+					main_node.hide_reward_drop_zones()
+			else:
+				var sel = GlobalInteractionRouter.get_current_selection()
+				var is_prize_selected = sel and sel.location and sel.location.container == &"Rewards"
+				# Only show instructions if choice is not yet complete
+				if not is_prize_selected and not back_to_path_button.visible:
+					if main_node.has_method("show_action_instruction"):
+						main_node.show_action_instruction(tr("ui.reward_elite_instruction"))
 
 func _mark_reward_action_buttons() -> void:
 	_mark_action_button_for_inspection_avoidance(gold_button)
@@ -82,7 +119,7 @@ func populate(context: Dictionary) -> void:
 			slot_view.visible = false
 	
 	back_to_path_button.visible = false
-	gold_button.visible = true
+	gold_button.visible = false # Keep hidden, replaced by Sell zone
 	
 	_staggered_entry_timer = get_tree().create_timer(0.2)
 	_staggered_entry_timer.timeout.connect(_on_staggered_entry_timer_timeout)
@@ -154,8 +191,13 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 		if trinket_container and trinket_container.has_method("find_first_empty_slot"):
 			target_trinket_slot = max(0, trinket_container.find_first_empty_slot())
 	
-	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
-		GameManager._active_main_node.hide_reward_drop_zones()
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		if main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		# We don't restore instruction here because choice is complete
+		if main_node.has_method("hide_action_instruction"):
+			main_node.hide_action_instruction()
 	
 	# Mapping for collection vfx (must stay global as it flies to Main bar)
 	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
@@ -168,15 +210,30 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	_complete_choice()
 	_action_in_progress = false
 
-func _on_gold_pressed() -> void:
+func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	if _action_in_progress: return
+	var prize_data = _get_selected_prize()
+	if prize_data.is_empty(): return
+	
 	_action_in_progress = true
-	gold_button.disabled = true
+	var loc = prize_data.location
+	var instance = prize_data.instance
 	
-	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
-		GameManager._active_main_node.hide_reward_drop_zones()
+	_clear_reward_slot(loc.index)
+	SignalBus.emit_signal("selection_clear_requested")
 	
-	var screen_pos = _get_absolute_screen_pos(gold_button.get_global_rect().get_center())
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		if main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		if main_node.has_method("hide_action_instruction"):
+			main_node.hide_action_instruction()
+	
+	var raw_pos = _get_slot_global_center(loc.index)
+	if is_drag:
+		raw_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	
+	var screen_pos = _get_absolute_screen_pos(raw_pos)
 	var vfx_start_pos = _map_screen_to_vfx_viewport(screen_pos)
 	
 	await _animate_gold_receive(_gold_amount, vfx_start_pos)
@@ -186,6 +243,10 @@ func _on_gold_pressed() -> void:
 	
 	_complete_choice()
 	_action_in_progress = false
+
+func _on_gold_pressed() -> void:
+	# Keep legacy method for compatibility if needed, but it's now redundant
+	pass
 
 func _complete_choice() -> void:
 	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
