@@ -464,7 +464,6 @@ ui.fullscreen,Fullscreen,Tela Cheia
 ui.glow_effect,Glow Effect,Efeito de Brilho
 ui.glow_debug,Glow Debug:,Debug de Brilho:
 ui.tutorial_title,Tutorial,Tutorial
-ui.end_turn,End Turn,Encerrar Turno
 ui.discard_pile,Discard Pile,Pilha de Descarte
 ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
 tutorial.traits.title,Traits,Sinergias
