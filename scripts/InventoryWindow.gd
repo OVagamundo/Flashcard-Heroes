@@ -168,7 +168,19 @@ func _show_inventory_tutorial() -> void:
 func _on_ui_refresh() -> void:
 	if not self.visible:
 		return
-	# On refresh, just re-populate the content of the existing slots.
+	# Debounce: defer the heavy refresh to end of frame so multiple signals
+	# (e.g. remove + add during transform) batch into a single rebuild,
+	# and animations in progress get a clean frame before the hitch.
+	if not _refresh_pending:
+		_refresh_pending = true
+		call_deferred("_deferred_refresh")
+
+var _refresh_pending: bool = false
+
+func _deferred_refresh() -> void:
+	_refresh_pending = false
+	if not self.visible:
+		return
 	_populate_grids()
 
 func _on_panel_gui_input(event: InputEvent) -> void:

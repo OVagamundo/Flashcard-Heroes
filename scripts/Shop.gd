@@ -374,7 +374,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 
 	
 	# Wait for animations then call completion callback
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
 	var wait_tween = create_tween()
 	wait_tween.tween_interval(total_wait)
 	wait_tween.tween_callback(on_complete)

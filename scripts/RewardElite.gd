@@ -257,6 +257,10 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	
 	var anim_ball = GachaBallViewScene.instantiate()
 	WindowManager.get_vfx_layer().add_child(anim_ball)
+	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	
 	anim_ball.top_level = true
 	anim_ball.z_index = 100
 	anim_ball.custom_minimum_size = Vector2(96, 96)
@@ -295,7 +299,7 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 			t.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
 		)
 		coin.play(start_pos + Vector2(randf_range(-15, 15), randf_range(-8, 8)), target_pos, i * 0.08)
-	await get_tree().create_timer((coins - 1) * 0.08 + 0.45).timeout
+	await get_tree().create_timer((coins - 1) * 0.08 + 0.55).timeout
 
 func _map_screen_to_vfx_viewport(screen_pos: Vector2) -> Vector2:
 	var vfx_layer = WindowManager.get_vfx_layer()

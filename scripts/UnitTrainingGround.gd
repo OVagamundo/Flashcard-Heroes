@@ -367,11 +367,6 @@ func _spend_tokens_and_train(cost: int) -> void:
 	if unit_uuid == "" or not is_instance_valid(GameManager.run_state):
 		return
 
-	if roll > 0:
-		var hp_delta = roll if _training_stat == "hp" else 0
-		var pwr_delta = roll if _training_stat == "pwr" else 0
-		GameManager.run_state.modify_unit_base_stats(unit_uuid, hp_delta, pwr_delta)
-
 	# Self-buff VFX: projectile from unit to itself (animate even on zero)
 	if is_instance_valid(_popup_ball_view):
 		var center = _popup_ball_view.get_global_rect().get_center()
@@ -379,6 +374,19 @@ func _spend_tokens_and_train(cost: int) -> void:
 		if proj:
 			proj.launch()
 			await proj.impact
+		
+		# DEFERRED: Apply stat buff to backend AFTER impact so visual tween has correct start/end
+		if roll > 0:
+			var hp_delta = roll if _training_stat == "hp" else 0
+			var pwr_delta = roll if _training_stat == "pwr" else 0
+			GameManager.run_state.modify_unit_base_stats(unit_uuid, hp_delta, pwr_delta)
+		
+		# Update the visual label with animation (replicates battle board logic)
+		var instance = GameManager.run_state.get_instance_by_uuid(unit_uuid)
+		if is_instance_valid(instance):
+			var new_val = instance.current_hp if _training_stat == "hp" else instance.current_pwr
+			_popup_ball_view.animate_stat_change(new_val, roll, _training_stat)
+			
 		# HOP_DEFORM animation (same as battle buff hop)
 		await _play_buff_hop()
 	else:
@@ -478,6 +486,10 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	var anim_ball = GachaBallViewScene.instantiate()
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
+	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	
 	anim_ball.force_inventory_mode = true
 	anim_ball.set_size_scale(1.0)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
@@ -558,7 +570,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
 	var wait_tween = create_tween()
 	wait_tween.tween_interval(total_wait)
 	wait_tween.tween_callback(on_complete)

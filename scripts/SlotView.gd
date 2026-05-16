@@ -258,12 +258,12 @@ func _recursively_set_mouse_filter_ignore(node: Node) -> void:
 ## Granular stat change handler - updates only the specific stat that changed
 func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, old_value: int, new_value: int) -> void:
 	# Check if we have a child view that matches this UUID
-	if get_child_count() > 0:
-		var view = get_child(0)
-		if view is GachaBallView and view.get_instance_uuid() == unit_uuid:
+	for child in get_children():
+		if child is GachaBallView and child.get_instance_uuid() == unit_uuid:
 			# Delegate to view's granular handler
-			if is_instance_valid(view) and view.has_method("_on_unit_stat_changed"):
-				view._on_unit_stat_changed(unit_uuid, stat_name, old_value, new_value)
+			if is_instance_valid(child) and child.has_method("_on_unit_stat_changed"):
+				child._on_unit_stat_changed(unit_uuid, stat_name, old_value, new_value)
+			break
 
 
 ## Configure the interaction context for this slot

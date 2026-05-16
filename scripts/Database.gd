@@ -134,6 +134,13 @@ func get_recipe_for_result(result_id: StringName) -> MergeRecipe:
 			return recipe
 	return null
 
+## Returns the self-merge recipe for the given definition_id, or null if none.
+func get_self_merge_recipe(definition_id: StringName) -> MergeRecipe:
+	for recipe in recipes.values():
+		if recipe.is_self_merge and recipe.ingredient_a_id == definition_id:
+			return recipe
+	return null
+
 ## A helper to get a definition from a deck by card ID
 func get_definition_from_deck(card_id: StringName) -> Resource:
 	return get_definition(card_id)

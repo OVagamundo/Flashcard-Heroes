@@ -434,9 +434,8 @@ func get_location() -> LocationIdentifier:
 	return _location
 
 func _trigger_trait_tutorial() -> void:
-	# Wait for WindowManager to finish positioning this window (it defers for 4 frames)
-	for i in range(5):
-		await get_tree().process_frame
+	# Wait 1.0s before showing tutorial to avoid "quick pass" triggers as requested
+	await get_tree().create_timer(1.0).timeout
 	
 	if not is_instance_valid(self) or not is_inside_tree():
 		return
