@@ -1203,6 +1203,12 @@ func _trigger_turn_start_abilities() -> void:
 		
 	_turn_start_abilities_triggered = true # Set flag here to prevent multiple calls
 	
+	# Skip firing turn start triggers on the very first turn so they only count
+	# after the player presses 'Battle!' (End Turn) for the first time.
+	if _current_turn <= 1:
+		_on_turn_animation_finished()
+		return
+	
 	# Trigger turn start abilities for all instances using unified processing
 	# This queues ability requests into _pending_reactions
 	var turn_start_context: Dictionary = {"turn": _current_turn}
