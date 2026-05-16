@@ -850,6 +850,11 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 	# Handle Reward/Shop
 	if new_location and new_location.container == &"Rewards":
 		show_reward_drop_zones()
+		# Hide instruction if visible (transition to action zones)
+		if _action_instruction_visible:
+			_action_instruction_overlay.visible = false
+			_action_instruction_visible = false
+			_action_instruction_overlay.modulate.a = 0.0
 	elif new_location and new_location.container == &"Shop":
 		show_confirm_drop_zone(&"Shop")
 	else:
@@ -878,7 +883,7 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 
 func _deferred_maybe_hide_drop_zone() -> void:
 	"""Hide drop zone if no relevant selection or drag is active."""
-	if _confirm_drop_zone_mode == &"":
+	if _confirm_drop_zone_mode == &"" and not _reward_drop_zones_visible:
 		return
 	var sel = GlobalInteractionRouter.get_current_selection()
 	if sel and is_instance_valid(sel.location):
@@ -887,6 +892,14 @@ func _deferred_maybe_hide_drop_zone() -> void:
 	hide_confirm_drop_zone()
 	if not (sel and is_instance_valid(sel.location) and sel.location.container == &"Rewards"):
 		hide_reward_drop_zones()
+		# Restore instruction if in Reward context
+		var is_reward_context = false
+		if is_instance_valid(_current_content_node):
+			if _current_content_node.name.begins_with("Reward") or _current_content_node.is_in_group("reward_scene"):
+				is_reward_context = true
+				
+		if is_reward_context and not WindowManager.is_run_inventory_window_open():
+			show_action_instruction(tr("ui.reward_instruction"))
 
 func _deferred_maybe_hide_action_drop_zones() -> void:
 	"""Hide action drop zones and show instruction if no relevant selection or drag is active."""
@@ -916,7 +929,12 @@ func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 	if origin_context and is_instance_valid(origin_context.location):
 		if origin_context.location.container == &"Rewards":
 			_drop_zone_drag_context = origin_context
-			show_confirm_drop_zone(&"Rewards")
+			show_reward_drop_zones()
+			# Hide instruction if visible
+			if _action_instruction_visible:
+				_action_instruction_overlay.visible = false
+				_action_instruction_visible = false
+				_action_instruction_overlay.modulate.a = 0.0
 		elif origin_context.location.container == &"Shop":
 			_drop_zone_drag_context = origin_context
 			show_confirm_drop_zone(&"Shop")
@@ -971,6 +989,19 @@ func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 	
 	# Drag ended elsewhere — hide the drop zone
 	hide_confirm_drop_zone()
+	
+	# Also hide reward zones if no selection remains
+	var sel = GlobalInteractionRouter.get_current_selection()
+	if not (sel and is_instance_valid(sel.location) and sel.location.container == &"Rewards"):
+		hide_reward_drop_zones()
+		# Restore instruction if in Reward context
+		var is_reward_context = false
+		if is_instance_valid(_current_content_node):
+			if _current_content_node.name.begins_with("Reward") or _current_content_node.is_in_group("reward_scene"):
+				is_reward_context = true
+				
+		if is_reward_context and not WindowManager.is_run_inventory_window_open():
+			show_action_instruction(tr("ui.reward_instruction"))
 
 
 ## Public API: Get the global rect of the drop zone (for external hit testing)
@@ -1127,12 +1158,18 @@ func _create_bm_zone_panel(text: String, bg_color: Color) -> PanelContainer:
 	return panel
 
 func show_split_action_drop_zones(left_text: String = "", right_text: String = "") -> void:
-	# Apply explicit text, or fall back to stored custom text, or keep existing
-	var l_text = left_text if left_text != "" else _action_zone_1_text
-	var r_text = right_text if right_text != "" else _action_zone_2_text
-	if l_text != "" and is_instance_valid(_action_label_1):
+	# Fallback chain: 1. Argument, 2. Stored custom text (e.g. from UTG), 3. BM default
+	var l_text = left_text
+	if l_text == "": l_text = _action_zone_1_text
+	if l_text == "": l_text = tr("ui.drop_zone_transform_multi")
+	
+	var r_text = right_text
+	if r_text == "": r_text = _action_zone_2_text
+	if r_text == "": r_text = tr("ui.drop_zone_remove_multi")
+	
+	if is_instance_valid(_action_label_1):
 		_action_label_1.text = "[center]" + l_text + "[/center]"
-	if r_text != "" and is_instance_valid(_action_label_2):
+	if is_instance_valid(_action_label_2):
 		_action_label_2.text = "[center]" + r_text + "[/center]"
 
 	"""Show the two-zone action overlay."""
@@ -1324,37 +1361,14 @@ func show_reward_drop_zones() -> void:
 	if not is_instance_valid(_reward_drop_zone_container): return
 	if _reward_drop_zones_visible: return
 	
-	# Update labels based on selected content (Trinket vs GachaBall)
-	var is_trinket := false
-	var selection = GlobalInteractionRouter.get_current_selection()
-	if selection and selection.location and selection.location.container == &"Rewards":
-		var inst = GameManager.get_reward_instance(selection.location.index)
-		if inst:
-			var def = inst.get_definition()
-			if is_instance_valid(def) and def.category == &"TRINKET":
-				is_trinket = true
+	_reward_sell_zone.visible = true
+	_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
-	var locale = TranslationServer.get_locale().left(2)
+	var get_text = tr("ui.drop_zone_get_multi")
+	_reward_collect_label.text = "[center]" + get_text + "[/center]"
 	
-	if is_trinket:
-		# For Elite rewards, we hide the sell zone and expand the collect zone
-		_reward_sell_zone.visible = false
-		_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		
-		var get_text = "Drop the Trinket here to get it!"
-		if locale == "pt": get_text = "Arraste o Amuleto aqui pra adquirir ele!"
-		_reward_collect_label.text = "[center]" + get_text + "[/center]"
-	else:
-		_reward_sell_zone.visible = true
-		_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		
-		var get_text = tr("ui.drop_zone_get_multi")
-		if get_text == "ui.drop_zone_get_multi": get_text = "Drag or click here to add it to your collection"
-		_reward_collect_label.text = "[center]" + get_text + "[/center]"
-		
-		var sell_text = tr("ui.drop_zone_sell_multi")
-		if sell_text == "ui.drop_zone_sell_multi": sell_text = "Drag or click here to sell it"
-		_reward_sell_label.text = "[center]" + sell_text + "[/center]"
+	var sell_text = tr("ui.drop_zone_sell_multi")
+	_reward_sell_label.text = "[center]" + sell_text + "[/center]"
 	
 	_reward_drop_zones_visible = true
 	_reward_drop_zone_container.visible = true

@@ -33,6 +33,7 @@ var _action_in_progress: bool = false
 var _last_inventory_open: bool = false
 
 func _ready() -> void:
+	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
 	
 	tier1_draw_button.pressed.connect(_on_tier1_draw_pressed)
@@ -56,6 +57,12 @@ func _ready() -> void:
 	
 	_update_token_display()
 	set_process(true)
+	call_deferred("_show_initial_instruction")
+
+func _show_initial_instruction() -> void:
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node) and main_node.has_method("show_action_instruction"):
+		main_node.show_action_instruction(tr("ui.reward_instruction"))
 
 func _process(_delta: float) -> void:
 	var is_open := WindowManager.is_run_inventory_window_open()
@@ -63,9 +70,17 @@ func _process(_delta: float) -> void:
 		_last_inventory_open = is_open
 		var main_node = GameManager._active_main_node
 		if is_instance_valid(main_node):
-			if not is_open:
+			if is_open:
+				if main_node.has_method("hide_action_instruction"):
+					main_node.hide_action_instruction()
 				if main_node.has_method("hide_reward_drop_zones"):
 					main_node.hide_reward_drop_zones()
+			else:
+				var sel = GlobalInteractionRouter.get_current_selection()
+				var is_prize_selected = sel and sel.location and sel.location.container == &"Rewards"
+				if not is_prize_selected:
+					if main_node.has_method("show_action_instruction"):
+						main_node.show_action_instruction(tr("ui.reward_instruction"))
 
 func _exit_tree() -> void:
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
@@ -78,8 +93,11 @@ func _exit_tree() -> void:
 		SignalBus.reward_sell_zone_activated.disconnect(_on_sell_pressed)
 
 	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
-		main_node.hide_reward_drop_zones()
+	if is_instance_valid(main_node):
+		if main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		if main_node.has_method("hide_action_instruction"):
+			main_node.hide_action_instruction()
 
 func _mark_reward_action_buttons() -> void:
 	_mark_action_button_for_inspection_avoidance(study_button)
@@ -350,8 +368,11 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 				if target_trinket_slot < 0: target_trinket_slot = 0
 	
 	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
-		main_node.hide_reward_drop_zones()
+	if is_instance_valid(main_node):
+		if main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		if not WindowManager.is_run_inventory_window_open() and main_node.has_method("show_action_instruction"):
+			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
 	if tier != -1:
 		# Important: Add the instance to the RunState temporarily or emit the signal that usually adds it
@@ -385,8 +406,11 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	SignalBus.emit_signal("selection_clear_requested")
 	
 	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
-		main_node.hide_reward_drop_zones()
+	if is_instance_valid(main_node):
+		if main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		if not WindowManager.is_run_inventory_window_open() and main_node.has_method("show_action_instruction"):
+			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
 	# Determine animation origin: use mouse position for Drag & Drop, slot center for Click-to-Sell
 	var start_pos = _get_slot_global_center(loc.index)
