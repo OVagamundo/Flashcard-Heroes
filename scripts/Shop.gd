@@ -16,6 +16,7 @@ var _current_shop_instances: Array = []
 var _selected_cost: int = 0
 var _price_tag_nodes: Array[Control] = []
 var _current_reroll_cost: int = 1
+var _is_first_populate: bool = true
 
 func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
@@ -88,8 +89,12 @@ func populate(context: Dictionary) -> void:
 			
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
-			slot_view.set_content(visual_data, true)
-			# Note: SlotView.set_content now propagates interaction context automatically
+			var ball_view = slot_view.set_content(visual_data, true)
+			
+			# HIDE IMMEDIATELY (both visibility and scale)
+			if is_instance_valid(ball_view):
+				ball_view.visible = false
+				ball_view.scale = Vector2.ZERO
 	
 	_update_fixed_price_tags()
 	_animate_staggered_entry()
@@ -102,8 +107,21 @@ func populate(context: Dictionary) -> void:
 func _animate_staggered_entry() -> void:
 	"""Animate gachaballs appearing one-by-one with landing bounce"""
 	var slot_nodes = slots_container.get_children()
-	var ball_index: int = 0
 	
+	# STAGE 2: Wait before starting the population sequence
+	# Only wait a short time on first entry (per USER request)
+	if _is_first_populate:
+		await get_tree().create_timer(0.5).timeout
+		_is_first_populate = false
+	else:
+		# Just a tiny delay for rerolls to let layout settle
+		await get_tree().process_frame
+
+	# STAGE 3: Wait for layout to settle so icon_rect.size is populated
+	# This is critical for play_landing_bounce() which skips if size is zero.
+	await get_tree().process_frame
+	
+	var ball_index: int = 0
 	for slot_view in slot_nodes:
 		# Find GachaBallView in slot
 		var ball_view: GachaBallView = null
@@ -113,8 +131,7 @@ func _animate_staggered_entry() -> void:
 				break
 		
 		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-			# Hide initially
-			ball_view.icon_rect.scale = Vector2.ZERO
+			# Ensure pivot is centered based on now-valid size
 			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
 			
 			# Schedule delayed reveal with bounce
@@ -122,8 +139,9 @@ func _animate_staggered_entry() -> void:
 			var wait_tween = ball_view.create_tween()
 			wait_tween.tween_interval(delay)
 			wait_tween.tween_callback(func():
-				if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-					ball_view.icon_rect.scale = Vector2.ONE
+				if is_instance_valid(ball_view):
+					ball_view.visible = true
+					ball_view.scale = Vector2.ZERO
 					ball_view.play_landing_bounce()
 			)
 			ball_index += 1

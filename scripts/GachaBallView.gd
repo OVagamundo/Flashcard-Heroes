@@ -163,8 +163,6 @@ func _needs_hover_visual_update() -> bool:
 		return true
 	if absf(rotation) > 0.001:
 		return true
-	if scale.distance_to(Vector2.ONE) > 0.001:
-		return true
 	return false
 
 func _update_drag_deformation(delta: float) -> void:

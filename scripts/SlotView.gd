@@ -189,7 +189,7 @@ func populate(loc: LocationIdentifier) -> void:
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 ## Set the content of this slot using VisualData
-func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy: bool = false) -> void:
+func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy: bool = false) -> GachaBallView:
 	# Clear existing content (preserve indicator and background)
 	# Clear existing content (preserve indicator)
 	for child in get_children():
@@ -211,7 +211,7 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy:
 	
 	if not is_instance_valid(view):
 		push_error("[SlotView] Failed to instantiate GachaBallView!")
-		return
+		return null
 	
 	# Set size scale before adding to tree (so populate uses correct scale)
 	if view.has_method("set_size_scale"):
@@ -246,6 +246,8 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy:
 	# it shouldn't consume clicks at all. Pass them to the parent.
 	if not is_instance_valid(_location):
 		_recursively_set_mouse_filter_ignore(view)
+	
+	return view
 
 ## Helper to recursively set mouse filter to ignore
 func _recursively_set_mouse_filter_ignore(node: Node) -> void:

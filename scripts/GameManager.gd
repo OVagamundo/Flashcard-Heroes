@@ -445,7 +445,10 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 					inst.setup_site()
 		"SURPRISE":
 			if is_instance_valid(_active_main_node):
-				var options = [preload("res://scenes/UnitTrainingGround.tscn")]
+				var options = [
+					preload("res://scenes/UnitTrainingGround.tscn"),
+					preload("res://scenes/MergeEncounter.tscn")
+				]
 				var chosen_scene = options[randi() % options.size()]
 				_active_main_node.load_content(chosen_scene)
 

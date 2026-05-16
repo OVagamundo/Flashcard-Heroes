@@ -109,6 +109,13 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 		if not (target_loc.container == C.CONTAINER_EQUIPPED_ITEM and source_loc.container != C.CONTAINER_EQUIPPED_ITEM):
 			return null
 
+	# Merging is only allowed in battle or during a Merge Encounter surprise event.
+	var is_battle = GameManager.is_in_battle
+	var is_merge_encounter = is_merge_encounter_active()
+	
+	if not is_battle and not is_merge_encounter:
+		return null
+
 	var def_a = instance_a.get_definition()
 	var def_b = instance_b.get_definition()
 	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
@@ -122,12 +129,20 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 
 		if recipe.is_self_merge:
 			if instance_a.definition_id == recipe.ingredient_a_id and instance_a.definition_id == instance_b.definition_id:
+				# Merge Encounter bypasses unlock check
+				if is_merge_encounter_active():
+					return recipe
+					
 				if not _is_recipe_unlocked(recipe.id):
 					continue
 				return recipe
 		else: # Check for A+B or B+A
 			if (instance_a.definition_id == recipe.ingredient_a_id and instance_b.definition_id == recipe.ingredient_b_id) or \
 			   (instance_a.definition_id == recipe.ingredient_b_id and instance_b.definition_id == recipe.ingredient_a_id):
+				# Merge Encounter bypasses unlock check
+				if is_merge_encounter_active():
+					return recipe
+					
 				if not _is_recipe_unlocked(recipe.id):
 					continue
 				return recipe
@@ -139,6 +154,11 @@ func _is_recipe_unlocked(recipe_id: StringName) -> bool:
 	if not is_instance_valid(run_state):
 		return false
 	return run_state.is_recipe_unlocked(recipe_id)
+
+func is_merge_encounter_active() -> bool:
+	var tree = Engine.get_main_loop() as SceneTree
+	if not tree: return false
+	return tree.get_nodes_in_group("merge_encounter_controller").size() > 0
 
 func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instances_db: Dictionary) -> Array[GachaBallInstance]:
 	var equipped_items: Array[GachaBallInstance] = []

@@ -299,12 +299,9 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	var owner = _get_data_owner()
 	if not is_instance_valid(owner): return
 	
-	# AUDIO HOOK: Drop/move sound
-	Audio.play_sfx("unit_land")
-	
 	owner.move_instance(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
-	SignalBus.emit_signal("inventory_action_completed", [instance_to_move.ball_uuid])
+	SignalBus.emit_signal.call_deferred("inventory_action_completed", [instance_to_move.ball_uuid])
 
 func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
 	var data_owner = _get_data_owner()
@@ -314,15 +311,12 @@ func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
-	
-	# AUDIO HOOK: Swap sound
-	Audio.play_sfx("ui_swap")
 
 	# Use atomic swap APIs
 	data_owner.swap_instances(source_loc, target_loc)
 
 	SignalBus.emit_signal("selection_clear_requested")
-	SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid, target_instance.ball_uuid])
+	SignalBus.emit_signal.call_deferred("inventory_action_completed", [source_instance.ball_uuid, target_instance.ball_uuid])
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
@@ -358,19 +352,29 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
+	var source_view = WindowManager.find_view_for_location(source_loc)
+	var target_view = WindowManager.find_view_for_location(target_loc)
+	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
+
 	var data_owner = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 
 	var all_instances_db = data_owner.get_all_instances()
+
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
-	var recipe: MergeRecipe = Database.recipes.get(recipe_id)
-	# var result_def = Database.get_definition(recipe.result_id)
-	# Line removed
+	# --- MERGE ENCOUNTER LOGIC ---
+	if MergeManager.is_merge_encounter_active():
+		if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 5:
+			# Play rejection feedback
+			var RejectionFeedbackScript = load("res://scripts/vfx/RejectionFeedback.gd")
+			var main_node = GameManager._active_main_node
+			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+			RejectionFeedbackScript.play_rejection_with_counter(target_view, gold_group, get_tree())
+			return
 
-	# Use MergeManager to calculate the result (including stat inheritance logic)
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if merge_result.is_empty():
 		return
@@ -378,78 +382,90 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	var new_instance: GachaBallInstance = merge_result["merged_instance"]
 	var result_def = new_instance.get_definition()
 	if not is_instance_valid(result_def): return
-	
+
 	# Collect items equipped on parents (if any) to equip onto a UNIT result later
 	# MergeManager returns the list of items that should be equipped.
 	var all_parent_items: Array = merge_result.get("items_to_equip", [])
 	var parent_items_to_discard: Array = merge_result.get("items_to_discard", [])
 
-	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
+	# PREPARATION: Hide originals and show the result VFX ball at the merge site
+	# This ensures the user sees the result while coins are flying.
+	_set_unit_view_visible(source_view, false)
+	_set_unit_view_visible(target_view, false)
+	
+	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
+
+	# DATA MUTATION: Perform all backend changes immediately so they are batched into a single UI refresh
+	if MergeManager.is_merge_encounter_active() and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.spend_gold(5)
+		GameManager.run_state.unlock_recipe_for_result(result_def.id)
+
+	# Context-aware placement logic
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
-	# A "board merge" includes the PlayerLineup and PlayerBench.
 	var is_board_merge = target_loc.container.begins_with("Player")
-
 	var placed_container: StringName = &""
 	var placed_index: int = -1
 
-	# For all merges except equipping two items on the same unit, remove source/target first
 	var is_same_unit_item_merge := source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid
 	if not is_same_unit_item_merge:
 		data_owner.remove_instance(source_instance.ball_uuid)
 		data_owner.remove_instance(target_instance.ball_uuid)
 
-	# Case 1: Most specific. Merging two items on the same unit -> remove both items, then equip the new item on same unit slot
 	if is_same_unit_item_merge:
-		# Remove old items first (safe for equipped items)
 		data_owner.remove_instance(source_instance.ball_uuid)
 		data_owner.remove_instance(target_instance.ball_uuid)
-		# Register new item temporarily into PlayerBench, then equip onto the unit slot
-		var temp_container: StringName = &"PlayerBench"
-		data_owner.add_instance(new_instance, temp_container, -1)
+		data_owner.add_instance(new_instance, &"PlayerBench", -1)
 		data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
 		placed_container = C.CONTAINER_EQUIPPED_ITEM
 		placed_index = target_loc.index
-	# Case 2: Merging on the board (Lineup/Bench) -> place result into target slot
 	elif is_board_merge:
 		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
 		placed_container = target_loc.container
 		placed_index = target_loc.index
-	# Case 3: Draw pool tier-up -> place in higher-tier container first empty slot
 	elif ("tier" in result_def) and ("tier" in source_instance.get_definition()) and result_def.tier > source_instance.get_definition().tier:
 		var prefix = "BattleInventoryT" if GameManager.is_in_battle else "RunInventoryT"
 		var new_container_tag = &"%s%d" % [prefix, result_def.tier]
-		# Use atomic add with index -1 (first empty)
 		data_owner.add_instance(new_instance, new_container_tag, -1)
 		placed_container = new_container_tag
 		placed_index = -1
-	# Case 4: Default same-tier draw pool -> place in target's old slot
 	else:
 		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
 		placed_container = target_loc.container
 		placed_index = target_loc.index
 
-	# If the result is a UNIT, equip parent items onto it using atomic equip
 	if result_def.category == &"UNIT":
 		var max_slots = new_instance.equipped_item_uuids.size()
 		for i in range(min(all_parent_items.size(), max_slots)):
 			var it: GachaBallInstance = all_parent_items[i]
-			if not is_instance_valid(it):
-				continue
-			data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
+			if is_instance_valid(it):
+				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
 
 	for discarded_item in parent_items_to_discard:
-		if not is_instance_valid(discarded_item):
-			continue
-		if GameManager.is_in_battle and data_owner.has_method("bm_move_instance_to_discard"):
-			data_owner.bm_move_instance_to_discard(discarded_item.ball_uuid)
-		else:
-			data_owner.remove_instance(discarded_item.ball_uuid)
+		if is_instance_valid(discarded_item):
+			if GameManager.is_in_battle and data_owner.has_method("bm_move_instance_to_discard"):
+				data_owner.bm_move_instance_to_discard(discarded_item.ball_uuid)
+			else:
+				data_owner.remove_instance(discarded_item.ball_uuid)
 
-	# (removals were performed earlier for all non-same-unit item merges)
+	# REFRESH: Wait for exactly one frame for the data changes to propagate to UI
+	# and for the VFX ball's layout to be ready for animation.
+	await get_tree().process_frame
 	
-	# AUDIO HOOK: Merge/upgrade sound
+	# BOUNCE: Satisfy "merged unit bounce animation should also happen when it first appears"
+	vfx_ball.play_landing_bounce()
+	
+	# HIDE: Ensure the real result unit (newly appeared in its slot) is hidden during the VFX sequence
+	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
+	var final_view = WindowManager.find_view_for_location(final_loc)
+	_set_unit_view_visible(final_view, false)
+
+	# AUDIO: Play merge sound
 	Audio.play_sfx("ui_merge")
+
+	# COINS: Animate gold if applicable
+	if MergeManager.is_merge_encounter_active():
+		await _animate_merge_gold_deduction(target_loc)
 
 	# Trigger management-phase on_merge abilities for battle-board merges only.
 	# This covers lineup/bench merges and same-unit equipped item merges on board.
@@ -469,7 +485,15 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")
-	SignalBus.emit_signal("inventory_action_completed", [new_instance.ball_uuid])
+	
+	# Transition: Wait for UI to refresh then perform arc toss
+	await get_tree().process_frame
+	
+	if is_instance_valid(final_view) and not start_pos.is_zero_approx():
+		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
+	else:
+		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		SignalBus.emit_signal.call_deferred("inventory_action_completed", [new_instance.ball_uuid])
 
 	if should_trigger_on_merge:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -496,6 +520,130 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			if bm.has_method("unblock_ui_updates"):
 				bm.unblock_ui_updates()
 
+func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
+	var target_view = WindowManager.find_view_for_location(target_loc)
+	if not is_instance_valid(target_view): return
+	
+	var end_pos = target_view.get_global_rect().get_center()
+	
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node): return
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group): return
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon): gold_icon = gold_group
+	var gold_rect = gold_icon.get_global_rect()
+	var start_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	
+	var GoldCoinVFXScript = load("res://scripts/vfx/GoldCoinVFX.gd")
+	var coins_to_spawn = 5
+	var stagger_delay = 0.08
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScript.new()
+		var effects_layer = WindowManager.get_vfx_layer()
+		effects_layer.add_child(coin_vfx)
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			Audio.play_sfx("coin_land")
+		)
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
+		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+		
+	# Await completion (stagger + flight time)
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
+	await get_tree().create_timer(total_wait).timeout
+
+func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> GachaBallView:
+	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
+	var visual_data = VisualDataAdapter.create_visual_data(instance)
+	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
+	
+	anim_ball.force_inventory_mode = true
+	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
+	# to ensure stat labels and icons are correctly positioned.
+	if anim_ball.has_method("set_size_scale"):
+		anim_ball.set_size_scale(1.0)
+	
+	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
+	anim_ball.size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
+	
+	anim_ball.populate(null, visual_data, false)
+	anim_ball.set_is_interactive(false)
+	
+	var pivot = anim_ball.size / 2.0
+	anim_ball.global_position = global_pos - pivot
+	return anim_ball
+
+func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
+	if not is_instance_valid(slot_view): return
+	for child in slot_view.get_children():
+		if child is GachaBallView:
+			child.visible = is_visible
+			break
+
+func _animate_vfx_ball_toss(vfx_ball: GachaBallView, target_slot: Control, instance: GachaBallInstance) -> void:
+	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball): 
+		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		return
+	
+	var start_pos = vfx_ball.global_position + (vfx_ball.size / 2.0)
+	var end_pos = target_slot.get_global_rect().get_center()
+	
+	# If start and end are too close, just trigger bounce and return
+	if start_pos.distance_to(end_pos) < 20.0:
+		vfx_ball.queue_free()
+		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+		return
+		
+	# Hide the real ball view in the target slot
+	var real_ball_view: GachaBallView = null
+	for child in target_slot.get_children():
+		if child is GachaBallView:
+			real_ball_view = child
+			break
+	
+	if is_instance_valid(real_ball_view):
+		real_ball_view.visible = false
+		target_slot.visible = true
+
+	# Animate Arc (Kinematic Parabola)
+	var arc_height = clamp(start_pos.distance_to(end_pos) * 0.5, 80.0, 300.0)
+	var duration = 0.55
+	
+	var control_point = Vector2(
+		(start_pos.x + end_pos.x) / 2.0,
+		min(start_pos.y, end_pos.y) - arc_height
+	)
+	
+	var tween = vfx_ball.create_tween()
+	tween.set_trans(Tween.TRANS_LINEAR)
+	
+	Audio.play_sfx("unit_toss")
+	
+	var pivot = vfx_ball.size / 2.0
+	tween.tween_method(func(t: float):
+		if not is_instance_valid(vfx_ball): return
+		var eased_t = pow(t, 1.05)
+		var inv_t = 1.0 - eased_t
+		var pos = (inv_t * inv_t * start_pos) + \
+				  (2.0 * inv_t * eased_t * control_point) + \
+				  (eased_t * eased_t * end_pos)
+		vfx_ball.global_position = pos - pivot
+	, 0.0, 1.0, duration)
+	
+	await tween.finished
+	
+	# Cleanup
+	if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+	if is_instance_valid(real_ball_view):
+		real_ball_view.visible = true
+		real_ball_view.play_landing_bounce()
+	
 # --- Single-Responsibility Helpers ---
 
 func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, target_item_slot: int) -> void:

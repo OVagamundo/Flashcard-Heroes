@@ -236,13 +236,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						
 					_dead_units[dead_uuid] = true
 					
-					# Check if this is a player unit BEFORE the animation (data may be gone after)
-					var is_player_unit := false
-					var payload = event.visual_payload
-					if payload.has("container_tag"):
-						var tag = payload.get("container_tag")
-						is_player_unit = tag == &"PlayerLineup" or tag == &"PlayerBench" or tag == &"DiscardPile"
-					
 					# AUDIO HOOK: Death
 					Audio.play_sfx("combat_death")
 					
@@ -259,12 +252,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						# CRITICAL: Wait one frame for queue_free() to actually remove the node
 						# This ensures the slot is empty before any SUMMON event runs
 						await get_tree().process_frame
-					
-					# TUTORIAL: Show unit death tutorial if player unit died (BLOCKING)
-					if is_player_unit:
-						await TutorialManager.show_tutorial_and_wait(&"unit_death_intro", [
-							{"text": TranslationServer.translate("tutorial.unit_death")}
-						])
 			CombatEvent.Type.SUMMON:
 				var payload = event.visual_payload
 				var new_unit_uuid = payload.get("new_unit_uuid", "")
