@@ -238,6 +238,37 @@ const ABILITIES: Dictionary = {
 		"effect": "Gain +1 HP for each token the player spends on gacha draws",
 	},
 	
+	# ==================== PENDING MERGES ====================
+	
+	"ability_doppleganger_scale": {
+		"owner": "Doppleganger (T3I)",
+		"trigger": "on_turn_start",
+		"condition": null,
+		"effect": "Gain +3 PWR for every other Doppleganger in the Battle Pool",
+	},
+	
+	"ability_doppleganger_death": {
+		"owner": "Doppleganger (T3I)",
+		"trigger": "on_death",
+		"condition": null,
+		"effect": "Spawn an additional Doppleganger into the Tier 3 Gacha Machine on death",
+		"execute_on_lethal": true,
+	},
+	
+	"ability_echoing_orb_scale": {
+		"owner": "Echoing Orb (T2D)",
+		"trigger": "on_turn_start",
+		"condition": null,
+		"effect": "Grant holder +2 PWR for every other Echoing Orb in Battle (including copies in the Discard Pile)",
+	},
+	
+	"ability_echoing_orb_death": {
+		"owner": "Echoing Orb (T2D)",
+		"trigger": "on_death",
+		"condition": null,
+		"effect": "Spawn a duplicate Echoing Orb into the Tier 2 Gacha Machine when holder dies",
+		"execute_on_lethal": true,
+	},
 }
 
 ## Get information about an ability

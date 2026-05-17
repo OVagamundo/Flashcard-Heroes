@@ -8,11 +8,13 @@
 
 Flashcard Heroes uses a **Hybrid Architecture** that strictly separates "Truth" from "Indexing".
 
-### 1.1 The Single Source of Truth
+### 1.1 The Single Source of Truth & Component Composition
 *   **The Instance (`GachaBallInstance`) is King.** It owns the data.
-    *   **Stats** (HP, PWR) are direct member variables.
-    *   **Status Effects** (Burn, Spikes, Armor) are stored in the `status_effects` dictionary.
+    *   **Live Combat Stats** (`current_hp`, `current_pwr`) are direct member variables, representing transient damage/healing.
+    *   **Base Definitions & Modifiers** are dynamically composed using a stack of `GachaBallComponent` resources (e.g., `StatComponent`, `TagComponent`, `AbilityComponent`, `VisualComponent`).
+    *   **Status Effects** (Burn, Spikes, Armor) are tracked in the `status_effects` dictionary and converted dynamically into status components.
 *   **The Container (`Inventory`, `Lineup`) is just a List.** It only holds UUIDs. It *never* owns data.
+*   **Effective Stat Calculation**: Never assume standard stats are static. Use `get_effective_starting_hp()` and `get_effective_starting_pwr()` to query the fully resolved stats from the aggregated component stack.
 *   **No Caching:** Never cache properties like `current_hp` in localized variables for longer than a single function scope. Always query the instance.
 
 ### 1.2 The Atomic Transaction
@@ -74,7 +76,13 @@ During complex animation sequences (like a potion usage with multiple effects), 
 
 ## 4. Ability & Trinket Standards
 
-### 4.1 Priority Is Law
+### 4.1 Component-Composed Ability Broadcast
+Active abilities are no longer statically bound to a unit. They are dynamically resolved via the source-aware broadcast system:
+*   **Abilities Query**: The `AbilityResolver` maps active abilities by querying `instance.get_active_ability_entries()`.
+*   **Component Modifiers**: Ability components (`AbilityComponent`) can dynamically inject abilities (e.g., from equipped items or persistent buffs), or they can set modes to `DISABLE` or `REPLACE` base unit abilities.
+*   **Decoupled Triggers**: Abilities must *always* execute through the event-driven system (triggers like `on_attack`, `on_hurt`, etc.), sorted deterministically by priority.
+
+### 4.2 Priority Is Law
 Every reaction has a strict numeric priority defined in `Constants.gd`.
 *   `PRIORITY_TRINKET_SUMMON` (210) > `PRIORITY_ITEM_SUMMON` (200).
 *   **Rule:** Always explicitly define priority in `.tres` files if the ability reacts to an event.

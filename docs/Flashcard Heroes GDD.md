@@ -4,7 +4,7 @@ Flashcard Heroes - Game Design Document (V6.0 - Component Refactor)
 
 2. Core Gameplay Loop
 1. **Loadout**: Select a Hero and a Flashcard Deck.
-2. **Path Selection**: Choose 1 of 3 encounter choices (Battles, Shop, Events, Rest Site).
+2. **Path Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others).
 3. **Resolution**: Resolve the node and advance the **Day** (Difficulty scaling).
 4. **Conclusion**: Victory (Final Boss defeated) or Permadeath (Hero HP = 0).
 
@@ -15,17 +15,17 @@ Flashcard Heroes - Game Design Document (V6.0 - Component Refactor)
 
 4. Flashcard System (SRS)
 Timed mini-game that generates **Gacha Tokens** for use in the current encounter.
-- **The Deck**: Starts with 10 unlocked active cards; new cards are introduced over time with an info screen before each mini-game.
+- **The Deck**: Starts with 6 unlocked active cards; new cards are introduced over time with an info screen before each mini-game.
 - **The Mini-Game**: A timed session of multiple-choice questions. Correct answers increase card "Mastery" and earn tokens. Incorrect answers decrease mastery.
 - **Spaced Repetition**: An *Anki*-style weighted algorithm ensures cards with lower Mastery and more time since last used appear more frequently. The same card will not appear twice in a row and there's a small random factor to keep it from being too predictable.
 
 5. GachaBall System
-**GachaBalls** are source-aware, component-composed instances that form your "deck".
-- **Units**: Creatures with HP and PWR stats and abilities. HP and PWR scale; healing is additive. Units are composed of components that define their stats, abilities, and visual effects.
-- **Items**: Equipment and consumables that provide stat bonuses or effects via component injection. Consumables are single-use per encounter, some can be single use per run.
-- **Attributes**: Tiers (1-3), Rarity (Normal, Prismatic, etc.), and Level are treated as attributes queried from the active component stack. Tags (Fire, Water, Earth, Air, etc.) provide synergies and are dynamically resolvable.
-    - **Item Slots**: All units (including the Hero) are restricted to a single item slot.
-    - **Evolutionary Levels**: Every level (e.g., Lv. 1 Tiger, Lv. 2 Tiger) is a unique unit definition. Leveling up is a transformation from one definition to another.
+**GachaBalls** are the core collectible tokens (Units and Items) that form your collection, functioning similarly to cards in a deckbuilding game.
+- **Units**: Characters with HP (Health) and PWR (Power) stats, along with unique passive or active abilities. HP and PWR scale upwards through leveling, equipment, or training.
+- **Items**: Equipment or consumables that provide stat bonuses or unique abilities when placed on a unit. Consumables are single-use per encounter, while standard equipment persists across battles.
+- **Attributes**: Every GachaBall is defined by its Tier (1-3), Level, and Rarity (Normal, Prismatic, etc.). Synergy Tags (Fire, Water, Earth, Air, etc.) represent elemental affiliations that contribute to powerful team-wide traits.
+    - **Item Slots**: All units (including the Hero) are restricted to a single item slot, emphasizing critical choice.
+    - **Evolutionary Levels**: Leveling up a unit elevates it to a more powerful tier or evolutionary state (e.g., Lv. 1 Tiger evolves into Lv. 2 Tiger), modifying its base stats and abilities.
 
 6. Inventories & Drawing
 - **Run Inventory**: Your persistent collection (deck) for the run.
@@ -34,7 +34,7 @@ Timed mini-game that generates **Gacha Tokens** for use in the current encounter
 - **Battle Inventory & Machines**:
     - Each battle uses a temporary copy of your Run Inventory as the initial draw pool. After that units can be merged, removed, summoned, etc. so the drawn pool can be changed during the battle but these changes do not affect the Run Inventory.
     - **Gacha Machines**: Spend tokens to draw balls from Tier 1, 2, or 3.
-    - **Discard & Reshuffle**: Defeated units and overflow go to a shared Discard Pile. If a tier machine is empty, its balls from the discard pile are reshuffled (resetting stats to base).
+    - **Discard**: Defeated units and overflow go to a shared Discard Pile where they remain permanently for the rest of the battle.
 - **Physics Overflow**: Battle draws are physical. Overfilling causes balls to push against a lid; sustained pressure sends them to the Discard Pile.
 
 ### 6.2 Economy & The Core Duality

@@ -357,6 +357,10 @@ To ensure correct interaction between Unit Abilities (like Mimic) and Team Trait
 This unified queue ensures that state mutations (Transformations) happen *before* state-dependent calculations (Buffs), preventing "missed buffs" on transformed units.
     *   *Result:* +3 Armor (Trait) and +3 Armor (Trinket) result in a smooth +6 Armor visualization and correct final state.
 
+> [!NOTE]
+> **First-Turn Suppression:**
+> To ensure a stable opening state and allow players to establish their lineup, `on_turn_start` ability and trait triggers are completely suppressed during the very first turn of a battle. They resume normal functionality starting at the beginning of the second turn.
+
 ---
 
 ## 1.8 Death & Reaction Priority
@@ -666,5 +670,5 @@ func apply_damage(unit: GachaBallInstance, amount: int) -> void:
 Separate from the turn-based simulation, the **Inventory Drawer** and **Discard Pile** operate on a real-time physics clock.
 
 - **Overflow Penalty**: If a ball maintains continuous contact with the **Spring Lid** for 5 seconds, it emits a penalty signal.
-- **Data Mutation**: This signal triggers an **immediate** atomic move of the instance to the **Battle Discard Pile** (resetting its stats). See [InventoryManager.md](InventoryManager.md) for reshuffle rules.
+- **Data Mutation**: This signal triggers an **immediate** atomic move of the instance to the **Battle Discard Pile**. See [InventoryManager.md](InventoryManager.md) for details.
 - **Interaction Boundaries**: To prevent accidental window closure, hover inspections originating outside the active inventory window are blocked while the drawer is open (Rule S8).

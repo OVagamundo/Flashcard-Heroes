@@ -108,7 +108,7 @@ Trigger: The draw_gacha_requested(tier) signal is emitted (typically from a UI b
 Logic: The BattleManager is responsible for executing the draw.
 Cost Check: It verifies if the player has enough Gacha Tokens (token cost according to tier).
 Pool Check: It checks the appropriate BattleInventoryT<n> container (each draw is associated with one of the tier containers).
-Reshuffle Check (Rule G1): If the pool becomes empty with a draw, it triggers the Reshuffle mechanism. If the pool is empty the draw fails and the token is not spent.
+Reshuffle Check (Rule G1): If the pool is empty, the draw fails, and the token is not spent. There is no automatic reshuffle.
 Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first available slot of the PlayerBench (for both Units and Items).
 Overflow (Rule G2): If the destination container (PlayerBench) is full, the drawn instance is sent directly to the DiscardPile. If a **Run Inventory** tiered container (`RunInventoryT*`) attempts to receive a 40th item, it triggers the **Random Eviction Rule** (see below).
 Rule G2: The Hardcap & Random Eviction Rule (RUN ONLY):
@@ -128,9 +128,8 @@ What Goes to the Discard Pile:
 Drawn GachaBalls when the bench/inventory is full (Rule G2).
 Items that were equipped on a Unit that is defeated in combat.
 The defeated Unit instance itself.
-Rule G1: The Automatic Reshuffle Rule:
-Statement: When a Gacha draw makes the BattleInventoryT<n> pool empty (last gachaball on that tier container is drawn), the system automatically moves all GachaBalls of that same tier from the DiscardPile back into that pool.
-Stat Reset: When an instance is sent to the discard pile, its current_hp and current_pwr are reset to their base definition values. This ensures it is drawn in a fresh, undamaged state.
+Rule G1: The Draw Fail Rule:
+Statement: If a tier pool is empty, any draw from that tier will fail and no tokens are spent. Discarded units do not return to the active draw pool.
 Rationale: This creates a closed-loop economy within each battle. It ensures the player can never have no gachaballs, but the state of those units (which ones are active, available vs. defeated) creates a dynamic and evolving tactical puzzle throughout the encounter.
 
 ## 3.1 Battle Physics Inventory & Discard Pile (PhysicsTierContainer)
@@ -147,7 +146,7 @@ These containers are strictly for observation. The following player actions are 
 - **Inventory = Active Pool**: Battle Inventory balls represent `BattleInventoryT<n>` contents.
 - **Discard = Shared History**: Discard Pile balls represent the contents of the `BattleDiscardPile`.
 - **Persistent State**: Simulation continues running while drawers are hidden. No "Kinematic Freeze" is required for movement; child physics nodes translate reliably with parent Controls.
-- **Sequential Spawning**: When a pool reshuffles or items are discarded, balls spawn at the **top-center** with a random X/Y stagger. Spawning is **sequential** (0.15s interval) to prevent overlapping explosions.
+- **Sequential Spawning**: When new balls are spawned or items are discarded, they spawn at the **top-center** with a random X/Y stagger. Spawning is **sequential** (0.15s interval) to prevent overlapping explosions.
 - **Spawning Timing**: `populate()` is called **before** the drawer begins its opening animation (Battle Inventory) or **after** it completes (Discard Pile if horizontal momentum is a concern, though current implementation preferes consistency with Battle Inventory).
 
 ### High-Fidelity Physics Stabilization

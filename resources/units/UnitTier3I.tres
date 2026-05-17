@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitI.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale.tres" id="4_scale"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death.tres" id="5_death"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_i"
+display_name_key = "unit_t3_i.name"
+description_key = ""
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"UNIT"
+base_hp = 3
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_scale"), ExtResource("5_death")])
