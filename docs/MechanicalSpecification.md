@@ -189,7 +189,7 @@ During Management Phase, the player may:
    * Requires unlocked recipe.
    * Creates new instance for current battle.
 
-8. **End Turn**
+8. **Battle! (End Turn)**
 
 No other actions are possible during Management Phase.
 
@@ -216,7 +216,7 @@ Go to one shared discard pile.
 ## 6.3 Physics Pool Visualization (Battle Only)
 During battle, the inventory drawer acts as a **Read-Only visualization** of the active gacha pools:
 - **No Manual Interaction**: Players cannot drag, move, swap, or merge items directly from the drawer.
-- **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns. When a pool reshuffles, new balls spawn sequentially at the top-center of the container.
+- **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns. When new balls are spawned, they spawn sequentially at the top-center of the container.
 
 ## 6.4 The Overflow Penalty
 - **Mechanic**: If a container becomes physically overfilled, balls will push against the **Spring Lid**.
@@ -225,7 +225,7 @@ During battle, the inventory drawer acts as a **Read-Only visualization** of the
 ## 6.5 Hover Restriction (Rule S8)
 When a physics-based inventory (Battle/Run/Discard) is open, hover inspections are strictly limited to the gachaballs inside that window. This prevents accidental window closure caused by hovering over the background battle board.
 
-## 6.6 Selective Reshuffle (Overflow Penalty)
+## 6.6 Selective Tray Return (Overflow Penalty)
 If a container overflows, the system normally moves the instance to the Discard Pile.
 - **Exception**: If the instance is **already** in the Discard Pile (e.g., waiting to be spawned when the container is opened), it is instead **returned to the Trays pool** with its stats reset. This prevents duplicate entries in the discard ledger.
 
@@ -373,7 +373,6 @@ During a merge, only **one item** is transferred to the resulting unit.
 
 * Creates new temporary instance for that battle only.
 * On death → goes to discard.
-* That merged version is what reshuffles.
 
 ---
 
@@ -437,7 +436,6 @@ Merging:
 
 * Increases unit density.
 * Increases stat density and item quality focus.
-* Alters reshuffle composition.
 
 Irreversible during battle.
 
@@ -770,7 +768,7 @@ This document now:
 * Defines exact randomness boundaries
 * Separates gold economy vs battle economy
 * Clarifies merge conservation rules
-* Defines reshuffle mechanics precisely
+* Defines discard mechanics precisely
 * Provides balancing levers
 * Removes engine implementation noise
 # 17. Progression & Meta-Systems

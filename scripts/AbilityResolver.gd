@@ -63,7 +63,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only the unit about to receive attack damage responds
 			return unit_uuid == context.get("defender_uuid", "")
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
 			# All living units respond
 			return unit.current_hp > 0
 		
@@ -196,8 +196,12 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 ## @param context: Trigger context with semantic keys
 ## @return true if this item should process abilities for this trigger
 func _should_item_respond(trigger: StringName, item: GachaBallInstance, context: Dictionary) -> bool:
+	# Items can always respond to on_board_changed to update their passive stats, even on the bench
+	if trigger == &"on_board_changed":
+		return true
+
 	var holder_uuid = item.equipped_on_uuid
-	assert(not holder_uuid.is_empty(), "AbilityResolver: item must be equipped")
+	assert(not holder_uuid.is_empty(), "AbilityResolver: item must be equipped to respond to combat triggers")
 	
 	match trigger:
 		&"on_hurt":
@@ -217,7 +221,7 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			var fainting_uuid = context.get("fainting_ally_uuid", "")
 			return holder_uuid != fainting_uuid
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
 			# All equipped items on living holders respond
 			return true
 		
@@ -250,7 +254,7 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			var fainting_team = context.get("fainting_ally_team", "")
 			return trinket_team == fainting_team
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
 			# All trinkets respond
 			return true
 		
@@ -303,7 +307,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 
 		if definition.category == &"UNIT":
 			unit_instances.append({"uuid": instance_uuid, "inst": instance, "def": definition})
-		elif definition.category == &"ITEM" and not instance.equipped_on_uuid.is_empty():
+		elif definition.category == &"ITEM":
+			# Skip unequipped items unless it's a passive stat update trigger
+			if instance.equipped_on_uuid.is_empty() and trigger != &"on_board_changed":
+				continue
+				
 			# Use unified filter to check if item should respond
 			if not _should_item_respond(trigger, instance, context):
 				continue

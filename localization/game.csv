@@ -494,3 +494,16 @@ ui.utg_done,Done!,Pronto!
 ui.merge_encounter_title,Merge Encounter,Encontro de Fusão
 ui.merge_encounter_open_inventory,CLICK HERE TO MERGE!,CLIQUE AQUI PARA FUNDIR!
 ui.merge_encounter_instruction,"Click or Drag and Drop one gachaball on another valid one to Merge! Cost: 5 Gold (Merging here unlocks that recipe for the rest of the run!)","Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: 5 Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
+
+unit_t3_i.name,Doppleganger,Doppleganger
+unit_t3_i.desc,"Gains PWR for each other Doppleganger, and spawns a clone on death.","Ganha PWR para cada Doppleganger e gera um clone ao morrer."
+ability.doppleganger_scale.name,Mirrored Might,Força Espelhada
+ability.doppleganger_scale.desc,"Gains +3 PWR for each other Doppleganger in battle.","Ganha +3 PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_death.name,Clone Split,Divisão de Clone
+ability.doppleganger_death.desc,"Spawns a Doppleganger into the Tier 3 Gacha Machine on death.","Gera um Doppleganger na Máquina Gacha de Nível 3 ao morrer."
+item_t2_d.name,Echoing Orb,Orbe Ressonante
+item_t2_d.desc,"Grants PWR for each other Echoing Orb in battle, and duplicates on death.","Concede PWR para cada Orbe Ressonante e se duplica ao morrer."
+ability.echoing_orb_scale.name,Resonance,Ressonância
+ability.echoing_orb_scale.desc,"Grants the holder +2 PWR for each other Echoing Orb in battle.","Concede ao portador +2 PWR para cada outro Orbe Ressonante em batalha."
+ability.echoing_orb_death.name,Echo Split,Divisão de Eco
+ability.echoing_orb_death.desc,"Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.","Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer."

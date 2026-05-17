@@ -118,7 +118,7 @@ The application maintains a strict four-tier UI hierarchy to resolve all occlusi
 ## 4. Combat Presentation (VCR)
 
 ### Flow
-1. End Turn → Simulation runs instantly → TurnLog generated
+1. "Battle!" Button Pressed (End Turn) → Simulation runs instantly → TurnLog generated
 2. BattleAnimator plays TurnLog sequentially
 3. Views operate in **Puppet Mode** - only react to Animator signals
 

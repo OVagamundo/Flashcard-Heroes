@@ -136,7 +136,13 @@ func _connect_signals() -> void:
 	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 func _emit_battle_inventory_changed() -> void:
+	# Trigger real-time passive updates whenever the inventory changes
+	AbilityResolver.process_trigger(&"on_board_changed", {})
+	
 	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
+		# Instantly resolve these updates silently so that stats are computed in real time.
+		# This ensures active units and equipped items update their stats instantly.
+		_combat.process_reaction_queue(self, {})
 		SignalBus.emit_signal("battle_inventory_changed")
 		_pending_inventory_refresh = false
 	else:
@@ -568,6 +574,9 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 		var inst = get_instance_by_uuid(uuid)
 		if is_instance_valid(inst):
 			_insert_summoned_unit_into_queue(inst)
+			
+	# Trigger on_board_changed to dynamically update passive effects (like Doppleganger/Echoing Orb)
+	AbilityResolver.process_trigger(&"on_board_changed", {})
 
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
@@ -737,6 +746,9 @@ func _perform_unit_death_cleanup(unit: GachaBallInstance) -> void:
 	
 	# Store back (array is shared reference but explicit for clarity)
 	set_meta("_deferred_enemy_erasures", deferred_erasures)
+	
+	# Trigger on_board_changed to dynamically update passive effects mid-combat
+	AbilityResolver.process_trigger(&"on_board_changed", {})
 
 ## Check if a unit has any abilities that can execute after receiving lethal damage.
 ## This is determined by the `execute_on_lethal` flag on AbilityDefinition.
@@ -1195,6 +1207,10 @@ func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 ## Trigger on_battle_start abilities for all units.
 func _trigger_battle_start_abilities() -> void:
 	TurnAbilities.trigger_battle_start_abilities(_state)
+	# Trigger passive scaling right after battle start abilities
+	AbilityResolver.process_trigger(&"on_board_changed", {})
+	# Instantly resolve starting passive stats/buffs before the first turn begins.
+	_combat.process_reaction_queue(self, {})
 
 ## Trigger on_turn_start abilities for all units and trinkets.
 func _trigger_turn_start_abilities() -> void:

@@ -18,7 +18,7 @@ Main.tscn
 
 ### Benefits
 - **Opaque Backgrounds**: Ensures the background image spans the entire screen, including areas that might be treated as "safe zones" or "notches" by different mobile OS versions, preventing grey or dithered bars.
-- **Shader Stability**: High-precision post-processing shaders (like Glow) are more stable when rendered within a fixed-size `SubViewport` before being composited to the screen.
+- **Shader Stability**: Custom shaders are more stable when rendered within a fixed-size `SubViewport` before being composited to the screen.
 - **Input Parity**: Touch coordinates are correctly mapped to UI elements without needing manual offsets for OS bars.
 
 ## 2. Platform Detection

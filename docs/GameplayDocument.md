@@ -189,7 +189,7 @@ During Management Phase, the player may:
    * Requires unlocked recipe.
    * Creates new instance for current battle.
 
-8. **End Turn**
+8. **Battle! (End Turn)**
 
 No other actions are possible during Management Phase.
 
@@ -216,7 +216,7 @@ Go to one shared discard pile.
 ## 6.3 Physics Pool Visualization (Battle Only)
 During battle, the inventory drawer acts as a **Read-Only visualization** of the active gacha pools:
 - **No Manual Interaction**: Players cannot drag, move, swap, or merge items directly from the drawer.
-- **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns. When a pool reshuffles, new balls spawn sequentially at the top-center of the container.
+- **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns. When new balls are spawned, they spawn sequentially at the top-center of the container.
 
 ## 6.4 The Overflow Penalty
 - **Mechanic**: If a container becomes physically overfilled, balls will push against the **Spring Lid**.
@@ -225,23 +225,15 @@ During battle, the inventory drawer acts as a **Read-Only visualization** of the
 ## 6.5 Hover Restriction (Rule S8)
 When a physics-based inventory (Battle/Run/Discard) is open, hover inspections are strictly limited to the gachaballs inside that window. This prevents accidental window closure caused by hovering over the background battle board.
 
-## 6.6 Selective Reshuffle (Overflow Penalty)
+## 6.6 Selective Tray Return (Overflow Penalty)
 If a container overflows, the system normally moves the instance to the Discard Pile.
 - **Exception**: If the instance is **already** in the Discard Pile (e.g., waiting to be spawned when the container is opened), it is instead **returned to the Trays pool** with its stats reset. This prevents duplicate entries in the discard ledger.
 
 ## 6.7 Discard Pile Jolt
 When the Discard Pile window is opened, a horizontal impulse of **Vector2(-500, 0)** is applied to all balls. This ensuring the pile doesn't form static "stalagmites" and encourages dense, efficient packing.
 
-## 6.8 Reshuffle Rule
-
-Reshuffle occurs only:
-
-* During Management Phase.
-* Only when a specific Tier pool becomes empty.
-* Only cards of that Tier are moved from the shared Discard Pile back into that Tier pool.
-* Other Tier pools remain unchanged.
-
-When a unit is reshuffled into a Tier pool, its stats are restored to its base values.
+## 6.8 The Permanent Discard
+Units and items moved to the Shared Discard Pile are **removed from the active draw pool** for the remainder of the battle. There is no automatic reshuffle mechanic. Once a Tier pool is empty, it remains empty.
 
 ---
 
@@ -530,7 +522,7 @@ The following must remain true for solvability and balance:
 6. **Tier Costs**: Tier Gold cost is `BaseTierCost * 2^(Level-1)` (1-2-4 base); Tier Token draw cost remains 1-2-3 (level agnostic).
 7. **Damage Determinism**: Damage remains deterministic (PWR = Damage).
 8. **Information Transparency**: Full pool and board transparency at all times.
-9. **Reshuffle**: Reshuffle triggers only when a tier pool is empty.
+9. **Discard**: All discards are permanent for the duration of the battle encounter. There is no automatic reshuffle.
 10. **Hero Death**: Hero death = immediate run loss.
 
 ## 15.1 Unified Item Slot Constraint
@@ -776,7 +768,7 @@ This document now:
 * Defines exact randomness boundaries
 * Separates gold economy vs battle economy
 * Clarifies merge conservation rules
-* Defines reshuffle mechanics precisely
+* Defines discard mechanics precisely
 * Provides balancing levers
 * Removes engine implementation noise
 # 17. Progression & Meta-Systems

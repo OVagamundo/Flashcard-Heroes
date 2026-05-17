@@ -8,7 +8,7 @@ Meta-Progression (Unlocks): How players permanently unlock new content for all f
 2. Run Progression: The "Day" & Encounter Budget
 The primary mechanism for difficulty scaling within a run is the "Day" counter, which is tracked in the RunState.
 Core Mechanic:
-The Day counter advances by one each time the player resolves a node on the path (Battle, Shop, Event, etc.).
+The Day counter advances by one each time the player resolves a node on the path (Battle, Shop, Rest Site, etc.).
 The Day value is the primary input for the Encounter Budget System, which dynamically generates enemy teams for non-boss battles.
 Encounter Budget System
 This system ensures that the challenge of battle nodes scales directly with the player's progress through a run.

@@ -64,11 +64,10 @@ Centralized interpretation of user intent to decouple Views from Logic:
 -   **Global Interaction Router (GIR):** The entry point for all UI input. It translates raw `InteractionContext` into a `CommandQueue`.
     -   (See `docs/UIInteraction.md` for selection/interaction rules)
     -   **O(1) Domain Mapping:** Maps containers to functional groups (`BattleBoard`, `InventoryGrid`, etc.) to determine valid interactions.
--   **Window Manager**: Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization and enforces a strict six-tier layering system:
+-   **Window Manager**: Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization and enforces a strict five-tier layering system:
     - **BackgroundUILayer (40)**: Inventory and Trays.
     - **HUDLayer (60)**: Persistent HUD and Gacha Machines.
     - **ModalLayer (120)**: Pop-ups and Inspections.
-    - **PostProcessLayer (130)**: Full-screen shaders (Glow/CRT).
     - **GlobalVFXLayer (150)**: High-priority currency animations (Gold Gain/Spend) and global transitions.
     - **CursorLayer (1024)**: Software Cursor (Sprite2D).
 -   **Interactive Overlays**: Programmatic service zones (Shop, Black Market, Rewards) that use the `DropZone.gd` component to provide native Godot drag-and-drop stability. They feature a **VFX Proxy** system to eliminate visual gaps during animated transactions.
@@ -109,7 +108,7 @@ Centralized interpretation of user intent to decouple Views from Logic:
 -   **Localization:** Key-based translation via Godot `Translation` resources. Exported/mobile builds must load `.translation` assets instead of relying on raw CSV reads at runtime.
 -   **Exported Resource Loading:** Runtime directory scans must support exported `.remap` files (`.tres.remap`, `.res.remap`) because Android/exported builds do not expose loose desktop resources the same way.
 -   **Inventory Visualization**: Count labels on gacha machines/discard pile are driven by signals from `DataContainers`, ensuring real-time UI magnitude feedback.
--   **Android/Mobile Reference:** See [AndroidPorting.md](AndroidPorting.md) for export setup, touch model, discard-pile mobile notes, and the current unresolved Android-only run-inventory glow issue.
+-   **Android/Mobile Reference:** See [AndroidPorting.md](AndroidPorting.md) for export setup, touch model, and mobile input adaptations.
 ## Part 6: Run Lifecycle & Persistence
 
 ### 6.1 Save & Checkpoints

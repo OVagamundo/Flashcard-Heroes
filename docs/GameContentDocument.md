@@ -57,7 +57,7 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `unit_t3_f` | Summoner | **Paladin + Knight** | 7 HP / 5 PWR | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies when they are summoned. |
 | `unit_t3_g` | Phantom Wayfarer | **Shadow Cloner + Shadow Cloner** | 6 HP / 6 PWR | 4 Wind | **Quiet Meditation** (`on_turn_start`): If on bench, gain +3 HP/+3 PWR. **[Player Exclusive]** |
 | `unit_t3_h` | Fusion Warden | **Steam Wisp + Shadow Cloner** | 4 HP / 6 PWR | 1 Fire, 1 Water, 2 Wind | **Convergence Surge** (`on_merge`): Whenever a merge happens on the battle board (bench or lineup, unit or item), if on the battle board, gain +2 HP/+2 PWR. |
-| `unit_t3_i` | Doppleganger | N/A | 3 HP / 3 PWR | — | **Mirrored Might** (`passive`): +3 PWR for every other Doppleganger in the Battle Pool.<br>**Clone Split** (`on_death`): Spawn an additional Doppleganger into the Discard Pile. **[Player Exclusive]** |
+| `unit_t3_i` | Doppleganger | **Mimic + Mimic** | 3 HP / 3 PWR | — | **Mirrored Might** (`passive`): +3 PWR for every other Doppleganger in the Battle Pool.<br>**Clone Split** (`on_death`): Spawn an additional Doppleganger into the Gacha Machine. **[Player Exclusive]** |
 
 ### Enemies
 | ID | Name | Stats | Type | Abilities |
@@ -90,7 +90,7 @@ Items are equipped on units to provide stats and new abilities.
 | `item_t2_a` | Summon Scroll | **Small HP + Small HP** | +2 HP | **Summon** (`on_death`): Summons a Tier 1 unit. |
 | `item_t2_b` | Bloodlust Blade | **Small PWR + Small PWR** | +2 PWR | **Bloodlust** (`on_kill`): Grant extra action. |
 | `item_t2_c` | Large HP Potion | **Small HP + Small PWR** | +1 HP / +1 PWR | **Regeneration** (`on_hurt`): Heal self 1 HP. |
-| `item_t2_d` | Echoing Orb | N/A | +2 PWR | **Resonance** (`passive`): +2 PWR per other Echoing Orb in Battle Pool.<br>**Echo Split** (`on_death`): Copy self to Discard Pile. **[Player Exclusive]** |
+| `item_t2_d` | Echoing Orb | N/A | +2 PWR | **Resonance** (`passive`): +2 PWR per other Echoing Orb in Battle Pool.<br>**Echo Split** (`on_death`): Copy self to the Gacha Machine of the same tier. **[Player Exclusive]** |
 
 ### Tier 3 Items (Gold Cost: 4 | Draw Cost: 3 Tokens)
 | ID | Name | Merge Recipe | Stats | Ability |
