@@ -10,6 +10,11 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	var dup_tier = int(parameters.get("duplicate_tier", 1))
 	var dying_uuid = context.get("dying_uuid", source_uuid)
 	
+	# Team-awareness check: Ensure only player-owned units/items duplicate to the gacha machine
+	var dying_team = context.get("dying_team", "")
+	if dying_team != "PLAYER":
+		return EffectResult.empty()
+	
 	# Item-specific safety check: Ensure the item is actually equipped on the dying unit
 	if dup_type == "ITEM":
 		var equipped = context.get("equipped_items", [])

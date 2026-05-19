@@ -1313,6 +1313,10 @@ func _open_status_effect_tooltip(status_id: StringName, anchor: Control) -> void
 	
 	WindowManager.open_child_contextual_window(&"EffectInspection", anchor, populate_ctx)
 
+func set_visual_equipped_item_icon(texture: Texture2D) -> void:
+	_visual_equipped_item_icon = texture
+	_update_equipped_item_icon()
+
 ## Update the equipped items display showing icons on the left side (behind the unit)
 func _update_equipped_item_icon() -> void:
 	if not is_instance_valid(equipped_item_icon_rect):

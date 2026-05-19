@@ -281,6 +281,13 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 		if explanation.is_empty():
 			explanation = tr("ui.no_explanation")
 		intro_explanation_label.text = explanation # Simplified as per feedback or clarity
+		
+		# Play native Japanese pronunciation out loud
+		if card_id.begins_with("KANJI_"):
+			Audio.play_sfx("pronunciation_" + card_id)
+		else:
+			var romaji = card_data.get("answer", "").to_lower()
+			Audio.play_sfx("pronunciation_" + romaji)
 	
 	# Get mastery level for this card and update panel color
 	var mastery_color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
@@ -463,8 +470,8 @@ func _on_got_it_pressed() -> void:
 
 func _start_minigame_session() -> void:
 	"""Start the 3-second sprint mini-game"""
-	# AUDIO HOOK: High-intensity minigame BGM
-	Audio.play_music(SoundRegistry.BGM_MINIGAME)
+	# AUDIO HOOK: High-intensity minigame BGM (played at -7.0 dB so voice clips are clear but music is audible)
+	Audio.play_music(SoundRegistry.BGM_MINIGAME, 0.1, -7.0)
 	
 	card_intro_container.hide()
 	
@@ -633,6 +640,15 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	# Submit answer to FlashcardManager first (this updates mastery)
 	FlashcardManager.submit_answer(_current_question_id, was_correct)
 	
+	# Play pronunciation of selected answer
+	if selected_answer_id.begins_with("KANJI_"):
+		Audio.play_sfx("pronunciation_" + selected_answer_id)
+	else:
+		var selected_data = Database.get_flashcard_definition(selected_answer_id)
+		if not selected_data.is_empty():
+			var romaji = selected_data.get("answer", "").to_lower()
+			Audio.play_sfx("pronunciation_" + romaji)
+	
 	if was_correct:
 		_correct_answers += 1
 		_session_timer += 0.5
@@ -650,6 +666,19 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		_flash_button_correct(_current_question_id, false) # Reveal correct answer, no token
 		# AUDIO HOOK: Incorrect
 		Audio.play_sfx("minigame_incorrect")
+		
+		# Play correct answer's pronunciation after a short delay so they hear both
+		var correct_delay_tween = create_tween()
+		correct_delay_tween.tween_interval(0.4)
+		correct_delay_tween.tween_callback(func():
+			if _current_question_id.begins_with("KANJI_"):
+				Audio.play_sfx("pronunciation_" + _current_question_id)
+			else:
+				var correct_data = Database.get_flashcard_definition(_current_question_id)
+				if not correct_data.is_empty():
+					var correct_romaji = correct_data.get("answer", "").to_lower()
+					Audio.play_sfx("pronunciation_" + correct_romaji)
+		)
 	
 	# Delay showing the next question
 	var next_question: Dictionary = FlashcardManager.get_next_question()

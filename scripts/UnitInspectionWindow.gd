@@ -117,7 +117,7 @@ func populate(context: Dictionary) -> void:
 	_inspected_unit_uuid = _instance.ball_uuid
 
 
-	name_label.text = tr(unit_definition.display_name_key)
+	name_label.text = tr(unit_definition.display_name_key) + " (Lv. %d)" % _instance.level
 	name_label.add_theme_font_override("font", BOLD_FONT)
 	name_label.add_theme_font_size_override("font_size", 32)
 	
@@ -279,6 +279,16 @@ func _update_description() -> void:
 		if is_instance_valid(_instance):
 			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
+			if ability_def.id == &"ability_echoing_orb_scale":
+				var source_inst = all_instances_db.get(entry.get("source_uuid"))
+				if is_instance_valid(source_inst):
+					var current_bonus = source_inst.current_pwr
+					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
+					ability_desc += " [color=#4ade80]%s[/color]" % suffix
+			elif ability_def.id == &"ability_doppleganger_scale":
+				var current_bonus = _instance.get_status_effect_amount(&"doppleganger_scaling")
+				var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
+				ability_desc += " [color=#4ade80]%s[/color]" % suffix
 		
 		if not ability_desc.is_empty():
 			abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])

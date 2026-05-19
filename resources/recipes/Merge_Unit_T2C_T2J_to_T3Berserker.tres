@@ -4,9 +4,9 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"merge_unit_t2e_t2e_to_t3i"
-ingredient_a_id = &"unit_t2_e"
-ingredient_b_id = &"unit_t2_e"
-result_id = &"unit_t3_i"
-is_self_merge = true
+id = &"merge_unit_t2c_t2j_to_t3berserker"
+ingredient_a_id = &"unit_t2_c"
+ingredient_b_id = &"unit_t2_j"
+result_id = &"unit_t3_berserker"
+is_self_merge = false
 merge_type = &"UNIT"

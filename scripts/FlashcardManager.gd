@@ -44,6 +44,14 @@ func _select_card_via_srs() -> StringName:
 		var random_component: float = randf() * SRS_RANDOM_FACTOR
 		var weight: float = mastery_component + time_component + random_component
 		
+		# Dampen weight of mastered cards so they are drawn much less frequently
+		if progress.mastery_level == 5:
+			weight *= 0.02 # 98% reduction for Blue Level 5 fully mastered cards
+		elif progress.mastery_level == 4:
+			weight *= 0.15 # 85% reduction for Level 4 cards
+		elif progress.mastery_level == 3:
+			weight *= 0.40 # 60% reduction for Level 3 cards
+		
 		weighted_candidates.append({"id": card_id, "weight": weight})
 		total_weight += weight
 	

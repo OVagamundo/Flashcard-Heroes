@@ -15,12 +15,12 @@ tags = Array[StringName]([&"SOUL_AIR", &"SOUL_AIR", &"SOUL_AIR", &"SOUL_AIR"])
 is_hero = false
 is_player_exclusive = true
 tier = 3
-level = 3
+level = 1
 cost = 4
 category = &"UNIT"
 
-base_hp = 6
-base_pwr = 6
+base_hp = 4
+base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
 ability_definitions = Array[Resource]([ExtResource("3_basic"), ExtResource("4_ability")])

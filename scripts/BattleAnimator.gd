@@ -418,6 +418,14 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var origin_uuid = payload.get("origin_uuid", "")
 				await _animate_gold_gain(origin_uuid, amount)
 
+			CombatEvent.Type.ITEM_TRANSFER:
+				var payload = event.visual_payload
+				var source_uuid = event.source_uuid
+				var target_uuid = event.target_uuids[0] if event.target_uuids.size() > 0 else ""
+				
+				if not source_uuid.is_empty() and not target_uuid.is_empty():
+					await _animate_item_transfer(source_uuid, target_uuid, payload)
+
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
@@ -671,3 +679,104 @@ func _animate_gold_gain(origin_uuid: String, amount: int) -> void:
 	# Wait for animations
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
 	await get_tree().create_timer(total_wait).timeout
+
+func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: Dictionary) -> void:
+	var source_view = _visual_registry.get(source_uuid)
+	var target_view = _visual_registry.get(target_uuid)
+	
+	var item_icon_path = payload.get("item_icon_path", "")
+	
+	# Extract chronological stats from the payload so we do not query the "future" simulated state
+	var old_hp = int(payload.get("old_hp", 0))
+	var new_hp = int(payload.get("new_hp", 0))
+	var old_pwr = int(payload.get("old_pwr", 0))
+	var new_pwr = int(payload.get("new_pwr", 0))
+	
+	var hp_diff = new_hp - old_hp
+	var pwr_diff = new_pwr - old_pwr
+	
+	var start_pos = Vector2.ZERO
+	var end_pos = Vector2.ZERO
+	
+	# Try to get live positions if available, fallback to snapshot
+	if is_instance_valid(source_view) and source_view.is_inside_tree():
+		start_pos = source_view.global_position + (source_view.size / 2.0)
+	else:
+		var snap = get_snapshot_position(source_uuid)
+		if not snap.is_empty():
+			start_pos = snap["center"]
+			
+	if is_instance_valid(target_view) and target_view.is_inside_tree():
+		end_pos = target_view.global_position + (target_view.size / 2.0)
+	else:
+		var snap = get_snapshot_position(target_uuid)
+		if not snap.is_empty():
+			end_pos = snap["center"]
+			
+	if start_pos == Vector2.ZERO or end_pos == Vector2.ZERO:
+		# Fail gracefully if positions are invalid
+		if is_instance_valid(source_view) and source_view.has_method("set_visual_equipped_item_icon"):
+			source_view.set_visual_equipped_item_icon(null)
+		if is_instance_valid(target_view) and target_view.has_method("set_visual_equipped_item_icon"):
+			var item_texture = load(item_icon_path) as Texture2D
+			target_view.set_visual_equipped_item_icon(item_texture)
+			
+			if hp_diff != 0 and target_view.has_method("animate_stat_change"):
+				target_view.animate_stat_change(new_hp, hp_diff, "hp")
+			if pwr_diff != 0 and target_view.has_method("animate_stat_change"):
+				target_view.animate_stat_change(new_pwr, pwr_diff, "pwr")
+		return
+		
+	# Load item texture
+	var item_texture = load(item_icon_path) as Texture2D
+	if not is_instance_valid(item_texture):
+		return
+		
+	# Clear source view icon immediately as the item begins to fly!
+	if is_instance_valid(source_view) and source_view.has_method("set_visual_equipped_item_icon"):
+		source_view.set_visual_equipped_item_icon(null)
+		
+	# Calculate target scale to fit exactly 96x96 pixels in battle (matching the standard bench size)
+	var target_size := 96.0
+	var tex_size := item_texture.get_size()
+	var scale_factor := target_size / maxf(maxf(tex_size.x, tex_size.y), 1.0)
+	
+	# Create flying item visual using Sprite2D to prevent Control scale/pivot shifts
+	var flying_icon = Sprite2D.new()
+	flying_icon.texture = item_texture
+	flying_icon.centered = true
+	flying_icon.scale = Vector2(scale_factor, scale_factor)
+	
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(flying_icon)
+	
+	# Kinematic parabolic arc tween
+	var duration := 0.6
+	var arc_height := 250.0
+	
+	# Spawn sound
+	Audio.play_sfx("unit_toss")
+	
+	var tween = flying_icon.create_tween()
+	tween.tween_method(func(t: float):
+		var curr_x = lerp(start_pos.x, end_pos.x, t)
+		var curr_y = lerp(start_pos.y, end_pos.y, t) - (4.0 * arc_height * t * (1.0 - t))
+		flying_icon.global_position = Vector2(curr_x, curr_y)
+	, 0.0, 1.0, duration)
+	
+	await tween.finished
+	flying_icon.queue_free()
+	
+	# Landing sound and impact
+	Audio.play_sfx("token_land")
+	
+	# Landing visual update - set target's equipped item icon!
+	if is_instance_valid(target_view) and target_view.has_method("set_visual_equipped_item_icon"):
+		target_view.set_visual_equipped_item_icon(item_texture)
+		target_view.play_landing_bounce()
+		
+		# Animate the stat change immediately upon landing, just like a self buff, with NO flying projectile!
+		if hp_diff != 0 and target_view.has_method("animate_stat_change"):
+			target_view.animate_stat_change(new_hp, hp_diff, "hp")
+		if pwr_diff != 0 and target_view.has_method("animate_stat_change"):
+			target_view.animate_stat_change(new_pwr, pwr_diff, "pwr")

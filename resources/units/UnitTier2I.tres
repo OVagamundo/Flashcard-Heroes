@@ -8,7 +8,9 @@
 script = ExtResource("1_script")
 id = &"unit_t2_i"
 tier = 2
-base_hp = 2
+level = 1
+cost = 2
+base_hp = 3
 base_pwr = 2
 is_hero = false
 

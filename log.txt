@@ -38,7 +38,7 @@ WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid U
        [0] _load_resources_from_path (res://scripts/Database.gd:82)
        [1] _ready (res://scripts/Database.gd:24)
 [Title] Ready. TutorialManager.tutorials_enabled: true
-[SaveManager] Run loaded successfully (Day 12)
+[SaveManager] Run loaded successfully (Day 3)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
@@ -59,15 +59,280 @@ WARNING: Setting node name 'CountLabel' to be unique within scene for 'HUDLayer/
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] _change_scene_to (res://scripts/SceneManager.gd:100)
-[PathChoice] Loading from save, skipping day advance. Current Day: 12
+[PathChoice] Loading from save, skipping day advance. Current Day: 3
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-[TutorialManager] Requesting tutorial: shop_intro
+[EncounterGenerator] Elite weighting: [300.0, 200.0, 100.0] (Last: ) Picked: unit_dust_elite_t2
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
+[BattleLog] [1:1] ═══ TURN 1 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-[SaveManager] Run saved successfully (Day 13)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779159737_8_32743
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779159737_8_32743
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779159737_9_86865
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779159737_9_86865
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1779159737_2_29205
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1779159737_2_29205
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779159737_15_96463
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779159737_15_96463
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1779159737_5_09716
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1779159737_5_09716
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_a_1779159737_21_60317
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1779159737_21_60317
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1779159737_29_76877
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779159737_15_96463
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779159737_1_18413
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779159737_1_18413
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_dust_elite2_spawn_death Prio:0 Src:unit_dust_elite_t2_1779159737_32_98099
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1779159737_31_75277
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1779159737_9_86865
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [1:2] Empath deals 1 dmg to Squire 
+[BattleLog] [1:3] Empath attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1779159737_29_76877"] source: unit_t1_d_1779159737_15_96463 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_d_1779159737 type 5
+[BattleLog] [1:4] Squire deals 2 dmg to Empath 
+[BattleLog] [1:5] unit_t1_... attacks Empath for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779159737_15_96463"] source: unit_t1_b_1779159737_29_76877 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [1:6] └─ Empath is defeated! 
+[BattleLog] [1:7] Empath grants Apprentice +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:8] Bounty Hunter heals Bounty Hunter for 1 HP 
+[BattleLog] [1:9] Bounty Hunter heals Bounty Hunter for 1 HP (hero_bounty_hunter_ally_death_buff, on_ally_death) (HP: 10→11)
+[BattleLog] [1:10] Bounty Hunter grants Bounty Hunter +1 PWR 
+[BattleLog] [1:11] Bounty Hunter grants Bounty Hunter +1 PWR (hero_bounty_hunter_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:12] └─ unit_t1_... is defeated! 
+[BattleLog] [1:13] Knight heals Knight for 1 HP 
+[BattleLog] [1:14] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
+[BattleLog] [1:15] Knight grants Knight +1 PWR 
+[BattleLog] [1:16] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:17] └─ unit_dus... summons New Unit! 
+[BattleLog] [1:18] Dust Elite 2 spawned a Dust unit in the player inventory. 
+[BattleLog] [1:19] Apprentice deals 3 dmg to Knight 
+[BattleLog] [1:20] Apprentice attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 4→1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1779159737_30_73505"] source: unit_t1_a_1779159766_35_46410 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [1:21] Squire deals 2 dmg to Knight 
+[BattleLog] [1:22] Squire attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1779159737_30_73505"] source: unit_t1_b_1779159737_8_32743 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [1:23] └─ unit_t2_... is defeated! 
+[BattleLog] [1:24] └─ unit_dus... summons New Unit! 
+[BattleLog] [1:25] Dust Elite 2 spawned a Dust unit in the player inventory. 
+[BattleLog] [1:26] Squire deals 2 dmg to Squire 
+[BattleLog] [1:27] Squire attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1779159737_31_75277"] source: unit_t1_b_1779159737_9_86865 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [1:28] Squire deals 2 dmg to Squire 
+[BattleLog] [1:29] unit_t1_... attacks Squire for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1779159737_9_86865"] source: unit_t1_b_1779159737_31_75277 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [1:30] └─ Squire is defeated! 
+[BattleLog] [1:31] └─ unit_t1_... is defeated! 
+[BattleLog] [1:32] Bounty Hunter heals Bounty Hunter for 1 HP 
+[BattleLog] [1:33] Bounty Hunter heals Bounty Hunter for 1 HP (hero_bounty_hunter_ally_death_buff, on_ally_death) (HP: 11→12)
+[BattleLog] [1:34] Bounty Hunter grants Bounty Hunter +1 PWR 
+[BattleLog] [1:35] Bounty Hunter grants Bounty Hunter +1 PWR (hero_bounty_hunter_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [1:36] └─ unit_dus... summons New Unit! 
+[BattleLog] [1:37] Dust Elite 2 spawned a Dust unit in the player inventory. 
+[BattleLog] [1:38] Bounty Hunter deals 4 dmg to Dust Sentinel (T2) 
+[BattleLog] [1:39] Bounty Hunter attacks unit_dus... for 4 damage (basic_attack, on_attack) (HP: 4→0)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t2_1779159737_32_98099"] source: hero_bounty_hunter_1779159737_1_18413 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [1:40] Gained 1 gold! 
+[BattleLog] [1:41] └─ unit_dus... is defeated! 
+[BattleLog] [1:42] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
+[RewardDebug] Victory rewards pending. Special: true
+[RewardElite] populate called
+[TutorialManager] Requesting tutorial: traits
+[TutorialManager] Emitting signal for: traits
+[TutorialManager] Signal received, opening overlay for: traits
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:33)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+DEBUG_INPUT: GachaBallView Pressed. UUID: trinket_trait_fire_1779159788_40_65535
+DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_trait_fire_1779159788_40_65535
+DEBUG_GIR: DRAG_START intercepted for TRINKET
+[SaveManager] Run saved successfully (Day 4)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
 WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
@@ -75,41 +340,61 @@ WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxConta
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] load_content (res://scripts/Main.gd:241)
-       [1] _on_node_selected (res://scripts/GameManager.gd:442)
+       [1] _on_node_selected (res://scripts/GameManager.gd:436)
        [2] _on_node_selected (res://scripts/PathChoice.gd:121)
 WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] load_content (res://scripts/Main.gd:241)
-       [1] _on_node_selected (res://scripts/GameManager.gd:442)
+       [1] _on_node_selected (res://scripts/GameManager.gd:436)
        [2] _on_node_selected (res://scripts/PathChoice.gd:121)
-[TutorialManager] Requesting tutorial: gambling_den_intro
-[TutorialManager] Emitting signal for: gambling_den_intro
-[TutorialManager] Signal received, opening overlay for: gambling_den_intro
+[TutorialManager] Requesting tutorial: training_grounds_intro
+[TutorialManager] Emitting signal for: training_grounds_intro
+[TutorialManager] Signal received, opening overlay for: training_grounds_intro
 WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1034)
    GDScript backtrace (most recent call first):
        [0] play_sfx (res://scripts/AudioManager.gd:33)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
-[SaveManager] Run saved successfully (Day 14)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
-[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 7
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 1 }
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _animate_prize_draw (res://scripts/RestSite.gd:325)
+       [1] _try_draw_tier (res://scripts/RestSite.gd:257)
+       [2] _animate_token_spend (res://scripts/RestSite.gd:304)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _animate_prize_draw (res://scripts/RestSite.gd:325)
+       [1] _try_draw_tier (res://scripts/RestSite.gd:257)
+       [2] _animate_token_spend (res://scripts/RestSite.gd:304)
+[SaveManager] Run saved successfully (Day 5)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[TutorialManager] Requesting tutorial: gacha_inspect_run
+[TutorialManager] Emitting signal for: gacha_inspect_run
+[TutorialManager] Signal received, opening overlay for: gacha_inspect_run
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:33)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
+[BattleLog] [2:1] ═══ TURN 2 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -122,11 +407,9 @@ If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
    GDScript backtrace (most recent call first):
        [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
@@ -140,11 +423,9 @@ If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
    GDScript backtrace (most recent call first):
        [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
@@ -158,34 +439,9 @@ If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
    GDScript backtrace (most recent call first):
        [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] Merchant's investments mature! PWR set to 6 (current Gold) 
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
@@ -199,15 +455,13 @@ If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
    GDScript backtrace (most recent call first):
        [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_i_1779052715_29_50460
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_i_1779052715_29_50460
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779159838_56_98688
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779159838_56_98688
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -215,10 +469,26 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t2_d_1779052715_26_17820
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_d_1779052715_26_17820
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779159838_50_85009
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779159838_50_85009
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779159838_49_84134
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779159838_49_84134
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_a_1779159838_61_82225
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1779159838_61_82225
 DEBUG_GIR: DRAG_START intercepted for ITEM
 DEBUG_GIR: Processing UNIT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -226,10 +496,78 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_f_1779052715_30_91577
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_f_1779052715_30_91577
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779159838_50_85009
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779159838_50_85009
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779159864_77_04012
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779159864_77_04012
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779159838_56_98688
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779159838_56_98688
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779159838_56_98688
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779159838_56_98688
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: hero_bounty_hunter_1779159838_42_58390
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: hero_bounty_hunter_1779159838_42_58390
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_c_1779159838_51_04378
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1779159838_51_04378
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -239,186 +577,84 @@ DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_c_1779052715_18_64799
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_c_1779052715_18_64799
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_72_53182
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t2_b_1779052715_25_63069
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_b_1779052715_25_63069
-DEBUG_GIR: DRAG_START intercepted for ITEM
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_72_53182
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1779052715_32_97549
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1779052715_32_97549
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_72_53182
+[CS] Draining reaction: unit_tier1a_passive_heal Prio:0 Src:unit_t1_a_1779159838_73_80073
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_72_53182
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 2
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 7
-[DeathProcessor] Draining batch of 7
-[CS] Draining reaction: ability_trinket_soul_echo Prio:210 Src:trinket_soul_echo_1779052715_39_23344
-[SoulEcho] SUCCESS: Resurrecting unit_t3_i at 4
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_51_04378
 [DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 6
-[DeathProcessor] Draining batch of 6
-[CS] Draining reaction: ability_trinket_soul_echo Prio:210 Src:trinket_soul_echo_1779052715_39_23344
-[SoulEcho] Failed: resurrection already done for PLAYER
-[CS] Draining reaction: ability_doppleganger_death Prio:205 Src:unit_t3_i_1779052749_40_51630
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052715_20_61451
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052715_29_50460
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052749_41_24467
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052715_26_17820
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052715_28_30505
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1779052715_18_64799
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1779052715_18_64799
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1779052715_38_07161
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1779052715_38_07161
-[CS] Draining reaction: ability_doppleganger_death Prio:205 Src:unit_t3_i_1779052715_29_50460
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052715_20_61451
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052715_29_50460
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052749_41_24467
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052749_42_94608
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052715_26_17820
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052715_28_30505
-[CS] Draining reaction: ability_echoing_orb_death Prio:200 Src:item_t2_d_1779052715_26_17820
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052715_20_61451
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052715_29_50460
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052749_41_24467
-[CS] Draining reaction: ability_doppleganger_scale Prio:100 Src:unit_t3_i_1779052749_42_94608
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052715_26_17820
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052715_28_30505
-[CS] Draining reaction: ability_echoing_orb_scale Prio:100 Src:item_t2_d_1779052749_43_24124
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1779052715_18_64799
-[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1779052715_18_64799
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1779052715_38_07161
-[CS] Draining reaction: ability_trinket_vengeance Prio:0 Src:trinket_vengeance_1779052715_38_07161
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779159838_56_98688
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779159838_42_58390
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779159838_42_58390
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_51_04378
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:3] Doppleganger deals 10 dmg to Warden 
-[BattleLog] [1:4] Doppleganger attacks unit_t3_... for 10 damage (basic_attack, on_attack) (HP: 7→-3)
-[DamageAnimation] Executing for targets: ["unit_t3_f_1779052715_35_25624"] source: unit_t3_i_1779052715_29_50460 attack_type: melee
+[BattleLog] [2:2] Empath deals 1 dmg to Dreadnought 
+[BattleLog] [2:3] Empath attacks unit_t3_... for 1 damage (basic_attack, on_attack) (HP: 6→5)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1779159838_70_09517"] source: unit_t1_d_1779159838_56_98688 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_i_1779052715 type 5
-[BattleLog] [1:5] └─ unit_t3_... is defeated! 
-[BattleLog] [1:6] Knight heals Knight for 1 HP 
-[BattleLog] [1:7] unit_t2_... heals unit_t2_... for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
-[BattleLog] [1:8] Knight grants Knight +1 PWR 
-[BattleLog] [1:9] unit_t2_... grants unit_t2_... +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BattleLog] [2:4] Bounty Hunter deals 9 dmg to Dreadnought 
+[BattleLog] [2:5] Bounty Hunter attacks unit_t3_... for 9 damage (basic_attack, on_attack) (HP: 5→-4)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1779159838_70_09517"] source: hero_bounty_hunter_1779159838_42_58390 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [2:6] Gained 1 gold! 
+[BattleLog] [2:7] └─ unit_t3_... is defeated! 
+[BattleLog] [2:8] Protector deals 1 dmg to Apprentice 
+[BattleLog] [2:9] Protector attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1779159838_73_80073"] source: unit_t1_c_1779159838_51_04378 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [2:10] Apprentice heals Apprentice for 1 HP 
+[BattleLog] [2:11] unit_t1_... heals unit_t1_... for 1 HP (unit_tier1a_passive_heal, on_hurt) (HP: 1→2)
+[BattleLog] [2:12] Squire deals 3 dmg to Apprentice 
+[BattleLog] [2:13] Squire attacks unit_t1_... for 3 damage (basic_attack, on_attack) (HP: 2→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1779159838_73_80073"] source: unit_t1_b_1779159864_77_04012 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [2:14] └─ unit_t1_... is defeated! 
+[BattleLog] [2:15] Empath deals 1 dmg to Empath 
+[BattleLog] [2:16] Empath attacks Empath for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779159838_56_98688"] source: unit_t1_d_1779159838_71_96969 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [2:17] └─ Empath is defeated! 
+[BattleLog] [2:18] Empath grants Bounty Hunter +1 PWR (unit_t1_d_empathic_link) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:10] Merchant deals 6 dmg to Knight 
-[BattleLog] [1:11] Merchant attacks unit_t2_... for 6 damage (basic_attack, on_attack) (HP: 4→-2)
-[DamageAnimation] Executing for targets: ["unit_t2_c_1779052715_32_97549"] source: unit_t2_f_1779052715_30_91577 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_f_1779052715 type 5
-[BattleLog] [1:12] └─ unit_t2_... is defeated! 
-[BattleLog] [1:13] Knight deals 3 dmg to Dreadnought 
-[BattleLog] [1:14] Knight attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 5→2)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1779052715_33_11985"] source: unit_t2_c_1779052715_18_64799 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_c_1779052715 type 5
-[BattleLog] [1:15] Timekeeper deals 2 dmg to Dreadnought 
-[BattleLog] [1:16] Timekeeper attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1779052715_33_11985"] source: hero_timekeeper_1779052715_7_27983 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1779 type 5
-[BattleLog] [1:17] └─ unit_t3_... is defeated! 
-[BattleLog] [1:18] Mud Wretch deals 2 dmg to Doppleganger 
-[BattleLog] [1:19] Mud Wretch attacks Doppleganger for 2 damage (basic_attack, on_attack) (HP: 3→1)
-[DamageAnimation] Executing for targets: ["unit_t3_i_1779052715_29_50460"] source: unit_t2_i_1779052715_31_67201 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t2_i_1779052715 type 5
-[BattleLog] [1:20] Dreadnought deals 7 dmg to Doppleganger 
-[BattleLog] [1:21] Dreadnought attacks Doppleganger for 7 damage (basic_attack, on_attack) (HP: 1→-6)
-[DamageAnimation] Executing for targets: ["unit_t3_i_1779052715_29_50460"] source: unit_t3_e_1779052715_34_48458 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1779052715 type 5
-[BattleLog] [1:22] └─ Doppleganger is defeated! 
-[BattleLog] [1:23] └─ trinket_soul_echo summons New Unit! 
-[BattleLog] [1:24] Doppleganger scales by +3 PWR (2 copies) 
-[BattleLog] [1:25] Doppleganger scales by +6 PWR (2 copies) 
-[BattleLog] [1:26] Doppleganger scales by +6 PWR (2 copies) 
-[BattleLog] [1:27] Dreadnought deals 3 dmg to Doppleganger 
-[BattleLog] [1:28] Dreadnought attacks Doppleganger for 3 damage (unit_tier3e_ambush_predator, on_enemy_summon) (HP: 3→0)
-[DamageAnimation] Executing for targets: ["unit_t3_i_1779052749_40_51630"] source: unit_t3_e_1779052715_34_48458 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_e_1779052715 type 5
-[BattleLog] [1:29] └─ Doppleganger is defeated! 
-[BattleLog] [1:30] └─ Doppleganger summons New Unit! 
-[BattleLog] [1:31] Doppleganger scales by +3 PWR (3 copies) 
-[BattleLog] [1:32] Doppleganger scales by +3 PWR (3 copies) 
-[BattleLog] [1:33] Doppleganger scales by +9 PWR (3 copies) 
-[BattleLog] [1:34] Knight heals Knight for 1 HP 
-[BattleLog] [1:35] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
-[BattleLog] [1:36] Knight grants Knight +1 PWR 
-[BattleLog] [1:37] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BattleLog] [2:19] Bounty Hunter heals Bounty Hunter for 1 HP 
+[BattleLog] [2:20] Bounty Hunter heals Bounty Hunter for 1 HP (hero_bounty_hunter_ally_death_buff, on_ally_death) (HP: 10→11)
+[BattleLog] [2:21] Bounty Hunter grants Bounty Hunter +1 PWR 
+[BattleLog] [2:22] Bounty Hunter grants Bounty Hunter +1 PWR (hero_bounty_hunter_ally_death_buff, on_ally_death) 
 [BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:38] Vengeance Charm grants Merchant +1 PWR 
-[BattleLog] [1:39] trinket_vengeance grants Merchant +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:40] Vengeance Charm heals Timekeeper for 1 HP 
-[BattleLog] [1:41] trinket_vengeance heals Timekeeper for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 50→51)
-[BattleLog] [1:42] └─ Doppleganger summons New Unit! 
-[BattleLog] [1:43] Doppleganger scales by +3 PWR (4 copies) 
-[BattleLog] [1:44] Doppleganger scales by +3 PWR (4 copies) 
-[BattleLog] [1:45] Doppleganger scales by +3 PWR (4 copies) 
-[BattleLog] [1:46] Doppleganger scales by +12 PWR (4 copies) 
-[BattleLog] [1:47] └─ Echoing Orb summons New Unit! 
-[BattleLog] [1:48] Echoing Orb (item_t2_d_1779052715_26_17820) scaled by +2 PWR (2 copies) 
-[BattleLog] [1:49] Echoing Orb (item_t2_d_1779052715_28_30505) scaled by +2 PWR (2 copies) 
-[BattleLog] [1:50] Echoing Orb (item_t2_d_1779052749_43_24124) scaled by +4 PWR (2 copies) 
-[BattleLog] [1:51] Knight heals Knight for 1 HP 
-[BattleLog] [1:52] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 4→5)
-[BattleLog] [1:53] Knight grants Knight +1 PWR 
-[BattleLog] [1:54] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:55] Vengeance Charm grants Timekeeper +1 PWR 
-[BattleLog] [1:56] trinket_vengeance grants Timekeeper +1 PWR (ability_trinket_vengeance, on_ally_death) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [1:57] Vengeance Charm heals Knight for 1 HP 
-[BattleLog] [1:58] trinket_vengeance heals Knight for 1 HP (ability_trinket_vengeance, on_ally_death) (HP: 5→6)
-[BattleLog] [1:59] └─ Doppleganger is defeated! 
-[BattleLog] [1:60] Doppleganger scales by +12 PWR (4 copies) 
+[BattleLog] [2:23] Protector deals 1 dmg to Bounty Hunter 
+[BattleLog] [2:24] Protector attacks Bounty Hunter for 1 damage (basic_attack, on_attack) (HP: 11→10)
+[DamageAnimation] Executing for targets: ["hero_bounty_hunter_1779159838_42_58390"] source: unit_t1_c_1779159838_72_53182 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [2:25] Protector shields their ally (+1 HP) 
+[BattleLog] [2:26] Protector heals Bounty Hunter for 1 HP (unit_t1_c_ally_shield, on_ally_hurt) (HP: 10→11)
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:1] ═══ TURN 2 ═══ 
+[BattleLog] [3:1] ═══ TURN 3 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 8
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 3
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:2] Timekeeper heals Knight and Merchant for 2 HP 
-[BattleLog] [2:3] Timekeeper heals Knight for 2 HP (hero_timekeeper_temporal_aura, on_turn_start) (HP: 6→8)
+[BattleLog] [3:2] Armor Aura grants Squire and Protector and Bounty Hunter +3 armor_stacks 
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=3
 [FlashcardManager] Signal emitted successfully
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 DEBUG_INPUT: BattleView Background Clicked.
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -426,158 +662,33 @@ DEBUG_GIR: Selection: false
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 3
 DEBUG_GIR: + CMD: 0
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Already completed
-[TutorialManager] Requesting tutorial: gacha_inspect_battle
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 3
-DEBUG_GIR: + CMD: 4
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[BattleLog] [3:3] Koi's Blessing heals Squire for 2 HP 
+[BattleLog] [3:4] Koi's Blessing heals Squire for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 3→5)
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_i_1779052749_42_94608
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_i_1779052749_42_94608
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_i_1779052749_41_24467
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_i_1779052749_41_24467
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:398)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1637)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t2_d_1779052715_28_30505
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_d_1779052715_28_30505
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t2_d_1779052749_43_24124
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_d_1779052749_43_24124
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1779159838_72_53182
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779159838_71_96969
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:4] Doppleganger deals 21 dmg to Mud Wretch 
-[BattleLog] [2:5] Doppleganger attacks unit_t2_... for 21 damage (basic_attack, on_attack) (HP: 2→-19)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1779052715_31_67201"] source: unit_t3_i_1779052749_42_94608 attack_type: melee
+[BattleLog] [3:5] Bounty Hunter deals 11 dmg to Empath 
+[BattleLog] [3:6] Bounty Hunter attacks unit_t1_... for 11 damage (basic_attack, on_attack) (HP: 1→-10)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779159838_71_96969"] source: hero_bounty_hunter_1779159838_42_58390 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_i_1779052749 type 5
-[BattleLog] [2:6] └─ unit_t2_... is defeated! 
-[BattleLog] [2:7] Doppleganger deals 21 dmg to Dreadnought 
-[BattleLog] [2:8] Doppleganger attacks unit_t3_... for 21 damage (basic_attack, on_attack) (HP: 5→-16)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1779052715_34_48458"] source: unit_t3_i_1779052749_41_24467 attack_type: melee
+[BattleLog] [3:7] Gained 1 gold! 
+[BattleLog] [3:8] └─ unit_t1_... is defeated! 
+[BattleLog] [3:9] unit_t1_... grants unit_t1_... +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [3:10] Protector deals 1 dmg to Protector 
+[BattleLog] [3:11] Protector attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_c_1779159838_72_53182"] source: unit_t1_c_1779159838_51_04378 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_i_1779052749 type 5
-[BattleLog] [2:9] └─ unit_t3_... is defeated! 
-[BattleLog] [2:10] Battle ended 
+[BattleLog] [3:12] └─ unit_t1_... is defeated! 
+[BattleLog] [3:13] Battle ended 
 [GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
 [GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 0
 [RewardDebug] Victory rewards pending. Special: false
@@ -597,20 +708,519 @@ WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxConta
        [2] _on_return_button_pressed (res://scripts/EndBattlePopup.gd:25)
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 7
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 7, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t3_e_1779052869_48_92328
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t3_e_1779052869_48_92328
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_t3_f_1779052867_47_33259
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t3_f_1779052867_47_33259
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_INPUT: GachaBallView Pressed. UUID: item_potion_t1_1779052870_49_13082
-DEBUG_INPUT: Emitting DRAG_START. Entity: CONSUMABLE | UUID: item_potion_t1_1779052870_49_13082
-DEBUG_GIR: DRAG_START intercepted for CONSUMABLE
-[SaveManager] Run saved successfully (Day 15)
+DEBUG_INPUT: SlotView Pressed (Empty).
+DEBUG_GIR: Processing EMPTY_SLOT Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t3_berserker_1779159916_81_30735
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_berserker_1779159916_81_30735
+DEBUG_GIR: DRAG_START intercepted for UNIT
+[TutorialManager] Requesting tutorial: gacha_inspect_run
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t2_f_1779159917_82_78703
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_f_1779159917_82_78703
+DEBUG_GIR: DRAG_START intercepted for UNIT
+[SaveManager] Run saved successfully (Day 6)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
-   at: cleanup (core/object/object.cpp:2641)
+[EncounterGenerator] Elite weighting: [300.0, 0.0, 100.0] (Last: unit_dust_elite_t2) Picked: unit_dust_elite_t3
+[AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
+[BattleLog] [4:1] ═══ TURN 4 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+DEBUG_INPUT: BattleView Background Clicked.
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[TutorialManager] Requesting tutorial: gacha_inspect_battle
+[TutorialManager] Emitting signal for: gacha_inspect_battle
+[TutorialManager] Signal received, opening overlay for: gacha_inspect_battle
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:33)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[TutorialManager] Requesting tutorial: gacha_inspect_battle
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: hero_bounty_hunter_1779160596_83_05865
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: hero_bounty_hunter_1779160596_83_05865
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779160596_99_47170
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779160596_99_47170
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_b_1779160596_106_88929
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1779160596_106_88929
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779160596_110_10163
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779160596_110_10163
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_a_1779160596_100_94531
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1779160596_100_94531
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1779160596_116_62950
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1779160596_116_62950
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779160596_99_47170
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779160596_83_05865
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779160596_83_05865
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779160596_110_10163
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779160596_83_05865
+[CS] Draining reaction: hero_bounty_hunter_ally_death_buff Prio:0 Src:hero_bounty_hunter_1779160596_83_05865
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:2] Empath deals 2 dmg to Apprentice 
+[BattleLog] [4:3] Empath attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1779160596_113_99351"] source: unit_t1_d_1779160596_99_47170 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [4:4] └─ unit_t1_... is defeated! 
+[BattleLog] [4:5] └─ Dust Overlord (T3) summons New Unit! 
+[BattleLog] [4:6] Dust Elite spawned a Dust unit in the player inventory. 
+[BattleLog] [4:7] Empath deals 1 dmg to Warden 
+[BattleLog] [4:8] Empath attacks unit_t3_... for 1 damage (basic_attack, on_attack) (HP: 5→4)
+[DamageAnimation] Executing for targets: ["unit_t3_f_1779160596_114_81381"] source: unit_t1_d_1779160596_110_10163 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [4:9] Bounty Hunter deals 9 dmg to Warden 
+[BattleLog] [4:10] Bounty Hunter attacks unit_t3_... for 9 damage (basic_attack, on_attack) (HP: 4→-5)
+[DamageAnimation] Executing for targets: ["unit_t3_f_1779160596_114_81381"] source: hero_bounty_hunter_1779160596_83_05865 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [4:11] Gained 1 gold! 
+[BattleLog] [4:12] └─ unit_t3_... is defeated! 
+[BattleLog] [4:13] └─ Dust Overlord (T3) summons New Unit! 
+[BattleLog] [4:14] Dust Elite spawned a Dust unit in the player inventory. 
+[BattleLog] [4:15] Empath deals 1 dmg to Empath 
+[BattleLog] [4:16] Empath attacks Empath for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779160596_99_47170"] source: unit_t1_d_1779160596_115_64374 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [4:17] └─ Empath is defeated! 
+[BattleLog] [4:18] Empath grants Empath +2 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [4:19] Bounty Hunter heals Bounty Hunter for 1 HP 
+[BattleLog] [4:20] Bounty Hunter heals Bounty Hunter for 1 HP (hero_bounty_hunter_ally_death_buff, on_ally_death) (HP: 11→12)
+[BattleLog] [4:21] Bounty Hunter grants Bounty Hunter +1 PWR 
+[BattleLog] [4:22] Bounty Hunter grants Bounty Hunter +1 PWR (hero_bounty_hunter_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:23] Dust Overlord (T3) deals 5 dmg to Empath 
+[BattleLog] [4:24] Dust Overlord (T3) attacks Empath for 5 damage (basic_attack, on_attack) (HP: 1→-4)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779160596_110_10163"] source: unit_dust_elite_t3_1779160596_116_62950 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [4:25] └─ Empath is defeated! 
+[BattleLog] [4:26] Empath grants Bounty Hunter +3 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
+[BattleLog] [4:27] Bounty Hunter heals Bounty Hunter for 1 HP 
+[BattleLog] [4:28] Bounty Hunter heals Bounty Hunter for 1 HP (hero_bounty_hunter_ally_death_buff, on_ally_death) (HP: 12→13)
+[BattleLog] [4:29] Bounty Hunter grants Bounty Hunter +1 PWR 
+[BattleLog] [4:30] Bounty Hunter grants Bounty Hunter +1 PWR (hero_bounty_hunter_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:31] └─ Dust Overlord (T3) summons New Unit! 
+[BattleLog] [4:32] └─ Dust Overlord (T3) summons New Unit! 
+[BattleLog] [5:1] ═══ TURN 5 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:2] Armor Aura grants Bounty Hunter +3 armor_stacks 
+[StatusEffectAnimation] execute() called - stat='armor_stacks' amount=3 targets=1
+[FlashcardManager] Signal emitted successfully
+[BattleLog] [5:3] Koi's Blessing heals Bounty Hunter for 2 HP 
+[BattleLog] [5:4] Koi's Blessing heals Bounty Hunter for 2 HP (item_tier1a_turn_start_heal, on_turn_start) (HP: 13→15)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_c_1779160596_94_89224
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1779160596_94_89224
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779160596_97_20331
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779160596_97_20331
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_d_1779160596_97_20331
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1779160596_97_20331
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_a_1779160596_86_72076
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1779160596_86_72076
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779160596_90_64777
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779160596_90_64777
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: GachaBallView Pressed. UUID: item_t1_a_1779160596_101_52374
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1779160596_101_52374
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:798)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:404)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1647)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_b_1779160596_88_28015
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1779160596_88_28015
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+DEBUG_INPUT: GachaBallView Pressed. UUID: unit_t1_c_1779160596_93_57123
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1779160596_93_57123
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779160651_123_51983
+[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1779160596_116_62950
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779160651_122_30658
+[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1779160596_116_62950
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1779160596_115_64374
+[CS] Draining reaction: ability_dust_elite_spawn_death Prio:0 Src:unit_dust_elite_t3_1779160596_116_62950
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:5] Empath deals 1 dmg to Empath 
+[BattleLog] [5:6] Empath attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779160651_123_51983"] source: unit_t1_d_1779160596_97_20331 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [5:7] └─ unit_t1_... is defeated! 
+[BattleLog] [5:8] unit_t1_... grants unit_t1_... +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [5:9] └─ unit_dus... summons New Unit! 
+[BattleLog] [5:10] Dust Elite spawned a Dust unit in the player inventory. 
+[BattleLog] [5:11] Apprentice deals 1 dmg to Empath 
+[BattleLog] [5:12] Apprentice attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779160651_122_30658"] source: unit_t1_a_1779160596_86_72076 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [5:13] └─ unit_t1_... is defeated! 
+[BattleLog] [5:14] unit_t1_... grants unit_t1_... +2 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=2 targets=1
+[BattleLog] [5:15] └─ unit_dus... summons New Unit! 
+[BattleLog] [5:16] Dust Elite spawned a Dust unit in the player inventory. 
+[BattleLog] [5:17] Bounty Hunter deals 14 dmg to Empath 
+[BattleLog] [5:18] Bounty Hunter attacks unit_t1_... for 14 damage (basic_attack, on_attack) (HP: 1→-13)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1779160596_115_64374"] source: hero_bounty_hunter_1779160596_83_05865 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [5:19] Gained 1 gold! 
+[BattleLog] [5:20] └─ unit_t1_... is defeated! 
+[BattleLog] [5:21] unit_t1_... grants unit_dus... +3 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=3 targets=1
+[BattleLog] [5:22] └─ unit_dus... summons New Unit! 
+[BattleLog] [5:23] Dust Elite spawned a Dust unit in the player inventory. 
+[BattleLog] [5:24] Protector deals 2 dmg to Dust Overlord (T3) 
+[BattleLog] [5:25] Protector attacks unit_dus... for 2 damage (basic_attack, on_attack) (HP: 5→3)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t3_1779160596_116_62950"] source: unit_t1_c_1779160693_125_80690 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [5:26] Squire deals 3 dmg to Dust Overlord (T3) 
+[BattleLog] [5:27] Squire attacks unit_dus... for 3 damage (basic_attack, on_attack) (HP: 3→0)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t3_1779160596_116_62950"] source: unit_t1_b_1779160690_124_30956 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[BattleLog] [5:28] └─ unit_dus... is defeated! 
+[BattleLog] [5:29] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
+[RewardDebug] Victory rewards pending. Special: true
+[RewardElite] populate called
+DEBUG_INPUT: GachaBallView Pressed. UUID: trinket_polished_plate_1779160706_129_95508
+DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_polished_plate_1779160706_129_95508
+DEBUG_GIR: DRAG_START intercepted for TRINKET
+[SaveManager] Run saved successfully (Day 7)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed

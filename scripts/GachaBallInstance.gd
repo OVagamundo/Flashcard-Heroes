@@ -11,6 +11,7 @@ var ball_uuid: String
 var origin_uuid: String = "" # UUID of the permanent instance this battle copy was created from.
 
 # --- State Properties ---
+var level: int = 1
 var current_hp: int
 var current_pwr: int
 
@@ -39,6 +40,7 @@ func initialize(definition: GachaBallDefinition) -> void:
 
 	self.definition_id = definition.id
 	self.ball_uuid = UUIDUtils.generate_uuid(definition.id)
+	self.level = definition.level if "level" in definition else 1
 	self.current_hp = definition.base_hp
 	self.current_pwr = definition.base_pwr
 	self.components.clear()
@@ -68,6 +70,7 @@ func create_battle_copy(all_instances_db: Dictionary = {}) -> GachaBallInstance:
 	copy.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
 	copy.origin_uuid = self.ball_uuid # Link back to the original
 	copy.definition_id = self.definition_id
+	copy.level = self.level
 
 	# Copy equipment state (needed for effective stat calculation)
 	copy.equipped_on_uuid = self.equipped_on_uuid
@@ -389,16 +392,15 @@ func get_attribute(attribute_name: StringName, all_instances_db: Dictionary = {}
 			if is_instance_valid(def) and "category" in def:
 				value = def.category
 		&"level":
-			if is_instance_valid(def) and "level" in def:
-				value = def.level
-			else:
-				value = 1
+			value = self.level
 		&"rarity":
 			value = &"normal"  # Overridden by components (e.g., prismatic_rarity TagComponent)
 
 	for component in get_active_components(all_instances_db):
 		if component is TagComponent:
 			var tag_component := component as TagComponent
+			if attribute_name == &"level" and tag_component.id == &"base_definition_attributes":
+				continue
 			if tag_component.attributes.has(attribute_name):
 				value = tag_component.attributes[attribute_name]
 			elif tag_component.attributes.has(String(attribute_name)):
@@ -410,8 +412,10 @@ func get_gold_value() -> int:
 	var def = get_definition()
 	if not is_instance_valid(def):
 		return 1
-	# Delegate to GameManager's central economy formula
-	return GameManager.get_item_cost(def)
+	# Delegate to GameManager's central economy formula with custom level scaling
+	var base_cost = GameManager.get_item_cost(def)
+	var multiplier: int = int(pow(2, self.level - 1))
+	return base_cost * multiplier
 
 func get_stat_breakdown(all_instances_db: Dictionary = {}) -> Dictionary:
 	return {
@@ -878,6 +882,7 @@ func to_save_dict() -> Dictionary:
 		"definition_id": String(definition_id),
 		"ball_uuid": ball_uuid,
 		"origin_uuid": origin_uuid,
+		"level": level,
 		"current_hp": current_hp,
 		"current_pwr": current_pwr,
 		"location_container_tag": String(location_container_tag),
@@ -895,6 +900,7 @@ func from_save_dict(data: Dictionary) -> void:
 	definition_id = StringName(data.get("definition_id", ""))
 	ball_uuid = data.get("ball_uuid", "")
 	origin_uuid = data.get("origin_uuid", "")
+	level = int(data.get("level", 1))
 	current_hp = data.get("current_hp", 0)
 	current_pwr = data.get("current_pwr", 0)
 	location_container_tag = StringName(data.get("location_container_tag", ""))

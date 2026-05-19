@@ -99,4 +99,14 @@ const SOUNDS: Dictionary = {
 }
 
 static func get_stream(sound_id: String) -> AudioStream:
-	return SOUNDS.get(sound_id)
+	if SOUNDS.has(sound_id):
+		return SOUNDS.get(sound_id)
+	
+	# Dynamic lookup for pronunciation SFX
+	if sound_id.begins_with("pronunciation_"):
+		var romaji = sound_id.trim_prefix("pronunciation_")
+		var path = "res://assets/audio/sfx/pronunciation/" + romaji + ".mp3"
+		if ResourceLoader.exists(path):
+			return load(path)
+			
+	return null

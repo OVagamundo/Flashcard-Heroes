@@ -19,7 +19,8 @@ enum Type {
 	GUARDIAN_INTERCEPT, # Guardian Sentinel: leaps to ally's position to intercept lethal damage
 	KAMIKAZE_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
 	TRANSFORM, # Mimic: hop and vanish
-	GOLD_GAIN # Payload: { "amount": int }
+	GOLD_GAIN, # Payload: { "amount": int }
+	ITEM_TRANSFER # Standard Bearer: item transfer on death
 }
 
 var type: Type
