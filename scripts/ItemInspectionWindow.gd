@@ -14,12 +14,18 @@ const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
+var _inspected_item_uuid: String
 var _long_press_timer: Timer
 var _last_meta_at_pointer = null
 var _locked_meta = null
 var _last_child_window_id: int = -1
 
 func _ready() -> void:
+	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
+	SignalBus.unit_inventory_changed.connect(_on_inventory_changed)
+	SignalBus.run_data_changed.connect(_on_inventory_changed)
+	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
+
 	description_label.meta_clicked.connect(_on_description_meta_clicked)
 	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
 	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
@@ -36,6 +42,16 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_STOP
 	# Configure child controls to allow bubbling so the root can prune children on generic clicks
 	_configure_mouse_filters()
+
+func _exit_tree() -> void:
+	if SignalBus.is_connected("battle_inventory_changed", _on_inventory_changed):
+		SignalBus.battle_inventory_changed.disconnect(_on_inventory_changed)
+	if SignalBus.is_connected("unit_inventory_changed", _on_inventory_changed):
+		SignalBus.unit_inventory_changed.disconnect(_on_inventory_changed)
+	if SignalBus.is_connected("run_data_changed", _on_inventory_changed):
+		SignalBus.run_data_changed.disconnect(_on_inventory_changed)
+	if SignalBus.is_connected("unit_stat_changed", _on_unit_stat_changed):
+		SignalBus.unit_stat_changed.disconnect(_on_unit_stat_changed)
 
 ## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
 func _configure_mouse_filters() -> void:
@@ -85,7 +101,10 @@ func populate(context: Dictionary) -> void:
 		WindowManager.request_close_inspection_window(self , &"INVALID_DEFINITION")
 		return
 
+	_inspected_item_uuid = _instance.ball_uuid
+	_update_description_and_stats(item_def)
 
+func _update_description_and_stats(item_def: Resource) -> void:
 	var name_key: String
 	if item_def is GachaBallDefinition:
 		name_key = item_def.display_name_key
@@ -128,8 +147,12 @@ func populate(context: Dictionary) -> void:
 				effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
 			elif item_def.bonus_hp > 0:
 				effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
-			elif item_def.bonus_pwr > 0:
-				effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
+			elif item_def.bonus_pwr > 0 or (is_instance_valid(_instance) and _instance.definition_id == &"item_t2_d"):
+				var display_pwr = item_def.bonus_pwr
+				if is_instance_valid(_instance) and _instance.definition_id == &"item_t2_d":
+					display_pwr += _instance.current_pwr
+				if display_pwr > 0:
+					effect_desc = tr("item.effect.pwr").replace("(PWR)", str(display_pwr))
 		
 		# Build abilities section: list all abilities with name and localized description
 		var abilities_block := ""
@@ -143,6 +166,10 @@ func populate(context: Dictionary) -> void:
 			if is_instance_valid(_instance):
 				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
+				if ability.id == &"ability_echoing_orb_scale":
+					var current_bonus = _instance.current_pwr
+					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
+					ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			
 			if not ability_name.is_empty() or not ability_desc.is_empty():
 				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
@@ -178,6 +205,25 @@ func populate(context: Dictionary) -> void:
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
+
+func _on_inventory_changed() -> void:
+	if not is_instance_valid(self):
+		return
+	var all_instances: Dictionary = _get_all_instances_db()
+	var current_instance: GachaBallInstance = all_instances.get(_inspected_item_uuid)
+	if not is_instance_valid(current_instance):
+		WindowManager.request_close_inspection_window(self, &"INSTANCE_MISSING_AFTER_INVENTORY_CHANGE")
+		return
+	
+	_instance = current_instance
+	var item_def = _instance.get_definition()
+	if is_instance_valid(item_def):
+		_update_description_and_stats(item_def)
+
+func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
+	if is_instance_valid(_instance):
+		if unit_uuid == _instance.equipped_on_uuid or unit_uuid == _inspected_item_uuid:
+			_on_inventory_changed()
 
 func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly

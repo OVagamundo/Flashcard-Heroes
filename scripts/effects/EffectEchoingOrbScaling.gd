@@ -13,12 +13,13 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_instance_valid(source_item):
 		return EffectResult.empty() if is_simulation else null
 
+	var source_is_player = _is_player_item(source_item, battle_manager)
+
 	for uuid in all_instances:
-		if uuid == source_uuid: 
-			continue
 		var inst = all_instances[uuid]
 		if inst.definition_id == &"item_t2_d": 
-			copy_count += 1
+			if _is_player_item(inst, battle_manager) == source_is_player:
+				copy_count += 1
 	
 	var bonus_pwr = copy_count * 2
 	var status_key = StringName("echoing_orb_scaling_" + source_uuid)
@@ -74,3 +75,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return result
 		
 	return item_delta
+
+func _is_player_item(inst: GachaBallInstance, battle_manager: Node) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	if not inst.equipped_on_uuid.is_empty():
+		var holder = battle_manager.get_instance_by_uuid(inst.equipped_on_uuid)
+		if is_instance_valid(holder):
+			return battle_manager._is_player_unit(holder) or battle_manager._is_player_owned(holder)
+	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)

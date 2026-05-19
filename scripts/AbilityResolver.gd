@@ -437,17 +437,27 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		if ability.id.contains("counter"):
 			effect_context["is_counter"] = true
 		
-		var effect_request = EffectRequest.new(
-			source_uuid,
-			ability.id,
-			effect,
-			resolved_targets,
-			effect_context,
-			ability.priority # Pass priority from ability definition
-		)
-		
-		# Enqueue the request
-		battle_manager.enqueue_effect_request(effect_request)
+		if ability.trigger == &"on_board_changed":
+			# ALWAYS execute passive stat scaling instantly and synchronously
+			# to ensure real-time mathematical correctness in all combat states.
+			if is_instance_valid(effect):
+				var sim_ctx = effect_context.duplicate(true)
+				var is_sim = context.get("is_simulation", false) or (battle_manager.get_current_phase() == BattleManager.Phases.COMBAT)
+				sim_ctx["is_simulation"] = is_sim
+				sim_ctx["ability_id"] = ability.id
+				effect.execute(source_uuid, resolved_targets, battle_manager, sim_ctx)
+		else:
+			var effect_request = EffectRequest.new(
+				source_uuid,
+				ability.id,
+				effect,
+				resolved_targets,
+				effect_context,
+				ability.priority # Pass priority from ability definition
+			)
+			
+			# Enqueue the request
+			battle_manager.enqueue_effect_request(effect_request)
 
 	# If ability successfully activated (found targets) AND it replaces basic attack, set flag
 	# This ensures we fallback to basic attack if the special ability fails to find a target (e.g. empty mirror slot)

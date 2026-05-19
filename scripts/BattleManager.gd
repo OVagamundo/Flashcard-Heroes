@@ -260,7 +260,7 @@ func bm_add_instance(instance: GachaBallInstance, container_name: StringName, in
 	var result := _state.bm_add_instance(instance, container_name, index)
 	if result:
 		if OS.is_debug_build():
-			_state.validate_state_consistency()
+			_bm_validate_state_consistency()
 		_emit_battle_inventory_changed()
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	return result
@@ -274,7 +274,7 @@ func bm_remove_instance(uuid: String) -> bool:
 		if not result.unit_changed_uuid.is_empty():
 			SignalBus.emit_signal("unit_inventory_changed", result.unit_changed_uuid)
 		if OS.is_debug_build():
-			_state.validate_state_consistency()
+			_bm_validate_state_consistency()
 		_emit_battle_inventory_changed()
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	return result.success
@@ -322,7 +322,7 @@ func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdent
 	
 	return result.success
 
-func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
+func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
 	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
 	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
 	
@@ -331,11 +331,17 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -
 	if result.success:
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
-		for uuid in result.changed_unit_uuids:
-			SignalBus.emit_signal("unit_inventory_changed", uuid)
-		if result.inventory_changed:
-			_emit_battle_inventory_changed()
-			SignalBus.emit_signal("inventory_ui_refresh_requested")
+		if not silent:
+			for uuid in result.changed_unit_uuids:
+				SignalBus.emit_signal("unit_inventory_changed", uuid)
+			if result.inventory_changed:
+				_emit_battle_inventory_changed()
+				SignalBus.emit_signal("inventory_ui_refresh_requested")
+		else:
+			# Even when silent (e.g. during combat simulation), we must trigger the passive scaling
+			# updates to guarantee holder stats are dynamically updated instantly.
+			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+			_pending_inventory_refresh = true
 	
 	return result.success
 
@@ -412,7 +418,8 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 # ------------------------------------------------------------------
 
 func _bm_validate_state_consistency() -> bool:
-	return _state.validate_state_consistency()
+	var deferred_erasures: Array = get_meta("_deferred_enemy_erasures", [])
+	return _state.validate_state_consistency(deferred_erasures)
 
 func get_gacha_tokens() -> int:
 	return _gacha_tokens
@@ -633,6 +640,10 @@ func _resolve_combat_phase() -> void:
 	_resolve_animator()
 	_populate_actor_queue()
 	
+	# CRITICAL: Enforce global "Puppet Mode" block before capturing snapshot and running simulation.
+	# This ensures all mid-combat state mutations (e.g. equips, buffs, damage) do not leak/redraw prematurely.
+	_is_processing_effect = true
+	
 	# 1. Capture State BEFORE Simulation
 	_lock_traits() # Snapshot traits for consistent combat behavior (ignoring mid-battle deaths)
 	_turn_metadata.clear() # Reset per-turn metadata (e.g. first killed unit, resurrection flags)
@@ -645,12 +656,11 @@ func _resolve_combat_phase() -> void:
 	# 3. Clean up deferred enemy instances AFTER all reactions have resolved
 	_flush_deferred_enemy_erasures()
 	
-	_is_processing_effect = false
-	
 	# 4. Send Log to Animator (The VCR Playback)
 	if not turn_log.is_empty():
 		_animator.play_turn_sequence(start_snapshot, turn_log)
 	else:
+		_is_processing_effect = false
 		_on_turn_animation_finished()
 
 func _trigger_pre_combat_abilities() -> void:

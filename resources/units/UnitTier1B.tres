@@ -13,6 +13,7 @@ description_key = "unit_t1_b.desc"
 icon = ExtResource("2_icon")
 tags = Array[StringName]([&"SOUL_FIRE"])
 tier = 1
+level = 1
 cost = 1
 category = &"UNIT"
 

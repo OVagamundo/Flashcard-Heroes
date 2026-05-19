@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2E_Mimic.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitE.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"unit_t3_mimic"
+display_name_key = "unit_t3_mimic.name"
+description_key = "unit_t3_mimic.desc"
+icon = ExtResource("3_icon")
+tags = Array[StringName]([&"SOUL_WATER", &"SOUL_WATER"])
+is_hero = false
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 6
+base_pwr = 4
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("2_ability")])

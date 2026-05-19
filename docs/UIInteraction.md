@@ -62,7 +62,7 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | **S2** Change of Focus | Click on non-target = move selection |
 | **S3** Selection-Only | Shop/Rewards: any click = change focus |
 | **S4** Re-Selection | Click selected item = lock inspection window |
-| **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) |
+| **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) after a 1-second dwell-time delay (to prevent accidental triggers during quick mouse passes) |
 | **S5a** Touch Peek | On touch devices, long-press temporarily opens inspection; release closes it unless the interaction is promoted by a tap/selection flow |
 | **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
@@ -214,8 +214,11 @@ The inventory drawer movements are synchronized with physical jolts:
 
 ### 5.5 Interactive Overlays
 To streamline interactions in Reward, Shop, and Black Market scenes, the game uses **Interactive Overlays** instead of modal choice windows.
-- **Implementation**: Managed programmatically by `Main.gd`.
-- **Mode 1: Unified Confirm**: A single warm-white zone (`_confirm_drop_zone`) used for Rewards ("Get") and Shops ("Buy").
+- **Implementation**: Managed programmatically by `Main.gd` and synchronized with inventory window states.
+- **Mode 1: Get or Sell Drop Zones**: Both standard Reward and Elite Reward scenes implement a split action layout consisting of a **Collect ("Get")** zone and a **Sell** zone.
+  - **Standard Rewards**: Items can be collected or sold for their base tier value.
+  - **Elite Rewards**: Selling grants a flat premium of **10 Gold**.
+  - **Auto-Collection**: Trying to leave the scene with rewards still on board automatically triggers sequential collection of all remaining items to prevent player loss.
 - **Mode 2: Split Action Zones**: Two side-by-side zones used for the Black Market ("Transform" / "Remove").
 - **Native Drag-Drop**: All overlays use `DropZone.gd` to integrate with Godot's built-in drag-and-drop system. This prevents "snap-back" glitches by reporting successful drops to the engine.
 - **VFX Proxy Pipeline**: To ensure fluid visuals during gold-spending animations, a static "proxy" view of the gachaball is spawned at the drop point until the financial transaction completes and the final movement animation begins.

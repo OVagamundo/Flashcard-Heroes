@@ -33,25 +33,34 @@ func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
 		push_warning("AudioManager: Sound not found: " + sound_id)
 		return
 	
-	# Debug: Log what we're playing
-	
 	# Get next available player from pool
 	var player = _sfx_pool[_current_sfx_index]
 	_current_sfx_index = (_current_sfx_index + 1) % POOL_SIZE
 	
-	# Vary pitch slightly for realism if default pitch is used
-	if is_equal_approx(pitch_scale, 1.0):
+	# Vocal pronunciations should have a consistent pitch and a volume boost
+	var is_vocal = sound_id.begins_with("pronunciation_")
+	
+	# Vary pitch slightly for realism if default pitch is used (except for vocal pronunciation)
+	if is_equal_approx(pitch_scale, 1.0) and not is_vocal:
 		pitch_scale = randf_range(0.95, 1.05)
 	
 	player.stream = stream
 	player.pitch_scale = pitch_scale
-	player.volume_db = 0.0 # Full volume
+	
+	if is_vocal:
+		player.volume_db = 6.0 # Boost vocal pronunciation to make it stand out
+	else:
+		player.volume_db = 0.0 # Full volume
+		
 	player.play()
 
 ## Play background music with crossfade and looping
-func play_music(stream: AudioStream, crossfade_duration: float = 0.1) -> void:
+func play_music(stream: AudioStream, crossfade_duration: float = 0.1, volume_db: float = 0.0) -> void:
 	if _music_player.stream == stream and _music_player.playing:
-		# Same track already playing, skipping
+		# If already playing, just update volume if it differs
+		if not is_equal_approx(_music_player.volume_db, volume_db):
+			var tween = create_tween()
+			tween.tween_property(_music_player, "volume_db", volume_db, 0.2)
 		return
 	
 	# Enable looping for OGG Vorbis streams
@@ -65,12 +74,13 @@ func play_music(stream: AudioStream, crossfade_duration: float = 0.1) -> void:
 		tween.tween_callback(func():
 			_music_player.stop()
 			_music_player.stream = stream
-			_music_player.volume_db = 0.0 # Reset volume
+			_music_player.volume_db = volume_db
 			_music_player.play()
 
 		)
 	else:
 		_music_player.stream = stream
+		_music_player.volume_db = volume_db
 		_music_player.play()
 
 

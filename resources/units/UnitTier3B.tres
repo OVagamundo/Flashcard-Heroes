@@ -11,13 +11,13 @@ display_name_key = "unit_t3_b.name"
 description_key = "unit_t3_b.desc"
 icon = ExtResource("2_icon")
 tier = 3
-level = 3
+level = 1
 cost = 4
 category = &"UNIT"
 
-base_hp = 6
-base_pwr = 4
+base_hp = 5
+base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
-tags = Array[StringName]([&"intercept_lethal", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH"])
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH"])
 ability_definitions = Array[Resource]([ExtResource("3_ability")])

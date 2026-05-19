@@ -101,4 +101,28 @@ Apply Color Hierarchy Rule: Assign the Primary, Secondary, and Blended colors to
 Execute Pixel Art: Draw the unit portrait adhering to all palette, shading, and outline specifications.
 Assemble the Card: Place the final portrait onto a card background that matches its Tier and color recipe. Add the two numerical stat values according to the UI rules.
 
+## 8. Universal Art Style Swapping
+The game implements a game-wide, runtime **Universal Art Style Swapping** framework managed by the `ArtStyleManager` autoload service. This allows players to toggle seamlessly between themed asset sets (e.g., "Realistic" and "PixelArt") directly from the Options menu.
+
+### 8.1 Path-Based Theme Resolution
+All visual style assets are structured under corresponding folders in the global assets directory:
+- `res://assets/Realistic/` (Default and fallback style)
+- `res://assets/PixelArt/`
+
+The `ArtStyleManager` dynamically translates file paths by swapping the style directory part (`parts[3]` of standard paths matching `res://assets/[StyleName]/...`). 
+
+### 8.2 Fallback Strategy
+If an asset is not yet implemented or missing in the currently selected style (e.g., `PixelArt`), the resolver automatically falls back to the corresponding asset under the `Realistic` directory. This ensures the game never crashes or displays missing textures during development or asset curation.
+
+### 8.3 Tree-Wide Reflection Swapping
+When the art style changes or new UI elements are added to the scene tree:
+1. The manager recursively traverses the active `SceneTree` (and connects to `node_added` signals).
+2. It queries each node's property list via reflection to identify properties holding a `Texture2D` or `StyleBoxTexture`.
+3. It replaces the existing texture with its themed counterpart automatically, ensuring a seamless visual transition without manual script-level updates.
+
+### 8.4 State Persistence
+The player's selected art style is saved to `user://art_style_settings.save` and loaded at the earliest possible stage of application boot.
+
+---
+
 The great inspiration for the pixel art and general aesthetic is the game "Cross Blitz" including visual effects and shaders.

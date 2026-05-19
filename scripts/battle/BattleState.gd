@@ -362,7 +362,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 
 ## Validate state consistency (Golden Rule check)
 ## Returns true if state is valid, false otherwise
-func validate_state_consistency() -> bool:
+func validate_state_consistency(deferred_erasures: Array = []) -> bool:
 	# Pass 1: scan containers, detect duplicates and equipped-item leaks
 	var occurrences: Dictionary = {}
 	for cname in _containers.keys():
@@ -390,8 +390,8 @@ func validate_state_consistency() -> bool:
 		var inst: GachaBallInstance = _battle_instances[u]
 		if not is_instance_valid(inst):
 			continue
-		# Skip dead units - they may be pending cleanup and have no container temporarily
-		if _dead_this_turn.has(u):
+		# Skip dead units and deferred erasures - they may be pending cleanup and have no container temporarily
+		if _dead_this_turn.has(u) or deferred_erasures.has(u):
 			continue
 		var loc := inst.get_location()
 		if not is_instance_valid(loc):

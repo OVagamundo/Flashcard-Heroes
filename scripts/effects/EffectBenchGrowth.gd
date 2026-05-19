@@ -21,14 +21,26 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 		
 	# Apply Stats
-	var hp_amount: int = 3
-	var pwr_amount: int = 3
+	var scale_amount = 3 if source_unit.level == 1 else (5 if source_unit.level == 2 else 7)
+	var hp_amount: int = scale_amount
+	var pwr_amount: int = scale_amount
 	
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
 	
-	var new_hp = battle_manager.apply_stat_delta(source_unit, "hp", hp_amount)
-	var new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", pwr_amount)
+	var hp_res = battle_manager.apply_stat_delta(source_unit, "hp", hp_amount)
+	var new_hp = old_hp + hp_amount
+	if hp_res is Dictionary:
+		new_hp = hp_res.get("new_hp", old_hp + hp_amount)
+	elif hp_res != null:
+		new_hp = int(hp_res)
+
+	var pwr_res = battle_manager.apply_stat_delta(source_unit, "pwr", pwr_amount)
+	var new_pwr = old_pwr + pwr_amount
+	if pwr_res is Dictionary:
+		new_pwr = pwr_res.get("new_pwr", old_pwr + pwr_amount)
+	elif pwr_res != null:
+		new_pwr = int(pwr_res)
 	
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"bench_growth")

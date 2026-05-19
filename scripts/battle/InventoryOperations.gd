@@ -510,6 +510,7 @@ static func move_instance_to_discard(state: BattleState, instance: GachaBallInst
 				if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
 					# Clear the parent's slot mapping if it points to this instance
 					if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:
+						parent.unequip_item_bonus(instance)
 						parent.equipped_item_uuids[loc.index] = ""
 						result.add_unit_change(parent.ball_uuid)
 			# Clear equipped linkage on the item itself

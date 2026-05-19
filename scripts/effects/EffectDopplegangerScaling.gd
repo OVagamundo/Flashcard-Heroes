@@ -8,18 +8,22 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
 	
+	var source = battle_manager.get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(source):
+		return EffectResult.empty() if is_simulation else null
+		
+	var source_is_player = _is_player_unit_team(source, battle_manager)
+	
 	for uuid in all_instances:
 		if uuid == source_uuid: 
 			continue
 		var inst = all_instances[uuid]
 		if inst.definition_id == &"unit_t3_i": 
-			copy_count += 1
+			if _is_player_unit_team(inst, battle_manager) == source_is_player:
+				copy_count += 1
 	
-	var bonus_pwr = copy_count * 3
-	var source = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source):
-		return EffectResult.empty() if is_simulation else null
-		
+	var scale_amount = 3 if source.level == 1 else (4 if source.level == 2 else 5)
+	var bonus_pwr = copy_count * scale_amount
 	var status_key = &"doppleganger_scaling"
 	var last_scaling = source.get_status_effect_amount(status_key)
 	var delta = bonus_pwr - last_scaling
@@ -45,3 +49,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return result
 		
 	return delta
+
+func _is_player_unit_team(inst: GachaBallInstance, battle_manager: Node) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)

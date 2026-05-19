@@ -46,6 +46,7 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	var final_pwr: int
 	
 	if is_level_up:
+		merged_instance.level = instance_a.level + 1
 		# LEVELING LOGIC: Keeps base stats + Sum(Extra Stats) + 1
 		# Inherent_Extra = Total_Inherent - ParentA_Base - ParentA_LevelBonus - ParentB_Base - ParentB_LevelBonus
 		var base_a = instance_a.get_definition_base_hp()
@@ -60,6 +61,7 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		var pwr_base_a = instance_a.get_definition_base_pwr()
 		final_pwr = total_pwr - pwr_base_a - level_bonus_a + 1
 	else:
+		merged_instance.level = 1
 		# TIER EVOLUTION LOGIC: Additive (A + B)
 		final_hp = total_hp
 		final_pwr = total_pwr
@@ -120,6 +122,20 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 	var def_b = instance_b.get_definition()
 	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
 		return null
+
+	# Dynamic Evolutionary Level-Up check (Unit self-merges)
+	if def_a.category == &"UNIT" and instance_a.definition_id == instance_b.definition_id:
+		if instance_a.level == instance_b.level and instance_a.level < 3:
+			var virtual_recipe = MergeRecipe.new()
+			virtual_recipe.id = StringName("level_up_" + String(instance_a.definition_id))
+			virtual_recipe.ingredient_a_id = instance_a.definition_id
+			virtual_recipe.ingredient_b_id = instance_b.definition_id
+			virtual_recipe.result_id = instance_a.definition_id
+			virtual_recipe.is_self_merge = true
+			virtual_recipe.merge_type = &"UNIT"
+			return virtual_recipe
+		else:
+			return null # Same unit ID but cannot merge/level up
 
 	for recipe_key in Database.recipes:
 		var recipe: MergeRecipe = Database.recipes[recipe_key]

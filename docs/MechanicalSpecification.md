@@ -129,6 +129,7 @@ Each turn:
 
    * Flashcard Mini-Game
    * Start-of-turn abilities resolve
+     * **First-Turn Suppression**: To ensure a stable opening state and allow players to establish their lineup, all `on_turn_start` ability and trait triggers are completely suppressed during the very first turn of a battle. They resume normal functionality starting at the beginning of the second turn.
 
 2. **Management Phase** (Player decision phase)
 
@@ -182,6 +183,7 @@ During Management Phase, the player may:
 6. **Equipping Rules**
    * Drag item from **Bench/Inventory** to a unit.
    * If the unit already has an item, the existing item is **discarded** (moved to the discard pile).
+   * **Bench Item Merging**: Dragging an item onto another item in the **PlayerBench** (or an inventory container) triggers recipe detection via `MergeManager`. If a valid recipe exists, a `ChoiceWindow` preview displays the predicted merge outcome for player confirmation. State transitions are atomic; ingredients are only consumed upon successful confirmation.
 
 
 7. **Merge Units**
@@ -487,8 +489,9 @@ Tier 3:
 After victory, the player enters the Reward scene:
 - **Prize Lineup**: 5 random GachaBalls (Units/Items/Trinkets) are displayed.
 - **Service Area**: 
-    - **Collect**: Free of charge. Item moves to Run Inventory.
-    - **Sell**: Item is discarded in exchange for Gold (based on tier value).
+    - **Get or Sell Drop Zones**: The legacy buttons are replaced with side-by-side drop zones for Collect ("Get") and Sell. Interaction overlays synchronize automatically with inventory drawer visibility to hide instructions when the inventory window is open.
+    - **Collect**: Free of charge. Moving the item/trinket to this zone adds it to the appropriate Run Inventory slot.
+    - **Sell**: Dragging/clicking the item/trinket to this zone discards it in exchange for Gold. Standard items/units sell for their base tier value, while Elite rewards grant a flat **10 Gold**.
 - **Auto-Collection**: If the player attempts to leave the scene with uncollected items, the system automatically triggers sequential collection for all remaining prizes to prevent accidental reward loss.
 - **Machine Interaction**: The Gacha Machines remain active for spending tokens banked during the final battle turn. Any remaining tokens are lost upon leaving this scene.
 
