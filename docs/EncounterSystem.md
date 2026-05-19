@@ -135,3 +135,20 @@ When generating an elite encounter, the system accepts an `elite_encounter_histo
   - *1 Encounter*: 33 Weight
   - *2 Encounters*: 20 Weight
 - **Impact**: This significantly reduces the probability of seeing the same elite back-to-back, ensuring a balanced frequency between Tier 2 and Tier 3 Dust Elites.
+
+## Battlefield Slot Generation & Budgeting
+
+Starting at day 1, slots with special effects can be generated on player and enemy lineups (replacing standard slots):
+* **Slot Types & Cost**:
+  * **Burn Slot**: Costs **3 Gold** of the encounter budget.
+  * **Lightning Slot**: Costs **2 Gold** of the encounter budget.
+* **Generation Probability**: The chance to spawn slots increases based on the run day:
+  * **Day 1-10**: 10% spawn chance.
+  * **Day 11-20**: 40% spawn chance.
+  * **Day 21-40**: 75% spawn chance.
+  * **Day 41+**: 100% spawn chance.
+* **Limits**: There can never be more than **3** Burn slots and **3** Lightning slots on either team's lineup.
+* **Budget Balancing**: 
+  * Player slot effects deduct directly from the player's generation budget (ensuring at least 1 Gold remains for units).
+  * Enemy slot effects increase the enemy's generation budget.
+  * The net change (`enemy_bonus - player_cost`) is applied to the final enemy lineup generation budget to maintain combat equilibrium.

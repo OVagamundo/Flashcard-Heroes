@@ -44,3 +44,10 @@ class_name EncounterDefinition extends Resource
 
 ## Enemy trinket IDs for this encounter
 @export var enemy_trinket_ids: Array[StringName] = []
+
+## Slot effects for player lineup slots (size 5, entries can be &"burn", &"lightning", etc., or empty &"")
+@export var player_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
+
+## Slot effects for enemy lineup slots (size 5, entries can be &"burn", &"lightning", etc., or empty &"")
+@export var enemy_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
+

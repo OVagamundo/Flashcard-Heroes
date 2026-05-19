@@ -181,6 +181,16 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
+[node name="SpacerPronunciation" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="PronunciationCheckbox" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
 [node name="Spacer2" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2

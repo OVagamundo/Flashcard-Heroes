@@ -4,12 +4,17 @@ extends Node
 ## Handles playing SFX and Music using a pool of AudioStreamPlayers.
 
 const POOL_SIZE = 16
+const AUDIO_SETTINGS_PATH := "user://audio_settings.save"
 
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _music_player: AudioStreamPlayer
 var _current_sfx_index: int = 0
+var pronunciation_enabled: bool = true
 
 func _ready() -> void:
+	# Load settings first
+	_load_audio_settings()
+	
 	# Create pool of SFX players
 	for i in range(POOL_SIZE):
 		var player = AudioStreamPlayer.new()
@@ -28,6 +33,10 @@ func _ready() -> void:
 
 ## Play a sound effect by ID
 func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
+	var is_vocal = sound_id.begins_with("pronunciation_")
+	if is_vocal and not pronunciation_enabled:
+		return
+		
 	var stream = SoundRegistry.get_stream(sound_id)
 	if not stream:
 		push_warning("AudioManager: Sound not found: " + sound_id)
@@ -36,9 +45,6 @@ func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
 	# Get next available player from pool
 	var player = _sfx_pool[_current_sfx_index]
 	_current_sfx_index = (_current_sfx_index + 1) % POOL_SIZE
-	
-	# Vocal pronunciations should have a consistent pitch and a volume boost
-	var is_vocal = sound_id.begins_with("pronunciation_")
 	
 	# Vary pitch slightly for realism if default pitch is used (except for vocal pronunciation)
 	if is_equal_approx(pitch_scale, 1.0) and not is_vocal:
@@ -109,3 +115,28 @@ func _prewarm_bgm_streams() -> void:
 		if is_instance_valid(stream):
 			# Touch the stream's length to force decode/load
 			var _length = stream.get_length()
+
+func _load_audio_settings() -> void:
+	if not FileAccess.file_exists(AUDIO_SETTINGS_PATH):
+		return
+		
+	var file := FileAccess.open(AUDIO_SETTINGS_PATH, FileAccess.READ)
+	if file == null:
+		return
+		
+	var data: Variant = file.get_var()
+	file.close()
+	
+	if data is Dictionary:
+		var master_idx = AudioServer.get_bus_index("Master")
+		var music_idx = AudioServer.get_bus_index("Music")
+		var sfx_idx = AudioServer.get_bus_index("SFX")
+		
+		if master_idx >= 0 and data.has("master_vol"):
+			AudioServer.set_bus_volume_db(master_idx, linear_to_db(data["master_vol"]))
+		if music_idx >= 0 and data.has("music_vol"):
+			AudioServer.set_bus_volume_db(music_idx, linear_to_db(data["music_vol"]))
+		if sfx_idx >= 0 and data.has("sfx_vol"):
+			AudioServer.set_bus_volume_db(sfx_idx, linear_to_db(data["sfx_vol"]))
+		if data.has("pronunciation_enabled"):
+			pronunciation_enabled = data["pronunciation_enabled"]

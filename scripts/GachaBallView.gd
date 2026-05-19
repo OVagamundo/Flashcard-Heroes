@@ -303,9 +303,15 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
-	# Sync spikes to dynamic status effects for icon display
-	if _visual_spikes_stacks > 0:
-		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
+	
+	# Clear and synchronize all status effects from visual_data
+	_visual_status_effects.clear()
+	var raw_effects = visual_data.get("status_effects", {})
+	for status_id in raw_effects:
+		_visual_status_effects[StringName(status_id)] = int(raw_effects[status_id])
+	# Always sync spikes explicitly to match _visual_spikes_stacks
+	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
+	
 	_visual_equipped_items = visual_data.get("equipped_items", []) # Array of {uuid, icon, definition_id}
 	_visual_equipped_item_icon = visual_data.get("equipped_item_icon")
 	
@@ -467,8 +473,15 @@ func update_visuals(visual_data: Dictionary) -> void:
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
-	# Sync spikes to dynamic status effects for icon display
+	
+	# Clear and synchronize all status effects from visual_data
+	_visual_status_effects.clear()
+	var raw_effects = visual_data.get("status_effects", {})
+	for status_id in raw_effects:
+		_visual_status_effects[StringName(status_id)] = int(raw_effects[status_id])
+	# Always sync spikes explicitly to match _visual_spikes_stacks
 	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
+	
 	_visual_equipped_items = visual_data.get("equipped_items", _visual_equipped_items)
 	_visual_equipped_item_icon = visual_data.get("equipped_item_icon", _visual_equipped_item_icon)
 	
@@ -958,23 +971,20 @@ func set_visual_state(snapshot: Dictionary) -> void:
 		_visual_armor_stacks = int(snapshot["armor_stacks"])
 	if snapshot.has("spikes_stacks") and snapshot["spikes_stacks"] != null: # Added for spikes
 		_visual_spikes_stacks = int(snapshot["spikes_stacks"])
-		# Sync to _visual_status_effects for dynamic icon display
-		_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	
 	# Restore generic status effects (armor, etc.)
+	_visual_status_effects.clear()
 	if snapshot.has("status_effects"):
 		var effects: Dictionary = snapshot["status_effects"]
 		for status_id in effects:
 			# Skip burn and armor - handled by dedicated systems
 			if status_id == &"burn" or status_id == &"armor":
 				continue
-			_visual_status_effects[status_id] = int(effects[status_id])
-			# Restored generic status effects
-		_update_dynamic_status_icons()
-	
-	# Also update dynamic icons if spikes was set but status_effects wasn't in snapshot
-	if _visual_spikes_stacks > 0:
-		_update_dynamic_status_icons()
+			_visual_status_effects[StringName(status_id)] = int(effects[status_id])
+			
+	# Always sync spikes explicitly to match _visual_spikes_stacks
+	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
+	_update_dynamic_status_icons()
 	
 	_update_stats()
 
@@ -1080,7 +1090,13 @@ func _update_dynamic_status_icons(animate: bool = true) -> void:
 	if not is_instance_valid(stats_container):
 		return
 	
-	# Update or create icons for each status effect
+	# Proactively hide all dynamic status icon nodes to ensure anything no longer active is hidden
+	for status_id in _status_icon_nodes:
+		var node = _status_icon_nodes[status_id]
+		if is_instance_valid(node):
+			node.visible = false
+	
+	# Update or create icons for each active status effect
 	for status_id in _visual_status_effects:
 		var stacks: int = _visual_status_effects[status_id]
 		
@@ -1114,15 +1130,6 @@ func _update_dynamic_status_icons(animate: bool = true) -> void:
 						_flash_label(label)
 					else:
 						label.text = str(stacks)
-						# Ensure visibility if setting immediately
-						if _status_icon_nodes.has(status_id):
-							_status_icon_nodes[status_id].visible = true
-		else:
-			# Hide icon (don't destroy - prevents flickering from async queue_free)
-			if _status_icon_nodes.has(status_id):
-				var icon_node = _status_icon_nodes[status_id]
-				if is_instance_valid(icon_node):
-					icon_node.visible = false
 
 ## Create a dynamic status icon for a status effect
 func _create_status_icon(status_id: StringName, parent: Node, animate: bool = true) -> void:

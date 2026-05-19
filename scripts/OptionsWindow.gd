@@ -9,6 +9,7 @@ extends Control
 @onready var title_label: Label = %TitleLabel
 
 @onready var fullscreen_checkbox: CheckBox = %FullscreenCheckbox
+@onready var pronunciation_checkbox: CheckBox = %PronunciationCheckbox
 @onready var master_slider: HSlider = %MasterSlider
 @onready var music_slider: HSlider = %MusicSlider
 @onready var sfx_slider: HSlider = %SFXSlider
@@ -65,6 +66,9 @@ func _init_audio_settings() -> void:
 	if sfx_slider and sfx_idx >= 0:
 		sfx_slider.value = db_to_linear(AudioServer.get_bus_volume_db(sfx_idx))
 		sfx_slider.value_changed.connect(_on_sfx_slider_changed)
+		
+	if pronunciation_checkbox:
+		pronunciation_checkbox.toggled.connect(_on_pronunciation_toggled)
 
 func _on_master_slider_changed(value: float) -> void:
 	var bus_idx = AudioServer.get_bus_index("Master")
@@ -84,17 +88,25 @@ func _on_sfx_slider_changed(value: float) -> void:
 		AudioServer.set_bus_volume_db(bus_idx, linear_to_db(value))
 		_save_audio_settings()
 
+func _on_pronunciation_toggled(enabled: bool) -> void:
+	var manager = get_tree().get_first_node_in_group("audio_manager")
+	if manager:
+		manager.pronunciation_enabled = enabled
+	_save_audio_settings()
+
 func _save_audio_settings() -> void:
 	var master_vol = master_slider.value if is_instance_valid(master_slider) else 1.0
 	var music_vol = music_slider.value if is_instance_valid(music_slider) else 1.0
 	var sfx_vol = sfx_slider.value if is_instance_valid(sfx_slider) else 1.0
+	var pron_enabled = pronunciation_checkbox.button_pressed if is_instance_valid(pronunciation_checkbox) else true
 	
 	var file := FileAccess.open(AUDIO_SETTINGS_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_var({
 			"master_vol": master_vol,
 			"music_vol": music_vol,
-			"sfx_vol": sfx_vol
+			"sfx_vol": sfx_vol,
+			"pronunciation_enabled": pron_enabled
 		})
 		file.close()
 
@@ -120,6 +132,13 @@ func _load_audio_settings() -> void:
 			AudioServer.set_bus_volume_db(music_idx, linear_to_db(data["music_vol"]))
 		if sfx_idx >= 0 and data.has("sfx_vol"):
 			AudioServer.set_bus_volume_db(sfx_idx, linear_to_db(data["sfx_vol"]))
+		if data.has("pronunciation_enabled"):
+			var pron_val = data["pronunciation_enabled"]
+			if pronunciation_checkbox:
+				pronunciation_checkbox.button_pressed = pron_val
+			var manager = get_tree().get_first_node_in_group("audio_manager")
+			if manager:
+				manager.pronunciation_enabled = pron_val
 
 func _populate_language_dropdown() -> void:
 	language_dropdown.clear()
@@ -152,6 +171,8 @@ func _update_labels() -> void:
 	
 	if fullscreen_checkbox:
 		fullscreen_checkbox.text = tr("ui.fullscreen")
+	if pronunciation_checkbox:
+		pronunciation_checkbox.text = tr("options.audio.pronunciation")
 	if has_node("%AudioLabel"):
 		get_node("%AudioLabel").text = tr("ui.audio_settings") if tr("ui.audio_settings") != "ui.audio_settings" else "Audio Settings"
 	

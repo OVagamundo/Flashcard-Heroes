@@ -325,6 +325,8 @@ STATUS_ARMOR,Armor,Armadura
 STATUS_ARMOR_DESC,Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.,Armadura: Absorve uma quantidade de dano igual ao valor de Armadura. Desaparece ao final do turno.
 STATUS_SPIKES,Spikes,Espinhos
 STATUS_SPIKES_DESC,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.,Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação.
+STATUS_STATIC,Static,Estático
+STATUS_STATIC_DESC,Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor.,Qualquer alteração de atributo consome 1 acúmulo de estático e causa 1 de dano. Acúmulos consumidos causam 1 de dano ignorando armadura.
 trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,"Grants +1 HP and +1 PWR to Tier 1 units when drawn.","Concede +1 HP e +1 PWR a unidades Nível 1 ao serem sacadas."
 ability.royal_insignia.name,Royal Blessing,Bênção Real
@@ -516,5 +518,7 @@ unit_t3_l.name,Golden Hermit,Eremita Dourado
 unit_t3_l.desc,"A solitary sage of wealth. Passive: [Wealth Accumulation]","Um sábio solitário da riqueza. Passiva: [Acúmulo de Riqueza]"
 ability.unit_t3_l.name,Wealth Accumulation,Acúmulo de Riqueza
 ability.unit_t3_l.desc,"At the start of each turn, gain +3 HP and +3 PWR for every 5 Gold you have.","No início de cada turno, ganha +3 HP e +3 PWR para cada 5 de Ouro que você possuir."
-
-
+options.audio.master,Master Volume,Volume Geral
+options.audio.music,Music Volume,Volume da Música
+options.audio.sfx,SFX Volume,Volume de Efeitos
+options.audio.pronunciation,Card Pronunciation,Pronúncia de Cartas

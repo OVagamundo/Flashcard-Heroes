@@ -128,8 +128,10 @@ Each turn:
 1. **Start of Turn**
 
    * Flashcard Mini-Game
-   * Start-of-turn abilities resolve
-     * **First-Turn Suppression**: To ensure a stable opening state and allow players to establish their lineup, all `on_turn_start` ability and trait triggers are completely suppressed during the very first turn of a battle. They resume normal functionality starting at the beginning of the second turn.
+   * Status Effect (DOT) Application (Burn damage is applied first; ignores Armor)
+   * Turn-start slot effects resolve (Burn and Lightning slot actions)
+   * Start-of-turn abilities and traits resolve
+     * **First-Turn Suppression**: To ensure a stable opening state and allow players to establish their lineup, all `on_turn_start` triggers (including abilities, traits, and slot effects) are completely suppressed during the very first turn of a battle. They resume normal functionality starting at the beginning of the second turn.
 
 2. **Management Phase** (Player decision phase)
 
@@ -150,6 +152,7 @@ The game supports both Desktop and Mobile interaction models.
 - **Mouse (Desktop)**: Drag-and-Drop, Single-Click Select, Hover-to-Peek.
 - **Touch (Mobile)**: Tap-to-Select, Long-Press-to-Peek (0.32s).
 - **Platform Specifics**: The "Exit Game" button is available on all platforms to close the application. The "Fullscreen" toggle is platform-dependent and hidden on mobile devices.
+- **Audio Options**: Includes volume sliders (Master, Music, SFX) and a toggle for Card Pronunciation. Disabling Card Pronunciation silences native voice audio during the flashcard minigame.
 
 ## 5.2 Drag-and-Drop Priority
 The game automatically determines intent when dropping one entity onto another:
@@ -328,6 +331,13 @@ Reactions are resolved using a **Priority Band** system:
 
 No randomness involved.
 
+## 8.4 Battlefield Slots
+
+Lineup slots can contain battlefield slot abilities, which affect the unit placed on them:
+* **Burn Slot**: Adds 1 stack of Burn to the unit standing on it every turn at the start of the turn (after DOT application). Burn stacks applied or held on units in a Burn slot do not decay.
+* **Lightning Slot**: Applies 1 stack of Static to the unit standing on it every turn at the start of the turn.
+* **Static (Status Effect)**: Stacks like Burn. One stack of Static is consumed whenever the unit suffers any core stat change (HP or PWR, from buffs, healing, or regular damage). Each consumed stack deals 1 damage to the unit, bypassing Armor. Damage dealt by Static itself does not trigger further Static consumption.
+
 ---
 
 # 9. Merge System Rules
@@ -353,7 +363,7 @@ If two identical units of Level N (e.g., Tiger Lv. 1 + Tiger Lv. 1) merge:
 * Damage/Health progress is preserved.
 * Buffs are preserved.
 * Reductions are preserved.
-* Status effects are combined into the new instance.
+* Status effects are combined into the new instance (stacks of Armor, Spikes, Burn, etc., along with dynamic tags from both parent units, are summed and transferred to the result).
 * All equipped items are transferred to the result.
 
 Tier progression follows the evolutionary chain:

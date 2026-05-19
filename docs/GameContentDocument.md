@@ -181,7 +181,29 @@ Traits are active bonuses based on the composition of your team. Each unit contr
 
 ---
 
-## 5. Encounter & Budget Systems
+## 5. Battlefield Slots
+Special slots placed on the battlefield grid that apply persistent or turn-start effects to the units standing on them.
+
+| ID | Name | Trigger | Effect | Cost (Gold) |
+|---|---|---|---|---|
+| `burn` | Burn Slot | `on_turn_start` | Applies 1 stack of Burn to the unit standing on it. Burn stacks on units in this slot do not decay. | 3 |
+| `lightning` | Lightning Slot | `on_turn_start` | Applies 1 stack of Static to the unit standing on it. | 2 |
+
+---
+
+## 6. Status Effects
+Status effects are active modifiers applied to units during combat. They can be applied by unit abilities, traits, items, or battlefield slots.
+
+| ID | Name | Mechanics | Decay Mode |
+|---|---|---|---|
+| `burn` | Burn | Deals damage equal to the number of stacks at the end of each turn. **Burn damage ignores armor.** | Halved (reduced by 50% rounded down) at the end of each turn. Burn stacks applied by a Burn Slot do not decay. |
+| `armor` | Armor | Absorbs incoming direct HP damage (1 point of Armor blocks 1 point of HP damage). Does not block Burn or Static damage. | Decays to 0 at the end of each turn unless preserved by specific abilities (e.g. Bastion's Fortify) or trinkets (e.g. Polished Plate). |
+| `spikes` | Spikes | Deals PWR damage back to attackers when hit by a direct attack. | Does not decay. |
+| `static` | Static | Consumed stack-by-stack when the holder suffers any form of stat change (HP damage, healing, or power modification). Consuming a stack deals 1 armor-ignoring damage to the unit. | Does not decay. Stacks are only consumed by stat changes. |
+
+---
+
+## 7. Encounter & Budget Systems
 
 ### Daily Budget Formula
 The game allocates a precise amount of gold for enemy recruitment every day. The system ensures the entire budget is spent, prioritizing units, then items, and finally trinkets.

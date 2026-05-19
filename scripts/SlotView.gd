@@ -50,36 +50,60 @@ func _ready() -> void:
 	_create_indicator()
 
 ## Set custom color for this slot based on container type
+var _slot_effect: StringName = &""
+var _container_name: StringName = &""
+
+## Set custom color for this slot based on container type
 func set_slot_color(container_name: StringName) -> void:
+	_container_name = container_name
+	_update_slot_appearance()
+
+func set_slot_effect(effect: StringName) -> void:
+	_slot_effect = effect
+	_update_slot_appearance()
+
+func _update_slot_appearance() -> void:
 	if not is_instance_valid(_background_style):
 		return
 	
 	# Determine if this is a battle slot
-	var is_battle_slot = (container_name == &"PlayerLineup" or container_name == &"EnemyLineup" or container_name == &"PlayerBench" or container_name == &"EnemyBench" or container_name == &"EnemyTrinkets" or container_name == &"PlayerTrinkets")
+	var is_battle_slot = (_container_name == &"PlayerLineup" or _container_name == &"EnemyLineup" or _container_name == &"PlayerBench" or _container_name == &"EnemyBench" or _container_name == &"EnemyTrinkets" or _container_name == &"PlayerTrinkets")
 	
-	if is_battle_slot:
-		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotBattle.png"))
-		# Expand the top margin instead so the base stays at the bottom to touch the unit's feet
-		# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
+	if _slot_effect == &"burn" and is_battle_slot:
+		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotBurn.png"))
 		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
 		_background_style.expand_margin_bottom = -15.0
-	elif container_name == &"EquippedItem": # C.CONTAINER_EQUIPPED_ITEM
-		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/ItemSlot.png"))
-		_background_style.expand_margin_bottom = 0.0
+		_background_style.modulate_color = Color.WHITE
+	elif _slot_effect == &"lightning" and is_battle_slot:
+		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotlightning.png"))
+		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
+		_background_style.expand_margin_bottom = -15.0
+		_background_style.modulate_color = Color.WHITE
 	else:
-		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slot.png"))
-		_background_style.expand_margin_bottom = 0.0
-		
-	# Tint the slot background texture based on container type
-	match container_name:
-		&"PlayerLineup":
-			_background_style.modulate_color = Color(0.3, 0.5, 0.8)
-		&"PlayerBench":
-			_background_style.modulate_color = Color(0.3, 0.7, 0.3)
-		&"EnemyLineup":
-			_background_style.modulate_color = Color(0.8, 0.3, 0.3)
-		_:
-			_background_style.modulate_color = Color(0.5, 0.5, 0.5)
+		if is_battle_slot:
+			_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotBattle.png"))
+			# Expand the top margin instead so the base stays at the bottom to touch the unit's feet
+			# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
+			_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
+			_background_style.expand_margin_bottom = -15.0
+		elif _container_name == &"EquippedItem": # C.CONTAINER_EQUIPPED_ITEM
+			_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/ItemSlot.png"))
+			_background_style.expand_margin_bottom = 0.0
+		else:
+			_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slot.png"))
+			_background_style.expand_margin_bottom = 0.0
+			
+		# Tint the slot background texture based on container type
+		match _container_name:
+			&"PlayerLineup":
+				_background_style.modulate_color = Color(0.3, 0.5, 0.8)
+			&"PlayerBench":
+				_background_style.modulate_color = Color(0.3, 0.7, 0.3)
+			&"EnemyLineup":
+				_background_style.modulate_color = Color(0.8, 0.3, 0.3)
+			_:
+				_background_style.modulate_color = Color(0.5, 0.5, 0.5)
+
 
 func _exit_tree() -> void:
 	if SignalBus.unit_stat_changed.is_connected(_on_unit_stat_changed):

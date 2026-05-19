@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="StatusEffectDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://b6ls31xcfxeya" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_static_pixel.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"static"
+display_name_key = "STATUS_STATIC"
+description_key = "STATUS_STATIC_DESC"
+icon = ExtResource("2_icon")
+color = Color(1, 0.85, 0.1, 1)
+turn_phase = "NONE"
+turn_effect = "NONE"
+turn_effect_multiplier = 1.0
+decay_mode = "NONE"
+decay_amount = 1
