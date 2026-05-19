@@ -28,6 +28,8 @@ Audio.play_music(SoundRegistry.BGM_BATTLE)
 - **BGM Crossfade**: 0.1s fade between music tracks
 - **BGM Prewarming**: All BGM streams are touched on startup for instant playback
 - **Looping**: OGG Vorbis streams are automatically set to loop
+- **Card Pronunciation Filtering**: Intercepts vocal pronunciation triggers (where `sound_id` starts with `"pronunciation_"`) and blocks playback if the card pronunciation option is disabled.
+- **Settings Persistence**: Saves and loads user volume and card pronunciation preferences automatically to/from `user://audio_settings.save` on boot (`_ready`) and when settings change in the Options menu.
 
 ---
 

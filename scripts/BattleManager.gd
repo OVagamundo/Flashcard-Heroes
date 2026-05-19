@@ -27,6 +27,7 @@ var _is_processing_effect: bool:
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
 var is_test_mode: bool = false
+var _is_applying_static_damage: bool = false
 
 # Locked traits snapshot for COMBAT phase stability
 var _locked_ready_traits: Dictionary = {}
@@ -181,6 +182,13 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	_battle_over_emitted = false
 	_battle_over_deferred = false
 	_current_turn = 0
+	
+	if is_instance_valid(encounter_def):
+		if "player_slot_effects" in encounter_def and encounter_def.player_slot_effects.size() == 5:
+			_state.player_slot_effects = encounter_def.player_slot_effects.duplicate()
+		if "enemy_slot_effects" in encounter_def and encounter_def.enemy_slot_effects.size() == 5:
+			_state.enemy_slot_effects = encounter_def.enemy_slot_effects.duplicate()
+
 	
 	# Create battle copies from run state using BattleSetup
 	var permanent_to_battle_uuid_map := BattleSetup.create_battle_copies_from_run_state(_state)
@@ -1130,6 +1138,8 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				}
 				if not spikes_data.is_empty():
 					result["spikes_data"] = spikes_data
+				if actual_delta != 0 and not _is_applying_static_damage:
+					_trigger_static_consumption(instance)
 				return result
 			else:
 				if delta > 0:
@@ -1144,20 +1154,25 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					
 					# Trigger on_healed event
 					TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, attacker_uuid)
+					if not _is_applying_static_damage:
+						_trigger_static_consumption(instance)
 				return new_hp
 		"pwr":
 			var new_pwr = instance.current_pwr + delta
 			instance.set_current_pwr_silent(new_pwr) # Silent during simulation
 			
-			if delta > 0:
-				# Trigger on_stat_increased for PWR buff
-				AbilityResolver.process_trigger(&"on_stat_increased", {
-					"unit_uuid": instance.ball_uuid,
-					"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
-					"stat": "pwr",
-					"amount": delta,
-					"source_uuid": attacker_uuid
-				})
+			if delta != 0:
+				if delta > 0:
+					# Trigger on_stat_increased for PWR buff
+					AbilityResolver.process_trigger(&"on_stat_increased", {
+						"unit_uuid": instance.ball_uuid,
+						"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
+						"stat": "pwr",
+						"amount": delta,
+						"source_uuid": attacker_uuid
+					})
+				if not _is_applying_static_damage:
+					_trigger_static_consumption(instance)
 			
 			return new_pwr
 		"burn_stacks":
@@ -1173,6 +1188,37 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 			else:
 				push_error("Unknown stat type: %s" % stat_type)
 				return 0
+
+func _trigger_static_consumption(instance: GachaBallInstance) -> void:
+	var static_stacks = instance.get_status_effect_amount(&"static")
+	if static_stacks > 0:
+		instance.add_status_effect_silent(&"static", -1)
+		var new_static = static_stacks - 1
+		
+		var static_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+			"source_uuid": "SYSTEM",
+			"target_uuids": [instance.ball_uuid],
+			"visual_payload": {
+				"stat": "static_stacks",
+				"amount": -1,
+				"new_val": new_static,
+				"targets_new_val": [new_static],
+				"new_value": new_static,
+				"old_value": static_stacks
+			}
+		})
+		_combat.add_inline_event(static_event)
+		
+		var static_effect_script = preload("res://scripts/effects/EffectStaticDischarge.gd").new()
+		var request = EffectRequest.new(
+			"",
+			&"static_discharge",
+			static_effect_script,
+			[instance.ball_uuid],
+			{"is_simulation": true, "ability_id": &"static_discharge"},
+			C.PRIORITY_STANDARD
+		)
+		_pending_reactions.append(request)
 
 func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK) -> void:
 	# Get target instance data for context (effects should not query instances directly)
@@ -1253,6 +1299,41 @@ func _trigger_turn_start_abilities() -> void:
 	)
 	_pending_reactions.append(trait_request)
 	
+	# QUEUE Slot Turn-Start Effects
+	var player_lineup_container = get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	if is_instance_valid(player_lineup_container):
+		for i in range(min(5, _state.player_slot_effects.size())):
+			var slot_effect = _state.player_slot_effects[i]
+			if slot_effect == &"":
+				continue
+			var unit_uuid = player_lineup_container.get_uuid(i)
+			if unit_uuid.is_empty():
+				continue
+			var unit = get_instance(unit_uuid)
+			if not is_instance_valid(unit) or unit.current_hp <= 0:
+				continue
+			
+			var request = _create_slot_effect_request(slot_effect, unit_uuid)
+			if request:
+				_pending_reactions.append(request)
+
+	var enemy_lineup_container = get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	if is_instance_valid(enemy_lineup_container):
+		for i in range(min(5, _state.enemy_slot_effects.size())):
+			var slot_effect = _state.enemy_slot_effects[i]
+			if slot_effect == &"":
+				continue
+			var unit_uuid = enemy_lineup_container.get_uuid(i)
+			if unit_uuid.is_empty():
+				continue
+			var unit = get_instance(unit_uuid)
+			if not is_instance_valid(unit) or unit.current_hp <= 0:
+				continue
+			
+			var request = _create_slot_effect_request(slot_effect, unit_uuid)
+			if request:
+				_pending_reactions.append(request)
+	
 	# Sort reactions by priority descending (Higher priority executes first)
 	_pending_reactions.sort_custom(func(a, b): return b.priority < a.priority)
 	
@@ -1263,6 +1344,40 @@ func _trigger_turn_start_abilities() -> void:
 	else:
 		# No turn start abilities to process - transition to MANAGEMENT directly
 		_on_turn_animation_finished()
+
+
+func _create_slot_effect_request(slot_effect: StringName, target_uuid: String) -> EffectRequest:
+	var effect_def: EffectDefinition
+	var ability_id: StringName
+	
+	if slot_effect == &"burn":
+		var effect_apply = preload("res://scripts/EffectApplyStatus.gd").new()
+		effect_apply.parameters = {
+			"status_id": "burn",
+			"amount": 1
+		}
+		effect_def = effect_apply
+		ability_id = &"slot_burn"
+	elif slot_effect == &"lightning":
+		var effect_apply = preload("res://scripts/EffectApplyStatus.gd").new()
+		effect_apply.parameters = {
+			"status_id": "static",
+			"amount": 1
+		}
+		effect_def = effect_apply
+		ability_id = &"slot_lightning"
+	else:
+		return null
+		
+	return EffectRequest.new(
+		"", # Empty source_uuid so it bypasses validation checks
+		ability_id,
+		effect_def,
+		[target_uuid],
+		{"is_simulation": true, "ability_id": ability_id},
+		C.PRIORITY_STANDARD # 0
+	)
+
 
 
 ## Process pending reactions without populating the actor queue
@@ -1429,7 +1544,7 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			var old_armor: int = unit.get_status_effect_amount(&"armor")
 			
 			# apply_stat_delta now returns dictionary for damage with armor mitigation data
-			var damage_result = apply_stat_delta(unit, "hp", -damage)
+			var damage_result = apply_stat_delta(unit, "hp", -damage, status_def.id == &"burn")
 			
 			# Extract data from dictionary return
 			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if damage_result is Dictionary else unit.current_hp
@@ -1489,21 +1604,36 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 		# Apply decay
 		var old_stacks: int = stacks
 		var new_stacks: int = stacks
-		match status_def.decay_mode:
-			"HALVE":
-				new_stacks = int(floor(stacks / 2.0))
-			"DECREMENT":
-				new_stacks = stacks - status_def.decay_amount
-			"CLEAR":
-				# Armor Decay Exception: Polished Plate Trinket or Hero Bastion
-				if status_def.id == &"armor":
-					var is_player_unit = _is_player_unit(unit)
-					if _has_team_trinket(is_player_unit, &"trinket_polished_plate") or unit.definition_id == &"hero_bastion":
-						new_stacks = stacks
+		
+		var is_burn_decay_immune := false
+		if status_def.id == &"burn":
+			var loc = get_location_for_uuid(unit.ball_uuid)
+			if is_instance_valid(loc):
+				if loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
+					if loc.index >= 0 and loc.index < _state.player_slot_effects.size() and _state.player_slot_effects[loc.index] == &"burn":
+						is_burn_decay_immune = true
+				elif loc.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+					if loc.index >= 0 and loc.index < _state.enemy_slot_effects.size() and _state.enemy_slot_effects[loc.index] == &"burn":
+						is_burn_decay_immune = true
+		
+		if is_burn_decay_immune:
+			new_stacks = stacks
+		else: # Apply normal decay
+			match status_def.decay_mode:
+				"HALVE":
+					new_stacks = int(floor(stacks / 2.0))
+				"DECREMENT":
+					new_stacks = stacks - status_def.decay_amount
+				"CLEAR":
+					# Armor Decay Exception: Polished Plate Trinket or Hero Bastion
+					if status_def.id == &"armor":
+						var is_player_unit = _is_player_unit(unit)
+						if _has_team_trinket(is_player_unit, &"trinket_polished_plate") or unit.definition_id == &"hero_bastion":
+							new_stacks = stacks
+						else:
+							new_stacks = 0
 					else:
 						new_stacks = 0
-				else:
-					new_stacks = 0
 		
 		if new_stacks != old_stacks:
 			if new_stacks <= 0:

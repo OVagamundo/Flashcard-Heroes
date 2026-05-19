@@ -26,10 +26,18 @@ func generate_encounter(budget: int) -> EncounterDefinition:
 	var pools := _create_resource_pools(true) # Include trinkets
 	
 	# Phase 2: Build encounter with 100% budget guarantee
-	var build := _build_encounter_with_full_spend(budget, pools, MAX_UNITS, MAX_TRINKETS)
+	var temp_encounter = EncounterDefinition.new()
+	var budget_delta = _generate_slot_effects(temp_encounter, budget)
+	var remaining_budget = budget + budget_delta
+	if remaining_budget <= 0:
+		remaining_budget = 1
+	var build := _build_encounter_with_full_spend(remaining_budget, pools, MAX_UNITS, MAX_TRINKETS)
 	
 	# Phase 3: Assemble the final encounter
-	return _assemble_encounter(build, "dynamic_encounter")
+	var encounter = _assemble_encounter(build, "dynamic_encounter")
+	encounter.player_slot_effects = temp_encounter.player_slot_effects
+	encounter.enemy_slot_effects = temp_encounter.enemy_slot_effects
+	return encounter
 
 ## Generates a boss encounter with the boss placed at position 4.
 func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: int) -> EncounterDefinition:
@@ -41,10 +49,16 @@ func generate_boss_encounter(boss_level: int, daily_budget: int, current_day: in
 	# Boss is FREE - use reduced daily budget (85%) for support units (keeps Boss >= Elite)
 	var pools := _create_resource_pools(true) # Include trinkets
 	var support_budget: int = int(daily_budget * 0.85)
+	# Pre-generate slot effects on a temporary EncounterDefinition
+	var temp_encounter = EncounterDefinition.new()
+	var budget_delta = _generate_slot_effects(temp_encounter, support_budget)
+	support_budget = max(1, support_budget + budget_delta)
 	var build := _build_encounter_with_full_spend(support_budget, pools, MAX_UNITS - 1, MAX_TRINKETS) # Reserve 1 slot for boss
 	
 	# Assemble encounter - reserve position 4 for boss
 	var encounter := _assemble_encounter(build, "boss_encounter_%d" % boss_level, true)
+	encounter.player_slot_effects = temp_encounter.player_slot_effects
+	encounter.enemy_slot_effects = temp_encounter.enemy_slot_effects
 	
 	# Place boss at position 4 (back of lineup)
 	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
@@ -104,10 +118,16 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_
 	# Elite unit is FREE (like boss battles) - reduced budget (85%) for support units
 	var pools := _create_resource_pools(true) # Include trinkets
 	var support_budget: int = int(total_budget * 0.85)
+	# Pre-generate slot effects on a temporary EncounterDefinition
+	var temp_encounter = EncounterDefinition.new()
+	var budget_delta = _generate_slot_effects(temp_encounter, support_budget)
+	support_budget = max(1, support_budget + budget_delta)
 	var build := _build_encounter_with_full_spend(support_budget, pools, MAX_UNITS - 1, MAX_TRINKETS)
 	
 	# Assemble encounter - reserve position 4 for elite unit
 	var encounter := _assemble_encounter(build, "elite_encounter_%s" % String(selected_boss_id), true)
+	encounter.player_slot_effects = temp_encounter.player_slot_effects
+	encounter.enemy_slot_effects = temp_encounter.enemy_slot_effects
 	
 	# Place elite boss at position 4 (back of lineup)
 	var boss_placement: Dictionary = {"id": boss_def.id, "position": 4, "items": []}
@@ -438,3 +458,82 @@ func analyze_encounter(encounter: EncounterDefinition) -> Dictionary:
 			analysis.total_cost += _get_cost(trinket_def)
 	
 	return analysis
+
+
+func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
+	encounter.player_slot_effects = [&"", &"", &"", &"", &""]
+	encounter.enemy_slot_effects = [&"", &"", &"", &"", &""]
+	
+	var day: int = director_run_state.current_day
+	if day <= 0:
+		day = 1
+		
+	# Determine if we should generate slots
+	var spawn_chance := 0.0
+	if day <= 10:
+		spawn_chance = 0.10
+	elif day <= 20:
+		spawn_chance = 0.40
+	elif day <= 40:
+		spawn_chance = 0.75
+	else:
+		spawn_chance = 1.0
+		
+	if randf() > spawn_chance:
+		return 0 # No slots generated
+		
+	# We are generating slots. We want at least one slot on each team.
+	# --- 1. Player Team Slots ---
+	var possible_player_combinations := []
+	for b in range(4): # 0 to 3 burn slots
+		for l in range(4): # 0 to 3 lightning slots
+			if b + l == 0:
+				continue
+			if b + l > 5:
+				continue
+			var cost = b * 3 + l * 2
+			if cost <= budget - 1: # Leave at least 1 gold for unit generation
+				possible_player_combinations.append({"burn": b, "lightning": l, "cost": cost})
+				
+	var player_cost = 0
+	if not possible_player_combinations.is_empty():
+		var chosen = possible_player_combinations[randi() % possible_player_combinations.size()]
+		var num_burn: int = chosen["burn"]
+		var num_lightning: int = chosen["lightning"]
+		player_cost = chosen["cost"]
+		
+		# Assign randomly
+		var pos = [0, 1, 2, 3, 4]
+		pos.shuffle()
+		for j in range(num_burn):
+			encounter.player_slot_effects[pos.pop_back()] = &"burn"
+		for j in range(num_lightning):
+			encounter.player_slot_effects[pos.pop_back()] = &"lightning"
+			
+	# --- 2. Enemy Team Slots ---
+	var possible_enemy_combinations := []
+	for b in range(4): # 0 to 3 burn slots
+		for l in range(4): # 0 to 3 lightning slots
+			if b + l == 0:
+				continue
+			if b + l > 5:
+				continue
+			var bonus = b * 3 + l * 2
+			possible_enemy_combinations.append({"burn": b, "lightning": l, "bonus": bonus})
+			
+	var enemy_bonus = 0
+	if not possible_enemy_combinations.is_empty():
+		var chosen = possible_enemy_combinations[randi() % possible_enemy_combinations.size()]
+		var num_burn: int = chosen["burn"]
+		var num_lightning: int = chosen["lightning"]
+		enemy_bonus = chosen["bonus"]
+		
+		# Assign randomly
+		var pos = [0, 1, 2, 3, 4]
+		pos.shuffle()
+		for j in range(num_burn):
+			encounter.enemy_slot_effects[pos.pop_back()] = &"burn"
+		for j in range(num_lightning):
+			encounter.enemy_slot_effects[pos.pop_back()] = &"lightning"
+			
+	return enemy_bonus - player_cost

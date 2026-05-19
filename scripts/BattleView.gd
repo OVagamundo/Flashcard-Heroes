@@ -327,6 +327,12 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		loc.container = container_name
 		loc.index = i
 
+		var slot_effect = &""
+		if container_name == &"PlayerLineup":
+			slot_effect = battle_manager._state.player_slot_effects[i]
+		elif container_name == &"EnemyLineup":
+			slot_effect = battle_manager._state.enemy_slot_effects[i]
+
 		var instance: GachaBallInstance = null
 		if i < uuids.size():
 			var uuid = uuids[i]
@@ -341,6 +347,8 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			# Use SlotView's set_content to populate the view
 			# This handles instantiation and population of GachaBallView internally
 			slot.set_content(visual_data, true, is_enemy)
+			if slot.has_method("set_slot_effect"):
+				slot.set_slot_effect(slot_effect)
 			
 			# EnemyLineup must be inspection-only: configure GachaBallView accordingly
 			# Note: We need to access the child view to set interaction context if needed,
@@ -370,6 +378,8 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				slot.set_meta("location_identifier", loc)
 				# Ensure it's empty
 				slot.set_content({}, false, false)
+				if slot.has_method("set_slot_effect"):
+					slot.set_slot_effect(slot_effect)
 				# EnemyLineup must be inspection-only: configure SlotView accordingly
 				if container_name == &"EnemyLineup":
 					# In test mode, allow full interaction with enemy slots
@@ -392,7 +402,6 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 			slot_view.set_meta("location_identifier", loc)
 			
 			# Apply battle-specific layout settings (responsive width, fixed height)
-			# Apply battle-specific layout settings (responsive width, fixed height)
 			if is_instance_valid(slot_view):
 				slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				slot_view.custom_minimum_size = Vector2(0, 250)
@@ -400,6 +409,8 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 				# Apply container-specific color scheme
 				if slot_view.has_method("set_slot_color"):
 					slot_view.set_slot_color(container_name)
+				if slot_view.has_method("set_slot_effect"):
+					slot_view.set_slot_effect(slot_effect)
 				# EnemyLineup must be inspection-only: configure SlotView accordingly
 				if container_name == &"EnemyLineup":
 					slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)

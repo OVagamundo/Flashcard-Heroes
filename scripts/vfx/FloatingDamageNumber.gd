@@ -45,6 +45,7 @@ func setup_status_effect(value: int, type: String, spawn_position: Vector2) -> v
 		"burn": color = Color(1.0, 0.5, 0.0) # Orange
 		"spikes": color = Color(0.0, 1.0, 0.0) # Green
 		"armor": color = Color(0.0, 0.6, 1.0) # Blue
+		"static": color = Color(1.0, 0.85, 0.1) # Yellow for static
 	
 	label.add_theme_color_override("font_color", color)
 	

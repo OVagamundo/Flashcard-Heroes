@@ -69,6 +69,24 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	merged_instance.current_hp = final_hp
 	merged_instance.current_pwr = final_pwr
 	
+	# Merge status effects: sum up stacks of each status effect
+	for status_id in instance_a.status_effects:
+		var amount = instance_a.status_effects[status_id]
+		if amount > 0:
+			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
+	for status_id in instance_b.status_effects:
+		var amount = instance_b.status_effects[status_id]
+		if amount > 0:
+			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
+			
+	# Merge dynamic tags (ensuring uniqueness)
+	for tag in instance_a.dynamic_tags:
+		if not merged_instance.dynamic_tags.has(tag):
+			merged_instance.dynamic_tags.append(tag)
+	for tag in instance_b.dynamic_tags:
+		if not merged_instance.dynamic_tags.has(tag):
+			merged_instance.dynamic_tags.append(tag)
+	
 	# Store surplus stats (above the new definition's base) as a merge inheritance component.
 	var surplus_hp: int = final_hp - result_definition.base_hp
 	var surplus_pwr: int = final_pwr - result_definition.base_pwr

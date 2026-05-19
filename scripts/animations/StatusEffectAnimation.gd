@@ -72,6 +72,10 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			flash_color = Color(0.8, 0.1, 0.1) # Reddish for spikes
 			animator.apply_spikes_stack(target_uuid, new_val)
 			_spawn_floating_status(animator, target_uuid, amount, "spikes")
+		elif stat == "static_stacks" or stat == "static":
+			flash_color = Color(1.0, 0.85, 0.1) # Yellow
+			animator.apply_status_stack(target_uuid, &"static", new_val)
+			_spawn_floating_status(animator, target_uuid, amount, "static")
 		else:
 			# Generic status effect
 			flash_color = Color(0.7, 0.7, 0.7)

@@ -38,6 +38,13 @@ var _dead_this_turn: Dictionary = {}
 ## Gacha tokens available for spending
 var _gacha_tokens: int = 0
 
+## Slot effects for player lineup slots (size 5, entries can be &"burn", &"lightning", etc., or empty &"")
+var player_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
+
+## Slot effects for enemy lineup slots (size 5, entries can be &"burn", &"lightning", etc., or empty &"")
+var enemy_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
+
+
 # ============================================================================
 # CONTAINER ACCESS
 # ============================================================================
@@ -230,6 +237,9 @@ func clear() -> void:
 	_turn_metadata.clear()
 	_dead_this_turn.clear()
 	_gacha_tokens = 0
+	player_slot_effects = [&"", &"", &"", &"", &""]
+	enemy_slot_effects = [&"", &"", &"", &"", &""]
+
 
 func register_instance(instance: GachaBallInstance) -> void:
 	_battle_instances[instance.ball_uuid] = instance
