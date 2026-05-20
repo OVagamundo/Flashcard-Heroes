@@ -58,6 +58,9 @@ var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
 var _pending_inventory_refresh: bool = false
+const DEATH_SLOT_START_TURN: int = 10
+const LINEUP_SLOT_COUNT: int = 5
+const DEATH_SLOT_EFFECT: StringName = &"death"
 
 
 # -----------------------------------------------------------------------------
@@ -1280,6 +1283,8 @@ func _trigger_turn_start_abilities() -> void:
 	if _current_turn <= 1:
 		_on_turn_animation_finished()
 		return
+
+	var slot_transition_events := _advance_death_slot_progression()
 	
 	# Trigger turn start abilities for all instances using unified processing
 	# This queues ability requests into _pending_reactions
@@ -1339,8 +1344,8 @@ func _trigger_turn_start_abilities() -> void:
 	
 	# Process turn start effects (heals, etc.) without starting combat
 	# Don't populate actor queue - we're just processing turn start abilities
-	if not _pending_reactions.is_empty():
-		_resolve_pending_reactions_only()
+	if not _pending_reactions.is_empty() or not slot_transition_events.is_empty():
+		_resolve_pending_reactions_only(slot_transition_events)
 	else:
 		# No turn start abilities to process - transition to MANAGEMENT directly
 		_on_turn_animation_finished()
@@ -1378,14 +1383,48 @@ func _create_slot_effect_request(slot_effect: StringName, target_uuid: String) -
 		C.PRIORITY_STANDARD # 0
 	)
 
+func _advance_death_slot_progression() -> Array[CombatEvent]:
+	var events: Array[CombatEvent] = []
+	if _current_turn < DEATH_SLOT_START_TURN:
+		return events
+	
+	var active_death_slots := mini(LINEUP_SLOT_COUNT, _current_turn - DEATH_SLOT_START_TURN + 1)
+	events.append_array(_advance_team_death_slots(_state.player_slot_effects, active_death_slots, true))
+	events.append_array(_advance_team_death_slots(_state.enemy_slot_effects, active_death_slots, false))
+	return events
+
+func _advance_team_death_slots(slot_effects: Array[StringName], active_death_slots: int, is_player_team: bool) -> Array[CombatEvent]:
+	var events: Array[CombatEvent] = []
+	for offset in range(active_death_slots):
+		# Frontmost follows existing board semantics:
+		# Player lineup front = highest index, Enemy lineup front = lowest index.
+		var slot_index := (LINEUP_SLOT_COUNT - 1 - offset) if is_player_team else offset
+		if slot_index < 0 or slot_index >= slot_effects.size():
+			continue
+		
+		var previous_effect: StringName = slot_effects[slot_index]
+		if previous_effect == DEATH_SLOT_EFFECT:
+			continue
+		
+		slot_effects[slot_index] = DEATH_SLOT_EFFECT
+		var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		events.append(CombatEvent.new(CombatEvent.Type.SLOT_EFFECT_CHANGE, {
+			"visual_payload": {
+				"container_tag": container_tag,
+				"slot_index": slot_index,
+				"from_effect": previous_effect,
+				"to_effect": DEATH_SLOT_EFFECT
+			}
+		}))
+	return events
+
 
 
 ## Process pending reactions without populating the actor queue
 ## Used for turn start abilities that shouldn't trigger combat
 ## Process pending reactions without populating the actor queue
 ## Used for turn start abilities that shouldn't trigger combat
-## @param extra_events: DEPRECATED - Events are now generated via queued reactions
-func _resolve_pending_reactions_only(_extra_events: Array[CombatEvent] = []) -> void:
+func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> void:
 	if _is_processing_effect: return
 	_is_processing_effect = true
 	_resolve_animator()
@@ -1396,6 +1435,7 @@ func _resolve_pending_reactions_only(_extra_events: Array[CombatEvent] = []) -> 
 	
 	# Capture board snapshot BEFORE simulation
 	var start_snapshot = get_board_snapshot()
+	all_events_for_animator.append_array(extra_events)
 	
 	# Process all pending reactions (turn start abilities)
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
@@ -1473,6 +1513,93 @@ func _flush_deferred_enemy_erasures() -> void:
 			_battle_instances.erase(uuid)
 	remove_meta("_deferred_enemy_erasures")
 
+func _process_death_slots_end_of_turn(all_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
+	var keep_checking := true
+	var safety_iterations := 0
+	while keep_checking and safety_iterations < 12:
+		safety_iterations += 1
+		keep_checking = false
+		keep_checking = _process_team_death_slots_end_of_turn(
+			C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP,
+			_state.player_slot_effects,
+			"PLAYER",
+			all_events,
+			death_tracking
+		) or keep_checking
+		keep_checking = _process_team_death_slots_end_of_turn(
+			C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP,
+			_state.enemy_slot_effects,
+			"ENEMY",
+			all_events,
+			death_tracking
+		) or keep_checking
+
+func _process_team_death_slots_end_of_turn(container_tag: StringName, slot_effects: Array[StringName], death_team: String, all_events: Array[CombatEvent], death_tracking: Dictionary) -> bool:
+	var lineup_container = get_container(container_tag)
+	if not is_instance_valid(lineup_container):
+		return false
+	
+	var killed_any := false
+	
+	for slot_index in range(mini(LINEUP_SLOT_COUNT, slot_effects.size())):
+		if slot_effects[slot_index] != DEATH_SLOT_EFFECT:
+			continue
+		
+		var unit_uuid := lineup_container.get_uuid(slot_index)
+		if unit_uuid.is_empty():
+			continue
+		
+		var unit := get_instance(unit_uuid)
+		if not is_instance_valid(unit) or unit.current_hp <= 0:
+			continue
+		
+		unit.current_hp = 0
+		_process_registered_death(unit, &"END_OF_TURN", death_team, all_events, death_tracking)
+		killed_any = true
+	
+	return killed_any
+
+func _process_registered_death(unit: GachaBallInstance, phase: StringName, death_team: String, all_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
+	if not _register_death(unit, phase):
+		return
+	
+	_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)
+	_track_first_killed_non_hero(unit, death_team)
+	
+	var death_location = get_location_for_uuid(unit.ball_uuid)
+	AbilityResolver.process_trigger(&"on_death", {
+		"dying_uuid": unit.ball_uuid,
+		"dying_team": death_team,
+		"dying_location": death_location,
+		"equipped_items": _snapshot_equipped_items(unit)
+	})
+	AbilityResolver.process_trigger(&"on_ally_death", {
+		"fainting_ally_uuid": unit.ball_uuid,
+		"fainting_ally_location": death_location,
+		"fainting_ally_team": death_team
+	})
+	
+	while not _pending_reactions.is_empty():
+		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+		var death_reaction = _pending_reactions.pop_front()
+		var death_reaction_events: Array[CombatEvent] = []
+		_resolve_single_effect_request(death_reaction, death_reaction_events, death_tracking)
+		all_events.append_array(death_reaction_events)
+
+func _track_first_killed_non_hero(unit: GachaBallInstance, death_team: String) -> void:
+	var first_killed_key := "first_killed_player_unit" if death_team == "PLAYER" else "first_killed_enemy_unit"
+	if _turn_metadata.has(first_killed_key):
+		return
+	var unit_def = unit.get_definition()
+	if is_instance_valid(unit_def) and not unit_def.is_hero:
+		var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
+		if is_instance_valid(loc_snapshot):
+			_turn_metadata[first_killed_key] = {
+				"def_id": unit.definition_id,
+				"team": death_team,
+				"location_snapshot": loc_snapshot
+			}
+
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
 	# print("DEBUG: _trigger_turn_end_abilities called")
@@ -1482,6 +1609,9 @@ func _trigger_turn_end_abilities() -> void:
 	
 	# Capture board snapshot for animation
 	var start_snapshot = get_board_snapshot()
+
+	# 0. Death slots execute before other end-of-turn effects.
+	_process_death_slots_end_of_turn(all_events, death_tracking)
 	
 	# 1. Process Status Effects via StatusEffectRegistry
 	# Generic loop replaces hardcoded burn logic
@@ -1657,44 +1787,8 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 		
 		# Handle death from status damage
 		if unit.current_hp <= 0:
-			if not _register_death(unit, &"END_OF_TURN"):
-				continue
-			
-			_create_death_event_if_needed(unit.ball_uuid, all_events, death_tracking)
-			
-			var is_player: bool = _is_player_unit(unit)
-			var first_killed_key := "first_killed_player_unit" if is_player else "first_killed_enemy_unit"
-			if not _turn_metadata.has(first_killed_key):
-				var unit_def_fk = unit.get_definition()
-				if is_instance_valid(unit_def_fk) and not unit_def_fk.is_hero:
-					var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
-					if is_instance_valid(loc_snapshot):
-						_turn_metadata[first_killed_key] = {
-							"def_id": unit.definition_id,
-							"team": "PLAYER" if is_player else "ENEMY",
-							"location_snapshot": loc_snapshot
-						}
-			
-			var death_location = get_location_for_uuid(unit.ball_uuid)
-			var death_team: String = "PLAYER" if is_player else "ENEMY"
-			AbilityResolver.process_trigger(&"on_death", {
-				"dying_uuid": unit.ball_uuid,
-				"dying_team": death_team,
-				"dying_location": death_location,
-				"equipped_items": _snapshot_equipped_items(unit)
-			})
-			AbilityResolver.process_trigger(&"on_ally_death", {
-				"fainting_ally_uuid": unit.ball_uuid,
-				"fainting_ally_location": death_location,
-				"fainting_ally_team": death_team
-			})
-			
-			while not _pending_reactions.is_empty():
-				_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-				var death_reaction = _pending_reactions.pop_front()
-				var death_reaction_events: Array[CombatEvent] = []
-				_resolve_single_effect_request(death_reaction, death_reaction_events, death_tracking)
-				all_events.append_array(death_reaction_events)
+			var death_team: String = "PLAYER" if _is_player_unit(unit) else "ENEMY"
+			_process_registered_death(unit, &"END_OF_TURN", death_team, all_events, death_tracking)
 
 func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
 	# Delegate to BattleState's authoritative reshuffle logic

@@ -2,6 +2,13 @@ class_name SlotView
 extends PanelContainer
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
+const AnimationConstants = preload("res://scripts/animations/AnimationConstants.gd")
+const SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slot.png")
+const BATTLE_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotBattle.png")
+const BURN_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotBurn.png")
+const LIGHTNING_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotlightning.png")
+const DEATH_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotDeath.png")
+const DEATH_SLOT_OVERLAY_TEXTURE = preload("res://assets/Realistic/ui/textures/slotX.png")
 
 var _location: LocationIdentifier
 
@@ -16,6 +23,9 @@ var _size_scale: float = 2.0 # Default to battle scale
 var _indicator: TextureRect = null
 var _indicator_tween: Tween = null
 const INDICATOR_TEXTURE = preload("res://assets/Realistic/ui/textures/Indicator.png")
+var _slot_effect_overlay: TextureRect = null
+var _slot_effect_pulse_tween: Tween = null
+var _slot_effect_transition_tween: Tween = null
 # Base slot size at 1x scale
 const BASE_SLOT_SIZE: int = 96
 
@@ -34,7 +44,7 @@ func _ready() -> void:
 	
 	# Configure the slot background using properties to render the texture
 	_background_style = StyleBoxTexture.new()
-	_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slot.png"))
+	_background_style.texture = ArtStyleManager.get_themed_texture(SLOT_TEXTURE)
 	# Default neutral tint (no alpha changes as requested)
 	_background_style.modulate_color = Color(0.5, 0.5, 0.5)
 	add_theme_stylebox_override("panel", _background_style)
@@ -48,6 +58,7 @@ func _ready() -> void:
 	
 	# Create indicator overlay (initially hidden)
 	_create_indicator()
+	_create_slot_effect_overlay()
 
 ## Set custom color for this slot based on container type
 var _slot_effect: StringName = &""
@@ -59,10 +70,12 @@ func set_slot_color(container_name: StringName) -> void:
 	_update_slot_appearance()
 
 func set_slot_effect(effect: StringName) -> void:
+	var previous_effect := _slot_effect
 	_slot_effect = effect
-	_update_slot_appearance()
+	var should_animate := is_inside_tree() and previous_effect != effect
+	_update_slot_appearance(should_animate)
 
-func _update_slot_appearance() -> void:
+func _update_slot_appearance(animate_transition: bool = false) -> void:
 	if not is_instance_valid(_background_style):
 		return
 	
@@ -70,18 +83,23 @@ func _update_slot_appearance() -> void:
 	var is_battle_slot = (_container_name == &"PlayerLineup" or _container_name == &"EnemyLineup" or _container_name == &"PlayerBench" or _container_name == &"EnemyBench" or _container_name == &"EnemyTrinkets" or _container_name == &"PlayerTrinkets")
 	
 	if _slot_effect == &"burn" and is_battle_slot:
-		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotBurn.png"))
+		_background_style.texture = ArtStyleManager.get_themed_texture(BURN_SLOT_TEXTURE)
 		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
 		_background_style.expand_margin_bottom = -15.0
 		_background_style.modulate_color = Color.WHITE
 	elif _slot_effect == &"lightning" and is_battle_slot:
-		_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotlightning.png"))
+		_background_style.texture = ArtStyleManager.get_themed_texture(LIGHTNING_SLOT_TEXTURE)
+		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
+		_background_style.expand_margin_bottom = -15.0
+		_background_style.modulate_color = Color.WHITE
+	elif _slot_effect == &"death" and is_battle_slot:
+		_background_style.texture = ArtStyleManager.get_themed_texture(DEATH_SLOT_TEXTURE)
 		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
 		_background_style.expand_margin_bottom = -15.0
 		_background_style.modulate_color = Color.WHITE
 	else:
 		if is_battle_slot:
-			_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slotBattle.png"))
+			_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_SLOT_TEXTURE)
 			# Expand the top margin instead so the base stays at the bottom to touch the unit's feet
 			# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
 			_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
@@ -103,6 +121,60 @@ func _update_slot_appearance() -> void:
 				_background_style.modulate_color = Color(0.8, 0.3, 0.3)
 			_:
 				_background_style.modulate_color = Color(0.5, 0.5, 0.5)
+	
+	_update_slot_effect_overlay(animate_transition and _slot_effect == &"death")
+
+func animate_slot_effect_change(effect: StringName) -> void:
+	var previous_effect := _slot_effect
+	_slot_effect = effect
+	_update_slot_appearance(previous_effect != effect)
+	if is_instance_valid(_slot_effect_transition_tween):
+		await _slot_effect_transition_tween.finished
+	else:
+		await get_tree().process_frame
+
+func _update_slot_effect_overlay(play_transition: bool) -> void:
+	if not is_instance_valid(_slot_effect_overlay):
+		return
+	
+	var is_death_slot := _slot_effect == &"death"
+	if is_death_slot:
+		_slot_effect_overlay.texture = ArtStyleManager.get_themed_texture(DEATH_SLOT_OVERLAY_TEXTURE)
+		_slot_effect_overlay.visible = true
+		_slot_effect_overlay.pivot_offset = _slot_effect_overlay.size / 2.0
+		if play_transition:
+			_play_death_slot_transition()
+		else:
+			_slot_effect_overlay.modulate = Color(1, 1, 1, 0.9)
+			_slot_effect_overlay.scale = Vector2.ONE
+			_start_slot_effect_pulse()
+	else:
+		_slot_effect_overlay.visible = false
+		if is_instance_valid(_slot_effect_pulse_tween):
+			_slot_effect_pulse_tween.kill()
+			_slot_effect_pulse_tween = null
+		if is_instance_valid(_slot_effect_transition_tween):
+			_slot_effect_transition_tween.kill()
+			_slot_effect_transition_tween = null
+
+func _play_death_slot_transition() -> void:
+	if not is_instance_valid(_slot_effect_overlay):
+		return
+	
+	if is_instance_valid(_slot_effect_pulse_tween):
+		_slot_effect_pulse_tween.kill()
+		_slot_effect_pulse_tween = null
+	if is_instance_valid(_slot_effect_transition_tween):
+		_slot_effect_transition_tween.kill()
+	
+	_slot_effect_overlay.visible = true
+	_slot_effect_overlay.modulate = Color(1, 1, 1, 0.0)
+	_slot_effect_overlay.scale = Vector2(0.72, 0.72)
+	_slot_effect_transition_tween = create_tween()
+	_slot_effect_transition_tween.tween_property(_slot_effect_overlay, "modulate:a", 0.9, AnimationConstants.scaled(0.16)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_slot_effect_transition_tween.parallel().tween_property(_slot_effect_overlay, "scale", Vector2(1.12, 1.12), AnimationConstants.scaled(0.22)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_slot_effect_transition_tween.tween_property(_slot_effect_overlay, "scale", Vector2.ONE, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_slot_effect_transition_tween.finished.connect(_start_slot_effect_pulse, CONNECT_ONE_SHOT)
 
 
 func _exit_tree() -> void:
@@ -128,6 +200,10 @@ func _exit_tree() -> void:
 	# Stop any running indicator tween
 	if is_instance_valid(_indicator_tween):
 		_indicator_tween.kill()
+	if is_instance_valid(_slot_effect_pulse_tween):
+		_slot_effect_pulse_tween.kill()
+	if is_instance_valid(_slot_effect_transition_tween):
+		_slot_effect_transition_tween.kill()
 
 func _notification(_what) -> void:
 	pass
@@ -141,6 +217,7 @@ func _create_indicator() -> void:
 	_indicator.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_indicator.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_indicator.set_meta("slot_persistent_child", true)
 	_indicator.visible = false
 	_indicator.z_index = 10 # Ensure it's on top
 	
@@ -149,6 +226,19 @@ func _create_indicator() -> void:
 	_indicator.set_offsets_preset(Control.PRESET_FULL_RECT)
 	
 	add_child(_indicator)
+
+func _create_slot_effect_overlay() -> void:
+	_slot_effect_overlay = TextureRect.new()
+	_slot_effect_overlay.texture = ArtStyleManager.get_themed_texture(DEATH_SLOT_OVERLAY_TEXTURE)
+	_slot_effect_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_slot_effect_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_slot_effect_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_slot_effect_overlay.set_meta("slot_persistent_child", true)
+	_slot_effect_overlay.visible = false
+	_slot_effect_overlay.z_index = 20
+	_slot_effect_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_slot_effect_overlay.set_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_slot_effect_overlay)
 
 ## Show indicator if this slot is in the valid locations list
 func _on_show_slot_indicators(locations: Array) -> void:
@@ -208,6 +298,21 @@ func _start_pulse_animation() -> void:
 	_indicator_tween.tween_property(_indicator, "scale", Vector2(1.08, 1.08), 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	_indicator_tween.tween_property(_indicator, "scale", Vector2(0.95, 0.95), 0.5).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 
+func _start_slot_effect_pulse() -> void:
+	if not is_instance_valid(_slot_effect_overlay):
+		return
+	if is_instance_valid(_slot_effect_pulse_tween):
+		_slot_effect_pulse_tween.kill()
+	
+	_slot_effect_overlay.scale = Vector2.ONE
+	_slot_effect_overlay.modulate.a = 0.9
+	_slot_effect_pulse_tween = create_tween()
+	_slot_effect_pulse_tween.set_loops()
+	_slot_effect_pulse_tween.tween_property(_slot_effect_overlay, "scale", Vector2(1.08, 1.08), AnimationConstants.scaled(0.45)).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_slot_effect_pulse_tween.parallel().tween_property(_slot_effect_overlay, "modulate:a", 1.0, AnimationConstants.scaled(0.45)).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_slot_effect_pulse_tween.tween_property(_slot_effect_overlay, "scale", Vector2(0.96, 0.96), AnimationConstants.scaled(0.45)).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	_slot_effect_pulse_tween.parallel().tween_property(_slot_effect_overlay, "modulate:a", 0.7, AnimationConstants.scaled(0.45)).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
 func populate(loc: LocationIdentifier) -> void:
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
@@ -217,7 +322,7 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy:
 	# Clear existing content (preserve indicator and background)
 	# Clear existing content (preserve indicator)
 	for child in get_children():
-		if child == _indicator:
+		if child.has_meta("slot_persistent_child"):
 			continue
 		child.queue_free()
 	

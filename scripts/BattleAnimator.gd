@@ -139,6 +139,30 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 	
 	await play_turn(turn_log)
 
+func _get_slot_view(container_tag: StringName, slot_index: int) -> PanelContainer:
+	if slot_index < 0:
+		return null
+	var battle_view = get_tree().get_first_node_in_group("battle_view")
+	if not is_instance_valid(battle_view):
+		return null
+	
+	var lineup_container: HBoxContainer = null
+	match container_tag:
+		&"PlayerLineup":
+			lineup_container = battle_view.player_lineup
+		&"EnemyLineup":
+			lineup_container = battle_view.enemy_lineup
+		&"PlayerBench":
+			lineup_container = battle_view.player_bench
+		_:
+			return null
+	
+	if not is_instance_valid(lineup_container):
+		return null
+	if slot_index >= lineup_container.get_child_count():
+		return null
+	return lineup_container.get_child(slot_index) as PanelContainer
+
 func play_turn(events: Array[CombatEvent]) -> void:
 	if events.is_empty():
 		emit_signal("turn_animation_finished")
@@ -426,6 +450,18 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				if not source_uuid.is_empty() and not target_uuid.is_empty():
 					await _animate_item_transfer(source_uuid, target_uuid, payload)
 
+			CombatEvent.Type.SLOT_EFFECT_CHANGE:
+				var payload = event.visual_payload
+				var container_tag: StringName = payload.get("container_tag", &"")
+				var slot_index: int = int(payload.get("slot_index", -1))
+				var to_effect: StringName = payload.get("to_effect", &"")
+				var slot_view = _get_slot_view(container_tag, slot_index)
+				if is_instance_valid(slot_view) and slot_view.has_method("animate_slot_effect_change"):
+					await slot_view.animate_slot_effect_change(to_effect)
+				elif is_instance_valid(slot_view) and slot_view.has_method("set_slot_effect"):
+					slot_view.set_slot_effect(to_effect)
+					await get_tree().create_timer(0.2).timeout
+
 		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
@@ -618,6 +654,10 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 			info["description"] = "Guardian intercepts"
 		CombatEvent.Type.TRANSFORM:
 			info["description"] = "Transforms"
+		CombatEvent.Type.SLOT_EFFECT_CHANGE:
+			var to_effect: String = String(event.visual_payload.get("to_effect", ""))
+			var slot_index: int = int(event.visual_payload.get("slot_index", -1))
+			info["description"] = "Slot %d becomes %s" % [slot_index + 1, to_effect]
 		_:
 			info["description"] = event.get_type_name()
 	
