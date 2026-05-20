@@ -310,11 +310,10 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 		if child is PanelContainer:
 			slots.append(child)
 
-	# 2. Remove all children from every slot (except indicator and background).
+	# 2. Remove all transient children from every slot.
 	for slot in slots:
 		for content in slot.get_children():
-			# Skip the indicator overlay (z_index 10) and slot background (z_index -1)
-			if content is TextureRect and (content.z_index == 10 or content.z_index == -1):
+			if content.has_meta("slot_persistent_child"):
 				continue
 			content.queue_free()
 

@@ -20,7 +20,8 @@ enum Type {
 	KAMIKAZE_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
 	TRANSFORM, # Mimic: hop and vanish
 	GOLD_GAIN, # Payload: { "amount": int }
-	ITEM_TRANSFER # Standard Bearer: item transfer on death
+	ITEM_TRANSFER, # Standard Bearer: item transfer on death
+	SLOT_EFFECT_CHANGE # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
 }
 
 var type: Type
