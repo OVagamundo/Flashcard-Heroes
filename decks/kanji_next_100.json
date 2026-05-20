@@ -1,0 +1,909 @@
+{
+    "deck_id": "kanji_next_100",
+    "display_name": "Top 101-200 Kanji",
+    "display_name_pt": "Top 101-200 Kanji",
+    "description": "The next 100 most common Japanese Kanji characters (ranked 101-200)",
+    "description_pt": "Os próximos 100 caracteres Kanji japoneses mais comuns (ranqueados de 101 a 200)",
+    "cards": [
+        {
+            "id": "KANJI_101",
+            "question": "最",
+            "answer": "most",
+            "answer_pt": "mais",
+            "explanation": "Readings: さい (sai), もっと (motto). Example: 最初 (saisho) = first, 最高 (saikou) = best/greatest.",
+            "explanation_pt": "Leituras: sai, motto. Ex: 最初 (saisho) = primeiro, 最高 (saikou) = o melhor/máximo.",
+            "tts_query": "さい"
+        },
+        {
+            "id": "KANJI_102",
+            "question": "化",
+            "answer": "change/transform",
+            "answer_pt": "mudar/transformar",
+            "explanation": "Readings: か (ka), ばける (bakeru). A person sitting next to another person upside down (transforming). Example: 文化 (bunka) = culture, 化学 (kagaku) = chemistry.",
+            "explanation_pt": "Leituras: ka, bakeru. Uma pessoa ao lado de outra de cabeça para baixo (transformando-se). Ex: 文化 (bunka) = cultura, 化学 (kagaku) = química.",
+            "tts_query": "か"
+        },
+        {
+            "id": "KANJI_103",
+            "question": "民",
+            "answer": "people/nation",
+            "answer_pt": "povo/nação",
+            "explanation": "Readings: みん (min), たみ (tami). Example: 国民 (kokumin) = citizens/people of a country, 民主主義 (minshushugi) = democracy.",
+            "explanation_pt": "Leituras: min, tami. Ex: 国民 (kokumin) = cidadãos/povo de um país, 民主主義 (minshushugi) = democracia.",
+            "tts_query": "みん"
+        },
+        {
+            "id": "KANJI_104",
+            "question": "不",
+            "answer": "non-/negative/bad",
+            "answer_pt": "não/negativo",
+            "explanation": "Readings: ふ (fu), ぶ (bu). A plant root under the ground, indicating negation or incompletion. Example: 不安 (fuan) = anxiety/unease, 不便 (fuben) = inconvenient.",
+            "explanation_pt": "Leituras: fu, bu. Uma raiz sob o solo, indicando negação ou incompletude. Ex: 不安 (fuan) = ansiedade/inquietação, 不便 (fuben) = inconveniente.",
+            "tts_query": "ふ"
+        },
+        {
+            "id": "KANJI_105",
+            "question": "口",
+            "answer": "mouth",
+            "answer_pt": "boca",
+            "explanation": "Readings: こう (kou), くち (kuchi). Shape of an open mouth. Example: 入口 (iriguchi) = entrance, 出口 (deguchi) = exit.",
+            "explanation_pt": "Leituras: kou, kuchi. Formato de uma boca aberta. Ex: 入口 (iriguchi) = entrada, 出口 (deguchi) = saída.",
+            "tts_query": "くち"
+        },
+        {
+            "id": "KANJI_106",
+            "question": "相",
+            "answer": "mutual/phase/aspect",
+            "answer_pt": "mútuo/aspecto",
+            "explanation": "Readings: そう (sou), あい (ai). A tree (木) and an eye (目) looking at each other. Example: 相手 (aite) = partner/opponent, 首相 (shushou) = prime minister.",
+            "explanation_pt": "Leituras: sou, ai. Uma árvore (木) e um olho (目) olhando um para o outro. Ex: 相手 (aite) = parceiro/oponente, 首相 (shushou) = primeiro-ministro.",
+            "tts_query": "あい"
+        },
+        {
+            "id": "KANJI_107",
+            "question": "多",
+            "answer": "many/much",
+            "answer_pt": "muito/vários",
+            "explanation": "Readings: た (ta), おお (oo). Two moons (夕) stacked up, representing abundance. Example: 多分 (tabun) = probably, 多い (ooi) = many/much.",
+            "explanation_pt": "Leituras: ta, oo. Duas luas (夕) empilhadas, representando abundância. Ex: 多分 (tabun) = provavelmente, 多い (ooi) = muitos/muito.",
+            "tts_query": "おお"
+        },
+        {
+            "id": "KANJI_108",
+            "question": "法",
+            "answer": "law/method",
+            "answer_pt": "lei/método",
+            "explanation": "Readings: ほう (hou). Water (氵) flowing away (去), which follows the natural law. Example: 方法 (houhou) = method, 法律 (houritsu) = law.",
+            "explanation_pt": "Leituras: hou. Água (氵) fluindo (去), o que segue as leis naturais. Ex: 方法 (houhou) = método, 法律 (houritsu) = lei.",
+            "tts_query": "ほう"
+        },
+        {
+            "id": "KANJI_109",
+            "question": "全",
+            "answer": "all/whole",
+            "answer_pt": "tudo/inteiro",
+            "explanation": "Readings: ぜん (zen), すべ (sube). A king (王) under a roof (人), representing complete control over all. Example: 全部 (zenbu) = all/everything, 全国 (zenkoku) = nationwide.",
+            "explanation_pt": "Leituras: zen, sube. Um rei (王) sob um teto (人), representando controle total sobre tudo. Ex: 全部 (zenbu) = tudo/inteiro, 全国 (zenkoku) = nacional/todo o país.",
+            "tts_query": "ぜん"
+        },
+        {
+            "id": "KANJI_110",
+            "question": "情",
+            "answer": "emotion/feeling/condition",
+            "answer_pt": "emoção/sentimento",
+            "explanation": "Readings: じょう (jou), なさ (nasa). Heart (忄) feeling pure/blue (青). Example: 情報 (jouhou) = information, 感情 (kanjou) = emotion.",
+            "explanation_pt": "Leituras: jou, nasa. O coração (忄) sentindo pureza/azul (青). Ex: 情報 (jouhou) = informação, 感情 (kanjou) = emoção.",
+            "tts_query": "じょう"
+        },
+        {
+            "id": "KANJI_111",
+            "question": "野",
+            "answer": "field/wild",
+            "answer_pt": "campo/selvagem",
+            "explanation": "Readings: や (ya), の (no). Example: 野菜 (yasai) = vegetables, 分野 (bunya) = field/area/sphere.",
+            "explanation_pt": "Leituras: ya, no. Ex: 野菜 (yasai) = vegetais, 分野 (bunya) = área/campo/esfera.",
+            "tts_query": "の"
+        },
+        {
+            "id": "KANJI_112",
+            "question": "考",
+            "answer": "think/consider",
+            "answer_pt": "pensar/considerar",
+            "explanation": "Readings: こう (kou), かんが (kanga). An old person walking with a cane, reflecting on life. Example: 考える (kangaeru) = to think/consider, 思考 (shikou) = thought/thinking.",
+            "explanation_pt": "Leituras: kou, kanga. Uma pessoa idosa caminhando com bengala, refletindo sobre a vida. Ex: 考える (kangaeru) = pensar, 思考 (shikou) = pensamento.",
+            "tts_query": "かんがえ"
+        },
+        {
+            "id": "KANJI_113",
+            "question": "平",
+            "answer": "flat/peace/equal",
+            "answer_pt": "plano/paz/igual",
+            "explanation": "Readings: へい (hei), たいら (taira). Balanced scales representing equality or peace. Example: 平和 (heiwa) = peace, 平日 (heijitsu) = weekday.",
+            "explanation_pt": "Leituras: hei, taira. Balança equilibrada representando igualdade ou paz. Ex: 平和 (heiwa) = paz, 平日 (heijitsu) = dia de semana.",
+            "tts_query": "へい"
+        },
+        {
+            "id": "KANJI_114",
+            "question": "成",
+            "answer": "become/achieve/grow",
+            "answer_pt": "tornar-se/alcançar",
+            "explanation": "Readings: せい (sei), な (na). Example: 成功 (seikou) = success, 成長 (seichou) = growth.",
+            "explanation_pt": "Leituras: sei, na. Ex: 成功 (seikou) = sucesso, 成長 (seichou) = crescimento.",
+            "tts_query": "せい"
+        },
+        {
+            "id": "KANJI_115",
+            "question": "軍",
+            "answer": "army/military/force",
+            "answer_pt": "exército/militar",
+            "explanation": "Readings: ぐん (gun). A chariot or car (車) under a cover, representing military vehicles. Example: 軍隊 (guntai) = army/military troops, 米軍 (beigun) = US military.",
+            "explanation_pt": "Leituras: gun. Uma carruagem/carro (車) sob cobertura, representando veículos militares. Ex: 軍隊 (guntai) = exército, 米軍 (beigun) = forças armadas americanas.",
+            "tts_query": "ぐん"
+        },
+        {
+            "id": "KANJI_116",
+            "question": "教",
+            "answer": "teach/religion",
+            "answer_pt": "ensinar/religião",
+            "explanation": "Readings: きょう (kyou), おし (oshi). A child (子) studying with a teacher showing guidelines. Example: 教える (oshieru) = to teach, 教室 (kyoushitsu) = classroom.",
+            "explanation_pt": "Leituras: kyou, oshi. Uma criança (子) estudando com um professor mostrando diretrizes. Ex: 教える (oshieru) = ensinar, 教室 (kyoushitsu) = sala de aula.",
+            "tts_query": "きょう"
+        },
+        {
+            "id": "KANJI_117",
+            "question": "信",
+            "answer": "trust/believe/message",
+            "answer_pt": "acreditar/confiança/sinal",
+            "explanation": "Readings: しん (shin). A person (人) stands by their words (言), representing trust. Example: 信じる (shinjiru) = to believe, 信用 (shinyou) = trust/credit.",
+            "explanation_pt": "Leituras: shin. Uma pessoa (人) que apoia suas palavras (言), representando confiança. Ex: 信じる (shinjiru) = acreditar, 信用 (shinyou) = confiança/crédito.",
+            "tts_query": "しん"
+        },
+        {
+            "id": "KANJI_118",
+            "question": "近",
+            "answer": "near/close",
+            "answer_pt": "perto/próximo",
+            "explanation": "Readings: きん (kin), ちか (chika). Walking (辶) an axe's (斤) distance away (short distance). Example: 近い (chikai) = near/close, 最近 (saikin) = recently.",
+            "explanation_pt": "Leituras: kin, chika. Caminhar (辶) a distância de um machado (斤) (distância curta). Ex: 近い (chikai) = perto/próximo, 最近 (saikin) = recentemente.",
+            "tts_query": "ちか"
+        },
+        {
+            "id": "KANJI_119",
+            "question": "以",
+            "answer": "since/than/prefix",
+            "answer_pt": "a partir de/além de",
+            "explanation": "Readings: い (i). Used to mark thresholds. Example: 以上 (ijou) = more than / that's all, 以下 (ika) = less than / below.",
+            "explanation_pt": "Leituras: i. Usado para marcar limites. Ex: 以上 (ijou) = mais do que / isso é tudo, 以下 (ika) = menos do que / abaixo.",
+            "tts_query": "い"
+        },
+        {
+            "id": "KANJI_120",
+            "question": "面",
+            "answer": "face/surface/mask",
+            "answer_pt": "face/superfície/máscara",
+            "explanation": "Readings: めん (men), おも (omo). Example: 面白い (omoshiroi) = interesting/funny, 画面 (gamen) = screen.",
+            "explanation_pt": "Leituras: men, omo. Ex: 面白い (omoshiroi) = interessante/divertido, 画面 (gamen) = tela.",
+            "tts_query": "めん"
+        },
+        {
+            "id": "KANJI_121",
+            "question": "連",
+            "answer": "connect/take along/link",
+            "answer_pt": "conectar/levar junto",
+            "explanation": "Readings: れん (ren), つれ (tsure). Cars (車) moving together on a road (辶) in a line. Example: 連絡 (renraku) = contact/connection, 連れて行く (tsureteiku) = to take (someone) along.",
+            "explanation_pt": "Leituras: ren, tsure. Carros (車) se movendo juntos em uma estrada (辶) em fila. Ex: 連絡 (renraku) = contato/conexão, 連れて行く (tsureteiku) = levar (alguém) junto.",
+            "tts_query": "れん"
+        },
+        {
+            "id": "KANJI_122",
+            "question": "問",
+            "answer": "question/ask/problem",
+            "answer_pt": "pergunta/problema",
+            "explanation": "Readings: もん (mon), とい (toi). Asking a question with your mouth (口) at the gate (門). Example: 問題 (mondai) = problem/question, 質問 (shitsumon) = question.",
+            "explanation_pt": "Leituras: mon, toi. Fazer uma pergunta com a boca (口) no portão (門). Ex: 問題 (mondai) = problema/pergunta, 質問 (shitsumon) = pergunta.",
+            "tts_query": "とい"
+        },
+        {
+            "id": "KANJI_123",
+            "question": "原",
+            "answer": "original/field/meadow",
+            "answer_pt": "campo/original/origem",
+            "explanation": "Readings: げん (gen), はら (hara). A spring flowing from a cliff, representing the source or origin. Example: 原因 (gen'in) = cause, 原っぱ (harappa) = open field.",
+            "explanation_pt": "Leituras: gen, hara. Uma fonte fluindo de um penhasco, representando a fonte ou origem. Ex: 原因 (gen'in) = causa, 原っぱ (harappa) = campo aberto.",
+            "tts_query": "はら"
+        },
+        {
+            "id": "KANJI_124",
+            "question": "顔",
+            "answer": "face",
+            "answer_pt": "rosto",
+            "explanation": "Readings: がん (gan), かお (kao). The head (頁) with expressive features. Example: 顔 (kao) = face, 笑顔 (egao) = smile/smiling face.",
+            "explanation_pt": "Leituras: gan, kao. A cabeça (頁) com traços expressivos. Ex: 顔 (kao) = rosto, 笑顔 (egao) = sorriso.",
+            "tts_query": "かお"
+        },
+        {
+            "id": "KANJI_125",
+            "question": "正",
+            "answer": "correct/right/justice",
+            "answer_pt": "correto/certo/justo",
+            "explanation": "Readings: せい (sei), しょう (shou), ただ (tada). Stopping (止) at the boundary line, staying upright and correct. Example: 正しい (tadashii) = correct/right, 正解 (seikai) = correct answer.",
+            "explanation_pt": "Leituras: sei, shou, tada. Parar (止) na linha de fronteira, mantendo-se ereto e correto. Ex: 正しい (tadashii) = correto/certo, 正解 (seikai) = resposta correta.",
+            "tts_query": "せい"
+        },
+        {
+            "id": "KANJI_126",
+            "question": "機",
+            "answer": "machine/opportunity",
+            "answer_pt": "máquina/oportunidade",
+            "explanation": "Readings: き (ki). Wood (木) used to build intricate mechanisms. Example: 機械 (kikai) = machine, 飛行機 (hikouki) = airplane.",
+            "explanation_pt": "Leituras: ki. Madeira (木) usada para construir mecanismos intrincados. Ex: 機械 (kikai) = máquina, 飛行機 (hikouki) = avião.",
+            "tts_query": "き"
+        },
+        {
+            "id": "KANJI_127",
+            "question": "次",
+            "answer": "next/second",
+            "answer_pt": "próximo/seguinte",
+            "explanation": "Readings: じ (ji), つぎ (tsugi). A person breathing out ice (冫) and waiting for the next turn. Example: 次 (tsugi) = next, 目次 (mokuji) = table of contents.",
+            "explanation_pt": "Leituras: ji, tsugi. Uma pessoa soprando gelo (冫) e esperando a próxima vez. Ex: 次 (tsugi) = próximo, 目次 (mokuji) = sumário/índice.",
+            "tts_query": "つぎ"
+        },
+        {
+            "id": "KANJI_128",
+            "question": "数",
+            "answer": "number/count",
+            "answer_pt": "número/contar",
+            "explanation": "Readings: すう (suu), かず (kazu). Sorting grains of rice (米) into piles to count. Example: 数学 (suugaku) = mathematics, 数える (kazoeru) = to count.",
+            "explanation_pt": "Leituras: suu, kazu. Classificar grãos de arroz (米) em pilhas para contar. Ex: 数学 (suugaku) = matemática, 数える (kazoeru) = contar.",
+            "tts_query": "すう"
+        },
+        {
+            "id": "KANJI_129",
+            "question": "美",
+            "answer": "beauty/beautiful",
+            "answer_pt": "beleza/belo",
+            "explanation": "Readings: び (bi), うつく (utsuku). A large (大) sheep (羊) is beautiful. Example: 美しい (utsukushii) = beautiful, 美人 (bijin) = beautiful person.",
+            "explanation_pt": "Leituras: bi, utsuku. Uma ovelha (羊) grande (大) é bonita/bela. Ex: 美しい (utsukushii) = belo/bonito, 美人 (bijin) = pessoa bonita.",
+            "tts_query": "び"
+        },
+        {
+            "id": "KANJI_130",
+            "question": "回",
+            "answer": "times/round/turn around",
+            "answer_pt": "vezes/rodada/girar",
+            "explanation": "Readings: かい (kai), まわ (mawa). Concentric circles spinning around. Example: 一回 (ikkai) = once/one time, 回る (mawaru) = to turn around/spin.",
+            "explanation_pt": "Leituras: kai, mawa. Círculos concêntricos girando. Ex: 一回 (ikkai) = uma vez, 回る (mawaru) = girar/rodar.",
+            "tts_query": "かい"
+        },
+        {
+            "id": "KANJI_131",
+            "question": "表",
+            "answer": "surface/express/chart",
+            "answer_pt": "superfície/expressar/tabela",
+            "explanation": "Readings: ひょう (hyou), おもて (omote), あらわ (arawa). Example: 表面 (hyoumen) = surface, 表す (arawasu) = to express/represent.",
+            "explanation_pt": "Leituras: hyou, omote, arawa. Ex: 表面 (hyoumen) = superfície, 表す (arawasu) = expressar/representar.",
+            "tts_query": "おもて"
+        },
+        {
+            "id": "KANJI_132",
+            "question": "声",
+            "answer": "voice",
+            "answer_pt": "voz",
+            "explanation": "Readings: せい (sei), こえ (koe). A wind chime or stone instrument making a sound heard by the ear. Example: 声 (koe) = voice, 発声 (hassei) = vocalization.",
+            "explanation_pt": "Leituras: sei, koe. Um sino de vento ou instrumento de pedra fazendo som ouvido pelo ouvido. Ex: 声 (koe) = voz, 発声 (hassei) = vocalização.",
+            "tts_query": "こえ"
+        },
+        {
+            "id": "KANJI_133",
+            "question": "真",
+            "answer": "true/real/pure",
+            "answer_pt": "verdadeiro/real/puro",
+            "explanation": "Readings: しん (shin), ま (ma). Natural tool/vessel kept upright and pure. Example: 写真 (shashin) = photograph, 真実 (shinjitsu) = truth.",
+            "explanation_pt": "Leituras: shin, ma. Utensílio/vaso mantido reto e puro. Ex: 写真 (shashin) = fotografia, 真実 (shinjitsu) = verdade.",
+            "tts_query": "しん"
+        },
+        {
+            "id": "KANJI_134",
+            "question": "味",
+            "answer": "taste/meaning",
+            "answer_pt": "sabor/significado",
+            "explanation": "Readings: み (mi), あじ (aji). Putting something into the mouth (口) to taste its status (未 = not yet fully grown). Example: 意味 (imi) = meaning, 趣味 (shumi) = hobby.",
+            "explanation_pt": "Leituras: mi, aji. Colocar algo na boca (口) para provar seu estado (未 = ainda não totalmente crescido). Ex: 意味 (imi) = significado, 趣味 (shumi) = hobby.",
+            "tts_query": "あじ"
+        },
+        {
+            "id": "KANJI_135",
+            "question": "界",
+            "answer": "boundary/world",
+            "answer_pt": "limite/mundo",
+            "explanation": "Readings: かい (kai). Setting boundaries (介) on fields (田). Example: 世界 (sekai) = the world, 業界 (gyoukai) = industry/business world.",
+            "explanation_pt": "Leituras: kai. Estabelecer limites (介) em campos (田). Ex: 世界 (sekai) = o mundo, 業界 (gyoukai) = indústria/setor.",
+            "tts_query": "かい"
+        },
+        {
+            "id": "KANJI_136",
+            "question": "無",
+            "answer": "nothing/without",
+            "answer_pt": "nada/sem",
+            "explanation": "Readings: む (mu), ぶ (bu), な (na). Example: 無料 (muryou) = free of charge, 無い (nai) = to not exist/none.",
+            "explanation_pt": "Leituras: mu, bu, na. Ex: 無料 (muryou) = grátis/sem custo, 無い (nai) = não existir/sem.",
+            "tts_query": "む"
+        },
+        {
+            "id": "KANJI_137",
+            "question": "少",
+            "answer": "few/little",
+            "answer_pt": "pouco",
+            "explanation": "Readings: しょう (shou), すこ (suko), すく (suku). Small particles (小) split by a stroke, representing very little. Example: 少し (sukoshi) = a little, 少ない (sukunai) = few/scarce.",
+            "explanation_pt": "Leituras: shou, suko, suku. Pequenas partículas (小) divididas por um traço, representando muito pouco. Ex: 少し (sukoshi) = um pouco, 少ない (sukunai) = poucos/escasseza.",
+            "tts_query": "すこし"
+        },
+        {
+            "id": "KANJI_138",
+            "question": "要",
+            "answer": "need/essential/main point",
+            "answer_pt": "precisar/essencial",
+            "explanation": "Readings: よう (you), い (i). Hands holding the waist (essential center of body). Example: 必要 (hitsuyou) = necessary, 要る (iru) = to need.",
+            "explanation_pt": "Leituras: you, i. Mãos segurando a cintura (centro essencial do corpo). Ex: 必要 (hitsuyou) = necessário, 要る (iru) = precisar/ser necessário.",
+            "tts_query": "よう"
+        },
+        {
+            "id": "KANJI_139",
+            "question": "海",
+            "answer": "sea/ocean",
+            "answer_pt": "mar/oceano",
+            "explanation": "Readings: かい (kai), うみ (umi). Water (氵) where life begins (every person 每 has a mother 母). Example: 海外 (kaigai) = overseas/abroad, 海 (umi) = sea.",
+            "explanation_pt": "Leituras: kai, umi. Água (氵) onde a vida começa (toda pessoa 每 tem uma mãe 母). Ex: 海外 (kaigai) = exterior/estrangeiro, 海 (umi) = mar.",
+            "tts_query": "うみ"
+        },
+        {
+            "id": "KANJI_140",
+            "question": "活",
+            "answer": "active/lively/life",
+            "answer_pt": "ativo/vida/animado",
+            "explanation": "Readings: かつ (katsu). Water (氵) flowing quickly and a tongue (舌) speaking, showing vitality. Example: 生活 (seikatsu) = daily life, 活動 (katsudou) = activity.",
+            "explanation_pt": "Leituras: katsu. Água (氵) fluindo rapidamente e uma língua (舌) falando, mostrando vitalidade. Ex: 生活 (seikatsu) = vida cotidiana, 活動 (katsudou) = atividade.",
+            "tts_query": "かつ"
+        },
+        {
+            "id": "KANJI_141",
+            "question": "使",
+            "answer": "use/messenger",
+            "answer_pt": "usar/mensageiro",
+            "explanation": "Readings: し (shi), つか (tsuka). A person (人) acting as an official messenger to carry out orders. Example: 使う (tsukau) = to use, 大使館 (taishikan) = embassy.",
+            "explanation_pt": "Leituras: shi, tsuka. Uma pessoa (人) agindo como mensageiro oficial para cumprir ordens. Ex: 使う (tsukau) = usar, 大使館 (taishikan) = embaixada.",
+            "tts_query": "つかう"
+        },
+        {
+            "id": "KANJI_142",
+            "question": "重",
+            "answer": "heavy/pile up/serious",
+            "answer_pt": "pesado/empilhar",
+            "explanation": "Readings: じゅう (juu), ちょう (chou), おも (omo). A heavy bag or load (車-like center) on the ground (土). Example: 重い (omoi) = heavy, 重要 (juuyou) = important.",
+            "explanation_pt": "Leituras: juu, chou, omo. Uma bolsa pesada ou carga sobre o solo (土). Ex: 重い (omoi) = pesado, 重要 (juuyou) = importante.",
+            "tts_query": "おもい"
+        },
+        {
+            "id": "KANJI_143",
+            "question": "切",
+            "answer": "cut/sharp/urgent",
+            "answer_pt": "cortar/urgente",
+            "explanation": "Readings: せつ (setsu), き (ki). Cutting something with a sword or knife (刀). Example: 切る (kiru) = to cut, 大切 (taisetsu) = important.",
+            "explanation_pt": "Leituras: setsu, ki. Cortar algo com uma espada ou faca (刀). Ex: 切る (kiru) = cortar, 大切 (taisetsu) = importante.",
+            "tts_query": "きる"
+        },
+        {
+            "id": "KANJI_144",
+            "question": "内",
+            "answer": "inside/within",
+            "answer_pt": "dentro/interno",
+            "explanation": "Readings: ない (nai), うち (uchi). Entering (入) borders or walls, representing the inside. Example: 内側 (uchigawa) = inside/interior, 国内 (kokunai) = domestic/within country.",
+            "explanation_pt": "Leituras: nai, uchi. Entrar (入) em fronteiras ou paredes, representando o interior. Ex: 内側 (uchigawa) = lado de dentro/interior, 国内 (kokunai) = doméstico/nacional.",
+            "tts_query": "うち"
+        },
+        {
+            "id": "KANJI_145",
+            "question": "公",
+            "answer": "public/official",
+            "answer_pt": "público/oficial",
+            "explanation": "Readings: こう (kou), おおやけ (ooyake). Dividing (八) private (厶) items to share them with the public. Example: 公園 (kouen) = park, 公務員 (koumuin) = public servant.",
+            "explanation_pt": "Leituras: kou, ooyake. Dividir (八) itens privados (厶) para compartilhá-los com o público. Ex: 公園 (kouen) = parque, 公務員 (koumuin) = funcionário público.",
+            "tts_query": "こう"
+        },
+        {
+            "id": "KANJI_146",
+            "question": "特",
+            "answer": "special",
+            "answer_pt": "especial",
+            "explanation": "Readings: とく (toku). A special cow (牛) kept at a temple (寺). Example: 特別 (tokubetsu) = special, 特に (toku ni) = especially.",
+            "explanation_pt": "Leituras: toku. Uma vaca (牛) especial mantida em um templo (寺). Ex: 特別 (tokubetsu) = especial, 特に (toku ni) = especialmente.",
+            "tts_query": "とく"
+        },
+        {
+            "id": "KANJI_147",
+            "question": "強",
+            "answer": "strong",
+            "answer_pt": "forte",
+            "explanation": "Readings: きょう (kyou), つよ (tsuyo). A strong insect (虫) with a flexible bow (弓). Example: 強い (tsuyoi) = strong, 勉強 (benkyou) = study.",
+            "explanation_pt": "Leituras: kyou, tsuyo. Um inseto (虫) forte com um arco (弓) flexível. Ex: 強い (tsuyoi) = forte, 勉強 (benkyou) = estudo.",
+            "tts_query": "つよい"
+        },
+        {
+            "id": "KANJI_148",
+            "question": "確",
+            "answer": "certain/sure/solid",
+            "answer_pt": "certo/certeza/sólido",
+            "explanation": "Readings: かく (kaku), たし (tashi). Standing firm on a rock (石) under a roof like a bird (隹) on a solid perch. Example: 確か (tashika) = certain/sure, 確認 (kakunin) = confirmation.",
+            "explanation_pt": "Leituras: kaku, tashi. Apoiar-se firmemente em uma rocha (石) sob um teto como um pássaro (隹) em um poleiro sólido. Ex: 確か (tashika) = com certeza/provável, 確認 (kakunin) = confirmação.",
+            "tts_query": "たしか"
+        },
+        {
+            "id": "KANJI_149",
+            "question": "性",
+            "answer": "gender/sex/nature/quality",
+            "answer_pt": "gênero/natureza/qualidade",
+            "explanation": "Readings: せい (sei), しょう (shou). Born (生) with a certain heart/mind (忄), indicating innate quality or gender. Example: 女性 (josei) = woman/female, 可能性 (kanousei) = possibility.",
+            "explanation_pt": "Leituras: sei, shou. Nascido (生) com um certo coração/mente (忄), indicando qualidade inata ou gênero. Ex: 女性 (josei) = mulher, 可能性 (kanousei) = possibilidade.",
+            "tts_query": "せい"
+        },
+        {
+            "id": "KANJI_150",
+            "question": "明",
+            "answer": "bright/clear",
+            "answer_pt": "brilhante/claro",
+            "explanation": "Readings: めい (mei), みょう (myou), あか (aka). Sun (日) and Moon (月) together shine very bright. Example: 明るい (akarui) = bright, 明日 (ashita/ashita) = tomorrow.",
+            "explanation_pt": "Leituras: mei, myou, aka. Sol (日) e Lua (月) juntos brilham muito. Ex: 明るい (akarui) = claro/brilhante, 明日 (ashita) = amanhã.",
+            "tts_query": "めい"
+        },
+        {
+            "id": "KANJI_151",
+            "question": "対",
+            "answer": "opposite/versus/against",
+            "answer_pt": "oposto/contra",
+            "explanation": "Readings: たい (tai), つい (tsui). Balancing two items carefully with a hand (寸). Example: 反対 (hantai) = opposite/opposition, 対象 (taishou) = target/subject.",
+            "explanation_pt": "Leituras: tai, tsui. Equilibrar dois itens cuidadosamente com uma mão (寸). Ex: 反対 (hantai) = oposto/oposição, 対象 (taishou) = alvo/sujeito.",
+            "tts_query": "たい"
+        },
+        {
+            "id": "KANJI_152",
+            "question": "他",
+            "answer": "other/another",
+            "answer_pt": "outro/outra",
+            "explanation": "Readings: た (ta), ほか (hoka). Another person (人) standing beside a snake-like radical. Example: 他人 (tanin) = stranger/other people, 他に (hoka ni) = besides/other than.",
+            "explanation_pt": "Leituras: ta, hoka. Outra pessoa (人) ao lado de um radical em forma de serpente. Ex: 他人 (tanin) = estranho/outras pessoas, 他に (hoka ni) = além disso/além de.",
+            "tts_query": "ほか"
+        },
+        {
+            "id": "KANJI_153",
+            "question": "様",
+            "answer": "style/manner/polite suffix",
+            "answer_pt": "estilo/maneira/sufixo de cortesia",
+            "explanation": "Readings: よう (you), さま (sama). Example: 様子 (yousu) = state/appearance, お客様 (okyakusama) = customer/guest (polite).",
+            "explanation_pt": "Leituras: you, sama. Ex: 様子 (yousu) = estado/aparência, お客様 (okyakusama) = cliente/visitante (polido).",
+            "tts_query": "さま"
+        },
+        {
+            "id": "KANJI_154",
+            "question": "記",
+            "answer": "record/write down",
+            "answer_pt": "registrar/anotar",
+            "explanation": "Readings: き (ki), しる (shiru). Expressing words (言) to describe oneself (己) for records. Example: 日記 (nikki) = diary, 記事 (kiji) = article/news item.",
+            "explanation_pt": "Leituras: ki, shiru. Expressar palavras (言) para descrever a si mesmo (己) para fins de registro. Ex: 日記 (nikki) = diário, 記事 (kiji) = artigo/notícia.",
+            "tts_query": "き"
+        },
+        {
+            "id": "KANJI_155",
+            "question": "戦",
+            "answer": "fight/war/battle",
+            "answer_pt": "guerra/luta/batalha",
+            "explanation": "Readings: せん (sen), たたた (tata). A weapon (単) and shield or spear (戈) used to fight. Example: 戦争 (sensou) = war, 戦う (tatakau) = to fight/battle.",
+            "explanation_pt": "Leituras: sen, tata. Uma arma (単) e um escudo ou lança (戈) usados para lutar. Ex: 戦争 (sensou) = guerra, 戦う (tatakau) = lutar/batalhar.",
+            "tts_query": "せん"
+        },
+        {
+            "id": "KANJI_156",
+            "question": "論",
+            "answer": "theory/discuss/argument",
+            "answer_pt": "teoria/discussão/argumento",
+            "explanation": "Readings: ろん (ron). Talking about words (言) organized in a scroll or logical manner (侖). Example: 論文 (ronbun) = thesis/paper, 議論 (giron) = discussion.",
+            "explanation_pt": "Leituras: ron. Falar sobre palavras (言) organizadas em um pergaminho ou de maneira lógica (侖). Ex: 論文 (ronbun) = tese/artigo, 議論 (giron) = discussão/debate.",
+            "tts_query": "ろん"
+        },
+        {
+            "id": "KANJI_157",
+            "question": "代",
+            "answer": "substitute/replace/generation/age",
+            "answer_pt": "geração/substituir/era",
+            "explanation": "Readings: だい (dai), か (ka). A person (人) holding a stake (弋) acting as a replacement guard. Example: 時代 (jidai) = era/period, 代わり (kawari) = substitute/instead.",
+            "explanation_pt": "Leituras: dai, ka. Uma pessoa (人) segurando uma estaca (弋) agindo como guarda substituto. Ex: 時代 (jidai) = era/período, 代わり (kawari) = substituto/em vez de.",
+            "tts_query": "だい"
+        },
+        {
+            "id": "KANJI_158",
+            "question": "算",
+            "answer": "calculate/count/divine",
+            "answer_pt": "calcular/contar",
+            "explanation": "Readings: さん (san). Using bamboo (竹) rods and hands (弄-like bottom) to calculate math. Example: 計算 (keisan) = calculation, 算数 (sansuu) = arithmetic.",
+            "explanation_pt": "Leituras: san. Usar hastes de bambu (竹) e as mãos para fazer cálculos matemáticos. Ex: 計算 (keisan) = cálculo, 算数 (sansuu) = aritmética.",
+            "tts_query": "さん"
+        },
+        {
+            "id": "KANJI_159",
+            "question": "実",
+            "answer": "reality/truth/fruit/seed",
+            "answer_pt": "realidade/fruto/semente",
+            "explanation": "Readings: じつ (jitsu), み (mi). A roof (宀) sheltering goods or coins, representing substance or reality. Example: 実は (jitsu wa) = actually/in reality, 実 (mi) = fruit/nut.",
+            "explanation_pt": "Leituras: jitsu, mi. Um teto (宀) abrigando bens ou moedas, representando substância ou realidade. Ex: 実は (jitsu wa) = na verdade/realmente, 実 (mi) = fruto/semente.",
+            "tts_query": "み"
+        },
+        {
+            "id": "KANJI_160",
+            "question": "園",
+            "answer": "garden/orchard/park",
+            "answer_pt": "jardim/parque",
+            "explanation": "Readings: えん (en), その (sono). A bordered enclosure (囗) with a tree and dress-like elements inside, forming a garden. Example: 公園 (kouen) = park, 動物園 (doubutsuen) = zoo.",
+            "explanation_pt": "Leituras: en, sono. Um recinto delimitado (囗) com plantas e flores no interior, formando um jardim. Ex: 公園 (kouen) = parque, 動物園 (doubutsuen) = zoológico.",
+            "tts_query": "えん"
+        },
+        {
+            "id": "KANJI_161",
+            "question": "運",
+            "answer": "carry/transport/luck/destiny",
+            "answer_pt": "carregar/sorte/destino",
+            "explanation": "Readings: うん (un), はこ (hako). Moving along a road (辶) with an army chariot (軍). Example: 運転 (unten) = driving, 運ぶ (hakobu) = to carry/transport.",
+            "explanation_pt": "Leituras: un, hako. Mover-se ao longo de uma estrada (辶) com uma carruagem militar (軍). Ex: 運転 (unten) = dirigir, 運ぶ (hakobu) = carregar/transportar.",
+            "tts_query": "うん"
+        },
+        {
+            "id": "KANJI_162",
+            "question": "終",
+            "answer": "end/finish",
+            "answer_pt": "fim/terminar",
+            "explanation": "Readings: しゅう (shuu), お (o). Tying a knot in thread (糸) when the winter (冬) storage is finished. Example: 終わり (owari) = end, 終了 (shuuryou) = completion.",
+            "explanation_pt": "Leituras: shuu, o. Dar um nó em uma linha (糸) quando o armazenamento de inverno (冬) termina. Ex: 終わり (owari) = fim, 終了 (shuuryou) = conclusão/término.",
+            "tts_query": "おわり"
+        },
+        {
+            "id": "KANJI_163",
+            "question": "台",
+            "answer": "stand/platform/counter for machines",
+            "answer_pt": "plataforma/suporte/contador de máquinas",
+            "explanation": "Readings: だい (dai), たい (tai). A platform with a base (口). Counter for cars and machines. Example: 台所 (daidokoro) = kitchen, 台風 (taifu) = typhoon.",
+            "explanation_pt": "Leituras: dai, tai. Uma plataforma com base (口). Contador para carros e máquinas. Ex: 台所 (daidokoro) = cozinha, 台風 (taifu) = tufão.",
+            "tts_query": "だい"
+        },
+        {
+            "id": "KANJI_164",
+            "question": "感",
+            "answer": "feel/sensation/emotion",
+            "answer_pt": "sentir/sensação/emoção",
+            "explanation": "Readings: かん (kan). A heart (心) reacting to an impact or weapon. Example: 感謝 (kansha) = gratitude/thanks, 感じる (kanjiru) = to feel.",
+            "explanation_pt": "Leituras: kan. Um coração (心) reagindo a um impacto ou estímulo. Ex: 感謝 (kansha) = gratidão, 感じる (kanjiru) = sentir.",
+            "tts_query": "かん"
+        },
+        {
+            "id": "KANJI_165",
+            "question": "作",
+            "answer": "make/produce/create",
+            "answer_pt": "fazer/produzir/criar",
+            "explanation": "Readings: さく (saku), さ (sa), つく (tsuku). A person (人) making or sewing clothes. Example: 作る (tsukuru) = to make, 作家 (sakka) = author/writer.",
+            "explanation_pt": "Leituras: saku, sa, tsuku. Uma pessoa (人) fazendo ou costurando roupas. Ex: 作る (tsukuru) = fazer/criar, 作家 (sakka) = autor/escritor.",
+            "tts_query": "つくる"
+        },
+        {
+            "id": "KANJI_166",
+            "question": "空",
+            "answer": "sky/empty/air",
+            "answer_pt": "céu/vazio/ar",
+            "explanation": "Readings: くう (kuu), そら (sora), あ (a). A cave (穴) with work (工) underneath creating empty space. Example: 空気 (kuuki) = air, 空 (sora) = sky.",
+            "explanation_pt": "Leituras: kuu, sora, a. Uma caverna (穴) com trabalho (工) por baixo criando espaço vazio. Ex: 空気 (kuuki) = ar, 空 (sora) = céu.",
+            "tts_query": "そら"
+        },
+        {
+            "id": "KANJI_167",
+            "question": "遠",
+            "answer": "far/distant",
+            "answer_pt": "longe/distante",
+            "explanation": "Readings: えん (en), とお (too). Walking (辶) a long distance carrying clothes and items. Example: 遠い (tooi) = far, 遠足 (ensoku) = excursion/hiking.",
+            "explanation_pt": "Leituras: en, too. Caminhar (辶) uma longa distância carregando roupas e pertences. Ex: 遠い (tooi) = longe/distante, 遠足 (ensoku) = excursão.",
+            "tts_query": "tooi"
+        },
+        {
+            "id": "KANJI_168",
+            "question": "帰",
+            "answer": "return home/arrive at",
+            "answer_pt": "voltar para casa/retornar",
+            "explanation": "Readings: き (ki), かえ (kae). Returning home to sweep and clean. Example: 帰る (kaeru) = to return home, 帰国 (kikoku) = return to one's country.",
+            "explanation_pt": "Leituras: ki, kae. Retornar para casa para varrer e limpar. Ex: 帰る (kaeru) = voltar para casa, 帰国 (kikoku) = retorno ao país de origem.",
+            "tts_query": "かえる"
+        },
+        {
+            "id": "KANJI_169",
+            "question": "投",
+            "answer": "throw/launch/invest",
+            "answer_pt": "lançar/arremessar/investir",
+            "explanation": "Readings: とう (tou), な (na). Throwing something with a hand (扌) and arm force. Example: 投げる (nageru) = to throw, 投資 (toushi) = investment.",
+            "explanation_pt": "Leituras: tou, na. Arremessar algo com a mão (扌) e força do braço. Ex: 投げる (nageru) = arremessar/jogar, 投資 (toushi) = investimento.",
+            "tts_query": "なげる"
+        },
+        {
+            "id": "KANJI_170",
+            "question": "送",
+            "answer": "send/dispatch/accompany",
+            "answer_pt": "enviar/despedir-se",
+            "explanation": "Readings: そう (sou), おく (oku). Moving on a road (辶) carrying goods with hands (top part). Example: 送る (okuru) = to send, 送信 (soushin) = transmission/sending.",
+            "explanation_pt": "Leituras: sou, oku. Mover-se em uma estrada (辶) carregando mercadorias com as mãos (parte superior). Ex: 送る (okuru) = enviar, 送信 (soushin) = transmissão/envio.",
+            "tts_query": "おくる"
+        },
+        {
+            "id": "KANJI_171",
+            "question": "鳥",
+            "answer": "bird",
+            "answer_pt": "pássaro/ave",
+            "explanation": "Readings: ちょう (chou), とり (tori). Pictograph of a bird with feathers and a tail. Example: 鳥 (tori) = bird, 焼き鳥 (yakitori) = grilled chicken skewers.",
+            "explanation_pt": "Leituras: chou, tori. Pictógrafo de um pássaro com penas e cauda. Ex: 鳥 (tori) = pássaro, 焼き鳥 (yakitori) = espetinho de frango grelhado.",
+            "tts_query": "とり"
+        },
+        {
+            "id": "KANJI_172",
+            "question": "風",
+            "answer": "wind/style/custom",
+            "answer_pt": "vento/estilo/costume",
+            "explanation": "Readings: ふう (fuu), かぜ (kaze). Wind blowing under a cover, carrying insects (虫) or pollen. Example: 風 (kaze) = wind, 和風 (wafuu) = Japanese style.",
+            "explanation_pt": "Leituras: fuu, kaze. Vento soprando sob uma cobertura, carregando insetos (虫) ou pólen. Ex: 風 (kaze) = vento, 和風 (wafuu) = estilo japonês.",
+            "tts_query": "かぜ"
+        },
+        {
+            "id": "KANJI_173",
+            "question": "石",
+            "answer": "stone/rock",
+            "answer_pt": "pedra/rocha",
+            "explanation": "Readings: せき (seki), いし (ishi). A stone rolling out from under a cliff (厂). Example: 石 (ishi) = stone, 化石 (kaseki) = fossil.",
+            "explanation_pt": "Leituras: seki, ishi. Uma pedra rolando de sob um penhasco (厂). Ex: 石 (ishi) = pedra, 化石 (kaseki) = fóssil.",
+            "tts_query": "いし"
+        },
+        {
+            "id": "KANJI_174",
+            "question": "糸",
+            "answer": "thread/yarn",
+            "answer_pt": "fio/linha",
+            "explanation": "Readings: し (shi), いと (ito). Pictograph of a coil of thread or silk fibers. Example: 糸 (ito) = thread, 毛糸 (keito) = wool yarn.",
+            "explanation_pt": "Leituras: shi, ito. Pictógrafo de um novelo de linha ou fibras de seda. Ex: 糸 (ito) = fio/linha, 毛糸 (keito) = fio de lã.",
+            "tts_query": "いと"
+        },
+        {
+            "id": "KANJI_175",
+            "question": "耳",
+            "answer": "ear",
+            "answer_pt": "orelha/ouvido",
+            "explanation": "Readings: じ (ji), みみ (mimi). Pictograph of an ear. Example: 耳 (mimi) = ear.",
+            "explanation_pt": "Leituras: ji, mimi. Pictógrafo de uma orelha/ouvido. Ex: 耳 (mimi) = orelha.",
+            "tts_query": "みみ"
+        },
+        {
+            "id": "KANJI_176",
+            "question": "音",
+            "answer": "sound/noise",
+            "answer_pt": "som/ruído",
+            "explanation": "Readings: おん (on), おと (oto). A sound standing (立) inside the mouth (日 = mouth-like structure). Example: 音楽 (ongaku) = music, 音 (oto) = sound.",
+            "explanation_pt": "Leituras: on, oto. Um som parado (立) dentro da boca (日 = estrutura semelhante a boca). Ex: 音楽 (ongaku) = música, 音 (oto) = som.",
+            "tts_query": "おと"
+        },
+        {
+            "id": "KANJI_177",
+            "question": "歌",
+            "answer": "song/sing",
+            "answer_pt": "canção/cantar",
+            "explanation": "Readings: か (ka), うた (uta). Breathing out (欠) and expressing a rhythmic voice (哥). Example: 歌う (utau) = to sing, 歌手 (kashu) = singer.",
+            "explanation_pt": "Leituras: ka, uta. Respirar/soprar (欠) expressando uma voz rítmica (哥). Ex: 歌う (utau) = cantar, 歌手 (kashu) = cantor.",
+            "tts_query": "うた"
+        },
+        {
+            "id": "KANJI_178",
+            "question": "鉄",
+            "answer": "iron/steel",
+            "answer_pt": "ferro",
+            "explanation": "Readings: てつ (tetsu). Metal (金) that is strong and used for tools. Example: 地下鉄 (chikatetsu) = subway, 鉄道 (tetsudou) = railway.",
+            "explanation_pt": "Leituras: tetsu. Metal (金) que é forte e usado para ferramentas. Ex: 地下鉄 (chikatetsu) = metrô, 鉄道 (tetsudou) = ferrovia.",
+            "tts_query": "てつ"
+        },
+        {
+            "id": "KANJI_179",
+            "question": "銀",
+            "answer": "silver/money",
+            "answer_pt": "prata",
+            "explanation": "Readings: ぎん (gin). Metal (金) that is good or shiny, but stops (艮) below gold. Example: 銀行 (ginkou) = bank, 銀座 (ginza) = Ginza (famous area in Tokyo).",
+            "explanation_pt": "Leituras: gin. Metal (金) que é bom ou brilhante, mas para (艮) abaixo do ouro. Ex: 銀行 (ginkou) = banco, 銀座 (ginza) = Ginza (área famosa em Tóquio).",
+            "tts_query": "ぎん"
+        },
+        {
+            "id": "KANJI_180",
+            "question": "図",
+            "answer": "drawing/map/plan/chart",
+            "answer_pt": "desenho/mapa/plano",
+            "explanation": "Readings: ず (zu), と (to). A bordered box (囗) containing plans or drawings. Example: 地図 (chizu) = map, 図書館 (toshokan) = library.",
+            "explanation_pt": "Leituras: zu, to. Uma caixa delimitada (囗) contendo planos ou desenhos. Ex: 地図 (chizu) = mapa, 図書館 (toshokan) = biblioteca.",
+            "tts_query": "ず"
+        },
+        {
+            "id": "KANJI_181",
+            "question": "紙",
+            "answer": "paper",
+            "answer_pt": "papel",
+            "explanation": "Readings: し (shi), かみ (kami). Thread-like fibers (糸) flattened (氏) to make paper. Example: 手紙 (tegami) = letter, 新聞紙 (shinbunshi) = newspaper sheet.",
+            "explanation_pt": "Leituras: shi, kami. Fibras semelhantes a fios (糸) achatadas (氏) para fazer papel. Ex: 手紙 (tegami) = carta, 新聞紙 (shinbunshi) = papel de jornal.",
+            "tts_query": "かみ"
+        },
+        {
+            "id": "KANJI_182",
+            "question": "画",
+            "answer": "picture/stroke/drawing",
+            "answer_pt": "imagem/traço/desenho",
+            "explanation": "Readings: が (ga), かく (kaku). Boarders enclosing a field, representing a picture or layout. Example: 映画 (eiga) = movie, 画家 (gaka) = painter.",
+            "explanation_pt": "Leituras: ga, kaku. Fronteiras delimitando um campo, representando uma imagem ou layout. Ex: 映画 (eiga) = filme, 画家 (gaka) = pintor.",
+            "tts_query": "が"
+        },
+        {
+            "id": "KANJI_183",
+            "question": "売",
+            "answer": "sell",
+            "answer_pt": "vender",
+            "explanation": "Readings: ばい (bai), う (u). Bringing things out to buy or sell (legs walking bottom). Example: 売る (uru) = to sell, 売店 (baiten) = stand/booth.",
+            "explanation_pt": "Leituras: bai, uru. Trazer coisas para comprar ou vender (pernas caminhando abaixo). Ex: 売る (uru) = vender, 売店 (baiten) = quiosque/barraca.",
+            "tts_query": "うる"
+        },
+        {
+            "id": "KANJI_184",
+            "question": "買",
+            "answer": "buy",
+            "answer_pt": "comprar",
+            "explanation": "Readings: ばい (bai), か (ka). A net (罒) used to gather shells (貝) (ancient money). Example: 買う (kau) = to buy, 買い物 (kaimono) = shopping.",
+            "explanation_pt": "Leituras: bai, kau. Uma rede (罒) usada para coletar conchas (貝) (dinheiro antigo). Ex: 買う (kau) = comprar, 買い物 (kaimono) = compras.",
+            "tts_query": "かう"
+        },
+        {
+            "id": "KANJI_185",
+            "question": "春",
+            "answer": "spring",
+            "answer_pt": "primavera",
+            "explanation": "Readings: しゅん (shun), はる (haru). Sun (日) rising, and plants starting to sprout in spring. Example: 春 (haru) = spring, 春休み (haruyasumi) = spring break.",
+            "explanation_pt": "Leituras: shun, haru. O sol (日) nascendo e plantas começando a brotar na primavera. Ex: 春 (haru) = primavera, 春休み (haruyasumi) = férias de primavera.",
+            "tts_query": "haru"
+        },
+        {
+            "id": "KANJI_186",
+            "question": "夏",
+            "answer": "summer",
+            "answer_pt": "verão",
+            "explanation": "Readings: か (ka), なつ (natsu). A large head with slow walking legs in the heat of summer. Example: 夏 (natsu) = summer, 夏祭り (natsumatsuri) = summer festival.",
+            "explanation_pt": "Leituras: ka, natsu. Uma cabeça grande com pernas caminhando devagar no calor do verão. Ex: 夏 (natsu) = verão, 夏祭り (natsumatsuri) = festival de verão.",
+            "tts_query": "natsu"
+        },
+        {
+            "id": "KANJI_187",
+            "question": "秋",
+            "answer": "autumn",
+            "answer_pt": "outono",
+            "explanation": "Readings: しゅう (shuu), あき (aki). Grain (禾) turned red or burned by fire (火) in autumn. Example: 秋 (aki) = autumn, 秋風 (akikaze) = autumn breeze.",
+            "explanation_pt": "Leituras: shuu, aki. Grão (禾) avermelhado ou queimado pelo fogo (火) no outono. Ex: 秋 (aki) = outono, 秋風 (akikaze) = brisa de outono.",
+            "tts_query": "aki"
+        },
+        {
+            "id": "KANJI_188",
+            "question": "冬",
+            "answer": "winter",
+            "answer_pt": "inverno",
+            "explanation": "Readings: とう (tou), ふゆ (fuyu). The end of the year, with ice or snow particles (冫). Example: 冬 (fuyu) = winter, 冬休み (fuyuyasumi) = winter break.",
+            "explanation_pt": "Leituras: tou, fuyu. O final do ano, com partículas de gelo ou neve (冫). Ex: 冬 (fuyu) = inverno, 冬休み (fuyuyasumi) = férias de inverno.",
+            "tts_query": "fuyu"
+        },
+        {
+            "id": "KANJI_189",
+            "question": "朝",
+            "answer": "morning",
+            "answer_pt": "manhã",
+            "explanation": "Readings: ちょう (chou), あさ (asa). The sun rising between grass, and the moon (月) still visible in the morning. Example: 朝 (asa) = morning, 朝食 (choushoku) = breakfast.",
+            "explanation_pt": "Leituras: chou, asa. O sol nascendo entre a grama, e a lua (月) ainda visível de manhã. Ex: 朝 (asa) = manhã, 朝食 (choushoku) = café da manhã.",
+            "tts_query": "asa"
+        },
+        {
+            "id": "KANJI_190",
+            "question": "昼",
+            "answer": "noon/daytime",
+            "answer_pt": "tarde/meio-dia/dia",
+            "explanation": "Readings: ちゅう (chuu), ひる (hiru). The sun (日) high in the sky during the day. Example: 昼 (hiru) = noon/daytime, 昼ご飯 (hirugohan) = lunch.",
+            "explanation_pt": "Leituras: chuu, hiru. O sol (日) alto no céu durante o dia. Ex: 昼 (hiru) = meio-dia/tarde, 昼ご飯 (hirugohan) = almoço.",
+            "tts_query": "ひる"
+        },
+        {
+            "id": "KANJI_191",
+            "question": "夕",
+            "answer": "evening",
+            "answer_pt": "anoitecer/tarde",
+            "explanation": "Readings: せき (seki), ゆう (yuu). The crescent moon appearing at sunset. Example: 夕方 (yuugata) = evening, 夕食 (yuushoku) = dinner.",
+            "explanation_pt": "Leituras: seki, yuu. A lua crescente aparecendo ao pôr do sol. Ex: 夕方 (yuugata) = entardecer/final da tarde, 夕食 (yuushoku) = jantar.",
+            "tts_query": "ゆう"
+        },
+        {
+            "id": "KANJI_192",
+            "question": "夜",
+            "answer": "night",
+            "answer_pt": "noite",
+            "explanation": "Readings: や (ya), よる (yoru). A person walking under the moon/stars at night. Example: 夜 (yoru) = night, 夜中 (yonaka) = middle of the night.",
+            "explanation_pt": "Leituras: ya, yoru. Uma pessoa caminhando sob a lua/estrelas à noite. Ex: 夜 (yoru) = noite, 夜中 (yonaka) = meio da noite.",
+            "tts_query": "よる"
+        },
+        {
+            "id": "KANJI_193",
+            "question": "曜",
+            "answer": "weekday/day of the week",
+            "answer_pt": "dia da semana",
+            "explanation": "Readings: よう (you). Sun (日) and feathers/wings representing days flying by. Example: 日曜日 (nichiyoubi) = Sunday, 何曜日 (naniyoubi) = which day of the week?",
+            "explanation_pt": "Leituras: you. O sol (日) e penas/asas representando os dias voando. Ex: 日曜日 (nichiyoubi) = domingo, 何曜日 (naniyoubi) = qual dia da semana?",
+            "tts_query": "よう"
+        },
+        {
+            "id": "KANJI_194",
+            "question": "黒",
+            "answer": "black",
+            "answer_pt": "preto/negro",
+            "explanation": "Readings: こく (koku), くろ (kuro). Smoke rising from fire (灬) covering a window in soot (black). Example: 黒い (kuroi) = black, 黒板 (kokuban) = blackboard.",
+            "explanation_pt": "Leituras: koku, kuro. Fumaça subindo do fogo (灬) cobrindo uma janela com fuligem (preto). Ex: 黒い (kuroi) = preto, 黒板 (kokuban) = lousa/quadro negro.",
+            "tts_query": "くろ"
+        },
+        {
+            "id": "KANJI_195",
+            "question": "赤",
+            "answer": "red",
+            "answer_pt": "vermelho",
+            "explanation": "Readings: せき (seki), あか (aka). A fire (土-like top + 灬-like bottom) glowing red. Example: 赤い (akai) = red, 赤ちゃん (akachan) = baby.",
+            "explanation_pt": "Leituras: seki, aka. Um fogo brilhando em brasa vermelha. Ex: 赤い (akai) = vermelho, 赤ちゃん (akachan) = bebê.",
+            "tts_query": "あか"
+        },
+        {
+            "id": "KANJI_196",
+            "question": "青",
+            "answer": "blue/green",
+            "answer_pt": "azul/verde",
+            "explanation": "Readings: せい (sei), あお (ao). Young plants sprouting (生) under a well (井-like top), representing green/blue. Example: 青い (aoi) = blue/green, 青年 (seinen) = youth/young man.",
+            "explanation_pt": "Leituras: sei, ao. Plantas jovens brotando (生) perto de um poço (topo como 井), representando verde/azul. Ex: 青い (aoi) = azul/verde, 青年 (seinen) = jovem.",
+            "tts_query": "あお"
+        },
+        {
+            "id": "KANJI_197",
+            "question": "黄",
+            "answer": "yellow",
+            "answer_pt": "amarelo",
+            "explanation": "Readings: こう (kou), き (ki). Example: 黄色い (kiiroi) = yellow, 黄金 (ougon/kogane) = gold/golden.",
+            "explanation_pt": "Leituras: kou, ki. Ex: 黄色い (kiiroi) = amarelo, 黄金 (ougon) = ouro/dourado.",
+            "tts_query": "き"
+        },
+        {
+            "id": "KANJI_198",
+            "question": "茶",
+            "answer": "tea/brown",
+            "answer_pt": "chá/marrom",
+            "explanation": "Readings: ちゃ (cha), さ (sa). Grass (艹) leaves harvested from a tree (木) to make tea. Example: お茶 (ocha) = green tea, 紅茶 (koucha) = black tea.",
+            "explanation_pt": "Leituras: cha, sa. Folhas (艹) colhidas de uma árvore (木) para fazer chá. Ex: お茶 (ocha) = chá verde, 紅茶 (koucha) = chá preto.",
+            "tts_query": "cha"
+        },
+        {
+            "id": "KANJI_199",
+            "question": "病",
+            "answer": "illness/sick",
+            "answer_pt": "doença/doente",
+            "explanation": "Readings: びょう (byou), やまい (yamai). Being sick in bed (疒) with a burning fever (丙). Example: 病気 (byouki) = illness/sickness, 病院 (byouin) = hospital.",
+            "explanation_pt": "Leituras: byou, yamai. Estar doente na cama (疒) com febre ardente (丙). Ex: 病気 (byouki) = doença/enfermidade, 病院 (byouin) = hospital.",
+            "tts_query": "びょう"
+        },
+        {
+            "id": "KANJI_200",
+            "question": "薬",
+            "answer": "medicine/drug",
+            "answer_pt": "remédio/medicamento",
+            "explanation": "Readings: やく (yaku), くすり (kusuri). Grass (艹) that makes you feel happy/comfortable (楽) when sick. Example: 薬 (kusuri) = medicine, 薬局 (yakkyoku) = pharmacy.",
+            "explanation_pt": "Leituras: yaku, kusuri. Erva/planta (艹) que faz você se sentir feliz/confortável (楽) quando doente. Ex: 薬 (kusuri) = remédio, 薬局 (yakkyoku) = farmácia.",
+            "tts_query": "kusuri"
+        }
+    ]
+}

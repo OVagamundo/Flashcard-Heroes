@@ -16,17 +16,21 @@ def main():
         os.makedirs(OUTPUT_DIR)
         print(f"Created output directory: {OUTPUT_DIR}")
     
-    # Load Kanji deck to extract card IDs and Kanji characters
-    kanji_file = os.path.join(DECKS_PATH, "kanji_100.json")
-    if not os.path.exists(kanji_file):
-        print(f"Error: {kanji_file} not found. Please run this from the project root directory.")
+    # Load all Kanji decks to extract card IDs and Kanji characters
+    cards = []
+    if not os.path.exists(DECKS_PATH):
+        print(f"Error: {DECKS_PATH} not found. Please run this from the project root directory.")
         return
         
-    with open(kanji_file, "r", encoding="utf-8") as f:
-        deck_data = json.load(f)
-        
-    cards = deck_data.get("cards", [])
-    print(f"Found {len(cards)} cards in Kanji deck.")
+    for filename in os.listdir(DECKS_PATH):
+        if filename.startswith("kanji_") and filename.endswith(".json"):
+            filepath = os.path.join(DECKS_PATH, filename)
+            print(f"Loading deck: {filepath}")
+            with open(filepath, "r", encoding="utf-8") as f:
+                deck_data = json.load(f)
+            cards.extend(deck_data.get("cards", []))
+            
+    print(f"Found {len(cards)} cards in total across all Kanji decks.")
     
     # Download each audio file
     download_count = 0
@@ -51,7 +55,8 @@ def main():
         print(f"Downloading pronunciation for '{card_id}'...")
         
         # Google Translate TTS URL
-        url_encoded_text = urllib.parse.quote(char)
+        tts_text = card.get("tts_query", char)
+        url_encoded_text = urllib.parse.quote(tts_text)
         url = f"https://translate.google.com/translate_tts?ie=UTF-8&tl=ja&client=tw-ob&q={url_encoded_text}"
         
         try:
