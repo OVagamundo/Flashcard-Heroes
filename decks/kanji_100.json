@@ -11,7 +11,8 @@
             "answer": "day/sun",
             "answer_pt": "dia/sol",
             "explanation": "Readings: にち (nichi), ひ (hi). Like a window with sunlight. Example: 日本 (nihon) = Japan.",
-            "explanation_pt": "Leituras: nichi, hi. Como uma janela com luz solar. Ex: 日本 (nihon) = Japão."
+            "explanation_pt": "Leituras: nichi, hi. Como uma janela com luz solar. Ex: 日本 (nihon) = Japão.",
+            "tts_query": "ひ"
         },
         {
             "id": "KANJI_002",
@@ -19,7 +20,8 @@
             "answer": "one",
             "answer_pt": "um",
             "explanation": "Readings: いち (ichi), ひと (hito). One horizontal stroke = one. Example: 一人 (hitori) = one person.",
-            "explanation_pt": "Leituras: ichi, hito. Um traço horizontal = um. Ex: 一人 (hitori) = uma pessoa."
+            "explanation_pt": "Leituras: ichi, hito. Um traço horizontal = um. Ex: 一人 (hitori) = uma pessoa.",
+            "tts_query": "いち"
         },
         {
             "id": "KANJI_003",
@@ -27,7 +29,8 @@
             "answer": "country",
             "answer_pt": "país",
             "explanation": "Readings: こく (koku), くに (kuni). Treasure (玉) inside borders. Example: 外国 (gaikoku) = foreign country.",
-            "explanation_pt": "Leituras: koku, kuni. Tesouro (玉) dentro de fronteiras. Ex: 外国 (gaikoku) = país estrangeiro."
+            "explanation_pt": "Leituras: koku, kuni. Tesouro (玉) dentro de fronteiras. Ex: 外国 (gaikoku) = país estrangeiro.",
+            "tts_query": "くに"
         },
         {
             "id": "KANJI_004",
@@ -35,7 +38,8 @@
             "answer": "person",
             "answer_pt": "pessoa",
             "explanation": "Readings: じん (jin), ひと (hito). A person walking. Example: 日本人 (nihonjin) = Japanese person.",
-            "explanation_pt": "Leituras: jin, hito. Uma pessoa caminhando. Ex: 日本人 (nihonjin) = pessoa japonesa."
+            "explanation_pt": "Leituras: jin, hito. Uma pessoa caminhando. Ex: 日本人 (nihonjin) = pessoa japonesa.",
+            "tts_query": "ひと"
         },
         {
             "id": "KANJI_005",
@@ -43,7 +47,8 @@
             "answer": "year",
             "answer_pt": "ano",
             "explanation": "Readings: ねん (nen), とし (toshi). Grain harvest cycle. Example: 今年 (kotoshi) = this year.",
-            "explanation_pt": "Leituras: nen, toshi. Ciclo de colheita de grãos. Ex: 今年 (kotoshi) = este ano."
+            "explanation_pt": "Leituras: nen, toshi. Ciclo de colheita de grãos. Ex: 今年 (kotoshi) = este ano.",
+            "tts_query": "とし"
         },
         {
             "id": "KANJI_006",
@@ -51,7 +56,8 @@
             "answer": "big",
             "answer_pt": "grande",
             "explanation": "Readings: だい (dai), おお (oo). Person with arms stretched wide. Example: 大学 (daigaku) = university.",
-            "explanation_pt": "Leituras: dai, oo. Pessoa com braços bem abertos. Ex: 大学 (daigaku) = universidade."
+            "explanation_pt": "Leituras: dai, oo. Pessoa com braços bem abertos. Ex: 大学 (daigaku) = universidade.",
+            "tts_query": "おおきい"
         },
         {
             "id": "KANJI_007",
@@ -59,7 +65,8 @@
             "answer": "ten",
             "answer_pt": "dez",
             "explanation": "Readings: じゅう (juu), とお (too). Cross representing 10. Example: 十分 (juubun) = enough/10 minutes.",
-            "explanation_pt": "Leituras: juu, too. Cruz representando 10. Ex: 十分 (juubun) = suficiente / 10 minutos."
+            "explanation_pt": "Leituras: juu, too. Cruz representando 10. Ex: 十分 (juubun) = suficiente / 10 minutos.",
+            "tts_query": "じゅう"
         },
         {
             "id": "KANJI_008",
@@ -67,7 +74,8 @@
             "answer": "two",
             "answer_pt": "dois",
             "explanation": "Readings: に (ni), ふた (futa). Two horizontal lines. Example: 二人 (futari) = two people.",
-            "explanation_pt": "Leituras: ni, futa. Duas linhas horizontais. Ex: 二人 (futari) = duas pessoas."
+            "explanation_pt": "Leituras: ni, futa. Duas linhas horizontais. Ex: 二人 (futari) = duas pessoas.",
+            "tts_query": "に"
         },
         {
             "id": "KANJI_009",
@@ -75,7 +83,8 @@
             "answer": "book/origin",
             "answer_pt": "livro/origem",
             "explanation": "Readings: ほん (hon), もと (moto). Tree with root marked. Example: 日本 (nihon) = Japan, 本 (hon) = book.",
-            "explanation_pt": "Leituras: hon, moto. Árvore com a raiz marcada. Ex: 日本 (nihon) = Japão, 本 (hon) = livro."
+            "explanation_pt": "Leituras: hon, moto. Árvore com a raiz marcada. Ex: 日本 (nihon) = Japão, 本 (hon) = livro.",
+            "tts_query": "ほん"
         },
         {
             "id": "KANJI_010",
@@ -83,7 +92,8 @@
             "answer": "middle",
             "answer_pt": "meio",
             "explanation": "Readings: ちゅう (chuu), なか (naka). Box with line through center. Example: 中国 (chuugoku) = China.",
-            "explanation_pt": "Leituras: chuu, naka. Caixa com linha pelo centro. Ex: 中国 (chuugoku) = China."
+            "explanation_pt": "Leituras: chuu, naka. Caixa com linha pelo centro. Ex: 中国 (chuugoku) = China.",
+            "tts_query": "なか"
         },
         {
             "id": "KANJI_011",
@@ -91,7 +101,8 @@
             "answer": "long",
             "answer_pt": "longo",
             "explanation": "Readings: ちょう (chou), なが (naga). Long flowing hair. Example: 社長 (shachou) = company president.",
-            "explanation_pt": "Leituras: chou, naga. Cabelo longo e esvoaçante. Ex: 社長 (shachou) = presidente da empresa."
+            "explanation_pt": "Leituras: chou, naga. Cabelo longo e esvoaçante. Ex: 社長 (shachou) = presidente da empresa.",
+            "tts_query": "ながい"
         },
         {
             "id": "KANJI_012",
@@ -99,7 +110,8 @@
             "answer": "exit",
             "answer_pt": "saída",
             "explanation": "Readings: しゅつ (shutsu), で (de). Mountain peaks emerging. Example: 出口 (deguchi) = exit.",
-            "explanation_pt": "Leituras: shutsu, de. Cumes de montanhas aparecendo. Ex: 出口 (deguchi) = saída."
+            "explanation_pt": "Leituras: shutsu, de. Cumes de montanhas aparecendo. Ex: 出口 (deguchi) = saída.",
+            "tts_query": "でる"
         },
         {
             "id": "KANJI_013",
@@ -107,7 +119,8 @@
             "answer": "three",
             "answer_pt": "três",
             "explanation": "Readings: さん (san), み (mi). Three horizontal lines. Example: 三人 (sannin) = three people.",
-            "explanation_pt": "Leituras: san, mi. Três linhas horizontais. Ex: 三人 (sannin) = três pessoas."
+            "explanation_pt": "Leituras: san, mi. Três linhas horizontais. Ex: 三人 (sannin) = três pessoas.",
+            "tts_query": "さん"
         },
         {
             "id": "KANJI_014",
@@ -115,7 +128,8 @@
             "answer": "time",
             "answer_pt": "tempo",
             "explanation": "Readings: じ (ji), とき (toki). Sun + temple = time told by temples. Example: 時間 (jikan) = time.",
-            "explanation_pt": "Leituras: ji, toki. Sol + templo = tempo marcado pelos templos. Ex: 時間 (jikan) = tempo."
+            "explanation_pt": "Leituras: ji, toki. Sol + templo = tempo marcado pelos templos. Ex: 時間 (jikan) = tempo.",
+            "tts_query": "とき"
         },
         {
             "id": "KANJI_015",
@@ -123,7 +137,8 @@
             "answer": "go",
             "answer_pt": "ir",
             "explanation": "Readings: こう (kou), い (i), ゆ (yu). Crossroads. Example: 行く (iku) = to go, 銀行 (ginkou) = bank.",
-            "explanation_pt": "Leituras: kou, i. Encruzilhada. Ex: 行く (iku) = ir, 銀行 (ginkou) = banco."
+            "explanation_pt": "Leituras: kou, i. Encruzilhada. Ex: 行く (iku) = ir, 銀行 (ginkou) = banco.",
+            "tts_query": "いく"
         },
         {
             "id": "KANJI_016",
@@ -131,7 +146,8 @@
             "answer": "see",
             "answer_pt": "ver",
             "explanation": "Readings: けん (ken), み (mi). Eye on legs. Example: 見る (miru) = to see, 意見 (iken) = opinion.",
-            "explanation_pt": "Leituras: ken, mi. Olho sobre pernas. Ex: 見る (miru) = ver, 意見 (iken) = opinião."
+            "explanation_pt": "Leituras: ken, mi. Olho sobre pernas. Ex: 見る (miru) = ver, 意見 (iken) = opinião.",
+            "tts_query": "みる"
         },
         {
             "id": "KANJI_017",
@@ -139,7 +155,8 @@
             "answer": "month/moon",
             "answer_pt": "mês/lua",
             "explanation": "Readings: げつ (getsu), つき (tsuki). Crescent moon shape. Example: 今月 (kongetsu) = this month.",
-            "explanation_pt": "Leituras: getsu, tsuki. Forma de lua crescente. Ex: 今月 (kongetsu) = este mês."
+            "explanation_pt": "Leituras: getsu, tsuki. Forma de lua crescente. Ex: 今月 (kongetsu) = este mês.",
+            "tts_query": "つき"
         },
         {
             "id": "KANJI_018",
@@ -147,7 +164,8 @@
             "answer": "minute/part",
             "answer_pt": "minuto/parte",
             "explanation": "Readings: ぶん (bun), わ (wa), ふん (fun). Cutting with a knife. Example: 五分 (gofun) = 5 minutes.",
-            "explanation_pt": "Leituras: bun, wa, fun. Cortando com uma faca. Ex: 五分 (gofun) = 5 minutos."
+            "explanation_pt": "Leituras: bun, wa, fun. Cortando com uma faca. Ex: 五分 (gofun) = 5 minutos.",
+            "tts_query": "わける"
         },
         {
             "id": "KANJI_019",
@@ -155,7 +173,8 @@
             "answer": "after",
             "answer_pt": "depois",
             "explanation": "Readings: ご (go), あと (ato), のち (nochi). Walking behind. Example: 午後 (gogo) = afternoon.",
-            "explanation_pt": "Leituras: go, ato. Caminhando atrás. Ex: 午後 (gogo) = tarde."
+            "explanation_pt": "Leituras: go, ato. Caminhando atrás. Ex: 午後 (gogo) = tarde.",
+            "tts_query": "あと"
         },
         {
             "id": "KANJI_020",
@@ -163,7 +182,8 @@
             "answer": "before",
             "answer_pt": "antes",
             "explanation": "Readings: ぜん (zen), まえ (mae). Walking in front. Example: 午前 (gozen) = morning, 名前 (namae) = name.",
-            "explanation_pt": "Leituras: zen, mae. Caminhando na frente. Ex: 午前 (gozen) = manhã, 名前 (namae) = nome."
+            "explanation_pt": "Leituras: zen, mae. Caminhando na frente. Ex: 午前 (gozen) = manhã, 名前 (namae) = nome.",
+            "tts_query": "まえ"
         },
         {
             "id": "KANJI_021",
@@ -171,7 +191,8 @@
             "answer": "life",
             "answer_pt": "vida",
             "explanation": "Readings: せい (sei), い (i), う (u), は (ha). Plant sprouting from earth. Example: 学生 (gakusei) = student.",
-            "explanation_pt": "Leituras: sei, i, u. Planta brotando da terra. Ex: 学生 (gakusei) = estudante."
+            "explanation_pt": "Leituras: sei, i, u. Planta brotando da terra. Ex: 学生 (gakusei) = estudante.",
+            "tts_query": "せい"
         },
         {
             "id": "KANJI_022",
@@ -179,7 +200,8 @@
             "answer": "five",
             "answer_pt": "cinco",
             "explanation": "Readings: ご (go), いつ (itsu). Cross with top and bottom. Example: 五人 (gonin) = five people.",
-            "explanation_pt": "Leituras: go, itsu. Cruz com topo e base. Ex: 五人 (gonin) = cinco pessoas."
+            "explanation_pt": "Leituras: go, itsu. Cruz com topo e base. Ex: 五人 (gonin) = cinco pessoas.",
+            "tts_query": "ご"
         },
         {
             "id": "KANJI_023",
@@ -187,7 +209,8 @@
             "answer": "interval",
             "answer_pt": "intervalo",
             "explanation": "Readings: かん (kan), あいだ (aida), ま (ma). Sun peeking through gate. Example: 時間 (jikan) = time.",
-            "explanation_pt": "Leituras: kan, aida. Sol espiando pelo portão. Ex: 時間 (jikan) = tempo."
+            "explanation_pt": "Leituras: kan, aida. Sol espiando pelo portão. Ex: 時間 (jikan) = tempo.",
+            "tts_query": "あいだ"
         },
         {
             "id": "KANJI_024",
@@ -195,7 +218,8 @@
             "answer": "up",
             "answer_pt": "cima",
             "explanation": "Readings: じょう (jou), うえ (ue), あ (a), のぼ (nobo). Line above base. Example: 上手 (jouzu) = skillful.",
-            "explanation_pt": "Leituras: jou, ue. Linha acima da base. Ex: 上手 (jouzu) = habilidoso."
+            "explanation_pt": "Leituras: jou, ue. Linha acima da base. Ex: 上手 (jouzu) = habilidoso.",
+            "tts_query": "うえ"
         },
         {
             "id": "KANJI_025",
@@ -203,7 +227,8 @@
             "answer": "east",
             "answer_pt": "leste",
             "explanation": "Readings: とう (tou), ひがし (higashi). Sun rising behind tree. Example: 東京 (toukyou) = Tokyo.",
-            "explanation_pt": "Leituras: tou, higashi. Sol nascendo atrás da árvore. Ex: 東京 (toukyou) = Tóquio."
+            "explanation_pt": "Leituras: tou, higashi. Sol nascendo atrás da árvore. Ex: 東京 (toukyou) = Tóquio.",
+            "tts_query": "ひがし"
         },
         {
             "id": "KANJI_026",
@@ -211,7 +236,8 @@
             "answer": "four",
             "answer_pt": "quatro",
             "explanation": "Readings: し (shi), よん (yon), よ (yo). Mouth breathing four times. Example: 四人 (yonin) = four people.",
-            "explanation_pt": "Leituras: shi, yon. Boca respirando quatro vezes. Ex: 四人 (yonin) = quatro pessoas."
+            "explanation_pt": "Leituras: shi, yon. Boca respirando quatro vezes. Ex: 四人 (yonin) = quatro pessoas.",
+            "tts_query": "よん"
         },
         {
             "id": "KANJI_027",
@@ -219,7 +245,8 @@
             "answer": "now",
             "answer_pt": "agora",
             "explanation": "Readings: こん (kon), いま (ima). Roof over something. Example: 今日 (kyou) = today.",
-            "explanation_pt": "Leituras: kon, ima. Telhado sobre algo. Ex: 今日 (kyou) = hoje."
+            "explanation_pt": "Leituras: kon, ima. Telhado sobre algo. Ex: 今日 (kyou) = hoje.",
+            "tts_query": "いま"
         },
         {
             "id": "KANJI_028",
@@ -227,7 +254,8 @@
             "answer": "gold/money",
             "answer_pt": "ouro/dinheiro",
             "explanation": "Readings: きん (kin), かね (kane). Golden nuggets underground. Example: お金 (okane) = money.",
-            "explanation_pt": "Leituras: kin, kane. Pepitas de ouro sob a terra. Ex: お金 (okane) = dinheiro."
+            "explanation_pt": "Leituras: kin, kane. Pepitas de ouro sob a terra. Ex: お金 (okane) = dinheiro.",
+            "tts_query": "かね"
         },
         {
             "id": "KANJI_029",
@@ -235,7 +263,8 @@
             "answer": "nine",
             "answer_pt": "nove",
             "explanation": "Readings: きゅう (kyuu), く (ku), ここの (kokono). Almost complete circle. Example: 九月 (kugatsu) = September.",
-            "explanation_pt": "Leituras: kyuu, ku. Círculo quase completo. Ex: 九月 (kugatsu) = Setembro."
+            "explanation_pt": "Leituras: kyuu, ku. Círculo quase completo. Ex: 九月 (kugatsu) = Setembro.",
+            "tts_query": "きゅう"
         },
         {
             "id": "KANJI_030",
@@ -243,7 +272,8 @@
             "answer": "enter",
             "answer_pt": "entrar",
             "explanation": "Readings: にゅう (nyuu), はい (hai), い (i). Arrow entering. Example: 入口 (iriguchi) = entrance.",
-            "explanation_pt": "Leituras: nyuu, hai, i. Flecha entrando. Ex: 入口 (iriguchi) = entrada."
+            "explanation_pt": "Leituras: nyuu, hai, i. Flecha entrando. Ex: 入口 (iriguchi) = entrada.",
+            "tts_query": "はいる"
         },
         {
             "id": "KANJI_031",
@@ -251,7 +281,8 @@
             "answer": "study",
             "answer_pt": "estudar",
             "explanation": "Readings: がく (gaku), まな (mana). Child under a roof learning. Example: 大学 (daigaku) = university.",
-            "explanation_pt": "Leituras: gaku, mana. Criança sob um telhado aprendendo. Ex: 大学 (daigaku) = universidade."
+            "explanation_pt": "Leituras: gaku, mana. Criança sob um telhado aprendendo. Ex: 大学 (daigaku) = universidade.",
+            "tts_query": "まなぶ"
         },
         {
             "id": "KANJI_032",
@@ -259,7 +290,8 @@
             "answer": "high",
             "answer_pt": "alto",
             "explanation": "Readings: こう (kou), たか (taka). Tall building with roof. Example: 高校 (koukou) = high school.",
-            "explanation_pt": "Leituras: kou, taka. Edifício alto com telhado. Ex: 高校 (koukou) = escola de ensino médio."
+            "explanation_pt": "Leituras: kou, taka. Edifício alto com telhado. Ex: 高校 (koukou) = escola de ensino médio.",
+            "tts_query": "たかい"
         },
         {
             "id": "KANJI_033",
@@ -267,7 +299,8 @@
             "answer": "yen/circle",
             "answer_pt": "iene/círculo",
             "explanation": "Readings: えん (en), まる (maru). Round coin. Example: 百円 (hyakuen) = 100 yen.",
-            "explanation_pt": "Leituras: en, maru. Moeda redonda. Ex: 百円 (hyakuen) = 100 ienes."
+            "explanation_pt": "Leituras: en, maru. Moeda redonda. Ex: 百円 (hyakuen) = 100 ienes.",
+            "tts_query": "えん"
         },
         {
             "id": "KANJI_034",
@@ -275,7 +308,8 @@
             "answer": "child",
             "answer_pt": "criança",
             "explanation": "Readings: し (shi), こ (ko). Baby with arms. Example: 子供 (kodomo) = child.",
-            "explanation_pt": "Leituras: shi, ko. Bebê com braços. Ex: 子供 (kodomo) = criança."
+            "explanation_pt": "Leituras: shi, ko. Bebê com braços. Ex: 子供 (kodomo) = criança.",
+            "tts_query": "こ"
         },
         {
             "id": "KANJI_035",
@@ -283,7 +317,8 @@
             "answer": "outside",
             "answer_pt": "fora",
             "explanation": "Readings: がい (gai), そと (soto), ほか (hoka). Evening moon = outside at night. Example: 外国 (gaikoku) = foreign country.",
-            "explanation_pt": "Leituras: gai, soto. Lua à noite = fora à noite. Ex: 外国 (gaikoku) = país estrangeiro."
+            "explanation_pt": "Leituras: gai, soto. Lua à noite = fora à noite. Ex: 外国 (gaikoku) = país estrangeiro.",
+            "tts_query": "そと"
         },
         {
             "id": "KANJI_036",
@@ -291,7 +326,8 @@
             "answer": "eight",
             "answer_pt": "oito",
             "explanation": "Readings: はち (hachi), や (ya), よう (you). Two lines spreading apart. Example: 八月 (hachigatsu) = August.",
-            "explanation_pt": "Leituras: hachi, ya. Duas linhas se separando. Ex: 八月 (hachigatsu) = Agosto."
+            "explanation_pt": "Leituras: hachi, ya. Duas linhas se separando. Ex: 八月 (hachigatsu) = Agosto.",
+            "tts_query": "はち"
         },
         {
             "id": "KANJI_037",
@@ -299,7 +335,8 @@
             "answer": "six",
             "answer_pt": "seis",
             "explanation": "Readings: ろく (roku), む (mu), むっ (mu). Roof with legs. Example: 六月 (rokugatsu) = June.",
-            "explanation_pt": "Leituras: roku, mu. Telhado com pernas. Ex: 六月 (rokugatsu) = Junho."
+            "explanation_pt": "Leituras: roku, mu. Telhado com pernas. Ex: 六月 (rokugatsu) = Junho.",
+            "tts_query": "ろく"
         },
         {
             "id": "KANJI_038",
@@ -307,7 +344,8 @@
             "answer": "down",
             "answer_pt": "baixo",
             "explanation": "Readings: か (ka), した (shita), さ (sa), お (o), くだ (kuda). Line below base. Example: 下手 (heta) = unskillful.",
-            "explanation_pt": "Leituras: ka, shita. Linha abaixo da base. Ex: 下手 (heta) = não habilidoso."
+            "explanation_pt": "Leituras: ka, shita. Linha abaixo da base. Ex: 下手 (heta) = não habilidoso.",
+            "tts_query": "した"
         },
         {
             "id": "KANJI_039",
@@ -315,7 +353,8 @@
             "answer": "come",
             "answer_pt": "vir",
             "explanation": "Readings: らい (rai), く (ku), き (ki). Rice plants coming in harvest. Example: 来年 (rainen) = next year.",
-            "explanation_pt": "Leituras: rai, ku. Plantas de arroz vindo na colheita. Ex: 来年 (rainen) = próximo ano."
+            "explanation_pt": "Leituras: rai, ku. Plantas de arroz vindo na colheita. Ex: 来年 (rainen) = próximo ano.",
+            "tts_query": "くる"
         },
         {
             "id": "KANJI_040",
@@ -323,7 +362,8 @@
             "answer": "spirit",
             "answer_pt": "espírito",
             "explanation": "Readings: き (ki), け (ke). Steam rising. Example: 元気 (genki) = energetic, 天気 (tenki) = weather.",
-            "explanation_pt": "Leituras: ki, ke. Vapor subindo. Ex: 元気 (genki) = energético, 天気 (tenki) = tempo."
+            "explanation_pt": "Leituras: ki, ke. Vapor subindo. Ex: 元気 (genki) = energético, 天気 (tenki) = tempo.",
+            "tts_query": "き"
         },
         {
             "id": "KANJI_041",
@@ -331,7 +371,8 @@
             "answer": "small",
             "answer_pt": "pequeno",
             "explanation": "Readings: しょう (shou), ちい (chii), こ (ko), お (o). Small dividing strokes. Example: 小学校 (shougakkou) = elementary school.",
-            "explanation_pt": "Leituras: shou, kii. Pequenos traços divisórios. Ex: 小学校 (shougakkou) = escola primária."
+            "explanation_pt": "Leituras: shou, kii. Pequenos traços divisórios. Ex: 小学校 (shougakkou) = escola primária.",
+            "tts_query": "ちいさい"
         },
         {
             "id": "KANJI_042",
@@ -339,7 +380,8 @@
             "answer": "seven",
             "answer_pt": "sete",
             "explanation": "Readings: しち (shichi), なな (nana). Bent line crossing. Example: 七月 (shichigatsu) = July.",
-            "explanation_pt": "Leituras: shichi, nana. Linha dobrada cruzando. Ex: 七月 (shichigatsu) = Julho."
+            "explanation_pt": "Leituras: shichi, nana. Linha dobrada cruzando. Ex: 七月 (shichigatsu) = Julho.",
+            "tts_query": "なな"
         },
         {
             "id": "KANJI_043",
@@ -347,7 +389,8 @@
             "answer": "mountain",
             "answer_pt": "montanha",
             "explanation": "Readings: さん (san), やま (yama). Mountain peaks! Example: 富士山 (fujisan) = Mt. Fuji.",
-            "explanation_pt": "Leituras: san, yama. Cumes de montanhas! Ex: 富士山 (fujisan) = Monte Fuji."
+            "explanation_pt": "Leituras: san, yama. Cumes de montanhas! Ex: 富士山 (fujisan) = Monte Fuji.",
+            "tts_query": "やま"
         },
         {
             "id": "KANJI_044",
@@ -355,7 +398,8 @@
             "answer": "talk",
             "answer_pt": "falar",
             "explanation": "Readings: わ (wa), はな (hana), はなし (hanashi). Words (言) from tongue. Example: 電話 (denwa) = telephone.",
-            "explanation_pt": "Leituras: wa, hana. Palavras (言) da língua. Ex: 電話 (denwa) = telefone."
+            "explanation_pt": "Leituras: wa, hana. Palavras (言) da língua. Ex: 電話 (denwa) = telefone.",
+            "tts_query": "はなし"
         },
         {
             "id": "KANJI_045",
@@ -363,7 +407,8 @@
             "answer": "woman",
             "answer_pt": "mulher",
             "explanation": "Readings: じょ (jo), おんな (onna), め (me). Woman kneeling elegantly. Example: 女性 (josei) = woman/female.",
-            "explanation_pt": "Leituras: jo, onna. Mulher ajoelhada elegantemente. Ex: 女性 (josei) = mulher/feminino."
+            "explanation_pt": "Leituras: jo, onna. Mulher ajoelhada elegantemente. Ex: 女性 (josei) = mulher/feminino.",
+            "tts_query": "おんな"
         },
         {
             "id": "KANJI_046",
@@ -371,7 +416,8 @@
             "answer": "north",
             "answer_pt": "norte",
             "explanation": "Readings: ほく (hoku), きた (kita). Two people back-to-back, fleeing cold. Example: 北海道 (hokkaidou) = Hokkaido.",
-            "explanation_pt": "Leituras: hoku, kita. Duas pessoas de costas uma para a outra, fugindo do frio. Ex: 北海道 (hokkaidou) = Hokkaido."
+            "explanation_pt": "Leituras: hoku, kita. Duas pessoas de costas uma para a outra, fugindo do frio. Ex: 北海道 (hokkaidou) = Hokkaido.",
+            "tts_query": "きた"
         },
         {
             "id": "KANJI_047",
@@ -379,7 +425,8 @@
             "answer": "noon",
             "answer_pt": "meio-dia",
             "explanation": "Readings: ご (go), うま (uma). Sun at its peak (12:00). Example: 午前 (gozen) = morning, 午後 (gogo) = afternoon.",
-            "explanation_pt": "Leituras: go, uma. Sol no seu auge (12:00). Ex: 午前 (gozen) = manhã, 午後 (gogo) = tarde."
+            "explanation_pt": "Leituras: go, uma. Sol no seu auge (12:00). Ex: 午前 (gozen) = manhã, 午後 (gogo) = tarde.",
+            "tts_query": "ご"
         },
         {
             "id": "KANJI_048",
@@ -387,7 +434,8 @@
             "answer": "hundred",
             "answer_pt": "cem",
             "explanation": "Readings: ひゃく (hyaku). One (一) + white (白). Example: 百円 (hyakuen) = 100 yen.",
-            "explanation_pt": "Leituras: hyaku. Um (一) + branco (白). Ex: 百円 (hyakuen) = 100 ienes."
+            "explanation_pt": "Leituras: hyaku. Um (一) + branco (白). Ex: 百円 (hyakuen) = 100 ienes.",
+            "tts_query": "ひゃく"
         },
         {
             "id": "KANJI_049",
@@ -395,7 +443,8 @@
             "answer": "write",
             "answer_pt": "escrever",
             "explanation": "Readings: しょ (sho), か (ka). Brush (聿) on paper (日). Example: 辞書 (jisho) = dictionary.",
-            "explanation_pt": "Leituras: sho, ka. Pincel (聿) no papel (日). Ex: 辞書 (jisho) = dicionário."
+            "explanation_pt": "Leituras: sho, ka. Pincel (聿) no papel (日). Ex: 辞書 (jisho) = dicionário.",
+            "tts_query": "かく"
         },
         {
             "id": "KANJI_050",
@@ -403,7 +452,8 @@
             "answer": "before/ahead",
             "answer_pt": "antes/frente",
             "explanation": "Readings: せん (sen), さき (saki). Walking ahead. Example: 先生 (sensei) = teacher.",
-            "explanation_pt": "Leituras: sen, saki. Caminhando à frente. Ex: 先生 (sensei) = professor."
+            "explanation_pt": "Leituras: sen, saki. Caminhando à frente. Ex: 先生 (sensei) = professor.",
+            "tts_query": "さき"
         },
         {
             "id": "KANJI_051",
@@ -411,7 +461,8 @@
             "answer": "name",
             "answer_pt": "nome",
             "explanation": "Readings: めい (mei), な (na). Evening moon (夕) + mouth (口) = calling a name at night. Example: 名前 (namae) = name.",
-            "explanation_pt": "Leituras: mei, na. Lua à noite (夕) + boca (口) = chamando um nome à noite. Ex: 名前 (namae) = nome."
+            "explanation_pt": "Leituras: mei, na. Lua à noite (夕) + boca (口) = chamando um nome à noite. Ex: 名前 (namae) = nome.",
+            "tts_query": "な"
         },
         {
             "id": "KANJI_052",
@@ -419,7 +470,8 @@
             "answer": "river",
             "answer_pt": "rio",
             "explanation": "Readings: せん (sen), かわ (kawa). Three lines of flowing water. Example: 山川 (yamakawa) = mountains and rivers.",
-            "explanation_pt": "Leituras: sen, kawa. Três linhas de água fluindo. Ex: 山川 (yamakawa) = montanhas e rios."
+            "explanation_pt": "Leituras: sen, kawa. Três linhas de água fluindo. Ex: 山川 (yamakawa) = montanhas e rios.",
+            "tts_query": "かわ"
         },
         {
             "id": "KANJI_053",
@@ -427,7 +479,8 @@
             "answer": "thousand",
             "answer_pt": "mil",
             "explanation": "Readings: せん (sen), ち (chi). One (一) + person (人) = many people. Example: 三千 (sanzen) = 3,000.",
-            "explanation_pt": "Leituras: sen, chi. Um (一) + pessoa (人) = muitas pessoas. Ex: 三千 (sanzen) = 3.000 ienes."
+            "explanation_pt": "Leituras: sen, chi. Um (一) + pessoa (人) = muitas pessoas. Ex: 三千 (sanzen) = 3.000 ienes.",
+            "tts_query": "せん"
         },
         {
             "id": "KANJI_054",
@@ -435,7 +488,8 @@
             "answer": "water",
             "answer_pt": "água",
             "explanation": "Readings: すい (sui), みず (mizu). Splashing water. Example: 水曜日 (suiyoubi) = Wednesday.",
-            "explanation_pt": "Leituras: sui, mizu. Água espirrando. Ex: 水曜日 (suiyoubi) = quarta-feira."
+            "explanation_pt": "Leituras: sui, mizu. Água espirrando. Ex: 水曜日 (suiyoubi) = quarta-feira.",
+            "tts_query": "みず"
         },
         {
             "id": "KANJI_055",
@@ -443,7 +497,8 @@
             "answer": "half",
             "answer_pt": "metade",
             "explanation": "Readings: はん (han), なか (naka). Dividing into two parts. Example: 半年 (hantoshi) = half year.",
-            "explanation_pt": "Leituras: han, naka. Dividindo em duas partes. Ex: 半年 (hantoshi) = meio ano."
+            "explanation_pt": "Leituras: han, naka. Dividindo em duas partes. Ex: 半年 (hantoshi) = meio ano.",
+            "tts_query": "はん"
         },
         {
             "id": "KANJI_056",
@@ -451,7 +506,8 @@
             "answer": "man",
             "answer_pt": "homem",
             "explanation": "Readings: だん (dan), おとこ (otoko). Rice field (田) + strength (力) = working the fields. Example: 男性 (dansei) = man/male.",
-            "explanation_pt": "Leituras: dan, otoko. Campo de arroz (田) + força (力) = trabalhando nos campos. Ex: 男性 (dansei) = homem/masculino."
+            "explanation_pt": "Leituras: dan, otoko. Campo de arroz (田) + força (力) = trabalhando nos campos. Ex: 男性 (dansei) = homem/masculino.",
+            "tts_query": "おとこ"
         },
         {
             "id": "KANJI_057",
@@ -459,7 +515,8 @@
             "answer": "west",
             "answer_pt": "oeste",
             "explanation": "Readings: せい (sei), にし (nishi). Bird in nest as sun sets. Example: 西口 (nishiguchi) = west exit.",
-            "explanation_pt": "Leituras: sei, nishi. Pássaro no ninho enquanto o sol se põe. Ex: 西口 (nishiguchi) = saída oeste, 関西 (kansai)."
+            "explanation_pt": "Leituras: sei, nishi. Pássaro no ninho enquanto o sol se põe. Ex: 西口 (nishiguchi) = saída oeste, 関西 (kansai).",
+            "tts_query": "にし"
         },
         {
             "id": "KANJI_058",
@@ -467,7 +524,8 @@
             "answer": "electricity",
             "answer_pt": "eletricidade",
             "explanation": "Readings: でん (den). Rain (雨) + lightning (申). Example: 電車 (densha) = train.",
-            "explanation_pt": "Leituras: den. Chuva (雨) + raio (申). Ex: 電話 (denwa) = telefone, 電車 (densha) = trem."
+            "explanation_pt": "Leituras: den. Chuva (雨) + raio (申). Ex: 電話 (denwa) = telefone, 電車 (densha) = trem.",
+            "tts_query": "でん"
         },
         {
             "id": "KANJI_059",
@@ -475,7 +533,8 @@
             "answer": "school",
             "answer_pt": "escola",
             "explanation": "Readings: こう (kou). Tree (木) + exchange (交) = place of exchange under trees. Example: 学校 (gakkou) = school.",
-            "explanation_pt": "Leituras: kou. Árvore (木) + troca (交) = lugar de troca sob as árvores. Ex: 学校 (gakkou) = escola."
+            "explanation_pt": "Leituras: kou. Árvore (木) + troca (交) = lugar de troca sob as árvores. Ex: 学校 (gakkou) = escola.",
+            "tts_query": "こう"
         },
         {
             "id": "KANJI_060",
@@ -483,7 +542,8 @@
             "answer": "language",
             "answer_pt": "língua",
             "explanation": "Readings: ご (go). Words (言) + I (五 + 口). Example: 日本語 (nihongo) = Japanese language.",
-            "explanation_pt": "Leituras: go. Palavras (言) + eu (五 + 口). Ex: 日本語 (nihongo) = língua japonesa."
+            "explanation_pt": "Leituras: go. Palavras (言) + eu (五 + 口). Ex: 日本語 (nihongo) = língua japonesa.",
+            "tts_query": "ご"
         },
         {
             "id": "KANJI_061",
@@ -491,7 +551,8 @@
             "answer": "soil",
             "answer_pt": "terra",
             "explanation": "Readings: ど (do), つち (tsuchi). Sprout coming from soil. Example: 土曜日 (doyoubi) = Saturday.",
-            "explanation_pt": "Leituras: do, tsuchi. Broto saindo da terra. Ex: 土曜日 (doyoubi) = sábado."
+            "explanation_pt": "Leituras: do, tsuchi. Broto saindo da terra. Ex: 土曜日 (doyoubi) = sábado.",
+            "tts_query": "つち"
         },
         {
             "id": "KANJI_062",
@@ -499,7 +560,8 @@
             "answer": "tree",
             "answer_pt": "árvore",
             "explanation": "Readings: もく (moku), き (ki). Shape of a tree with branches. Example: 木曜日 (mokuyoubi) = Thursday.",
-            "explanation_pt": "Leituras: moku, ki. Forma de uma árvore com galhos. Ex: 木曜日 (mokuyoubi) = quinta-feira."
+            "explanation_pt": "Leituras: moku, ki. Forma de uma árvore com galhos. Ex: 木曜日 (mokuyoubi) = quinta-feira.",
+            "tts_query": "き"
         },
         {
             "id": "KANJI_063",
@@ -507,7 +569,8 @@
             "answer": "hear",
             "answer_pt": "ouvir",
             "explanation": "Readings: ぶん (bun), き (ki). Ear (耳) at the gate (門). Example: 聞く (kiku) = to hear, 新聞 (shinbun) = newspaper.",
-            "explanation_pt": "Leituras: bun, ki. Ouvido (耳) no portão (門). Ex: 聞く (kiku) = ouvir, 新聞 (shinbun) = jornal."
+            "explanation_pt": "Leituras: bun, ki. Ouvido (耳) no portão (門). Ex: 聞く (kiku) = ouvir, 新聞 (shinbun) = jornal.",
+            "tts_query": "きく"
         },
         {
             "id": "KANJI_064",
@@ -515,7 +578,8 @@
             "answer": "eat",
             "answer_pt": "comer",
             "explanation": "Readings: しょく (shoku), た (ta). Person with food under a roof. Example: 食べる (taberu) = to eat, 食事 (shokuji) = meal.",
-            "explanation_pt": "Leituras: shoku, ta. Pessoa com comida sob um telhado. Ex: 食べる (taberu) = comer, 食事 (shokuji) = refeição."
+            "explanation_pt": "Leituras: shoku, ta. Pessoa com comida sob um telhado. Ex: 食べる (taberu) = comer, 食事 (shokuji) = refeição.",
+            "tts_query": "たべる"
         },
         {
             "id": "KANJI_065",
@@ -523,7 +587,8 @@
             "answer": "car",
             "answer_pt": "carro",
             "explanation": "Readings: しゃ (sha), くるま (kuruma). Overhead view of a carriage. Example: 電車 (densha) = train.",
-            "explanation_pt": "Leituras: sha, kuruma. Vista superior de uma carruagem. Ex: 電車 (densha) = trem, 自動車 (jidousha) = carro."
+            "explanation_pt": "Leituras: sha, kuruma. Vista superior de uma carruagem. Ex: 電車 (densha) = trem, 自動車 (jidousha) = carro.",
+            "tts_query": "くるま"
         },
         {
             "id": "KANJI_066",
@@ -531,7 +596,8 @@
             "answer": "what",
             "answer_pt": "o quê",
             "explanation": "Readings: か (ka), なに (nani), なん (nan). Person carrying something. Example: 何 (nani) = what, 何時 (nanji) = what time.",
-            "explanation_pt": "Leituras: ka, nani, nan. Pessoa carregando algo. Ex: 何 (nani) = o quê, 何時 (nanji) = que horas."
+            "explanation_pt": "Leituras: ka, nani, nan. Pessoa carregando algo. Ex: 何 (nani) = o quê, 何時 (nanji) = que horas.",
+            "tts_query": "なに"
         },
         {
             "id": "KANJI_067",
@@ -539,7 +605,8 @@
             "answer": "south",
             "answer_pt": "sul",
             "explanation": "Readings: なん (nan), みなみ (minami). Lush vegetation in warm south. Example: 南口 (minamiguchi) = south exit.",
-            "explanation_pt": "Leituras: nan, minami. Vegetação exuberante no sul quente. Ex: 南口 (minamiguchi) = saída sul."
+            "explanation_pt": "Leituras: nan, minami. Vegetação exuberante no sul quente. Ex: 南口 (minamiguchi) = saída sul.",
+            "tts_query": "みなみ"
         },
         {
             "id": "KANJI_068",
@@ -547,7 +614,8 @@
             "answer": "ten thousand",
             "answer_pt": "dez mil",
             "explanation": "Readings: まん (man). Ancient symbol for many. Example: 一万 (ichiman) = 10,000.",
-            "explanation_pt": "Leituras: man. Símbolo antigo para muitos. Ex: 一万 (ichiman) = 10.000 ienes."
+            "explanation_pt": "Leituras: man. Símbolo antigo para muitos. Ex: 一万 (ichiman) = 10.000 ienes.",
+            "tts_query": "まん"
         },
         {
             "id": "KANJI_069",
@@ -555,7 +623,8 @@
             "answer": "every",
             "answer_pt": "cada/todo",
             "explanation": "Readings: まい (mai). Mother (母) + one stroke. Example: 毎日 (mainichi) = every day.",
-            "explanation_pt": "Leituras: mai. Mãe (母) + um traço. Ex: 毎日 (mainichi) = cada dia / todos os dias."
+            "explanation_pt": "Leituras: mai. Mãe (母) + um traço. Ex: 毎日 (mainichi) = cada dia / todos os dias.",
+            "tts_query": "まい"
         },
         {
             "id": "KANJI_070",
@@ -563,7 +632,8 @@
             "answer": "white",
             "answer_pt": "branco",
             "explanation": "Readings: はく (haku), しろ (shiro). Sunlight (日) with a ray. Example: 白い (shiroi) = white.",
-            "explanation_pt": "Leituras: haku, shiro. Luz solar (日) com um raio. Ex: 白い (shiroi) = branco."
+            "explanation_pt": "Leituras: haku, shiro. Luz solar (日) com um raio. Ex: 白い (shiroi) = branco.",
+            "tts_query": "しろ"
         },
         {
             "id": "KANJI_071",
@@ -571,7 +641,8 @@
             "answer": "heaven",
             "answer_pt": "céu",
             "explanation": "Readings: てん (ten). Big (大) + one stroke above. Example: 天気 (tenki) = weather.",
-            "explanation_pt": "Leituras: ten. Grande (大) + um traço acima. Ex: 天気 (tenki) = tempo / clima."
+            "explanation_pt": "Leituras: ten. Grande (大) + um traço acima. Ex: 天気 (tenki) = tempo / clima.",
+            "tts_query": "てん"
         },
         {
             "id": "KANJI_072",
@@ -579,7 +650,8 @@
             "answer": "mother",
             "answer_pt": "mãe",
             "explanation": "Readings: ぼ (bo), はは (haha). Woman (女) with dots for breasts. Example: お母さん (okaasan) = mother.",
-            "explanation_pt": "Leituras: bo, haha. Mulher (女) com pontos para os seios. Ex: お母さん (okaasan) = mãe."
+            "explanation_pt": "Leituras: bo, haha. Mulher (女) com pontos para os seios. Ex: お母さん (okaasan) = mãe.",
+            "tts_query": "はは"
         },
         {
             "id": "KANJI_073",
@@ -587,7 +659,8 @@
             "answer": "fire",
             "answer_pt": "fogo",
             "explanation": "Readings: か (ka), ひ (hi). Flickering flames. Example: 火曜日 (kayoubi) = Tuesday.",
-            "explanation_pt": "Leituras: ka, hi. Chamas oscilantes. Ex: 火曜日 (kayoubi) = terça-feira."
+            "explanation_pt": "Leituras: ka, hi. Chamas oscilantes. Ex: 火曜日 (kayoubi) = terça-feira.",
+            "tts_query": "ひ"
         },
         {
             "id": "KANJI_074",
@@ -595,7 +668,8 @@
             "answer": "right",
             "answer_pt": "direita",
             "explanation": "Readings: う (u), ゆう (yuu), みぎ (migi). Hand (又) + mouth (口) = side that feeds. Example: 右手 (migite) = right hand.",
-            "explanation_pt": "Leituras: u, yuu, migi. Mão (又) + boca (口) = lado que alimenta. Ex: 右手 (migite) = mão direita."
+            "explanation_pt": "Leituras: u, yuu, migi. Mão (又) + boca (口) = lado que alimenta. Ex: 右手 (migite) = mão direita.",
+            "tts_query": "みぎ"
         },
         {
             "id": "KANJI_075",
@@ -603,7 +677,8 @@
             "answer": "read",
             "answer_pt": "ler",
             "explanation": "Readings: どく (doku), よ (yo). Words (言) + seller (売) = reciting. Example: 読む (yomu) = to read.",
-            "explanation_pt": "Leituras: doku, yo. Palavras (言) + vendedor (売) = recitar. Ex: 読む (yomu) = ler."
+            "explanation_pt": "Leituras: doku, yo. Palavras (言) + vendedor (売) = recitar. Ex: 読む (yomu) = ler.",
+            "tts_query": "よむ"
         },
         {
             "id": "KANJI_076",
@@ -611,7 +686,8 @@
             "answer": "friend",
             "answer_pt": "amigo",
             "explanation": "Readings: ゆう (yuu), とも (tomo). Two hands (又) helping each other. Example: 友達 (tomodachi) = friend.",
-            "explanation_pt": "Leituras: yuu, tomo. Duas mãos (又) se ajudando. Ex: 友達 (tomodachi) = amigo."
+            "explanation_pt": "Leituras: yuu, tomo. Duas mãos (又) se ajudando. Ex: 友達 (tomodachi) = amigo.",
+            "tts_query": "とも"
         },
         {
             "id": "KANJI_077",
@@ -619,7 +695,8 @@
             "answer": "left",
             "answer_pt": "esquerda",
             "explanation": "Readings: さ (sa), ひだり (hidari). Hand + work = left hand works. Example: 左 (hidari) = left.",
-            "explanation_pt": "Leituras: sa, hidari. Mão + trabalho = mão esquerda trabalha. Ex: 左 (hidari) = esquerda."
+            "explanation_pt": "Leituras: sa, hidari. Mão + trabalho = mão esquerda trabalha. Ex: 左 (hidari) = esquerda.",
+            "tts_query": "ひだり"
         },
         {
             "id": "KANJI_078",
@@ -627,7 +704,8 @@
             "answer": "rest",
             "answer_pt": "descansar",
             "explanation": "Readings: きゅう (kyuu), やす (yasu). Person against tree = resting. Example: 休む (yasumu) = to rest.",
-            "explanation_pt": "Leituras: kyuu, yasu. Pessoa contra árvore = descansando. Ex: 休む (yasumu) = descansar."
+            "explanation_pt": "Leituras: kyuu, yasu. Pessoa contra árvore = descansando. Ex: 休む (yasumu) = descansar.",
+            "tts_query": "やすむ"
         },
         {
             "id": "KANJI_079",
@@ -635,7 +713,8 @@
             "answer": "father",
             "answer_pt": "pai",
             "explanation": "Readings: ふ (fu), ちち (chichi). Person with authority. Example: お父さん (otousan) = father.",
-            "explanation_pt": "Leituras: fu, chichi. Pessoa com autoridade. Ex: お父さん (otousan) = pai."
+            "explanation_pt": "Leituras: fu, chichi. Pessoa com autoridade. Ex: お父さん (otousan) = pai.",
+            "tts_query": "ちち"
         },
         {
             "id": "KANJI_080",
@@ -643,7 +722,8 @@
             "answer": "rain",
             "answer_pt": "chuva",
             "explanation": "Readings: う (u), あめ (ame), あま (ama). Clouds with raindrops. Example: 雨 (ame) = rain.",
-            "explanation_pt": "Leituras: u, ame. Nuvens com gotas de chuva. Ex: 雨 (ame) = chuva."
+            "explanation_pt": "Leituras: u, ame. Nuvens com gotas de chuva. Ex: 雨 (ame) = chuva.",
+            "tts_query": "あめ"
         },
         {
             "id": "KANJI_081",
@@ -651,7 +731,8 @@
             "answer": "way",
             "answer_pt": "caminho",
             "explanation": "Readings: どう (dou), みち (michi). Walking + head = knowing the way. Example: 道 (michi) = road, 柔道 (juudou) = judo.",
-            "explanation_pt": "Leituras: dou, michi. Caminhando + cabeça = sabendo o caminho. Ex: 道 (michi) = estrada, 柔道 (judo)."
+            "explanation_pt": "Leituras: dou, michi. Caminhando + cabeça = sabendo o caminho. Ex: 道 (michi) = estrada, 柔道 (judo).",
+            "tts_query": "みち"
         },
         {
             "id": "KANJI_082",
@@ -659,7 +740,8 @@
             "answer": "station",
             "answer_pt": "estação",
             "explanation": "Readings: えき (eki). Horse + stacked = horses at rest stop. Example: 駅 (eki) = train station.",
-            "explanation_pt": "Leituras: eki. Cavalo + empilhado = cavalos na parada. Ex: 駅 (eki) = estação de trem."
+            "explanation_pt": "Leituras: eki. Cavalo + empilhado = cavalos na parada. Ex: 駅 (eki) = estação de trem.",
+            "tts_query": "えき"
         },
         {
             "id": "KANJI_083",
@@ -667,7 +749,8 @@
             "answer": "meet",
             "answer_pt": "encontrar",
             "explanation": "Readings: かい (kai), あ (a). Roof + speak = meeting together. Example: 会う (au) = to meet, 会社 (kaisha) = company.",
-            "explanation_pt": "Leituras: kai, a. Telhado + fala = encontrando-se. Ex: 会う (au) = encontrar-se, 会社 (kaisha) = empresa."
+            "explanation_pt": "Leituras: kai, a. Telhado + fala = encontrando-se. Ex: 会う (au) = encontrar-se, 会社 (kaisha) = empresa.",
+            "tts_query": "あう"
         },
         {
             "id": "KANJI_084",
@@ -675,7 +758,8 @@
             "answer": "same",
             "answer_pt": "mesmo",
             "explanation": "Readings: どう (dou), おな (ona). Same container for all. Example: 同じ (onaji) = same.",
-            "explanation_pt": "Leituras: dou, ona. Mesmo recipiente para todos. Ex: 同じ (onaji) = igual."
+            "explanation_pt": "Leituras: dou, ona. Mesmo recipiente para todos. Ex: 同じ (onaji) = igual.",
+            "tts_query": "おなじ"
         },
         {
             "id": "KANJI_085",
@@ -683,7 +767,8 @@
             "answer": "matter",
             "answer_pt": "assunto",
             "explanation": "Readings: じ (ji), ず (zu), こと (koto). Hand doing something. Example: 仕事 (shigoto) = work.",
-            "explanation_pt": "Leituras: ji, koto. Mão fazendo algo. Ex: 仕事 (shigoto) = trabalho."
+            "explanation_pt": "Leituras: ji, koto. Mão fazendo algo. Ex: 仕事 (shigoto) = trabalho.",
+            "tts_query": "こと"
         },
         {
             "id": "KANJI_086",
@@ -691,7 +776,8 @@
             "answer": "self",
             "answer_pt": "si mesmo",
             "explanation": "Readings: じ (ji), し (shi), みずか (mizuka). Point at nose = self. Example: 自分 (jibun) = oneself.",
-            "explanation_pt": "Leituras: ji, shi. Apontar para o nariz = eu mesmo. Ex: 自分 (jibun) = si mesmo."
+            "explanation_pt": "Leituras: ji, shi. Apontar para o nariz = eu mesmo. Ex: 自分 (jibun) = si mesmo.",
+            "tts_query": "じ"
         },
         {
             "id": "KANJI_087",
@@ -699,7 +785,8 @@
             "answer": "company",
             "answer_pt": "empresa",
             "explanation": "Readings: しゃ (sha), やしろ (yashiro). Altar + earth = shrine, company. Example: 会社 (kaisha) = company.",
-            "explanation_pt": "Leituras: sha, yashiro. Altar + terra = santuário, empresa. Ex: 会社 (kaisha) = empresa."
+            "explanation_pt": "Leituras: sha, yashiro. Altar + terra = santuário, empresa. Ex: 会社 (kaisha) = empresa.",
+            "tts_query": "しゃ"
         },
         {
             "id": "KANJI_088",
@@ -707,7 +794,8 @@
             "answer": "departure",
             "answer_pt": "partida",
             "explanation": "Readings: はつ (hatsu), ほつ (hotsu). Feet starting to leave. Example: 出発 (shuppatsu) = departure.",
-            "explanation_pt": "Leituras: hatsu, hotsu. Pés começando a partir. Ex: 出発 (shuppatsu) = partida."
+            "explanation_pt": "Leituras: hatsu, hotsu. Pés começando a partir. Ex: 出発 (shuppatsu) = partida.",
+            "tts_query": "はつ"
         },
         {
             "id": "KANJI_089",
@@ -715,7 +803,8 @@
             "answer": "person",
             "answer_pt": "pessoa",
             "explanation": "Readings: しゃ (sha), もの (mono). Old man = wise person. Example: 記者 (kisha) = journalist.",
-            "explanation_pt": "Leituras: sha, mono. Homem velho = pessoa sábia. Ex: 記者 (kisha) = jornalista."
+            "explanation_pt": "Leituras: sha, mono. Homem velho = pessoa sábia. Ex: 記者 (kisha) = jornalista.",
+            "tts_query": "もの"
         },
         {
             "id": "KANJI_090",
@@ -723,7 +812,8 @@
             "answer": "ground",
             "answer_pt": "chão",
             "explanation": "Readings: ち (chi), じ (ji). Earth + foundation. Example: 地下 (chika) = underground.",
-            "explanation_pt": "Leituras: chi, ji. Terra + base. Ex: 地下 (chika) = subterrâneo."
+            "explanation_pt": "Leituras: chi, ji. Terra + base. Ex: 地下 (chika) = subterrâneo.",
+            "tts_query": "ち"
         },
         {
             "id": "KANJI_091",
@@ -731,7 +821,8 @@
             "answer": "business",
             "answer_pt": "negócio",
             "explanation": "Readings: ぎょう (gyou), ごう (gou), わざ (waza). Complex work activities. Example: 授業 (jugyou) = class.",
-            "explanation_pt": "Leituras: gyou, gou. Atividades complexas de trabalho. Ex: 授業 (jugyou) = aula."
+            "explanation_pt": "Leituras: gyou, gou. Atividades complexas de trabalho. Ex: 授業 (jugyou) = aula.",
+            "tts_query": "ぎょう"
         },
         {
             "id": "KANJI_092",
@@ -739,7 +830,8 @@
             "answer": "direction",
             "answer_pt": "direção",
             "explanation": "Readings: ほう (hou), かた (kata). Forked path direction. Example: 方向 (houkou) = direction.",
-            "explanation_pt": "Leituras: hou, kata. Direção de um caminho bifurcado. Ex: 方向 (houkou) = direção."
+            "explanation_pt": "Leituras: hou, kata. Direção de um caminho bifurcado. Ex: 方向 (houkou) = direção.",
+            "tts_query": "かた"
         },
         {
             "id": "KANJI_093",
@@ -747,7 +839,8 @@
             "answer": "new",
             "answer_pt": "novo",
             "explanation": "Readings: しん (shin), あたら (atara), あら (ara), にい (nii). Tree cut for new wood. Example: 新聞 (shinbun) = newspaper.",
-            "explanation_pt": "Leituras: shin, atara. Árvore cortada para madeira nova. Ex: 新聞 (shinbun) = jornal."
+            "explanation_pt": "Leituras: shin, atara. Árvore cortada para madeira nova. Ex: 新聞 (shinbun) = jornal.",
+            "tts_query": "あたらしい"
         },
         {
             "id": "KANJI_094",
@@ -755,7 +848,8 @@
             "answer": "place",
             "answer_pt": "lugar",
             "explanation": "Readings: じょう (jou), ば (ba). Earth + ease = comfortable place. Example: 場所 (basho) = place.",
-            "explanation_pt": "Leituras: jou, ba. Terra + facilidade = lugar confortável. Ex: 場所 (basho) = lugar."
+            "explanation_pt": "Leituras: jou, ba. Terra + facilidade = lugar confortável. Ex: 場所 (basho) = lugar.",
+            "tts_query": "ば"
         },
         {
             "id": "KANJI_095",
@@ -763,7 +857,8 @@
             "answer": "member",
             "answer_pt": "membro",
             "explanation": "Readings: いん (in). Mouth + cowrie shell = counted member. Example: 会員 (kaiin) = member.",
-            "explanation_pt": "Leituras: in. Boca + búzio = membro contado. Ex: 会員 (kaiin) = membro."
+            "explanation_pt": "Leituras: in. Boca + búzio = membro contado. Ex: 会員 (kaiin) = membro.",
+            "tts_query": "いん"
         },
         {
             "id": "KANJI_096",
@@ -771,7 +866,8 @@
             "answer": "stand",
             "answer_pt": "em pé",
             "explanation": "Readings: りつ (ritsu), た (ta). Person standing on ground. Example: 立つ (tatsu) = to stand.",
-            "explanation_pt": "Leituras: ritsu, ta. Pessoa em pé no chão. Ex: 立つ (tatsu) = ficar em pé."
+            "explanation_pt": "Leituras: ritsu, ta. Pessoa em pé no chão. Ex: 立つ (tatsu) = ficar em pé.",
+            "tts_query": "たつ"
         },
         {
             "id": "KANJI_097",
@@ -779,7 +875,8 @@
             "answer": "open",
             "answer_pt": "abrir",
             "explanation": "Readings: かい (kai), ひら (hira), あ (a). Door with hands opening both sides. Example: 開く (hiraku) = to open.",
-            "explanation_pt": "Leituras: kai, hira. Porta com as mãos abrindo ambos os lados. Ex: 開く (hiraku) = abrir."
+            "explanation_pt": "Leituras: kai, hira. Porta com as mãos abrindo ambos os lados. Ex: 開く (hiraku) = abrir.",
+            "tts_query": "ひらく"
         },
         {
             "id": "KANJI_098",
@@ -787,7 +884,8 @@
             "answer": "hand",
             "answer_pt": "mão",
             "explanation": "Readings: しゅ (shu), て (te), た (ta). Fingers and palm. Example: 上手 (jouzu) = skillful, 手紙 (tegami) = letter.",
-            "explanation_pt": "Leituras: shu, te. Dedos e palma. Ex: 上手 (jouzu) = habilidoso, 手紙 (tegami) = carta."
+            "explanation_pt": "Leituras: shu, te. Dedos e palma. Ex: 上手 (jouzu) = habilidoso, 手紙 (tegami) = carta.",
+            "tts_query": "て"
         },
         {
             "id": "KANJI_099",
@@ -795,14 +893,17 @@
             "answer": "power",
             "answer_pt": "poder",
             "explanation": "Readings: りょく (ryoku), りき (riki), ちから (chikara). Flexed arm muscle. Example: 力 (chikara) = power.",
-            "explanation_pt": "Leituras: ryoku, riki. Músculo do braço flexionado. Ex: 力 (chikara) = poder."
+            "explanation_pt": "Leituras: ryoku, riki. Músculo do braço flexionado. Ex: 力 (chikara) = poder.",
+            "tts_query": "ちから"
         },
         {
             "id": "KANJI_100",
             "question": "目",
             "answer": "eye",
+            "answer_pt": "olho",
             "explanation": "Readings: もく (moku), め (me). Eye shape sideways. Example: 目 (me) = eye, 目標 (mokuhyou) = goal.",
-            "explanation_pt": "Leituras: moku, me. Formato de olho de lado. Ex: 目 (me) = olho, 目標 (mokuhyou) = objetivo."
+            "explanation_pt": "Leituras: moku, me. Formato de olho de lado. Ex: 目 (me) = olho, 目標 (mokuhyou) = objetivo.",
+            "tts_query": "め"
         }
     ]
 }
