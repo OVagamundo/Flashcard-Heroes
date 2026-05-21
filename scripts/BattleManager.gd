@@ -280,6 +280,10 @@ func _reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	return _state.reshuffle_tier_from_discard(tier_to_reshuffle)
 
 func bm_remove_instance(uuid: String) -> bool:
+	var instance := get_instance(uuid)
+	if is_instance_valid(instance):
+		_cleanup_removed_trinket_passives(instance)
+
 	var result := _state.bm_remove_instance(uuid)
 	if result.success:
 		if not result.unit_changed_uuid.is_empty():
@@ -289,6 +293,34 @@ func bm_remove_instance(uuid: String) -> bool:
 		_emit_battle_inventory_changed()
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	return result.success
+
+func _cleanup_removed_trinket_passives(instance: GachaBallInstance) -> void:
+	if not is_instance_valid(instance):
+		return
+
+	var definition = instance.get_definition()
+	if not is_instance_valid(definition):
+		return
+	if definition.category != &"TRINKET":
+		return
+	if definition.id != &"trinket_twin_charm":
+		return
+
+	var status_key := StringName("twin_charm_scaling_" + instance.ball_uuid)
+	for uuid in _battle_instances:
+		var target: GachaBallInstance = _battle_instances[uuid]
+		if not is_instance_valid(target):
+			continue
+		var target_def = target.get_definition()
+		if not is_instance_valid(target_def) or target_def.category != &"UNIT":
+			continue
+
+		var last_bonus := target.get_status_effect_amount(status_key)
+		if last_bonus <= 0:
+			continue
+
+		target.clear_status_effect(status_key)
+		target.apply_pwr_delta(-last_bonus)
 
 
 func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:

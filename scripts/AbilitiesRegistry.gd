@@ -214,6 +214,13 @@ const ABILITIES: Dictionary = {
 		"condition": null,
 		"effect": "Grant +1 PWR to a random ally when an ally dies",
 	},
+
+	"ability_trinket_underdog_emblem": {
+		"owner": "Underdog Emblem (Trinket)",
+		"trigger": "on_turn_start",
+		"condition": null,
+		"effect": "If outnumbered in the lineup, grant all allies +2 Armor per missing ally",
+	},
 	
 	# ==================== BOSS ABILITIES ====================
 	

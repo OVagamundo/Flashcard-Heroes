@@ -132,6 +132,10 @@ trinket.aegis.name,Aegis Charm,Amuleto Égide
 trinket.aegis.desc,A protective charm that shields allies from fatal blows.,Um amuleto protetor que escuda aliados de golpes fatais.
 ability.aegis.name,Last Stand,Último Suspiro
 ability.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead.","Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
+trinket.twin_charm.name,Twin Charm,Amuleto Gêmeo
+trinket.twin_charm.desc,"A mirrored charm that rewards building around duplicate units.","Um amuleto espelhado que recompensa montar sua equipe com unidades duplicadas."
+ability.twin_charm_scale.name,Shared Reflection,Reflexo Compartilhado
+ability.twin_charm_scale.desc,"Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.","Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha."
 unit_t3_a.name,Shadow Striker,Atacante das Sombras
 unit_t3_a.desc,"Master of precise strikes. Passive: [Mirror Strike]","Mestre em ataques precisos. Passiva: [Aura Espelhada]"
 ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
@@ -522,3 +526,7 @@ options.audio.master,Master Volume,Volume Geral
 options.audio.music,Music Volume,Volume da Música
 options.audio.sfx,SFX Volume,Volume de Efeitos
 options.audio.pronunciation,Card Pronunciation,Pronúncia de Cartas
+trinket.underdog_emblem.name,Underdog Emblem,Emblema do Azarão
+trinket.underdog_emblem.desc,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","No início do turno, se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
+ability.underdog_emblem.name,Outnumbered Bulwark,Bastião dos Superados
+ability.underdog_emblem.desc,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","No início do turno, se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
