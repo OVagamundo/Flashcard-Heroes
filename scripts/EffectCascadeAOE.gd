@@ -42,32 +42,15 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if not is_instance_valid(container):
 		return EffectResult.empty()
 	
-	# Step 1: Find the frontmost LIVING enemy (respecting attack direction)
-	# Player attacks from left to right (finds index 0 first)
-	# Enemy attacks from right to left (finds highest index first)
+	# Step 1: Start cascade from the resolved target
 	var frontmost_slot: int = -1
 	var all_uuids = container.get_all_uuids()
+	var target_uuid = targets[0]
 	
-	if is_player_unit:
-		# Player attacks: frontmost is lowest index
-		for slot_index in range(all_uuids.size()):
-			var uuid = all_uuids[slot_index]
-			if uuid.is_empty():
-				continue
-			var unit = battle_manager.get_instance_by_uuid(uuid)
-			if is_instance_valid(unit) and unit.current_hp > 0:
-				frontmost_slot = slot_index
-				break
-	else:
-		# Enemy attacks: frontmost is HIGHEST index (closest to enemy on right)
-		for slot_index in range(all_uuids.size() - 1, -1, -1):
-			var uuid = all_uuids[slot_index]
-			if uuid.is_empty():
-				continue
-			var unit = battle_manager.get_instance_by_uuid(uuid)
-			if is_instance_valid(unit) and unit.current_hp > 0:
-				frontmost_slot = slot_index
-				break
+	for slot_index in range(all_uuids.size()):
+		if all_uuids[slot_index] == target_uuid:
+			frontmost_slot = slot_index
+			break
 	
 	if frontmost_slot == -1:
 		return EffectResult.empty() # No living enemies

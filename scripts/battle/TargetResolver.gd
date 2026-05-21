@@ -41,6 +41,19 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 	else:
 		return []
 
+	# Item Override: Sniper Aim (item_t3_g) changes basic attack targeting to Mirror Slot
+	if target_type == C.TARGET_FRONTMOST_ENEMY and context.get("trigger_type") == &"on_attack":
+		if is_instance_valid(source_instance) and source_instance.get_definition().category == &"UNIT":
+			var has_sniper_aim := false
+			for item_uuid in source_instance.equipped_item_uuids:
+				if not item_uuid.is_empty():
+					var item = battle_manager.get_instance_by_uuid(item_uuid)
+					if is_instance_valid(item) and item.definition_id == &"item_t3_g":
+						has_sniper_aim = true
+						break
+			if has_sniper_aim:
+				target_type = &"MIRROR_SLOT_ENEMY"
+
 	match target_type:
 		C.TARGET_SELF:
 			return [source_uuid]

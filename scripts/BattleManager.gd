@@ -631,16 +631,21 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var is_player = _is_player_unit(attacker)
-	var target = _get_frontmost_target(is_player)
-	if not is_instance_valid(target): return
 	# Build context for on_attack trigger (semantic keys per unified broadcast pattern)
 	var context: Dictionary = {
 		"attacker_uuid": attacker.ball_uuid,
-		"target_uuid": target.ball_uuid,
-		"target_initial_hp": target.current_hp,
 		"trigger_cause": C.CAUSE_TURN,
-		"cause_id": C.CAUSE_TURN # Redundant but explicit for cause_id field
+		"cause_id": C.CAUSE_TURN, # Redundant but explicit for cause_id field
+		"trigger_type": &"on_attack"
 	}
+	
+	var target_uuids = TargetResolver.resolve_target(attacker.ball_uuid, C.TARGET_FRONTMOST_ENEMY, context, self)
+	if target_uuids.is_empty(): return
+	var target = get_instance_by_uuid(target_uuids[0])
+	if not is_instance_valid(target): return
+	
+	context["target_uuid"] = target.ball_uuid
+	context["target_initial_hp"] = target.current_hp
 	
 	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
 	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
