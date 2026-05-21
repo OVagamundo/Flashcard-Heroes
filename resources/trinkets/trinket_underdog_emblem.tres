@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket9A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_underdog_emblem.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_underdog_emblem"
+name_key = "trinket.underdog_emblem.name"
+description_key = "trinket.underdog_emblem.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

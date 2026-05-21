@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_twin_charm_scaling.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_twin_charm_scale"
+name_key = "ability.twin_charm_scale.name"
+description_key = "ability.twin_charm_scale.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([ExtResource("2_effect")])
+execute_on_lethal = false
