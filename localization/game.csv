@@ -72,6 +72,8 @@ item_t3_e.name,Death's Bargain,Barganha da Morte
 item_t3_e.desc,Upon death strikes the mightiest foe.,Ao morrer atinge o inimigo mais poderoso.
 item_t3_f.name,Soul Siphon,Sifão de Almas
 item_t3_f.desc,Drains power from enemies with each strike.,Drena poder dos inimigos a cada golpe.
+item_t3_g.name,Sniper Aim,Mira de Precisão
+item_t3_g.desc,Replaces basic attacks with Mirror Strike.,Substitui ataques básicos por Ataque Espelhado.
 ability.item_t3e_death_damage.name,Final Strike,Golpe Final
 ability.item_t3f_power_drain.name,Power Drain,Dreno de Poder
 ability.item_t3f_power_drain.desc,After dealing damage steal half of target's PWR (min 1).,Após causar dano rouba metade do PWR do alvo (mín. 1).

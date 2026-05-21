@@ -103,7 +103,8 @@ Items are equipped on units to provide stats and new abilities.
 | `item_t3_c` | Lifesteal Ring (Vampiric Dagger) | **Bloodlust Edge + Summoning Scroll** | +2 HP / +2 PWR | **Vampiric Strike** (`on_damage_dealt`): On dealing damage, heal holder for 20% of damage dealt (min 1 HP). |
 | `item_t3_d` | Vengeful Thorn (Retaliation Shield) | **Phoenix Elixir + Phoenix Elixir** | +2 HP / +2 PWR | **Retaliation** (`on_hurt`): When hurt by an attack, deal half of the holder's PWR as damage to a random enemy. |
 | `item_t3_e` | Death's Bargain (Deathbomb) | **Summoning Scroll + Phoenix Elixir** | +3 HP / +1 PWR | **Final Strike** (`on_death`): When holder dies, deal damage equal to half of the highest HP enemy's HP to that enemy. |
-| `item_t3_f` | Soul Siphon | **Bloodlust Edge + Phoenix Elixir** | +1 HP / +3 PWR | **Power Drain** (`on_damage_dealt`): After dealing damage, steal half of target's PWR (min 1). |
+| `item_t3_f` | Soul Siphon | N/A | +1 HP / +3 PWR | **Power Drain** (`on_damage_dealt`): After dealing damage, steal half of target's PWR (min 1). |
+| `item_t3_g` | Sniper Aim | **Bloodlust Edge + Phoenix Elixir** | +1 PWR | **Mirror Strike** (`on_attack`): Replaces basic attack targeting with Mirror Strike targeting (opposite slot, or backmost enemy). |
 | `item_emblem_fire` | Fire Emblem | Obtained from boss/rewards | +2 PWR | **Fire Soul** (`passive`): Counts as a Fire unit and grants the Fire trait. |
 | `item_emblem_earth` | Earth Emblem | Obtained from boss/rewards | +4 HP | **Earth Soul** (`passive`): Counts as an Earth unit and grants the Earth trait. |
 | `item_emblem_water` | Water Emblem | Obtained from boss/rewards | +2 HP / +1 PWR | **Water Soul** (`passive`): Counts as a Water unit and grants the Water trait. |
@@ -134,6 +135,8 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+1 HP/+1 PWR** to any **Tier 1** unit entering the board. |
 | `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** non-hero ally to die each turn. |
 | `trinket_vengeance` | Vengeance Charm (Vengeance) | `on_ally_death` | Grants **+1 HP** and **+1 PWR** to a random ally. |
+| `trinket_twin_charm` | Twin Charm | `on_board_changed` | **Shared Reflection**: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
+| `trinket_underdog_emblem` | Underdog Emblem | `on_turn_start` | **Outnumbered Bulwark**: At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference. |
 | `trinket_trait_fire` | Fire Trait | `passive` | Enables the Fire synergy whenever your team has enough Fire souls. |
 | `trinket_trait_earth` | Earth Trait | `passive` | Enables the Earth synergy whenever your team has enough Earth souls. |
 | `trinket_trait_water` | Water Trait | `passive` | Enables the Water synergy whenever your team has enough Water souls. |
