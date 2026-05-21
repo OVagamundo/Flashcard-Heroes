@@ -317,6 +317,7 @@ deck.hiragana.desc,"Master the flowing Japanese syllabary for native words and g
 deck.kanji_100.desc,"Challenge yourself with 100 essential Chinese characters used in Japanese writing.","Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa."
 deck.german_100.desc,"Build your German vocabulary with 100 common and essential words.","Construa seu vocabulário alemão com 100 palavras comuns e essenciais."
 deck.portuguese_100.desc,"Expand your Portuguese vocabulary with 100 essential everyday words.","Expanda seu vocabulário português com 100 palavras essenciais do dia a dia."
+deck.korean_hangul.desc,"Learn Korean Hangul alphabet and pronunciation rules","Aprenda o alfabeto coreano Hangul e as regras de pronúncia"
 unit_t3_e.name,Dreadnought,Dreadnought
 unit_t3_e.desc,A terrifying predator that strikes down newly summoned enemies.,Um predador aterrorizante que abate inimigos recém-invocados.
 ability.unit_tier3e_ambush_predator.name,Ambush Predator,Predador de Emboscada

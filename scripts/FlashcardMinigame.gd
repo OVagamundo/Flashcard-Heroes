@@ -282,8 +282,8 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 			explanation = tr("ui.no_explanation")
 		intro_explanation_label.text = explanation # Simplified as per feedback or clarity
 		
-		# Play native Japanese pronunciation out loud
-		if card_id.begins_with("KANJI_"):
+		# Play native Japanese/Korean pronunciation out loud
+		if card_id.begins_with("KANJI_") or card_id.begins_with("KOR_"):
 			Audio.play_sfx("pronunciation_" + card_id)
 		else:
 			var romaji = card_data.get("answer", "").to_lower()
@@ -641,7 +641,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	FlashcardManager.submit_answer(_current_question_id, was_correct)
 	
 	# Play pronunciation of selected answer
-	if selected_answer_id.begins_with("KANJI_"):
+	if selected_answer_id.begins_with("KANJI_") or selected_answer_id.begins_with("KOR_"):
 		Audio.play_sfx("pronunciation_" + selected_answer_id)
 	else:
 		var selected_data = Database.get_flashcard_definition(selected_answer_id)
@@ -671,7 +671,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		var correct_delay_tween = create_tween()
 		correct_delay_tween.tween_interval(0.4)
 		correct_delay_tween.tween_callback(func():
-			if _current_question_id.begins_with("KANJI_"):
+			if _current_question_id.begins_with("KANJI_") or _current_question_id.begins_with("KOR_"):
 				Audio.play_sfx("pronunciation_" + _current_question_id)
 			else:
 				var correct_data = Database.get_flashcard_definition(_current_question_id)
