@@ -221,6 +221,42 @@ const ABILITIES: Dictionary = {
 		"condition": null,
 		"effect": "If outnumbered in the lineup, grant all allies +2 Armor per missing ally",
 	},
+
+	"ability_trinket_veteran_insignia": {
+		"owner": "Veteran Insignia (Trinket)",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_LEVEL_GREATER_THAN_1",
+		"effect": "Grant +1 HP and +1 PWR when a level 2 or 3 unit is drawn, summoned, merged, or at battle start",
+	},
+
+	"ability_trinket_bargain_charm": {
+		"owner": "Bargain Charm (Trinket)",
+		"trigger": "gacha_draw_cost",
+		"condition": "VALID_FOR_BATTLES_ONLY",
+		"effect": "Spend 1 token less, once per machine, per turn (minimum 1 token cost). Player exclusive.",
+	},
+	
+	"ability_trinket_token_return_charm": {
+		"owner": "Token Return Charm (Trinket)",
+		"trigger": "on_unit_death",
+		"condition": null,
+		"effect": "The first unit to die that round returns tokens equivalent to its tier (Tier 1 = 1, Tier 2 = 2, Tier 3 = 3). Player exclusive.",
+	},
+	
+	"ability_trinket_time_sprint_charm": {
+		"owner": "Sprint Charm (Trinket)",
+		"trigger": "minigame_start",
+		"condition": "VALID_FOR_BATTLES_ONLY",
+		"effect": "Minigame timer gets a flat 2-second increase in battle context. Player exclusive.",
+	},
+	
+	"ability_trinket_merge_damage_charm": {
+		"owner": "Fusion Spark (Trinket)",
+		"trigger": "on_merge",
+		"condition": null,
+		"effect": "Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit. Player exclusive.",
+	},
+
 	
 	# ==================== BOSS ABILITIES ====================
 	

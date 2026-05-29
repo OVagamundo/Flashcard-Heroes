@@ -57,6 +57,7 @@ const _EncounterDefinition = preload("res://scripts/EncounterDefinition.gd")
 var _last_minigame_results: Dictionary = {}
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
+var _bargain_charm_uses: Dictionary = {}
 var _pending_inventory_refresh: bool = false
 const DEATH_SLOT_START_TURN: int = 10
 const LINEUP_SLOT_COUNT: int = 5
@@ -418,6 +419,13 @@ func bm_reshuffle_discard_pile(_tier_to_reshuffle: int) -> bool:
 
 func bm_draw_gacha_instance(tier: int) -> bool:
 	var cost := tier
+	
+	# Apply Bargain Charm cost reduction
+	var has_bargain = _has_team_trinket(true, &"trinket_bargain_charm")
+	var bargain_used = _bargain_charm_uses.get(tier, false)
+	if has_bargain and not bargain_used:
+		cost = maxi(1, cost - 1)
+		
 	if _gacha_tokens < cost:
 		return false
 	
@@ -437,6 +445,8 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	
 	# Spend tokens
 	_gacha_tokens -= cost
+	if has_bargain and not bargain_used:
+		_bargain_charm_uses[tier] = true
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Validate and emit
@@ -505,6 +515,7 @@ func _change_phase(new_phase: Phases) -> void:
 			# Increment turn counter and reset turn start flag
 			_current_turn += 1
 			_turn_start_abilities_triggered = false
+			_bargain_charm_uses.clear()
 			
 			# Timekeeper hero bonus: +5 tokens for easy testing
 			if _is_timekeeper_hero():
@@ -1614,6 +1625,11 @@ func _process_registered_death(unit: GachaBallInstance, phase: StringName, death
 		"fainting_ally_uuid": unit.ball_uuid,
 		"fainting_ally_location": death_location,
 		"fainting_ally_team": death_team
+	})
+	AbilityResolver.process_trigger(&"on_unit_death", {
+		"dying_uuid": unit.ball_uuid,
+		"dying_team": death_team,
+		"dying_location": death_location
 	})
 	
 	while not _pending_reactions.is_empty():

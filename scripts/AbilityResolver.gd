@@ -262,6 +262,16 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			# Only player trinkets respond to player draws
 			# (enemies don't draw, so this is always player team for now)
 			return trinket_team == "PLAYER"
+		
+		&"on_merge":
+			# Trinkets only respond to merges on their own team
+			var merged_team = context.get("merged_team", "")
+			return trinket_team == merged_team
+		
+		&"on_ally_summon":
+			# Trinkets only respond to ally summons on their own team
+			var summoned_team = context.get("summoned_team", "")
+			return trinket_team == summoned_team
 	
 	# For other triggers, trinkets respond based on team context if available
 	return true

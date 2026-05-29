@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_death_token_refund.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_token_return_charm"
+name_key = "ability.token_return_charm.name"
+description_key = "ability.token_return_charm.desc"
+trigger = &"on_unit_death"
+priority = 220
+effects = Array[Resource]([ExtResource("2_effect")])

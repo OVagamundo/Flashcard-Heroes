@@ -21,7 +21,8 @@ enum Type {
 	TRANSFORM, # Mimic: hop and vanish
 	GOLD_GAIN, # Payload: { "amount": int }
 	ITEM_TRANSFER, # Standard Bearer: item transfer on death
-	SLOT_EFFECT_CHANGE # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
+	SLOT_EFFECT_CHANGE, # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
+	TOKEN_GAIN
 }
 
 var type: Type

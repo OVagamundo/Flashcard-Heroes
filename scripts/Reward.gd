@@ -114,9 +114,14 @@ func _update_localized_text() -> void:
 	
 	study_button.text = tr("ui.study")
 	leave_button.text = tr("ui.leave")
-	tier1_draw_button.text = "Tier 1 prizes\n(%d Token%s)" % [COST_TIER1, "" if COST_TIER1 == 1 else "s"]
-	tier2_draw_button.text = "Tier 2 prizes\n(%d Token%s)" % [COST_TIER2, "" if COST_TIER2 == 1 else "s"]
-	tier3_draw_button.text = "Tier 3 prizes\n(%d Token%s)" % [COST_TIER3, "" if COST_TIER3 == 1 else "s"]
+	
+	var cost_t1 = GameManager.get_gacha_token_cost(1)
+	var cost_t2 = GameManager.get_gacha_token_cost(2)
+	var cost_t3 = GameManager.get_gacha_token_cost(3)
+	
+	tier1_draw_button.text = "Tier 1 prizes\n(%d Token%s)" % [cost_t1, "" if cost_t1 == 1 else "s"]
+	tier2_draw_button.text = "Tier 2 prizes\n(%d Token%s)" % [cost_t2, "" if cost_t2 == 1 else "s"]
+	tier3_draw_button.text = "Tier 3 prizes\n(%d Token%s)" % [cost_t3, "" if cost_t3 == 1 else "s"]
 
 func _setup_prize_slots() -> void:
 	var slots = prize_lineup.get_children()
@@ -153,13 +158,13 @@ func _update_token_display() -> void:
 # --- Draw Logic ---
 
 func _on_tier1_draw_pressed() -> void:
-	_try_draw_tier(1, COST_TIER1, tier1_machine)
+	_try_draw_tier(1, GameManager.get_gacha_token_cost(1), tier1_machine)
 
 func _on_tier2_draw_pressed() -> void:
-	_try_draw_tier(2, COST_TIER2, tier2_machine)
+	_try_draw_tier(2, GameManager.get_gacha_token_cost(2), tier2_machine)
 
 func _on_tier3_draw_pressed() -> void:
-	_try_draw_tier(3, COST_TIER3, tier3_machine)
+	_try_draw_tier(3, GameManager.get_gacha_token_cost(3), tier3_machine)
 
 func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	if _action_in_progress: return
@@ -185,6 +190,9 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	
 	_tokens -= cost
 	_update_token_display()
+	
+	GameManager.use_gacha_discount(tier)
+	_update_localized_text()
 	
 	var definition = _draw_definition_for_tier(tier)
 	var instance = GachaBallInstance.new()

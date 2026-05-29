@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_draw.tres" id="2_ability_draw"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_summon.tres" id="3_ability_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_merge.tres" id="4_ability_merge"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_battle_start.tres" id="5_ability_battle_start"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket10A.png" id="6_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_veteran_insignia"
+name_key = "trinket.veteran_insignia.name"
+description_key = "trinket.veteran_insignia.desc"
+icon = ExtResource("6_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability_draw"), ExtResource("3_ability_summon"), ExtResource("4_ability_merge"), ExtResource("5_ability_battle_start")])
