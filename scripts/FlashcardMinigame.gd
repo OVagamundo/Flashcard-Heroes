@@ -477,6 +477,8 @@ func _start_minigame_session() -> void:
 	
 	# 7-second base timer
 	_session_timer = 7.0
+	if GameManager.is_in_battle and GameManager.has_trinket(&"trinket_time_sprint_charm"):
+		_session_timer += 2.0
 	if is_instance_valid(timer_bar):
 		timer_bar.max_value = _session_timer
 		timer_bar.value = _session_timer
@@ -774,6 +776,19 @@ func _is_timekeeper() -> bool:
 		return false
 	return def.id == &"hero_timekeeper"
 
+## Check if the current hero is the Starter
+## Passive: Minimum 3 tokens per minigame
+func _is_starter_hero() -> bool:
+	if not is_instance_valid(GameManager.run_state):
+		return false
+	var hero: GachaBallInstance = GameManager.run_state.hero_instance
+	if not is_instance_valid(hero):
+		return false
+	var def: GachaBallDefinition = hero.get_definition()
+	if not is_instance_valid(def):
+		return false
+	return def.id == &"hero_starter"
+
 
 func _flash_button_correct(correct_answer_id: StringName, spawn_token: bool = true) -> void:
 	"""Flash the correct answer button green and optionally spawn token pop VFX"""
@@ -902,6 +917,16 @@ func _end_minigame() -> void:
 		Audio.play_music(SoundRegistry.BGM_BATTLE)
 	else:
 		Audio.play_music(SoundRegistry.BGM_REST)
+	
+	# Starter hero: guarantee minimum 3 tokens
+	if _is_starter_hero() and _correct_answers < 3:
+		var bonus = 3 - _correct_answers
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm) and bm.has_method("add_gacha_token"):
+			bm.add_gacha_token(bonus)
+		else:
+			SignalBus.emit_signal("flashcard_token_earned", bonus)
+		_correct_answers = 3  # Update for results dict
 	
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,

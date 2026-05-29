@@ -12,6 +12,7 @@ var run_state: RunState
 var is_in_battle: bool = false # The global authority on whether a battle is active.
 var is_test_mode: bool = false # Global flag for test environment
 var _active_battle_manager: Node = null # ADD THIS LINE
+var gacha_discounts_used: Dictionary = {1: false, 2: false, 3: false}
 
 var director: WeightedPoolDirector = WeightedPoolDirector.new()
 var director_run_state: DirectorRunState = DirectorRunState.new()
@@ -75,6 +76,7 @@ func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> vo
 		
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id)
+	reset_gacha_discounts()
 	SignalBus.emit_signal("main_scene_requested")
 
 func _on_new_game_requested() -> void:
@@ -159,9 +161,12 @@ func _on_battle_won_rewards_pending() -> void:
 	
 	if is_special_victory:
 		# Boss rewards: 3 random trinkets (use Director if they are WeightableEntities)
-		var all_trinkets = Database.trinkets.values().duplicate()
+		var eligible_trinkets: Array[Resource] = []
+		for t in Database.trinkets.values():
+			if t is TrinketDefinition and not t.is_enemy_exclusive:
+				eligible_trinkets.append(t)
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)
-		var drawn_trinkets = director.draw_unique_items(all_trinkets, director_run_state, 3)
+		var drawn_trinkets = director.draw_unique_items(eligible_trinkets, director_run_state, 3)
 		
 		for i in range(drawn_trinkets.size()):
 			var inst = GachaBallInstance.new()
@@ -173,10 +178,7 @@ func _on_battle_won_rewards_pending() -> void:
 	else:
 		# Regular rewards: gacha balls from dynamic pool using Director
 		var all_defs = Database.get_all_pool_definitions()
-		if all_defs.is_empty():
-			push_error("[GameManager] Reward pool definitions are empty!")
-			return
-			
+
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)
 		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3)
 		
@@ -202,6 +204,7 @@ func _on_return_to_title() -> void:
 	# Clear any temporary rewards if the player quits or loses.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
+
 
 
 func _on_battle_victory_acknowledged() -> void:
@@ -336,7 +339,7 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 			if not uuid.is_empty():
 				return _temporary_reward_master_dict.get(uuid)
 		return null # Return null if the reward context is not active or slot is empty.
-
+	
 	# NEW: Check for the temporary shop context.
 	if loc.container == &"Shop":
 		if _temporary_shop_container and _temporary_shop_master_dict:
@@ -554,7 +557,6 @@ func _generate_reward_stock() -> void:
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 	else:
-		# Regular rewards: gacha balls from dynamic pool using Director
 		var all_defs = Database.get_all_pool_definitions()
 		if all_defs.is_empty(): return
 		
@@ -568,3 +570,30 @@ func _generate_reward_stock() -> void:
 			inst.location_slot_index = i
 			_temporary_reward_master_dict[inst.ball_uuid] = inst
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
+
+func has_trinket(trinket_id: StringName) -> bool:
+	if not is_instance_valid(run_state):
+		return false
+	var container = run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+	if not is_instance_valid(container):
+		return false
+	for uuid in container.get_all_non_empty_uuids():
+		var inst = run_state.get_instance_by_uuid(uuid)
+		if is_instance_valid(inst):
+			var def = inst.get_definition()
+			if is_instance_valid(def) and def.id == trinket_id:
+				return true
+	return false
+
+func get_gacha_token_cost(tier: int) -> int:
+	var base_cost = tier
+	var cost = base_cost
+	if has_trinket(&"trinket_bargain_charm") and not gacha_discounts_used.get(tier, false):
+		cost -= 1
+	return max(1, cost)
+
+func use_gacha_discount(tier: int) -> void:
+	gacha_discounts_used[tier] = true
+
+func reset_gacha_discounts() -> void:
+	gacha_discounts_used = {1: false, 2: false, 3: false}

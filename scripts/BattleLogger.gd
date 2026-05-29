@@ -185,6 +185,12 @@ func _on_animation_event(event: CombatEvent) -> void:
 		CombatEvent.Type.LOG_MESSAGE:
 			if event.text != "":
 				log_system(event.text)
+		
+		CombatEvent.Type.TOKEN_GAIN:
+			var payload = event.visual_payload
+			var amount = int(payload.get("amount", 0))
+			log_system("Gained %d tokens!" % amount)
+
 
 func _get_source_name(event: CombatEvent) -> String:
 	# First check cached source_name

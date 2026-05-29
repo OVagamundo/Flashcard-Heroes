@@ -338,6 +338,14 @@ trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,"Grants +1 HP and +1 PWR to Tier 1 units when drawn.","Concede +1 HP e +1 PWR a unidades Nível 1 ao serem sacadas."
 ability.royal_insignia.name,Royal Blessing,Bênção Real
 ability.royal_insignia.desc,"When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 1 é sacada, concede +1 HP e +1 PWR."
+trinket.veteran_insignia.name,Veteran Insignia,Insígnia do Veterano
+trinket.veteran_insignia.desc,"Grants +1 HP and +1 PWR to level 2 and 3 units of any tier when drawn, summoned, or merged.","Concede +1 HP e +1 PWR a unidades nível 2 e 3 de qualquer tier ao serem compradas, invocadas ou fundidas."
+ability.veteran_insignia.name,Veteran Blessing,Bênção do Veterano
+ability.veteran_insignia.desc,"When a level 2 or 3 unit is drawn, summoned, or merged, grant it +1 HP and +1 PWR.","Quando uma unidade nível 2 ou 3 é comprada, invocada ou fundida, concede +1 HP e +1 PWR."
+trinket.veteran_insignia.name,Veteran Insignia,Insígnia do Veterano
+trinket.veteran_insignia.desc,"Grants +1 HP and +1 PWR to level 2 and 3 units of any tier when drawn, summoned, or merged.","Concede +1 HP e +1 PWR a unidades nível 2 e 3 de qualquer tier ao serem compradas, invocadas ou fundidas."
+ability.veteran_insignia.name,Veteran Blessing,Bênção do Veterano
+ability.veteran_insignia.desc,"When a level 2 or 3 unit is drawn, summoned, or merged, grant it +1 HP and +1 PWR.","Quando uma unidade nível 2 ou 3 é comprada, invocada ou fundida, concede +1 HP e +1 PWR."
 trinket.trait_fire.name,Fire Trait,Sinergia de Fogo
 trinket.trait_fire.desc,"Enables the Fire trait whenever your team has enough Fire souls.","Ativa a sinergia de Fogo sempre que sua equipe tiver almas de Fogo suficientes."
 trinket.trait_earth.name,Earth Trait,Sinergia de Terra
@@ -533,3 +541,24 @@ trinket.underdog_emblem.name,Underdog Emblem,Emblema do Azarão
 trinket.underdog_emblem.desc,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","No início do turno, se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
 ability.underdog_emblem.name,Outnumbered Bulwark,Bastião dos Superados
 ability.underdog_emblem.desc,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","No início do turno, se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
+trinket.bargain_charm.name,Bargain Charm,Charme de Barganha
+trinket.bargain_charm.desc,"Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.","Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
+ability.bargain_charm.name,Bargain Charm,Charme de Barganha
+ability.bargain_charm.desc,"Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.","Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
+trinket.token_return_charm.name,Token Return Charm,Amuleto de Retorno de Fichas
+trinket.token_return_charm.desc,"The first unit to die each round returns tokens equivalent to its tier (Tier 1 = 1, Tier 2 = 2, Tier 3 = 3).","A primeira unidade a morrer a cada rodada retorna fichas equivalentes ao seu nível (Nível 1 = 1, Nível 2 = 2, Nível 3 = 3)."
+ability.token_return_charm.name,Token Return,Retorno de Fichas
+ability.token_return_charm.desc,"The first unit to die each round returns tokens equivalent to its tier.","A primeira unidade a morrer a cada rodada retorna fichas equivalentes ao seu nível."
+trinket.time_sprint_charm.name,Sprint Charm,Amuleto de Arrancada
+trinket.time_sprint_charm.desc,"Minigame timer gets a flat 2-second increase in battle. Player exclusive.","O cronômetro do minigame ganha um aumento de 2 segundos em batalhas. Exclusivo para o jogador."
+ability.time_sprint_charm.name,Time Sprint,Tempo de Arrancada
+ability.time_sprint_charm.desc,"Minigame timer gets a flat 2-second increase in battle.","O cronômetro do minigame ganha um aumento de 2 segundos em batalhas."
+trinket.merge_damage_charm.name,Fusion Spark,Centelha de Fusão
+trinket.merge_damage_charm.desc,"Whenever you perform a merge on the battle board, deal 3 damage to a random enemy unit. Player exclusive.","Sempre que você realizar uma fusão no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória. Exclusivo para o jogador."
+ability.merge_damage_charm.name,Fusion Spark,Centelha de Fusão
+ability.merge_damage_charm.desc,"Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.","Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
+hero_starter.name,Starter,Iniciante
+hero_starter.desc,"A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck.","Um herói de apoio que absorve o poder dos aliados caídos. Garante pelo menos 3 fichas em cada minijogo. Recomendado para experimentar um novo baralho."
+hero_starter.flavor,"A gentle soul who draws strength from loss, guiding newcomers through their first steps.","Uma alma gentil que tira força da perda, guiando novatos em seus primeiros passos."
+ability.hero_starter_ally_death_absorb.name,Soul Harvest,Colheita de Almas
+ability.hero_starter_ally_death_absorb.desc,"When an ally dies, gain HP equal to their PWR.","Quando um aliado morre, ganha HP igual ao PWR dele."

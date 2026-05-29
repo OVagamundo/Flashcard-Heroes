@@ -12,8 +12,11 @@ var _visual_registry: Dictionary = {} # UUID -> GachaBallView (for puppet mode)
 var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vector2} - captured at animation start
 var _pending_guardian_return: String = "" # UUID of Guardian needing to return after damage
 var _tracker: AnimationCompletionTracker # Animation completion tracking
+var _visual_gacha_tokens: int = 0
+
 
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
+const TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
 
 # --- Speed Control ---
 # Speed factor is stored in AnimationConstants.speed_factor (static var)
@@ -44,6 +47,19 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 		var data = start_snapshot[uuid]
 		if data is Dictionary and data.has("hp"):
 			hp_only_snapshot[uuid] = data["hp"]
+	
+	# Initialize visual gacha tokens tracking for playback
+	var final_tokens = 0
+	var bm = GameManager._active_battle_manager
+	if is_instance_valid(bm):
+		final_tokens = bm.get_gacha_tokens()
+	
+	var total_tokens_gained_in_log = 0
+	for event in turn_log:
+		if event.type == CombatEvent.Type.TOKEN_GAIN:
+			var payload = event.visual_payload
+			total_tokens_gained_in_log += int(payload.get("amount", 0))
+	_visual_gacha_tokens = final_tokens - total_tokens_gained_in_log
 	
 	# PUPPET MODE: Build visual registry by scanning scene tree
 	_visual_registry.clear()
@@ -442,6 +458,13 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var origin_uuid = payload.get("origin_uuid", "")
 				await _animate_gold_gain(origin_uuid, amount)
 
+			CombatEvent.Type.TOKEN_GAIN:
+				var payload = event.visual_payload
+				var amount = int(payload.get("amount", 0))
+				var origin_uuid = payload.get("origin_uuid", "")
+				await _animate_token_gain(origin_uuid, amount)
+
+
 			CombatEvent.Type.ITEM_TRANSFER:
 				var payload = event.visual_payload
 				var source_uuid = event.source_uuid
@@ -719,6 +742,81 @@ func _animate_gold_gain(origin_uuid: String, amount: int) -> void:
 	# Wait for animations
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
 	await get_tree().create_timer(total_wait).timeout
+
+func _animate_token_gain(origin_uuid: String, amount: int) -> void:
+	# 1. Get origin position from snapshot
+	var pos_data = _position_snapshot.get(origin_uuid, {})
+	var start_pos = Vector2.ZERO
+	if not pos_data.is_empty():
+		start_pos = pos_data["center"]
+	else:
+		# Fallback to visual registry if available
+		var view = _visual_registry.get(origin_uuid)
+		if is_instance_valid(view) and view.is_inside_tree():
+			start_pos = view.global_position + (view.size / 2.0)
+			
+	if start_pos == Vector2.ZERO:
+		return
+		
+	# 2. Get target position (TokenGroup in Main)
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		return
+		
+	var token_group = main_node.get_node_or_null("%TokenGroup")
+	if not is_instance_valid(token_group):
+		return
+	
+	var token_icon = token_group.get_node_or_null("TokenIcon")
+	if not is_instance_valid(token_icon):
+		token_icon = token_group
+		
+	var token_rect = token_icon.get_global_rect()
+	var target_pos = Vector2(
+		token_rect.position.x + token_rect.size.x / 2,
+		token_rect.position.y + token_rect.size.y / 2
+	)
+	
+	# Spawn tokens with stagger
+	var tokens_to_spawn = mini(amount, 5) # Cap at 5 tokens for visual clarity
+	var stagger_delay = 0.08
+	
+	var total_coins_landed = 0
+	
+	for i in range(tokens_to_spawn):
+		var token_vfx = TokenPopVFXScene.instantiate()
+		var effects_layer = WindowManager.get_vfx_layer()
+		
+		# Set position before add_child to prevent one-frame flash at (0,0)
+		token_vfx.position = start_pos
+		effects_layer.add_child(token_vfx)
+		
+		token_vfx.setup(start_pos, target_pos)
+		
+		# Connect to trigger counter reaction
+		token_vfx.animation_finished.connect(func():
+			Audio.play_sfx("coin_land")
+			total_coins_landed += 1
+			_visual_gacha_tokens += 1
+			SignalBus.emit_signal("gacha_tokens_changed", _visual_gacha_tokens)
+			
+			if is_instance_valid(token_group):
+				var tween = token_group.create_tween()
+				token_group.pivot_offset = token_group.size / 2.0
+				tween.tween_property(token_group, "scale", Vector2(1.2, 1.2), 0.05)
+				tween.tween_property(token_group, "scale", Vector2(1.0, 1.0), 0.1)
+		)
+		
+		if i > 0:
+			await get_tree().create_timer(stagger_delay).timeout
+		
+		if is_instance_valid(token_vfx):
+			token_vfx.play(target_pos)
+			Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+
+	# Wait for animations to complete
+	var total_wait_token = 0.5 + (tokens_to_spawn * stagger_delay)
+	await get_tree().create_timer(total_wait_token).timeout
 
 func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: Dictionary) -> void:
 	var source_view = _visual_registry.get(source_uuid)

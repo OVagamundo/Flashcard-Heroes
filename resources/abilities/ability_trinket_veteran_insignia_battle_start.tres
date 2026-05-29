@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_high_level_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_veteran_insignia_battle_start"
+name_key = ""
+description_key = ""
+trigger = &"on_battle_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])

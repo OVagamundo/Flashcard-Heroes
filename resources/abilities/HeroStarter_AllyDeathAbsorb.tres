@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectGainDeadAllyPwrAsHP.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectGainDeadAllyPwrAsHP_1"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_starter_ally_death_absorb"
+name_key = "ability.hero_starter_ally_death_absorb.name"
+description_key = "ability.hero_starter_ally_death_absorb.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectGainDeadAllyPwrAsHP_1")])

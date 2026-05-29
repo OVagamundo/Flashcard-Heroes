@@ -880,7 +880,7 @@ func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
 				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
 			]
-		&"hero_pyro":
+		&"hero_pyro", &"hero_starter":
 			return [
 				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
 				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",

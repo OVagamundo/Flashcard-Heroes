@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_bargain_charm"
+name_key = "ability.bargain_charm.name"
+description_key = "ability.bargain_charm.desc"
+trigger = &"gacha_draw_cost"
+priority = 50
+effects = Array[Resource]([])
