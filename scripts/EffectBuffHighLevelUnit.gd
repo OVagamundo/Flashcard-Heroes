@@ -58,8 +58,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.category != &"UNIT":
 			continue
 		
-		# Check level > 1 (i.e., Level 2 or 3)
-		if target_instance.level <= 1:
+		# Check if Level is > 1 OR Tier is > 1 (i.e., Level 2+ or Tier 2+ units)
+		var target_tier = int(target_def.tier) if "tier" in target_def else 1
+		if target_instance.level <= 1 and target_tier <= 1:
 			continue
 		
 		# Check recursion prevention tag

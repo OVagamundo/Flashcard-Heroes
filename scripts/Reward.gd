@@ -186,6 +186,11 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	var button = machine.get_node("DrawButton")
 	button.disabled = true
 	
+	# Animate Bargain Charm if it is providing a discount
+	if GameManager.is_bargain_charm_active(tier):
+		BattleAnimator.hop_trinket_by_definition_id(&"trinket_bargain_charm", false)
+		await get_tree().create_timer(0.25).timeout
+	
 	await _animate_token_spend(machine, cost, token_group)
 	
 	_tokens -= cost

@@ -193,42 +193,35 @@ func play_turn(events: Array[CombatEvent]) -> void:
 	
 	await _animate_events(events)
 
+
 func _animate_events(events: Array[CombatEvent]) -> void:
-	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
-	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
-	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
 	for event in events:
 		SignalBus.log_animation_event.emit(event)
 		
-		# Skip non-visual events in step mode
+		await _play_trinket_activations_for_event(event)
 		if event.type == CombatEvent.Type.LOG_MESSAGE:
 			continue
 		
-		# STEP MODE: Pause before each visual event and wait for user input
 		if _is_paused and not _step_advance_requested:
 			var step_info = _build_step_info(event)
 			emit_signal("combat_step_reached", step_info)
 			
-			# Wait for user to click "Next Step" or a Play speed
 			while _is_paused and not _step_advance_requested:
 				await get_tree().process_frame
 				
-		_step_advance_requested = false # consume the step request exactly once per event
+		_step_advance_requested = false
 		
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
-				pass # Log messages are instant, no animation to wait for
+				pass
 
 			CombatEvent.Type.DAMAGE:
-				# Use the dedicated DamageAnimation class which handles bumps, projectiles, and flashes
-				# NOTE: Audio is handled inside DamageAnimation at proper timing (lunge + impact)
 				var anim = AnimationRegistry.get_animation("damage")
 				if anim:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Damage animation not found in registry!")
 				
-				# After damage, check if Guardian needs to return to original position
 				if not _pending_guardian_return.is_empty():
 					var guardian_view = _visual_registry.get(_pending_guardian_return)
 					if is_instance_valid(guardian_view) and guardian_view.has_method("animate_leap_return"):
@@ -236,62 +229,46 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					_pending_guardian_return = ""
 
 			CombatEvent.Type.HEAL:
-				# Use the dedicated HealAnimation class which handles projectiles and flashes
 				var anim = AnimationRegistry.get_animation("heal")
 				if anim:
-					# AUDIO HOOK: Heal (play BEFORE await so sound syncs with animation start)
 					Audio.play_sfx("combat_heal")
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Heal animation not found in registry!")
 
 			CombatEvent.Type.BUFF:
-				# Use the dedicated BuffAnimation class for HP/PWR stats
 				var anim = AnimationRegistry.get_animation("buff")
 				if anim:
-					# AUDIO HOOK: Buff (play BEFORE await so sound syncs with animation start)
 					Audio.play_sfx("combat_buff")
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Buff animation not found in registry!")
 
 			CombatEvent.Type.STATUS_EFFECT:
-				# Use the dedicated StatusEffectAnimation class for status effect stacks
 				var anim = AnimationRegistry.get_animation("status_effect")
 				if anim:
-					# AUDIO HOOK: Status effect (same sound as buff for now)
 					Audio.play_sfx("combat_buff")
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Status effect animation not found in registry!")
 
 			CombatEvent.Type.DEATH:
-				# Play death fade on target
 				if event.target_uuids.size() > 0:
 					var dead_uuid := event.target_uuids[0]
-					
-					# Prevent duplicate death animations for the same unit in this sequence
 					if _dead_units.has(dead_uuid):
 						continue
-						
 					_dead_units[dead_uuid] = true
-					
-					# AUDIO HOOK: Death
 					Audio.play_sfx("combat_death")
-					
 					if SignalBus.has_signal("unit_death_fade"):
 						SignalBus.emit_signal("unit_death_fade", dead_uuid)
 					await wait_for_animation_completion("death_fade", dead_uuid)
 					
-					# Remove the dead view from scene after animation completes
-					# With DEATH → SUMMON ordering, the slot will be empty when SUMMON runs
 					var dead_view = _visual_registry.get(dead_uuid)
 					if is_instance_valid(dead_view):
 						dead_view.queue_free()
 						_visual_registry.erase(dead_uuid)
-						# CRITICAL: Wait one frame for queue_free() to actually remove the node
-						# This ensures the slot is empty before any SUMMON event runs
 						await get_tree().process_frame
+
 			CombatEvent.Type.SUMMON:
 				var payload = event.visual_payload
 				var new_unit_uuid = payload.get("new_unit_uuid", "")
@@ -306,28 +283,21 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var battle_view = get_tree().get_first_node_in_group("battle_view")
 				var main_node = get_tree().get_root().find_child("Main", true, false)
 				
-				# 1. Arc Animation (Elite -> Machine) if metadata present
 				var arc_completed = false
 				if not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
 					var source_pos_data = _position_snapshot.get(spawn_source_uuid, {})
 					var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % unit_tier)
-					
 					if not source_pos_data.is_empty() and is_instance_valid(machine_node):
 						var start_center: Vector2 = source_pos_data["center"]
 						var machine_rect = machine_node.get_global_rect()
 						var end_center: Vector2 = machine_rect.get_center()
 						
-						# Initial setup - REUSING EXACT SYSTEM PROPORTIONS
 						var anim_capsule = preload("res://scenes/GachaBallView.tscn").instantiate()
 						var effects_layer = WindowManager.get_vfx_layer()
 						effects_layer.add_child(anim_capsule)
-						
-						# Fix warning: Reset anchors before setting size
 						anim_capsule.anchors_preset = Control.PRESET_TOP_LEFT
-						
-						anim_capsule.set_size_scale(1.0) # Matches 96px Inventory Standard
-						
-						anim_capsule.force_inventory_mode = true # Ensure system capsule overlay is used
+						anim_capsule.set_size_scale(1.0)
+						anim_capsule.force_inventory_mode = true
 						var new_snapshot = payload.get("new_unit_snapshot", {})
 						anim_capsule.populate(null, new_snapshot)
 						
@@ -335,23 +305,19 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						var final_scale_val := 1.5
 						anim_capsule.scale = Vector2(initial_scale, initial_scale)
 						
-						var center_offset = Vector2(48, 48) # slot_base/2
-						var arc_height := 500.0 # Standard weighted peak
+						var center_offset = Vector2(48, 48)
+						var arc_height := 500.0
 						var duration := 0.7
 						
 						var tween = anim_capsule.create_tween()
 						tween.set_trans(Tween.TRANS_LINEAR)
 						
 						tween.tween_method(func(t: float):
-							# 1. THE "CORRECT" KINEMATIC ARC:
 							var curr_x = lerp(start_center.x, end_center.x, t)
 							var curr_y = lerp(start_center.y, end_center.y, t) - (4.0 * arc_height * t * (1.0 - t))
-							
-							# 2. FAST-SCALE "POP": Reaches final size at 10% of duration
 							var scale_t = clamp(t * 10.0, 0.0, 1.0)
 							var current_scale = lerp(initial_scale, final_scale_val, scale_t)
 							anim_capsule.scale = Vector2(current_scale, current_scale)
-							
 							var pos = Vector2(curr_x, curr_y)
 							anim_capsule.global_position = pos - (center_offset * current_scale)
 						, 0.0, 1.0, duration)
@@ -363,7 +329,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							main_node.trigger_machine_bounce(unit_tier)
 						arc_completed = true
 
-				# 2. Fade in unit in its actual slot (unless it's an inventory summon, which has no slot)
 				if not is_inventory_summon and is_instance_valid(battle_view):
 					var lineup_container: HBoxContainer = null
 					if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
@@ -374,28 +339,23 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
 						var slot_view = lineup_container.get_child(index)
 						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
-						# Defensive: if slot already has a GachaBallView, skip this summon entirely
-						# NOTE: SlotView always has indicator/background children, so we must
-						# check for GachaBallView specifically, not just any child.
+						
 						var has_existing_unit := false
 						for child in slot_view.get_children():
-							if child is GachaBallView:
+							if child.has_method("populate"): # Defensive check instead of is GachaBallView
 								has_existing_unit = true
 								break
 						if has_existing_unit:
 							new_view.queue_free()
 						else:
 							slot_view.add_child(new_view)
-							
 							var new_snapshot = payload.get("new_unit_snapshot", {})
 							if not new_snapshot.is_empty():
 								var new_location = LocationIdentifier.new(container_tag, index)
 								new_view.populate(new_location, new_snapshot, false)
 								new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
-								
 								_visual_registry[new_unit_uuid] = new_view
 								
-								# Register dynamic position
 								await get_tree().process_frame
 								var rect = new_view.get_global_rect()
 								_position_snapshot[new_unit_uuid] = {
@@ -405,21 +365,17 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 								}
 								
 								if arc_completed:
-									# If we arced, just snap the unit in and bounce
 									new_view.play_landing_bounce()
 								else:
-									# Standard fade in
 									if SignalBus.has_signal("unit_summon_fade"):
 										SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
 										Audio.play_sfx("combat_summon")
 										await wait_for_animation_completion("summon_fade", new_unit_uuid)
 				
-				# Wait a tiny bit for the machine bounce to feel solid
 				if arc_completed:
 					await get_tree().create_timer(0.2).timeout
 
 			CombatEvent.Type.LETHAL_SAVE:
-				# Aegis Charm: use dedicated LethalSaveAnimation
 				var anim = AnimationRegistry.get_animation("lethal_save")
 				if anim:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
@@ -427,7 +383,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					push_error("[BattleAnimator] Lethal save animation not found in registry!")
 
 			CombatEvent.Type.GUARDIAN_INTERCEPT:
-				# Guardian Sentinel: use dedicated GuardianInterceptAnimation
 				var anim = AnimationRegistry.get_animation("guardian_intercept")
 				if anim:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
@@ -435,7 +390,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					push_error("[BattleAnimator] Guardian intercept animation not found in registry!")
 
 			CombatEvent.Type.KAMIKAZE_ATTACK:
-				# Death's Bargain: dying unit lunges to target, attacks, dies at target
 				var anim = AnimationRegistry.get_animation("kamikaze")
 				if anim:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
@@ -443,11 +397,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					push_error("[BattleAnimator] Kamikaze animation not found in registry!")
 
 			CombatEvent.Type.TRANSFORM:
-				# Mimic Transform: use dedicated TransformAnimation
 				var anim = AnimationRegistry.get_animation("transform")
 				if anim:
-					# AUDIO HOOK: Hop sound? Or maybe a special transform sound if available.
-					# For now, using unit_hop signal in the animation handles the hop sound.
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Transform animation not found in registry!")
@@ -456,132 +407,189 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var payload = event.visual_payload
 				var amount = int(payload.get("amount", 0))
 				var origin_uuid = payload.get("origin_uuid", "")
-				await _animate_gold_gain(origin_uuid, amount)
+				if has_method("_animate_gold_gain"):
+					await _animate_gold_gain(origin_uuid, amount)
 
 			CombatEvent.Type.TOKEN_GAIN:
 				var payload = event.visual_payload
 				var amount = int(payload.get("amount", 0))
 				var origin_uuid = payload.get("origin_uuid", "")
-				await _animate_token_gain(origin_uuid, amount)
-
+				if has_method("_animate_token_gain"):
+					await _animate_token_gain(origin_uuid, amount)
 
 			CombatEvent.Type.ITEM_TRANSFER:
 				var payload = event.visual_payload
 				var source_uuid = event.source_uuid
 				var target_uuid = event.target_uuids[0] if event.target_uuids.size() > 0 else ""
-				
 				if not source_uuid.is_empty() and not target_uuid.is_empty():
-					await _animate_item_transfer(source_uuid, target_uuid, payload)
+					if has_method("_animate_item_transfer"):
+						await _animate_item_transfer(source_uuid, target_uuid, payload)
 
 			CombatEvent.Type.SLOT_EFFECT_CHANGE:
 				var payload = event.visual_payload
 				var container_tag: StringName = payload.get("container_tag", &"")
 				var slot_index: int = int(payload.get("slot_index", -1))
 				var to_effect: StringName = payload.get("to_effect", &"")
-				var slot_view = _get_slot_view(container_tag, slot_index)
-				if is_instance_valid(slot_view) and slot_view.has_method("animate_slot_effect_change"):
-					await slot_view.animate_slot_effect_change(to_effect)
-				elif is_instance_valid(slot_view) and slot_view.has_method("set_slot_effect"):
-					slot_view.set_slot_effect(to_effect)
-					await get_tree().create_timer(0.2).timeout
+				if has_method("_get_slot_view"):
+					var slot_view = _get_slot_view(container_tag, slot_index)
+					if is_instance_valid(slot_view) and slot_view.has_method("animate_slot_effect_change"):
+						await slot_view.animate_slot_effect_change(to_effect)
+					elif is_instance_valid(slot_view) and slot_view.has_method("set_slot_effect"):
+						slot_view.set_slot_effect(to_effect)
+						await get_tree().create_timer(0.2).timeout
 
-		# Let the UI process the emitted signal this frame
 		await get_tree().process_frame
-	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
 	
-	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
-	# SIMULATION-PRESENTATION VERIFICATION: Log completion summary
-	
-	# Clear step mode at end of turn
 	_is_paused = false
 	_step_advance_requested = false
 	
 	emit_signal("turn_animation_finished")
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
-	# PUPPET MODE: Use visual registry to update view directly
 	var view = _visual_registry.get(target_uuid)
-	
-	if not is_instance_valid(view) or not (view is GachaBallView):
-		# DECOUPLED: No fallback - if view not in registry, simulation emitted an invalid event
-		# Graceful degradation: Warn but don't crash, logic already applied
+	if not is_instance_valid(view) or not view.has_method("animate_stat_change"):
 		push_warning("[BattleAnimator] HP delta target not in visual registry: " + target_uuid)
 		return
-		
 	view.animate_stat_change(new_hp, amount, "hp")
 
 func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
-	# PUPPET MODE: Use visual registry to update view directly
 	var view = _visual_registry.get(target_uuid)
-	if is_instance_valid(view) and view is GachaBallView:
-		# Call puppet view's animate method with absolute value
+	if is_instance_valid(view) and view.has_method("animate_stat_change"):
 		view.animate_stat_change(new_pwr, amount, "pwr")
 	else:
-		# DECOUPLED: No fallback - if view not in registry, simulation emitted an invalid event
-		# Graceful degradation: Warn but don't crash, logic already applied
 		push_warning("[BattleAnimator] PWR delta target not in visual registry: " + target_uuid)
 
 func apply_burn_stack(uuid: String, new_stacks: int) -> void:
-	# Update visual burn stacks on puppet view
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
 		if is_instance_valid(view) and view.has_method("animate_burn_change"):
 			view.animate_burn_change(new_stacks)
 
 func apply_armor_stack(uuid: String, new_stacks: int) -> void:
-	# Update visual armor stacks on puppet view - same pattern as burn
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
 		if is_instance_valid(view) and view.has_method("animate_armor_change"):
 			view.animate_armor_change(new_stacks)
 
 func apply_armor_delta(target_uuid: String, armor_consumed: int, new_armor: int) -> void:
-	# Animate armor countdown (counts down from old to new value)
 	var view = _visual_registry.get(target_uuid)
-	if is_instance_valid(view) and view is GachaBallView:
+	if is_instance_valid(view):
 		if view.has_method("animate_armor_stat_change"):
 			view.animate_armor_stat_change(new_armor, armor_consumed)
-		else:
-			# Fallback to simple update
+		elif view.has_method("animate_armor_change"):
 			view.animate_armor_change(new_armor)
 
 func apply_status_stack(uuid: String, status_id: StringName, new_stacks: int) -> void:
-	# Update visual status effect stacks on puppet view (for generic status effects like armor)
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
 		if is_instance_valid(view) and view.has_method("animate_status_change"):
 			view.animate_status_change(status_id, new_stacks)
 
 func apply_spikes_stack(uuid: String, new_stacks: int) -> void:
-	# Update visual spikes stacks on puppet view - same pattern as armor/burn
-	# Falls back to generic status change animation
 	if _visual_registry.has(uuid):
 		var view = _visual_registry[uuid]
 		if is_instance_valid(view) and view.has_method("animate_status_change"):
 			view.animate_status_change(&"spikes", new_stacks)
 
 func _emit_bump(_attacker_uuid: String) -> void:
-	# LEGACY FALLBACK: This is no longer called since all DAMAGE events
-	# now have bump_direction precomputed in their payload (handled at line 121-123).
-	# Keeping this as a no-op for compatibility with any legacy code paths.
-	# TRUE DECOUPLING: No instance queries needed!
 	pass
 
-## Get position data from snapshot - animations use this instead of querying views
-## Returns: Dictionary with "position", "size", "center" or empty dict if not found
 func get_snapshot_position(uuid: String) -> Dictionary:
-	return _position_snapshot.get(uuid, {})
+	if _position_snapshot.has(uuid):
+		return _position_snapshot[uuid]
+		
+	var trinket_view = _find_trinket_view(uuid, &"", false)
+	if not is_instance_valid(trinket_view):
+		trinket_view = _find_trinket_view("", StringName(uuid), false)
+		
+	if is_instance_valid(trinket_view):
+		var rect = trinket_view.get_global_rect()
+		return {
+			"position": rect.position,
+			"size": rect.size,
+			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+		}
+		
+	return {}
 
-## Register a new position for dynamically created units (e.g., summoned units)
-func register_dynamic_position(uuid: String, view: GachaBallView) -> void:
+func register_dynamic_position(uuid: String, view) -> void:
 	if is_instance_valid(view):
 		var rect = view.get_global_rect()
 		_position_snapshot[uuid] = {
 			"position": rect.position,
 			"size": rect.size,
 			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-			}
+		}
 		_visual_registry[uuid] = view
+
+func _play_trinket_activations_for_event(event: CombatEvent) -> void:
+	var payload: Dictionary = event.visual_payload
+	var activations: Array = []
+	if payload.has("trinket_activations"):
+		var raw_activations = payload.get("trinket_activations", [])
+		if raw_activations is Array:
+			for raw_activation in raw_activations:
+				if raw_activation is Dictionary:
+					activations.append(raw_activation)
+	elif payload.has("trinket_visual_uuid") or payload.has("trinket_definition_id"):
+		activations.append({
+			"visual_uuid": String(payload.get("trinket_visual_uuid", "")),
+			"definition_id": StringName(payload.get("trinket_definition_id", &"")),
+			"is_enemy": bool(payload.get("trinket_is_enemy", false))
+		})
+	
+	for activation in activations:
+		print("[TRINKET_DBG] Activation: def=", activation.get("definition_id", ""), " uuid=", activation.get("visual_uuid", ""), " enemy=", activation.get("is_enemy", false), " event_type=", event.get_type_name())
+		play_trinket_activation(
+			String(activation.get("visual_uuid", "")),
+			StringName(activation.get("definition_id", &"")),
+			bool(activation.get("is_enemy", false))
+		)
+		await get_tree().create_timer(0.25).timeout
+
+func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
+	var view = _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
+	if is_instance_valid(view):
+		print("[TRINKET_DBG] FOUND view for def=", trinket_definition_id, " uuid=", visual_uuid, " -> playing bounce on view def=", view.get_definition_id(), " view_uuid=", view.get_instance_uuid())
+		if view.has_method("play_trinket_activation_bounce"):
+			view.play_trinket_activation_bounce()
+		elif view.has_method("play_landing_bounce"):
+			view.play_landing_bounce()
+	else:
+		print("[TRINKET_DBG] NO VIEW FOUND for def=", trinket_definition_id, " uuid=", visual_uuid, " enemy=", is_enemy_trinket)
+
+func hop_trinket_by_definition_id(trinket_definition_id: StringName, is_enemy_trinket: bool = false) -> void:
+	print("[TRINKET_DBG] hop_trinket_by_definition_id: ", trinket_definition_id)
+	play_trinket_activation("", trinket_definition_id, is_enemy_trinket)
+
+func hop_trinket_by_visual_uuid(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
+	play_trinket_activation(visual_uuid, trinket_definition_id, is_enemy_trinket)
+
+func _find_trinket_view(visual_uuid: String, trinket_definition_id: StringName, is_enemy_trinket: bool) -> GachaBallView:
+	var trinket_views := _get_trinket_views_from_tree()
+	print("[TRINKET_DBG] _find_trinket_view: ", trinket_views.size(), " views in group. Looking for uuid=", visual_uuid, " def=", trinket_definition_id, " enemy=", is_enemy_trinket)
+	for v in trinket_views:
+		if is_instance_valid(v):
+			print("[TRINKET_DBG]   view: uuid=", v.get_instance_uuid(), " def=", v.get_definition_id(), " container=", v._location.container if is_instance_valid(v._location) else "NO_LOC", " visible=", v.visible)
+	if not visual_uuid.is_empty():
+		for view in trinket_views:
+			if is_instance_valid(view) and view.get_instance_uuid() == visual_uuid:
+				return view
+	if trinket_definition_id != &"":
+		for view in trinket_views:
+			if is_instance_valid(view):
+				var view_def_id = view.get_definition_id()
+				var view_is_enemy = view._location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
+				if view_def_id == trinket_definition_id and view_is_enemy == is_enemy_trinket:
+					return view
+	return null
+
+func _get_trinket_views_from_tree() -> Array[GachaBallView]:
+	var result: Array[GachaBallView] = []
+	for node in get_tree().get_nodes_in_group("trinket_view"):
+		if node is GachaBallView and is_instance_valid(node) and node.is_inside_tree() and node.visible:
+			result.append(node)
+	return result
 
 # Animation waiting now delegated to AnimationCompletionTracker
 # All signal connect/disconnect and callback methods removed

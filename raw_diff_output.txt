@@ -1,0 +1,88 @@
+Created At: 2026-05-29T22:21:14Z
+Completed At: 2026-05-29T22:21:41Z
+The following changes were made by the multi_replace_file_content tool to: C:\Users\danhh\Desktop\Flashcard-Heroes\scripts\BattleAnimator.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -195,442 +195,6 @@
+ 
+ func _animate_events(events: Array[CombatEvent]) -> void:
+ 	# NOTE: Animation completion tracking now handled by AnimationCompletionTracker
+-	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
+-	# SIMULATION-PRESENTATION VERIFICATION: Log all events we're about to process
+-	for event in events:
+-		SignalBus.log_animation_event.emit(event)
+-		
+-		# Skip non-visual events in step mode
+-		_play_trinket_activations_for_event(event)
+-		if event.type == CombatEvent.Type.LOG_MESSAGE:
+-			continue
+-		
+-		# STEP MODE: Pause before each visual event and wait for user input
+-		if _is_paused and not _step_advance_requested:
+-			var step_info = _build_step_info(event)
+-			emit_signal("combat_step_reached", step_info)
+-			
+-			# Wait for user to click "Next Step" or a Play speed
+-			while _is_paused and not _step_advance_requested:
+-				await get_tree().process_frame
+-				
+-		_step_advance_requested = false # consume the step request exactly once per event
+-		
+-		match event.type:
+-			CombatEvent.Type.LOG_MESSAGE:
+-				pass # Log messages are instant, no animation to wait for
+-
+-			CombatEvent.Type.DAMAGE:
+-				# Use the dedicated DamageAnimation class which handles bumps, projectiles, and flashes
+-				# NOTE: Audio is handled inside DamageAnimation at proper timing (lunge + impact)
+-				var anim = AnimationRegistry.get_animation("damage")
+-				if anim:
+-					await anim.execute(self, event.target_uuids, event.visual_payload)
+-				else:
+-					push_error("[BattleAnimator] Damage animation not found in registry!")
+-				
+-				# After damage, check if Guardian needs to return to original position
+-				if not _pen
+<truncated 16978 bytes>
+.size.y / 2)
+-		}
+-		_visual_registry[uuid] = view
+-
+-func _play_trinket_activations_for_event(event: CombatEvent) -> void:
+-	# DAMAGE events play their associated trinket activations (like Burn Vial) at the point of impact
+-	if event.type == CombatEvent.Type.DAMAGE:
+-		return
+-		
+-	var payload: Dictionary = event.visual_payload
+-	var activations: Array[Dictionary] = []
+-	if payload.has("trinket_activations"):
+-		var raw_activations = payload.get("trinket_activations", [])
+-		if raw_activations is Array:
+-			for raw_activation in raw_activations:
+-				if raw_activation is Dictionary:
+-					activations.append(raw_activation)
+-	elif payload.has("trinket_visual_uuid") or payload.has("trinket_definition_id"):
+-		activations.append({
+-			"visual_uuid": String(payload.get("trinket_visual_uuid", "")),
+-			"definition_id": StringName(payload.get("trinket_definition_id", &"")),
+-			"is_enemy": bool(payload.get("trinket_is_enemy", false))
+-		})
+-	
+-	for activation in activations:
+-		play_trinket_activation(
+-			String(activation.get("visual_uuid", "")),
+-			StringName(activation.get("definition_id", &"")),
+-			bool(activation.get("is_enemy", false))
+-		)
+-
+-func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
+-	var view := _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
+-	if is_instance_valid(view):
+-		view.play_landing_bounce()
+ 
+ func hop_trinket_by_definition_id(trinket_definition_id: StringName, is_enemy_trinket: bool = false) -> void:
+ 	print("[BattleAnimator] hop_trinket_by_definition_id called for: ", trinket_definition_id)
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+
+We did our best to apply changes despite some inaccuracies. Double check if the edit applied is what you intended.

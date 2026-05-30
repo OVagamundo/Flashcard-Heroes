@@ -224,7 +224,7 @@ const ABILITIES: Dictionary = {
 
 	"ability_trinket_veteran_insignia": {
 		"owner": "Veteran Insignia (Trinket)",
-		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"trigger": "on_draw / on_ally_summon / on_battle_start",
 		"condition": "TARGET_LEVEL_GREATER_THAN_1",
 		"effect": "Grant +1 HP and +1 PWR when a level 2 or 3 unit is drawn, summoned, merged, or at battle start",
 	},

@@ -250,6 +250,7 @@ static func handle_damage_effect(
 	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
 	var burn_amount := 0
+	var burn_from_trinket := false
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
@@ -259,6 +260,7 @@ static func handle_damage_effect(
 	# 1. Trinket: Burn Vial (Team-wide)
 	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
 		burn_amount += 1
+		burn_from_trinket = true
 		
 	# 2. Fire Trait Logic
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
@@ -444,11 +446,17 @@ static func handle_damage_effect(
 	
 	# Compute animation source
 	var animation_source_uuid: String = request.source_uuid
+	var is_trinket := false
 	if is_instance_valid(source):
 		var source_def := source.get_definition()
-		if is_instance_valid(source_def) and source_def.category == &"ITEM":
-			if not source.equipped_on_uuid.is_empty():
-				animation_source_uuid = source.equipped_on_uuid
+		if is_instance_valid(source_def):
+			if source_def.category == &"ITEM":
+				if not source.equipped_on_uuid.is_empty():
+					animation_source_uuid = source.equipped_on_uuid
+			elif source_def.category == &"TRINKET":
+				is_trinket = true
+	elif String(request.source_uuid).begins_with("trinket_"):
+		is_trinket = true
 	
 	# Compute bump direction
 	var bump_dir := Vector2.ZERO
@@ -459,7 +467,16 @@ static func handle_damage_effect(
 			bump_dir = Vector2(1, 0)
 		elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
 			bump_dir = Vector2(-1, 0)
+			
+	var attack_type := "trinket" if is_trinket else "melee"
 	
+	var t_acts = []
+	if burn_from_trinket:
+		t_acts.append({
+			"definition_id": &"trinket_burn_vial",
+			"is_enemy": not is_player_source
+		})
+		
 	# Add DAMAGE event with ARMOR data included for unified animation
 	result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 		"source_uuid": request.source_uuid,
@@ -482,14 +499,15 @@ static func handle_damage_effect(
 			"targets_old_armor": targets_old_armor,
 			"targets_new_armor": targets_new_armor,
 			"armor_consumed": armor_consumed_list,
-			"attack_type": "melee",
+			"attack_type": attack_type,
 			"original_target_uuids": original_target_uuids,
 			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
 			"projectile_data": {
 				"stat": "hp",
 				"amount": amount,
 				"color": "red"
-			}
+			},
+			"trinket_activations": t_acts
 		}
 	}))
 	
@@ -526,6 +544,7 @@ static func handle_cascade_damage(
 	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
 	var burn_amount := 0
+	var burn_from_trinket := false
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
@@ -533,6 +552,7 @@ static func handle_cascade_damage(
 	# 1. Trinket: Burn Vial (Team-wide)
 	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
 		burn_amount += 1
+		burn_from_trinket = true
 		
 	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
@@ -662,11 +682,17 @@ static func handle_cascade_damage(
 		
 		# Compute animation source
 		var animation_source_uuid: String = request.source_uuid
+		var is_trinket := false
 		if is_instance_valid(source):
 			var source_def := source.get_definition()
-			if is_instance_valid(source_def) and source_def.category == &"ITEM":
-				if not source.equipped_on_uuid.is_empty():
-					animation_source_uuid = source.equipped_on_uuid
+			if is_instance_valid(source_def):
+				if source_def.category == &"ITEM":
+					if not source.equipped_on_uuid.is_empty():
+						animation_source_uuid = source.equipped_on_uuid
+				elif source_def.category == &"TRINKET":
+					is_trinket = true
+		elif String(request.source_uuid).begins_with("trinket_"):
+			is_trinket = true
 		
 		# Compute bump direction
 		var bump_dir := Vector2.ZERO
@@ -678,33 +704,48 @@ static func handle_cascade_damage(
 			elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
 				bump_dir = Vector2(-1, 0)
 		
+		var attack_type := "trinket" if is_trinket else "melee"
+		
+		var t_acts = []
+		if burn_from_trinket:
+			t_acts.append({
+				"definition_id": &"trinket_burn_vial",
+				"is_enemy": not is_player_source
+			})
+			
+		var payload = {
+			"source_uuid": animation_source_uuid,
+			"amount": - cascade_amount,
+			"stat": "hp",
+			"skip_bump": cascade_skip_bump,
+			"bump_direction": bump_dir,
+			"apply_burn": should_apply_burn,
+			"targets_old_hp": [old_hp],
+			"targets_new_hp": [new_hp],
+			"targets_max_hp": [max_hp],
+			"targets_old_burn": [old_burn],
+			"targets_new_burn": [burn_val],
+			"targets_old_armor": [old_armor],
+			"targets_new_armor": [new_armor],
+			"armor_consumed": [armor_consumed],
+			"attack_type": attack_type,
+			"original_target_uuid": original_target_uuid,
+			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
+			"projectile_data": {
+				"stat": "hp",
+				"amount": - cascade_amount,
+				"color": "red"
+			},
+			"trinket_activations": t_acts
+		}
+		
 		result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 			"source_uuid": request.source_uuid,
 			"target_uuids": [cascade_target_uuid],
-			"visual_payload": {
-				"source_uuid": animation_source_uuid,
-				"amount": - cascade_amount,
-				"stat": "hp",
-				"skip_bump": cascade_skip_bump,
-				"bump_direction": bump_dir,
-				"apply_burn": should_apply_burn,
-				"targets_old_hp": [old_hp],
-				"targets_new_hp": [new_hp],
-				"targets_max_hp": [max_hp],
-				"targets_old_burn": [old_burn],
-				"targets_new_burn": [burn_val],
-				"targets_old_armor": [old_armor],
-				"targets_new_armor": [new_armor],
-				"armor_consumed": [armor_consumed],
-				"attack_type": "melee",
-				"original_target_uuid": original_target_uuid,
-				"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
-				"projectile_data": {
-					"stat": "hp",
-					"amount": - cascade_amount,
-					"color": "red"
-				}
-			}
+			"ability_id": request.ability_id,
+			"trigger_type": "cascade_damage",
+			"ability_holder_uuid": request.source_uuid,
+			"visual_payload": payload
 		}))
 		
 		# Track for Phase 2 reactions

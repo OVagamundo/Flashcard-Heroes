@@ -1,4 +1,5 @@
 # scripts/CombatEvent.gd
+@tool
 class_name CombatEvent
 extends Resource
 

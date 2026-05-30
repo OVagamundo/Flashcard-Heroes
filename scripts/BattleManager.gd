@@ -67,12 +67,14 @@ const DEATH_SLOT_EFFECT: StringName = &"death"
 # -----------------------------------------------------------------------------
 # INITIALIZATION & SETUP
 # -----------------------------------------------------------------------------
-@onready var _animator: Node = $"../BattleAnimator"
+var _animator: Node = null
 
 func _resolve_animator() -> void:
 	if is_instance_valid(_animator):
 		return
-	var candidate = get_tree().get_first_node_in_group("battle_animator")
+	var candidate: Node = get_node_or_null("/root/BattleAnimator")
+	if not is_instance_valid(candidate):
+		candidate = get_tree().get_first_node_in_group("battle_animator")
 	if is_instance_valid(candidate):
 		_animator = candidate
 		if not _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
@@ -418,7 +420,8 @@ func bm_reshuffle_discard_pile(_tier_to_reshuffle: int) -> bool:
 	return false
 
 func bm_draw_gacha_instance(tier: int) -> bool:
-	var cost := tier
+	var base_cost := tier
+	var cost := base_cost
 	
 	# Apply Bargain Charm cost reduction
 	var has_bargain = _has_team_trinket(true, &"trinket_bargain_charm")
@@ -447,6 +450,14 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	_gacha_tokens -= cost
 	if has_bargain and not bargain_used:
 		_bargain_charm_uses[tier] = true
+		if cost < base_cost:
+			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"text": "",
+				"visual_payload": {
+					"trinket_activations": [{"definition_id": &"trinket_bargain_charm", "is_enemy": false}]
+				}
+			})
+			_animate_bargain_charm_async(event)
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Validate and emit
@@ -1802,6 +1813,7 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 		if is_burn_decay_immune:
 			new_stacks = stacks
 		else: # Apply normal decay
+			var armor_decay_prevented_by_polished := false
 			match status_def.decay_mode:
 				"HALVE":
 					new_stacks = int(floor(stacks / 2.0))
@@ -1811,12 +1823,31 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 					# Armor Decay Exception: Polished Plate Trinket or Hero Bastion
 					if status_def.id == &"armor":
 						var is_player_unit = _is_player_unit(unit)
-						if _has_team_trinket(is_player_unit, &"trinket_polished_plate") or unit.definition_id == &"hero_bastion":
+						if _has_team_trinket(is_player_unit, &"trinket_polished_plate"):
+							new_stacks = stacks
+							armor_decay_prevented_by_polished = true
+						elif unit.definition_id == &"hero_bastion":
 							new_stacks = stacks
 						else:
 							new_stacks = 0
 					else:
 						new_stacks = 0
+			
+			if armor_decay_prevented_by_polished:
+				all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+					"source_uuid": "",
+					"target_uuids": [unit.ball_uuid],
+					"visual_payload": {
+						"amount": 0,
+						"stat": "armor_stacks",
+						"new_val": new_stacks,
+						"status_color": status_def.color,
+						"trinket_activations": [{
+							"definition_id": &"trinket_polished_plate",
+							"is_enemy": not _is_player_unit(unit)
+						}]
+					}
+				}))
 		
 		if new_stacks != old_stacks:
 			if new_stacks <= 0:
@@ -2394,3 +2425,13 @@ func _on_battle_inventory_penalty(uuid: String) -> void:
 		
 		if Engine.has_singleton("BattleLogger"):
 			BattleLogger.log_message("[color=red]OVERFLOW PENALTY:[/color] %s was moved to discard pile." % name_str)
+
+func _animate_bargain_charm_async(event: CombatEvent) -> void:
+	_resolve_animator()
+	_is_processing_effect = true
+	var snapshot = get_board_snapshot()
+	var events: Array[CombatEvent] = [event]
+	await _animator.play_turn_sequence(snapshot, events)
+	_is_processing_effect = false
+	if _pending_inventory_refresh:
+		_emit_battle_inventory_changed()

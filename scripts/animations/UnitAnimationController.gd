@@ -703,7 +703,6 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 			# Impact: Quick stretch then elastic return
 			_deform_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(0.04)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 			_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(0.24)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-		
 		&"HOP_DEFORM":
 			# Synced with HOP movement (0.12s up + 0.18s down = 0.3s total)
 			_deform_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(0.03)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -713,12 +712,13 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 		
 		&"LANDING_BOUNCE":
 			# Inventory action landing feedback (bounce the WHOLE ball: capsule + unit + stats)
-			if is_instance_valid(_view):
-				_view.pivot_offset = _view.size / 2.0
-				_deform_tween.tween_property(_view, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				_deform_tween.tween_property(_view, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				_deform_tween.tween_property(_view, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-				_deform_tween.tween_property(_view, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			# We animate the sprite to prevent breaking container layouts when in HBox/VBox.
+			if is_instance_valid(sprite):
+				sprite.pivot_offset = Vector2(sprite.size.x / 2.0, sprite.size.y)
+				_deform_tween.tween_property(sprite, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	_deform_tween.finished.connect(func():
 		_reset_sprite_scale()
