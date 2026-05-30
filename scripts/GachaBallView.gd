@@ -43,6 +43,8 @@ var _instance_uuid: String
 var _is_selected: bool = false
 var _is_inspectable: bool = true
 var _is_interactive: bool = true
+var definition_id: StringName = &""
+var is_enemy: bool = false
 
 # Local input state to disambiguate click vs drag
 var _pressed_pending_click: bool = false
@@ -98,6 +100,7 @@ var _touch_press_position: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
+	add_to_group("gachaball_view")
 	_base_z_index = z_index
 	_slot_view_ref = get_parent() as Control
 	if is_instance_valid(_slot_view_ref):
@@ -267,6 +270,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	self._instance_uuid = visual_data.get("uuid", "")
 	self._bound_uuid = visual_data.get("uuid", "")
 	self._is_inspectable = is_inspectable
+	definition_id = StringName(visual_data.get("definition_id", visual_data.get("def_id", &"")))
 	if is_instance_valid(_hover_tween):
 		_hover_tween.kill()
 	if is_instance_valid(_press_tween):
@@ -290,12 +294,16 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
 
 	if visual_data.is_empty():
+		definition_id = &""
+		_entity_type = &""
+		_update_view_groups()
 		visible = false
 		return
 	
 	# Set entity type based on definition category
 	var category = visual_data.get("category", "UNIT")
 	_entity_type = StringName(category)
+	_update_view_groups()
 	
 	# Initialize visual state
 	_visual_hp = visual_data.get("hp", 0)
@@ -541,15 +549,30 @@ func _apply_visual_layers(layers: Array) -> void:
 		if unit_sprite:
 			unit_sprite.material = null
 
-func set_is_enemy(is_enemy: bool, _definition_id: StringName = &"") -> void:
+func set_is_enemy(p_is_enemy: bool, _definition_id: StringName = &"") -> void:
+	is_enemy = p_is_enemy
 	if is_instance_valid(icon_rect):
+		if _entity_type == &"TRINKET":
+			return
 		# All textures face right by default, so flip horizontally for enemy team
-		icon_rect.flip_h = is_enemy
+		icon_rect.flip_h = p_is_enemy
 		
 		# Also flip the UnitSprite child if it exists (Battle Mode scaling)
 		var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
 		if unit_sprite:
-			unit_sprite.flip_h = is_enemy
+			unit_sprite.flip_h = p_is_enemy
+
+func get_definition_id() -> StringName:
+	return definition_id
+
+func is_enemy_view() -> bool:
+	return is_enemy
+
+func _update_view_groups() -> void:
+	if _entity_type == &"TRINKET":
+		add_to_group("trinket_view")
+	else:
+		remove_from_group("trinket_view")
 
 func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive
@@ -1573,7 +1596,6 @@ func _gui_input(event: InputEvent) -> void:
 			return
 		# DOUBLE_CLICK is no longer needed — hover replaces inspect, click locks
 		if event.is_pressed():
-			print("DEBUG_INPUT: GachaBallView Pressed. UUID: ", _instance_uuid)
 			_animate_press_to(1.0, 0.05)
 			if not _is_hovered:
 				_set_hover_state(true, false)
@@ -1822,6 +1844,30 @@ func _reset_drag_deformation() -> void:
 	if is_instance_valid(icon_rect):
 		icon_rect.scale = _original_icon_scale
 		icon_rect.rotation = _original_icon_rotation
+
+func play_trinket_activation_bounce() -> void:
+	if not is_instance_valid(icon_rect): return
+	
+	Audio.play_sfx("unit_hop")
+	
+	if not visible:
+		visible = true
+	if is_instance_valid(get_parent()):
+		get_parent().visible = true
+	
+	# Trinkets live inside HBoxContainer layouts — position-based animations
+	# (unit_move HOP) get immediately overridden by the container.
+	# Always use inline scale tween which is layout-safe.
+	if icon_rect.size == Vector2.ZERO:
+		await get_tree().process_frame
+		if not is_instance_valid(icon_rect): return
+		
+	icon_rect.pivot_offset = icon_rect.size / 2.0
+	var original_scale := icon_rect.scale
+	var tween := create_tween()
+	tween.tween_property(icon_rect, "scale", Vector2(0.85, 1.15), 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(1.1, 0.9), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", original_scale, 0.12).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 func play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return

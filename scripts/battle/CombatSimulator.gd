@@ -288,6 +288,7 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 		
 		var reaction_events: Array[CombatEvent] = []
 		resolve_effect_request(current_reaction, reaction_events, death_tracking, battle_manager)
+		_tag_trinket_events(reaction_events, current_reaction, battle_manager)
 		
 		# Collect inline events (e.g. self-damage, heals, lethal saves triggered during resolution)
 		var inline_evts = collect_and_clear_inline_events()
@@ -851,7 +852,9 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 			
 		# Capture events to _inline_events so they can be collected by the outer loop
 		# IMPORTANT: Pass a special death_tracking that disables death checking
+		var inline_start_index := _inline_events.size()
 		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(_inline_events, request, bm, inline_start_index)
 		
 		# RECURSIVE PROCESSING: If this effect triggered new reactions, process them immediately
 		if not _pending_reactions.is_empty():
@@ -880,7 +883,9 @@ func drain_lethal_reactions(start_index: int, bm) -> void:
 	
 	# Process ONLY these reactions - do NOT recursively drain new ones
 	for request in reactions_to_process:
+		var inline_start_index := _inline_events.size()
 		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(_inline_events, request, bm, inline_start_index)
 		# NOTE: We intentionally do NOT call drain_reactions_inline(0, bm) here
 
 ## Collect and clear inline events. Returns the collected events.
@@ -940,11 +945,52 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			
 			var reaction_events: Array[CombatEvent] = []
 			resolve_effect_request(reaction, reaction_events, {}, bm)
+			_tag_trinket_events(reaction_events, reaction, bm)
 			
 			# Collect inline events
 			var inline_evts = collect_and_clear_inline_events()
 			out_events.append_array(inline_evts)
 			out_events.append_array(reaction_events)
+
+func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm, start_index: int = 0) -> void:
+	if request.source_uuid.is_empty():
+		return
+	var source: GachaBallInstance = bm.get_instance_by_uuid(request.source_uuid)
+	if not is_instance_valid(source):
+		return
+	var definition := source.get_definition()
+	if not is_instance_valid(definition) or not ("category" in definition) or definition.category != &"TRINKET":
+		return
+	var visual_uuid := source.origin_uuid if not source.origin_uuid.is_empty() else source.ball_uuid
+	var is_enemy_trinket := source.location_container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
+	var has_visual_event := false
+	for i in range(start_index, events.size()):
+		var candidate := events[i]
+		if is_instance_valid(candidate) and candidate.type != CombatEvent.Type.LOG_MESSAGE:
+			has_visual_event = true
+			break
+			
+	for i in range(start_index, events.size()):
+		var event := events[i]
+		if not is_instance_valid(event):
+			continue
+		if event.type == CombatEvent.Type.LOG_MESSAGE and has_visual_event:
+			continue
+		event.ability_holder_uuid = request.source_uuid
+		
+		var activation := {
+			"visual_uuid": visual_uuid,
+			"definition_id": source.definition_id,
+			"is_enemy": is_enemy_trinket
+		}
+		if event.visual_payload.has("trinket_activations"):
+			var activations: Array = event.visual_payload.get("trinket_activations", [])
+			activations.append(activation)
+			event.visual_payload["trinket_activations"] = activations
+		else:
+			event.visual_payload["trinket_visual_uuid"] = visual_uuid
+			event.visual_payload["trinket_definition_id"] = source.definition_id
+			event.visual_payload["trinket_is_enemy"] = is_enemy_trinket
 
 # ============================================================================
 # CLEANUP

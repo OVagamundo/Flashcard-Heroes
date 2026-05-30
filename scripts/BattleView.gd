@@ -144,7 +144,7 @@ func _ready() -> void:
 	_animate_initial_unit_entry()
 	
 	# Initialize combat controls styling/connections
-	_battle_animator = get_node_or_null("BattleAnimator")
+	_resolve_battle_animator()
 	
 	_speed_buttons = [pause_btn, speed_1x_btn, speed_2x_btn, speed_3x_btn]
 	if is_instance_valid(pause_btn): pause_btn.pressed.connect(_on_pause_button_pressed)
@@ -159,6 +159,13 @@ func _ready() -> void:
 	
 	if is_instance_valid(_battle_animator) and _battle_animator.has_signal("combat_step_reached"):
 		_battle_animator.combat_step_reached.connect(_on_combat_step_reached)
+
+func _resolve_battle_animator() -> void:
+	if is_instance_valid(_battle_animator):
+		return
+	_battle_animator = get_node_or_null("/root/BattleAnimator")
+	if not is_instance_valid(_battle_animator):
+		_battle_animator = get_tree().get_first_node_in_group("battle_animator")
 
 func _apply_battle_vertical_padding() -> void:
 	var team_areas = %TeamAreas
@@ -523,7 +530,7 @@ func _populate_enemy_trinkets() -> void:
 			var instance = battle_manager.enemy_trinkets[i]
 			if is_instance_valid(instance):
 				var visual_data = VisualDataAdapter.create_visual_data(instance)
-				slot_view.set_content(visual_data, true, false)
+				slot_view.set_content(visual_data, true, true)
 				if slot_view.get_child_count() > 0:
 					# Find GachaBallView among children (indicator TextureRect may also be present)
 					var view: GachaBallView = null
@@ -1005,11 +1012,13 @@ func _trigger_on_draw_effects(draw_result) -> void:
 # =============================================================================
 
 func _on_pause_button_pressed() -> void:
+	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.pause_combat()
 	_update_speed_button_styles(-1.0) # -1.0 represents Paused
 
 func _on_speed_button_pressed(speed: float) -> void:
+	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.play_continuous(speed)
 	_update_speed_button_styles(speed)
@@ -1030,6 +1039,7 @@ func _update_speed_button_styles(active_speed: float) -> void:
 		btn.add_theme_stylebox_override("normal", style)
 
 func _on_step_button_pressed() -> void:
+	_resolve_battle_animator()
 	if not is_instance_valid(_battle_animator):
 		return
 	

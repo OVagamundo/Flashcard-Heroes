@@ -585,12 +585,24 @@ func has_trinket(trinket_id: StringName) -> bool:
 				return true
 	return false
 
+func get_base_gacha_token_cost(tier: int) -> int:
+	# Base cost could be affected by other things in the future
+	return tier
+
 func get_gacha_token_cost(tier: int) -> int:
-	var base_cost = tier
+	var base_cost = get_base_gacha_token_cost(tier)
 	var cost = base_cost
-	if has_trinket(&"trinket_bargain_charm") and not gacha_discounts_used.get(tier, false):
+	if is_bargain_charm_active(tier):
 		cost -= 1
 	return max(1, cost)
+
+func is_bargain_charm_active(tier: int) -> bool:
+	if not has_trinket(&"trinket_bargain_charm"):
+		return false
+	if gacha_discounts_used.get(tier, false):
+		return false
+	var base_cost = get_base_gacha_token_cost(tier)
+	return max(1, base_cost - 1) < max(1, base_cost)
 
 func use_gacha_discount(tier: int) -> void:
 	gacha_discounts_used[tier] = true

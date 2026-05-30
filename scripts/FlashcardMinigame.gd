@@ -479,6 +479,9 @@ func _start_minigame_session() -> void:
 	_session_timer = 7.0
 	if GameManager.is_in_battle and GameManager.has_trinket(&"trinket_time_sprint_charm"):
 		_session_timer += 2.0
+		var animator = get_node_or_null("/root/BattleAnimator")
+		if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
+			animator.call_deferred("hop_trinket_by_definition_id", &"trinket_time_sprint_charm", false)
 	if is_instance_valid(timer_bar):
 		timer_bar.max_value = _session_timer
 		timer_bar.value = _session_timer

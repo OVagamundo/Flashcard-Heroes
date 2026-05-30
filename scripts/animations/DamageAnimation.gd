@@ -84,6 +84,26 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		await animator.wait_for_animation_completion("melee_return", source_uuid)
 	
 	# ------------------------------------------------------------------
+	# TRINKET ACTIVATION AND PROJECTILE ANIMATION
+	# ------------------------------------------------------------------
+	elif attack_type == "trinket":
+		# 1. Activate the trinket view (play hop/bounce animation)
+		if animator.has_method("play_trinket_activation"):
+			animator.play_trinket_activation(source_uuid)
+			
+		# 2. Launch projectile from trinket position to target(s)
+		var p_stat = String(payload.get("stat", "hp"))
+		var p_amount = amount
+		for target_uuid in targets:
+			_launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, "red")
+			
+		# Wait for projectile travel time (approx 0.35s)
+		await animator.get_tree().create_timer(0.35).timeout
+		
+		# 3. Apply damage impact (recoil, flashes, numbers)
+		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+	
+	# ------------------------------------------------------------------
 	# RANGED ATTACK ANIMATION (Future - uses projectiles)
 	# ------------------------------------------------------------------
 	elif attack_type == "ranged":
@@ -129,6 +149,19 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	var targets_new_pwr = payload.get("targets_new_pwr", []) # Support for PWR damage
 	var stat = String(payload.get("stat", "hp")) # Identify stat type
 	var spikes_data_list = payload.get("spikes_data_list", []) # Spikes reflection data
+	
+	# Play any trinket activations associated with this damage impact
+	if payload.has("trinket_activations"):
+		var raw_activations = payload.get("trinket_activations", [])
+		if raw_activations is Array:
+			for raw_activation in raw_activations:
+				if raw_activation is Dictionary:
+					var visual_uuid = String(raw_activation.get("visual_uuid", ""))
+					var def_id = StringName(raw_activation.get("definition_id", &""))
+					var is_enemy = bool(raw_activation.get("is_enemy", false))
+					if animator.has_method("play_trinket_activation"):
+						animator.play_trinket_activation(visual_uuid, def_id, is_enemy)
+						await animator.get_tree().create_timer(0.25).timeout
 	
 	# Trigger screen shake based on total damage dealt
 	# Intensity scales from 0.0 to 1.0, where 5+ damage = max shake
