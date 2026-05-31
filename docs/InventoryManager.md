@@ -1,6 +1,4 @@
-Inventory & Gacha Systems - V2.4 (Unified)
-Version: 2.4
-Status: Canonical
+# Inventory & Gacha Systems
 This document describes the architecture and definitive rules for all GachaBall manipulation systems, including inventory actions (Move, Swap, Equip, Merge), the Gacha draw mechanism, and the Discard Pile lifecycle. The InventoryManager is the central, stateless logic controller that executes the logic described herein.
 1. Purpose & Core Philosophy
 The InventoryManager is a stateless logic controller. It is the "verb" system for all GachaBall instances. Its sole purpose is to execute commands and signals related to GachaBall manipulation, validate them against a strict set of gameplay rules, and instruct the appropriate data owner (RunState or BattleManager) to perform the state change via a unified polymorphic API.
@@ -14,7 +12,7 @@ The Golden Rule of State Synchronization: All state change instructions sent to 
 > [!NOTE]
 > **In-Battle Inventory Logic:** During combat, `InventoryOperations.gd` provides the core implementation for gacha draws, moves, swaps, and equips. `BattleManager` delegates to these static methods.
 
-## v2.4 Addendum: ChoiceWindow-Driven Swap/Merge and Close Suppression
+## ChoiceWindow-Driven Swap/Merge and Close Suppression
 
 This addendum documents the finalized flow for ambiguous actions (Swap/Merge) prompted via `ChoiceWindow` and the suppression required to prevent premature closing of inspection windows during these actions.
 
@@ -225,6 +223,6 @@ The `RunState` initializes different starting inventories based on the selected 
 
 | Hero | Loadout Strategy | Details |
 |------|------------------|---------|
-| **Timekeeper** | **Testing Full Access** | **1000 Gold** and one of EVERY Tier 3 unit and item. Used for high-level debugging and transaction testing. |
+| **Timekeeper** | **Developer Testing** | **1000 Gold**, a special Prismatic Apprentice, and 2 copies of all mergeable entities plus 1 of non-mergeable entities. Used for high-level debugging and transaction testing. |
 | **Bounty Hunter** | **Tier 1 Abundance** | 4 copies of EVERY Tier 1 unit and item (16 total items). No Tier 2 or 3 items. Focuses on rapid early-game merging strategies. |
 | **Generic** | **Standard** | 2 copies of specific items per tier. Default balanced start for standard gameplay. |

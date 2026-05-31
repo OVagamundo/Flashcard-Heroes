@@ -359,6 +359,7 @@ If two identical units of Level N (e.g., Tiger Lv. 1 + Tiger Lv. 1) merge:
 2. The result inherits the "stat surplus" from both parents via a persistent **Merge Inheritance StatComponent**.
     - **Tier Evolution**: Inherent stats are summed (Parent A + Parent B).
     - **Leveling**: Unit keeps original base stats plus a flat **+1 Stat Point per level gained**, and sums "Extra Stats" (inheritance/buffs) from parents.
+    - **Soul Inheritance**: The result inherits any "surplus" elemental souls from its parents. The sum of the parents' souls is calculated, the new unit's base souls are subtracted, and the difference is retained as inherited trait tags (e.g., `merge_inheritance_souls`).
 
 * Damage/Health progress is preserved.
 * Buffs are preserved.

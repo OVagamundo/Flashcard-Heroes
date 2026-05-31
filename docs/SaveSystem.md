@@ -1,7 +1,4 @@
-# Save System
-Version: 1.0
-Status: Implemented
-
+# SaveSystem
 ## 1. Overview
 The Save System allows players to suspend their run and resume it later. It is designed as a "checkpoint" system rather than a "save anywhere" system. The primary goal is to allow players to take breaks without losing progress, while maintaining the roguelike tension (saves are cleared on death).
 

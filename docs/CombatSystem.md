@@ -314,7 +314,7 @@ When a unit dies, `reset_battle_stats_silent()` restores their HP to full **befo
 
 The validation occurs in:
 - `BattleManager._resolve_single_effect_request()` at the target filtering stage
-- `TargetResolver.resolve_target()` for context-based target resolution
+- `TargetResolver.resolve_target()` for context-based target resolution (ensuring triggers and effects accurately evaluate target liveness and correct location).
 
 ### Mid-Turn Summon Participation
 
@@ -569,6 +569,17 @@ enum Type { DAMAGE, HEAL, DEATH, SUMMON, BUFF, ... }
 var type: Type
 var source_uuid: String
 var target_uuids: Array[String]
+
+# Ability/Trigger Context - enables descriptive logging
+var ability_id: StringName = &"" 
+var trigger_type: StringName = &"" 
+var ability_holder_uuid: String = "" 
+
+# Concurrent Animation Trackers
+# Array of dictionaries: { "source_uuid": str, "def_id": StringName }
+# Used by BattleAnimator to play VFX on the UI trinket icons concurrently with the event.
+var trinket_activations: Array[Dictionary] = []
+
 var visual_payload: Dictionary 
 # Source of Truth for Views. Common keys:
 # - amount: int (The delta applied)

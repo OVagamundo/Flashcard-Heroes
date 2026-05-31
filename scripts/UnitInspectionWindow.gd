@@ -515,15 +515,10 @@ func _calculate_unit_trait_counts() -> Dictionary:
 		return counts
 	
 	var all_instances_db = _get_all_instances_db()
-	for tag in _instance.get_active_tags(all_instances_db):
-		if tag == &"SOUL_FIRE":
-			counts["FIRE"] += 1
-		elif tag == &"SOUL_EARTH":
-			counts["EARTH"] += 1
-		elif tag == &"SOUL_WATER":
-			counts["WATER"] += 1
-		elif tag == &"SOUL_AIR":
-			counts["AIR"] += 1
+	var soul_counts = _instance.get_trait_soul_counts(all_instances_db)
+	
+	for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
+		counts[soul_type] += soul_counts[soul_type]
 	
 	return counts
 

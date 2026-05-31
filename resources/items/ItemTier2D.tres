@@ -9,7 +9,7 @@
 script = ExtResource("1_script")
 id = &"item_t2_d"
 display_name_key = "item_t2_d.name"
-description_key = ""
+description_key = "item_t2_d.desc"
 icon = ExtResource("2_icon")
 tier = 2
 cost = 2

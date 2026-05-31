@@ -1,7 +1,4 @@
-Progression Systems
-Version: 1.0
-Status: Active
-1. Purpose & Responsibility
+# Progression Systems
 The Progression Systems govern the player's advancement both within a single run and across multiple playthroughs. These systems are designed to create a scaling challenge and provide long-term replayability. They are divided into two distinct categories:
 Run Progression (Difficulty Scaling): How the game's challenge increases during a single run.
 Meta-Progression (Unlocks): How players permanently unlock new content for all future runs.
@@ -23,17 +20,7 @@ More or better-equipped items.
 (Potentially) Powerful enemy leaders with team-wide passive abilities.
 (Potentially) Enemy trinkets providing team-wide passive effects.
 
-## Trait Scaling Details
 
-### Earth Trait (EARTH)
-- **Levels**: Thresholds at 3, 5, 7, and 9 souls.
-- **Effect**: Grants team-wide Armor at start of turn.
-- **Scaling**: 1 / 2 / 3 / 4 Armor based on soul level.
-- **Bonus**: Units with the Earth tag receive **double** the armor amount.
-
-### Fire Trait (FIRE)
-- **Threshold**: Activates at 7+ souls.
-- **Effect**: Applies 2 Burn stacks to the entire opposing team at the start of each turn.
 
 ## Reward Reroll System
 Players may spend gold to refresh the available rewards. Note: Rerolling reward screens is intended to be a feature unlocked by acquiring the **Reroll Trinket** (Future Content). It is currently enabled by default for testing purposes.

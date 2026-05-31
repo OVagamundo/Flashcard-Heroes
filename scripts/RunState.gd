@@ -546,20 +546,21 @@ func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifi
 # Economy (Gold) atomic API
 # ------------------------------------------------------------------
 
-func add_gold(amount: int) -> bool:
+func add_gold(amount: int, silent: bool = false) -> bool:
 	# Adds gold atomically; emits change signals
 	if amount == 0:
 		return true
 	if amount < 0:
-		return spend_gold(-amount)
+		return spend_gold(-amount, silent)
 	gold += amount
 	if OS.is_debug_build():
 		_validate_state_consistency()
-	SignalBus.emit_signal("gold_changed", gold)
-	SignalBus.emit_signal("run_data_changed")
+	if not silent:
+		SignalBus.emit_signal("gold_changed", gold)
+		SignalBus.emit_signal("run_data_changed")
 	return true
 
-func spend_gold(amount: int) -> bool:
+func spend_gold(amount: int, silent: bool = false) -> bool:
 	# Spends gold if available; emits change signals
 	if amount <= 0:
 		return true
@@ -568,8 +569,9 @@ func spend_gold(amount: int) -> bool:
 	gold -= amount
 	if OS.is_debug_build():
 		_validate_state_consistency()
-	SignalBus.emit_signal("gold_changed", gold)
-	SignalBus.emit_signal("run_data_changed")
+	if not silent:
+		SignalBus.emit_signal("gold_changed", gold)
+		SignalBus.emit_signal("run_data_changed")
 	return true
 
 func get_black_market_remove_cost() -> int:

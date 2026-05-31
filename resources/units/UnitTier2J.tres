@@ -9,7 +9,7 @@
 script = ExtResource("1_script")
 id = &"unit_t2_j"
 display_name_key = "unit_t2_j.name"
-description_key = "ability.scald.desc"
+description_key = "unit_t2_j.desc"
 icon = ExtResource("2_icon")
 tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER"])
 tier = 2

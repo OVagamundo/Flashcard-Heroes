@@ -1,5 +1,4 @@
-Flashcard Heroes - Game Design Document (V6.0 - Component Refactor)
-1. Game Overview
+# Flashcard Heroes - Game Design Document
 **Flashcard Heroes** is a single-player roguelike deckbuilder, auto-battler (inspired by *Super Auto Pets* and *Slay the Spire*) that integrates an *Anki*-style spaced repetition system as resource generation mechanic. Players build a collection of **GachaBalls** (Units and Items) to survive encounters and defeat bosses.
 
 2. Core Gameplay Loop
@@ -130,6 +129,7 @@ We distinguish between two distinct merging pathways:
 | **Burn** | Damage at turn end equal to stacks. |
 | **Armor** | Blocks incoming damage. |
 | **Spikes** | Deals damage back to attackers. |
+| **Static** | Consumed stack-by-stack when the holder suffers any stat change. Deals 1 armor-ignoring damage per consumed stack. |
 - **Traits**: Persistent team-wide bonuses based on the active units and emblems in your lineup. Each unit contributes 1 **Soul** to a specific element (Fire, Earth, Water, Wind).
     - **Fire**: Offensive pressure (Burn application).
     - **Earth**: Defense and sustain (Armor and Spikes).

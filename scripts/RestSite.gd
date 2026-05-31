@@ -7,6 +7,7 @@ class_name ResourceSite
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
+const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
@@ -35,6 +36,8 @@ enum SiteType { HP, PWR, GOLD }
 const COST_TIER1: int = 1
 const COST_TIER2: int = 2
 const COST_TIER3: int = 3
+
+const STUDY_COST_GOLD: int = 5
 
 # State
 var _tokens: int = 0
@@ -186,11 +189,25 @@ func _on_study_pressed() -> void:
 	if _has_studied:
 		return
 	
+	var main_node = GameManager._active_main_node
+	var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+	
+	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < STUDY_COST_GOLD:
+		RejectionFeedbackScript.play_rejection_with_counter(study_button, gold_group, get_tree())
+		return
+	
 	_has_studied = true
 	study_button.disabled = true
 	
-	if is_instance_valid(GameManager.run_state):
-		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+	var target_pos = study_button.get_global_rect().get_center()
+	
+	_animate_gold_spend(STUDY_COST_GOLD, target_pos, func():
+		if is_instance_valid(GameManager.run_state) and GameManager.run_state.spend_gold(STUDY_COST_GOLD):
+			FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+		else:
+			_has_studied = false
+			study_button.disabled = false
+	)
 
 func _on_live_token_earned(amount: int) -> void:
 	"""Called when a token lands during flashcard minigame animation"""
@@ -340,6 +357,44 @@ func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictiona
 	
 	await tween.finished
 	anim_ball.queue_free()
+
+func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
+	var main_node = GameManager._active_main_node
+	if not is_instance_valid(main_node):
+		on_complete.call()
+		return
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group):
+		on_complete.call()
+		return
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon):
+		gold_icon = gold_group
+	var gold_rect = gold_icon.get_global_rect()
+	var start_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	var end_pos = target_pos
+	var coins_to_spawn = mini(amount, 5)
+	var stagger_delay = 0.08
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScene.new()
+		var vfx_layer = WindowManager.get_vfx_layer()
+		if is_instance_valid(vfx_layer):
+			vfx_layer.add_child(coin_vfx)
+		else:
+			effects_layer.add_child(coin_vfx)
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			Audio.play_sfx("coin_land")
+		)
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
+		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
+	var wait_tween = create_tween()
+	wait_tween.tween_interval(total_wait)
+	wait_tween.tween_callback(on_complete)
 
 func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
 	var icon_tex = preload("res://assets/Realistic/ui/textures/gachaballcapsule.png")
