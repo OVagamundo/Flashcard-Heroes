@@ -381,6 +381,23 @@ func get_active_traits(all_instances_db: Dictionary = {}) -> Array[StringName]:
 			traits.append(tag)
 	return traits
 
+func get_trait_soul_counts(all_instances_db: Dictionary = {}) -> Dictionary:
+	var counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	for component in get_active_components(all_instances_db):
+		if not component is TagComponent:
+			continue
+		var tag_component := component as TagComponent
+		for tag in tag_component.tags_to_add:
+			if tag == &"SOUL_FIRE":
+				counts["FIRE"] += 1
+			elif tag == &"SOUL_EARTH":
+				counts["EARTH"] += 1
+			elif tag == &"SOUL_WATER":
+				counts["WATER"] += 1
+			elif tag == &"SOUL_AIR":
+				counts["AIR"] += 1
+	return counts
+
 func get_attribute(attribute_name: StringName, all_instances_db: Dictionary = {}) -> Variant:
 	var def = get_definition()
 	var value: Variant = null

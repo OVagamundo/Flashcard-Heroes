@@ -314,8 +314,9 @@ func _get_run_trait_count(trait_id: String) -> int:
 		var unit = GameManager.run_state.get_instance_by_uuid(unit_uuid)
 		if not is_instance_valid(unit):
 			continue
-		for tag in unit.get_active_tags(GameManager.run_state.get_all_instances()):
-			_accumulate_trait_tag(counts, tag)
+		var soul_counts = unit.get_trait_soul_counts(GameManager.run_state.get_all_instances())
+		for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
+			counts[soul_type] += soul_counts[soul_type]
 
 	return int(counts.get(trait_id, 0))
 

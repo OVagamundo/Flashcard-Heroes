@@ -2084,8 +2084,9 @@ func _calculate_active_traits(team: String) -> Dictionary:
 		if not is_instance_valid(unit) or unit.current_hp <= 0:
 			continue
 		
-		for tag in unit.get_active_tags(get_all_instances()):
-			_accumulate_trait_tag(counts, tag)
+		var soul_counts = unit.get_trait_soul_counts(get_all_instances())
+		for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
+			counts[soul_type] += soul_counts[soul_type]
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		if not _team_has_trait_trinket(team, trait_name):

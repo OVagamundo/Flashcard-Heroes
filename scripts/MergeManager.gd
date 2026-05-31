@@ -99,6 +99,35 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		false
 	)
 
+	# Inherit surplus souls
+	var parent_a_souls = instance_a.get_trait_soul_counts(all_instances_db)
+	var parent_b_souls = instance_b.get_trait_soul_counts(all_instances_db)
+	var result_base_souls = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	if "tags" in result_definition:
+		for tag in result_definition.tags:
+			if tag == &"SOUL_FIRE": result_base_souls["FIRE"] += 1
+			elif tag == &"SOUL_EARTH": result_base_souls["EARTH"] += 1
+			elif tag == &"SOUL_WATER": result_base_souls["WATER"] += 1
+			elif tag == &"SOUL_AIR": result_base_souls["AIR"] += 1
+
+	var inherited_tags: Array = []
+	for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
+		var total_parent_souls = parent_a_souls[soul_type] + parent_b_souls[soul_type]
+		var surplus = total_parent_souls - result_base_souls[soul_type]
+		if surplus > 0:
+			var tag_name = StringName("SOUL_" + soul_type)
+			for i in range(surplus):
+				inherited_tags.append(tag_name)
+				
+	if not inherited_tags.is_empty():
+		merged_instance.add_or_update_tag_component(
+			&"merge_inheritance_souls",
+			&"MERGE_INHERITANCE",
+			String(recipe.id),
+			{},
+			inherited_tags
+		)
+
 	# Target item has priority. If target is empty, inherit source item.
 	var items_to_equip: Array[GachaBallInstance] = []
 	var items_to_discard: Array[GachaBallInstance] = []

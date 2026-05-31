@@ -198,8 +198,12 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	for event in events:
 		SignalBus.log_animation_event.emit(event)
 		
-		await _play_trinket_activations_for_event(event)
+		_play_trinket_activations_for_event(event)
 		if event.type == CombatEvent.Type.LOG_MESSAGE:
+			var has_trinket = event.trinket_activations.size() > 0 or event.visual_payload.has("trinket_activations")
+			if has_trinket:
+				# Standalone trinket activations need to be awaited so the UI isn't destroyed immediately
+				await get_tree().create_timer(0.25).timeout
 			continue
 		
 		if _is_paused and not _step_advance_requested:
@@ -407,8 +411,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var payload = event.visual_payload
 				var amount = int(payload.get("amount", 0))
 				var origin_uuid = payload.get("origin_uuid", "")
+				var target_gold_amount = payload.get("target_gold_amount", -1)
 				if has_method("_animate_gold_gain"):
-					await _animate_gold_gain(origin_uuid, amount)
+					await _animate_gold_gain(origin_uuid, amount, target_gold_amount)
 
 			CombatEvent.Type.TOKEN_GAIN:
 				var payload = event.visual_payload
@@ -523,8 +528,15 @@ func register_dynamic_position(uuid: String, view) -> void:
 		_visual_registry[uuid] = view
 
 func _play_trinket_activations_for_event(event: CombatEvent) -> void:
-	var payload: Dictionary = event.visual_payload
 	var activations: Array = []
+	
+	# Primary: new strongly typed array
+	if event.trinket_activations.size() > 0:
+		for act in event.trinket_activations:
+			activations.append(act)
+	
+	# Fallback: legacy visual payload keys
+	var payload: Dictionary = event.visual_payload
 	if payload.has("trinket_activations"):
 		var raw_activations = payload.get("trinket_activations", [])
 		if raw_activations is Array:
@@ -545,7 +557,7 @@ func _play_trinket_activations_for_event(event: CombatEvent) -> void:
 			StringName(activation.get("definition_id", &"")),
 			bool(activation.get("is_enemy", false))
 		)
-		await get_tree().create_timer(0.25).timeout
+		# No await timer here to allow concurrent playback
 
 func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
 	var view = _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
@@ -579,7 +591,9 @@ func _find_trinket_view(visual_uuid: String, trinket_definition_id: StringName, 
 		for view in trinket_views:
 			if is_instance_valid(view):
 				var view_def_id = view.get_definition_id()
-				var view_is_enemy = view._location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
+				var view_is_enemy = false
+				if is_instance_valid(view._location):
+					view_is_enemy = view._location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
 				if view_def_id == trinket_definition_id and view_is_enemy == is_enemy_trinket:
 					return view
 	return null
@@ -694,7 +708,7 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 	
 	return info
 
-func _animate_gold_gain(origin_uuid: String, amount: int) -> void:
+func _animate_gold_gain(origin_uuid: String, amount: int, target_gold_amount: int = -1) -> void:
 	"""Animate gold coins flying from a unit to the gold counter at the top"""
 	# 1. Get origin position from snapshot
 	var pos_data = _position_snapshot.get(origin_uuid, {})
@@ -741,6 +755,9 @@ func _animate_gold_gain(origin_uuid: String, amount: int) -> void:
 				gold_group.pivot_offset = gold_group.size / 2.0
 				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
 				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
+				
+				if target_gold_amount != -1:
+					SignalBus.emit_signal("gold_changed", target_gold_amount)
 		)
 		
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))

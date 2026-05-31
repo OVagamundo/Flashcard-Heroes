@@ -11,9 +11,11 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 	
 	# During simulation, apply gold and return EffectResult
 	if is_simulation:
-		# Apply gold during simulation
+		# Apply gold during simulation silently so UI doesn't pop instantly
+		var target_gold_amount = 0
 		if is_instance_valid(GameManager.run_state):
-			GameManager.run_state.add_gold(amount)
+			GameManager.run_state.add_gold(amount, true)
+			target_gold_amount = GameManager.run_state.gold
 		
 		var result := EffectResult.new()
 		# Add log message for history
@@ -32,7 +34,8 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 			"amount": amount,
 			"visual_payload": {
 				"amount": amount,
-				"origin_uuid": origin_uuid
+				"origin_uuid": origin_uuid,
+				"target_gold_amount": target_gold_amount
 			}
 		}))
 		

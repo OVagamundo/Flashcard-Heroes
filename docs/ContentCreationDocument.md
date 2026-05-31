@@ -1,14 +1,12 @@
 # Flashcard Heroes: Systems Architecture and Content Creation Guide
 
 > [!IMPORTANT]
-> **MASTER DOCUMENT**
 > This document is the **Single Source of Truth** for the entire Flashcard Heroes codebase.
 > It consolidates and replaces:
 > *   `AbilityImplementationGuide.md`
 > *   `AbilityExecutionPipeline.md`
 > *   `AnimationImplementationGuide.md`
 >
-> **Status:** Definitive Reference
 > **Philosophy:** Strict Separation of Simulation vs. Presentation.
 
 ---

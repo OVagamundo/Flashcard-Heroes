@@ -976,21 +976,15 @@ func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm,
 			continue
 		if event.type == CombatEvent.Type.LOG_MESSAGE and has_visual_event:
 			continue
-		event.ability_holder_uuid = request.source_uuid
-		
-		var activation := {
+		# FIX: Only tag events that actually originated from this trinket!
+		if event.ability_holder_uuid != request.source_uuid:
+			continue
+			
+		event.trinket_activations.append({
 			"visual_uuid": visual_uuid,
 			"definition_id": source.definition_id,
 			"is_enemy": is_enemy_trinket
-		}
-		if event.visual_payload.has("trinket_activations"):
-			var activations: Array = event.visual_payload.get("trinket_activations", [])
-			activations.append(activation)
-			event.visual_payload["trinket_activations"] = activations
-		else:
-			event.visual_payload["trinket_visual_uuid"] = visual_uuid
-			event.visual_payload["trinket_definition_id"] = source.definition_id
-			event.visual_payload["trinket_is_enemy"] = is_enemy_trinket
+		})
 
 # ============================================================================
 # CLEANUP

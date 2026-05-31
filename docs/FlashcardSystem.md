@@ -1,8 +1,4 @@
 # Flashcard System
-
-**Version:** 1.2  
-**Status:** Active
-
 ## 1. Purpose & Responsibility
 
 The Flashcard System is a core gameplay mechanic designed to test player knowledge and serve as the primary driver for in-battle resource generation. The system is encapsulated within the FlashcardManager singleton.

@@ -1,8 +1,4 @@
 # Encounter System & Generation
-
-**Version:** 2.0  
-**Status:** Active
-
 ## Overview
 
 The Encounter System is responsible for defining, generating, and instantiating enemy teams for battle. It uses a budget-based algorithm that **guarantees 100% budget spending**.
@@ -152,3 +148,13 @@ Starting at day 1, slots with special effects can be generated on player and ene
   * Player slot effects deduct directly from the player's generation budget (ensuring at least 1 Gold remains for units).
   * Enemy slot effects increase the enemy's generation budget.
   * The net change (`enemy_bonus - player_cost`) is applied to the final enemy lineup generation budget to maintain combat equilibrium.
+
+## Non-Combat Encounters
+
+The game features non-combat encounters such as the **Rest Site** (HP), **Training Ground** (PWR), and **Gambling Den** (Gold). These encounters offer a token-based stat gacha system.
+
+### Study Sessions
+Players can activate a "Study Session" (Flashcard Minigame) at these encounters to earn additional tokens. 
+- **Cost**: Activating a study session requires exactly **5 Gold**.
+- **Animation**: Spending gold triggers a visual VFX of gold coins transferring from the player's gold bank to the study button.
+- **Availability**: The study session can only be activated once per encounter visit.

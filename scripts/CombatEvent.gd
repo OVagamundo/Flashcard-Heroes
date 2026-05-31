@@ -39,6 +39,9 @@ var ability_id: StringName = &"" # e.g., "basic_attack", "item_tier2b_bloodlust"
 var trigger_type: StringName = &"" # e.g., "on_kill", "on_hurt", "on_turn_start", ""
 var ability_holder_uuid: String = "" # UUID of unit/item that owns the ability
 
+# Strong typed array for trinket animations to play with this event
+var trinket_activations: Array[Dictionary] = []
+
 # The Absolute Truth Payload
 # MANDATORY KEYS for DAMAGE/HEAL: { "new_hp": int, "amount": int, "is_crit": bool }
 # MANDATORY KEYS for SUMMON: { "snapshot": Dictionary }

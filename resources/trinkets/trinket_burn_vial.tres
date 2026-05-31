@@ -7,14 +7,14 @@
 [sub_resource type="Resource" id="Ability_BurnVial"]
 script = ExtResource("3_ability")
 trigger = &"on_passive"
-description_key = "Your team's damage applies 1 Burn. Burn deals damage at end of turn, then halves."
+description_key = "ability.burn_vial.desc"
 effects = Array[Resource]([])
 
 [resource]
 script = ExtResource("1_script")
 id = &"trinket_burn_vial"
-name_key = "Burn Vial"
-description_key = "Your team's damage applies 1 Burn. Burn deals damage at end of turn, then halves."
+name_key = "trinket.burn_vial.name"
+description_key = "trinket.burn_vial.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
 is_player_exclusive = false

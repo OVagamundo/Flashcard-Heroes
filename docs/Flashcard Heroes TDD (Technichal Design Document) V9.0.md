@@ -1,7 +1,4 @@
 # Flashcard Heroes - Technical Design Document
-
-**Status:** Active
-
 ## Part 1: Core Architecture & Principles
 
 ### 1.1 The Definitive Hybrid Architecture

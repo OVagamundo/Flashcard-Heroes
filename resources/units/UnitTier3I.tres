@@ -10,7 +10,7 @@
 script = ExtResource("1_script")
 id = &"unit_t3_i"
 display_name_key = "unit_t3_i.name"
-description_key = ""
+description_key = "unit_t3_i.desc"
 icon = ExtResource("2_icon")
 tags = Array[StringName]([])
 tier = 3

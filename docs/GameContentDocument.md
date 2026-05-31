@@ -1,6 +1,4 @@
 # Game Content Document: Flashcard Heroes
-**(Synced with Codebase)**
-
 ## Recipe Unlock System
 
 **Important**: Merge recipes are LOCKED by default at the start of each run. Recipes only unlock when you acquire the resulting gachaball (via shop purchase, battle reward, etc.). These unlocks are per-run only and reset when starting a new run.
@@ -133,6 +131,11 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
 | `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |
 | `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+1 HP/+1 PWR** to any **Tier 1** unit entering the board. |
+| `trinket_veteran_insignia`| Veteran Insignia | `on_draw / on_ally_summon / on_battle_start` | Grants +1 HP and +1 PWR when a level 2 or 3 unit is drawn, summoned, merged, or at battle start. |
+| `trinket_bargain_charm` | Bargain Charm | `gacha_draw_cost` | Spend 1 token less, once per machine, per turn (minimum 1 token cost). |
+| `trinket_token_return_charm` | Token Return Charm | `on_unit_death` | The first unit to die that round returns tokens equivalent to its tier. |
+| `trinket_time_sprint_charm` | Sprint Charm | `minigame_start` | Minigame timer gets a flat 2-second increase in battle context. |
+| `trinket_merge_damage_charm` | Fusion Spark | `on_merge` | Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit. |
 | `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** non-hero ally to die each turn. |
 | `trinket_vengeance` | Vengeance Charm (Vengeance) | `on_ally_death` | Grants **+1 HP** and **+1 PWR** to a random ally. |
 | `trinket_twin_charm` | Twin Charm | `on_board_changed` | **Shared Reflection**: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
