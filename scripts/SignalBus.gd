@@ -16,7 +16,8 @@ signal new_game_requested
 ## Emitted when a run should start
 ## @param hero_def_id: StringName - The hero definition ID
 ## @param deck_id: StringName - The deck ID
-signal start_run_requested(hero_def_id: StringName, deck_id: StringName)
+## @param deck_order: String - The order to add cards ("REGULAR", "INVERTED", "RANDOM")
+signal start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String)
 
 ## Emitted when loadout scene is requested
 signal loadout_scene_requested

@@ -1,0 +1,84 @@
+id,tier,thai,element,transliteration,tone,type,position,letter_name,class,sound_initial,sound_final,notes
+1,Tier 1: Vowels,กะ,ะ,ka,Mid,Short Vowel,Right,Sra A,Mid,k-,-,Short standard 'a' sound. Forces dead syllable if no final consonant.
+2,Tier 1: Vowels,กา,า,kaa,Mid,Long Vowel,Right,Sra Aa,Mid,k-,-,Long standard 'aa' sound. Creates live syllable.
+3,Tier 1: Vowels,กิ,ิ,ki,Mid,Short Vowel,Above,Sra I,Mid,k-,-,Short 'i' sound placed directly above the consonant.
+4,Tier 1: Vowels,กี,ี,kee,Mid,Long Vowel,Above,Sra Ee,Mid,k-,-,Long 'ee' sound placed directly above the consonant.
+5,Tier 1: Vowels,กึ,ึ,kue,Mid,Short Vowel,Above,Sra Ue (Short),Mid,k-,-,Short unrounded back vowel (close back unrounded).
+6,Tier 1: Vowels,กือ,ื / อ,kuee,Mid,Long Vowel,Above & Right,Sra Ue (Long),Mid,k-,-,Long unrounded back vowel. Requires trailing อ if no final consonant.
+7,Tier 1: Vowels,กุ,ุ,ku,Mid,Short Vowel,Below,Sra U,Mid,k-,-,Short 'u' sound (like oo in foot) placed below.
+8,Tier 1: Vowels,กู,ู,koo,Mid,Long Vowel,Below,Sra Oo,Mid,k-,-,Long 'oo' sound (like oo in boot) placed below.
+9,Tier 1: Vowels,เกะ,เ—ะ,ke,Mid,Short Vowel,Wrap-around,Sra E (Short),Mid,k-,-,Short 'e' sound. Vowel wraps around the consonant.
+10,Tier 1: Vowels,เก,เ,kay,Mid,Long Vowel,Left,Sra E (Long),Mid,k-,-,Long 'ay' sound placed to the left of the consonant.
+11,Tier 1: Vowels,แกะ,แ—ะ,kae,Mid,Short Vowel,Wrap-around,Sra Ae (Short),Mid,k-,-,Short 'ae' sound (like 'a' in cat). Wrap-around structure.
+12,Tier 1: Vowels,แก,แ,kaee,Mid,Long Vowel,Left,Sra Ae (Long),Mid,k-,-,Long 'ae' sound (like 'a' in bad) placed to the left.
+13,Tier 1: Vowels,โกะ,โ—ะ,ko,Mid,Short Vowel,Wrap-around,Sra O (Short),Mid,k-,-,Short 'o' sound. Disappears completely when final consonant is added.
+14,Tier 1: Vowels,โก,โ,koh,Mid,Long Vowel,Left,Sra O (Long),Mid,k-,-,Long 'oh' sound placed to the left of the consonant.
+15,Tier 1: Vowels,เกาะ,เ—าะ,kaw,Mid,Short Vowel,Wrap-around,Sra Aw (Short),Mid,k-,-,Short open 'o' sound (like 'aw' in law). Wrap-around.
+16,Tier 1: Vowels,กอ,อ,kaww,Mid,Long Vowel,Right,Sra Aw (Long),Mid,k-,-,Long open 'o' sound. The letter 'อ' functions purely as a vowel here.
+17,Tier 1: Vowels,เกิอะ,เ—ิอะ,koer,Mid,Short Vowel,Wrap-around,Sra Oe (Short),Mid,k-,-,Short central vowel (like 'er' in British 'her'). Very rare.
+18,Tier 1: Vowels,เกอ,เ—อ,koerr,Mid,Long Vowel,Wrap-around,Sra Oe (Long),Mid,k-,-,Long central vowel. Changes form to เ—ิ when final consonant attached.
+19,Tier 1: Vowels,เกียะ,เ—ียะ,kia,Mid,Short Diphthong,Wrap-around,Sra Ia (Short),Mid,k-,-,Short diphthong 'i-a'. Rare modern usage.
+20,Tier 1: Vowels,เกีย,เ—ีย,keea,Mid,Long Diphthong,Wrap-around,Sra Ia (Long),Mid,k-,-,Long diphthong moving from 'ee' to 'ah' smoothly.
+21,Tier 1: Vowels,เกือะ,เ—ือะ,kuea,Mid,Short Diphthong,Wrap-around,Sra Uea (Short),Mid,k-,-,Short diphthong combining unrounded back vowel + 'a'.
+22,Tier 1: Vowels,เกือ,เ—ือ,kueaa,Mid,Long Diphthong,Wrap-around,Sra Uea (Long),Mid,k-,-,Long diphthong combining unrounded back vowel + 'ah'.
+23,Tier 1: Vowels,กัวะ,—ัวะ,kua,Mid,Short Diphthong,Wrap-around,Sra Ua (Short),Mid,k-,-,Short diphthong combining 'u' + 'a' with final glottal stop.
+24,Tier 1: Vowels,กัว,—ัว,kuaa,Mid,Long Diphthong,Above & Right,Sra Ua (Long),Mid,k-,-,Long diphthong 'oo-ah'. Drops the upper symbol when final consonant attached.
+25,Tier 1: Vowels,กำ,ำ,kam,Mid,Special Vowel,Above & Right,Sra Am,Mid,k-,-,Combines short 'a' sound with a final '-m' closing sound.
+26,Tier 1: Vowels,ไก,ไ,kai,Mid,Special Vowel,Left,Sra Ai Mai-Malai,Mid,k-,-,Short 'ai' sound. Most common 'ai' vowel layout.
+27,Tier 1: Vowels,ใก,ใ,kai,Mid,Special Vowel,Left,Sra Ai Mai-Muan,Mid,k-,-,Short 'ai' sound. Restricted to exactly 20 grammar words in Thai.
+28,Tier 1: Vowels,เกา,เ—า,kao,Mid,Special Vowel,Wrap-around,Sra Ao,Mid,k-,-,Short/Medium 'ao' sound like 'ow' in cow.
+29,Tier 2: Consonants,กา,ก,koaa,Mid,Consonant Anchor,Left,กอ ไก่,Mid,k-,-k,Meaning: Chicken. Mid Class + Long Vowel = Mid Tone.
+30,Tier 2: Consonants,จา,จ,choaa,Mid,Consonant Anchor,Left,จอ จาน,Mid,ch-,-t,Meaning: Plate. Mid Class + Long Vowel = Mid Tone.
+31,Tier 2: Consonants,ฎา,ฎ,doaa,Mid,Consonant Anchor,Left,ฎา ชฎา,Mid,d-,-t,Meaning: Headdress (Rarely used). Mid Class + Long Vowel = Mid Tone.
+32,Tier 2: Consonants,ฏา,ฏ,toaa,Mid,Consonant Anchor,Left,ฏฏ ปฏัก,Mid,t-,-t,Meaning: Goad/Javelin (Rarely used). Mid Class + Long Vowel = Mid Tone.
+33,Tier 2: Consonants,ดา,ด,doaa,Mid,Consonant Anchor,Left,ดอ เด็ก,Mid,d-,-t,Meaning: Child. Mid Class + Long Vowel = Mid Tone.
+34,Tier 2: Consonants,ตา,ต,toaa,Mid,Consonant Anchor,Left,ตอ เต่า,Mid,t-,-t,Meaning: Turtle. Mid Class + Long Vowel = Mid Tone.
+35,Tier 2: Consonants,บา,บ,boaa,Mid,Consonant Anchor,Left,บอ ใบไม้,Mid,b-,-p,Meaning: Leaf. Mid Class + Long Vowel = Mid Tone.
+36,Tier 2: Consonants,ปา,ป,poaa,Mid,Consonant Anchor,Left,ปอ ปลา,Mid,p-,-p,Meaning: Fish. Mid Class + Long Vowel = Mid Tone.
+37,Tier 2: Consonants,อา,อ,oaa,Mid,Consonant Anchor,Left,ออ อ่าง,Mid,y-/-,-,Meaning: Basin / Vowel Placeholder. Mid Class + Long Vowel = Mid Tone.
+38,Tier 2: Consonants,ขา,ข,khoaa,Rising,Consonant Anchor,Left,ขอ ไข่,High,kh-,-k,Meaning: Egg. High Class + Long Vowel = Rising Tone without markers.
+39,Tier 2: Consonants,ฉา,ฉ,choaa,Rising,Consonant Anchor,Left,ฉอ ฉิ่ง,High,ch-,-,Meaning: Cymbals (No final sound standard). High Class + Long Vowel = Rising Tone without markers.
+40,Tier 2: Consonants,ฐา,ฐ,thoaa,Rising,Consonant Anchor,Left,ฐอ ฐาน,High,th-,-t,Meaning: Pedestal. High Class + Long Vowel = Rising Tone without markers.
+41,Tier 2: Consonants,ถา,ถ,thoaa,Rising,Consonant Anchor,Left,ถอ ถุง,High,th-,-t,Meaning: Bag. High Class + Long Vowel = Rising Tone without markers.
+42,Tier 2: Consonants,ผา,ผ,phoaa,Rising,Consonant Anchor,Left,ผอ ผึ้ง,High,ph-,-,Meaning: Bee (No final sound standard). High Class + Long Vowel = Rising Tone without markers.
+43,Tier 2: Consonants,ฝา,ฝ,foaa,Rising,Consonant Anchor,Left,ฝอ ฝา,High,f-,-,Meaning: Lid (No final sound standard). High Class + Long Vowel = Rising Tone without markers.
+44,Tier 2: Consonants,ศา,ศ,soaa,Rising,Consonant Anchor,Left,ศอ ศาลา,High,s-,-t,Meaning: Pavilion. High Class + Long Vowel = Rising Tone without markers.
+45,Tier 2: Consonants,ษา,ษ,soaa,Rising,Consonant Anchor,Left,ษอ ฤาษี,High,s-,-t,Meaning: Hermit. High Class + Long Vowel = Rising Tone without markers.
+46,Tier 2: Consonants,สา,ส,soaa,Rising,Consonant Anchor,Left,สอ เสือ,High,s-,-t,Meaning: Tiger. High Class + Long Vowel = Rising Tone without markers.
+47,Tier 2: Consonants,หา,ห,hoaa,Rising,Consonant Anchor,Left,หอ หีบ,High,h-,-,Meaning: Chest/Box / High Tone Lead. High Class + Long Vowel = Rising Tone without markers.
+48,Tier 2: Consonants,คา,ค,khoaa,Mid,Consonant Anchor,Left,คอ ควาย,Low,kh-,-k,Meaning: Buffalo. Low Class + Long Vowel = Mid Tone.
+49,Tier 2: Consonants,ฆา,ฆ,khoaa,Mid,Consonant Anchor,Left,ฆอ ระฆัง,Low,kh-,-k,Meaning: Bell. Low Class + Long Vowel = Mid Tone.
+50,Tier 2: Consonants,งา,ง,ngoaa,Mid,Consonant Anchor,Left,งอ งู,Low,ng-,-ng,Meaning: Snake (Nasal sound). Low Class + Long Vowel = Mid Tone.
+51,Tier 2: Consonants,ชา,ช,choaa,Mid,Consonant Anchor,Left,ชอ ช้าง,Low,ch-,-t,Meaning: Elephant. Low Class + Long Vowel = Mid Tone.
+52,Tier 2: Consonants,ซา,ซ,soaa,Mid,Consonant Anchor,Left,ซอ โซ่,Low,s-,-t,Meaning: Chain. Low Class + Long Vowel = Mid Tone.
+53,Tier 2: Consonants,ฌา,ฌ,choaa,Mid,Consonant Anchor,Left,ฌอ เฌอ,Low,ch-,-,Meaning: Tree (Rare). Low Class + Long Vowel = Mid Tone.
+54,Tier 2: Consonants,ญา,ญ,yoaa,Mid,Consonant Anchor,Left,ญอ หญิง,Low,y-,-n,Meaning: Woman. Low Class + Long Vowel = Mid Tone.
+55,Tier 2: Consonants,ฑา,ฑ,thoaa,Mid,Consonant Anchor,Left,ฑอ มณโฑ,Low,th-,-t,Meaning: Ramayana Character. Low Class + Long Vowel = Mid Tone.
+56,Tier 2: Consonants,ฒา,ฒ,thoaa,Mid,Consonant Anchor,Left,ฒอ ผู้เฒ่า,Low,th-,-t,Meaning: Elderly Person. Low Class + Long Vowel = Mid Tone.
+57,Tier 2: Consonants,ณา,ณ,noaa,Mid,Consonant Anchor,Left,ณอ เณร,Low,n-,-n,Meaning: Novice Monk. Low Class + Long Vowel = Mid Tone.
+58,Tier 2: Consonants,ทา,ท,thoaa,Mid,Consonant Anchor,Left,ทอ ทหาร,Low,th-,-t,Meaning: Soldier. Low Class + Long Vowel = Mid Tone.
+59,Tier 2: Consonants,ธา,ธ,thoaa,Mid,Consonant Anchor,Left,ธอ ธง,Low,th-,-t,Meaning: Flag. Low Class + Long Vowel = Mid Tone.
+60,Tier 2: Consonants,นา,น,noaa,Mid,Consonant Anchor,Left,นอ หนู,Low,n-,-n,Meaning: Mouse / No. Low Class + Long Vowel = Mid Tone.
+61,Tier 2: Consonants,พา,พ,phoaa,Mid,Consonant Anchor,Left,พอ พาน,Low,ph-,-p,Meaning: Tray. Low Class + Long Vowel = Mid Tone.
+62,Tier 2: Consonants,ฟา,ฟ,foaa,Mid,Consonant Anchor,Left,ฟอ ฟัน,Low,f-,-p,Meaning: Teeth. Low Class + Long Vowel = Mid Tone.
+63,Tier 2: Consonants,ภา,ภ,phoaa,Mid,Consonant Anchor,Left,ภอ สำเภา,Low,ph-,-p,Meaning: Sailing Ship. Low Class + Long Vowel = Mid Tone.
+64,Tier 2: Consonants,มา,ม,moaa,Mid,Consonant Anchor,Left,มอ ม้า,Low,m-,-m,Meaning: Horse. Low Class + Long Vowel = Mid Tone.
+65,Tier 2: Consonants,ยา,ย,yoaa,Mid,Consonant Anchor,Left,ยอ ยักษ์,Low,y-,- (Diphthong),Meaning: Giant / Ogre. Low Class + Long Vowel = Mid Tone.
+66,Tier 2: Consonants,รา,ร,roaa,Mid,Consonant Anchor,Left,รอ เรือ,Low,r/l-,-n,Meaning: Boat (Trill/Flap). Low Class + Long Vowel = Mid Tone.
+67,Tier 2: Consonants,ลา,ล,loaa,Mid,Consonant Anchor,Left,ลอ ลิง,Low,l-,-n,Meaning: Monkey. Low Class + Long Vowel = Mid Tone.
+68,Tier 2: Consonants,วา,ว,woaa,Mid,Consonant Anchor,Left,วอ แหวน,Low,w-,- (Diphthong),Meaning: Ring. Low Class + Long Vowel = Mid Tone.
+69,Tier 2: Consonants,ฬา,ฬ,loaa,Mid,Consonant Anchor,Left,ฬอ จุฬา,Low,l-,-n,Meaning: Kite. Low Class + Long Vowel = Mid Tone.
+70,Tier 2: Consonants,ฮา,ฮ,hoaa,Mid,Consonant Anchor,Left,ฮอ นกฮูก,Low,h-,-,Meaning: Owl. Low Class + Long Vowel = Mid Tone.
+71,Tier 3: Operations,คน,"ค, น",khon,Mid,Word (Hidden Vowel),Internal,Hidden Sra O,Low,kh-,-n,Hidden short 'o' vowel (โกะ pattern) triggers when two consonants sit with no visible vowel.
+72,Tier 3: Operations,มา,"ม, า",maa,Mid,Word (Standard),Right,None,Low,m-,-,High frequency word meaning 'to come'. Low class + long vowel = mid tone.
+73,Tier 3: Operations,กิน,"ก, ิ, น",kin,Mid,Word (Standard),Above,None,Mid,k-,-n,High frequency word meaning 'to eat'. Mid class + short vowel + live ending = mid tone.
+74,Tier 3: Operations,นอน,"น, อ, น",naawn,Mid,Word (Standard),Right,None,Low,n-,-n,Means 'to sleep'. Uses อ as the long aww vowel block with a live final n.
+75,Tier 3: Operations,รัก,"ร, ั, ก",rak,High,Word (Dead Syllable),Above,None,Low,r-,-k,Means 'to love'. Short vowel + dead ending (k) on a Low Class consonant shifts tone to HIGH.
+76,Tier 3: Operations,เรียน,"เ, ร, ี, ย, น",reean,Mid,Word (Diphthong),Wrap-around,None,Low,r-,-n,Means 'to study'. Demonstrates the full long diphthong เ—ีย structure ending in live -n.
+77,Tier 3: Operations,ไป,"ไ, ป",pai,Mid,Word (Special Vowel),Left,None,Mid,p-,-,Means 'to go'. Left-side vowel ไ structure. Mid class + special vowel = mid tone.
+78,Tier 3: Operations,บ้าน,"บ, า, น, ้",baan,Falling,Word (Tone Marker),Above,Mai Tho,Mid,b-,-n,Means 'house/home'. Mid class + live ending + Mai Tho marker = FALLING tone.
+79,Tier 3: Operations,ไม่,"ม, ่, ใ",mai,Falling,Word (Tone Marker),Left & Above,Mai Ek,Low,m-,-,Means 'no/not'. Low class + Mai Ek marker shifts the rule strictly to a FALLING tone.
+80,Tier 3: Operations,น่ะ,"น, ่, ะ",na,Falling,Word (Tone Marker),Above & Right,Mai Ek,Low,n-,-,Grammar particle. Low class + short vowel + Mai Ek = FALLING tone.
+81,Tier 3: Operations,กวน,"ก, ว, น",kuan,Mid,Word (Diphthong Shift),Internal,None,Mid,k-,-n,Means 'to agitate/stir'. Notice the upper component of —ัว is dropped when a final consonant (น) joins.
+82,Tier 3: Operations,การ,"ก, า, ร",kaan,Mid,Word (Final Shift),Right,None,Mid,k-,-n (written r),Prefix for making verbs nouns. Letter ร (r) shifts strictly to an 'n' final sound in Thai.
+83,Tier 3: Operations,พูด,"พ, ู, ด",phoot,Falling,Word (Dead Syllable),Below,None,Low,ph-,-t,Means 'to speak'. Low class consonant + long vowel + dead ending (t) shifts tone to FALLING.

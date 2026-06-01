@@ -345,8 +345,13 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
 						
 						var has_existing_unit := false
+						var old_unit_uuid = payload.get("old_unit_uuid", "")
 						for child in slot_view.get_children():
+							if child.is_queued_for_deletion():
+								continue
 							if child.has_method("populate"): # Defensive check instead of is GachaBallView
+								if old_unit_uuid != "" and child.has_method("get_instance_uuid") and child.get_instance_uuid() == old_unit_uuid:
+									continue # Allow overlapping with the unit being replaced
 								has_existing_unit = true
 								break
 						if has_existing_unit:

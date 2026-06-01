@@ -69,13 +69,13 @@ func get_pending_rewards() -> Dictionary:
 		"is_special_victory": run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	}
 
-func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName) -> void:
+func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR") -> void:
 	# User Requirement: Start fresh tutorials every run if enabled
 	if TutorialManager:
 		TutorialManager.reset_all_tutorials()
 		
 	run_state = RunState.new()
-	run_state.initialize_run(hero_def_id, deck_id)
+	run_state.initialize_run(hero_def_id, deck_id, deck_order)
 	reset_gacha_discounts()
 	SignalBus.emit_signal("main_scene_requested")
 
@@ -84,7 +84,7 @@ func _on_new_game_requested() -> void:
 	var hero_defs = Database.get_hero_definitions()
 	var deck_meta = Database.get_all_deck_metadata()
 	if hero_defs.size() > 0 and deck_meta.size() > 0:
-		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id)
+		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id, "REGULAR")
 	else:
 		return
 

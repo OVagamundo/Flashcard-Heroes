@@ -25,6 +25,7 @@ extends Resource
 # Flashcard learning progress - key = card_id (StringName), value = FlashcardProgress
 @export var flashcard_progress: Dictionary = {} # key = StringName, value = FlashcardProgress
 @export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
+@export var ordered_deck_pool: Array[StringName] = [] # The pool of cards ordered by user setting
 @export var deck_def_id: StringName = &"" # The definition ID of the chosen deck
 @export var cards_presented_count: int = 0 # Updates the progressive presentation of cards
 
@@ -728,7 +729,7 @@ func start_new_run() -> void:
 ## Used for weighted encounter generation (pity system)
 @export var elite_encounter_history: Dictionary = {}
 
-func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
+func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR") -> void:
 	start_new_run()
 	self.deck_def_id = deck_id
 	
@@ -752,7 +753,16 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 		# Try to fallback to all cards if deck lookup fails
 		deck_card_ids = Database.flashcard_definitions.keys()
 		
-	for card_id in deck_card_ids:
+	ordered_deck_pool.clear()
+	for id in deck_card_ids:
+		ordered_deck_pool.append(StringName(id))
+		
+	if deck_order == "INVERTED":
+		ordered_deck_pool.reverse()
+	elif deck_order == "RANDOM":
+		ordered_deck_pool.shuffle()
+		
+	for card_id in ordered_deck_pool:
 		if not flashcard_progress.has(card_id):
 			var progress = FlashcardProgress.new()
 			progress.mastery_level = FlashcardProgress.MASTERY_MIN # Start at level 1 (Very Hard)
@@ -760,8 +770,8 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName) -> void:
 	
 	# Populate the initial active deck with the first 5 cards
 	# We start with 5 and the first minigame will immediately add the 6th card
-	for i in range(min(5, deck_card_ids.size())):
-		active_deck_ids.append(deck_card_ids[i])
+	for i in range(min(5, ordered_deck_pool.size())):
+		active_deck_ids.append(ordered_deck_pool[i])
 	
 	# Initial 5 cards are considered "introduced" to start expansion immediately
 	cards_presented_count = 5
@@ -917,7 +927,7 @@ func check_deck_expansion() -> bool:
 	if deck_def_id == &"":
 		return false
 	
-	var full_deck = Database.get_cards_for_deck(deck_def_id)
+	var full_deck = ordered_deck_pool
 	if full_deck.is_empty() or active_deck_ids.size() >= full_deck.size():
 		return false
 	
@@ -961,6 +971,7 @@ func to_save_dict() -> Dictionary:
 		# Flashcard progress and active deck
 		"flashcard_progress": _serialize_flashcard_progress(),
 		"active_deck_ids": _serialize_active_deck_ids(),
+		"ordered_deck_pool": _serialize_ordered_deck_pool(),
 		# Recipe unlocks
 		"unlocked_recipes": _serialize_unlocked_recipes(),
 	}
@@ -1028,6 +1039,7 @@ func from_save_dict(data: Dictionary) -> void:
 	# Restore flashcard progress
 	_deserialize_flashcard_progress(data.get("flashcard_progress", {}))
 	_deserialize_active_deck_ids(data.get("active_deck_ids", []))
+	_deserialize_ordered_deck_pool(data.get("ordered_deck_pool", []))
 	
 	# Restore unlocked recipes
 	_deserialize_unlocked_recipes(data.get("unlocked_recipes", {}))
@@ -1075,3 +1087,15 @@ func _deserialize_unlocked_recipes(data: Dictionary) -> void:
 	unlocked_recipes.clear()
 	for key_str in data.keys():
 		unlocked_recipes[StringName(key_str)] = data[key_str]
+
+func _serialize_ordered_deck_pool() -> Array:
+	var result: Array = []
+	for id in ordered_deck_pool:
+		result.append(String(id))
+	return result
+
+func _deserialize_ordered_deck_pool(data: Array) -> void:
+	ordered_deck_pool.clear()
+	for id_str in data:
+		ordered_deck_pool.append(StringName(str(id_str)))
+

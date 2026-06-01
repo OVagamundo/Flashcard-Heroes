@@ -41,6 +41,7 @@ var _selected_hero_def: GachaBallDefinition = null
 var _selected_deck_meta: Dictionary = {}
 var _hero_buttons: Array = [] # HeroSelectButton instances
 var _deck_buttons: Array = [] # DeckSelectButton instances
+var deck_order_option: OptionButton # Deck order selection
 
 
 func _ready() -> void:
@@ -50,6 +51,23 @@ func _ready() -> void:
 	
 	_populate_heroes()
 	_populate_decks()
+	
+	# Create Deck Order setting UI
+	var order_container = HBoxContainer.new()
+	order_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	order_container.add_theme_constant_override("separation", 10)
+	
+	var order_label = Label.new()
+	order_label.text = tr("ui.deck_order") if tr("ui.deck_order") != "ui.deck_order" else "Deck Order:"
+	
+	deck_order_option = OptionButton.new()
+	deck_order_option.add_item(tr("ui.deck_order.regular") if tr("ui.deck_order.regular") != "ui.deck_order.regular" else "Regular", 0)
+	deck_order_option.add_item(tr("ui.deck_order.inverted") if tr("ui.deck_order.inverted") != "ui.deck_order.inverted" else "Inverted", 1)
+	deck_order_option.add_item(tr("ui.deck_order.random") if tr("ui.deck_order.random") != "ui.deck_order.random" else "Random", 2)
+	
+	order_container.add_child(order_label)
+	order_container.add_child(deck_order_option)
+	deck_grid.get_parent().add_child(order_container)
 	
 	start_button.pressed.connect(_on_start_run_pressed)
 	test_button.pressed.connect(_on_test_mode_pressed)
@@ -236,9 +254,16 @@ func _on_start_run_pressed() -> void:
 	var hero_id = _selected_hero_def.id
 	var deck_id = _selected_deck_meta.get("deck_id", "")
 	
+	var order_str = "REGULAR"
+	if is_instance_valid(deck_order_option):
+		if deck_order_option.selected == 1:
+			order_str = "INVERTED"
+		elif deck_order_option.selected == 2:
+			order_str = "RANDOM"
+	
 	# Ensure test mode is off for normal runs
 	GameManager.is_test_mode = false
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str)
 
 
 func _on_test_mode_pressed() -> void:
@@ -249,8 +274,15 @@ func _on_test_mode_pressed() -> void:
 	var hero_id = _selected_hero_def.id
 	var deck_id = _selected_deck_meta.get("deck_id", "")
 	
+	var order_str = "REGULAR"
+	if is_instance_valid(deck_order_option):
+		if deck_order_option.selected == 1:
+			order_str = "INVERTED"
+		elif deck_order_option.selected == 2:
+			order_str = "RANDOM"
+	
 	# Set test mode flag
 	GameManager.is_test_mode = true
 	
 	# Trigger normal run start
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str)

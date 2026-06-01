@@ -36,6 +36,10 @@ func _ready() -> void:
 	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
 	
+	# Clear pre-generated rewards and setup for dynamic token draws
+	GameManager._temporary_reward_master_dict.clear()
+	GameManager._temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(5)
+	
 	tier1_draw_button.pressed.connect(_on_tier1_draw_pressed)
 	tier2_draw_button.pressed.connect(_on_tier2_draw_pressed)
 	tier3_draw_button.pressed.connect(_on_tier3_draw_pressed)
@@ -203,6 +207,12 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	var instance = GachaBallInstance.new()
 	instance.initialize(definition)
 	
+	# Add to GameManager so inspection windows resolve correctly
+	instance.location_container_tag = &"Rewards"
+	instance.location_slot_index = slot_index
+	GameManager._temporary_reward_master_dict[instance.ball_uuid] = instance
+	GameManager._temporary_reward_container.set_uuid(slot_index, instance.ball_uuid)
+	
 	# Animate draw and add prize
 	await _animate_prize_draw(machine, slot_index, instance)
 	_prizes[slot_index] = instance
@@ -316,6 +326,11 @@ func _populate_prize_slot(slot_index: int, instance: GachaBallInstance) -> void:
 		slot.set_content(VisualDataAdapter.create_visual_data(instance), true, false)
 
 func _clear_prize_slot(slot_index: int) -> void:
+	if _prizes[slot_index] != null:
+		var uuid = _prizes[slot_index].ball_uuid
+		GameManager._temporary_reward_master_dict.erase(uuid)
+		GameManager._temporary_reward_container.set_uuid(slot_index, "")
+		
 	_prizes[slot_index] = null
 	var slot = prize_lineup.get_child(slot_index)
 	if slot.has_method("set_content"):

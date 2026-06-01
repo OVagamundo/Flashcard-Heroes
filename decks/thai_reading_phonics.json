@@ -1,0 +1,590 @@
+{
+    "deck_id": "thai_reading_phonics",
+    "display_name": "Thai Reading Phonics",
+    "display_name_pt": "Fonética de Leitura Tailandesa",
+    "description": "Learn Thai phonics and reading rules.",
+    "description_pt": "Aprenda a fonética e regras de leitura tailandesas.",
+    "cards": [
+        {
+            "id": "THAI_P001",
+            "question": "กะ",
+            "answer": "ka",
+            "explanation": "Short standard 'a' sound. Forces dead syllable if no final consonant. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กะ"
+        },
+        {
+            "id": "THAI_P002",
+            "question": "กา",
+            "answer": "kaa",
+            "explanation": "Long standard 'aa' sound. Creates live syllable. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กา"
+        },
+        {
+            "id": "THAI_P003",
+            "question": "กิ",
+            "answer": "ki",
+            "explanation": "Short 'i' sound placed directly above the consonant. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กิ"
+        },
+        {
+            "id": "THAI_P004",
+            "question": "กี",
+            "answer": "kee",
+            "explanation": "Long 'ee' sound placed directly above the consonant. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กี"
+        },
+        {
+            "id": "THAI_P005",
+            "question": "กึ",
+            "answer": "kue",
+            "explanation": "Short unrounded back vowel (close back unrounded). (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กึ"
+        },
+        {
+            "id": "THAI_P006",
+            "question": "กือ",
+            "answer": "kuee",
+            "explanation": "Long unrounded back vowel. Requires trailing อ if no final consonant. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กือ"
+        },
+        {
+            "id": "THAI_P007",
+            "question": "กุ",
+            "answer": "ku",
+            "explanation": "Short 'u' sound (like oo in foot) placed below. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กุ"
+        },
+        {
+            "id": "THAI_P008",
+            "question": "กู",
+            "answer": "koo",
+            "explanation": "Long 'oo' sound (like oo in boot) placed below. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กู"
+        },
+        {
+            "id": "THAI_P009",
+            "question": "เกะ",
+            "answer": "ke",
+            "explanation": "Short 'e' sound. Vowel wraps around the consonant. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "เกะ"
+        },
+        {
+            "id": "THAI_P010",
+            "question": "เก",
+            "answer": "kay",
+            "explanation": "Long 'ay' sound placed to the left of the consonant. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "เก"
+        },
+        {
+            "id": "THAI_P011",
+            "question": "แกะ",
+            "answer": "kae",
+            "explanation": "Short 'ae' sound (like 'a' in cat). Wrap-around structure. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "แกะ"
+        },
+        {
+            "id": "THAI_P012",
+            "question": "แก",
+            "answer": "kaee",
+            "explanation": "Long 'ae' sound (like 'a' in bad) placed to the left. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "แก"
+        },
+        {
+            "id": "THAI_P013",
+            "question": "โกะ",
+            "answer": "ko",
+            "explanation": "Short 'o' sound. Disappears completely when final consonant is added. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "โกะ"
+        },
+        {
+            "id": "THAI_P014",
+            "question": "โก",
+            "answer": "koh",
+            "explanation": "Long 'oh' sound placed to the left of the consonant. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "โก"
+        },
+        {
+            "id": "THAI_P015",
+            "question": "เกาะ",
+            "answer": "kaw",
+            "explanation": "Short open 'o' sound (like 'aw' in law). Wrap-around. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "เกาะ"
+        },
+        {
+            "id": "THAI_P016",
+            "question": "กอ",
+            "answer": "kaww",
+            "explanation": "Long open 'o' sound. The letter 'อ' functions purely as a vowel here. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กอ"
+        },
+        {
+            "id": "THAI_P017",
+            "question": "เกิอะ",
+            "answer": "koer",
+            "explanation": "Short central vowel (like 'er' in British 'her'). Very rare. (Type: Short Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "เกิอะ"
+        },
+        {
+            "id": "THAI_P018",
+            "question": "เกอ",
+            "answer": "koerr",
+            "explanation": "Long central vowel. Changes form to เ—ิ when final consonant attached. (Type: Long Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "เกอ"
+        },
+        {
+            "id": "THAI_P019",
+            "question": "เกียะ",
+            "answer": "kia",
+            "explanation": "Short diphthong 'i-a'. Rare modern usage. (Type: Short Diphthong, Tone: Mid, Class: Mid)",
+            "tts_query": "เกียะ"
+        },
+        {
+            "id": "THAI_P020",
+            "question": "เกีย",
+            "answer": "keea",
+            "explanation": "Long diphthong moving from 'ee' to 'ah' smoothly. (Type: Long Diphthong, Tone: Mid, Class: Mid)",
+            "tts_query": "เกีย"
+        },
+        {
+            "id": "THAI_P021",
+            "question": "เกือะ",
+            "answer": "kuea",
+            "explanation": "Short diphthong combining unrounded back vowel + 'a'. (Type: Short Diphthong, Tone: Mid, Class: Mid)",
+            "tts_query": "เกือะ"
+        },
+        {
+            "id": "THAI_P022",
+            "question": "เกือ",
+            "answer": "kueaa",
+            "explanation": "Long diphthong combining unrounded back vowel + 'ah'. (Type: Long Diphthong, Tone: Mid, Class: Mid)",
+            "tts_query": "เกือ"
+        },
+        {
+            "id": "THAI_P023",
+            "question": "กัวะ",
+            "answer": "kua",
+            "explanation": "Short diphthong combining 'u' + 'a' with final glottal stop. (Type: Short Diphthong, Tone: Mid, Class: Mid)",
+            "tts_query": "กัวะ"
+        },
+        {
+            "id": "THAI_P024",
+            "question": "กัว",
+            "answer": "kuaa",
+            "explanation": "Long diphthong 'oo-ah'. Drops the upper symbol when final consonant attached. (Type: Long Diphthong, Tone: Mid, Class: Mid)",
+            "tts_query": "กัว"
+        },
+        {
+            "id": "THAI_P025",
+            "question": "กำ",
+            "answer": "kam",
+            "explanation": "Combines short 'a' sound with a final '-m' closing sound. (Type: Special Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "กำ"
+        },
+        {
+            "id": "THAI_P026",
+            "question": "ไก",
+            "answer": "kai",
+            "explanation": "Short 'ai' sound. Most common 'ai' vowel layout. (Type: Special Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "ไก"
+        },
+        {
+            "id": "THAI_P027",
+            "question": "ใก",
+            "answer": "kai",
+            "explanation": "Short 'ai' sound. Restricted to exactly 20 grammar words in Thai. (Type: Special Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "ใก"
+        },
+        {
+            "id": "THAI_P028",
+            "question": "เกา",
+            "answer": "kao",
+            "explanation": "Short/Medium 'ao' sound like 'ow' in cow. (Type: Special Vowel, Tone: Mid, Class: Mid)",
+            "tts_query": "เกา"
+        },
+        {
+            "id": "THAI_P029",
+            "question": "กา",
+            "answer": "koaa",
+            "explanation": "Meaning: Chicken. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "กา"
+        },
+        {
+            "id": "THAI_P030",
+            "question": "จา",
+            "answer": "choaa",
+            "explanation": "Meaning: Plate. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "จา"
+        },
+        {
+            "id": "THAI_P031",
+            "question": "ฎา",
+            "answer": "doaa",
+            "explanation": "Meaning: Headdress (Rarely used). Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "ฎา"
+        },
+        {
+            "id": "THAI_P032",
+            "question": "ฏา",
+            "answer": "toaa",
+            "explanation": "Meaning: Goad/Javelin (Rarely used). Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "ฏา"
+        },
+        {
+            "id": "THAI_P033",
+            "question": "ดา",
+            "answer": "doaa",
+            "explanation": "Meaning: Child. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "ดา"
+        },
+        {
+            "id": "THAI_P034",
+            "question": "ตา",
+            "answer": "toaa",
+            "explanation": "Meaning: Turtle. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "ตา"
+        },
+        {
+            "id": "THAI_P035",
+            "question": "บา",
+            "answer": "boaa",
+            "explanation": "Meaning: Leaf. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "บา"
+        },
+        {
+            "id": "THAI_P036",
+            "question": "ปา",
+            "answer": "poaa",
+            "explanation": "Meaning: Fish. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "ปา"
+        },
+        {
+            "id": "THAI_P037",
+            "question": "อา",
+            "answer": "oaa",
+            "explanation": "Meaning: Basin / Vowel Placeholder. Mid Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Mid)",
+            "tts_query": "อา"
+        },
+        {
+            "id": "THAI_P038",
+            "question": "ขา",
+            "answer": "khoaa",
+            "explanation": "Meaning: Egg. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ขา"
+        },
+        {
+            "id": "THAI_P039",
+            "question": "ฉา",
+            "answer": "choaa",
+            "explanation": "Meaning: Cymbals (No final sound standard). High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ฉา"
+        },
+        {
+            "id": "THAI_P040",
+            "question": "ฐา",
+            "answer": "thoaa",
+            "explanation": "Meaning: Pedestal. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ฐา"
+        },
+        {
+            "id": "THAI_P041",
+            "question": "ถา",
+            "answer": "thoaa",
+            "explanation": "Meaning: Bag. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ถา"
+        },
+        {
+            "id": "THAI_P042",
+            "question": "ผา",
+            "answer": "phoaa",
+            "explanation": "Meaning: Bee (No final sound standard). High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ผา"
+        },
+        {
+            "id": "THAI_P043",
+            "question": "ฝา",
+            "answer": "foaa",
+            "explanation": "Meaning: Lid (No final sound standard). High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ฝา"
+        },
+        {
+            "id": "THAI_P044",
+            "question": "ศา",
+            "answer": "soaa",
+            "explanation": "Meaning: Pavilion. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ศา"
+        },
+        {
+            "id": "THAI_P045",
+            "question": "ษา",
+            "answer": "soaa",
+            "explanation": "Meaning: Hermit. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "ษา"
+        },
+        {
+            "id": "THAI_P046",
+            "question": "สา",
+            "answer": "soaa",
+            "explanation": "Meaning: Tiger. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "สา"
+        },
+        {
+            "id": "THAI_P047",
+            "question": "หา",
+            "answer": "hoaa",
+            "explanation": "Meaning: Chest/Box / High Tone Lead. High Class + Long Vowel = Rising Tone without markers. (Type: Consonant Anchor, Tone: Rising, Class: High)",
+            "tts_query": "หา"
+        },
+        {
+            "id": "THAI_P048",
+            "question": "คา",
+            "answer": "khoaa",
+            "explanation": "Meaning: Buffalo. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "คา"
+        },
+        {
+            "id": "THAI_P049",
+            "question": "ฆา",
+            "answer": "khoaa",
+            "explanation": "Meaning: Bell. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฆา"
+        },
+        {
+            "id": "THAI_P050",
+            "question": "งา",
+            "answer": "ngoaa",
+            "explanation": "Meaning: Snake (Nasal sound). Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "งา"
+        },
+        {
+            "id": "THAI_P051",
+            "question": "ชา",
+            "answer": "choaa",
+            "explanation": "Meaning: Elephant. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ชา"
+        },
+        {
+            "id": "THAI_P052",
+            "question": "ซา",
+            "answer": "soaa",
+            "explanation": "Meaning: Chain. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ซา"
+        },
+        {
+            "id": "THAI_P053",
+            "question": "ฌา",
+            "answer": "choaa",
+            "explanation": "Meaning: Tree (Rare). Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฌา"
+        },
+        {
+            "id": "THAI_P054",
+            "question": "ญา",
+            "answer": "yoaa",
+            "explanation": "Meaning: Woman. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ญา"
+        },
+        {
+            "id": "THAI_P055",
+            "question": "ฑา",
+            "answer": "thoaa",
+            "explanation": "Meaning: Ramayana Character. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฑา"
+        },
+        {
+            "id": "THAI_P056",
+            "question": "ฒา",
+            "answer": "thoaa",
+            "explanation": "Meaning: Elderly Person. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฒา"
+        },
+        {
+            "id": "THAI_P057",
+            "question": "ณา",
+            "answer": "noaa",
+            "explanation": "Meaning: Novice Monk. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ณา"
+        },
+        {
+            "id": "THAI_P058",
+            "question": "ทา",
+            "answer": "thoaa",
+            "explanation": "Meaning: Soldier. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ทา"
+        },
+        {
+            "id": "THAI_P059",
+            "question": "ธา",
+            "answer": "thoaa",
+            "explanation": "Meaning: Flag. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ธา"
+        },
+        {
+            "id": "THAI_P060",
+            "question": "นา",
+            "answer": "noaa",
+            "explanation": "Meaning: Mouse / No. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "นา"
+        },
+        {
+            "id": "THAI_P061",
+            "question": "พา",
+            "answer": "phoaa",
+            "explanation": "Meaning: Tray. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "พา"
+        },
+        {
+            "id": "THAI_P062",
+            "question": "ฟา",
+            "answer": "foaa",
+            "explanation": "Meaning: Teeth. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฟา"
+        },
+        {
+            "id": "THAI_P063",
+            "question": "ภา",
+            "answer": "phoaa",
+            "explanation": "Meaning: Sailing Ship. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ภา"
+        },
+        {
+            "id": "THAI_P064",
+            "question": "มา",
+            "answer": "moaa",
+            "explanation": "Meaning: Horse. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "มา"
+        },
+        {
+            "id": "THAI_P065",
+            "question": "ยา",
+            "answer": "yoaa",
+            "explanation": "Meaning: Giant / Ogre. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ยา"
+        },
+        {
+            "id": "THAI_P066",
+            "question": "รา",
+            "answer": "roaa",
+            "explanation": "Meaning: Boat (Trill/Flap). Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "รา"
+        },
+        {
+            "id": "THAI_P067",
+            "question": "ลา",
+            "answer": "loaa",
+            "explanation": "Meaning: Monkey. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ลา"
+        },
+        {
+            "id": "THAI_P068",
+            "question": "วา",
+            "answer": "woaa",
+            "explanation": "Meaning: Ring. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "วา"
+        },
+        {
+            "id": "THAI_P069",
+            "question": "ฬา",
+            "answer": "loaa",
+            "explanation": "Meaning: Kite. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฬา"
+        },
+        {
+            "id": "THAI_P070",
+            "question": "ฮา",
+            "answer": "hoaa",
+            "explanation": "Meaning: Owl. Low Class + Long Vowel = Mid Tone. (Type: Consonant Anchor, Tone: Mid, Class: Low)",
+            "tts_query": "ฮา"
+        },
+        {
+            "id": "THAI_P071",
+            "question": "คน",
+            "answer": "khon",
+            "explanation": "Hidden short 'o' vowel (โกะ pattern) triggers when two consonants sit with no visible vowel. (Type: Word (Hidden Vowel), Tone: Mid, Class: Low)",
+            "tts_query": "คน"
+        },
+        {
+            "id": "THAI_P072",
+            "question": "มา",
+            "answer": "maa",
+            "explanation": "High frequency word meaning 'to come'. Low class + long vowel = mid tone. (Type: Word (Standard), Tone: Mid, Class: Low)",
+            "tts_query": "มา"
+        },
+        {
+            "id": "THAI_P073",
+            "question": "กิน",
+            "answer": "kin",
+            "explanation": "High frequency word meaning 'to eat'. Mid class + short vowel + live ending = mid tone. (Type: Word (Standard), Tone: Mid, Class: Mid)",
+            "tts_query": "กิน"
+        },
+        {
+            "id": "THAI_P074",
+            "question": "นอน",
+            "answer": "naawn",
+            "explanation": "Means 'to sleep'. Uses อ as the long aww vowel block with a live final n. (Type: Word (Standard), Tone: Mid, Class: Low)",
+            "tts_query": "นอน"
+        },
+        {
+            "id": "THAI_P075",
+            "question": "รัก",
+            "answer": "rak",
+            "explanation": "Means 'to love'. Short vowel + dead ending (k) on a Low Class consonant shifts tone to HIGH. (Type: Word (Dead Syllable), Tone: High, Class: Low)",
+            "tts_query": "รัก"
+        },
+        {
+            "id": "THAI_P076",
+            "question": "เรียน",
+            "answer": "reean",
+            "explanation": "Means 'to study'. Demonstrates the full long diphthong เ—ีย structure ending in live -n. (Type: Word (Diphthong), Tone: Mid, Class: Low)",
+            "tts_query": "เรียน"
+        },
+        {
+            "id": "THAI_P077",
+            "question": "ไป",
+            "answer": "pai",
+            "explanation": "Means 'to go'. Left-side vowel ไ structure. Mid class + special vowel = mid tone. (Type: Word (Special Vowel), Tone: Mid, Class: Mid)",
+            "tts_query": "ไป"
+        },
+        {
+            "id": "THAI_P078",
+            "question": "บ้าน",
+            "answer": "baan",
+            "explanation": "Means 'house/home'. Mid class + live ending + Mai Tho marker = FALLING tone. (Type: Word (Tone Marker), Tone: Falling, Class: Mid)",
+            "tts_query": "บ้าน"
+        },
+        {
+            "id": "THAI_P079",
+            "question": "ไม่",
+            "answer": "mai",
+            "explanation": "Means 'no/not'. Low class + Mai Ek marker shifts the rule strictly to a FALLING tone. (Type: Word (Tone Marker), Tone: Falling, Class: Low)",
+            "tts_query": "ไม่"
+        },
+        {
+            "id": "THAI_P080",
+            "question": "น่ะ",
+            "answer": "na",
+            "explanation": "Grammar particle. Low class + short vowel + Mai Ek = FALLING tone. (Type: Word (Tone Marker), Tone: Falling, Class: Low)",
+            "tts_query": "น่ะ"
+        },
+        {
+            "id": "THAI_P081",
+            "question": "กวน",
+            "answer": "kuan",
+            "explanation": "Means 'to agitate/stir'. Notice the upper component of —ัว is dropped when a final consonant (น) joins. (Type: Word (Diphthong Shift), Tone: Mid, Class: Mid)",
+            "tts_query": "กวน"
+        },
+        {
+            "id": "THAI_P082",
+            "question": "การ",
+            "answer": "kaan",
+            "explanation": "Prefix for making verbs nouns. Letter ร (r) shifts strictly to an 'n' final sound in Thai. (Type: Word (Final Shift), Tone: Mid, Class: Mid)",
+            "tts_query": "การ"
+        },
+        {
+            "id": "THAI_P083",
+            "question": "พูด",
+            "answer": "phoot",
+            "explanation": "Means 'to speak'. Low class consonant + long vowel + dead ending (t) shifts tone to FALLING. (Type: Word (Dead Syllable), Tone: Falling, Class: Low)",
+            "tts_query": "พูด"
+        }
+    ]
+}
