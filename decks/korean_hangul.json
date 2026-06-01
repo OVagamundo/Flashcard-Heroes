@@ -25,8 +25,8 @@
             "id": "KOR_003",
             "question": "ㅓ",
             "answer": "eo",
-            "explanation": "Basic vowel: sounds like 'o' in 'cup' or 'run' (open o).",
-            "explanation_pt": "Vogal básica: som de 'ó' aberto.",
+            "explanation": "Basic vowel: Pronounced with a wide open mouth, jaw dropped (midway between 'ah' and 'uh').",
+            "explanation_pt": "Vogal básica: Pronunciada com a boca bem aberta, maxilar caído (meio do caminho entre 'a' e 'o').",
             "tts_query": "어"
         },
         {
@@ -41,8 +41,8 @@
             "id": "KOR_005",
             "question": "ㅗ",
             "answer": "o",
-            "explanation": "Basic vowel: sounds like 'o' in 'boat' or 'home' (closed o).",
-            "explanation_pt": "Vogal básica: som de 'ô' fechado.",
+            "explanation": "Basic vowel: Pronounced with tight, rounded lips (like 'o' in boat).",
+            "explanation_pt": "Vogal básica: Pronunciada com os lábios arredondados e tensos (como 'ô').",
             "tts_query": "오"
         },
         {
@@ -89,8 +89,8 @@
             "id": "KOR_011",
             "question": "ㅐ",
             "answer": "ae",
-            "explanation": "Double vowel: sounds like 'ae' in 'care' or 'bet'.",
-            "explanation_pt": "Vogal dupla: som de 'é' aberto.",
+            "explanation": "Double vowel: Sounds identical to ㅔ in modern colloquial speech (like 'e' in met).",
+            "explanation_pt": "Vogal dupla: Soa idêntico a ㅔ na fala coloquial moderna (como 'é' em meta).",
             "tts_query": "애"
         },
         {
@@ -105,8 +105,8 @@
             "id": "KOR_013",
             "question": "ㅔ",
             "answer": "e",
-            "explanation": "Double vowel: sounds like 'e' in 'pen'. In modern Korean, ㅐ and ㅔ sound identical.",
-            "explanation_pt": "Vogal dupla: som de 'ê' fechado. Soa idêntico a ㅐ no coreano moderno.",
+            "explanation": "Double vowel: Sounds identical to ㅐ in modern colloquial speech (like 'e' in met).",
+            "explanation_pt": "Vogal dupla: Soa idêntico a ㅐ na fala coloquial moderna (como 'é' em meta).",
             "tts_query": "에"
         },
         {
@@ -129,16 +129,16 @@
             "id": "KOR_016",
             "question": "ㅙ",
             "answer": "wae",
-            "explanation": "Double vowel: sounds like 'wae' in 'wet'. Combines ㅗ and ㅐ.",
-            "explanation_pt": "Vogal dupla: som de 'ué' aberto. Combinação de ㅗ e ㅐ.",
+            "explanation": "Double vowel: All three (ㅙ, ㅚ, ㅞ) sound nearly identical to the English word 'wet' or 'way'.",
+            "explanation_pt": "Vogal dupla: Todas as três (ㅙ, ㅚ, ㅞ) soam quase idênticas a 'ué'.",
             "tts_query": "왜"
         },
         {
             "id": "KOR_017",
             "question": "ㅚ",
             "answer": "oe",
-            "explanation": "Double vowel: sounds like 'oe' in 'wet'. Sounds identical to ㅙ and ㅞ in modern Korean.",
-            "explanation_pt": "Vogal dupla: som de 'ué'. Soa idêntico a ㅙ e ㅞ.",
+            "explanation": "Double vowel: All three (ㅙ, ㅚ, ㅞ) sound nearly identical to the English word 'wet' or 'way'.",
+            "explanation_pt": "Vogal dupla: Todas as três (ㅙ, ㅚ, ㅞ) soam quase idênticas a 'ué'.",
             "tts_query": "외"
         },
         {
@@ -153,8 +153,8 @@
             "id": "KOR_019",
             "question": "ㅞ",
             "answer": "we",
-            "explanation": "Double vowel: sounds like 'we' in 'wedding'. Combines ㅜ and ㅔ.",
-            "explanation_pt": "Vogal dupla: som de 'uê' fechado. Combinação de ㅜ e ㅔ.",
+            "explanation": "Double vowel: All three (ㅙ, ㅚ, ㅞ) sound nearly identical to the English word 'wet' or 'way'.",
+            "explanation_pt": "Vogal dupla: Todas as três (ㅙ, ㅚ, ㅞ) soam quase idênticas a 'ué'.",
             "tts_query": "웨"
         },
         {
@@ -177,8 +177,8 @@
             "id": "KOR_022",
             "question": "ㄱ",
             "answer": "g/k",
-            "explanation": "Giyeok: sounds like 'g' at the start of a word, and 'k' at the end.",
-            "explanation_pt": "Giyeok: som de 'g' no início de sílaba, e 'k' no final.",
+            "explanation": "Plain Consonant: Soft, relaxed. Soft burst of air at the start, voiced between vowels.",
+            "explanation_pt": "Consoante Plana: Suave, relaxada. Suave sopro de ar no início, sonora entre vogais.",
             "tts_query": "기역"
         },
         {
@@ -193,8 +193,8 @@
             "id": "KOR_024",
             "question": "ㄷ",
             "answer": "d/t",
-            "explanation": "Digeut: sounds like 'd' at the start of a word, and 't' at the end.",
-            "explanation_pt": "Digeut: som de 'd' no início de sílaba, e 't' no final.",
+            "explanation": "Plain Consonant: Soft, relaxed. Soft burst of air at the start, voiced between vowels.",
+            "explanation_pt": "Consoante Plana: Suave, relaxada. Suave sopro de ar no início, sonora entre vogais.",
             "tts_query": "디귿"
         },
         {
@@ -217,8 +217,8 @@
             "id": "KOR_027",
             "question": "ㅂ",
             "answer": "b/p",
-            "explanation": "Bieup: sounds like 'b' at the start of a word, and 'p' at the end.",
-            "explanation_pt": "Bieup: som de 'b' no início de sílaba, e 'p' no final.",
+            "explanation": "Plain Consonant: Soft, relaxed. Soft burst of air at the start, voiced between vowels.",
+            "explanation_pt": "Consoante Plana: Suave, relaxada. Suave sopro de ar no início, sonora entre vogais.",
             "tts_query": "비읍"
         },
         {
@@ -241,40 +241,40 @@
             "id": "KOR_030",
             "question": "ㅈ",
             "answer": "j",
-            "explanation": "Jieut: sounds like 'j' in 'juice' or 'z' in 'azure'.",
-            "explanation_pt": "Jieut: som de 'j' (como em jam em inglês).",
+            "explanation": "Plain Consonant: Soft, relaxed. Soft burst of air at the start, voiced between vowels.",
+            "explanation_pt": "Consoante Plana: Suave, relaxada. Suave sopro de ar no início, sonora entre vogais.",
             "tts_query": "지읏"
         },
         {
             "id": "KOR_031",
             "question": "ㅊ",
             "answer": "ch",
-            "explanation": "Chieut: aspirated consonant, sounds like 'ch' in 'chair' with a puff of air.",
-            "explanation_pt": "Chieut: consoante aspirada, som de 'tch' forte com sopro de ar.",
+            "explanation": "Aspirated Consonant: Intense burst of air. Exhaled strongly.",
+            "explanation_pt": "Consoante Aspirada: Intensa explosão de ar. Exalada fortemente.",
             "tts_query": "치읓"
         },
         {
             "id": "KOR_032",
             "question": "ㅋ",
             "answer": "k",
-            "explanation": "Kieuk: aspirated consonant, sounds like 'k' in 'king' with a puff of air.",
-            "explanation_pt": "Kieuk: consoante aspirada, som de 'k' forte com sopro de ar.",
+            "explanation": "Aspirated Consonant: Intense burst of air. Exhaled strongly.",
+            "explanation_pt": "Consoante Aspirada: Intensa explosão de ar. Exalada fortemente.",
             "tts_query": "키읔"
         },
         {
             "id": "KOR_033",
             "question": "ㅌ",
             "answer": "t",
-            "explanation": "Tieut: aspirated consonant, sounds like 't' in 'tall' with a puff of air.",
-            "explanation_pt": "Tieut: consoante aspirada, som de 't' forte com sopro de ar.",
+            "explanation": "Aspirated Consonant: Intense burst of air. Exhaled strongly.",
+            "explanation_pt": "Consoante Aspirada: Intensa explosão de ar. Exalada fortemente.",
             "tts_query": "티읕"
         },
         {
             "id": "KOR_034",
             "question": "ㅍ",
             "answer": "p",
-            "explanation": "Pieup: aspirated consonant, sounds like 'p' in 'pen' with a puff of air.",
-            "explanation_pt": "Pieup: consoante aspirada, som de 'p' forte com sopro de ar.",
+            "explanation": "Aspirated Consonant: Intense burst of air. Exhaled strongly.",
+            "explanation_pt": "Consoante Aspirada: Intensa explosão de ar. Exalada fortemente.",
             "tts_query": "피읖"
         },
         {
@@ -289,46 +289,46 @@
             "id": "KOR_036",
             "question": "ㄲ",
             "answer": "kk",
-            "explanation": "Ssang-giyeok: tense 'k' sound, pronounced sharply without any puff of air.",
-            "explanation_pt": "Ssang-giyeok: som de 'k' tenso, pronunciado secamente sem sopro de ar.",
+            "explanation": "Tense Consonant: Zero air, completely clipped. Constrict throat muscles before releasing.",
+            "explanation_pt": "Consoante Tensa: Zero ar, som totalmente seco. Constrição dos músculos da garganta antes de soltar.",
             "tts_query": "쌍기역"
         },
         {
             "id": "KOR_037",
             "question": "ㄸ",
             "answer": "tt",
-            "explanation": "Ssang-digeut: tense 't' sound, pronounced sharply without any puff of air.",
-            "explanation_pt": "Ssang-digeut: som de 't' tenso, pronunciado secamente sem sopro de ar.",
+            "explanation": "Tense Consonant: Zero air, completely clipped. Constrict throat muscles before releasing.",
+            "explanation_pt": "Consoante Tensa: Zero ar, som totalmente seco. Constrição dos músculos da garganta antes de soltar.",
             "tts_query": "쌍디귿"
         },
         {
             "id": "KOR_038",
             "question": "ㅃ",
             "answer": "pp",
-            "explanation": "Ssang-bieup: tense 'p' sound, pronounced sharply without any puff of air.",
-            "explanation_pt": "Ssang-bieup: som de 'p' tenso, pronunciado secamente sem sopro de ar.",
+            "explanation": "Tense Consonant: Zero air, completely clipped. Constrict throat muscles before releasing.",
+            "explanation_pt": "Consoante Tensa: Zero ar, som totalmente seco. Constrição dos músculos da garganta antes de soltar.",
             "tts_query": "쌍비읍"
         },
         {
             "id": "KOR_039",
             "question": "ㅆ",
             "answer": "ss",
-            "explanation": "Ssang-siot: tense 's' sound, pronounced sharply.",
-            "explanation_pt": "Ssang-siot: som de 's' tenso, pronunciado com mais força.",
+            "explanation": "Tense Consonant: Zero air, completely clipped. Constrict throat muscles before releasing.",
+            "explanation_pt": "Consoante Tensa: Zero ar, som totalmente seco. Constrição dos músculos da garganta antes de soltar.",
             "tts_query": "쌍시옷"
         },
         {
             "id": "KOR_040",
             "question": "ㅉ",
             "answer": "jj",
-            "explanation": "Ssang-jieut: tense 'j/ch' sound, pronounced sharply without any puff of air.",
-            "explanation_pt": "Ssang-jieut: som de 'tch' tenso e seco.",
+            "explanation": "Tense Consonant: Zero air, completely clipped. Constrict throat muscles before releasing.",
+            "explanation_pt": "Consoante Tensa: Zero ar, som totalmente seco. Constrição dos músculos da garganta antes de soltar.",
             "tts_query": "쌍지읏"
         },
         {
             "id": "KOR_041",
             "question": "ㄱ\n(Batchim)",
-            "answer": "k",
+            "answer": "-k (g/k)",
             "explanation": "In the final position (Batchim), 'ㄱ' (기역) is pronounced as a 'k' stop sound. Example: '가격' (price, striking).",
             "explanation_pt": "Na posição final (Batchim), 'ㄱ' (기역) é pronunciado como um som de parada 'k'. Exemplo: '가격' (preço).",
             "tts_query": "가격"
@@ -336,7 +336,7 @@
         {
             "id": "KOR_042",
             "question": "ㄴ\n(Batchim)",
-            "answer": "n",
+            "answer": "-n",
             "explanation": "In the final position (Batchim), 'ㄴ' (니은) is pronounced as a 'n' stop sound. Example: '나는' (I (casual) + topic particle).",
             "explanation_pt": "Na posição final (Batchim), 'ㄴ' (니은) é pronunciado como um som de parada 'n'. Exemplo: '나는' (eu (casual) + partícula de tópico).",
             "tts_query": "안"
@@ -344,7 +344,7 @@
         {
             "id": "KOR_043",
             "question": "ㄷ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (d/t)",
             "explanation": "In the final position (Batchim), 'ㄷ' (디귿) is pronounced as a 't' stop sound. Example: '곧' (immediately, soon).",
             "explanation_pt": "Na posição final (Batchim), 'ㄷ' (디귿) é pronunciado como um som de parada 't'. Exemplo: '곧' (imediatamente).",
             "tts_query": "곧"
@@ -352,7 +352,7 @@
         {
             "id": "KOR_044",
             "question": "ㄹ\n(Batchim)",
-            "answer": "l",
+            "answer": "-l",
             "explanation": "In the final position (Batchim), 'ㄹ' (리을) is pronounced as a 'l' stop sound. Example: '색깔' (colour).",
             "explanation_pt": "Na posição final (Batchim), 'ㄹ' (리을) é pronunciado como um som de parada 'l'. Exemplo: '색깔' (cor).",
             "tts_query": "색깔"
@@ -360,7 +360,7 @@
         {
             "id": "KOR_045",
             "question": "ㅁ\n(Batchim)",
-            "answer": "m",
+            "answer": "-m",
             "explanation": "In the final position (Batchim), 'ㅁ' (미음) is pronounced as a 'm' stop sound. Example: '마음' (heart).",
             "explanation_pt": "Na posição final (Batchim), 'ㅁ' (미음) é pronunciado como um som de parada 'm'. Exemplo: '마음' (coração/mente).",
             "tts_query": "마음"
@@ -368,7 +368,7 @@
         {
             "id": "KOR_046",
             "question": "ㅂ\n(Batchim)",
-            "answer": "p",
+            "answer": "-p (b/p)",
             "explanation": "In the final position (Batchim), 'ㅂ' (비읍) is pronounced as a 'p' stop sound. Example: '밥' (rice).",
             "explanation_pt": "Na posição final (Batchim), 'ㅂ' (비읍) é pronunciado como um som de parada 'p'. Exemplo: '밥' (arroz/refeição).",
             "tts_query": "밥"
@@ -376,7 +376,7 @@
         {
             "id": "KOR_047",
             "question": "ㅅ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (s)",
             "explanation": "In the final position (Batchim), 'ㅅ' (시옷) is pronounced as a 't' stop sound. Example: '옷' (clothes).",
             "explanation_pt": "Na posição final (Batchim), 'ㅅ' (시옷) é pronunciado como um som de parada 't'. Exemplo: '옷' (roupas).",
             "tts_query": "옷"
@@ -384,7 +384,7 @@
         {
             "id": "KOR_048",
             "question": "ㅇ\n(Batchim)",
-            "answer": "ng",
+            "answer": "-ng [ㅇ]",
             "explanation": "In the final position (Batchim), 'ㅇ' (이응) is pronounced as a 'ng' stop sound. Example: '응' (yup, yeah).",
             "explanation_pt": "Na posição final (Batchim), 'ㅇ' (이응) é pronunciado como um som de parada 'ng'. Exemplo: '응' (sim (informal)).",
             "tts_query": "응"
@@ -392,7 +392,7 @@
         {
             "id": "KOR_049",
             "question": "ㅈ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (j)",
             "explanation": "In the final position (Batchim), 'ㅈ' (지읒) is pronounced as a 't' stop sound. Example: '낮' (day, daytime, afternoon).",
             "explanation_pt": "Na posição final (Batchim), 'ㅈ' (지읒) é pronunciado como um som de parada 't'. Exemplo: '낮' (dia/tarde).",
             "tts_query": "낮"
@@ -400,15 +400,15 @@
         {
             "id": "KOR_050",
             "question": "ㅎ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (h)",
             "explanation": "In the final position (Batchim), 'ㅎ' (Hieut) is pronounced as a silent or 't' stop sound depending on what follows. It usually combines with other consonants to aspirate them.",
             "explanation_pt": "Na posição final (Batchim), 'ㅎ' (Hieut) é pronunciado como um som mudo ou de parada 't', dependendo do que segue. Geralmente se combina com outras consoantes para aspirá-las.",
-            "tts_query": "낳"
+            "tts_query": "히읗"
         },
         {
             "id": "KOR_051",
             "question": "ㅊ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (ch)",
             "explanation": "In the final position (Batchim), 'ㅊ' (치읓) is pronounced as a 't' stop sound. Example: '꽃' (flower).",
             "explanation_pt": "Na posição final (Batchim), 'ㅊ' (치읓) é pronunciado como um som de parada 't'. Exemplo: '꽃' (flor).",
             "tts_query": "꽃"
@@ -416,7 +416,7 @@
         {
             "id": "KOR_052",
             "question": "ㅋ\n(Batchim)",
-            "answer": "k",
+            "answer": "-k (k)",
             "explanation": "In the final position (Batchim), 'ㅋ' (키읔) is pronounced as a 'k' stop sound. Example: '부엌' (kitchen).",
             "explanation_pt": "Na posição final (Batchim), 'ㅋ' (키읔) é pronunciado como um som de parada 'k'. Exemplo: '부엌' (cozinha).",
             "tts_query": "부엌"
@@ -424,7 +424,7 @@
         {
             "id": "KOR_053",
             "question": "ㅌ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (t)",
             "explanation": "In the final position (Batchim), 'ㅌ' (티읕) is pronounced as a 't' stop sound. Example: '밑' (bottom).",
             "explanation_pt": "Na posição final (Batchim), 'ㅌ' (티읕) é pronunciado como um som de parada 't'. Exemplo: '밑' (baixo/fundo).",
             "tts_query": "밑"
@@ -432,7 +432,7 @@
         {
             "id": "KOR_054",
             "question": "ㅍ\n(Batchim)",
-            "answer": "p",
+            "answer": "-p (p)",
             "explanation": "In the final position (Batchim), 'ㅍ' (피읖) is pronounced as a 'p' stop sound. Example: '옆' (side).",
             "explanation_pt": "Na posição final (Batchim), 'ㅍ' (피읖) é pronunciado como um som de parada 'p'. Exemplo: '옆' (lado).",
             "tts_query": "옆"
@@ -440,7 +440,7 @@
         {
             "id": "KOR_055",
             "question": "ㄲ\n(Batchim)",
-            "answer": "k",
+            "answer": "-k (kk)",
             "explanation": "In the final position (Batchim), 'ㄲ' (쌍기역) is pronounced as a 'k' stop sound. Example: '밖' (outside).",
             "explanation_pt": "Na posição final (Batchim), 'ㄲ' (쌍기역) é pronunciado como um som de parada 'k'. Exemplo: '밖' (fora).",
             "tts_query": "밖"
@@ -448,7 +448,7 @@
         {
             "id": "KOR_056",
             "question": "ㅆ\n(Batchim)",
-            "answer": "t",
+            "answer": "-t (ss)",
             "explanation": "In the final position (Batchim), 'ㅆ' (쌍시옷) is pronounced as a 't' stop sound. Example: '있다' (existent).",
             "explanation_pt": "Na posição final (Batchim), 'ㅆ' (쌍시옷) é pronunciado como um som de parada 't'. Exemplo: '있다' (existir/ter).",
             "tts_query": "있다"
@@ -456,7 +456,7 @@
         {
             "id": "KOR_057",
             "question": "ㄺ\n(Cluster)",
-            "answer": "k",
+            "answer": "-k (l-g)",
             "explanation": "Double final consonant (Cluster) 'ㄺ' is pronounced as 'k'. Example: '닭' (chicken) is pronounced as [닥].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄺ' é pronunciada como 'k'. Exemplo: '닭' (frango) é pronunciado como [닥].",
             "tts_query": "닭"
@@ -464,7 +464,7 @@
         {
             "id": "KOR_058",
             "question": "ㄵ\n(Cluster)",
-            "answer": "n",
+            "answer": "-n (n-j)",
             "explanation": "Double final consonant (Cluster) 'ㄵ' is pronounced as 'n'. Example: '앉다' (to sit) is pronounced as [안따].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄵ' é pronunciada como 'n'. Exemplo: '앉다' (sentar) é pronunciado como [안따].",
             "tts_query": "앉다"
@@ -472,7 +472,7 @@
         {
             "id": "KOR_059",
             "question": "ㄶ\n(Cluster)",
-            "answer": "n",
+            "answer": "-n (n-h)",
             "explanation": "Double final consonant (Cluster) 'ㄶ' is pronounced as 'n'. Example: '많다' (to be many) is pronounced as [만타].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄶ' é pronunciada como 'n'. Exemplo: '많다' (haver muito) é pronunciado como [만타].",
             "tts_query": "많다"
@@ -480,7 +480,7 @@
         {
             "id": "KOR_060",
             "question": "ㄼ\n(Cluster)",
-            "answer": "l",
+            "answer": "-l (l-b)",
             "explanation": "Double final consonant (Cluster) 'ㄼ' is pronounced as 'l'. Example: '여덟' (eight) is pronounced as [여덜].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄼ' é pronunciada como 'l'. Exemplo: '여덟' (oito) é pronunciado como [여덜].",
             "tts_query": "여덟"
@@ -488,7 +488,7 @@
         {
             "id": "KOR_061",
             "question": "ㅀ\n(Cluster)",
-            "answer": "l",
+            "answer": "-l (l-h)",
             "explanation": "Double final consonant (Cluster) 'ㅀ' is pronounced as 'l'. Example: '잃다' (to lose) is pronounced as [일타].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㅀ' é pronunciada como 'l'. Exemplo: '잃다' (perder) é pronunciado como [일타].",
             "tts_query": "잃다"
@@ -496,7 +496,7 @@
         {
             "id": "KOR_062",
             "question": "ㄻ\n(Cluster)",
-            "answer": "m",
+            "answer": "-m (l-m)",
             "explanation": "Double final consonant (Cluster) 'ㄻ' is pronounced as 'm'. Example: '삶' (life) is pronounced as [삼].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄻ' é pronunciada como 'm'. Exemplo: '삶' (vida) é pronunciado como [삼].",
             "tts_query": "삶"
@@ -504,7 +504,7 @@
         {
             "id": "KOR_063",
             "question": "ㅄ\n(Cluster)",
-            "answer": "p",
+            "answer": "-p (b-s)",
             "explanation": "Double final consonant (Cluster) 'ㅄ' is pronounced as 'p'. Example: '값' (price) is pronounced as [갑].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㅄ' é pronunciada como 'p'. Exemplo: '값' (preço) é pronunciado como [갑].",
             "tts_query": "값"
@@ -512,7 +512,7 @@
         {
             "id": "KOR_064",
             "question": "ㄳ\n(Cluster)",
-            "answer": "k",
+            "answer": "-k (g-s)",
             "explanation": "Double final consonant (Cluster) 'ㄳ' is pronounced as 'k'. Example: '넋' (soul) is pronounced as [넉].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄳ' é pronunciada como 'k'. Exemplo: '넋' (alma) é pronunciado como [넉].",
             "tts_query": "넋"
@@ -520,7 +520,7 @@
         {
             "id": "KOR_065",
             "question": "ㄽ\n(Cluster)",
-            "answer": "l",
+            "answer": "-l (l-s)",
             "explanation": "Double final consonant (Cluster) 'ㄽ' is pronounced as 'l'. Example: '외곬' (single way) is pronounced as [외골].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄽ' é pronunciada como 'l'. Exemplo: '외곬' (caminho único) é pronunciado como [외골].",
             "tts_query": "외곬"
@@ -528,7 +528,7 @@
         {
             "id": "KOR_066",
             "question": "ㄾ\n(Cluster)",
-            "answer": "l",
+            "answer": "-l (l-t)",
             "explanation": "Double final consonant (Cluster) 'ㄾ' is pronounced as 'l'. Example: '핥다' (to lick) is pronounced as [할따].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄾ' é pronunciada como 'l'. Exemplo: '핥다' (lamber) é pronunciado como [할따].",
             "tts_query": "핥다"
@@ -536,298 +536,10 @@
         {
             "id": "KOR_067",
             "question": "ㄿ\n(Cluster)",
-            "answer": "p",
+            "answer": "-p (l-p)",
             "explanation": "Double final consonant (Cluster) 'ㄿ' is pronounced as 'p'. Example: '읊다' (to recite) is pronounced as [읖따].",
             "explanation_pt": "A consoante final dupla (Cluster) 'ㄿ' é pronunciada como 'p'. Exemplo: '읊다' (recitar) é pronunciado como [읖따].",
             "tts_query": "읊다"
-        },
-        {
-            "id": "KOR_068",
-            "question": "Middle consonant: ㄱ ㄷ ㅈ ㅂ between two voiced sounds (e.g. vowels)\n(e.g., 아기)",
-            "answer": "[a̠ɡi]",
-            "explanation": "Rule: Middle consonant: ㄱ ㄷ ㅈ ㅂ between two voiced sounds (e.g. vowels)\n\nExamples:\n- 아기 (baby) -> [a̠ɡi]: voicing of /k/ to /g/\n- 어디 (where) -> [ʌ̹di]: voicing of /t/ to /d/\n- 아버지 (father) -> [a̠bʌ̹d͡ʑi]: voicing of /p/ to /b/, /t͡ɕ/ (ch-like) to /d͡ʑ/ (j-like)\n- 드디어 (at last, finally) -> [tɯdiʌ̹]: voicing of 2nd /t/ to /d/\n- 바보 (idiot) -> [ˈpa̠(ː)bo̞]: voicing of 2nd /p/ to /b/,\n- 바다 (sea, ocean) -> [pa̠da̠]: voicing of /t/ to /d/",
-            "explanation_pt": "Regra: Consoante média: ㄱ ㄷ ㅈ ㅂ entre dois sons sonoros (ex: vogais)\n\nExemplos:\n- 아기 (bebê) -> [a̠ɡi]: voicing of /k/ to /g/\n- 어디 (onde) -> [ʌ̹di]: voicing of /t/ to /d/\n- 아버지 (pai) -> [a̠bʌ̹d͡ʑi]: voicing of /p/ to /b/, /t͡ɕ/ (ch-like) to /d͡ʑ/ (j-like)\n- 드디어 (finalmente) -> [tɯdiʌ̹]: voicing of 2nd /t/ to /d/\n- 바보 (idiota) -> [ˈpa̠(ː)bo̞]: voicing of 2nd /p/ to /b/,\n- 바다 (mar) -> [pa̠da̠]: voicing of /t/ to /d/",
-            "tts_query": "아기"
-        },
-        {
-            "id": "KOR_069",
-            "question": "ㅅ before /i/, /j/ sound or ㅟ\n(e.g., 시간)",
-            "answer": "[ɕʰiɡa̠n]",
-            "explanation": "Rule: ㅅ before /i/, /j/ sound or ㅟ\n\nExamples:\n- 시간 (hour, time) -> [ɕʰiɡa̠n]\n- 쉬다 (to rest, repose) -> [ˈʃʰɥi(ː)da̠] ~ [ˈʃʰy(ː)da̠]\n- 샤워 (shower, shower bath) -> [ɕʰa̠wʌ̹]\n- 셔츠 (shirt) -> [ɕʰʌ̹t͡ɕʰɯ]\n- 쇼핑 (shopping) -> [ɕ͈opʰiŋ]\n- 슈퍼마켓 (supermarket, grocery store) -> [ɕʰupʰʌ̹ma̠kʰe̞t̚]",
-            "explanation_pt": "Regra: ㅅ antes do som /i/, /j/ ou ㅟ\n\nExemplos:\n- 시간 (hora/tempo) -> [ɕʰiɡa̠n]\n- 쉬다 (descansar) -> [ˈʃʰɥi(ː)da̠] ~ [ˈʃʰy(ː)da̠]\n- 샤워 (banho/chuveiro) -> [ɕʰa̠wʌ̹]\n- 셔츠 (camisa) -> [ɕʰʌ̹t͡ɕʰɯ]\n- 쇼핑 (compras) -> [ɕ͈opʰiŋ]\n- 슈퍼마켓 (supermercado) -> [ɕʰupʰʌ̹ma̠kʰe̞t̚]",
-            "tts_query": "시간"
-        },
-        {
-            "id": "KOR_070",
-            "question": "ㅈ, ㅉ, ㅊ before /j/ sound\n(e.g., 가져)",
-            "answer": "[가저]",
-            "explanation": "Rule: ㅈ, ㅉ, ㅊ before /j/ sound\n\nExamples:\n- 가져 (가지다 (to have, hold) as declarative) -> [가저]\n- 다쳐 (다치다 (be injured) as declarative) -> [다처]",
-            "explanation_pt": "Regra: ㅈ, ㅉ, ㅊ antes do som /j/\n\nExemplos:\n- 가져 (ter/segurar) -> [가저]\n- 다쳐 (다치다 (be injured) as declarative) -> [다처]",
-            "tts_query": "가져"
-        },
-        {
-            "id": "KOR_071",
-            "question": "ㅢ pronunciation\n(e.g., 의자)",
-            "answer": "[의자]",
-            "explanation": "Rule: ㅢ pronunciation\n\nExamples:\n- 의자 (chair, stool; 椅子) -> [의자]\n- 의사 (doctor; 醫師) -> [의사]\n- 희망 (hope; 希望) -> [히망]\n- 틔어 (틔다 (get cleared, start business) as declarative) -> [티어]\n- 의의 (meaning, sense; 意義) -> [의의/의이]\n- 민주주의 (democracy; 民主主義) -> [민주주의/민주주이]",
-            "explanation_pt": "Regra: Pronúncia de ㅢ\n\nExemplos:\n- 의자 (cadeira) -> [의자]\n- 의사 (doctor; 醫師) -> [의사]\n- 희망 (hope; 希望) -> [히망]\n- 틔어 (틔다 (get cleared, start business) as declarative) -> [티어]\n- 의의 (meaning, sense; 意義) -> [의의/의이]\n- 민주주의 (democracy; 民主主義) -> [민주주의/민주주이]",
-            "tts_query": "의자"
-        },
-        {
-            "id": "KOR_072",
-            "question": "Liaison: Single Batchim\n(e.g., 옷이)",
-            "answer": "[오시]",
-            "explanation": "Rule: Liaison: Single Batchim\n\nExamples:\n- 옷이 (옷 (clothes) + subject particle) -> [오시]\n- 낮이 (낮 (daytime) + subject particle) -> [나지]\n- 꽃을 (꽃 (flower) + object particle) -> [꼬츨]\n- 한국어 (Korean language) -> [한ː구거]\n- 잎이 (잎 (leaf) + subject particle) -> [이피]\n- 이것은 (이것 + topic particle) -> [이거슨]",
-            "explanation_pt": "Regra: Ligação: Batchim Único\n\nExemplos:\n- 옷이 (roupas) -> [오시]\n- 낮이 (낮 (daytime) + subject particle) -> [나지]\n- 꽃을 (꽃 (flower) + object particle) -> [꼬츨]\n- 한국어 (Korean language) -> [한ː구거]\n- 잎이 (잎 (leaf) + subject particle) -> [이피]\n- 이것은 (이것 + topic particle) -> [이거슨]",
-            "tts_query": "옷이"
-        },
-        {
-            "id": "KOR_073",
-            "question": "Liaison: Tense Consonant Batchim\n(e.g., 있어)",
-            "answer": "[이써]",
-            "explanation": "Rule: Liaison: Tense Consonant Batchim\n\nExamples:\n- 있어 (있다 (existent) as declarative) -> [이써]\n- 깎아 (깎다 (peel, carve) as declarative) -> [까까]\n- 섞여 (섞이다 (be mixed, be added) as declarative) -> [서껴]\n- 갔어 (가다 (go) as declarative past) -> [가써]\n- 했어 (하다 (do) as declarative past) -> [해써]\n- 갔었어 (가다 (go) as declarative past perfect) -> [가써써]",
-            "explanation_pt": "Regra: Ligação: Batchim de Consoante Tensa\n\nExemplos:\n- 있어 (existente/ter) -> [이써]\n- 깎아 (깎다 (peel, carve) as declarative) -> [까까]\n- 섞여 (섞이다 (be mixed, be added) as declarative) -> [서껴]\n- 갔어 (가다 (go) as declarative past) -> [가써]\n- 했어 (하다 (do) as declarative past) -> [해써]\n- 갔었어 (가다 (go) as declarative past perfect) -> [가써써]",
-            "tts_query": "있어"
-        },
-        {
-            "id": "KOR_074",
-            "question": "Liaison: Double Consonant Batchim\n(e.g., 닭을)",
-            "answer": "[달글]",
-            "explanation": "Rule: Liaison: Double Consonant Batchim\n\nExamples:\n- 닭을 (닭 (chicken) + object particle) -> [달글]\n- 넋이 (넋 (soul) + subject particle) -> [넉씨]\n- 없어 (없다 (non-existent) as declarative) -> [업:서]\n- 값이 (값 (price) + subject particle) -> [갑씨]\n- 읽어 (읽다 (read) as declarative) -> [일거]\n- 많이 (much, in large numbers) -> [마ː니]",
-            "explanation_pt": "Regra: Ligação: Batchim de Consoante Dupla\n\nExemplos:\n- 닭을 (frango) -> [달글]\n- 넋이 (넋 (soul) + subject particle) -> [넉씨]\n- 없어 (existente/ter) -> [업:서]\n- 값이 (값 (price) + subject particle) -> [갑씨]\n- 읽어 (읽다 (read) as declarative) -> [일거]\n- 많이 (much, in large numbers) -> [마ː니]",
-            "tts_query": "닭을"
-        },
-        {
-            "id": "KOR_075",
-            "question": "Liaison: ㅎ before ㅇ\n(e.g., 좋아)",
-            "answer": "[조아]",
-            "explanation": "Rule: Liaison: ㅎ before ㅇ\n\nExamples:\n- 좋아 (좋다 (good) as declarative) -> [조아]\n- 싫어 (싫다 (unsatisfying, disagreeable) as declarative) -> [시러]",
-            "explanation_pt": "Regra: Ligação: ㅎ antes de ㅇ\n\nExemplos:\n- 좋아 (bom) -> [조아]\n- 싫어 (싫다 (unsatisfying, disagreeable) as declarative) -> [시러]",
-            "tts_query": "좋아"
-        },
-        {
-            "id": "KOR_076",
-            "question": "Palatalisation: ㄷ이 becomes 지 if 이- only has grammatical meaning\n(e.g., 해돋이)",
-            "answer": "[해도지]",
-            "explanation": "Rule: Palatalisation: ㄷ이 becomes 지 if 이- only has grammatical meaning\n\nExamples:\n- 해돋이 (sunrise) -> [해도지]\n- 곧이듣다 (to take another´s words as truth) -> [고지듣따]",
-            "explanation_pt": "Regra: Palatalização: ㄷ이 torna-se 지 se 이- tem apenas significado gramatical\n\nExemplos:\n- 해돋이 (nascer do sol) -> [해도지]\n- 곧이듣다 (to take another´s words as truth) -> [고지듣따]",
-            "tts_query": "해돋이"
-        },
-        {
-            "id": "KOR_077",
-            "question": "Palatalisation: ㅌ이 and 't-stops + 히' becomes 치 if 히- only has grammatical meaning\n(e.g., 같이)",
-            "answer": "[가치]",
-            "explanation": "Rule: Palatalisation: ㅌ이 and 't-stops + 히' becomes 치 if 히- only has grammatical meaning\n\nExamples:\n- 같이 (together) -> [가치]\n- 붙이다 (to stick, paste, ignite) -> [부치다]\n- 굳히다 (to harden) -> [구치다]\n- 받히다 (to be hit) -> [바치다]",
-            "explanation_pt": "Regra: Palatalização: ㅌ이 e 't-stops + 히' tornam-se 치 se 히- tem apenas significado gramatical\n\nExemplos:\n- 같이 (juntos) -> [가치]\n- 붙이다 (to stick, paste, ignite) -> [부치다]\n- 굳히다 (to harden) -> [구치다]\n- 받히다 (to be hit) -> [바치다]",
-            "tts_query": "같이"
-        },
-        {
-            "id": "KOR_078",
-            "question": "Final-initial pair ㄹㄹ\n(e.g., 몰라)",
-            "answer": "[molla]",
-            "explanation": "Rule: Final-initial pair ㄹㄹ\n\nExamples:\n- 몰라 (모르다 (to not know) as declarative) -> [molla]\n- 빨리 (quickly) -> [빨리]",
-            "explanation_pt": "Regra: Par final-inicial ㄹㄹ\n\nExemplos:\n- 몰라 (não saber) -> [molla]\n- 빨리 (quickly) -> [빨리]",
-            "tts_query": "몰라"
-        },
-        {
-            "id": "KOR_079",
-            "question": "Final-initial pair ㄴㄴ\n(e.g., 만나다)",
-            "answer": "[ma̠nna̠da̠]",
-            "explanation": "Rule: Final-initial pair ㄴㄴ\n\nExamples:\n- 만나다 (to meet) -> [ma̠nna̠da̠]\n- 만년 (old age) -> [ˈma̠(ː)nɲʌ̹n]",
-            "explanation_pt": "Regra: Par final-inicial ㄴㄴ\n\nExemplos:\n- 만나다 (encontrar) -> [ma̠nna̠da̠]\n- 만년 (old age) -> [ˈma̠(ː)nɲʌ̹n]",
-            "tts_query": "만나다"
-        },
-        {
-            "id": "KOR_080",
-            "question": "Nasalisation: k-stops + ㄴ become ㅇㄴ\n(e.g., 학년)",
-            "answer": "[항년]",
-            "explanation": "Rule: Nasalisation: k-stops + ㄴ become ㅇㄴ\n\nExamples:\n- 학년 (grade) -> [항년]\n- 닦는 (닦다 (to wipe) as present adnomninal) -> [당는]\n- 긁는 (긁다 (to scratch) as present adnominal) -> [긍는]\n- 먹는 (먹다 (to eat) as present adnominal) -> [멍는]",
-            "explanation_pt": "Regra: Nasalização: k-stops + ㄴ tornam-se ㅇㄴ\n\nExemplos:\n- 학년 (série/ano escolar) -> [항년]\n- 닦는 (닦다 (to wipe) as present adnomninal) -> [당는]\n- 긁는 (긁다 (to scratch) as present adnominal) -> [긍는]\n- 먹는 (먹다 (to eat) as present adnominal) -> [멍는]",
-            "tts_query": "학년"
-        },
-        {
-            "id": "KOR_081",
-            "question": "Nasalisation: k-stops + ㅁ become ㅇㅁ\n(e.g., 국물)",
-            "answer": "[궁물]",
-            "explanation": "Rule: Nasalisation: k-stops + ㅁ become ㅇㅁ\n\nExamples:\n- 국물 (broth) -> [궁물]\n- 부엌문 (kitchen door) -> [부엉문]\n- 키읔만 (키읔 + &#x27;only&#x27; particle , &#x27;ㅋ&#x27; only) -> [키응만]\n- 묵묵히 (silently) -> [뭉무키]",
-            "explanation_pt": "Regra: Nasalização: k-stops + ㅁ tornam-se ㅇㅁ\n\nExemplos:\n- 국물 (caldo/sopa) -> [궁물]\n- 부엌문 (kitchen door) -> [부엉문]\n- 키읔만 (키읔 + &#x27;only&#x27; particle , &#x27;ㅋ&#x27; only) -> [키응만]\n- 묵묵히 (silently) -> [뭉무키]",
-            "tts_query": "국물"
-        },
-        {
-            "id": "KOR_082",
-            "question": "Nasalisation: t-stops + ㄴ become ㄴㄴ\n(e.g., 닫는)",
-            "answer": "[단는]",
-            "explanation": "Rule: Nasalisation: t-stops + ㄴ become ㄴㄴ\n\nExamples:\n- 닫는 (닫다 (to close) as present adnominal, closing) -> [단는]\n- 덧니 (snaggletooth) -> [던니]\n- 죽었니? (Is it dead?) -> [주건니]\n- 젖니 (baby tooth) -> [전니]\n- 벚나무 (cherry tree) -> [번나무]\n- 꽃나무 (flowering tree, flowering plant) -> [꼰나무]",
-            "explanation_pt": "Regra: Nasalização: t-stops + ㄴ tornam-se ㄴㄴ\n\nExemplos:\n- 닫는 (fechando) -> [단는]\n- 덧니 (snaggletooth) -> [던니]\n- 죽었니? (Is it dead?) -> [주건니]\n- 젖니 (bebê) -> [전니]\n- 벚나무 (cherry tree) -> [번나무]\n- 꽃나무 (flowering tree, flowering plant) -> [꼰나무]",
-            "tts_query": "닫는"
-        },
-        {
-            "id": "KOR_083",
-            "question": "Nasalisation: t-stops + ㅁ become ㄴㅁ\n(e.g., 맏며느리)",
-            "answer": "[만며느리]",
-            "explanation": "Rule: Nasalisation: t-stops + ㅁ become ㄴㅁ\n\nExamples:\n- 맏며느리 (wife of one&#x27;s eldest son) -> [만며느리]\n- 옷맵시 (line of cloth, style) -> [온맵씨]\n- 낮말 (talking in the daytime) -> [난말]\n- 히읗만 (only &#x27;ㅎ&#x27;) -> [히은만]",
-            "explanation_pt": "Regra: Nasalização: t-stops + ㅁ tornam-se ㄴㅁ\n\nExemplos:\n- 맏며느리 (wife of one&#x27;s eldest son) -> [만며느리]\n- 옷맵시 (line of cloth, style) -> [온맵씨]\n- 낮말 (talking in the daytime) -> [난말]\n- 히읗만 (only &#x27;ㅎ&#x27;) -> [히은만]",
-            "tts_query": "맏며느리"
-        },
-        {
-            "id": "KOR_084",
-            "question": "Nasalisation: p-stops + ㄴ becomes ㅁㄴ\n(e.g., 감사합니다)",
-            "answer": "[감사함니다]",
-            "explanation": "Rule: Nasalisation: p-stops + ㄴ becomes ㅁㄴ\n\nExamples:\n- 감사합니다 (감사하다 (to thank) as declarative) -> [감사함니다]\n- 줍는 (줍다 (to pick up) as present adnominal, picking up) -> [줌는]\n- 읊는 (읊다 (to recite) as present adnominal, reciting) -> [음는]\n- 밟는 (밟다 (to step on) as present adnominal, stepping on) -> [밤는]: 밟- is pronounced [밥:] (counterexample of pronunciation of ㄼ)",
-            "explanation_pt": "Regra: Nasalização: p-stops + ㄴ torna-se ㅁㄴ\n\nExemplos:\n- 감사합니다 (agradecer) -> [감사함니다]\n- 줍는 (줍다 (to pick up) as present adnominal, picking up) -> [줌는]\n- 읊는 (읊다 (to recite) as present adnominal, reciting) -> [음는]\n- 밟는 (밟다 (to step on) as present adnominal, stepping on) -> [밤는]: 밟- is pronounced [밥:] (counterexample of pronunciation of ㄼ)",
-            "tts_query": "감사합니다"
-        },
-        {
-            "id": "KOR_085",
-            "question": "Nasalisation: p-stops + ㅁ becomes ㅁㅁ\n(e.g., 업무)",
-            "answer": "[엄무]",
-            "explanation": "Rule: Nasalisation: p-stops + ㅁ becomes ㅁㅁ\n\nExamples:\n- 업무 (duties) -> [엄무]\n- 앞문 (front door) -> [암문]",
-            "explanation_pt": "Regra: Nasalização: p-stops + ㅁ torna-se ㅁㅁ\n\nExemplos:\n- 업무 (deveres/tarefas) -> [엄무]\n- 앞문 (front door) -> [암문]",
-            "tts_query": "업무"
-        },
-        {
-            "id": "KOR_086",
-            "question": "Aspiration: ㄱㅎ becomes ㅋ, ㅎㄱ becomes ㅋ\n(e.g., 북한)",
-            "answer": "[부칸]",
-            "explanation": "Rule: Aspiration: ㄱㅎ becomes ㅋ, ㅎㄱ becomes ㅋ\n\nExamples:\n- 북한 (North Korea) -> [부칸]\n- 착한 (good-natured) -> [차칸]\n- 하얗게 (whitely) -> [하야케]\n- 어떻게 (how) -> [어떠케]",
-            "explanation_pt": "Regra: Aspiração: ㄱㅎ torna-se ㅋ, ㅎㄱ torna-se ㅋ\n\nExemplos:\n- 북한 (Coreia do Norte) -> [부칸]\n- 착한 (bom) -> [차칸]\n- 하얗게 (whitely) -> [하야케]\n- 어떻게 (how) -> [어떠케]",
-            "tts_query": "북한"
-        },
-        {
-            "id": "KOR_087",
-            "question": "Aspiration: t-stops + ㅎ becomes ㅌ but, t-stops + 히 becomes 치 if it involves palatalisation,\n(e.g., 맏형)",
-            "answer": "[마텽]",
-            "explanation": "Rule: Aspiration: t-stops + ㅎ becomes ㅌ but, t-stops + 히 becomes 치 if it involves palatalisation,\n\nExamples:\n- 맏형 (the eldest brother) -> [마텽]\n- 몇 할 (what percentage, literally how many 'hal' (할, 割, 10%)) -> [며탈]\n- 맞히다 (to guess right) -> [마치다]\n- 받히다 (to be hit) -> [바치다]\n- 빨갛다 (to be red) -> [빨ː가타]\n- 노랗다 (to be yellow) -> [노ː라타]",
-            "explanation_pt": "Regra: Aspiration: t-stops + ㅎ becomes ㅌ but, t-stops + 히 becomes 치 if it involves palatalisation,\n\nExemplos:\n- 맏형 (caldo/sopa) -> [마텽]\n- 몇 할 (what percentage, literally how many 'hal' (할, 割, 10%)) -> [며탈]\n- 맞히다 (to guess right) -> [마치다]\n- 받히다 (to be hit) -> [바치다]\n- 빨갛다 (to be red) -> [빨ː가타]\n- 노랗다 (to be yellow) -> [노ː라타]",
-            "tts_query": "맏형"
-        },
-        {
-            "id": "KOR_088",
-            "question": "Aspiration: ㅂㅎ becomes ㅍ\n(e.g., 입학)",
-            "answer": "[이팍]",
-            "explanation": "Rule: Aspiration: ㅂㅎ becomes ㅍ\n\nExamples:\n- 입학 (admission to a school) -> [이팍]\n- 넓히다 (to extend) -> [널피다]",
-            "explanation_pt": "Regra: Aspiração: ㅂㅎ torna-se ㅍ\n\nExemplos:\n- 입학 (admissão escolar) -> [이팍]\n- 넓히다 (to extend) -> [널피다]",
-            "tts_query": "입학"
-        },
-        {
-            "id": "KOR_089",
-            "question": "Aspiration: ㅎㅈ becomes ㅊ\n(e.g., 좋죠)",
-            "answer": "[조쵸]",
-            "explanation": "Rule: Aspiration: ㅎㅈ becomes ㅊ\n\nExamples:\n- 좋죠 (좋다 (good) + 죠 (confirmation ending)) -> [조쵸]\n- 그렇죠 (그렇다 (to be so) + 죠 (confirmation ending), indeed) -> [그러쵸]",
-            "explanation_pt": "Regra: Aspiração: ㅎㅈ torna-se ㅊ\n\nExemplos:\n- 좋죠 (bom) -> [조쵸]\n- 그렇죠 (sufixo de confirmação) -> [그러쵸]",
-            "tts_query": "좋죠"
-        },
-        {
-            "id": "KOR_090",
-            "question": "Aspiration: ㅎㅅ becomes ㅆ\n(e.g., 않소)",
-            "answer": "[안쏘]",
-            "explanation": "Rule: Aspiration: ㅎㅅ becomes ㅆ\n\nExamples:\n- 않소 (from 않다 (do not)) -> [안쏘]\n- 많소 (from 많다 (many)) -> [만:쏘]",
-            "explanation_pt": "Regra: Aspiração: ㅎㅅ torna-se ㅆ\n\nExemplos:\n- 않소 (não fazer) -> [안쏘]\n- 많소 (from 많다 (many)) -> [만:쏘]",
-            "tts_query": "않소"
-        },
-        {
-            "id": "KOR_091",
-            "question": "Final-initial pair ㅁㄹ becomes ㅁㄴ\n(e.g., 남루하다)",
-            "answer": "[남:누하다]",
-            "explanation": "Rule: Final-initial pair ㅁㄹ becomes ㅁㄴ\n\nExamples:\n- 남루하다 (shabby, ragged) -> [남:누하다]\n- 담력 (courage, nerve; 膽力) -> [담:녁]",
-            "explanation_pt": "Regra: Par final-inicial ㅁㄹ torna-se ㅁㄴ\n\nExemplos:\n- 남루하다 (desgastado) -> [남:누하다]\n- 담력 (courage, nerve; 膽力) -> [담:녁]",
-            "tts_query": "남루하다"
-        },
-        {
-            "id": "KOR_092",
-            "question": "Final-initial pair ㅇㄹ becomes ㅇㄴ\n(e.g., 대통령)",
-            "answer": "[대:통녕]",
-            "explanation": "Rule: Final-initial pair ㅇㄹ becomes ㅇㄴ\n\nExamples:\n- 대통령 (president) -> [대:통녕]\n- 항로 (sea route) -> [항:노]",
-            "explanation_pt": "Regra: Par final-inicial ㅇㄹ torna-se ㅇㄴ\n\nExemplos:\n- 대통령 (presidente) -> [대:통녕]\n- 항로 (sea route) -> [항:노]",
-            "tts_query": "대통령"
-        },
-        {
-            "id": "KOR_093",
-            "question": "Final-initial pair ㄱㄹ becomes ㅇㄴ (can be divided as ㄱㄹ -&gt; ㄱㄴ -&gt; ㅇㄴ)\n(e.g., 박람회)",
-            "answer": "[방남회]",
-            "explanation": "Rule: Final-initial pair ㄱㄹ becomes ㅇㄴ (can be divided as ㄱㄹ -&gt; ㄱㄴ -&gt; ㅇㄴ)\n\nExamples:\n- 박람회 (expo) -> [방남회]",
-            "explanation_pt": "Regra: Final-initial pair ㄱㄹ becomes ㅇㄴ (can be divided as ㄱㄹ -&gt; ㄱㄴ -&gt; ㅇㄴ)\n\nExemplos:\n- 박람회 (exposição) -> [방남회]",
-            "tts_query": "박람회"
-        },
-        {
-            "id": "KOR_094",
-            "question": "Final-initial pair ㅂㄹ becomes ㅁㄴ (can be divided as ㅂㄹ -&gt; ㅂㄴ -&gt; ㅁㄴ)\n(e.g., 합리적)",
-            "answer": "[함니적]",
-            "explanation": "Rule: Final-initial pair ㅂㄹ becomes ㅁㄴ (can be divided as ㅂㄹ -&gt; ㅂㄴ -&gt; ㅁㄴ)\n\nExamples:\n- 합리적 (rational; 合理的) -> [함니적]",
-            "explanation_pt": "Regra: Final-initial pair ㅂㄹ becomes ㅁㄴ (can be divided as ㅂㄹ -&gt; ㅂㄴ -&gt; ㅁㄴ)\n\nExemplos:\n- 합리적 (racional) -> [함니적]",
-            "tts_query": "합리적"
-        },
-        {
-            "id": "KOR_095",
-            "question": "Final-initial pair ㄴㄹ becomes ㄹㄹ (except some words)\n(e.g., 한류)",
-            "answer": "[할ː류]",
-            "explanation": "Rule: Final-initial pair ㄴㄹ becomes ㄹㄹ (except some words)\n\nExamples:\n- 한류 (Korean wave 韓流) -> [할ː류]\n- 안락하다 (comfortable) -> [알라카다]\n- 난로 (heater, stove) -> [날:로]\n- 광한루 (Gwanghallu) -> [광할루]\n- 공권력 (governmental authority) -> [공꿘녁]\n- 의견란 (comment/suggestion box 意見欄) -> [의ː견난]",
-            "explanation_pt": "Regra: Par final-inicial ㄴㄹ torna-se ㄹㄹ (exceto algumas palavras)\n\nExemplos:\n- 한류 (Korean wave 韓流) -> [할ː류]\n- 안락하다 (comfortable) -> [알라카다]\n- 난로 (heater, stove) -> [날:로]\n- 광한루 (Gwanghallu) -> [광할루]\n- 공권력 (governmental authority) -> [공꿘녁]\n- 의견란 (comment/suggestion box 意見欄) -> [의ː견난]",
-            "tts_query": "한류"
-        },
-        {
-            "id": "KOR_096",
-            "question": "Final-initial pair ㄹㄴ becomes ㄹㄹ (except some words)\n(e.g., 잃는)",
-            "answer": "[일른]",
-            "explanation": "Rule: Final-initial pair ㄹㄴ becomes ㄹㄹ (except some words)\n\nExamples:\n- 잃는 (잃다 (to lose) as adnominal) -> [일른]",
-            "explanation_pt": "Regra: Par final-inicial ㄹㄴ torna-se ㄹㄹ (exceto algumas palavras)\n\nExemplos:\n- 잃는 (perder) -> [일른]",
-            "tts_query": "잃는"
-        },
-        {
-            "id": "KOR_097",
-            "question": "Tensing: ㄱ ㄷ ㅂ ㅅ ㅈ after ㄱ (ㄲㅋㄳㄺ) ㄷ (ㅅㅆㅈㅊㅌ) or ㅂ (ㅍㄼㄿㅄ)\n(e.g., 덥다)",
-            "answer": "[덥따]",
-            "explanation": "Rule: Tensing: ㄱ ㄷ ㅂ ㅅ ㅈ after ㄱ (ㄲㅋㄳㄺ) ㄷ (ㅅㅆㅈㅊㅌ) or ㅂ (ㅍㄼㄿㅄ)\n\nExamples:\n- 덥다 (hot) -> [덥따]\n- 학기 (semester) -> [학끼]\n- 학생 (student) -> [학쌩]\n- 떡볶이 (tteokbokki) -> [떡뽀끼]",
-            "explanation_pt": "Regra: Tensão: ㄱ ㄷ ㅂ ㅅ ㅈ após ㄱ (ㄲㅋㄳㄺ) ㄷ (ㅅㅆㅈㅊㅌ) ou ㅂ (ㅍㄼㄿㅄ)\n\nExemplos:\n- 덥다 (quente) -> [덥따]\n- 학기 (semester) -> [학끼]\n- 학생 (student) -> [학쌩]\n- 떡볶이 (tteokbokki) -> [떡뽀끼]",
-            "tts_query": "덥다"
-        },
-        {
-            "id": "KOR_098",
-            "question": "Tensing: Suffix initial ㄱ ㄷ ㅅ ㅈ after a verb stem final ㄴ(ㄵ) ㅁ(ㄻ) ㄼ ㄾ\n(e.g., 신고)",
-            "answer": "[신꼬]",
-            "explanation": "Rule: Tensing: Suffix initial ㄱ ㄷ ㅅ ㅈ after a verb stem final ㄴ(ㄵ) ㅁ(ㄻ) ㄼ ㄾ\n\nExamples:\n- 신고 (신다 (wear) as conjunctive) -> [신꼬]\n- 삼고 (삼다 (adopt, take) as conjunctive) -> [삼:꼬]\n- 앉고 (앉다 (sit) as conjunctive) -> [안꼬]\n- 젊지 (젊다 (young) + confirmation particle) -> [점:찌]\n- 안기다 (put something in one&#x27;s arms) -> [안기다]\n- 옮기다 (move, take, shift) -> [옴기다]",
-            "explanation_pt": "Regra: Tensão: ㄱ ㄷ ㅅ ㅈ inicial de sufixo após ㄴ(ㄵ) ㅁ(ㄻ) ㄼ ㄾ final do radical do verbo\n\nExemplos:\n- 신고 (calçar/vestir) -> [신꼬]\n- 삼고 (삼다 (adopt, take) as conjunctive) -> [삼:꼬]\n- 앉고 (앉다 (sit) as conjunctive) -> [안꼬]\n- 젊지 (젊다 (young) + confirmation particle) -> [점:찌]\n- 안기다 (put something in one&#x27;s arms) -> [안기다]\n- 옮기다 (move, take, shift) -> [옴기다]",
-            "tts_query": "신고"
-        },
-        {
-            "id": "KOR_099",
-            "question": "Tensing: ㄱ ㄷ ㅂ ㅅ ㅈ after modifier ㄹ\n(e.g., 만날 사람)",
-            "answer": "[만날싸람]",
-            "explanation": "Rule: Tensing: ㄱ ㄷ ㅂ ㅅ ㅈ after modifier ㄹ\n\nExamples:\n- 만날 사람 (person to meet) -> [만날싸람]\n- 갈 곳 (place to go) -> [갈꼳]\n- 할 수는 (ability to do + topic particle) -> [할쑤는]\n- 할 것을 (things to do) -> [할꺼슬]",
-            "explanation_pt": "Regra: Tensão: ㄱ ㄷ ㅂ ㅅ ㅈ após modificador ㄹ\n\nExemplos:\n- 만날 사람 (encontrar) -> [만날싸람]\n- 갈 곳 (place to go) -> [갈꼳]\n- 할 수는 (ability to do + topic particle) -> [할쑤는]\n- 할 것을 (things to do) -> [할꺼슬]",
-            "tts_query": "만날 사람"
-        },
-        {
-            "id": "KOR_100",
-            "question": "Tensing: Without a Rule\n(e.g., 한자)",
-            "answer": "[한ː짜]",
-            "explanation": "Rule: Tensing: Without a Rule\n\nExamples:\n- 한자 (Chinese characters; 漢字) -> [한ː짜]\n- 인기 (popularity; 人氣) -> [인끼]\n- 먹을 거 (먹다 (to eat) as future adnominal, things to eat) -> [머글 꺼]\n- 시가 (market price; 市價) -> [시까]",
-            "explanation_pt": "Regra: Tensão: Sem Regra Específica\n\nExemplos:\n- 한자 (Chinese characters; 漢字) -> [한ː짜]\n- 인기 (popularity; 人氣) -> [인끼]\n- 먹을 거 (먹다 (to eat) as future adnominal, things to eat) -> [머글 꺼]\n- 시가 (market price; 市價) -> [시까]",
-            "tts_query": "한자"
-        },
-        {
-            "id": "KOR_101",
-            "question": "Liaison: Between Words Without /j/\n(e.g., 꽃 위)",
-            "answer": "[꼬뒤]",
-            "explanation": "Rule: Liaison: Between Words Without /j/\n\nExamples:\n- 꽃 위 (on a flower) -> [꼬뒤]\n- 늪 앞 (front of a swamp) -> [느밥]\n- 젖어미 (젖 (milk) + 어미 (mother, often impolite) wet nurse) -> [저더미]\n- 맛없다 (맛 (taste) + 없다 (non-existent), to taste awful) -> [마덥따]",
-            "explanation_pt": "Regra: Ligação: Entre Palavras sem /j/\n\nExemplos:\n- 꽃 위 (sobre uma flor) -> [꼬뒤]\n- 늪 앞 (front of a swamp) -> [느밥]\n- 젖어미 (젖 (milk) + 어미 (mother, often impolite) wet nurse) -> [저더미]\n- 맛없다 (existente/ter) -> [마덥따]",
-            "tts_query": "꽃 위"
-        },
-        {
-            "id": "KOR_102",
-            "question": "Liaison: Between Words With /j/\n(e.g., 솜이불)",
-            "answer": "[솜ː니불]",
-            "explanation": "Rule: Liaison: Between Words With /j/\n\nExamples:\n- 솜이불 (솜 + 이불, cotton blanket) -> [솜ː니불]\n- 홑이불 (bed sheet) -> [혼니불]\n- 막일 (막 (hard) + 일 (work), physical labour) -> [망닐]\n- 삯일 (삯 (wage, fare) + 일 (work), job work, odd jobs) -> [상닐]\n- 색연필 (colored pencil) -> [생년필]\n- 영업용 (for business use) -> [영엄뇽]",
-            "explanation_pt": "Regra: Ligação: Entre Palavras com /j/\n\nExemplos:\n- 솜이불 (cobertor de algodão) -> [솜ː니불]\n- 홑이불 (bed sheet) -> [혼니불]\n- 막일 (막 (hard) + 일 (work), physical labour) -> [망닐]\n- 삯일 (삯 (wage, fare) + 일 (work), job work, odd jobs) -> [상닐]\n- 색연필 (colored pencil) -> [생년필]\n- 영업용 (for business use) -> [영엄뇽]",
-            "tts_query": "솜이불"
-        },
-        {
-            "id": "KOR_103",
-            "question": "Liaison: Between Words With /j/, Final-initial pair ㄹㄴ\n(e.g., 들일)",
-            "answer": "[들ː릴]",
-            "explanation": "Rule: Liaison: Between Words With /j/, Final-initial pair ㄹㄴ\n\nExamples:\n- 들일 (field labour) -> [들ː릴]\n- 솔잎 (pine needles) -> [솔립]\n- 설익다 (설- (not properly) + 익다 (), be half-cooked, be half-done) -> [설릭따]\n- 물약 (물 (water) + 약 (medicine), liquid medicine) -> [물략]",
-            "explanation_pt": "Regra: Ligação: Entre Palavras com /j/, Par final-inicial ㄹㄴ\n\nExemplos:\n- 들일 (trabalho de campo) -> [들ː릴]\n- 솔잎 (pine needles) -> [솔립]\n- 설익다 (설- (not properly) + 익다 (), be half-cooked, be half-done) -> [설릭따]\n- 물약 (물 (water) + 약 (medicine), liquid medicine) -> [물략]",
-            "tts_query": "들일"
         }
     ]
 }
