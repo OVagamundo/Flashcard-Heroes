@@ -49,7 +49,7 @@ func setup(spawn_position: Vector2, target_pos: Vector2 = Vector2.ZERO) -> void:
 	_target_position = target_pos
 	global_position = spawn_position
 
-func play(target_pos: Vector2 = Vector2.ZERO) -> void:
+func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 	"""Play the juicy coin pop and fly animation"""
 	_start_position = global_position
 	
@@ -61,6 +61,32 @@ func play(target_pos: Vector2 = Vector2.ZERO) -> void:
 	# Start with white flash and small scale
 	token_sprite.modulate = Color.WHITE
 	token_sprite.scale = Vector2(INITIAL_SCALE, INITIAL_SCALE)
+	
+	# Determine juice multipliers based on streak
+	var max_scale = MAX_SCALE
+	var glow_color = GLOW_COLOR
+	var flip_count = FLIP_COUNT
+	
+	if streak >= 9:
+		flip_count *= 3
+		max_scale *= 1.5
+		glow_color = Color(1.0, 0.4, 0.9, 1.0) # Bright pink/magenta
+		if is_instance_valid(particles): particles.amount *= 4
+	elif streak >= 7:
+		flip_count *= 2
+		max_scale *= 1.3
+		glow_color = Color(1.0, 0.8, 0.2, 1.0) # Bright gold
+		if is_instance_valid(particles): particles.amount *= 3
+		SignalBus.screen_shake_requested.emit(0.15)
+	elif streak >= 5:
+		flip_count = int(flip_count * 1.5)
+		max_scale *= 1.2
+		glow_color = Color(0.4, 0.8, 1.0, 1.0) # Cyan
+		if is_instance_valid(particles): particles.amount *= 2
+	elif streak >= 3:
+		flip_count = int(flip_count * 1.25)
+		max_scale *= 1.1
+		
 	
 	# === PHASE 1: POP UP with scale overshoot ===
 	var peak_pos = Vector2(_start_position.x, _start_position.y - POP_HEIGHT)
@@ -80,7 +106,7 @@ func play(target_pos: Vector2 = Vector2.ZERO) -> void:
 	# Scale animation: small -> overshoot big -> settle to normal
 	var scale_tween = create_tween()
 	# Pop to max size with overshoot
-	scale_tween.tween_property(token_sprite, "scale", Vector2(MAX_SCALE, MAX_SCALE), POP_UP_DURATION * 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	scale_tween.tween_property(token_sprite, "scale", Vector2(max_scale, max_scale), POP_UP_DURATION * 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	# Settle to normal size
 	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE, FINAL_SCALE), POP_UP_DURATION * 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	# Shrink as approaching target (absorbed effect)
@@ -88,11 +114,11 @@ func play(target_pos: Vector2 = Vector2.ZERO) -> void:
 	
 	# Color: white flash -> golden glow -> normal
 	var color_tween = create_tween()
-	color_tween.tween_property(token_sprite, "modulate", GLOW_COLOR, WHITE_FLASH_DURATION).set_trans(Tween.TRANS_SINE)
+	color_tween.tween_property(token_sprite, "modulate", glow_color, WHITE_FLASH_DURATION).set_trans(Tween.TRANS_SINE)
 	color_tween.tween_property(token_sprite, "modulate", Color.WHITE, POP_UP_DURATION - WHITE_FLASH_DURATION)
 	
 	# Start spinning
-	_start_horizontal_flip()
+	_start_horizontal_flip(flip_count)
 	
 	# Add wobble during flight phase
 	_start_wobble(POP_UP_DURATION + HANG_TIME)
@@ -128,13 +154,13 @@ func play(target_pos: Vector2 = Vector2.ZERO) -> void:
 	await get_tree().create_timer(0.2).timeout
 	queue_free()
 
-func _start_horizontal_flip() -> void:
+func _start_horizontal_flip(count: int) -> void:
 	"""Animate spinning coin effect"""
 	_flip_tween = create_tween()
-	_flip_tween.set_loops(FLIP_COUNT)
+	_flip_tween.set_loops(count)
 	
 	var total_duration = POP_UP_DURATION + HANG_TIME + FLY_TO_TARGET_DURATION
-	var flip_duration = total_duration / FLIP_COUNT / 4.0
+	var flip_duration = total_duration / count / 4.0
 	
 	# Full rotation cycle using scale.x
 	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)

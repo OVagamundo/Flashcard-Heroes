@@ -81,12 +81,13 @@ func play_music(stream: AudioStream, crossfade_duration: float = 0.1, volume_db:
 			_music_player.stop()
 			_music_player.stream = stream
 			_music_player.volume_db = volume_db
+			_music_player.pitch_scale = 1.0
 			_music_player.play()
-
 		)
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = volume_db
+		_music_player.pitch_scale = 1.0
 		_music_player.play()
 
 
@@ -95,6 +96,11 @@ func stop_music(fade_duration: float = 1.0) -> void:
 		var tween = create_tween()
 		tween.tween_property(_music_player, "volume_db", -80.0, fade_duration)
 		tween.tween_callback(_music_player.stop)
+
+func set_music_pitch(pitch: float, duration: float = 0.5) -> void:
+	if is_instance_valid(_music_player):
+		var tween = create_tween()
+		tween.tween_property(_music_player, "pitch_scale", pitch, duration).set_trans(Tween.TRANS_SINE)
 
 func _prewarm_bgm_streams() -> void:
 	"""Prewarm all BGM streams to eliminate first-play loading delay.

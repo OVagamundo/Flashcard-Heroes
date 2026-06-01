@@ -44,6 +44,7 @@ const BUTTON_PRESSED_TEXTURE = preload("res://assets/Realistic/ui/textures/butto
 var _run_state: RunState = null
 var _active_deck: Array[StringName] = []
 var _correct_answers: int = 0
+var _current_streak: int = 0
 var _total_answers: int = 0
 var _session_timer: float = 3.0
 var _is_introducing_new_card: bool = false
@@ -62,6 +63,7 @@ var _tokens_pending: int = 0 # Tokens that are mid-animation
 
 # Input lock to prevent race conditions with rapid clicking
 var _input_locked: bool = false
+var _aura_vfx: Control = null
 
 func _ready() -> void:
 	# Connect to the FlashcardManager's minigame_finished signal
@@ -82,6 +84,19 @@ func _ready() -> void:
 	
 	# Find and exempt token counter from dimming
 	_setup_token_counter_exemption()
+	
+	# Instantiate Aura VFX
+	var aura_scene = preload("res://scenes/vfx/MinigameAuraVFX.tscn")
+	if aura_scene:
+		_aura_vfx = aura_scene.instantiate()
+		if is_instance_valid(main_panel):
+			main_panel.add_child(_aura_vfx)
+			_aura_vfx.show_behind_parent = true
+			
+			# It's a Control now, so just make it fill the main panel
+			_aura_vfx.set_anchors_preset(Control.PRESET_FULL_RECT)
+		else:
+			add_child(_aura_vfx)
 
 func _setup_token_counter_exemption() -> void:
 	"""Find the TokenGroup in Main and reparent it to stay above the dimming layer"""
@@ -488,8 +503,10 @@ func _start_minigame_session() -> void:
 		
 	_is_introducing_new_card = false
 	_correct_answers = 0
+	_current_streak = 0
 	_total_answers = 0
 	_tokens_pending = 0
+	_update_aura_vfx()
 	
 	_update_localized_text() # Refresh UI state to hide title
 	
@@ -656,15 +673,26 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	
 	if was_correct:
 		_correct_answers += 1
+		_current_streak += 1
 		_session_timer += 0.5
 		_update_timer_display()
+		_update_aura_vfx()
 			
 		_flash_button_correct(selected_answer_id, true)
 		_flash_timer_bar_correct()
-		# AUDIO HOOK: Correct
-		Audio.play_sfx("minigame_correct")
+		
+		# Update BGM tempo/pitch based on streak
+		Audio.set_music_pitch(1.0 + minf(_current_streak, 10) * 0.02)
+		
+		# AUDIO HOOK: Correct (pitch ascending)
+		var pitch = minf(1.0 + (_current_streak * 0.05), 1.5)
+		Audio.play_sfx("minigame_correct", pitch)
 	else:
+		_current_streak = 0
+		_update_aura_vfx()
 		# NO timer reduction as per user request
+		
+		Audio.set_music_pitch(1.0)
 			
 		_flash_button_incorrect(selected_answer_id)
 		_flash_timer_bar_incorrect()
@@ -696,7 +724,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 			next_mastery_color = progress.get_mastery_color()
 	
 	# Flash feedback then transition to next question's color
-	var flash_color: Color = COLOR_FLASH_CORRECT if was_correct else COLOR_FLASH_INCORRECT
+	var flash_color: Color = _get_streak_color() if was_correct else COLOR_FLASH_INCORRECT
 	_flash_panel_and_transition(flash_color, next_mastery_color)
 	
 	var feedback_pause = 0.05 if was_correct else 1.0
@@ -729,8 +757,8 @@ func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> voi
 	tween.tween_property(_panel_style, prop, target_color, FLASH_FADE_DURATION).set_delay(FLASH_DURATION)
 
 func _flash_timer_bar_correct() -> void:
-	"""Flash the timer bar white"""
-	_flash_timer_bar(COLOR_FLASH_CORRECT)
+	"""Flash the timer bar white or streak color"""
+	_flash_timer_bar(COLOR_FLASH_CORRECT if _current_streak < 5 else _get_streak_color())
 
 func _flash_timer_bar_incorrect() -> void:
 	"""Flash the timer bar red"""
@@ -793,14 +821,33 @@ func _is_starter_hero() -> bool:
 	return def.id == &"hero_starter"
 
 
+func _get_streak_color() -> Color:
+	if _current_streak >= 9:
+		# Rainbow-ish (magenta/pink) for highest tier
+		return Color(1.0, 0.2, 0.8)
+	elif _current_streak >= 7:
+		return Color(1.0, 0.84, 0.0) # Gold
+	elif _current_streak >= 5:
+		return Color(0.6, 0.2, 1.0) # Purple/Blue
+	elif _current_streak >= 3:
+		return Color.CYAN
+	else:
+		return Color.LIGHT_GREEN
+
+func _update_aura_vfx() -> void:
+	if is_instance_valid(_aura_vfx):
+		_aura_vfx.set_intensity(_current_streak, _get_streak_color())
+
 func _flash_button_correct(correct_answer_id: StringName, spawn_token: bool = true) -> void:
-	"""Flash the correct answer button green and optionally spawn token pop VFX"""
+	"""Flash the correct answer button green (or streak color) and optionally spawn token pop VFX"""
+	var btn_color = _get_streak_color()
+	
 	for i in range(choices_grid.get_child_count()):
 		var button: Control = choices_grid.get_child(i)
 		if not is_instance_valid(button):
 			continue
 		if button.get_meta(&"choice_id", &"") == correct_answer_id:
-			button.modulate = Color.LIGHT_GREEN
+			button.modulate = btn_color
 			
 			if spawn_token:
 				# Spawn Mario-style token pop from button center, flying to token counter
@@ -886,7 +933,7 @@ func _spawn_token_pop(button: Control) -> void:
 	# Add to scene and play with target
 	add_child(token_pop)
 	token_pop.global_position = spawn_pos
-	token_pop.play(target_pos)
+	token_pop.play(target_pos, _current_streak)
 
 func _on_token_landed() -> void:
 	"""Called when a token animation completes - update the counter live"""
