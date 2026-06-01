@@ -69,6 +69,7 @@ WARNING: AudioManager: Sound not found: ui_button_click
        [0] play_sfx (res://scripts/AudioManager.gd:42)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[EncounterGenerator] Elite weighting: [300.0, 200.0, 100.0] (Last: ) Picked: unit_dust_elite_t1
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Emitting signal for: new_card_intro
@@ -79,8 +80,8 @@ WARNING: AudioManager: Sound not found: ui_button_click
        [0] play_sfx (res://scripts/AudioManager.gd:42)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
-[FlashcardManager] _on_minigame_complete called. Correct: 4
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
 [TutorialManager] Requesting tutorial: battle_management_intro
 [TutorialManager] Emitting signal for: battle_management_intro
 [TutorialManager] Signal received, opening overlay for: battle_management_intro
@@ -105,23 +106,9 @@ If you want to set size, change the anchors or consider using set_deferred().
        [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
        [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Emitting signal for: first_draw
 [TutorialManager] Signal received, opening overlay for: first_draw
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
 WARNING: AudioManager: Sound not found: ui_button_click
    at: push_warning (core/variant/variant_utility.cpp:1034)
    GDScript backtrace (most recent call first):
@@ -134,6 +121,36 @@ WARNING: AudioManager: Sound not found: ui_button_click
        [0] play_sfx (res://scripts/AudioManager.gd:42)
        [1] play_sfx (res://scripts/Audio.gd:13)
        [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
@@ -168,7 +185,7 @@ If you want to set size, change the anchors or consider using set_deferred().
        [3] _animate_token_spend (res://scripts/Main.gd:397)
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780335599_27_03755
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780338054_28_32588
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -176,7 +193,7 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780335599_35_80703
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780338054_27_22135
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -184,24 +201,7 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780335599_38_50450
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
-       [1] _merge (res://scripts/InventoryManager.gd:396)
-       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
-       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
-       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780335599_40_41606
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780338054_29_01555
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -209,8 +209,16 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: hero_starter_1780335599_26_80918
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780338054_37_28157
 DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1780338054_46_02839
+DEBUG_GIR: DRAG_START intercepted for ITEM
 DEBUG_GIR: Processing UNIT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: true
@@ -219,44 +227,215 @@ DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780335599_51_88230
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780338054_52_00162
+[CS] Draining reaction: ability_dust_elite1_spawn_death Prio:0 Src:unit_dust_elite_t1_1780338054_53_53102
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780338054_51_43880
+[CS] Draining reaction: ability_dust_elite1_spawn_death Prio:0 Src:unit_dust_elite_t1_1780338054_53_53102
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780335599_51_88230
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780335599_52_78383
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780335660_55_48112
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
 [DeathProcessor] Phase 1 (on_death) done. Pending: 0
 [DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] Empath deals 1 dmg to Protector 
-[BattleLog] [1:3] Empath attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1780335599_53_08329"] source: unit_t1_d_1780335599_40_41606 attack_type: melee
+[BattleLog] [1:2] Apprentice deals 1 dmg to Empath 
+[BattleLog] [1:3] Apprentice attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780338054_52_00162"] source: unit_t1_a_1780338054_28_32588 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_d_1780335599 type 5
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780338054 type 5
 [BattleLog] [1:4] └─ unit_t1_... is defeated! 
-[BattleLog] [1:5] Starter deals 2 dmg to Squire 
-[BattleLog] [1:6] Starter attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1780335599_52_78383"] source: hero_starter_1780335599_26_80918 attack_type: melee
+[BattleLog] [1:5] └─ unit_dus... summons New Unit! 
+[BattleLog] [1:6] Dust Elite 1 spawned a Dust unit in the player inventory. 
+[BattleLog] [1:7] Apprentice deals 1 dmg to Empath 
+[BattleLog] [1:8] Apprentice attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780338054_51_43880"] source: unit_t1_a_1780338054_27_22135 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_starter_1780335 type 5
-[BattleLog] [1:7] Squire deals 2 dmg to Starter 
-[BattleLog] [1:8] unit_t1_... attacks Starter for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 10→8)
-[DamageAnimation] Executing for targets: ["hero_starter_1780335599_26_80918"] source: unit_t1_b_1780335599_52_78383 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780338054 type 5
+[BattleLog] [1:9] └─ unit_t1_... is defeated! 
+[BattleLog] [1:10] └─ unit_dus... summons New Unit! 
+[BattleLog] [1:11] Dust Elite 1 spawned a Dust unit in the player inventory. 
+[BattleLog] [1:12] Apprentice deals 1 dmg to Dust Guard (T1) 
+[BattleLog] [1:13] Apprentice attacks unit_dus... for 1 damage (basic_attack, on_attack) (HP: 3→2)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t1_1780338054_53_53102"] source: unit_t1_a_1780338054_29_01555 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1780335599 type 5
-[BattleLog] [1:9] Protector shields their ally (+2 HP) 
-[BattleLog] [1:10] Protector heals Starter for 2 HP (unit_t1_c_ally_shield, on_ally_hurt) (HP: 8→10)
-[BattleLog] [1:11] └─ unit_t1_... is defeated! 
-[BattleLog] [1:12] Protector deals 2 dmg to Protector 
-[BattleLog] [1:13] Protector attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
-[DamageAnimation] Executing for targets: ["unit_t1_c_1780335599_51_88230"] source: unit_t1_c_1780335660_55_48112 attack_type: melee
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780338054 type 5
+[BattleLog] [1:14] Protector deals 1 dmg to Dust Guard (T1) 
+[BattleLog] [1:15] Protector attacks unit_dus... for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t1_1780338054_53_53102"] source: unit_t1_c_1780338054_37_28157 attack_type: melee
 [DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_c_1780335660 type 5
-[BattleLog] [1:14] └─ unit_t1_... is defeated! 
-[BattleLog] [1:15] Battle ended 
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780338054 type 5
+[BattleLog] [1:16] Starter deals 2 dmg to Dust Guard (T1) 
+[BattleLog] [1:17] Starter attacks unit_dus... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t1_1780338054_53_53102"] source: hero_starter_1780338054_26_26316 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780338 type 5
+[BattleLog] [1:18] └─ unit_dus... is defeated! 
+[BattleLog] [1:19] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
+[RewardDebug] Victory rewards pending. Special: true
+[RewardElite] populate called
+DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_merge_damage_charm_1780338099_59_27810
+DEBUG_GIR: DRAG_START intercepted for TRINKET
+[SaveManager] Run saved successfully (Day 2)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[BattleLog] [2:1] ═══ TURN 2 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780338112_75_06152
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780338112_65_27486
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780338112_70_81454
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780338112_85_72637
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780338112_87_97147
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [2:2] Empath deals 1 dmg to Empath 
+[BattleLog] [2:3] Empath attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780338112_87_97147"] source: unit_t1_d_1780338112_75_06152 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_d_1780338112 type 5
+[BattleLog] [2:4] └─ unit_t1_... is defeated! 
+[BattleLog] [2:5] Squire deals 2 dmg to Protector 
+[BattleLog] [2:6] Squire attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_c_1780338112_85_72637"] source: unit_t1_b_1780338112_65_27486 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1780338112 type 5
+[BattleLog] [2:7] └─ unit_t1_... is defeated! 
+[BattleLog] [2:8] Protector deals 1 dmg to Steam Wisp 
+[BattleLog] [2:9] Protector attacks unit_t2_... for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t2_j_1780338112_86_50627"] source: unit_t1_c_1780338112_70_81454 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780338112 type 5
+[BattleLog] [2:10] Starter deals 2 dmg to Steam Wisp 
+[BattleLog] [2:11] Starter attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t2_j_1780338112_86_50627"] source: hero_starter_1780338112_60_74070 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780338 type 5
+[BattleLog] [2:12] └─ unit_t2_... is defeated! 
+[BattleLog] [2:13] Battle ended 
 [GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
 [GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 0
 [RewardDebug] Victory rewards pending. Special: false
@@ -279,10 +458,1563 @@ WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxConta
 [FlashcardManager] _on_minigame_complete called. Correct: 5
 [FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_h_1780335787_59_33640
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_d_1780338205_93_18887
 DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1780335792_61_17365
+[SaveManager] Run saved successfully (Day 3)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[BattleLog] [3:1] ═══ TURN 3 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[TutorialManager] Requesting tutorial: traits
+[TutorialManager] Emitting signal for: traits
+[TutorialManager] Signal received, opening overlay for: traits
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780340608_97_46457
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780340608_105_87413
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1780340608_117_96746
 DEBUG_GIR: DRAG_START intercepted for ITEM
-[SaveManager] Run saved successfully (Day 2)
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780340608_105_87413
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780340608_122_05073
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TigerSpirit] Triggering Extra Attack for unit:unit_t1_c_1780340608_105_87413
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: double_strike_attack Prio:-50 Src:unit_t1_c_1780340608_105_87413
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [3:2] Apprentice deals 1 dmg to Empath 
+[BattleLog] [3:3] Apprentice attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780340608_122_05073"] source: unit_t1_a_1780340608_97_46457 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780340608 type 5
+[BattleLog] [3:4] └─ unit_t1_... is defeated! 
+[BattleLog] [3:5] unit_t1_... grants unit_t3_... +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [3:6] Starter deals 2 dmg to Dreadnought 
+[BattleLog] [3:7] Starter attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 6→4)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1780340608_121_73962"] source: hero_starter_1780340608_95_30822 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [3:8] Protector deals 2 dmg to Dreadnought 
+[BattleLog] [3:9] Protector attacks unit_t3_... for 2 damage (basic_attack, on_attack) (HP: 4→2)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1780340608_121_73962"] source: unit_t1_c_1780340608_105_87413 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780340608 type 5
+[BattleLog] [3:10] Protector deals 2 dmg to Dreadnought 
+[BattleLog] [3:11] Protector attacks unit_t3_... for 2 damage (double_strike_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1780340608_121_73962"] source: unit_t1_c_1780340608_105_87413 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780340608 type 5
+[BattleLog] [3:12] └─ unit_t3_... is defeated! 
+[BattleLog] [3:13] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 0
+[RewardDebug] Victory rewards pending. Special: false
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] _on_reward_scene_requested (res://scripts/Main.gd:287)
+       [1] _on_battle_victory_acknowledged (res://scripts/GameManager.gd:230)
+       [2] _on_return_button_pressed (res://scripts/EndBattlePopup.gd:25)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] _on_reward_scene_requested (res://scripts/Main.gd:287)
+       [1] _on_battle_victory_acknowledged (res://scripts/GameManager.gd:230)
+       [2] _on_return_button_pressed (res://scripts/EndBattlePopup.gd:25)
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+[TutorialManager] Requesting tutorial: gacha_inspect_run
+[TutorialManager] Emitting signal for: gacha_inspect_run
+[TutorialManager] Signal received, opening overlay for: gacha_inspect_run
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_b_1780340667_129_65085
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_i_1780340668_130_44938
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_b_1780340665_128_19026
+DEBUG_GIR: DRAG_START intercepted for ITEM
+[SaveManager] Run saved successfully (Day 4)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[EncounterGenerator] Elite weighting: [0.0, 200.0, 100.0] (Last: unit_dust_elite_t1) Picked: unit_dust_elite_t2
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:1] ═══ TURN 4 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1780340681_153_01655
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing ITEM Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1780340681_158_00858
+[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1780340681_158_00858
+[CS] Draining reaction: ability_dust_elite2_spawn_death Prio:0 Src:unit_dust_elite_t2_1780340681_161_81707
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:2] Fusion Spark deals 3 dmg to Protector 
+[BattleLog] [4:3] trinket_merge_damage_charm attacks Protector for 3 damage (ability_trinket_merge_damage_charm, on_merge) (HP: 1→-2)
+[TRINKET_DBG] Activation: def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 enemy=false event_type=DAMAGE
+[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_merge_damage_charm_1780338099_59_27810 def=trinket_merge_damage_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340681_162_24037 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340681_163_12883 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340681_163_12883
+[DamageAnimation] Executing for targets: ["unit_t1_c_1780340681_159_87395"] source: trinket_merge_damage_charm_1780340681_163_12883 attack_type: trinket
+[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_merge_damage_charm_1780340681_163_12883 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340681_162_24037 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340681_163_12883 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def= uuid=trinket_merge_damage_charm_1780340681_163_12883 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340681_163_12883
+[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_merge_damage_charm_1780340681_163_12883 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340681_162_24037 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340681_163_12883 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[BattleLog] [4:4] └─ Protector is defeated! 
+[BattleLog] [4:5] Knight heals Knight for 1 HP 
+[BattleLog] [4:6] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 3→4)
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780340681_144_84163
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[BattleLog] [4:7] Knight grants Knight +1 PWR 
+[BattleLog] [4:8] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:9] └─ Dust Sentinel (T2) summons New Unit! 
+[BattleLog] [4:10] Dust Elite 2 spawned a Dust unit in the player inventory. 
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1780340681_158_00858
+[CS] Draining reaction: unit_tier2c_ally_death_buff Prio:0 Src:unit_t2_c_1780340681_158_00858
+[CS] Draining reaction: ability_dust_elite2_spawn_death Prio:0 Src:unit_dust_elite_t2_1780340681_161_81707
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:11] Fusion Spark deals 3 dmg to Templar 
+[BattleLog] [4:12] trinket_merge_damage_charm attacks Templar for 3 damage (ability_trinket_merge_damage_charm, on_merge) (HP: 2→-1)
+[TRINKET_DBG] Activation: def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 enemy=false event_type=DAMAGE
+[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_merge_damage_charm_1780338099_59_27810 def=trinket_merge_damage_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340681_162_24037 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340681_163_12883 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340681_163_12883
+[DamageAnimation] Executing for targets: ["unit_t2_d_1780340681_160_30928"] source: trinket_merge_damage_charm_1780340681_163_12883 attack_type: trinket
+[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_merge_damage_charm_1780340681_163_12883 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340681_162_24037 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340681_163_12883 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def= uuid=trinket_merge_damage_charm_1780340681_163_12883 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340681_163_12883
+[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_merge_damage_charm_1780340681_163_12883 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340681_162_24037 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340681_163_12883 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[BattleLog] [4:13] └─ Templar is defeated! 
+[BattleLog] [4:14] Knight heals Knight for 1 HP 
+[BattleLog] [4:15] Knight heals Knight for 1 HP (unit_tier2c_ally_death_buff, on_ally_death) (HP: 4→5)
+[BattleLog] [4:16] Knight grants Knight +1 PWR 
+[BattleLog] [4:17] Knight grants Knight +1 PWR (unit_tier2c_ally_death_buff, on_ally_death) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [4:18] └─ Dust Sentinel (T2) summons New Unit! 
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780340710_166_41183
+DEBUG_GIR: DRAG_START intercepted for UNIT
+[BattleLog] [4:19] Dust Elite 2 spawned a Dust unit in the player inventory. 
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_b_1780340704_164_56122
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780340681_132_44581
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:20] └─ "Bloodlust" grants Starter an extra action! 
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_dust_elite2_spawn_death Prio:0 Src:unit_dust_elite_t2_1780340681_161_81707
+[BattleLog] [4:21] └─ "Bloodlust" grants Starter an extra action! 
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [4:22] Apprentice deals 1 dmg to Knight 
+[BattleLog] [4:23] Apprentice attacks unit_t2_... for 1 damage (basic_attack, on_attack) (HP: 5→4)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1780340681_158_00858"] source: unit_t1_a_1780340681_132_44581 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780340681 type 5
+[BattleLog] [4:24] Empath deals 2 dmg to Knight 
+[BattleLog] [4:25] Empath attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 4→2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1780340681_158_00858"] source: unit_t1_d_1780340710_166_41183 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_d_1780340710 type 5
+[BattleLog] [4:26] Starter deals 4 dmg to Knight 
+[BattleLog] [4:27] Starter attacks unit_t2_... for 4 damage (basic_attack, on_attack) (HP: 2→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1780340681_158_00858"] source: hero_starter_1780340681_131_86038 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [4:28] Starter triggers Bloodlust! 
+[BattleLog] [4:29] └─ unit_t2_... is defeated! 
+[BattleLog] [4:30] └─ unit_dus... summons New Unit! 
+[BattleLog] [4:31] Dust Elite 2 spawned a Dust unit in the player inventory. 
+[BattleLog] [4:32] Starter deals 4 dmg to Dust Sentinel (T2) 
+[BattleLog] [4:33] Starter attacks unit_dus... for 4 damage (basic_attack, on_attack) (HP: 4→0)
+[DamageAnimation] Executing for targets: ["unit_dust_elite_t2_1780340681_161_81707"] source: hero_starter_1780340681_131_86038 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [4:34] Starter triggers Bloodlust! 
+[BattleLog] [4:35] └─ unit_dus... is defeated! 
+[BattleLog] [4:36] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
+[RewardDebug] Victory rewards pending. Special: true
+[RewardElite] populate called
+DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_token_return_charm_1780340731_169_74384
+DEBUG_GIR: DRAG_START intercepted for TRINKET
+[SaveManager] Run saved successfully (Day 5)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:439)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:121)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:439)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:121)
+[TutorialManager] Requesting tutorial: training_grounds_intro
+[TutorialManager] Emitting signal for: training_grounds_intro
+[TutorialManager] Signal received, opening overlay for: training_grounds_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 6
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 6, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _animate_prize_draw (res://scripts/RestSite.gd:342)
+       [1] _try_draw_tier (res://scripts/RestSite.gd:274)
+       [2] _animate_token_spend (res://scripts/RestSite.gd:321)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _animate_prize_draw (res://scripts/RestSite.gd:342)
+       [1] _try_draw_tier (res://scripts/RestSite.gd:274)
+       [2] _animate_token_spend (res://scripts/RestSite.gd:321)
+[SaveManager] Run saved successfully (Day 6)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:1] ═══ TURN 5 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 4
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 4, "incorrect_answers": 0 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: hero_starter_1780340790_172_23902
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780340790_187_85513
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780340790_177_73728
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780340790_182_27962
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340790_205_50018
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340790_205_50018
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780340790_182_27962
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780340790_177_73728
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340790_205_50018
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [5:2] Squire deals 2 dmg to Steam Wisp 
+[BattleLog] [5:3] Squire attacks unit_t2_... for 2 damage (basic_attack, on_attack) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t2_j_1780340790_201_87879"] source: unit_t1_b_1780340790_177_73728 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1780340790 type 5
+[BattleLog] [5:4] └─ unit_t2_... is defeated! 
+[BattleLog] [5:5] Token Return Charm: Gained 2 tokens! 
+[BattleLog] [5:6] Gained 2 tokens! 
+[TRINKET_DBG] Activation: def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 enemy=false event_type=TOKEN_GAIN
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_token_return_charm_1780340731_169_74384 def=trinket_token_return_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340790_202_24586 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340790_203_08491 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340790_204_00262 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340790_205_50018 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 -> playing bounce on view def=trinket_token_return_charm view_uuid=trinket_token_return_charm_1780340790_205_50018
+[BattleLog] [5:7] Empath deals 1 dmg to Shadow Striker 
+[BattleLog] [5:8] Empath attacks unit_t3_... for 1 damage (basic_attack, on_attack) (HP: 5→4)
+[DamageAnimation] Executing for targets: ["unit_t3_a_1780340790_199_03903"] source: unit_t1_d_1780340790_187_85513 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_d_1780340790 type 5
+[BattleLog] [5:9] Starter deals 3 dmg to Shadow Striker 
+[BattleLog] [5:10] Starter attacks unit_t3_... for 3 damage (basic_attack, on_attack) (HP: 4→1)
+[DamageAnimation] Executing for targets: ["unit_t3_a_1780340790_199_03903"] source: hero_starter_1780340790_172_23902 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [5:11] Protector deals 1 dmg to Shadow Striker 
+[BattleLog] [5:12] Protector attacks unit_t3_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t3_a_1780340790_199_03903"] source: unit_t1_c_1780340790_182_27962 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780340790 type 5
+[BattleLog] [5:13] └─ unit_t3_... is defeated! 
+[BattleLog] [5:14] Templar deals 1 dmg to Squire 
+[BattleLog] [5:15] unit_t2_... attacks Squire for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1780340790_177_73728"] source: unit_t2_d_1780340790_200_57378 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t2_d_1780340790 type 5
+[BattleLog] [5:16] Squire deals 2 dmg to Templar 
+[BattleLog] [5:17] Squire attacks unit_t2_... for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 2→0)
+[DamageAnimation] Executing for targets: ["unit_t2_d_1780340790_200_57378"] source: unit_t1_b_1780340790_177_73728 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1780340790 type 5
+[BattleLog] [5:18] └─ unit_t2_... is defeated! 
+[BattleLog] [5:19] └─ Squire is defeated! 
+[BattleLog] [5:20] Starter harvests Squire's soul (+2 HP) 
+[BattleLog] [5:21] Starter grants Starter +2 HP (hero_starter_ally_death_absorb) 
+[BuffAnimation] execute() called - stat='hp' amount=2 targets=1
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid= def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340790_202_24586 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340790_203_08491 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340790_204_00262 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340790_205_50018 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid= def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340790_202_24586 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_water_1780340790_203_08491 def=trinket_trait_water container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340790_204_00262 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340790_205_50018 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[BattleLog] [5:22] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 0
+[RewardDebug] Victory rewards pending. Special: false
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] _on_reward_scene_requested (res://scripts/Main.gd:287)
+       [1] _on_battle_victory_acknowledged (res://scripts/GameManager.gd:230)
+       [2] _on_return_button_pressed (res://scripts/EndBattlePopup.gd:25)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] _on_reward_scene_requested (res://scripts/Main.gd:287)
+       [1] _on_battle_victory_acknowledged (res://scripts/GameManager.gd:230)
+       [2] _on_return_button_pressed (res://scripts/EndBattlePopup.gd:25)
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 3
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t2_f_1780340846_209_33015
+DEBUG_GIR: DRAG_START intercepted for UNIT
+[SaveManager] Run saved successfully (Day 7)
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[BattleLog] [6:1] ═══ TURN 6 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 3
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": 0 }
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:2] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [6:3] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[AnimationCompletionTracker] Timeout for boss_1_1780340856_24 type 7
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:4] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [6:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:6] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [6:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: hero_starter_1780340856_211_58269
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780340856_226_80336
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780340856_214_86568
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[CS] Draining reaction: unit_tier1a_passive_heal Prio:0 Src:unit_t1_a_1780340856_214_86568
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[CS] Draining reaction: hero_starter_ally_death_absorb Prio:0 Src:hero_starter_1780340856_211_58269
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 3
+[DeathProcessor] Draining batch of 3
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780340856_226_80336
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[CS] Draining reaction: hero_starter_ally_death_absorb Prio:0 Src:hero_starter_1780340856_211_58269
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:8] Apprentice deals 1 dmg to Knight 
+[BattleLog] [6:9] Apprentice attacks unit_t2_... for 1 damage (basic_attack, on_attack) (HP: 3→2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1780340856_241_49429"] source: unit_t1_a_1780340856_214_86568 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780340856 type 5
+[BattleLog] [6:10] Empath deals 1 dmg to Knight 
+[BattleLog] [6:11] Empath attacks unit_t2_... for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1780340856_241_49429"] source: unit_t1_d_1780340856_226_80336 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_d_1780340856 type 5
+[BattleLog] [6:12] Starter deals 3 dmg to Knight 
+[BattleLog] [6:13] Starter attacks unit_t2_... for 3 damage (basic_attack, on_attack) (HP: 1→-2)
+[DamageAnimation] Executing for targets: ["unit_t2_c_1780340856_241_49429"] source: hero_starter_1780340856_211_58269 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [6:14] └─ unit_t2_... is defeated! 
+[BattleLog] [6:15] Token Return Charm: Gained 2 tokens! 
+[BattleLog] [6:16] Gained 2 tokens! 
+[TRINKET_DBG] Activation: def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 enemy=false event_type=TOKEN_GAIN
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_token_return_charm_1780340731_169_74384 def=trinket_token_return_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 -> playing bounce on view def=trinket_token_return_charm view_uuid=trinket_token_return_charm_1780340856_246_01369
+[BattleLog] [6:17] Apprentice deals 1 dmg to Apprentice 
+[BattleLog] [6:18] Apprentice attacks Apprentice for 1 damage (basic_attack, on_attack) (HP: 2→1)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1780340856_214_86568"] source: unit_t1_a_1780340856_240_65728 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780340856 type 5
+[BattleLog] [6:19] Apprentice heals Apprentice for 1 HP 
+[BattleLog] [6:20] Apprentice heals Apprentice for 1 HP (unit_tier1a_passive_heal, on_hurt) (HP: 1→2)
+[BattleLog] [6:21] Dreadnought deals 5 dmg to Apprentice 
+[BattleLog] [6:22] Dreadnought attacks Apprentice for 5 damage (basic_attack, on_attack) (HP: 2→-3)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1780340856_214_86568"] source: unit_t3_e_1780340856_239_96072 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t3_e_1780340856 type 5
+[BattleLog] [6:23] └─ Apprentice is defeated! 
+[BattleLog] [6:24] Starter harvests Apprentice's soul (+1 HP) 
+[BattleLog] [6:25] Starter grants Starter +1 HP (hero_starter_ally_death_absorb) 
+[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid= def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid= def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[BattleLog] [6:26] The Awakened Guardian deals 6 dmg to Empath 
+[BattleLog] [6:27] The Awakened Guardian attacks Empath for 6 damage (basic_attack, on_attack) (HP: 1→-5)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780340856_226_80336"] source: boss_1_1780340856_242_32828 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for boss_1_1780340856_24 type 5
+[BattleLog] [6:28] └─ Empath is defeated! 
+[BattleLog] [6:29] Empath grants Starter +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [6:30] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [6:31] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [7:1] ═══ TURN 7 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 5
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 5, "incorrect_answers": 0 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:2] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:3] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 9→10)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[AnimationCompletionTracker] Timeout for boss_1_1780340856_24 type 7
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:4] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 10→11)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:6] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 11→12)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:8] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 12→13)
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1780340856_235_38524
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing ITEM Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:10] Fusion Spark deals 3 dmg to The Awakened Guardian 
+[BattleLog] [7:11] trinket_merge_damage_charm attacks The Awakened Guardian for 3 damage (ability_trinket_merge_damage_charm, on_merge) (HP: 13→10)
+[TRINKET_DBG] Activation: def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 enemy=false event_type=DAMAGE
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780338099_59_27810 def=trinket_merge_damage_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[DamageAnimation] Executing for targets: ["boss_1_1780340856_242_32828"] source: trinket_merge_damage_charm_1780340856_245_55573 attack_type: trinket
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def= uuid=trinket_merge_damage_charm_1780340856_245_55573 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_b_1780340922_249_31547
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:12] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:13] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 10→11)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:14] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:15] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 11→12)
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1780340856_233_30211
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing ITEM Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:16] Fusion Spark deals 3 dmg to Apprentice 
+[BattleLog] [7:17] trinket_merge_damage_charm attacks Apprentice for 3 damage (ability_trinket_merge_damage_charm, on_merge) (HP: 2→-1)
+[TRINKET_DBG] Activation: def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 enemy=false event_type=DAMAGE
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780338099_59_27810 def=trinket_merge_damage_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[DamageAnimation] Executing for targets: ["unit_t1_a_1780340856_240_65728"] source: trinket_merge_damage_charm_1780340856_245_55573 attack_type: trinket
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def= uuid=trinket_merge_damage_charm_1780340856_245_55573 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[BattleLog] [7:18] └─ Apprentice is defeated! 
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780340856_219_05161
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_b_1780340931_250_00279
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:19] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [7:20] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 12→13)
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780340856_213_88958
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780340856_221_67277
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780340896_248_51420
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780340896_247_10496
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780340856_221_67277
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780340856_219_05161
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:21] └─ "Bloodlust" grants Starter an extra action! 
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780340856_221_67277
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[CS] Draining reaction: hero_starter_ally_death_absorb Prio:0 Src:hero_starter_1780340856_211_58269
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:22] Apprentice deals 1 dmg to Empath 
+[BattleLog] [7:23] Apprentice attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780340896_248_51420"] source: unit_t1_a_1780340856_213_88958 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_a_1780340856 type 5
+[BattleLog] [7:24] └─ unit_t1_... is defeated! 
+[BattleLog] [7:25] unit_t1_... grants unit_t1_... +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+[BattleLog] [7:26] Token Return Charm: Gained 1 tokens! 
+[BattleLog] [7:27] Gained 1 tokens! 
+[TRINKET_DBG] Activation: def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 enemy=false event_type=TOKEN_GAIN
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_token_return_charm_1780340731_169_74384 def=trinket_token_return_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 -> playing bounce on view def=trinket_token_return_charm view_uuid=trinket_token_return_charm_1780340856_246_01369
+[BattleLog] [7:28] Squire deals 4 dmg to Squire 
+[BattleLog] [7:29] Squire attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 1→-3)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1780340896_247_10496"] source: unit_t1_b_1780340856_219_05161 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1780340856 type 5
+[BattleLog] [7:30] Squire deals 3 dmg to Squire 
+[BattleLog] [7:31] unit_t1_... attacks Squire for 3 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 1→-2)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1780340856_219_05161"] source: unit_t1_b_1780340896_247_10496 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1780340896 type 5
+[BattleLog] [7:32] └─ Squire is defeated! 
+[BattleLog] [7:33] └─ unit_t1_... is defeated! 
+[BattleLog] [7:34] Starter harvests Squire's soul (+2 HP) 
+[BattleLog] [7:35] Starter grants Starter +2 HP (hero_starter_ally_death_absorb) 
+[BuffAnimation] execute() called - stat='hp' amount=2 targets=1
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid= def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid= def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[BattleLog] [7:36] Starter deals 6 dmg to Dreadnought 
+[BattleLog] [7:37] Starter attacks unit_t3_... for 6 damage (basic_attack, on_attack) (HP: 6→0)
+[DamageAnimation] Executing for targets: ["unit_t3_e_1780340856_239_96072"] source: hero_starter_1780340856_211_58269 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [7:38] Starter triggers Bloodlust! 
+[BattleLog] [7:39] └─ unit_t3_... is defeated! 
+[BattleLog] [7:40] Starter deals 6 dmg to The Awakened Guardian 
+[BattleLog] [7:41] Starter attacks The Awakened Guardian for 6 damage (basic_attack, on_attack) (HP: 13→7)
+[DamageAnimation] Executing for targets: ["boss_1_1780340856_242_32828"] source: hero_starter_1780340856_211_58269 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [7:42] Protector deals 1 dmg to The Awakened Guardian 
+[BattleLog] [7:43] Protector attacks The Awakened Guardian for 1 damage (basic_attack, on_attack) (HP: 7→6)
+[DamageAnimation] Executing for targets: ["boss_1_1780340856_242_32828"] source: unit_t1_c_1780340856_221_67277 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780340856 type 5
+[BattleLog] [7:44] The Awakened Guardian deals 6 dmg to Apprentice 
+[BattleLog] [7:45] The Awakened Guardian attacks Apprentice for 6 damage (basic_attack, on_attack) (HP: 2→-4)
+[DamageAnimation] Executing for targets: ["unit_t1_a_1780340856_213_88958"] source: boss_1_1780340856_242_32828 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for boss_1_1780340856_24 type 5
+[BattleLog] [7:46] └─ Apprentice is defeated! 
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [7:47] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [7:48] └─ The Awakened Guardian summons New Unit! 
+[BattleLog] [8:1] ═══ TURN 8 ═══ 
+[TutorialManager] Requesting tutorial: new_card_intro
+[TutorialManager] Blocked: Already completed
+[FlashcardManager] _on_minigame_complete called. Correct: 3
+[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 3, "incorrect_answers": -1 }
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[FlashcardManager] Signal emitted successfully
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:2] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [8:3] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 6→7)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:4] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [8:5] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 7→8)
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: false
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 3
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:6] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [8:7] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 8→9)
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:8] The Awakened Guardian drains energy from your draw (+1 HP) 
+[BattleLog] [8:9] The Awakened Guardian heals The Awakened Guardian for 1 HP (ability_boss_1_draw_drain, on_draw) (HP: 9→10)
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780340856_224_29113
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780340856_225_24198
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:10] Fusion Spark deals 3 dmg to The Awakened Guardian 
+[BattleLog] [8:11] trinket_merge_damage_charm attacks The Awakened Guardian for 3 damage (ability_trinket_merge_damage_charm, on_merge) (HP: 10→7)
+[TRINKET_DBG] Activation: def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 enemy=false event_type=DAMAGE
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780338099_59_27810 def=trinket_merge_damage_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[DamageAnimation] Executing for targets: ["boss_1_1780340856_242_32828"] source: trinket_merge_damage_charm_1780340856_245_55573 attack_type: trinket
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def= uuid=trinket_merge_damage_charm_1780340856_245_55573 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1780340856_228_23292
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing ITEM Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
+       [1] _merge (res://scripts/InventoryManager.gd:396)
+       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
+       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
+       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
+[DeathProcessor] Phase 1 (on_death) done. Pending: 1
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
+[DeathProcessor] Draining batch of 2
+[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780340963_251_61395
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:12] Fusion Spark deals 3 dmg to Empath 
+[BattleLog] [8:13] trinket_merge_damage_charm attacks Empath for 3 damage (ability_trinket_merge_damage_charm, on_merge) (HP: 1→-2)
+[TRINKET_DBG] Activation: def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 enemy=false event_type=DAMAGE
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780338099_59_27810 def=trinket_merge_damage_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_merge_damage_charm uuid=trinket_merge_damage_charm_1780338099_59_27810 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780340963_251_61395"] source: trinket_merge_damage_charm_1780340856_245_55573 attack_type: trinket
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def= uuid=trinket_merge_damage_charm_1780340856_245_55573 -> playing bounce on view def=trinket_merge_damage_charm view_uuid=trinket_merge_damage_charm_1780340856_245_55573
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_merge_damage_charm_1780340856_245_55573 def= enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[BattleLog] [8:14] └─ Empath is defeated! 
+[BattleLog] [8:15] Empath grants The Awakened Guardian +1 PWR (unit_t1_d_empathic_link) 
+[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t2_a_1780340989_254_29040
+DEBUG_GIR: DRAG_START intercepted for ITEM
+DEBUG_GIR: Processing UNIT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780340963_252_94208
+[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780340856_221_67277
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
+[DeathProcessor] Draining batch of 1
+[CS] Draining reaction: ability_trinket_token_return_charm Prio:220 Src:trinket_token_return_charm_1780340856_246_01369
+[DeathProcessor] Phase 1 (on_death) done. Pending: 0
+[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[BattleLog] [8:16] Empath deals 2 dmg to Squire 
+[BattleLog] [8:17] Empath attacks unit_t1_... for 2 damage (basic_attack, on_attack) (HP: 1→-1)
+[DamageAnimation] Executing for targets: ["unit_t1_b_1780340963_252_94208"] source: unit_t1_d_1780340986_253_49263 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_d_1780340986 type 5
+[BattleLog] [8:18] Squire deals 2 dmg to Empath 
+[BattleLog] [8:19] unit_t1_... attacks Empath for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 4→2)
+[DamageAnimation] Executing for targets: ["unit_t1_d_1780340986_253_49263"] source: unit_t1_b_1780340963_252_94208 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_b_1780340963 type 5
+[BattleLog] [8:20] └─ unit_t1_... is defeated! 
+[BattleLog] [8:21] Starter deals 6 dmg to The Awakened Guardian 
+[BattleLog] [8:22] Starter attacks boss_1_1... for 6 damage (basic_attack, on_attack) (HP: 7→1)
+[DamageAnimation] Executing for targets: ["boss_1_1780340856_242_32828"] source: hero_starter_1780340856_211_58269 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for hero_starter_1780340 type 5
+[BattleLog] [8:23] Protector deals 1 dmg to The Awakened Guardian 
+[BattleLog] [8:24] Protector attacks boss_1_1... for 1 damage (basic_attack, on_attack) (HP: 1→0)
+[DamageAnimation] Executing for targets: ["boss_1_1780340856_242_32828"] source: unit_t1_c_1780340856_221_67277 attack_type: melee
+[DamageAnimation] Playing LUNGE sound: unit_toss
+[AnimationCompletionTracker] Timeout for unit_t1_c_1780340856 type 5
+[BattleLog] [8:25] └─ boss_1_1... is defeated! 
+[BattleLog] [8:26] Token Return Charm: Gained 3 tokens! 
+[BattleLog] [8:27] Gained 3 tokens! 
+[TRINKET_DBG] Activation: def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 enemy=false event_type=TOKEN_GAIN
+[TRINKET_DBG] _find_trinket_view: 4 views in group. Looking for uuid=trinket_token_return_charm_1780340731_169_74384 def=trinket_token_return_charm enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780340856_243_21644 def=trinket_trait_fire container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_trait_earth_1780340856_244_11574 def=trinket_trait_earth container=EnemyTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_merge_damage_charm_1780340856_245_55573 def=trinket_merge_damage_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG]   view: uuid=trinket_token_return_charm_1780340856_246_01369 def=trinket_token_return_charm container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_token_return_charm uuid=trinket_token_return_charm_1780340731_169_74384 -> playing bounce on view def=trinket_token_return_charm view_uuid=trinket_token_return_charm_1780340856_246_01369
+[BattleLog] [8:28] Battle ended 
+[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
+[GameManager] Boss victory detected! Level: 1
+[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 0
+[RewardDebug] Victory rewards pending. Special: true
+[RewardElite] populate called
+DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_twin_charm_1780341003_256_57892
+DEBUG_GIR: DRAG_START intercepted for TRINKET
+DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_royal_insignia_1780341003_257_26596
+DEBUG_GIR: DRAG_START intercepted for TRINKET
+[SaveManager] Run saved successfully (Day 8)
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
