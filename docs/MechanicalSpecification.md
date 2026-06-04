@@ -418,17 +418,36 @@ Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. Th
 
 ## In Battle:
 
-Correct answers → Tokens (+1 Mastery)
-Incorrect/Skip → NO Tokens (-1 Mastery)
+* **Correct answers**: +1 Token, +1 Mastery, +0.5s timer, increases correct answer streak by 1, triggers scaled correct SFX and BGM pitch.
+* **Incorrect answers**: NO Tokens, -1 Mastery, resets correct answer streak to 0, resets BGM pitch to 1.0.
+* **Skip answers**: NO Tokens, -1 Mastery, +0.5s timer, **preserves** the current correct answer streak and active BGM pitch scale (does not reset streak/pitch).
 
 ## At Rest Site:
 
-Correct answers → Tokens (can be used to draw Permanent Hero Base Stat increases)
+* **Correct answers**: Earns Gacha Tokens (can be spent at Rest Site machines for permanent Hero Base Stat increases).
+* **Incorrect/Skip answers**: NO Tokens.
 
-Tokens:
+## Tokens:
 
 * Exist only within encounter.
 * Reset after encounter.
+
+## Streak & Juice System Mechanics:
+
+### Audio & BGM Scaling
+* **SFX Pitch**: The `minigame_correct` sound effect pitch increases by `0.05` per streak level, capping at a pitch multiplier of `1.5` at streak 10+.
+* **BGM Pitch**: The active `BGM_MINIGAME` track pitch/tempo dynamically scales upwards by `0.02` per streak level, capping at `1.2` at streak 10+. Incorrect answers reset BGM pitch to `1.0` immediately via a smooth transition.
+
+### Visual Edge Fire Aura & Particle Scaling
+* **Aura VFX**: A custom `Control` based fire aura (`MinigameAuraVFX`) frames the outer borders of the minigame container using four edge particle emitters:
+  - Particle emission count, velocity, and spread scale up linearly with each correct answer in the active streak.
+  - The border fire changes colors based on the streak:
+    - **Streak 1-2**: Cyan
+    - **Streak 3-5**: Purple
+    - **Streak 6-8**: Gold
+    - **Streak 9+**: Magenta
+  - Renders behind the parent panel (`show_behind_parent = true`) to prevent covering interactive text.
+* **Token Pop & Spin**: Correct answer currency pop-up animations scale their particle amount, size, and spin velocity with the current streak tier.
 
 ---
 

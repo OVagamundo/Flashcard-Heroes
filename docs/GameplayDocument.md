@@ -24,6 +24,19 @@ Each run progresses through a series of sequential choices:
 3.  **Boss Milestones**: Boss battles are triggered dynamically by the player's Flashcard Mastery progression. Whenever the player unlocks a specific percentage of their flashcard deck, a Boss battle is scheduled, overriding standard nodes.
 4.  **Final Encounter**: Defeating the Final Boss concludes the run.
 
+### 2.1 Loadout Selection Scene
+Before starting a run (or a testing session), the player configures their starting setup in the Loadout Scene:
+- **Hero & Deck Carousels**: The screen features selection carousels for choosing a starting Hero and a starting Flashcard Deck. Both carousels display a three-item layout showing the previous item, the currently selected item (scaled up), and the next item, along with left and right navigation arrows.
+- **Simultaneous Detail Panels**: Clicking a carousel item centers it and updates separate, persistent information panels for the Hero (displaying base HP/PWR, detailed descriptions, abilities, and flavor text) and the Deck (displaying card counts and descriptions).
+- **Deck Ordering**: The player can configure the order in which flashcards are reviewed:
+  - `REGULAR`: Reviews cards in their standard database order.
+  - `INVERTED`: Reviews cards in reverse database order.
+  - `RANDOM`: Shuffles cards before review.
+- **Deck Sorting**: Available decks are sorted dynamically to prioritize the `Katakana Main` deck at the start of the list.
+- **Test Mode Starters Option**: In Test Mode, the player is presented with a dropdown utility allowing them to selectively add starting Gacha items or trinkets directly from the registry to the Hero's starting inventory for debug purposes.
+- **Dynamic Localization Updates**: The scene dynamically swaps text elements and re-loads localized metadata if the system's locale is updated, preserving the player's active carousel selections.
+- **Audio Integration**: Plays a matching background music track (`bgm/loadout.ogg`) upon entry.
+
 ### Run-Persistent State (Carries Over Between Nodes)
 *   Hero and unit base stats (HP, PWR).
 *   Gold.
@@ -161,6 +174,13 @@ At the start of each turn, the game takes a snapshot of the active souls on the 
 *   **Air**: Focuses on disruption, stealing Power (PWR) from mirrored enemy slots.
 *   *Scaling*: Trait effects scale in intensity as the player accumulates more souls of that element on the board.
 
+## 9.3 Trinket Integration & Trigger Rules
+Trinkets represent team-wide passive artifacts that register for and react to gameplay and management events. They adhere to these structural integration laws:
+- **Broadcasting & Priority**: During Combat Broadcast sequences, active Trinket abilities resolve in the third priority band: **Unit -> Item -> Trinket**. This ensures unit-specific abilities and equipped items process their reactions before team-wide trinkets apply their modifications.
+- **Turn-Start Processing & Suppression**: Turn-start trinkets (such as Spiked Armor, Purifying Pendant, and Awe Inspiring Totem) execute their effects during the Start of Turn phase. In accordance with first-turn suppression, these triggers are blocked on Turn 1 of any combat encounter, activating normally from Turn 2 onward.
+- **Mini-Game Interceptors**: Certain trinkets (like Beginner's Charm) directly modify the Flashcard Resource Engine logic. They inspect the reviewed card's metadata (e.g., Mastery Level) and intercept the token distribution step to award bonus tokens.
+- **Draw/Merge Event Registration**: Trinkets reacting to board state changes, draws, or merges (such as Trinity Charm or Hero's Catalyst) listen to GameManager or RunState signals. They track player draws from specific tier machines or merges of duplicate units across both active battle and management screens.
+
 ---
 
 # 10. Flashcard Resource Engine (SRS)
@@ -169,10 +189,14 @@ The Spaced Repetition System (SRS) drives resource generation.
 
 *   **Mini-Game Sprint**: A fast-paced timed session where the player answers multiple-choice questions.
 *   **Accuracy Flow**:
-    *   **Correct Answers**: Earn Gacha Tokens and increase the card's Mastery level.
-    *   **Skips & Incorrect Answers**: Earn no tokens and decrease the card's Mastery level.
+    *   **Correct Answers**: Earn Gacha Tokens, increase the card's Mastery level, and increment the consecutive correct answer streak (triggering escalating sound pitch and visual effects).
+    *   **Incorrect Answers**: Earn no tokens, decrease the card's Mastery level, and reset the streak to 0.
+    *   **Skips**: Earn no tokens, decrease the card's Mastery level, but **preserve** the consecutive correct answer streak without resetting it.
 *   **SRS Selection**: Cards with lower Mastery or those that have not been reviewed recently are prioritized by the card generator, ensuring targeted learning.
 *   **Timer Adjustments**: Correct answers and skipped cards extend the active minigame timer, giving the player more time to answer subsequent cards.
+*   **Streak & Juice Escalation**:
+    *   *Audio*: Correct SFX pitch climbs by `0.05` per streak, and the minigame music track speed/pitch dynamically increases by `0.02` per streak (up to `1.2x`).
+    *   *Visuals*: A border fire aura (`MinigameAuraVFX`) surrounds the minigame window edges, scaling its particle output with the streak and morphing colors (Cyan → Purple → Gold → Magenta) at specific milestones. Token pop animations also scale their physics/particle parameters with the streak tier.
 
 ---
 

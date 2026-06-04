@@ -75,6 +75,10 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 - **Style:** Purely visual (non-interactive in battle). Must have a 1px white outline to separate from background.
 - **Layout:** Strictly aligned to x=0. Must not overlap the unit sprite (which faces right).
 
+**Trait Trinkets:**
+- **Dynamic Outlines:** Trait Trinkets (Fire, Earth, Water, Air) use a dynamically thick outline shader (up to 30.0px) that cycles through metallic gradient colors when their synergy threshold is met.
+- **Soul Counters:** Trait Trinkets display a small label in the bottom-right corner showing the current number of active souls of that element in the battle lineup.
+
 **Status Effects:**
 - **Burn:**
     - **Visual:** Instant opaque **Orange** flash on the entire unit sprite.

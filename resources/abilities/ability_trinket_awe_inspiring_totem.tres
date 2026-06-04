@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_awe_inspiring_totem.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_awe_inspiring_totem"
+name_key = ""
+description_key = ""
+trigger = &"on_turn_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false

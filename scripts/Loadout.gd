@@ -1,18 +1,18 @@
 # res://scripts/Loadout.gd
 extends Control
 
-## Loadout scene with hero and deck grid selection.
-## Displays heroes in a 5-column grid and decks below.
+## Loadout scene with hero and deck carousel selection.
+## Displays heroes and decks in a carousel showing prev/selected/next.
 ## Separate info panels for hero and deck, both visible simultaneously.
 
 const HeroSelectButtonScene = preload("res://scenes/HeroSelectButton.tscn")
 const DeckSelectButtonScene = preload("res://scenes/DeckSelectButton.tscn")
 
-# UI References - Selection Grids
+# UI References - Carousels
 @onready var hero_title: Label = %HeroTitle
-@onready var hero_grid: GridContainer = %HeroGrid
+@onready var hero_carousel: HBoxContainer = %HeroCarousel
 @onready var deck_title: Label = %DeckTitle
-@onready var deck_grid: GridContainer = %DeckGrid
+@onready var deck_carousel: HBoxContainer = %DeckCarousel
 
 # UI References - Hero Info Panel
 @onready var hero_info_panel: PanelContainer = %HeroInfoPanel
@@ -36,12 +36,16 @@ const DeckSelectButtonScene = preload("res://scenes/DeckSelectButton.tscn")
 var _hero_defs: Array[GachaBallDefinition] = []
 var _deck_meta: Array[Dictionary] = []
 
-# Selection State
+# Selection State (index-based for carousel)
+var _selected_hero_index: int = 0
+var _selected_deck_index: int = 0
 var _selected_hero_def: GachaBallDefinition = null
 var _selected_deck_meta: Dictionary = {}
-var _hero_buttons: Array = [] # HeroSelectButton instances
-var _deck_buttons: Array = [] # DeckSelectButton instances
 var deck_order_option: OptionButton # Deck order selection
+
+var _test_starters: Array[StringName] = []
+var _test_starters_label: Label
+var _test_starters_option: OptionButton
 
 
 func _ready() -> void:
@@ -49,8 +53,10 @@ func _ready() -> void:
 	# AUDIO HOOK: Loadout BGM
 	Audio.play_music(SoundRegistry.BGM_LOADOUT)
 	
-	_populate_heroes()
-	_populate_decks()
+	_load_hero_data()
+	_load_deck_data()
+	_update_hero_carousel()
+	_update_deck_carousel()
 	
 	# Create Deck Order setting UI
 	var order_container = HBoxContainer.new()
@@ -67,7 +73,68 @@ func _ready() -> void:
 	
 	order_container.add_child(order_label)
 	order_container.add_child(deck_order_option)
-	deck_grid.get_parent().add_child(order_container)
+	deck_carousel.get_parent().add_child(order_container)
+	
+	# Create Test Starters UI
+	var test_starters_container = VBoxContainer.new()
+	test_starters_container.name = "TestStartersContainer"
+	
+	var ts_label = Label.new()
+	ts_label.text = "Add Test Items/Trinkets (Optional):"
+	ts_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	test_starters_container.add_child(ts_label)
+	
+	var ts_controls = HBoxContainer.new()
+	test_starters_container.add_child(ts_controls)
+	
+	_test_starters_option = OptionButton.new()
+	_test_starters_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ts_controls.add_child(_test_starters_option)
+	
+	_test_starters_option.add_item("--- Select Item ---", 0)
+	_test_starters_option.set_item_metadata(0, "")
+	
+	var t_idx = 1
+	var all_pool = Database.get_all_pool_definitions()
+	for def in all_pool:
+		var display_text = "%s (%s)" % [tr(def.display_name_key), def.id]
+		_test_starters_option.add_item(display_text, t_idx)
+		_test_starters_option.set_item_metadata(t_idx, def.id)
+		t_idx += 1
+	for t in Database.trinkets.values():
+		var display_text = "%s (%s)" % [tr(t.name_key), t.id]
+		_test_starters_option.add_item(display_text, t_idx)
+		_test_starters_option.set_item_metadata(t_idx, t.id)
+		t_idx += 1
+		
+	var btn_add = Button.new()
+	btn_add.text = "Add"
+	btn_add.pressed.connect(func():
+		var sel_idx = _test_starters_option.selected
+		if sel_idx > 0:
+			var item_id = _test_starters_option.get_item_metadata(sel_idx)
+			if item_id != "":
+				_test_starters.append(StringName(item_id))
+				_update_test_starters_label()
+	)
+	ts_controls.add_child(btn_add)
+	
+	var btn_clear = Button.new()
+	btn_clear.text = "Clear"
+	btn_clear.pressed.connect(func():
+		_test_starters.clear()
+		_update_test_starters_label()
+	)
+	ts_controls.add_child(btn_clear)
+	
+	_test_starters_label = Label.new()
+	_test_starters_label.text = "Selected: None"
+	_test_starters_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_test_starters_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.2))
+	test_starters_container.add_child(_test_starters_label)
+	
+	# Add the container to HeroColumn
+	hero_info_panel.get_parent().add_child(test_starters_container)
 	
 	start_button.pressed.connect(_on_start_run_pressed)
 	test_button.pressed.connect(_on_test_mode_pressed)
@@ -83,55 +150,58 @@ func _update_localized_text() -> void:
 	start_button.text = tr("ui.play")
 	test_button.text = tr("ui.test_mode")
 	
-	# Re-populate to update translated names
-	var hero_selection = _selected_hero_def
-	var deck_selection = _selected_deck_meta
+	# Preserve current selections
+	var hero_id_backup = _selected_hero_def.id if _selected_hero_def else StringName("")
+	var deck_id_backup = _selected_deck_meta.get("deck_id", "") if not _selected_deck_meta.is_empty() else ""
 	
-	_populate_heroes()
-	_populate_decks()
+	_load_hero_data()
+	_load_deck_data()
 	
-	# Restore selections
-	if hero_selection:
-		_select_hero_by_id(hero_selection.id)
-	if not deck_selection.is_empty():
-		_select_deck_by_id(deck_selection.get("deck_id", ""))
+	# Restore selections by finding indices
+	if hero_id_backup != StringName(""):
+		for i in range(_hero_defs.size()):
+			if _hero_defs[i].id == hero_id_backup:
+				_selected_hero_index = i
+				break
+	if deck_id_backup != "":
+		for i in range(_deck_meta.size()):
+			if _deck_meta[i].get("deck_id", "") == deck_id_backup:
+				_selected_deck_index = i
+				break
+	
+	_update_hero_carousel()
+	_update_deck_carousel()
+
+func _update_test_starters_label() -> void:
+	if _test_starters.is_empty():
+		_test_starters_label.text = "Selected: None"
+	else:
+		var names = []
+		for item_id in _test_starters:
+			var def = Database.get_definition(item_id)
+			if def:
+				if "name_key" in def:
+					names.append(tr(def.name_key))
+				elif "display_name_key" in def:
+					names.append(tr(def.display_name_key))
+				else:
+					names.append(String(item_id))
+			else:
+				names.append(String(item_id))
+		_test_starters_label.text = "Selected: " + ", ".join(names)
+
+# --- Data Loading ---
 
 
-func _populate_heroes() -> void:
+func _load_hero_data() -> void:
 	_hero_defs = Database.get_hero_definitions()
-	
-	# Clear existing buttons
-	for child in hero_grid.get_children():
-		child.queue_free()
-	_hero_buttons.clear()
-	
-	# Create hero buttons
-	for hero_def in _hero_defs:
-		var button = HeroSelectButtonScene.instantiate()
-		hero_grid.add_child(button)
-		button.populate(hero_def, false) # Not locked
-		button.hero_selected.connect(_on_hero_selected)
-		_hero_buttons.append(button)
-	
-	# Add locked placeholder using first hero's sprite (for future unlockables)
+	_selected_hero_index = clampi(_selected_hero_index, 0, maxi(_hero_defs.size() - 1, 0))
 	if _hero_defs.size() > 0:
-		var locked_button = HeroSelectButtonScene.instantiate()
-		hero_grid.add_child(locked_button)
-		locked_button.populate(_hero_defs[0], true) # Use first hero sprite but locked
-		_hero_buttons.append(locked_button)
-	
-	# Pre-select first hero
-	if _hero_buttons.size() > 0 and not _hero_buttons[0]._is_locked:
-		_on_hero_selected(_hero_defs[0])
+		_selected_hero_def = _hero_defs[_selected_hero_index]
 
 
-func _populate_decks() -> void:
+func _load_deck_data() -> void:
 	_deck_meta = Database.get_all_deck_metadata()
-	
-	# Clear existing buttons
-	for child in deck_grid.get_children():
-		child.queue_free()
-	_deck_buttons.clear()
 	
 	# Sort decks to put Katakana first
 	_deck_meta.sort_custom(func(a, b):
@@ -142,39 +212,178 @@ func _populate_decks() -> void:
 		return a.get("display_name", "") < b.get("display_name", "")
 	)
 	
-	# Create deck buttons
-	for meta in _deck_meta:
-		var button = DeckSelectButtonScene.instantiate()
-		deck_grid.add_child(button)
-		button.populate(meta)
-		button.deck_selected.connect(_on_deck_selected)
-		_deck_buttons.append(button)
-	
-	# Pre-select Katakana (should be first after sorting)
-	if _deck_buttons.size() > 0:
-		_on_deck_selected(_deck_meta[0])
+	_selected_deck_index = clampi(_selected_deck_index, 0, maxi(_deck_meta.size() - 1, 0))
+	if _deck_meta.size() > 0:
+		_selected_deck_meta = _deck_meta[_selected_deck_index]
 
 
-func _on_hero_selected(hero_def: GachaBallDefinition) -> void:
-	_selected_hero_def = hero_def
-	
-	# Update button selection states
-	for button in _hero_buttons:
-		button.set_selected(button.get_hero_def() == hero_def)
-	
-	# Update hero info panel
-	_update_hero_info_panel(hero_def)
+# --- Carousel Updates ---
 
 
-func _on_deck_selected(deck_meta: Dictionary) -> void:
-	_selected_deck_meta = deck_meta
+func _update_deck_carousel() -> void:
+	for child in deck_carousel.get_children():
+		child.queue_free()
 	
-	# Update button selection states
-	for button in _deck_buttons:
-		button.set_selected(button.get_deck_meta().get("deck_id", "") == deck_meta.get("deck_id", ""))
+	if _deck_meta.is_empty():
+		return
 	
-	# Update deck info panel
-	_update_deck_info_panel(deck_meta)
+	var count = _deck_meta.size()
+	_selected_deck_index = wrapi(_selected_deck_index, 0, count)
+	_selected_deck_meta = _deck_meta[_selected_deck_index]
+	
+	# Left arrow
+	var left_arrow = _create_arrow_button("◀")
+	left_arrow.pressed.connect(_on_deck_prev)
+	deck_carousel.add_child(left_arrow)
+	
+	# Previous item (only if 3+ items to avoid showing same item twice)
+	if count >= 3:
+		var prev_idx = wrapi(_selected_deck_index - 1, 0, count)
+		_add_deck_carousel_item(prev_idx, false)
+	
+	# Selected item
+	_add_deck_carousel_item(_selected_deck_index, true)
+	
+	# Next item (only if 2+ items)
+	if count >= 2:
+		var next_idx = wrapi(_selected_deck_index + 1, 0, count)
+		_add_deck_carousel_item(next_idx, false)
+	
+	# Right arrow
+	var right_arrow = _create_arrow_button("▶")
+	right_arrow.pressed.connect(_on_deck_next)
+	deck_carousel.add_child(right_arrow)
+	
+	_update_deck_info_panel(_selected_deck_meta)
+
+
+func _add_deck_carousel_item(index: int, is_selected: bool) -> void:
+	var button = DeckSelectButtonScene.instantiate()
+	if is_selected:
+		button.custom_minimum_size = Vector2(160, 80)
+	else:
+		button.custom_minimum_size = Vector2(110, 60)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	deck_carousel.add_child(button)
+	button.populate(_deck_meta[index])
+	if is_selected:
+		button.set_selected(true)
+	else:
+		button.modulate = Color(1, 1, 1, 0.45)
+		var target_index = index
+		button.deck_selected.connect(func(_m): _navigate_deck_to(target_index))
+
+
+func _update_hero_carousel() -> void:
+	for child in hero_carousel.get_children():
+		child.queue_free()
+	
+	if _hero_defs.is_empty():
+		return
+	
+	var count = _hero_defs.size()
+	_selected_hero_index = wrapi(_selected_hero_index, 0, count)
+	_selected_hero_def = _hero_defs[_selected_hero_index]
+	
+	# Left arrow
+	var left_arrow = _create_arrow_button("◀")
+	left_arrow.pressed.connect(_on_hero_prev)
+	hero_carousel.add_child(left_arrow)
+	
+	# Previous item
+	if count >= 3:
+		var prev_idx = wrapi(_selected_hero_index - 1, 0, count)
+		_add_hero_carousel_item(prev_idx, false)
+	
+	# Selected item
+	_add_hero_carousel_item(_selected_hero_index, true)
+	
+	# Next item
+	if count >= 2:
+		var next_idx = wrapi(_selected_hero_index + 1, 0, count)
+		_add_hero_carousel_item(next_idx, false)
+	
+	# Right arrow
+	var right_arrow = _create_arrow_button("▶")
+	right_arrow.pressed.connect(_on_hero_next)
+	hero_carousel.add_child(right_arrow)
+	
+	_update_hero_info_panel(_selected_hero_def)
+
+
+func _add_hero_carousel_item(index: int, is_selected: bool) -> void:
+	var button = HeroSelectButtonScene.instantiate()
+	if is_selected:
+		button.custom_minimum_size = Vector2(128, 128)
+	else:
+		button.custom_minimum_size = Vector2(80, 80)
+	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hero_carousel.add_child(button)
+	button.populate(_hero_defs[index], false)
+	if is_selected:
+		button.set_selected(true)
+	else:
+		button.modulate = Color(1, 1, 1, 0.45)
+		var target_index = index
+		button.hero_selected.connect(func(_d): _navigate_hero_to(target_index))
+
+
+# --- Arrow Buttons ---
+
+
+func _create_arrow_button(symbol: String) -> Button:
+	var btn = Button.new()
+	btn.text = symbol
+	btn.flat = true
+	btn.custom_minimum_size = Vector2(36, 36)
+	btn.add_theme_font_size_override("font_size", 24)
+	btn.add_theme_color_override("font_color", Color(1, 0.9, 0.6, 0.8))
+	btn.add_theme_color_override("font_hover_color", Color(1, 0.95, 0.7, 1.0))
+	btn.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1.0))
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return btn
+
+
+# --- Navigation ---
+
+
+func _on_deck_prev() -> void:
+	Audio.play_sfx("ui_click")
+	_selected_deck_index = wrapi(_selected_deck_index - 1, 0, _deck_meta.size())
+	_update_deck_carousel()
+
+
+func _on_deck_next() -> void:
+	Audio.play_sfx("ui_click")
+	_selected_deck_index = wrapi(_selected_deck_index + 1, 0, _deck_meta.size())
+	_update_deck_carousel()
+
+
+func _navigate_deck_to(index: int) -> void:
+	if index != _selected_deck_index:
+		_selected_deck_index = index
+		_update_deck_carousel()
+
+
+func _on_hero_prev() -> void:
+	Audio.play_sfx("ui_click")
+	_selected_hero_index = wrapi(_selected_hero_index - 1, 0, _hero_defs.size())
+	_update_hero_carousel()
+
+
+func _on_hero_next() -> void:
+	Audio.play_sfx("ui_click")
+	_selected_hero_index = wrapi(_selected_hero_index + 1, 0, _hero_defs.size())
+	_update_hero_carousel()
+
+
+func _navigate_hero_to(index: int) -> void:
+	if index != _selected_hero_index:
+		_selected_hero_index = index
+		_update_hero_carousel()
+
+
+# --- Info Panel Updates ---
 
 
 func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
@@ -233,16 +442,18 @@ func _update_deck_info_panel(deck_meta: Dictionary) -> void:
 
 
 func _select_hero_by_id(hero_id: StringName) -> void:
-	for hero_def in _hero_defs:
-		if hero_def.id == hero_id:
-			_on_hero_selected(hero_def)
+	for i in range(_hero_defs.size()):
+		if _hero_defs[i].id == hero_id:
+			_selected_hero_index = i
+			_update_hero_carousel()
 			return
 
 
 func _select_deck_by_id(deck_id: String) -> void:
-	for meta in _deck_meta:
-		if meta.get("deck_id", "") == deck_id:
-			_on_deck_selected(meta)
+	for i in range(_deck_meta.size()):
+		if _deck_meta[i].get("deck_id", "") == deck_id:
+			_selected_deck_index = i
+			_update_deck_carousel()
 			return
 
 
@@ -260,6 +471,9 @@ func _on_start_run_pressed() -> void:
 			order_str = "INVERTED"
 		elif deck_order_option.selected == 2:
 			order_str = "RANDOM"
+	
+	# Pass test starters
+	GameManager.test_starting_items = _test_starters.duplicate()
 	
 	# Ensure test mode is off for normal runs
 	GameManager.is_test_mode = false
@@ -280,6 +494,9 @@ func _on_test_mode_pressed() -> void:
 			order_str = "INVERTED"
 		elif deck_order_option.selected == 2:
 			order_str = "RANDOM"
+	
+	# Pass test starters
+	GameManager.test_starting_items = _test_starters.duplicate()
 	
 	# Set test mode flag
 	GameManager.is_test_mode = true

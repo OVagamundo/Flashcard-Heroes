@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" uid="uid://dm26eyl3nccdc" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_purifying_pendant.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket17A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_purifying_pendant"
+name_key = "trinket.purifying_pendant.name"
+description_key = "trinket.purifying_pendant.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+cost = 10

@@ -131,6 +131,8 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
 | `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |
 | `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+1 HP/+1 PWR** to any **Tier 1** unit entering the board. |
+| `trinket_hero_catalyst` | Hero's Catalyst | `on_merge` | Grants **+1 HP/+1 PWR** to your Hero whenever an ally merges. **[Player Exclusive]** |
+| `trinket_rusty_ring` | Rusty Ring | `on_draw, on_summon, on_battle_start` | Grants **+1 HP/+1 PWR** to all units with no equipment. Equipping an item cancels this buff. |
 | `trinket_veteran_insignia`| Veteran Insignia | `on_draw / on_ally_summon / on_battle_start` | Grants +1 HP and +1 PWR when a level 2 or 3 unit is drawn, summoned, merged, or at battle start. |
 | `trinket_bargain_charm` | Bargain Charm | `gacha_draw_cost` | Spend 1 token less, once per machine, per turn (minimum 1 token cost). |
 | `trinket_token_return_charm` | Token Return Charm | `on_unit_death` | The first unit to die that round returns tokens equivalent to its tier. |
@@ -144,6 +146,11 @@ Team-wide passive artifacts obtained from bosses.
 | `trinket_trait_earth` | Earth Trait | `passive` | Enables the Earth synergy whenever your team has enough Earth souls. |
 | `trinket_trait_water` | Water Trait | `passive` | Enables the Water synergy whenever your team has enough Water souls. |
 | `trinket_trait_air` | Air Trait | `passive` | Enables the Air synergy whenever your team has enough Air souls. |
+| `trinket_spiked_armor` | Spiked Armor | `on_turn_start` | At turn start, the frontmost unit gains 2 Armor and 2 Spikes. |
+| `trinket_purifying_pendant` | Purifying Pendant | `on_turn_start` | At turn start, affected allies with a negative status effect gain +1 HP. |
+| `trinket_awe_inspiring_totem` | Awe Inspiring Totem | `on_turn_start` | At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units (excluding the Hero). |
+| `trinket_beginners_charm` | Beginner's Charm | `minigame_start` | Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard). **[Player Exclusive]** |
+| `trinket_trinity_charm` | Trinity Charm | `on_draw` | If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token. |
 | *N/A* | Cloning Idol | *N/A* | *Historical / Deprecated (Not present in active game files).* |
 
 ---

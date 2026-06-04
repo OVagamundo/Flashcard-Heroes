@@ -30,6 +30,8 @@ var _reroll_cost: int = 1
 var _active_main_node: Node = null # ADD THIS LINE
 var loading_from_save: bool = false # Flag to prevent double day increment on load
 
+var test_starting_items: Array[StringName] = []
+
 # These functions are deprecated - use get_instance_from_location instead
 
 func _ready() -> void:

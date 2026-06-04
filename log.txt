@@ -43,7 +43,7 @@ WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid U
        [1] _ready (res://scripts/Database.gd:24)
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 [Title] Ready. TutorialManager.tutorials_enabled: true
-[SaveManager] Run loaded successfully (Day 5)
+[SaveManager] Run loaded successfully (Day 1)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
@@ -64,578 +64,15 @@ WARNING: Setting node name 'CountLabel' to be unique within scene for 'HUDLayer/
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] _change_scene_to (res://scripts/SceneManager.gd:100)
-[PathChoice] Loading from save, skipping day advance. Current Day: 5
+[PathChoice] Loading from save, skipping day advance. Current Day: 1
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-Warning: Instance has invalid stats, resetting from definition
-Warning: Instance has invalid stats, resetting from definition
-[TutorialManager] Requesting tutorial: shop_intro
-[TutorialManager] Emitting signal for: shop_intro
-[TutorialManager] Signal received, opening overlay for: shop_intro
-WARNING: AudioManager: Sound not found: ui_button_click
-   at: push_warning (core/variant/variant_utility.cpp:1034)
-   GDScript backtrace (most recent call first):
-       [0] play_sfx (res://scripts/AudioManager.gd:42)
-       [1] play_sfx (res://scripts/Audio.gd:13)
-       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
-[SaveManager] Run saved successfully (Day 6)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
-[EncounterGenerator] Elite weighting: [300.0, 200.0, 100.0] (Last: ) Picked: unit_dust_elite_t2
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
+[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780609599_19_79201 def=trinket_trait_air enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780609599_19_79201 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192
 [BattleLog] [1:1] ═══ TURN 1 ═══ 
 [TutorialManager] Requesting tutorial: new_card_intro
 [TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 8
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 8, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-DEBUG_INPUT: BattleView Background Clicked.
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780350951_16_57841
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780350951_11_30347
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: CONSUMABLE | UUID: item_potion_t1_1780350951_67_12171
-DEBUG_GIR: DRAG_START intercepted for CONSUMABLE
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:2] Squire heals Squire for 4 HP 
-[BattleLog] [1:3] Squire heals Squire for 4 HP (ability_consumable_potion_t1) (HP: 1→5)
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780350951_15_82878
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
-       [1] _merge (res://scripts/InventoryManager.gd:396)
-       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
-       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
-       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:4] Veteran Insignia grants Empath +1 HP, +1 PWR 
-[BattleLog] [1:5] trinket_veteran_insignia grants Empath +1 HP (ability_trinket_veteran_insignia, on_merge) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780350951_75_68827
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780350951_75_68827 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[BattleLog] [1:6] trinket_veteran_insignia grants Empath +1 PWR (ability_trinket_veteran_insignia, on_merge) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780350951_75_68827
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780350951_75_68827 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_b_1780350951_47_87773
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t1_a_1780350951_46_41414
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780350951_10_69700
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780350951_14_94101
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780350951_12_94339
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
-       [1] _merge (res://scripts/InventoryManager.gd:396)
-       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
-       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
-       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:7] Veteran Insignia grants Squire +1 HP, +1 PWR 
-[BattleLog] [1:8] trinket_veteran_insignia grants Squire +1 HP (ability_trinket_veteran_insignia, on_merge) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780350951_75_68827
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780350951_75_68827 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[BattleLog] [1:9] trinket_veteran_insignia grants Squire +1 PWR (ability_trinket_veteran_insignia, on_merge) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780350951_75_68827
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780350951_75_68827 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_a_1780350951_5_39133
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
-   GDScript backtrace (most recent call first):
-       [0] _create_vfx_ball (res://scripts/InventoryManager.gd:573)
-       [1] _merge (res://scripts/InventoryManager.gd:396)
-       [2] _on_choice_made (res://scripts/InventoryManager.gd:187)
-       [3] _on_choice_made (res://scripts/ChoiceWindow.gd:99)
-       [4] _on_merge_pressed (res://scripts/ChoiceWindow.gd:94)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:10] Veteran Insignia grants Apprentice +1 HP, +1 PWR 
-[BattleLog] [1:11] trinket_veteran_insignia grants Apprentice +1 HP (ability_trinket_veteran_insignia, on_merge) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780350951_75_68827
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780350951_75_68827 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[BattleLog] [1:12] trinket_veteran_insignia grants Apprentice +1 PWR (ability_trinket_veteran_insignia, on_merge) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780350951_75_68827
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780350951_75_68827 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_fire_1780350951_74_66030 def=trinket_trait_fire container=EnemyTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780350951_75_68827 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[TigerSpirit] Triggering Extra Attack for unit:unit_t1_d_1780350985_76_11600
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: double_strike_attack Prio:-50 Src:unit_t1_d_1780350985_76_11600
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780350951_70_69648
-[CS] Draining reaction: unit_t1_c_ally_shield Prio:100 Src:unit_t1_c_1780350951_14_94101
-[CS] Draining reaction: unit_tier1b_counter_on_hurt Prio:0 Src:unit_t1_b_1780351005_77_18306
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: ability_dust_elite2_spawn_death Prio:0 Src:unit_dust_elite_t2_1780350951_73_31439
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: unit_tier1a_passive_heal Prio:0 Src:unit_t1_a_1780350951_72_24690
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: ability_dust_elite2_spawn_death Prio:0 Src:unit_dust_elite_t2_1780350951_73_31439
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [1:13] Empath deals 4 dmg to Dreadnought 
-[BattleLog] [1:14] Empath attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 6→2)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1780350951_71_82737"] source: unit_t1_d_1780350985_76_11600 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_d_1780350985 type 5
-[BattleLog] [1:15] Empath deals 4 dmg to Dreadnought 
-[BattleLog] [1:16] Empath attacks unit_t3_... for 4 damage (double_strike_attack, on_attack) (HP: 2→-2)
-[DamageAnimation] Executing for targets: ["unit_t3_e_1780350951_71_82737"] source: unit_t1_d_1780350985_76_11600 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_d_1780350985 type 5
-[BattleLog] [1:17] Squire deals 4 dmg to Squire 
-[BattleLog] [1:18] Squire attacks unit_t1_... for 4 damage (basic_attack, on_attack) (HP: 1→-3)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1780350951_70_69648"] source: unit_t1_b_1780351005_77_18306 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1780351005 type 5
-[BattleLog] [1:19] Squire deals 2 dmg to Squire 
-[BattleLog] [1:20] unit_t1_... attacks Squire for 2 damage (unit_tier1b_counter_on_hurt, on_hurt) (HP: 7→5)
-[DamageAnimation] Executing for targets: ["unit_t1_b_1780351005_77_18306"] source: unit_t1_b_1780350951_70_69648 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_b_1780350951 type 5
-[BattleLog] [1:21] Protector shields their ally (+1 HP) 
-[BattleLog] [1:22] Protector heals Squire for 1 HP (unit_t1_c_ally_shield, on_ally_hurt) (HP: 5→6)
-[BattleLog] [1:23] └─ unit_t3_... is defeated! 
-[BattleLog] [1:24] └─ unit_dus... summons New Unit! 
-[BattleLog] [1:25] Dust Elite 2 spawned a Dust unit in the player inventory. 
-[BattleLog] [1:26] └─ unit_t1_... is defeated! 
-[BattleLog] [1:27] └─ unit_dus... summons New Unit! 
-[BattleLog] [1:28] Dust Elite 2 spawned a Dust unit in the player inventory. 
-[BattleLog] [1:29] Protector deals 1 dmg to Apprentice 
-[BattleLog] [1:30] Protector attacks unit_t1_... for 1 damage (basic_attack, on_attack) (HP: 2→1)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1780350951_72_24690"] source: unit_t1_c_1780350951_14_94101 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_c_1780350951 type 5
-[BattleLog] [1:31] Apprentice heals Apprentice for 1 HP 
-[BattleLog] [1:32] unit_t1_... heals unit_t1_... for 1 HP (unit_tier1a_passive_heal, on_hurt) (HP: 1→2)
-[BattleLog] [1:33] Apprentice deals 5 dmg to Apprentice 
-[BattleLog] [1:34] Apprentice attacks unit_t1_... for 5 damage (basic_attack, on_attack) (HP: 2→-3)
-[DamageAnimation] Executing for targets: ["unit_t1_a_1780350951_72_24690"] source: unit_t1_a_1780351011_78_08447 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t1_a_1780351011 type 5
-[BattleLog] [1:35] └─ unit_t1_... is defeated! 
-[BattleLog] [1:36] └─ unit_dus... summons New Unit! 
-[BattleLog] [1:37] Dust Elite 2 spawned a Dust unit in the player inventory. 
-[BattleLog] [1:38] Timekeeper deals 11 dmg to Dust Sentinel (T2) 
-[BattleLog] [1:39] Timekeeper attacks unit_dus... for 11 damage (basic_attack, on_attack) (HP: 4→-7)
-[DamageAnimation] Executing for targets: ["unit_dust_elite_t2_1780350951_73_31439"] source: hero_timekeeper_1780350951_4_27713 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1780 type 5
-[BattleLog] [1:40] └─ unit_dus... is defeated! 
-[BattleLog] [1:41] Battle ended 
-[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
-[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
-[RewardDebug] Victory rewards pending. Special: true
-[RewardElite] populate called
-DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_time_sprint_charm_1780351036_82_20626
-DEBUG_GIR: DRAG_START intercepted for TRINKET
-[SaveManager] Run saved successfully (Day 7)
-[TutorialManager] Requesting tutorial: path_choice_intro
-[TutorialManager] Blocked: Already completed
-[EncounterGenerator] Elite weighting: [300.0, 0.0, 100.0] (Last: unit_dust_elite_t2) Picked: unit_dust_elite_t1
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:1] ═══ TURN 2 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
-[TutorialManager] Blocked: Already completed
-[TRINKET_DBG] hop_trinket_by_definition_id: trinket_time_sprint_charm
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid= def=trinket_time_sprint_charm enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_time_sprint_charm uuid= -> playing bounce on view def=trinket_time_sprint_charm view_uuid=trinket_time_sprint_charm_1780351046_156_00891
 [FlashcardManager] _on_minigame_complete called. Correct: 10
 [FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 10, "incorrect_answers": 0 }
 [FlashcardManager] Signal emitted successfully
@@ -653,29 +90,14 @@ If you want to set size, change the anchors or consider using set_deferred().
        [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
        [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 3
 DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:2] Veteran Insignia grants Phantom Wayfarer +1 HP, +1 PWR 
-[BattleLog] [2:3] trinket_veteran_insignia grants Phantom Wayfarer +1 HP (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
+[TutorialManager] Requesting tutorial: first_draw
+[TutorialManager] Blocked: Already completed
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
@@ -684,28 +106,8 @@ If you want to set size, change the anchors or consider using set_deferred().
        [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
        [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[BattleLog] [2:4] trinket_veteran_insignia grants Phantom Wayfarer +1 PWR (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t3_g_1780351046_117_99713
-   at: push_warning (core/variant/variant_utility.cpp:1034)
-   GDScript backtrace (most recent call first):
-       [0] apply_pwr_delta (res://scripts/BattleAnimator.gd:470)
-       [1] execute (res://scripts/animations/BuffAnimation.gd:74)
-       [2] _process (res://scripts/vfx/StatProjectile.gd:124)
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
@@ -722,21 +124,6 @@ If you want to set size, change the anchors or consider using set_deferred().
        [3] _animate_token_spend (res://scripts/Main.gd:397)
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:5] Veteran Insignia grants Standard Bearer +1 HP, +1 PWR 
-[BattleLog] [2:6] trinket_veteran_insignia grants Standard Bearer +1 HP (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
@@ -751,67 +138,14 @@ If you want to set size, change the anchors or consider using set_deferred().
        [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
        [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
        [3] _animate_token_spend (res://scripts/Main.gd:397)
-[BattleLog] [2:7] trinket_veteran_insignia grants Standard Bearer +1 PWR (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_t3_j_1780351046_120_12939
-   at: push_warning (core/variant/variant_utility.cpp:1034)
-   GDScript backtrace (most recent call first):
-       [0] apply_pwr_delta (res://scripts/BattleAnimator.gd:470)
-       [1] execute (res://scripts/animations/BuffAnimation.gd:74)
-       [2] _process (res://scripts/vfx/StatProjectile.gd:124)
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:8] Veteran Insignia grants Dust Minion (T3) +1 HP, +1 PWR 
-[BattleLog] [2:9] trinket_veteran_insignia grants Dust Minion (T3) +1 HP (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-WARNING: [BattleAnimator] HP delta target not in visual registry: unit_dust_t3_1780351046_89_96353
-   at: push_warning (core/variant/variant_utility.cpp:1034)
-   GDScript backtrace (most recent call first):
-       [0] apply_hp_delta (res://scripts/BattleAnimator.gd:461)
-       [1] execute (res://scripts/animations/BuffAnimation.gd:57)
-       [2] _process (res://scripts/vfx/StatProjectile.gd:124)
-[BattleLog] [2:10] trinket_veteran_insignia grants Dust Minion (T3) +1 PWR (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
 DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
 DEBUG_GIR: Selection: false
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 3
 DEBUG_GIR: + CMD: 0
-WARNING: [BattleAnimator] PWR delta target not in visual registry: unit_dust_t3_1780351046_89_96353
-   at: push_warning (core/variant/variant_utility.cpp:1034)
-   GDScript backtrace (most recent call first):
-       [0] apply_pwr_delta (res://scripts/BattleAnimator.gd:470)
-       [1] execute (res://scripts/animations/BuffAnimation.gd:74)
-       [2] _process (res://scripts/vfx/StatProjectile.gd:124)
 WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
 If you want to set size, change the anchors or consider using set_deferred().
    at: _set_size (scene/gui/control.cpp:1479)
@@ -822,32 +156,7 @@ If you want to set size, change the anchors or consider using set_deferred().
        [3] _animate_token_spend (res://scripts/Main.gd:397)
 [TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:11] Veteran Insignia grants Doppleganger +1 HP, +1 PWR 
-[BattleLog] [2:12] trinket_veteran_insignia grants Doppleganger +1 HP (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='hp' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[BattleLog] [2:13] trinket_veteran_insignia grants Doppleganger +1 PWR (ability_trinket_veteran_insignia, on_draw) 
-[TRINKET_DBG] Activation: def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 enemy=false event_type=BUFF
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780348343_149_86236 def=trinket_veteran_insignia enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_veteran_insignia uuid=trinket_veteran_insignia_1780348343_149_86236 -> playing bounce on view def=trinket_veteran_insignia view_uuid=trinket_veteran_insignia_1780351046_155_92110
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[TRINKET_DBG] _find_trinket_view: 2 views in group. Looking for uuid=trinket_veteran_insignia_1780351046_155_92110 def= enemy=false
-[TRINKET_DBG]   view: uuid=trinket_veteran_insignia_1780351046_155_92110 def=trinket_veteran_insignia container=PlayerTrinkets visible=true
-[TRINKET_DBG]   view: uuid=trinket_time_sprint_charm_1780351046_156_00891 def=trinket_time_sprint_charm container=PlayerTrinkets visible=true
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_i_1780351046_119_30559
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780612946_6_27710
 DEBUG_GIR: DRAG_START intercepted for UNIT
 DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -855,7 +164,7 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_t3_c_1780351046_139_12883
+DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_emblem_air_1780612946_19_43382
 DEBUG_GIR: DRAG_START intercepted for ITEM
 DEBUG_GIR: Processing UNIT Event: DROP
 DEBUG_GIR: Locked: false | LockedID: -1
@@ -863,99 +172,68 @@ DEBUG_GIR: Selection: true
 DEBUG_GIR: Commands: 2
 DEBUG_GIR: + CMD: 6
 DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_dust_t3_1780351046_89_96353
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
 DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
+DEBUG_GIR: Selection: false
 DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 3
 DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_j_1780351046_120_12939
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t3_g_1780351046_117_99713
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[CS] Draining reaction: item_tier3c_on_attack_lifesteal Prio:0 Src:item_t3_c_1780351046_139_12883
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 1
-[DeathProcessor] Draining batch of 1
-[CS] Draining reaction: ability_dust_elite1_spawn_death Prio:0 Src:unit_dust_elite_t1_1780351046_154_90354
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: ability_doppleganger_death Prio:205 Src:unit_t3_i_1780351046_152_58961
-[CS] Draining reaction: ability_dust_elite1_spawn_death Prio:0 Src:unit_dust_elite_t1_1780351046_154_90354
-[DeathProcessor] Phase 1 (on_death) done. Pending: 1
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 2
-[DeathProcessor] Draining batch of 2
-[CS] Draining reaction: unit_t1_d_empathic_link Prio:300 Src:unit_t1_d_1780351046_151_39491
-[CS] Draining reaction: ability_dust_elite1_spawn_death Prio:0 Src:unit_dust_elite_t1_1780351046_154_90354
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[DeathProcessor] Phase 1 (on_death) done. Pending: 0
-[DeathProcessor] Phase 2 (on_ally_death) done. Pending: 0
-[BattleLog] [2:14] Doppleganger deals 7 dmg to Mud Wretch 
-[BattleLog] [2:15] Doppleganger attacks unit_t2_... for 7 damage (basic_attack, on_attack) (HP: 3→-4)
-[DamageAnimation] Executing for targets: ["unit_t2_i_1780351046_153_61856"] source: unit_t3_i_1780351046_119_30559 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_i_1780351046 type 5
-[BattleLog] [2:16] Lifesteal Ring heals Doppleganger for 1 HP 
-[BattleLog] [2:17] Lifesteal Ring heals Doppleganger for 1 HP (item_tier3c_on_attack_lifesteal, on_damage_dealt) (HP: 8→9)
-[BattleLog] [2:18] └─ unit_t2_... is defeated! 
-[BattleLog] [2:19] └─ unit_dus... summons New Unit! 
-[BattleLog] [2:20] Dust Elite 1 spawned a Dust unit in the player inventory. 
-[BattleLog] [2:21] Dust Minion (T3) deals 4 dmg to Doppleganger 
-[BattleLog] [2:22] Dust Minion (T3) attacks unit_t3_... for 4 damage (basic_attack, on_attack) (HP: 5→1)
-[DamageAnimation] Executing for targets: ["unit_t3_i_1780351046_152_58961"] source: unit_dust_t3_1780351046_89_96353 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_dust_t3_1780351 type 5
-[BattleLog] [2:23] Standard Bearer deals 6 dmg to Doppleganger 
-[BattleLog] [2:24] Standard Bearer attacks unit_t3_... for 6 damage (basic_attack, on_attack) (HP: 1→-5)
-[DamageAnimation] Executing for targets: ["unit_t3_i_1780351046_152_58961"] source: unit_t3_j_1780351046_120_12939 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_j_1780351046 type 5
-[BattleLog] [2:25] └─ unit_t3_... is defeated! 
-[BattleLog] [2:26] └─ unit_dus... summons New Unit! 
-[BattleLog] [2:27] Dust Elite 1 spawned a Dust unit in the player inventory. 
-[BattleLog] [2:28] Phantom Wayfarer deals 6 dmg to Empath 
-[BattleLog] [2:29] Phantom Wayfarer attacks unit_t1_... for 6 damage (basic_attack, on_attack) (HP: 1→-5)
-[DamageAnimation] Executing for targets: ["unit_t1_d_1780351046_151_39491"] source: unit_t3_g_1780351046_117_99713 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for unit_t3_g_1780351046 type 5
-[BattleLog] [2:30] └─ unit_t1_... is defeated! 
-[BattleLog] [2:31] unit_t1_... grants unit_dus... +1 PWR (unit_t1_d_empathic_link) 
-[BuffAnimation] execute() called - stat='pwr' amount=1 targets=1
-[BattleLog] [2:32] └─ unit_dus... summons New Unit! 
-[BattleLog] [2:33] Dust Elite 1 spawned a Dust unit in the player inventory. 
-[BattleLog] [2:34] Timekeeper deals 11 dmg to Dust Guard (T1) 
-[BattleLog] [2:35] Timekeeper attacks unit_dus... for 11 damage (basic_attack, on_attack) (HP: 3→-8)
-[DamageAnimation] Executing for targets: ["unit_dust_elite_t1_1780351046_154_90354"] source: hero_timekeeper_1780351046_85_06436 attack_type: melee
-[DamageAnimation] Playing LUNGE sound: unit_toss
-[AnimationCompletionTracker] Timeout for hero_timekeeper_1780 type 5
-[BattleLog] [2:36] └─ unit_dus... is defeated! 
-[BattleLog] [2:37] Battle ended 
-[GameManager] _on_battle_ended called with results: { "victory": true, "reason": &"enemy_wipe" }
-[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: 1
-[RewardDebug] Victory rewards pending. Special: true
-[RewardElite] populate called
-DEBUG_INPUT: Emitting DRAG_START. Entity: TRINKET | UUID: trinket_twin_charm_1780351111_161_60518
-DEBUG_GIR: DRAG_START intercepted for TRINKET
-[SaveManager] Run saved successfully (Day 8)
-[TutorialManager] Requesting tutorial: path_choice_intro
+WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
+If you want to set size, change the anchors or consider using set_deferred().
+   at: _set_size (scene/gui/control.cpp:1479)
+   GDScript backtrace (most recent call first):
+       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
+       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
+       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
+       [3] _animate_token_spend (res://scripts/Main.gd:397)
+[TutorialManager] Requesting tutorial: first_draw
 [TutorialManager] Blocked: Already completed
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780612946_12_50804
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780612946_23_91192 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780612946_9_27594
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780612946_8_15436
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780612946_12_50804
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780612946_23_91192 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192
+DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780612946_12_50804
+DEBUG_GIR: DRAG_START intercepted for UNIT
+DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
+DEBUG_GIR: Locked: false | LockedID: -1
+DEBUG_GIR: Selection: true
+DEBUG_GIR: Commands: 2
+DEBUG_GIR: + CMD: 6
+DEBUG_GIR: + CMD: 0
+[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air enemy=false
+[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
+[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780612946_23_91192 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192

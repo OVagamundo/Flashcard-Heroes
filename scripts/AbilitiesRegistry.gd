@@ -256,7 +256,20 @@ const ABILITIES: Dictionary = {
 		"condition": null,
 		"effect": "Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit. Player exclusive.",
 	},
+	
+	"ability_trinket_purifying_pendant": {
+		"owner": "Purifying Pendant (Trinket)",
+		"trigger": "on_turn_start",
+		"condition": "TARGET_HAS_NEGATIVE_STATUS_EFFECT",
+		"effect": "At turn start, affected allies with a negative status effect gain +1 HP.",
+	},
 
+	"ability_trinket_awe_inspiring_totem": {
+		"owner": "Awe Inspiring Totem (Trinket)",
+		"trigger": "on_turn_start",
+		"condition": "HAS_TIER3_OR_LEVEL3_UNIT",
+		"effect": "If there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.",
+	},
 	
 	# ==================== BOSS ABILITIES ====================
 	

@@ -4,7 +4,7 @@ shader_type canvas_item;
 // Ignores transparent parts of the sprite
 
 uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 1.0, 1.0); // White by default
-uniform float outline_width : hint_range(0.0, 10.0) = 2.0;
+uniform float outline_width : hint_range(0.0, 30.0) = 2.0;
 uniform bool outline_enabled = false;
 
 // Animation uniforms for flash and fade effects
@@ -36,7 +36,11 @@ void fragment() {
             
             // If any neighbor is opaque, draw outline
             if (max_alpha > 0.5) {
-                final_color = outline_color;
+                // Diagonal metallic shimmer sweep
+                float sweep = mod(UV.x - UV.y - TIME * 1.5, 1.0);
+                float shimmer = smoothstep(0.4, 0.45, sweep) - smoothstep(0.45, 0.5, sweep);
+                vec3 metallic_color = mix(outline_color.rgb, vec3(1.0), shimmer * 0.7);
+                final_color = vec4(metallic_color, outline_color.a);
             } else {
                 final_color = sprite_color;
             }

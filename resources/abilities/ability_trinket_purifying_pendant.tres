@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectPurifyHeal.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_purifying_pendant"
+trigger = &"on_turn_start"
+effect = SubResource("Resource_effect")
+priority = 0

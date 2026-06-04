@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" uid="uid://dm26eyl3nccdc" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://eswp3jlepu41" path="res://assets/Realistic/sprites/trinkets/Trinket21A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_spiked_armor.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_spiked_armor"
+tier = 2
+name_key = "trinket.spiked_armor.name"
+description_key = "trinket.spiked_armor.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

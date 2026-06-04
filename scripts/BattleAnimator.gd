@@ -38,6 +38,9 @@ func _ready() -> void:
 	AnimationRegistry.load_standard_animations()
 	# Initialize animation completion tracker
 	_tracker = AnimationCompletionTracker.new(get_tree())
+	
+	if SignalBus.has_signal("trait_threshold_reached"):
+		SignalBus.connect("trait_threshold_reached", _on_trait_threshold_reached)
 
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
 	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
@@ -606,7 +609,7 @@ func _find_trinket_view(visual_uuid: String, trinket_definition_id: StringName, 
 func _get_trinket_views_from_tree() -> Array[GachaBallView]:
 	var result: Array[GachaBallView] = []
 	for node in get_tree().get_nodes_in_group("trinket_view"):
-		if node is GachaBallView and is_instance_valid(node) and node.is_inside_tree() and node.visible:
+		if node is GachaBallView and is_instance_valid(node) and not node.is_queued_for_deletion() and node.is_inside_tree() and node.visible:
 			result.append(node)
 	return result
 
@@ -652,6 +655,13 @@ func get_combat_speed() -> float:
 # =============================================================================
 # STEP MODE & PAUSE CONTROL
 # =============================================================================
+
+func _on_battle_inventory_changed() -> void:
+	pass
+
+func _on_trait_threshold_reached(trinket_uuid: String, definition_id: StringName, is_enemy: bool) -> void:
+	# Using call_deferred so it executes cleanly after layout updates finish
+	call_deferred("hop_trinket_by_visual_uuid", trinket_uuid, definition_id, is_enemy)
 
 func pause_combat() -> void:
 	_is_paused = true
@@ -782,11 +792,15 @@ func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 	else:
 		# Fallback to visual registry if available
 		var view = _visual_registry.get(origin_uuid)
+		if not is_instance_valid(view) or not view.is_inside_tree():
+			view = _find_trinket_view(origin_uuid, &"", false)
+			
 		if is_instance_valid(view) and view.is_inside_tree():
-			start_pos = view.global_position + (view.size / 2.0)
+			start_pos = view.get_global_rect().get_center()
 			
 	if start_pos == Vector2.ZERO:
-		return
+		var window_size = get_viewport().get_visible_rect().size
+		start_pos = window_size / 2.0
 		
 	# 2. Get target position (TokenGroup in Main)
 	var main_node = GameManager._active_main_node
