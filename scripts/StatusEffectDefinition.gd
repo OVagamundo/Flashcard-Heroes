@@ -9,6 +9,7 @@ extends Resource
 @export var id: StringName = &"" # Unique identifier, e.g., &"burn", &"shield"
 @export var display_name_key: String = "" # Localization key
 @export var description_key: String = "" # Localization key for mechanics description
+@export var is_negative: bool = false # Used for trinkets and synergies to differentiate bad effects
 
 # --- Visuals ---
 @export var icon: Texture2D # Icon shown in unit's status bar

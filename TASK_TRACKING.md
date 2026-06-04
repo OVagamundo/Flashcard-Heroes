@@ -3,6 +3,8 @@
 ## Current Status: Refining Systems and UI
 
 ### ✅ RECENTLY COMPLETED TASKS
+- [x] Created and implemented Loadout Scene (`scenes/Loadout.tscn`, `scripts/Loadout.gd`) with Hero and Deck selection carousels, Deck Order options (Regular, Inverted, Random), and Test Mode starters.
+- [x] Implemented 7 new Trinkets (Rusty Ring, Hero's Catalyst, Purifying Pendant, Awe Inspiring Totem, Beginner's Charm, Trinity Charm, Spiked Armor) with corresponding abilities, effects, and localized assets.
 - [x] Implemented Non-Combat Encounter Study Sessions (Rest Site, Training Ground, Gambling Den) with a 5 Gold cost.
 - [x] Added Gold Spend VFX Animation for Study Sessions.
 - [x] Fixed `CombatEvent` member errors and refined target resolution logic.
@@ -20,8 +22,3 @@
 
 ### 🐛 KNOWN ISSUES TO FIX
 - [ ] Results storage between `_on_flashcard_completed` and `_on_results_acknowledged` needs improvement.
-
-### 📋 PENDING TASKS
-- [ ] **Create Loadout Scene according to TDD Section 10.2**
-  - [ ] Loadout.tscn scene and script
-  - [ ] Hero and deck selection UI

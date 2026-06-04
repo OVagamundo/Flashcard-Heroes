@@ -32,6 +32,11 @@ var _has_studied: bool = false
 var _action_in_progress: bool = false
 var _last_inventory_open: bool = false
 
+var _trinity_t1_drawn: bool = false
+var _trinity_t2_drawn: bool = false
+var _trinity_t3_drawn: bool = false
+var _trinity_rewarded: bool = false
+
 func _ready() -> void:
 	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
@@ -218,8 +223,59 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	_prizes[slot_index] = instance
 	_populate_prize_slot(slot_index, instance)
 	
+	if GameManager.has_trinket(&"trinket_trinity_charm") and not _trinity_rewarded:
+		if tier == 1: _trinity_t1_drawn = true
+		elif tier == 2: _trinity_t2_drawn = true
+		elif tier == 3: _trinity_t3_drawn = true
+		if _trinity_t1_drawn and _trinity_t2_drawn and _trinity_t3_drawn:
+			_trinity_rewarded = true
+			_tokens += 1
+			_update_token_display()
+			_animate_trinity_token_gain()
+	
 	button.disabled = false
 	_action_in_progress = false
+
+func _animate_trinity_token_gain() -> void:
+	var TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
+	var token_vfx = TokenPopVFXScene.instantiate()
+	var effects_layer_vfx = WindowManager.get_vfx_layer()
+	
+	var trinket_view = null
+	for node in get_tree().get_nodes_in_group("trinket_view"):
+		if node.has_method("get_definition") and is_instance_valid(node.get_definition()):
+			if node.get_definition().id == &"trinket_trinity_charm" and node.is_inside_tree() and node.visible:
+				trinket_view = node
+				break
+				
+	var start_pos = get_viewport().get_visible_rect().size / 2.0
+	if is_instance_valid(trinket_view):
+		start_pos = trinket_view.get_global_rect().get_center()
+		
+	var main_node = GameManager._active_main_node
+	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
+	var target_pos = start_pos
+	if is_instance_valid(token_group):
+		var token_icon = token_group.get_node_or_null("TokenIcon")
+		if is_instance_valid(token_icon):
+			target_pos = token_icon.get_global_rect().get_center()
+		else:
+			target_pos = token_group.get_global_rect().get_center()
+	
+	token_vfx.position = start_pos
+	effects_layer_vfx.add_child(token_vfx)
+	token_vfx.setup(start_pos, target_pos)
+	
+	token_vfx.animation_finished.connect(func():
+		Audio.play_sfx("coin_land")
+		if is_instance_valid(token_group):
+			var tween = create_tween()
+			token_group.pivot_offset = token_group.size / 2.0
+			tween.tween_property(token_group, "scale", Vector2(1.2, 1.2), 0.05)
+			tween.tween_property(token_group, "scale", Vector2(1.0, 1.0), 0.1)
+	)
+	token_vfx.play(target_pos)
+	Audio.play_sfx("coin_spawn", 1.0)
 
 func _draw_definition_for_tier(tier: int) -> GachaBallDefinition:
 	var eligible: Array[GachaBallDefinition] = []

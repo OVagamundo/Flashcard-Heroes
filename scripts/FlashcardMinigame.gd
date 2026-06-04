@@ -44,6 +44,7 @@ const BUTTON_PRESSED_TEXTURE = preload("res://assets/Realistic/ui/textures/butto
 var _run_state: RunState = null
 var _active_deck: Array[StringName] = []
 var _correct_answers: int = 0
+var _tokens_earned: int = 0
 var _current_streak: int = 0
 var _total_answers: int = 0
 var _session_timer: float = 3.0
@@ -492,7 +493,7 @@ func _start_minigame_session() -> void:
 	
 	# 7-second base timer
 	_session_timer = 7.0
-	if GameManager.is_in_battle and GameManager.has_trinket(&"trinket_time_sprint_charm"):
+	if GameManager.is_in_battle and _has_trinket(&"trinket_time_sprint_charm"):
 		_session_timer += 2.0
 		var animator = get_node_or_null("/root/BattleAnimator")
 		if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
@@ -503,6 +504,7 @@ func _start_minigame_session() -> void:
 		
 	_is_introducing_new_card = false
 	_correct_answers = 0
+	_tokens_earned = 0
 	_current_streak = 0
 	_total_answers = 0
 	_tokens_pending = 0
@@ -659,6 +661,10 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	var was_correct: bool = selected_answer_id == _current_question_id
 	_total_answers += 1
 	
+	var mastery_level: int = FlashcardProgress.MASTERY_MIN
+	if is_instance_valid(_run_state) and _run_state.flashcard_progress.has(_current_question_id):
+		mastery_level = _run_state.flashcard_progress[_current_question_id].mastery_level
+	
 	# Submit answer to FlashcardManager first (this updates mastery)
 	FlashcardManager.submit_answer(_current_question_id, was_correct)
 	
@@ -674,11 +680,25 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	if was_correct:
 		_correct_answers += 1
 		_current_streak += 1
+		
+		var has_charm: bool = _has_trinket(&"trinket_beginners_charm")
+		var tokens_to_give: int = 1
+		if mastery_level <= FlashcardProgress.MASTERY_MIN and has_charm:
+			tokens_to_give = 2
+			
+			# Hop animation for trinket trigger
+			if GameManager.is_in_battle:
+				var animator = get_node_or_null("/root/BattleAnimator")
+				if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
+					animator.call_deferred("hop_trinket_by_definition_id", &"trinket_beginners_charm", false)
+		
+		_tokens_earned += tokens_to_give
+		
 		_session_timer += 0.5
 		_update_timer_display()
 		_update_aura_vfx()
 			
-		_flash_button_correct(selected_answer_id, true)
+		_flash_button_correct(selected_answer_id, tokens_to_give)
 		_flash_timer_bar_correct()
 		
 		# Update BGM tempo/pitch based on streak
@@ -696,7 +716,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 			
 		_flash_button_incorrect(selected_answer_id)
 		_flash_timer_bar_incorrect()
-		_flash_button_correct(_current_question_id, false) # Reveal correct answer, no token
+		_flash_button_correct(_current_question_id, 0) # Reveal correct answer, no token
 		# AUDIO HOOK: Incorrect
 		Audio.play_sfx("minigame_incorrect")
 		
@@ -838,7 +858,7 @@ func _update_aura_vfx() -> void:
 	if is_instance_valid(_aura_vfx):
 		_aura_vfx.set_intensity(_current_streak, _get_streak_color())
 
-func _flash_button_correct(correct_answer_id: StringName, spawn_token: bool = true) -> void:
+func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) -> void:
 	"""Flash the correct answer button green (or streak color) and optionally spawn token pop VFX"""
 	var btn_color = _get_streak_color()
 	
@@ -846,12 +866,29 @@ func _flash_button_correct(correct_answer_id: StringName, spawn_token: bool = tr
 		var button: Control = choices_grid.get_child(i)
 		if not is_instance_valid(button):
 			continue
+		
+		# Disable visually without making it non-clickable during animation
+		button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
 		if button.get_meta(&"choice_id", &"") == correct_answer_id:
 			button.modulate = btn_color
 			
-			if spawn_token:
-				# Spawn Mario-style token pop from button center, flying to token counter
-				_spawn_token_pop(button)
+			var button_rect = button.get_global_rect()
+			var spawn_pos = Vector2(
+				button_rect.position.x + button_rect.size.x / 2.0,
+				button_rect.position.y + button_rect.size.y / 2.0
+			)
+			
+			for j in range(token_count):
+				if j == 0:
+					_spawn_token_pop_at_pos(spawn_pos)
+				else:
+					# Use SceneTree timer instead of Tween for robust lambda execution
+					var delay = 0.15 * j
+					get_tree().create_timer(delay).timeout.connect(func():
+						if is_instance_valid(self) and is_inside_tree():
+							_spawn_token_pop_at_pos(spawn_pos)
+					)
 			break
 
 func _on_skip_pressed() -> void:
@@ -868,7 +905,7 @@ func _on_skip_pressed() -> void:
 	# 3. NO token
 	# 4. Stay for 0.5s while timer runs then move to next
 	
-	_flash_button_correct(_current_question_id, false)
+	_flash_button_correct(_current_question_id, 0)
 	_session_timer += 0.5
 	_update_timer_display()
 	
@@ -908,18 +945,11 @@ func _get_token_counter_target_position() -> Vector2:
 		token_rect.position.y + token_rect.size.y / 2
 	)
 
-func _spawn_token_pop(button: Control) -> void:
-	"""Spawn a token pop VFX at the button's center that flies to token counter"""
+func _spawn_token_pop_at_pos(spawn_pos: Vector2) -> void:
+	"""Spawn a token pop VFX at the given position that flies to token counter"""
 	const TokenPopScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
 	
 	var token_pop = TokenPopScene.instantiate()
-	
-	# Get button center in global coordinates
-	var button_rect = button.get_global_rect()
-	var spawn_pos = Vector2(
-		button_rect.position.x + button_rect.size.x / 2,
-		button_rect.position.y + button_rect.size.y / 2
-	)
 	
 	# Get target position (token counter)
 	var target_pos = _get_token_counter_target_position()
@@ -945,8 +975,6 @@ func _on_token_landed() -> void:
 		bm.add_gacha_token(1)
 	else:
 		# Non-battle context (Rest Site, etc.): emit signal directly
-		# Find current token count from whoever is listening
-		# This increments the displayed count by 1
 		SignalBus.emit_signal("flashcard_token_earned", 1)
 
 func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
@@ -977,12 +1005,13 @@ func _end_minigame() -> void:
 		else:
 			SignalBus.emit_signal("flashcard_token_earned", bonus)
 		_correct_answers = 3  # Update for results dict
+		_tokens_earned += bonus
 	
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,
 		"total_answers": _total_answers,
 		"incorrect_answers": _total_answers - _correct_answers,
-		"tokens_already_awarded": _correct_answers - _tokens_pending # Tokens that completed animation
+		"tokens_already_awarded": _tokens_earned - _tokens_pending # Tokens that completed animation
 	}
 	
 	# Call FlashcardManager's completion method
@@ -1015,6 +1044,22 @@ func _is_japanese(text: String) -> bool:
 		   (code >= 0x4E00 and code <= 0x9FFF):
 			return true
 	return false
+
+func _has_trinket(trinket_id: StringName) -> bool:
+	# First check battle state if in battle (critical for Test Mode parity)
+	if GameManager.is_in_battle:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm) and bm.has_method("get_container"):
+			var container = bm.get_container(&"PlayerTrinkets")
+			if is_instance_valid(container):
+				for uuid in container.get_all_non_empty_uuids():
+					var inst = bm.get_instance_by_uuid(uuid)
+					if is_instance_valid(inst):
+						var def = inst.get_definition()
+						if is_instance_valid(def) and def.id == trinket_id:
+							return true
+	# Fallback to persistent run state
+	return GameManager.has_trinket(trinket_id)
 
 func get_window_to_animate() -> Control:
 	return main_panel

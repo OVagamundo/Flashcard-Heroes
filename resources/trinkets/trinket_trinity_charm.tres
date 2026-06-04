@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_trinity_charm_draw.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_trinity_charm_reset.tres" id="3_ability_reset"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_trinity_charm_reset2.tres" id="4_ability_reset2"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket20A.png" id="5_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trinity_charm"
+name_key = "trinket.trinity_charm.name"
+description_key = "trinket.trinity_charm.desc"
+icon = ExtResource("5_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_reset"), ExtResource("4_ability_reset2")])
+cost = 10

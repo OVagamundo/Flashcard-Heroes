@@ -60,6 +60,10 @@ signal battle_victory_acknowledged
 ## Emitted when battle won rewards are pending
 signal battle_won_rewards_pending
 
+## Emitted when a trait trinket's threshold level changes (up or down).
+## Used to trigger its activation hop animation via BattleAnimator.
+signal trait_threshold_reached(trinket_uuid: String, definition_id: StringName, is_enemy: bool)
+
 # -----------------------------------------------------------------------------
 # BATTLE SYSTEM SIGNALS
 # -----------------------------------------------------------------------------

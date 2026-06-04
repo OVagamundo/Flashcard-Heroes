@@ -578,6 +578,9 @@ var ability_holder_uuid: String = ""
 # Concurrent Animation Trackers
 # Array of dictionaries: { "source_uuid": str, "def_id": StringName }
 # Used by BattleAnimator to play VFX on the UI trinket icons concurrently with the event.
+# NOTE: Trait Trinkets (Fire, Water, etc.) are passive and do NOT use CombatEvents.
+# Instead, they calculate their state on UI layout changes and emit a standalone
+# `trait_threshold_reached` signal directly to the BattleAnimator.
 var trinket_activations: Array[Dictionary] = []
 
 var visual_payload: Dictionary 

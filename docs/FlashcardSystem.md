@@ -62,9 +62,9 @@ When `start_minigame` is called:
    - **Select Question:** Uses SRS algorithm (see Section 5).
    - **Display:** Shows question with 6 multiple-choice answers in a 2x3 grid.
    - **Player Answers:**
-     - ✓ Correct: Button highlights **Green**, Panel flashes **white**, mastery +1, timer +0.5s, spawns token VFX, next question after 0.05s.
-     - ✗ Incorrect: Button highlights **Red**, correct answer highlights **Green**, Panel flashes **red**, mastery −1, NO token, next question after 1.0s.
-     - ⏭ Skip: Correct answer highlights **Green**, timer +0.5s, NO token, mastery -1, next question after 0.5s.
+     - ✓ Correct: Button highlights **Green**, Panel flashes **white**, mastery +1, timer +0.5s, spawns token VFX, increases correct streak, updates music pitch/SFX, next question after 0.05s.
+     - ✗ Incorrect: Button highlights **Red**, correct answer highlights **Green**, Panel flashes **red**, mastery −1, NO token, resets correct streak to 0, resets music pitch, next question after 1.0s.
+     - ⏭ Skip: Correct answer highlights **Green**, timer +0.5s, NO token, mastery -1, preserves correct streak and music pitch, next question after 0.5s.
    - **Input Locking**: Inputs are strictly locked at the very start of the `_on_choice_selected` and `_on_skip_pressed` handlers. Any subsequent attempts to interact with the minigame are ignored until the visual transition completes and the **new** answer buttons are spawned.
 
 4. **Session End:** Timer expires → window closes → `minigame_finished` signal emitted.
@@ -117,3 +117,29 @@ Rewards are handled by the calling system, not the FlashcardManager:
 **At Rest Sites (RestSite.gd):**
 - **Correct Answer**: Provides tokens used to draw Permanent Hero Base Stat increases.
 - **Incorrect/Skip**: NO Token.
+
+---
+
+## 8. Streak & Juice System
+
+To reward consecutive correct answers, a dynamic feedback system scales the audio, music, and visual presentation based on the player's current correct answer streak.
+
+### Streak Mechanics
+- **Streak Increment**: Every correct answer increases the active streak by 1.
+- **Streak Preservation (Skip)**: Selecting a **Skip** does *not* reset the streak, preserving the current visual and audio intensity.
+- **Streak Reset (Incorrect)**: An incorrect answer resets the active streak to 0.
+
+### Dynamic Audio Feedback
+- **Correct SFX Pitch**: The pitch of the `minigame_correct` sound effect scales upwards by `0.05` per streak level (up to a maximum pitch multiplier of `1.5` at streak 10+), providing a rising "correct answer melody".
+- **BGM Tempo Escalation**: The pitch and tempo of the active music (`BGM_MINIGAME`) dynamically increases by `0.02` per streak level (up to a maximum pitch scale of `1.2` at streak 10+). Incorrect answers reset the BGM pitch immediately back to `1.0`.
+
+### Dynamic Visual Feedback (Juice)
+- **Minigame Aura VFX**: A custom edge border fire effect (`MinigameAuraVFX`) surrounds the minigame window edges:
+  - Particle intensity (amount, speed, and spread) scales up linearly with each correct answer in the streak.
+  - The fire shifts color profiles at specific streak milestones:
+    - **Streak 1-2**: Cyan
+    - **Streak 3-5**: Purple
+    - **Streak 6-8**: Gold
+    - **Streak 9+**: Magenta
+  - The aura node renders behind the main UI panel (`show_behind_parent = true`), framing the borders of the minigame window without obscuring any text or multiple-choice options.
+- **Token Pop VFX**: The gacha coin pop-up animation scales its particle quantity, size, and spin velocity based on the current streak tier.

@@ -70,6 +70,12 @@ var _visual_tier: int = 1
 var _bound_uuid: String = "" # UUID bound during populate()
 var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
 
+var _is_trait_trinket: bool = false
+var _trait_name: String = ""
+var _last_soul_count: int = -1
+var _last_trait_level: int = -1
+var _default_material: Material = null
+
 # Drag deformation state (rubber toy physics)
 var _is_dragging: bool = false
 var _drag_first_frame: bool = true # Skip velocity calc on first frame after drag start
@@ -112,6 +118,7 @@ func _ready() -> void:
 	# Otherwise all GachaBallViews would share the same material and selection state
 	if icon_rect and icon_rect.material:
 		icon_rect.material = icon_rect.material.duplicate()
+		_default_material = icon_rect.material
 
 	_anim_controller = get_node_or_null("AnimationController")
 
@@ -133,6 +140,10 @@ func _ready() -> void:
 		if bus.has_signal("drag_ended"):
 			if not bus.is_connected("drag_ended", _on_drag_ended):
 				bus.drag_ended.connect(_on_drag_ended)
+				
+		if bus.has_signal("battle_inventory_changed"):
+			if not bus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
+				bus.connect("battle_inventory_changed", _on_battle_inventory_changed)
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
 	
 	# Connect click handlers for status effect icons (burn/armor)
@@ -244,6 +255,10 @@ func _exit_tree() -> void:
 	if mouse_exited.is_connected(_on_mouse_exited):
 		mouse_exited.disconnect(_on_mouse_exited)
 
+	if is_instance_valid(bus):
+		if bus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
+			bus.disconnect("battle_inventory_changed", _on_battle_inventory_changed)
+
 	# If this view is being freed during a drag, centrally end the drag ONLY if it is the source
 	if GlobalInteractionRouter.is_drag_active():
 		var source_view = GlobalInteractionRouter.get_drag_source_view()
@@ -304,6 +319,16 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	var category = visual_data.get("category", "UNIT")
 	_entity_type = StringName(category)
 	_update_view_groups()
+	
+	_is_trait_trinket = String(definition_id).begins_with("trinket_trait_")
+	if _is_trait_trinket:
+		var parts = String(definition_id).split("_")
+		if parts.size() >= 3:
+			_trait_name = parts[2].to_upper()
+	else:
+		_trait_name = ""
+		_last_soul_count = -1
+		_last_trait_level = -1
 	
 	# Initialize visual state
 	_visual_hp = visual_data.get("hp", 0)
@@ -470,6 +495,86 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_update_item_slots()
 	_apply_selection_feedback()
 	_apply_inventory_brightness(HoverFxMode.OFF)
+	
+	_update_trait_trinket_visuals(false)
+
+func _on_battle_inventory_changed() -> void:
+	_update_trait_trinket_visuals(true)
+
+func _update_trait_trinket_visuals(animate_if_changed: bool) -> void:
+	var trait_label = get_node_or_null("%TraitCountLabel")
+	
+	if not _is_trait_trinket:
+		if trait_label:
+			trait_label.visible = false
+		return
+		
+	# Traits only calculate properly in battle
+	if not GameManager.is_in_battle:
+		if trait_label:
+			trait_label.text = "0"
+			trait_label.visible = true
+		return
+		
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if not is_instance_valid(bm): 
+		return
+		
+	var team = "ENEMY" if is_enemy else "PLAYER"
+	var active_traits = bm.get_active_traits(team)
+	var current_souls = active_traits.get(_trait_name, 0)
+	
+	if trait_label:
+		trait_label.text = str(current_souls)
+		trait_label.visible = true
+	
+	# Determine level
+	var level = 0
+	var trait_def = C.TRAIT_DEFINITIONS.get(_trait_name, {})
+	var levels = trait_def.get("levels", [])
+	for i in range(levels.size()):
+		if current_souls >= levels[i]["min"]:
+			level = i + 1
+			
+	if animate_if_changed and level != _last_trait_level:
+		var bus = get_node_or_null("/root/SignalBus")
+		if is_instance_valid(bus) and bus.has_signal("trait_threshold_reached"):
+			bus.emit_signal("trait_threshold_reached", _instance_uuid, definition_id, is_enemy)
+		
+	_last_trait_level = level
+	_last_soul_count = current_souls
+	
+	# Set outline color
+	var outline_mat = null
+	if icon_rect and icon_rect.material:
+		outline_mat = icon_rect.material as ShaderMaterial
+		
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite") if icon_rect else null
+	var unit_sprite_mat = unit_sprite.material as ShaderMaterial if unit_sprite and unit_sprite.material else null
+		
+	if level > 0:
+		var colors = [
+			Color(0.8, 0.5, 0.2), # Bronze
+			Color(0.75, 0.75, 0.75), # Silver
+			Color(1.0, 0.84, 0.0), # Gold
+			Color(0.5, 1.0, 1.0) # Prismatic/Cyan
+		]
+		var color_idx = min(level - 1, colors.size() - 1)
+		var outline_color = colors[color_idx]
+		
+		if outline_mat:
+			outline_mat.set_shader_parameter("outline_enabled", true)
+			outline_mat.set_shader_parameter("outline_color", outline_color)
+			outline_mat.set_shader_parameter("outline_width", 18.0)
+		if unit_sprite_mat:
+			unit_sprite_mat.set_shader_parameter("outline_enabled", true)
+			unit_sprite_mat.set_shader_parameter("outline_color", outline_color)
+			unit_sprite_mat.set_shader_parameter("outline_width", 18.0)
+	else:
+		if outline_mat:
+			outline_mat.set_shader_parameter("outline_enabled", false)
+		if unit_sprite_mat:
+			unit_sprite_mat.set_shader_parameter("outline_enabled", false)
 
 
 func update_visuals(visual_data: Dictionary) -> void:
@@ -513,10 +618,10 @@ func _apply_visual_layers(layers: Array) -> void:
 
 	if layers.is_empty():
 		# No visual layers — reset to clean state (important for recycled UI slots)
-		icon_rect.material = null
+		icon_rect.material = _default_material
 		icon_rect.modulate = Color.WHITE
 		if unit_sprite:
-			unit_sprite.material = null
+			unit_sprite.material = _default_material
 		return
 
 	# Apply the first shader layer found (currently only one shader layer is expected)
@@ -544,10 +649,10 @@ func _apply_visual_layers(layers: Array) -> void:
 
 	if not shader_applied:
 		# Layers exist but none had shaders — reset material
-		icon_rect.material = null
+		icon_rect.material = _default_material
 		icon_rect.modulate = Color.WHITE
 		if unit_sprite:
-			unit_sprite.material = null
+			unit_sprite.material = _default_material
 
 func set_is_enemy(p_is_enemy: bool, _definition_id: StringName = &"") -> void:
 	is_enemy = p_is_enemy

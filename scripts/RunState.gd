@@ -784,31 +784,26 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 
-	# POC TEST: Give the Timekeeper a special Prismatic Apprentice
-	# Moved here so containers are guaranteed to exist.
 
-	if hero_def_id == &"hero_timekeeper":
-		var apprentice_def = Database.get_definition(&"unit_t1_a")
-		if apprentice_def:
-			var prismatic_inst = GachaBallInstance.new()
-			prismatic_inst.initialize(apprentice_def)
-			prismatize_unit(prismatic_inst)
-			# Add to Tier 1 Run Inventory so it ends up in the Battle Inventory draw pool
-			add_instance(prismatic_inst, &"RunInventoryT1", -1)
 
 	# NOTE: Player trinkets are now obtained exclusively through boss victories.
 	# No starter trinkets are given - the player earns them by progressing.
 
 	# --- Add starter units/items to inventory ---
 	var starters: Array[StringName] = _get_starters_for_hero(hero_def_id)
+	if GameManager.test_starting_items.size() > 0:
+		starters.append_array(GameManager.test_starting_items)
 
 	for id in starters:
-		var def: GachaBallDefinition = Database.get_definition(id)
+		var def: Resource = Database.get_definition(id)
 		if not def:
 			continue
 			
 		var inst := GachaBallInstance.new()
-		inst.initialize(def)
+		if def is TrinketDefinition:
+			inst.initialize_from_trinket(def)
+		else:
+			inst.initialize(def)
 		
 		var container_name: StringName
 		if def.category == &"TRINKET":
@@ -826,100 +821,15 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	if GameManager.is_test_mode:
 		unlock_all_recipes_for_testing()
 
-func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
-	match hero_id:
-		&"hero_timekeeper":
-			# Timekeeper is the developer/testing hero.
-			# Requirement: 2 copies of all mergeable entities, 1 of non-mergeable.
-			var starters: Array[StringName] = []
-			
-			# 1. Identify all mergeable component IDs from the recipes database
-			var mergeable_ids: Dictionary = {}
-			for recipe in Database.recipes.values():
-				if recipe is MergeRecipe:
-					mergeable_ids[recipe.ingredient_a_id] = true
-					mergeable_ids[recipe.ingredient_b_id] = true
-			
-			# 2. Add Units
-			for unit_id in Database.units.keys():
-				var def = Database.units[unit_id]
-				if not def: continue
-				# Filter out enemy-only units (Bosses, Elites, and Dust)
-				if def.tags.has(&"BOSS") or def.tags.has(&"ELITE") or "Dust" in String(unit_id):
-					continue
-					
-				starters.append(unit_id)
-				if mergeable_ids.has(unit_id):
-					starters.append(unit_id)
-					
-			# 3. Add Items
-			for item_id in Database.items.keys():
-				var def = Database.items[item_id]
-				if not def: continue
-				if def.tags.has(&"BOSS") or def.tags.has(&"ELITE"):
-					continue
-					
-				starters.append(item_id)
-				if mergeable_ids.has(item_id):
-					starters.append(item_id)
-					
-			return starters
-		&"hero_bounty_hunter":
-			# Bounty Hunter: 4 of each Tier 1 gachaball (32 total)
-			return [
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
-				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
-				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
-				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
-				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
-				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
-			]
-		&"hero_avenger":
-			return [
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
-				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
-				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
-				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
-				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
-				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
-			]
-		&"hero_bastion":
-			return [
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
-				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
-				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
-				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
-				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
-				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
-			]
-		&"hero_pyro", &"hero_starter":
-			return [
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
-				&"unit_t1_b", &"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
-				&"unit_t1_c", &"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
-				&"unit_t1_d", &"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
-				&"item_t1_a", &"item_t1_a", &"item_t1_a", &"item_t1_a",
-				&"item_t1_b", &"item_t1_b", &"item_t1_b", &"item_t1_b"
-			]
-		&"hero":
-			# Generic hero: 2 copies of selected units/items per tier
-			return [
-				# Tier 1: 2 copies each
-				&"unit_t1_a", &"unit_t1_a", &"unit_t1_b", &"unit_t1_b",
-				&"item_t1_a", &"item_t1_a", &"item_t1_b", &"item_t1_b",
-				# Tier 2: 2x Knight + 2x Phoenix Elixir
-				&"unit_t2_c", &"unit_t2_c",
-				&"item_t2_c", &"item_t2_c",
-				# Tier 3: 2x Sakura Spirit + 2x Vengeful Thorn
-				&"unit_t3_d", &"unit_t3_d",
-				&"item_t3_d", &"item_t3_d"
-			]
-		_:
-			# Default: minimal starter loadout for other heroes
-			return [
-				&"unit_t1_a", &"unit_t1_b",
-				&"item_t1_a", &"item_t1_b"
-			]
+func _get_starters_for_hero(_hero_id: StringName) -> Array[StringName]:
+	return [
+		&"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
+		&"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
+		&"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
+		&"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
+		&"item_t1_a", &"item_t1_a",
+		&"item_t1_b", &"item_t1_b"
+	]
 
 func check_deck_expansion() -> bool:
 	"""Every time this is called, add EXACTLY ONE new card if available.
@@ -1098,4 +1008,3 @@ func _deserialize_ordered_deck_pool(data: Array) -> void:
 	ordered_deck_pool.clear()
 	for id_str in data:
 		ordered_deck_pool.append(StringName(str(id_str)))
-

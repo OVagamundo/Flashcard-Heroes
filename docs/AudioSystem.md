@@ -7,11 +7,14 @@ The audio system in *Flashcard Heroes* provides immersive audio feedback for all
 
 ### 1. Audio Access Pattern
 ```gdscript
-# SFX - Fire and forget with pitch variance
-Audio.play_sfx("combat_hit")
+# SFX - Fire and forget with optional pitch scale override
+Audio.play_sfx("combat_hit", 1.2)
 
 # BGM - Automatic crossfade with looping
 Audio.play_music(SoundRegistry.BGM_BATTLE)
+
+# BGM Pitch/Tempo Adjustment - Tweens music pitch over a given duration (default 0.5s)
+Audio.set_music_pitch(1.2, 0.5)
 ```
 
 ### 2. Core Components
@@ -24,7 +27,9 @@ Audio.play_music(SoundRegistry.BGM_BATTLE)
 
 ### 3. AudioManager Features
 - **SFX Pool**: 16 pre-instantiated `AudioStreamPlayer` nodes prevent stutter
+- **Flexible SFX Pitch Scale**: Dynamic pitch scaling can be passed directly to `play_sfx()`. This is used to build effects like ascending correct-streak pitch logic.
 - **Naturalistic Pitch Scaling**: Random pitch variance (±0.05 to ±0.15 depending on effect) is applied within `VFXFactory.gd` rather than globally, ensuring thematic consistency (e.g. heavy clanks stay low, small sizzles vary more).
+- **Dynamic BGM Pitch Adjustment**: The `set_music_pitch(pitch, duration)` API tweens the playback `pitch_scale` of the active BGM using a sine transition, allowing game mechanics (like correct answer streaks) to modify music speed and tempo dynamically.
 - **BGM Crossfade**: 0.1s fade between music tracks
 - **BGM Prewarming**: All BGM streams are touched on startup for instant playback
 - **Looping**: OGG Vorbis streams are automatically set to loop
