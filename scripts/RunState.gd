@@ -16,6 +16,9 @@ extends Resource
 @export var hero_instance: GachaBallInstance
 @export var last_elite_id: StringName = &""
 
+# Track when each encounter was last offered for pity system
+@export var encounter_last_offered_day: Dictionary = {}
+
 # Recipe unlock tracking (per-run) - key: recipe_id (StringName), value: bool (unlocked)
 @export var unlocked_recipes: Dictionary = {}
 
@@ -724,6 +727,7 @@ func start_new_run() -> void:
 	active_deck_ids.clear()
 	cards_presented_count = 0
 	unlocked_recipes.clear() # All recipes start locked
+	encounter_last_offered_day.clear()
 
 ## Track which elite bosses have been encountered this run (ID -> count)
 ## Used for weighted encounter generation (pity system)

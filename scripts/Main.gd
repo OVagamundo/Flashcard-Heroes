@@ -647,12 +647,8 @@ func _populate_flashcard_progress() -> void:
 	for child in flashcard_progress_bar.get_children():
 		child.queue_free()
 	
-	# Get main deck cards from Database
-	var deck_id = GameManager.run_state.deck_def_id
-	if deck_id == &"":
-		return
-	
-	var main_deck_cards = Database.get_cards_for_deck(deck_id)
+	# Get main deck cards based on chosen play order
+	var main_deck_cards = GameManager.run_state.ordered_deck_pool
 	if main_deck_cards.is_empty():
 		return
 	

@@ -43,7 +43,6 @@ WARNING: res://resources/items/item_emblem_fire.tres:4 - ext_resource, invalid U
        [1] _ready (res://scripts/Database.gd:24)
 [AnimationRegistry] Loaded animations: ["projectile", "damage", "heal", "buff", "item_activation", "death", "summon", "guardian_intercept", "lethal_save", "status_effect", "kamikaze", "transform"]
 [Title] Ready. TutorialManager.tutorials_enabled: true
-[SaveManager] Run loaded successfully (Day 1)
 WARNING: Setting node name 'KnobButton' to be unique within scene for 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2/KnobButton', but it's already claimed by 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton'.
 'HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1/KnobButton' is no longer set as having a unique name.
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
@@ -64,176 +63,260 @@ WARNING: Setting node name 'CountLabel' to be unique within scene for 'HUDLayer/
    at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
        [0] _change_scene_to (res://scripts/SceneManager.gd:100)
-[PathChoice] Loading from save, skipping day advance. Current Day: 1
+[SaveManager] Run saved successfully (Day 1)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 20 Pity: 20 Final: 40
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Emitting signal for: path_choice_intro
+[TutorialManager] Signal received, opening overlay for: path_choice_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[SaveManager] Run saved successfully (Day 2)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 20 Pity: 40 Final: 60
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 40 Final: 90
 [TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780609599_19_79201 def=trinket_trait_air enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780609599_19_79201 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192
-[BattleLog] [1:1] ═══ TURN 1 ═══ 
-[TutorialManager] Requesting tutorial: new_card_intro
+[SaveManager] Run saved successfully (Day 3)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 20 Pity: 60 Final: 80
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 60 Final: 110
+[TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-[FlashcardManager] _on_minigame_complete called. Correct: 10
-[FlashcardManager] Emitting minigame_finished signal with results: { "correct_answers": 10, "incorrect_answers": 0 }
-[FlashcardManager] Signal emitted successfully
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Emitting signal for: black_market_intro
+[TutorialManager] Signal received, opening overlay for: black_market_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-[TutorialManager] Requesting tutorial: first_draw
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[SaveManager] Run saved successfully (Day 4)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 20 Pity: 80 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 80 Final: 130
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 80 Final: 130
+[TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
+[SaveManager] Run saved successfully (Day 5)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 40 Final: 140
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 100 Final: 150
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 100 Final: 150
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 6)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 60 Final: 160
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 40 Final: 120
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 120 Final: 170
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 7)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 80 Final: 180
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 40 Final: 90
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 8)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 40 Final: 120
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 60 Final: 110
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Emitting signal for: shop_intro
+[TutorialManager] Signal received, opening overlay for: shop_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[SaveManager] Run saved successfully (Day 9)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 80 Final: 130
+[TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
+[SaveManager] Run saved successfully (Day 10)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 40 Final: 140
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 80 Final: 130
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 100 Final: 150
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 11)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 60 Final: 160
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 40 Final: 120
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 12)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 80 Final: 130
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 40 Final: 90
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 13)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 40 Final: 140
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 100 Final: 150
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 80 Final: 130
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:449)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:154)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
-[TutorialManager] Blocked: Already completed
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:449)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:154)
+[TutorialManager] Requesting tutorial: rest_site_intro
+[TutorialManager] Emitting signal for: rest_site_intro
+[TutorialManager] Signal received, opening overlay for: rest_site_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[SaveManager] Run saved successfully (Day 14)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 20 Final: 100
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 120 Final: 170
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 100 Final: 150
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 80 Final: 130
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_b_1780612946_6_27710
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: ITEM | UUID: item_emblem_air_1780612946_19_43382
-DEBUG_GIR: DRAG_START intercepted for ITEM
-DEBUG_GIR: Processing UNIT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_GIR: Processing GLOBAL_BACKGROUND Event: SINGLE_CLICK
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: false
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 3
-DEBUG_GIR: + CMD: 0
-WARNING: Nodes with non-equal opposite anchors will have their size overridden after _ready(). 
-If you want to set size, change the anchors or consider using set_deferred().
-   at: _set_size (scene/gui/control.cpp:1479)
+[TutorialManager] Requesting tutorial: black_market_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 15)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 40 Final: 120
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 140 Final: 190
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 120 Final: 170
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 100 Final: 150
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+Warning: Instance has invalid stats, resetting from definition
+Warning: Instance has invalid stats, resetting from definition
+[TutorialManager] Requesting tutorial: shop_intro
+[TutorialManager] Blocked: Already completed
+[SaveManager] Run saved successfully (Day 16)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 20 Final: 120
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 60 Final: 140
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 40 Final: 90
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 140 Final: 190
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 40 Final: 90
+[TutorialManager] Requesting tutorial: path_choice_intro
+[TutorialManager] Blocked: Already completed
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier2Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
    GDScript backtrace (most recent call first):
-       [0] _on_gacha_draw_animated (res://scripts/BattleView.gd:815)
-       [1] bm_draw_gacha_instance (res://scripts/BattleManager.gd:468)
-       [2] _on_draw_gacha_requested (res://scripts/BattleManager.gd:1955)
-       [3] _animate_token_spend (res://scripts/Main.gd:397)
-[TutorialManager] Requesting tutorial: first_draw
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:459)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:154)
+WARNING: Setting node name 'DrawButton' to be unique within scene for 'VBoxContainer/MachinesArea/Tier3Machine/DrawButton', but it's already claimed by 'VBoxContainer/MachinesArea/Tier1Machine/DrawButton'.
+'VBoxContainer/MachinesArea/Tier1Machine/DrawButton' is no longer set as having a unique name.
+   at: _acquire_unique_name_in_owner (scene/main/node.cpp:2228)
+   GDScript backtrace (most recent call first):
+       [0] load_content (res://scripts/Main.gd:241)
+       [1] _on_node_selected (res://scripts/GameManager.gd:459)
+       [2] _on_node_selected (res://scripts/PathChoice.gd:154)
+[TutorialManager] Requesting tutorial: training_grounds_intro
+[TutorialManager] Emitting signal for: training_grounds_intro
+[TutorialManager] Signal received, opening overlay for: training_grounds_intro
+WARNING: AudioManager: Sound not found: ui_button_click
+   at: push_warning (core/variant/variant_utility.cpp:1034)
+   GDScript backtrace (most recent call first):
+       [0] play_sfx (res://scripts/AudioManager.gd:42)
+       [1] play_sfx (res://scripts/Audio.gd:13)
+       [2] _on_got_it_pressed (res://scripts/TutorialPopup.gd:346)
+[SaveManager] Run saved successfully (Day 17)
+[PathChoice] Generated weight for BATTLE -> Base: 100 Pity: 40 Final: 140
+[PathChoice] Generated weight for BATTLE_ELITE -> Base: 80 Pity: 80 Final: 160
+[PathChoice] Generated weight for SHOP -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for BLACK_MARKET -> Base: 50 Pity: 60 Final: 110
+[PathChoice] Generated weight for REST -> Base: 50 Pity: 160 Final: 210
+[PathChoice] Generated weight for DOJO -> Base: 50 Pity: 20 Final: 70
+[PathChoice] Generated weight for SURPRISE -> Base: 50 Pity: 20 Final: 70
+[TutorialManager] Requesting tutorial: path_choice_intro
 [TutorialManager] Blocked: Already completed
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780612946_12_50804
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780612946_23_91192 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780612946_9_27594
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_c_1780612946_8_15436
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780612946_12_50804
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780612946_23_91192 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192
-DEBUG_INPUT: Emitting DRAG_START. Entity: UNIT | UUID: unit_t1_d_1780612946_12_50804
-DEBUG_GIR: DRAG_START intercepted for UNIT
-DEBUG_GIR: Processing EMPTY_SLOT Event: DROP
-DEBUG_GIR: Locked: false | LockedID: -1
-DEBUG_GIR: Selection: true
-DEBUG_GIR: Commands: 2
-DEBUG_GIR: + CMD: 6
-DEBUG_GIR: + CMD: 0
-[TRINKET_DBG] _find_trinket_view: 1 views in group. Looking for uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air enemy=false
-[TRINKET_DBG]   view: uuid=trinket_trait_air_1780612946_23_91192 def=trinket_trait_air container=PlayerTrinkets visible=true
-[TRINKET_DBG] FOUND view for def=trinket_trait_air uuid=trinket_trait_air_1780612946_23_91192 -> playing bounce on view def=trinket_trait_air view_uuid=trinket_trait_air_1780612946_23_91192

@@ -20,8 +20,8 @@ A run is lost immediately if the Hero's health (HP) reaches zero.
 
 Each run progresses through a series of sequential choices:
 1.  **Loadout Selection**: Choose a starting Hero and an initial Flashcard Deck.
-2.  **Path Selection & Node Resolution**: Choose between branch paths containing different node types (Battles, Shops, Rest Sites, etc.). Resolving a node advances the run's difficulty (tracked via the "Day" counter).
-3.  **Boss Milestones**: Boss battles are triggered dynamically by the player's Flashcard Mastery progression. Whenever the player unlocks a specific percentage of their flashcard deck, a Boss battle is scheduled, overriding standard nodes.
+2.  **Encounter Selection & Resolution**: Choose between branch choices containing different encounter types (Battles, Shops, Merge Encounters, etc.). Resolving an encounter advances the run's difficulty (tracked via the "Day" counter).
+3.  **Boss Milestones**: Boss battles are triggered dynamically by the player's Flashcard Mastery progression. Whenever the player unlocks a specific percentage of their flashcard deck, a Boss battle is scheduled, overriding standard encounters.
 4.  **Final Encounter**: Defeating the Final Boss concludes the run.
 
 ### 2.1 Loadout Selection Scene
@@ -210,16 +210,16 @@ Difficulty increases as the player resolves nodes and advances the Day counter, 
 *   **Black Market**: Specialized nodes for curating deck composition. Players spend Gold to permanently **Remove** a GachaBall from their Run Inventory (with escalating costs) or **Transform** a GachaBall into a random alternative of the same tier (flat cost).
 *   **Post-Battle Rewards**: Displays a lineup of random GachaBalls. The player can drag them to the **Collect** zone to add them to their Run Inventory, or to the **Sell** zone to discard them for Gold. Any uncollected rewards are automatically collected when leaving the node.
 
-## 11.2 Training Sites (Rest Site / Dojo / Gambling Den)
-*   **Purpose**: Dedicated nodes for permanently buffing the Hero.
-*   **Flow**: The Hero is placed in the prize lineup. The player can Study once to play the Flashcard minigame and earn Gacha Tokens.
-*   **Spending**: Gacha Tokens are spent on tiered machines to draw capsules containing HP, PWR, or Gold buffs.
-*   **Application**: Applying drawn capsules permanently upgrades the Hero's base HP (Rest Site), base PWR (Dojo), or grants Gold (Gambling Den). Leaving the scene automatically applies any uncollected capsules.
-
-## 11.3 Surprise Events
-Surprise encounters are randomly selected node events:
+## 11.2 Standalone Encounters
 *   **Unit Training Ground**: Allows players to permanently train the stats of any unit in their Run Inventory. The player selects a unit and drops it into the HP or PWR training zone, paying a Gold fee to start a study session. The Gacha Tokens earned during study are then spent to roll for permanent stat increases for that unit.
 *   **Merge Encounter**: Allows players to merge GachaBalls in their Run Inventory directly. Merges here cost a flat Gold fee but bypass the usual run-level recipe unlock requirements, permanently unlocking the resulting recipe for the rest of the run.
+
+## 11.3 Surprise Events
+Surprise encounters are randomly selected from a pool of classic resource sites:
+*   **Rest Site**: The Hero can study and spend Tokens to draw HP buff capsules.
+*   **Gambling Den**: The Hero can study and spend Tokens to draw Gold bonus capsules.
+*   **Training Grounds**: The Hero can study and spend Tokens to draw PWR buff capsules.
+*   Applying drawn capsules permanently upgrades the Hero. Leaving the scene automatically applies any uncollected capsules.
 
 ---
 
