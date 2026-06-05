@@ -432,16 +432,10 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				_active_main_node.load_content(BLACK_MARKET_SCENE)
 		"REST":
 			if is_instance_valid(_active_main_node):
-				var inst = _active_main_node.load_content(REST_SITE_SCENE)
-				if inst is ResourceSite:
-					inst.site_type = ResourceSite.SiteType.HP
-					inst.setup_site()
+				_active_main_node.load_content(preload("res://scenes/MergeEncounter.tscn"))
 		"DOJO":
 			if is_instance_valid(_active_main_node):
-				var inst = _active_main_node.load_content(REST_SITE_SCENE)
-				if inst is ResourceSite:
-					inst.site_type = ResourceSite.SiteType.PWR
-					inst.setup_site()
+				_active_main_node.load_content(preload("res://scenes/UnitTrainingGround.tscn"))
 		"GOLD":
 			if is_instance_valid(_active_main_node):
 				var inst = _active_main_node.load_content(REST_SITE_SCENE)
@@ -450,12 +444,22 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 					inst.setup_site()
 		"SURPRISE":
 			if is_instance_valid(_active_main_node):
-				var options = [
-					preload("res://scenes/UnitTrainingGround.tscn"),
-					preload("res://scenes/MergeEncounter.tscn")
-				]
-				var chosen_scene = options[randi() % options.size()]
-				_active_main_node.load_content(chosen_scene)
+				var roll = randi() % 3
+				if roll == 0:
+					var inst = _active_main_node.load_content(REST_SITE_SCENE)
+					if inst is ResourceSite:
+						inst.site_type = ResourceSite.SiteType.HP
+						inst.setup_site()
+				elif roll == 1:
+					var inst = _active_main_node.load_content(REST_SITE_SCENE)
+					if inst is ResourceSite:
+						inst.site_type = ResourceSite.SiteType.GOLD
+						inst.setup_site()
+				else:
+					var inst = _active_main_node.load_content(REST_SITE_SCENE)
+					if inst is ResourceSite:
+						inst.site_type = ResourceSite.SiteType.PWR
+						inst.setup_site()
 
 func _enter_shop() -> void:
 	_reroll_cost = 1

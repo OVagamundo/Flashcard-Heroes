@@ -65,23 +65,50 @@ func _setup_boss_node(boss_level: int) -> void:
 func _setup_normal_nodes() -> void:
 	# Create potential node versions
 	var types = [
-		{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "weight": 100},
-		{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node", "weight": 30},
-		{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "weight": 40},
-		{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "weight": 40},
-		{"type": "REST", "subtype": "", "name": "ui.rest_node", "weight": 40},
-		{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "weight": 50},
-		{"type": "GOLD", "subtype": "", "name": "ui.gambling_den_node", "weight": 60},
-		{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "weight": 40}
+		{"type": "BATTLE", "subtype": "", "name": "ui.battle_node"},
+		{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node"},
+		{"type": "SHOP", "subtype": "", "name": "ui.shop_node"},
+		{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node"},
+		{"type": "REST", "subtype": "", "name": "ui.rest_node"},
+		{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node"},
+		{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node"}
 	]
 	
 	var pool: Array[PathNodeDefinition] = []
+	var current_day = 1
+	if is_instance_valid(GameManager.run_state):
+		current_day = GameManager.run_state.day
+		
 	for t in types:
+		# Calculate base weight according to rules
+		var base_w = 50
+		if t.type == "BATTLE" and t.subtype == "":
+			base_w = 100
+		elif t.type == "BATTLE" and t.subtype == "ELITE":
+			if current_day < 5:
+				base_w = 20
+			else:
+				base_w = 80
+				
+		# Apply pity system multiplier
+		var dict_key = t.type
+		if t.subtype != "":
+			dict_key += "_" + t.subtype
+			
+		var last_offered = 0
+		if is_instance_valid(GameManager.run_state):
+			last_offered = GameManager.run_state.encounter_last_offered_day.get(dict_key, 0)
+			
+		var days_since = current_day - last_offered
+		var final_weight = base_w + (days_since * 20)
+		
+		print("[PathChoice] Generated weight for ", dict_key, " -> Base: ", base_w, " Pity: ", days_since * 20, " Final: ", final_weight)
+		
 		var def = PathNodeDefinition.new()
 		def.node_type = t.type
 		def.subtype = t.subtype
 		def.display_name_key = t.name
-		def.base_weight = t.weight
+		def.base_weight = final_weight
 		pool.append(def)
 	
 	# Draw 3 unique nodes one by one to ensure categorical uniqueness
@@ -101,6 +128,12 @@ func _setup_normal_nodes() -> void:
 			pool = next_pool
 
 	for node_def in selected_nodes:
+		if is_instance_valid(GameManager.run_state):
+			var dict_key = node_def.node_type
+			if node_def.subtype != "":
+				dict_key += "_" + node_def.subtype
+			GameManager.run_state.encounter_last_offered_day[dict_key] = GameManager.run_state.day
+			
 		var node_view = NodeViewScene.instantiate()
 		node_view.populate(node_def)
 		_register_node_view(node_view)

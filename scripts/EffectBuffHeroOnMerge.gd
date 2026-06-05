@@ -24,7 +24,36 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	if source_team != "PLAYER":
 		return EffectResult.empty() if is_simulation else null
 		
-	var hero_uuid = battle_manager.get_hero_uuid()
+	var hero_uuid = ""
+	for c_name in [&"PlayerLineup"]:
+		var container = battle_manager.get_container(c_name)
+		if is_instance_valid(container):
+			for i in range(container.get_size()):
+				var uuid = container.get_uuid(i)
+				if not uuid.is_empty():
+					var inst = battle_manager.get_instance(uuid)
+					if is_instance_valid(inst):
+						var def = inst.get_definition()
+						if is_instance_valid(def):
+							var is_hero = false
+							if def.category == &"HERO":
+								is_hero = true
+							else:
+								var def_id = String(def.id).to_lower()
+								if def_id == "hero" or def_id.begins_with("hero_"):
+									is_hero = true
+								elif "tags" in def:
+									for tag in def.tags:
+										if String(tag).to_lower() == "hero":
+											is_hero = true
+											break
+							
+							if is_hero:
+								hero_uuid = uuid
+								break
+		if not hero_uuid.is_empty():
+			break
+			
 	if hero_uuid.is_empty():
 		return EffectResult.empty() if is_simulation else null
 		

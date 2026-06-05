@@ -149,9 +149,19 @@ Starting at day 1, slots with special effects can be generated on player and ene
   * Enemy slot effects increase the enemy's generation budget.
   * The net change (`enemy_bonus - player_cost`) is applied to the final enemy lineup generation budget to maintain combat equilibrium.
 
+## Encounter Selection RNG (Choices)
+
+When the player selects their next encounter, a weighted RNG system determines which encounters are offered.
+- **Regular Battles** have the highest priority (base weight 100).
+- **Elite Battles** are rare early on (base weight 20 before Day 5) but become more common later (base weight 80 from Day 5 onward).
+- **Other Encounters** (Shop, Black Market, Merge, Unit Training, Surprise) have a standard base weight (50).
+
+### The Pity System
+To ensure variety, an encounter's weight increases the longer it goes unoffered. For every day an encounter type is *not* offered as a choice, it gains **+20** to its weight. Once it is offered, its "last offered day" is updated, resetting this pity bonus.
+
 ## Non-Combat Encounters
 
-The game features non-combat encounters such as the **Rest Site** (HP), **Training Ground** (PWR), and **Gambling Den** (Gold). These encounters offer a token-based stat gacha system.
+The game features non-combat encounters such as the **Surprise Events** (which randomly choose between Rest Site for HP, Gambling Den for Gold, and Training Ground for PWR), the **Merge Encounter**, and the **Unit Training Ground**. These encounters offer a token-based stat gacha system or upgrade mechanics.
 
 ### Study Sessions
 Players can activate a "Study Session" (Flashcard Minigame) at these encounters to earn additional tokens. 

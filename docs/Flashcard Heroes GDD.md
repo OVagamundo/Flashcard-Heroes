@@ -3,8 +3,8 @@
 
 2. Core Gameplay Loop
 1. **Loadout**: Select a Hero and a Flashcard Deck.
-2. **Path Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others).
-3. **Resolution**: Resolve the node and advance the **Day** (Difficulty scaling).
+2. **Encounter Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others).
+3. **Resolution**: Resolve the encounter and advance the **Day** (Difficulty scaling).
 4. **Conclusion**: Victory (Final Boss defeated) or Permadeath (Hero HP = 0).
 
 3. Player Resources
@@ -116,11 +116,11 @@ We distinguish between two distinct merging pathways:
 9. Core Entities & Systems
 - **Hero Unit**: Your central character. HP = Run Health. restricted to the PlayerLineup.
 - **Trinkets**: Non-GachaBall items providing run-wide passive bonuses.
-- **Encounters (Nodes)**: Path options that define your run's journey and difficulty scaling, including:
+- **Encounters**: Choices that define your run's journey and difficulty scaling, including:
     - **Battles**: Common, Elite, and Boss encounters. Elite and Boss victories award permanent Trinkets and greater Gold rewards.
     - **Shops**: Standard **Shop** (buy, reroll, or remove/transform GachaBalls) and the **Black Market** (specialized vendor with exotic or rare inventory).
-    - **Training Sites**: Dedicated sites for permanent Hero improvements: **Rest Site** (HP boosts), **Dojo** (PWR boosts), and **Gold Site** (extra currency acquisition).
-    - **Surprise Events**: Randomly selected mini-encounters like the **Unit Training Ground** (stat-boosting projectile training minigame) and **Merge Encounter** (advanced gachaball combining).
+    - **Standalone Encounters**: Dedicated sites for permanent improvements: **Merge Encounter** (advanced gachaball combining bypassing recipes) and **Unit Training Ground** (stat-boosting projectile training minigame).
+    - **Surprise Events**: Randomly selected mini-encounters including the **Rest Site** (Hero HP boosts), **Gambling Den** (Gold boosts), and **Training Grounds** (Hero PWR boosts).
 - **Ability System**: Event-driven (triggers like `ON_ATTACK`, `ON_DEATH`). Every unit an items has an ability or more besides sometimes passive stats.
 - **Status Effects**: Temporary effects that stack and typically decay at turn end, per activation, etc.
 
