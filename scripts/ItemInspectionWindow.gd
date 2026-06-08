@@ -162,7 +162,11 @@ func _update_description_and_stats(item_def: Resource) -> void:
 			if not is_instance_valid(ability):
 				continue
 			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
+			if "name_key" in ability and ability_name == ability.name_key and ability.name_key.begins_with("ability."):
+				ability_name = ""
 			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+			if "description_key" in ability and ability_desc == ability.description_key and ability.description_key.begins_with("ability."):
+				ability_desc = ""
 			if is_instance_valid(_instance):
 				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
@@ -175,7 +179,7 @@ func _update_description_and_stats(item_def: Resource) -> void:
 				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 		abilities_block = "\n".join(abilities_lines)
 
-		if not base_desc.is_empty():
+		if not base_desc.is_empty() and abilities_block.is_empty():
 			full_text += base_desc
 		if not effect_desc.is_empty():
 			if not full_text.is_empty(): full_text += "\n"

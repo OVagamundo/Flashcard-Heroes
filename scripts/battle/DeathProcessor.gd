@@ -205,13 +205,40 @@ static func process_completed_counter_deaths(out_events, death_tracking, bm) -> 
 		# If no pending counter-attacks, this unit can die now
 		if not has_pending_counters:
 			if out_events != null and death_tracking != null:
-				var death_event = create_death_event_if_needed(uuid, death_tracking)
+				var death_location = bm.get_location_for_uuid(uuid)
+				var container_tag: StringName = death_location.container if is_instance_valid(death_location) else &""
+				var death_event = create_death_event_if_needed(uuid, death_tracking, container_tag)
 				if death_event != null:
 					out_events.append(death_event)
+			
+			var death_location = bm.get_location_for_uuid(uuid)
+			var team = "PLAYER" if bm._is_player_unit(unit) else "ENEMY"
+			
+			var death_ctx := {
+				"dying_uuid": uuid,
+				"dying_team": team,
+				"dying_location": death_location,
+				"equipped_items": snapshot_equipped_items(unit, bm._battle_instances),
+				"source_pwr": unit.current_pwr
+			}
+			AbilityResolver.process_trigger(&"on_death", death_ctx)
 			
 			# Process deferred on_ally_death triggers for this unit
 			process_deferred_ally_death(uuid, "PLAYER", bm)
 			process_deferred_ally_death(uuid, "ENEMY", bm)
+			
+			var dying_tier: int = 0
+			var dying_def = unit.get_definition()
+			if is_instance_valid(dying_def):
+				dying_tier = dying_def.tier
+			var unit_death_ctx := {
+				"dying_uuid": uuid,
+				"dying_team": team,
+				"dying_location": death_location,
+				"dying_tier": dying_tier,
+				"dying_definition_id": String(unit.definition_id)
+			}
+			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 			
 			# CRITICAL FIX: Actually clean up the unit from the game state
 			bm._perform_unit_death_cleanup(unit)
@@ -414,14 +441,15 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 
 	# PHASE 1: Fire ALL on_death triggers (queues item summons, priority 200)
 	for data in dying_units_data:
-		var death_ctx := {
-			"dying_uuid": data.unit.ball_uuid,
-			"dying_team": data.team,
-			"dying_location": data.death_location,
-			"equipped_items": data.equipped_items,
-			"source_pwr": data.unit.current_pwr
-		}
-		AbilityResolver.process_trigger(&"on_death", death_ctx)
+		if not data.has_lethal_counter:
+			var death_ctx := {
+				"dying_uuid": data.unit.ball_uuid,
+				"dying_team": data.team,
+				"dying_location": data.death_location,
+				"equipped_items": data.equipped_items,
+				"source_pwr": data.unit.current_pwr
+			}
+			AbilityResolver.process_trigger(&"on_death", death_ctx)
 	
 	if OS.is_debug_build() and is_simulation:
 		print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())

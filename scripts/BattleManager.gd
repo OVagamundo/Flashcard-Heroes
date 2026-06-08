@@ -1220,8 +1220,7 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						_trigger_static_consumption(instance)
 				return new_hp
 		"pwr":
-			var new_pwr = instance.current_pwr + delta
-			instance.set_current_pwr_silent(new_pwr) # Silent during simulation
+			var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
 			
 			if delta != 0:
 				if delta > 0:
@@ -2323,34 +2322,30 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 				if enemy == null:
 					continue
 				
-				# Steal 1 PWR from enemy (but can't reduce below 1)
+				# Steal 1 PWR from enemy (will be clamped to 1 systemically)
 				var enemy_old_pwr = enemy.current_pwr
-				var can_steal = enemy_old_pwr > 1 # Only steal if enemy has more than 1 PWR
 				
-				# Always gain 1 PWR regardless of whether we can steal
+				# Always gain 1 PWR
 				var unit_old_pwr = unit.current_pwr
 				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1)
 				
-				# Only reduce enemy PWR if they have more than 1
-				var enemy_new_pwr = enemy_old_pwr
-				if can_steal:
-					enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
+				# Reduce enemy PWR
+				var enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
 				
-				# Create debuff event for enemy (only if we could steal)
-				if can_steal:
-					var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
-						"target_uuids": [enemy.ball_uuid],
-						"ability_id": &"trait_air_steal",
-						"visual_payload": {
-							"source_uuid": enemy.ball_uuid,
-							"stat": "pwr",
-							"amount": - 1,
-							"targets_old_pwr": [enemy_old_pwr],
-							"targets_new_pwr": [enemy_new_pwr]
-						}
-					})
-					total_events.append(debuff_event)
+				# Create debuff event for enemy
+				var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
+					"target_uuids": [enemy.ball_uuid],
+					"ability_id": &"trait_air_steal",
+					"visual_payload": {
+						"source_uuid": enemy.ball_uuid,
+						"stat": "pwr",
+						"amount": - 1,
+						"targets_old_pwr": [enemy_old_pwr],
+						"targets_new_pwr": [enemy_new_pwr]
+					}
+				})
+				total_events.append(debuff_event)
 				
 				# Create buff event for unit - projectile FROM enemy TO Air unit
 				var buff_event = CombatEvent.new(CombatEvent.Type.BUFF, {

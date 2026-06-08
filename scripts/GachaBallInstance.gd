@@ -15,6 +15,10 @@ var level: int = 1
 var current_hp: int
 var current_pwr: int
 
+# --- Stat Debt (Systemic Minimum 1 constraint) ---
+var _hp_debt: int = 0
+var _pwr_debt: int = 0
+
 # --- Location Properties (for temporary battle state) ---
 var location_container_tag: StringName = &""
 var location_slot_index: int = -1
@@ -111,14 +115,11 @@ func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_def): return
 	var hp_delta: int = int(item_def.bonus_hp) if "bonus_hp" in item_def else 0
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
-	var old_hp = self.current_hp
-	var old_pwr = self.current_pwr
-	self.current_hp += hp_delta
-	self.current_pwr += pwr_delta
+	
 	if hp_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, self.current_hp)
+		apply_hp_delta(hp_delta, {"silent": false})
 	if pwr_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, self.current_pwr)
+		apply_pwr_delta(pwr_delta, {"silent": false})
 
 func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
@@ -126,14 +127,11 @@ func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_def): return
 	var hp_delta: int = int(item_def.bonus_hp) if "bonus_hp" in item_def else 0
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
-	var old_hp = self.current_hp
-	var old_pwr = self.current_pwr
-	self.current_hp -= hp_delta
-	self.current_pwr -= pwr_delta
+	
 	if hp_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, self.current_hp)
+		apply_hp_delta(-hp_delta, {"silent": false})
 	if pwr_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, self.current_pwr)
+		apply_pwr_delta(-pwr_delta, {"silent": false})
 
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
@@ -490,21 +488,47 @@ func get_battle_pwr_modifier() -> int:
 	return _sum_components_stat(battle_components, &"pwr", true)
 
 func get_effective_starting_hp(all_instances_db: Dictionary = {}) -> int:
-	return get_definition_base_hp() + get_persistent_hp_modifier() + get_equipment_hp_modifier(all_instances_db) + get_battle_hp_modifier()
+	var total = get_definition_base_hp() + get_persistent_hp_modifier() + get_equipment_hp_modifier(all_instances_db) + get_battle_hp_modifier()
+	return max(1, total)
 
 func get_effective_starting_pwr(all_instances_db: Dictionary = {}) -> int:
-	return get_definition_base_pwr() + get_persistent_pwr_modifier() + get_equipment_pwr_modifier(all_instances_db) + get_battle_pwr_modifier()
+	var total = get_definition_base_pwr() + get_persistent_pwr_modifier() + get_equipment_pwr_modifier(all_instances_db) + get_battle_pwr_modifier()
+	return max(1, total)
 
 func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
 	var old_hp := current_hp
-	current_hp += amount
+	
+	if amount < 0:
+		var max_drop = max(0, current_hp - 1)
+		var actual_drop = min(abs(amount), max_drop)
+		var debt_added = abs(amount) - actual_drop
+		_hp_debt += debt_added
+		current_hp -= actual_drop
+	elif amount > 0:
+		var debt_paid = min(amount, _hp_debt)
+		_hp_debt -= debt_paid
+		var actual_gain = amount - debt_paid
+		current_hp += actual_gain
+		
 	if not bool(context.get("silent", false)) and old_hp != current_hp:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, current_hp)
 	return current_hp
 
 func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 	var old_pwr := current_pwr
-	current_pwr += amount
+	
+	if amount < 0:
+		var max_drop = max(0, current_pwr - 1)
+		var actual_drop = min(abs(amount), max_drop)
+		var debt_added = abs(amount) - actual_drop
+		_pwr_debt += debt_added
+		current_pwr -= actual_drop
+	elif amount > 0:
+		var debt_paid = min(amount, _pwr_debt)
+		_pwr_debt -= debt_paid
+		var actual_gain = amount - debt_paid
+		current_pwr += actual_gain
+		
 	if not bool(context.get("silent", false)) and old_pwr != current_pwr:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
 	return current_pwr
