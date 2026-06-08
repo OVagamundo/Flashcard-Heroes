@@ -271,11 +271,15 @@ func _update_description() -> void:
 			continue
 		
 		var ability_name = tr(ability_def.name_key)
+		if ability_name == ability_def.name_key and ability_def.name_key.begins_with("ability."):
+			ability_name = ""
 		if ability_name.is_empty() or seen_ability_names.has(ability_name):
 			continue
 		seen_ability_names[ability_name] = true
 		
 		var ability_desc = tr(ability_def.description_key)
+		if ability_desc == ability_def.description_key and ability_def.description_key.begins_with("ability."):
+			ability_desc = ""
 		if is_instance_valid(_instance):
 			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
@@ -297,7 +301,7 @@ func _update_description() -> void:
 	
 	var full_text := ""
 	var unit_desc := tr(unit_definition.description_key) if "description_key" in unit_definition else ""
-	if not unit_desc.is_empty() and unit_desc != unit_definition.description_key:
+	if not unit_desc.is_empty() and unit_desc != unit_definition.description_key and abilities_block.is_empty():
 		full_text = unit_desc
 	
 	if not abilities_block.is_empty():
