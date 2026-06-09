@@ -357,32 +357,37 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									continue # Allow overlapping with the unit being replaced
 								has_existing_unit = true
 								break
+						
+						# If there is already a unit, force clear it visually to avoid overlap
 						if has_existing_unit:
-							new_view.queue_free()
-						else:
-							slot_view.add_child(new_view)
-							var new_snapshot = payload.get("new_unit_snapshot", {})
-							if not new_snapshot.is_empty():
-								var new_location = LocationIdentifier.new(container_tag, index)
-								new_view.populate(new_location, new_snapshot, false)
-								new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
-								_visual_registry[new_unit_uuid] = new_view
-								
-								await get_tree().process_frame
-								var rect = new_view.get_global_rect()
-								_position_snapshot[new_unit_uuid] = {
-									"position": rect.position,
-									"size": rect.size,
-									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-								}
-								
-								if arc_completed:
-									new_view.play_landing_bounce()
-								else:
-									if SignalBus.has_signal("unit_summon_fade"):
-										SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
-										Audio.play_sfx("combat_summon")
-										await wait_for_animation_completion("summon_fade", new_unit_uuid)
+							for child in slot_view.get_children():
+								if child.has_method("populate"):
+									child.hide()
+									child.queue_free()
+									
+						slot_view.add_child(new_view)
+						var new_snapshot = payload.get("new_unit_snapshot", {})
+						if not new_snapshot.is_empty():
+							var new_location = LocationIdentifier.new(container_tag, index)
+							new_view.populate(new_location, new_snapshot, false)
+							new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+							_visual_registry[new_unit_uuid] = new_view
+							
+							await get_tree().process_frame
+							var rect = new_view.get_global_rect()
+							_position_snapshot[new_unit_uuid] = {
+								"position": rect.position,
+								"size": rect.size,
+								"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+							}
+							
+							if arc_completed:
+								new_view.play_landing_bounce()
+							else:
+								if SignalBus.has_signal("unit_summon_fade"):
+									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
+									Audio.play_sfx("combat_summon")
+									await wait_for_animation_completion("summon_fade", new_unit_uuid)
 				
 				if arc_completed:
 					await get_tree().create_timer(0.2).timeout

@@ -150,6 +150,10 @@ func _emit_battle_inventory_changed() -> void:
 		# Instantly resolve these updates silently so that stats are computed in real time.
 		# This ensures active units and equipped items update their stats instantly.
 		_combat.process_reaction_queue(self, {})
+		
+		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
+		_flush_deferred_enemy_erasures()
+		
 		SignalBus.emit_signal("battle_inventory_changed")
 		_pending_inventory_refresh = false
 	else:
@@ -1328,6 +1332,8 @@ func _trigger_battle_start_abilities() -> void:
 	AbilityResolver.process_trigger(&"on_board_changed", {})
 	# Instantly resolve starting passive stats/buffs before the first turn begins.
 	_combat.process_reaction_queue(self, {})
+	
+	_flush_deferred_enemy_erasures()
 
 ## Trigger on_turn_start abilities for all units and trinkets.
 func _trigger_turn_start_abilities() -> void:
@@ -1568,7 +1574,7 @@ func _flush_deferred_enemy_erasures() -> void:
 	var erasure_list: Array = get_meta("_deferred_enemy_erasures")
 	for uuid in erasure_list:
 		if _battle_instances.has(uuid):
-			_battle_instances.erase(uuid)
+			_state.bm_remove_instance(uuid)
 	remove_meta("_deferred_enemy_erasures")
 
 func _process_death_slots_end_of_turn(all_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
@@ -2054,6 +2060,9 @@ func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> Gacha
 func _finalize_deaths() -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
 	var something_changed = DeathProcessor.finalize_deaths(self )
+	
+	_flush_deferred_enemy_erasures()
+	
 	if something_changed:
 		_emit_battle_inventory_changed()
 
