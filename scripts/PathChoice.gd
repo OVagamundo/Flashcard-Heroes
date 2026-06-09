@@ -33,12 +33,21 @@ func _ready() -> void:
 	
 	_update_director_run_state(DirectorRunState.Purpose.NODE_GENERATION)
 	
-	# Check for boss based on deck unlock percentage (every 20%: 20%, 40%, 60%, 80%, 100%)
+	var is_half_deck = false
+	if is_instance_valid(GameManager.run_state):
+		is_half_deck = GameManager.run_state.is_half_deck
+		
+	# Check for boss based on deck unlock percentage
 	var boss_level: int = GameManager.run_state.bosses_defeated + 1
 	var threshold: float = boss_level * 0.2
+	var max_bosses: int = 5
+	
+	if is_half_deck:
+		threshold = boss_level * 0.3333
+		max_bosses = 3
 	
 	# Use a small epsilon to handle float precision issues
-	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= 5:
+	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= max_bosses:
 		_setup_boss_node(boss_level)
 	else:
 		_setup_normal_nodes()
@@ -85,7 +94,11 @@ func _setup_normal_nodes() -> void:
 		if t.type == "BATTLE" and t.subtype == "":
 			base_w = 100
 		elif t.type == "BATTLE" and t.subtype == "ELITE":
-			if current_day < 5:
+			var is_half = false
+			if is_instance_valid(GameManager.run_state):
+				is_half = GameManager.run_state.is_half_deck
+			var elite_day_threshold = 3 if is_half else 5
+			if current_day < elite_day_threshold:
 				base_w = 20
 			else:
 				base_w = 80

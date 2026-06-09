@@ -2,7 +2,7 @@
 **Flashcard Heroes** is a single-player roguelike deckbuilder, auto-battler (inspired by *Super Auto Pets* and *Slay the Spire*) that integrates an *Anki*-style spaced repetition system as resource generation mechanic. Players build a collection of **GachaBalls** (Units and Items) to survive encounters and defeat bosses.
 
 2. Core Gameplay Loop
-1. **Loadout**: Select a Hero and a Flashcard Deck.
+1. **Loadout**: Select a Hero, a Flashcard Deck, and the Deck Size ("Full" for a complete run or "Quick/Half" for a shorter, faster run).
 2. **Encounter Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others).
 3. **Resolution**: Resolve the encounter and advance the **Day** (Difficulty scaling).
 4. **Conclusion**: Victory (Final Boss defeated) or Permadeath (Hero HP = 0).
