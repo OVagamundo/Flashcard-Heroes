@@ -398,7 +398,7 @@ static func handle_damage_effect(
 			var attacker_max_hp := 0
 			if is_instance_valid(attacker_inst):
 				var attacker_def = attacker_inst.get_definition()
-				if is_instance_valid(attacker_def):
+				if is_instance_valid(attacker_def) and "base_hp" in attacker_def:
 					attacker_max_hp = attacker_def.base_hp
 			
 			# Log message for Spikes (still a separate event since it's UI only)
@@ -652,7 +652,7 @@ static func handle_cascade_damage(
 			var attacker_max_hp := 0
 			if is_instance_valid(attacker_inst):
 				var attacker_def = attacker_inst.get_definition()
-				if is_instance_valid(attacker_def):
+				if is_instance_valid(attacker_def) and "base_hp" in attacker_def:
 					attacker_max_hp = attacker_def.base_hp
 			
 			# Log message for Spikes (still a separate event since it's UI only)

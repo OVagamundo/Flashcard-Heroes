@@ -30,6 +30,7 @@ extends Resource
 @export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
 @export var ordered_deck_pool: Array[StringName] = [] # The pool of cards ordered by user setting
 @export var deck_def_id: StringName = &"" # The definition ID of the chosen deck
+@export var is_half_deck: bool = false # Tracks if the run uses a quick/half deck
 @export var cards_presented_count: int = 0 # Updates the progressive presentation of cards
 
 # All containers indexed by name (e.g., "RunInventoryT1", "PlayerLineup", etc.)
@@ -49,14 +50,10 @@ static var RUN_CONTAINER_TAGS: Dictionary = {
 func get_deck_unlock_percentage() -> float:
 	"""Returns the percentage of the full deck that has been unlocked (active_deck_ids size / total card_ids).
 	Returns 0.0 if no deck is selected."""
-	if deck_def_id == &"":
-		return 0.0
-	
-	var full_deck = Database.get_cards_for_deck(deck_def_id)
-	if full_deck.is_empty():
+	if ordered_deck_pool.is_empty():
 		return 0.0
 		
-	return float(active_deck_ids.size()) / float(full_deck.size())
+	return float(active_deck_ids.size()) / float(ordered_deck_pool.size())
 
 ## Records an elite encounter in the history
 func record_elite_encounter(elite_id: StringName) -> void:
@@ -733,9 +730,10 @@ func start_new_run() -> void:
 ## Used for weighted encounter generation (pity system)
 @export var elite_encounter_history: Dictionary = {}
 
-func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR") -> void:
+func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
 	start_new_run()
 	self.deck_def_id = deck_id
+	self.is_half_deck = (deck_size == "HALF")
 	
 	# Create hero instance from the selected hero definition
 	var hero_def = Database.get_definition(hero_def_id)
@@ -761,10 +759,21 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	for id in deck_card_ids:
 		ordered_deck_pool.append(StringName(id))
 		
-	if deck_order == "INVERTED":
-		ordered_deck_pool.reverse()
-	elif deck_order == "RANDOM":
-		ordered_deck_pool.shuffle()
+	if deck_size == "HALF":
+		var half_size = max(1, ordered_deck_pool.size() / 2)
+		if deck_order == "INVERTED":
+			ordered_deck_pool = ordered_deck_pool.slice(ordered_deck_pool.size() - half_size, ordered_deck_pool.size())
+			ordered_deck_pool.reverse()
+		elif deck_order == "RANDOM":
+			ordered_deck_pool.shuffle()
+			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
+		else:
+			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
+	else:
+		if deck_order == "INVERTED":
+			ordered_deck_pool.reverse()
+		elif deck_order == "RANDOM":
+			ordered_deck_pool.shuffle()
 		
 	for card_id in ordered_deck_pool:
 		if not flashcard_progress.has(card_id):
@@ -877,6 +886,7 @@ func to_save_dict() -> Dictionary:
 		"total_gold_earned": total_gold_earned,
 		"black_market_remove_cost": black_market_remove_cost,
 		"deck_def_id": String(deck_def_id),
+		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
 		# Serialize all instances
 		"instances": {},
@@ -913,6 +923,7 @@ func from_save_dict(data: Dictionary) -> void:
 	total_gold_earned = data.get("total_gold_earned", 0)
 	black_market_remove_cost = data.get("black_market_remove_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
+	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
 	
 	# Clear and restore instances

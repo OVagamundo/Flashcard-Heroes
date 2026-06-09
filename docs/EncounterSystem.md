@@ -59,8 +59,14 @@ Bosses don't have a cost, they are free.
 
 ### Boss Battle Scheduling
 Boss battles are triggered by **Flashcard Mastery Progression** rather than a fixed day count:
-- **Trigger**: Occurs every time 20% of the total Flashcard deck has been unlocked/introduced (20%, 40%, 60%, 80%, 100%).
+- **Trigger (Full Deck)**: Occurs every time 20% of the selected deck has been unlocked/introduced (20%, 40%, 60%, 80%, 100%). Maximum 5 Bosses.
+- **Trigger (Quick/Half Deck)**: Occurs every time 33.3% of the selected half-deck has been unlocked/introduced (33.3%, 66.6%, 100%). Maximum 3 Bosses.
 - **Behavior**: Overrides the standard node generation to force a Boss encounter.
+
+### Elite Battle Scheduling
+Elite nodes are harder optional encounters that provide better rewards.
+- **Full Deck**: Elites begin appearing on the map starting from Day 5.
+- **Quick/Half Deck**: Elites begin appearing on the map starting from Day 3 to account for the shorter run.
 
 ## Encounter Generation Algorithm
 

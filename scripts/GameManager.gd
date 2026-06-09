@@ -71,13 +71,13 @@ func get_pending_rewards() -> Dictionary:
 		"is_special_victory": run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	}
 
-func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR") -> void:
+func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
 	# User Requirement: Start fresh tutorials every run if enabled
 	if TutorialManager:
 		TutorialManager.reset_all_tutorials()
 		
 	run_state = RunState.new()
-	run_state.initialize_run(hero_def_id, deck_id, deck_order)
+	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	reset_gacha_discounts()
 	SignalBus.emit_signal("main_scene_requested")
 
@@ -86,7 +86,7 @@ func _on_new_game_requested() -> void:
 	var hero_defs = Database.get_hero_definitions()
 	var deck_meta = Database.get_all_deck_metadata()
 	if hero_defs.size() > 0 and deck_meta.size() > 0:
-		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id, "REGULAR")
+		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id, "REGULAR", "FULL")
 	else:
 		return
 
@@ -103,15 +103,14 @@ func _on_battle_ended(results: Dictionary) -> void:
 		print("[GameManager] Boss victory detected! Level: ", run_state.current_boss_level)
 		run_state.bosses_defeated += 1
 		
-		# Check for Boss 5 victory (run complete)
-		if run_state.current_boss_level == 5:
+		var max_boss_level = 3 if run_state.is_half_deck else 5
+		# Check for Boss victory (run complete)
+		if run_state.current_boss_level == max_boss_level:
 			_show_run_complete_popup()
 			return
 
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
-		if run_state.current_boss_level > 0:
-			run_state.bosses_defeated += 1
 		if run_state.current_elite_level > 0:
 			run_state.elites_defeated += 1
 			

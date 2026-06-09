@@ -660,6 +660,9 @@ func _populate_flashcard_progress() -> void:
 	
 	# Create a rectangle for each card in main deck order
 	var boss_thresholds = [0.2, 0.4, 0.6, 0.8, 1.0]
+	if GameManager.run_state.is_half_deck:
+		boss_thresholds = [0.3333, 0.6666, 1.0]
+		
 	var boss_indices = []
 	for t in boss_thresholds:
 		var idx = clampi(ceil(main_deck_cards.size() * t) - 1, 0, main_deck_cards.size() - 1)

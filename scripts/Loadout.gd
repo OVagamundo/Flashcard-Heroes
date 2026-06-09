@@ -42,6 +42,7 @@ var _selected_deck_index: int = 0
 var _selected_hero_def: GachaBallDefinition = null
 var _selected_deck_meta: Dictionary = {}
 var deck_order_option: OptionButton # Deck order selection
+var deck_size_option: OptionButton # Deck size selection
 
 var _test_starters: Array[StringName] = []
 var _test_starters_label: Label
@@ -73,6 +74,21 @@ func _ready() -> void:
 	
 	order_container.add_child(order_label)
 	order_container.add_child(deck_order_option)
+	
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(20, 0)
+	order_container.add_child(spacer)
+	
+	var size_label = Label.new()
+	size_label.text = tr("ui.deck_size") if tr("ui.deck_size") != "ui.deck_size" else "Deck Size:"
+	
+	deck_size_option = OptionButton.new()
+	deck_size_option.add_item(tr("ui.deck_size.full") if tr("ui.deck_size.full") != "ui.deck_size.full" else "Full (complete deck)", 0)
+	deck_size_option.add_item(tr("ui.deck_size.half") if tr("ui.deck_size.half") != "ui.deck_size.half" else "Quick (half deck)", 1)
+	
+	order_container.add_child(size_label)
+	order_container.add_child(deck_size_option)
+	
 	deck_carousel.get_parent().add_child(order_container)
 	
 	# Create Test Starters UI
@@ -472,12 +488,17 @@ func _on_start_run_pressed() -> void:
 		elif deck_order_option.selected == 2:
 			order_str = "RANDOM"
 	
+	var size_str = "FULL"
+	if is_instance_valid(deck_size_option):
+		if deck_size_option.selected == 1:
+			size_str = "HALF"
+	
 	# Pass test starters
 	GameManager.test_starting_items = _test_starters.duplicate()
 	
 	# Ensure test mode is off for normal runs
 	GameManager.is_test_mode = false
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str, size_str)
 
 
 func _on_test_mode_pressed() -> void:
@@ -495,6 +516,11 @@ func _on_test_mode_pressed() -> void:
 		elif deck_order_option.selected == 2:
 			order_str = "RANDOM"
 	
+	var size_str = "FULL"
+	if is_instance_valid(deck_size_option):
+		if deck_size_option.selected == 1:
+			size_str = "HALF"
+	
 	# Pass test starters
 	GameManager.test_starting_items = _test_starters.duplicate()
 	
@@ -502,4 +528,4 @@ func _on_test_mode_pressed() -> void:
 	GameManager.is_test_mode = true
 	
 	# Trigger normal run start
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str, size_str)

@@ -11,7 +11,7 @@ Encounter Budget System
 This system ensures that the challenge of battle nodes scales directly with the player's progress through a run.
 Budget Formula: `3 + (Day - 1)` Gold
 Elite/Boss Multipliers: For ELITE or BOSS support units, the total budget is **0.85x** of the daily budget (since the Elite/Boss unit itself is free).
-Scheduling: Bosses appear when the player reaches specific deck unlock thresholds (every 20%: 20%, 40%, 60%, 80%, 100%).
+Scheduling: Bosses appear when the player reaches specific deck unlock thresholds. For a Full Deck, this is every 20% (maximum 5 bosses). For a Quick/Half Deck, this is every 33.3% (maximum 3 bosses).
 Generator's Role: The EncounterGenerator uses this budget to "purchase" a team of units and items from the pool of all available GachaBallDefinition resources. For more details, see docs/EncounterSystem.md.
 Effect of Scaling: As the Day counter increases, the budget grows, resulting in enemy teams that are progressively more powerful. In later days, players will face enemies that have:
 More numerous or higher-tier units.
