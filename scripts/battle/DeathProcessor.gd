@@ -79,7 +79,6 @@ static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstan
 					state.update_instance_location(item_instance.ball_uuid, &"", -1)
 					deferred_erasures.append(item_instance.ball_uuid)
 		unit.equipped_item_uuids.fill("")
-		InventoryOperations.remove_instance_from_container(state, unit)
 		deferred_erasures.append(unit.ball_uuid)
 
 # ============================================================================
@@ -399,10 +398,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-				
-				deferred_deaths.append(unit.ball_uuid)
+						deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
-				bm._perform_unit_death_cleanup(unit)
+				if register_death(bm._state, unit, &"COMBAT"):
+					bm._perform_unit_death_cleanup(unit)
 	
 	# Check enemy units (LINEUP only - bench items are not combatants)
 	var enemy_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
@@ -427,10 +426,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-				
-				deferred_deaths.append(unit.ball_uuid)
+						deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
-				bm._perform_unit_death_cleanup(unit)
+				if register_death(bm._state, unit, &"COMBAT"):
+					bm._perform_unit_death_cleanup(unit)
 	
 	# -------------------------------------------------------------------------
 	# UNIFIED PRIORITY BATCHING

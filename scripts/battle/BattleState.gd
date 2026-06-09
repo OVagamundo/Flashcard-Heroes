@@ -300,68 +300,53 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 	var instance := get_instance(uuid)
 	assert(is_instance_valid(instance), "bm_remove_instance: instance not found for uuid " + uuid)
 	var loc := instance.get_location()
-	if not is_instance_valid(loc):
-		return result
 	
-	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var parent := get_instance(loc.unit_uuid)
-		if not is_instance_valid(parent):
-			return result
-		if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
-			return result
-		# Remove bonuses from the parent before clearing the mapping
-		parent.unequip_item_bonus(instance)
-		parent.equipped_item_uuids[loc.index] = ""
-		instance.equipped_on_uuid = ""
-		instance.equipped_slot_index = -1
-		update_instance_location(instance.ball_uuid, &"", -1)
-		result.unit_changed_uuid = parent.ball_uuid
-	else:
-		# If this is a player unit with equipped items, unequip and move them to inventory
-		if instance.equipped_item_uuids.size() > 0:
-			if is_player_unit(instance):
-				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-				for i in range(instance.equipped_item_uuids.size()):
-					var it_uuid := instance.equipped_item_uuids[i]
-					if it_uuid.is_empty():
-						continue
-					var it := get_instance(it_uuid)
-					if not is_instance_valid(it):
-						continue
-					instance.equipped_item_uuids[i] = ""
-					it.equipped_on_uuid = ""
-					it.equipped_slot_index = -1
-					if is_instance_valid(inv):
-						var empty := inv.find_first_empty_slot()
-						if empty != -1:
-							inv.set_uuid(empty, it.ball_uuid)
-							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
-						else:
-							return result
-			else:
-				# Enemy unit: destroy equipped items
-				for it_uuid in instance.equipped_item_uuids:
-					if not it_uuid.is_empty():
-						_battle_instances.erase(it_uuid)
-		# Extra hardening: clear any stray items that believe they are equipped on this unit
-		if is_player_unit(instance):
-			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-			for k in _battle_instances.keys():
-				var maybe_item: GachaBallInstance = _battle_instances[k]
-				if not is_instance_valid(maybe_item):
-					continue
-				if maybe_item.equipped_on_uuid == instance.ball_uuid:
-					maybe_item.equipped_on_uuid = ""
-					maybe_item.equipped_slot_index = -1
-					if is_instance_valid(inv2):
-						var empty2 := inv2.find_first_empty_slot()
-						if empty2 != -1:
-							inv2.set_uuid(empty2, maybe_item.ball_uuid)
-							update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty2)
-						else:
-							return result
-		remove_instance_from_container(instance)
-	
+	# Only attempt to clear from containers if the location is valid
+	if is_instance_valid(loc):
+		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+			var parent := get_instance(loc.unit_uuid)
+			if not is_instance_valid(parent):
+				return result
+			if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
+				return result
+			# Remove bonuses from the parent before clearing the mapping
+			parent.unequip_item_bonus(instance)
+			parent.equipped_item_uuids[loc.index] = ""
+			instance.equipped_on_uuid = ""
+			instance.equipped_slot_index = -1
+			update_instance_location(instance.ball_uuid, &"", -1)
+			result.unit_changed_uuid = parent.ball_uuid
+		else:
+			# If this is a player unit with equipped items, unequip and move them to inventory
+			if instance.equipped_item_uuids.size() > 0:
+				if is_player_unit(instance):
+					var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+					for i in range(instance.equipped_item_uuids.size()):
+						var it_uuid := instance.equipped_item_uuids[i]
+						if it_uuid.is_empty():
+							continue
+						var it := get_instance(it_uuid)
+						if not is_instance_valid(it):
+							continue
+						instance.equipped_item_uuids[i] = ""
+						it.equipped_on_uuid = ""
+						it.equipped_slot_index = -1
+						if is_instance_valid(inv):
+							var empty := inv.find_first_empty_slot()
+							if empty != -1:
+								inv.set_uuid(empty, it.ball_uuid)
+								update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
+								result.unit_changed_uuid = instance.ball_uuid
+							else:
+								push_warning("Inventory full while unequipping item %s" % it.ball_uuid)
+				else:
+					pass
+			
+			if loc.container != &"":
+				var c = get_container(loc.container)
+				if is_instance_valid(c) and loc.index >= 0:
+					c.set_uuid(loc.index, "")
+	# Finally remove it, even if it had no valid container location
 	_battle_instances.erase(uuid)
 	result.success = true
 	return result
