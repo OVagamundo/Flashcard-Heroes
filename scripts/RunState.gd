@@ -12,7 +12,10 @@ extends Resource
 @export var elites_defeated: int = 0
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
+@export var total_tokens_earned: int = 0
 @export var black_market_remove_cost: int = 5
+@export var merge_encounter_cost: int = 5
+@export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
 @export var last_elite_id: StringName = &""
 
@@ -554,6 +557,7 @@ func add_gold(amount: int, silent: bool = false) -> bool:
 	if amount < 0:
 		return spend_gold(-amount, silent)
 	gold += amount
+	total_gold_earned += amount
 	if OS.is_debug_build():
 		_validate_state_consistency()
 	if not silent:

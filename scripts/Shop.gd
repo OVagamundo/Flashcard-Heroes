@@ -11,6 +11,7 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 @onready var reroll_button: Button = %RerollButton
 @onready var leave_button: Button = %LeaveButton
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 
 var _current_shop_instances: Array = []
 var _selected_cost: int = 0
@@ -49,6 +50,8 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")
+	if description_label:
+		description_label.text = tr("ui.shop_desc")
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 	leave_button.text = tr("ui.leave")
 
@@ -98,11 +101,6 @@ func populate(context: Dictionary) -> void:
 	
 	_update_fixed_price_tags()
 	_animate_staggered_entry()
-	
-	# Show shop tutorial
-	TutorialManager.show_tutorial(&"shop_intro", [
-		{"text": tr("tutorial.shop")}
-	])
 
 func _animate_staggered_entry() -> void:
 	"""Animate gachaballs appearing one-by-one with landing bounce"""

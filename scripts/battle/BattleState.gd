@@ -175,7 +175,10 @@ func get_gacha_tokens() -> int:
 	return _gacha_tokens
 
 func add_gacha_tokens(amount: int) -> void:
+	if amount <= 0: return
 	_gacha_tokens += amount
+	if is_instance_valid(GameManager.run_state):
+		GameManager.run_state.total_tokens_earned += amount
 
 func spend_gacha_tokens(amount: int) -> bool:
 	if _gacha_tokens < amount:
@@ -345,7 +348,8 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 			if loc.container != &"":
 				var c = get_container(loc.container)
 				if is_instance_valid(c) and loc.index >= 0:
-					c.set_uuid(loc.index, "")
+					if c.get_uuid(loc.index) == instance.ball_uuid:
+						c.set_uuid(loc.index, "")
 	# Finally remove it, even if it had no valid container location
 	_battle_instances.erase(uuid)
 	result.success = true

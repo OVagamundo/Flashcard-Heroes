@@ -19,5 +19,5 @@ base_hp = 5
 base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
-tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH"])
+tags = Array[StringName]([&"intercept_lethal", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH"])
 ability_definitions = Array[Resource]([ExtResource("3_ability")])

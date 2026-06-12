@@ -5,6 +5,7 @@ extends Control
 ## Merging here bypasses recipe locks and unlocks the recipe for the run.
 
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var leave_button: Button = %LeaveButton
 
@@ -39,13 +40,22 @@ func _process(_delta: float) -> void:
 		if is_instance_valid(main_node):
 			if is_open:
 				if main_node.has_method("show_action_instruction"):
-					main_node.show_action_instruction(tr("ui.merge_encounter_instruction"))
+					var cost = 5
+					if is_instance_valid(GameManager.run_state):
+						cost = GameManager.run_state.merge_encounter_cost
+					main_node.show_action_instruction(tr("ui.merge_encounter_instruction").format({"cost": str(cost)}))
 			else:
 				if main_node.has_method("hide_action_instruction"):
 					main_node.hide_action_instruction()
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.merge_encounter_title")
+	
+	var cost = 5
+	if is_instance_valid(GameManager.run_state):
+		cost = GameManager.run_state.merge_encounter_cost
+	description_label.text = tr("ui.merge_encounter_description").format({"cost": str(cost)})
+	
 	open_inventory_button.text = tr("ui.merge_encounter_open_inventory")
 	leave_button.text = tr("ui.leave")
 

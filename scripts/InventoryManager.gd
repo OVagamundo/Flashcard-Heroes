@@ -367,7 +367,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	# --- MERGE ENCOUNTER LOGIC ---
 	if MergeManager.is_merge_encounter_active():
-		if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 5:
+		if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < GameManager.run_state.merge_encounter_cost:
 			# Play rejection feedback
 			var RejectionFeedbackScript = load("res://scripts/vfx/RejectionFeedback.gd")
 			var main_node = GameManager._active_main_node
@@ -397,13 +397,13 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	# DATA MUTATION: Perform all backend changes immediately so they are batched into a single UI refresh
 	if MergeManager.is_merge_encounter_active() and is_instance_valid(GameManager.run_state):
-		GameManager.run_state.spend_gold(5)
+		GameManager.run_state.spend_gold(GameManager.run_state.merge_encounter_cost)
 		GameManager.run_state.unlock_recipe_for_result(result_def.id)
 
 	# Context-aware placement logic
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
-	var is_board_merge = target_loc.container.begins_with("Player")
+	var is_board_merge = target_loc.container == C.CONTAINER_PLAYER_LINEUP or target_loc.container == C.CONTAINER_PLAYER_BENCH
 	var placed_container: StringName = &""
 	var placed_index: int = -1
 

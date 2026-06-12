@@ -29,10 +29,6 @@ func _ready() -> void:
 	# Ensure popup handles input while game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Initial state for animation
-	modulate.a = 0.0
-	popup_panel.scale = Vector2(0.9, 0.9)
-	
 	# Pause the game
 	get_tree().paused = true
 	
@@ -41,8 +37,6 @@ func _ready() -> void:
 	
 	# Initial hide of pointer line
 	pointer_line.hide()
-	
-	_play_open_animation()
 
 
 func populate(context: Dictionary) -> void:
@@ -56,31 +50,17 @@ func populate(context: Dictionary) -> void:
 		return
 	
 	_update_page_display()
-	_reposition_window()
-	_update_pointer()
-	_update_pointer()
-
-
-func _play_open_animation() -> void:
-	# Instant visibility
-	modulate.a = 1.0
-	popup_panel.scale = Vector2.ONE
-	show()
-
-	# Ensure pivot is centered for bounce effect
-	# Wait for layout to settle sizes
+	
+	# Wait for layout to settle sizes before repositioning
 	await get_tree().process_frame
+	if not is_inside_tree():
+		return
+		
 	_reposition_window()
-	popup_panel.pivot_offset = popup_panel.size / 2.0
-	
-	# Tween: Subtle bouncy overshoot AFTER it's open
-	var tween = create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	
-	# Subtle overshoot (1.0 -> 1.04 -> 1.0)
-	# 0.1s up, 0.15s back to neutral
-	tween.tween_property(popup_panel, "scale", Vector2(1.04, 1.04), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(popup_panel, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_update_pointer()
+
+
+
 
 
 func _reposition_window() -> void:

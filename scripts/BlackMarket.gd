@@ -9,6 +9,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var leave_button: Button = %LeaveButton
 
@@ -25,7 +26,6 @@ func _ready() -> void:
 	SignalBus.action_drop_zone_1_activated.connect(_on_transform_requested)
 	_update_localized_text()
 	set_process(true)
-	call_deferred("_show_black_market_tutorial")
 
 func _exit_tree() -> void:
 	if SignalBus.locale_changed.is_connected(_update_localized_text):
@@ -60,6 +60,8 @@ func _process(_delta: float) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.black_market_title")
+	if description_label:
+		description_label.text = tr("ui.black_market_desc")
 	open_inventory_button.text = tr("ui.black_market_open_inventory")
 	leave_button.text = tr("ui.leave")
 
@@ -149,6 +151,15 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 			GameManager.run_state.remove_instance(item_data.uuid)
 			if GameManager.run_state.has_method("increase_black_market_remove_cost"):
 				GameManager.run_state.increase_black_market_remove_cost()
+
+			# Refresh drop zone texts dynamically
+			if is_instance_valid(main_node):
+				if main_node.has_method("set_action_zone_texts"):
+					var transform_text = tr("ui.bm_drop_transform").format({"cost": str(TRANSFORM_COST_GOLD)})
+					var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
+					main_node.set_action_zone_texts(transform_text, remove_text)
+				if main_node.has_method("show_split_action_drop_zones"):
+					main_node.show_split_action_drop_zones()
 
 			# Clear selection
 			SignalBus.emit_signal("selection_clear_requested")
@@ -486,18 +497,16 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 	wait_tween.tween_interval(total_wait)
 	wait_tween.tween_callback(on_complete)
 
-func _show_black_market_tutorial() -> void:
-	TutorialManager.show_tutorial(&"black_market_intro", [
-		{
-			"text": "tutorial.black_market_intro",
-			"center": true
-		}
-	], open_inventory_button)
-
 func _on_open_inventory_pressed() -> void:
 	if WindowManager.is_any_inspection_window_open():
 		WindowManager.close_all_inspection_windows()
 	else:
+		var main_node = GameManager._active_main_node
+		if is_instance_valid(main_node) and main_node.has_method("set_action_zone_texts"):
+			var transform_text = tr("ui.bm_drop_transform").format({"cost": str(TRANSFORM_COST_GOLD)})
+			var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
+			main_node.set_action_zone_texts(transform_text, remove_text)
+			
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:

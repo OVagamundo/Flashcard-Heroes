@@ -27,6 +27,20 @@ func _ready() -> void:
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
 	# Prune only child windows when clicking on this window's background
 	gui_input.connect(_on_panel_gui_input)
+	
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
+
+func _update_localized_text() -> void:
+	swap_button.text = tr("ui.btn_swap")
+	
+	if MergeManager.is_merge_encounter_active():
+		var cost = 5
+		if is_instance_valid(GameManager.run_state):
+			cost = GameManager.run_state.merge_encounter_cost
+		merge_button.text = tr("ui.btn_merge_cost").format({"cost": str(cost)})
+	else:
+		merge_button.text = tr("ui.btn_merge")
 
 func _on_panel_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
@@ -39,6 +53,9 @@ func _exit_tree() -> void:
 	# Release interaction lock
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.emit_signal("interaction_lock_requested", false)
+		
+	if SignalBus.locale_changed.is_connected(_update_localized_text):
+		SignalBus.locale_changed.disconnect(_update_localized_text)
 		
 	# Restore visibility of source view if it was hidden (e.g. on Cancel)
 	if _source_view_instance_id != -1:
@@ -61,6 +78,8 @@ func populate(context: Dictionary) -> void:
 	_recipe_id = context.get("recipe_id")
 	_source_view_instance_id = context.get("source_view_id", -1)
 
+	_update_localized_text()
+
 
 	# MODIFIED: All button configuration logic is now here, inside populate().
 	# This guarantees it runs AFTER the context data has been received.
@@ -70,7 +89,7 @@ func populate(context: Dictionary) -> void:
 		
 		# MERGE ENCOUNTER: Disable if not enough gold
 		if MergeManager.is_merge_encounter_active():
-			if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 5:
+			if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < GameManager.run_state.merge_encounter_cost:
 				merge_button.disabled = true
 		# Ensure we don't connect the signal multiple times if populate were ever called again.
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
