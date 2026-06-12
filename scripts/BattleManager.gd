@@ -495,6 +495,8 @@ func get_gacha_tokens() -> int:
 func add_gacha_token(amount: int = 1) -> void:
 	"""Add gacha tokens and emit signal for UI update. Used for live token updates."""
 	_gacha_tokens += amount
+	if amount > 0 and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.total_tokens_earned += amount
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
 func get_current_phase_name() -> StringName:
@@ -1170,11 +1172,20 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				if old_spikes > 0:
 					var attacker = get_instance_by_uuid(attacker_uuid)
 					if is_instance_valid(attacker) and attacker.current_hp > 0:
-						# Deal spikes damage to attacker (bypasses armor, direct HP damage)
+						# Deal spikes damage to attacker (respects armor)
 						var spikes_damage = old_spikes
 						var attacker_old_hp = attacker.current_hp
-						var attacker_new_hp = max(0, attacker_old_hp - spikes_damage)
-						attacker.set_current_hp_silent(attacker_new_hp)
+						
+						var damage_result = apply_stat_delta(attacker, "hp", -spikes_damage, false, "")
+						
+						var attacker_new_hp = attacker.current_hp
+						var spikes_armor_consumed = 0
+						var spikes_new_armor = attacker.get_status_effect_amount(&"armor")
+						
+						if damage_result is Dictionary:
+							attacker_new_hp = damage_result.get("new_hp", attacker_new_hp)
+							spikes_armor_consumed = damage_result.get("armor_consumed", 0)
+							spikes_new_armor = damage_result.get("new_armor", spikes_new_armor)
 						
 						# Decay spikes by 1 stack
 						instance.add_status_effect_silent(&"spikes", -1)
@@ -1184,6 +1195,8 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						spikes_data = {
 							"spikes_triggered": true,
 							"spikes_damage": spikes_damage,
+							"armor_consumed": spikes_armor_consumed,
+							"new_armor": spikes_new_armor,
 							"attacker_uuid": attacker_uuid,
 							"attacker_old_hp": attacker_old_hp,
 							"attacker_new_hp": attacker_new_hp,

@@ -12,7 +12,8 @@ const COST_TIER1: int = 1
 const COST_TIER2: int = 2
 const COST_TIER3: int = 3
 
-@onready var title_label: Control = %StudyButton
+@onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var prize_lineup: HBoxContainer = %PrizeLineup
 @onready var study_button: Button = %StudyButton
 @onready var leave_button: Button = %LeaveButton
@@ -120,6 +121,10 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 		button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
 
 func _update_localized_text() -> void:
+	if is_instance_valid(title_label):
+		title_label.text = tr("ui.rewards_title")
+	if is_instance_valid(description_label):
+		description_label.text = tr("ui.reward_desc")
 	
 	study_button.text = tr("ui.study")
 	leave_button.text = tr("ui.leave")
@@ -230,6 +235,8 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		if _trinity_t1_drawn and _trinity_t2_drawn and _trinity_t3_drawn:
 			_trinity_rewarded = true
 			_tokens += 1
+			if is_instance_valid(GameManager.run_state):
+				GameManager.run_state.total_tokens_earned += 1
 			_update_token_display()
 			_animate_trinity_token_gain()
 	

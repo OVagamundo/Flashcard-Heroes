@@ -12,6 +12,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var leave_button: Button = %LeaveButton
 
@@ -88,6 +89,8 @@ func _process(_delta: float) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.utg_title")
+	if description_label:
+		description_label.text = tr("ui.utg_desc")
 	open_inventory_button.text = tr("ui.utg_btn")
 	leave_button.text = tr("ui.leave")
 

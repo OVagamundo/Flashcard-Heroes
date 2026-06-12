@@ -252,6 +252,8 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		var _old_spikes = int(spikes_data.get("old_spikes", 0))
 		var new_spikes = int(spikes_data.get("new_spikes", 0))
 		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
+		var armor_consumed = int(spikes_data.get("armor_consumed", 0))
+		var new_armor = int(spikes_data.get("new_armor", 0))
 		
 		if attacker_uuid.is_empty() or spikes_damage <= 0:
 			continue
@@ -259,11 +261,22 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		# Play spike damage sound
 		Audio.play_sfx("combat_hit")
 		
-		# Spawn floating damage number at attacker (white/spikes color)
-		_spawn_floating_spikes_damage(animator, attacker_uuid, spikes_damage)
+		# ARMOR EFFECTS FIRST (before HP)
+		if armor_consumed > 0:
+			# Spawn grey floating damage number for armor
+			_spawn_floating_armor_damage(animator, attacker_uuid, armor_consumed)
+			# Animate armor label countdown
+			animator.apply_armor_delta(attacker_uuid, armor_consumed, new_armor)
+			# Longer pause between armor and HP updates for player to register
+			await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+
+		var hp_damage = spikes_damage - armor_consumed
 		
-		# Update attacker HP
-		animator.apply_hp_delta(attacker_uuid, -spikes_damage, attacker_new_hp)
+		if hp_damage > 0:
+			# Spawn floating damage number at attacker (white/spikes color)
+			_spawn_floating_spikes_damage(animator, attacker_uuid, hp_damage)
+			# Update attacker HP
+			animator.apply_hp_delta(attacker_uuid, -hp_damage, attacker_new_hp)
 		
 		# Update defender's Spikes stacks
 		if not defender_uuid.is_empty():

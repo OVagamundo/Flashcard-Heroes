@@ -302,3 +302,9 @@ func get_unit_name(uuid: String) -> String:
 			return String(def.id)
 	
 	return uuid.substr(0, 8) + "..."
+func _init() -> void:
+	# Clear the log file at the start of every session so we only get the latest output
+	var file := FileAccess.open("res://log.txt", FileAccess.WRITE)
+	if is_instance_valid(file):
+		file.store_string("")
+		file.close()

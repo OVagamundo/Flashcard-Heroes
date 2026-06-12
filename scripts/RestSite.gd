@@ -30,14 +30,13 @@ enum SiteType { HP, PWR, GOLD }
 @onready var prize_lineup: HBoxContainer = %PrizeLineup
 @onready var hero_slot: Control = %HeroSlot
 @onready var title_label: Label = $VBoxContainer/TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var effects_layer: CanvasLayer = $EffectsLayer
 
 # Token costs
 const COST_TIER1: int = 1
 const COST_TIER2: int = 2
 const COST_TIER3: int = 3
-
-const STUDY_COST_GOLD: int = 5
 
 # State
 var _tokens: int = 0
@@ -79,33 +78,24 @@ func setup_site() -> void:
 	"""Call this after setting site_type to correctly initialize visuals and tutorials"""
 	_update_localized_text()
 	_setup_machine_visuals()
-	
-	# Show site-specific tutorial
-	var tutorial_key = "rest_site_intro"
-	var tutorial_text = "tutorial.rest_site"
-	
-	match site_type:
-		SiteType.PWR:
-			tutorial_key = "training_grounds_intro"
-			tutorial_text = "tutorial.training_grounds"
-		SiteType.GOLD:
-			tutorial_key = "gambling_den_intro"
-			tutorial_text = "tutorial.gambling_den"
-			
-	TutorialManager.show_tutorial(tutorial_key, [
-		{"text": tr(tutorial_text)}
-	])
 
 func _update_localized_text() -> void:
+	var cost = 5
+	if is_instance_valid(GameManager.run_state):
+		cost = GameManager.run_state.get_tokens_cost
+
 	match site_type:
 		SiteType.HP:
 			title_label.text = tr("ui.rest_site")
+			description_label.text = tr("ui.rest_site_desc")
 		SiteType.PWR:
 			title_label.text = tr("ui.training_grounds")
+			description_label.text = tr("ui.training_grounds_desc")
 		SiteType.GOLD:
 			title_label.text = tr("ui.gambling_den")
+			description_label.text = tr("ui.gambling_den_desc")
 	
-	study_button.text = tr("ui.study")
+	study_button.text = tr("ui.rest_study") % cost
 	leave_button.text = tr("ui.leave")
 
 func _setup_machine_visuals() -> void:
@@ -192,7 +182,11 @@ func _on_study_pressed() -> void:
 	var main_node = GameManager._active_main_node
 	var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 	
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < STUDY_COST_GOLD:
+	var cost = 5
+	if is_instance_valid(GameManager.run_state):
+		cost = GameManager.run_state.get_tokens_cost
+		
+	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < cost:
 		RejectionFeedbackScript.play_rejection_with_counter(study_button, gold_group, get_tree())
 		return
 	
@@ -201,8 +195,8 @@ func _on_study_pressed() -> void:
 	
 	var target_pos = study_button.get_global_rect().get_center()
 	
-	_animate_gold_spend(STUDY_COST_GOLD, target_pos, func():
-		if is_instance_valid(GameManager.run_state) and GameManager.run_state.spend_gold(STUDY_COST_GOLD):
+	_animate_gold_spend(cost, target_pos, func():
+		if is_instance_valid(GameManager.run_state) and GameManager.run_state.spend_gold(cost):
 			FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 		else:
 			_has_studied = false

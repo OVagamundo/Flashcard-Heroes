@@ -49,6 +49,11 @@ func _ready() -> void:
 	SignalBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 	SignalBus.reward_reroll_requested.connect(_on_reward_reroll_requested)
+	SignalBus.flashcard_token_earned.connect(_on_flashcard_token_earned)
+
+func _on_flashcard_token_earned(amount: int) -> void:
+	if is_instance_valid(run_state) and amount > 0:
+		run_state.total_tokens_earned += amount
 
 # ADD THESE TWO FUNCTIONS
 func register_battle_manager(bm: Node) -> void:
@@ -113,8 +118,6 @@ func _on_battle_ended(results: Dictionary) -> void:
 	if is_victory:
 		if run_state.current_elite_level > 0:
 			run_state.elites_defeated += 1
-			
-		run_state.total_enemies_defeated += 1
 		
 		# Emit the signal. The levels are NOT reset here, ensuring that 
 		# _on_battle_won_rewards_pending can correctly identify the encounter type.
@@ -125,11 +128,18 @@ func _on_battle_ended(results: Dictionary) -> void:
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
 func _show_run_complete_popup() -> void:
+	var flashcard_progress: Dictionary = {}
+	if is_instance_valid(run_state) and run_state.flashcard_progress != null:
+		flashcard_progress = run_state.flashcard_progress
+		
 	var context = {
 		"days": run_state.day,
 		"bosses_defeated": run_state.bosses_defeated,
 		"enemies_defeated": run_state.total_enemies_defeated,
-		"gold_earned": run_state.total_gold_earned
+		"elites_defeated": run_state.elites_defeated,
+		"gold_earned": run_state.total_gold_earned,
+		"tokens_earned": run_state.total_tokens_earned,
+		"flashcard_progress": flashcard_progress
 	}
 	WindowManager.open_modal_window(&"RunCompletePopup", context)
 

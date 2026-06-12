@@ -48,6 +48,16 @@ theme_override_constants/outline_size = 4
 text = "Shop"
 horizontal_alignment = 1
 
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Description text"
+horizontal_alignment = 1
+
 [node name="RerollButton" type="Button" parent="VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 70)

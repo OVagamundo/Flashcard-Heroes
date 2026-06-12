@@ -25,6 +25,9 @@ static func register_death(state: BattleState, unit: GachaBallInstance, phase: S
 		return false # Already dead this turn
 	
 	var is_player := state.is_player_unit(unit)
+	if not is_player and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.total_enemies_defeated += 1
+		
 	dead_this_turn[unit.ball_uuid] = {
 		"team": "PLAYER" if is_player else "ENEMY",
 		"died_in_phase": phase,

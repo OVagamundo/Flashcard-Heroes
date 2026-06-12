@@ -1725,7 +1725,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var drag_payload := _prepare_drag_payload()
 	if drag_payload.is_empty():
 		return null
-	set_drag_preview(drag_payload["preview"])
+	# We omit calling set_drag_preview() here because we use a custom
+	# drag overlay layer in GlobalInteractionRouter. 
+	# Passing an engine preview stub often causes a harmless but annoying 
+	# Godot Engine C++ error: "Don't free the control set as drag preview"
 	return drag_payload["data"]
 
 func _can_drop_data(_at_position, data) -> bool:

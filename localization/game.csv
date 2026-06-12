@@ -1,4 +1,4 @@
-﻿keys,en,pt_BR
+keys,en,pt_BR
 hero.name,Bounty Hunter,CaÃ§ador de Recompensas
 hero.desc,"A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.","Um caÃ§ador habilidoso que lucra com cada morte e fica mais forte com perdas. Ganha ouro por cada inimigo morto, e ganha +1 HP e +1 PWR quando aliados morrem."
 enemy_hero.name,Enemy Hero,HerÃ³i Inimigo
@@ -214,11 +214,20 @@ ui.tier_1,Tier 1,NÃ­vel 1
 ui.tier_2,Tier 2,NÃ­vel 2
 ui.tier_3,Tier 3,NÃ­vel 3
 ui.show,Show,Mostrar
-ui.run_complete_message,You have defeated all 5 bosses and completed your run!,VocÃª derrotou todos os 5 chefes e completou sua jogatina!
+ui.run_complete_message,You have defeated all %d bosses and completed your run!,VocÃª derrotou todos os %d chefes e completou sua jogatina!
 ui.final_statistics,Final Statistics,EstatÃ­sticas Finais
 ui.days_survived,Days Survived,Dias Sobrevividos
 ui.bosses_defeated,Bosses Defeated,Chefes Derrotados
+ui.elites_defeated,Elites Defeated,Elites Derrotados
+ui.enemies_slain,Enemies Slain,Inimigos Derrotados
 ui.gold_earned,Gold Earned,Ouro Ganho
+ui.tokens_earned,Tokens Earned,Fichas Ganhas
+ui.flashcards_mastered,Flashcards Mastered,Flashcards Dominados
+ui.mastery_breakdown,Mastery Breakdown,NÃ­veis de DomÃ­nio
+ui.mastery_level_2,Mastery 2 (Hard),DomÃ­nio 2 (DifÃ­cil)
+ui.mastery_level_3,Mastery 3 (Medium),DomÃ­nio 3 (MÃ©dio)
+ui.mastery_level_4,Mastery 4 (Easy),DomÃ­nio 4 (FÃ¡cil)
+ui.mastery_level_5,Mastery 5 (Very Easy),DomÃ­nio 5 (Muito FÃ¡cil)
 ui.take_gold_amount,Take %d Gold instead,Prefiro %d de Ouro
 ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
 ui.tokens_count,Tokens: %d,Fichas: %d
@@ -250,7 +259,7 @@ ui.score,Score: %d,PontuaÃ§Ã£o: %d
 ui.answer,Answer: %s,Resposta: %s
 ui.explanation,Explanation: %s,ExplicaÃ§Ã£o: %s
 ui.no_explanation,No explanation available,Nenhuma explicaÃ§Ã£o disponÃ­vel
-ui.study,Get Tokens!,Ganhar Fichas!
+ui.study,"Get Tokens!","Ganhar Fichas!"
 ui.stat_prize,Stat Prize,PrÃªmio de Atributo
 ui.show_tutorials,Show Tutorials & Tooltips,Mostrar Tutoriais e Dicas
 ui.review_title,Get Tokens!,Ganhar Fichas!
@@ -495,7 +504,7 @@ ui.utg_popup_title,Use your Tokens to train!,Use suas Fichas para treinar!
 ui.utg_done,Done!,Pronto!
 ui.merge_encounter_title,Merge Encounter,Encontro de FusÃ£o
 ui.merge_encounter_open_inventory,CLICK HERE TO MERGE!,CLIQUE AQUI PARA FUNDIR!
-ui.merge_encounter_instruction,Click or Drag and Drop one gachaball on another valid one to Merge! Cost: 5 Gold (Merging here unlocks that recipe for the rest of the run!),Clique ou Arraste uma gachaball sobre outra vÃ¡lida para Fundir! Custo: 5 Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)
+ui.merge_encounter_instruction,"Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!)","Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
 unit_t3_i.name,Doppleganger,Doppleganger
 unit_t3_i.desc,Volatile clone.,Clone volÃ¡til.
 ability.doppleganger_scale.name,Mirrored Might,ForÃ§a Espelhada
@@ -566,3 +575,20 @@ ability.trinket_spiked_armor.name,"Spiked Armor","Armadura de Espinhos"
 ability.trinket_spiked_armor.desc,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].","No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
 
 
+ui.merge_encounter_description,"Merge or level up your Gachamons or Spirits permanently!
+({cost} Gold per action)","Fundir ou evoluir seus Gachamons ou Espíritos permanentemente!
+({cost} Ouro por ação)"
+ui.rest_site_desc,"Play to earn tokens, then spend them for permanent HP upgrades.","Jogue para ganhar fichas e gaste-as em melhorias permanentes de HP."
+ui.training_grounds_desc,"Play to earn tokens, then spend them for permanent Power upgrades.","Jogue para ganhar fichas e gaste-as em melhorias permanentes de Poder."
+ui.gambling_den_desc,"Play to earn tokens, then spend them for a chance to win big Gold payouts.","Jogue para ganhar fichas e gaste-as para ter a chance de ganhar muito Ouro."
+ui.btn_merge,"Merge","Fundir"
+ui.btn_merge_cost,"Merge ({cost} Gold)","Fundir ({cost} Ouro)"
+ui.btn_swap,"Swap","Trocar"
+ui.black_market_desc,"Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold.","Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
+ui.shop_desc,"Spend Gold to expand your collection. Reroll the stock if needed, but the reroll price rises each time!","Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
+ui.bm_drop_transform,"Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold)","Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)"
+ui.bm_drop_remove,"Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold)","Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)"
+ui.utg_desc,"Shape your units!\nOpen your inventory to drag a unit here,\nand train its HP or Power by spending tokens.","Molde suas unidades!\nAbra o inventário para arrastar uma unidade aqui,\ne treine seu HP ou Poder gastando fichas."
+ui.rest_study,"Get Tokens! (%d Gold)","Ganhar Fichas! (%d Ouro)"
+ui.reward_desc,"Get tokens to spend on prizes in the machines below!","Ganhe fichas para gastar em prêmios nas máquinas abaixo!"
+ui.rewards_title,REWARDS,RECOMPENSAS

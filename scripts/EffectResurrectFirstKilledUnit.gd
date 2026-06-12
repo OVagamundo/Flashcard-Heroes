@@ -36,6 +36,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		print("[SoulEcho] Failed: invalid unit def ", def_id)
 		return EffectResult.empty()
 
+	# 4b. Hero check - don't resurrect the hero (game over condition)
+	var is_hero: bool = false
+	if "is_hero" in unit_def:
+		is_hero = unit_def.is_hero
+	elif String(def_id).to_lower() == "hero":
+		is_hero = true
+		
+	if is_hero:
+		print("[SoulEcho] Failed: cannot resurrect the hero")
+		return EffectResult.empty()
+
 	# 5. Determine where to resurrect
 	# We prefer the slot where the triggering ally died (fainting_ally_location)
 	# This matches Soul Caller and other summoning items.
