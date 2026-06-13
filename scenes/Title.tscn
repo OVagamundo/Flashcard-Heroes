@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://6d52omscjhhr" path="res://scripts/Title.gd" id="1_abcde"]
 [ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/styles/game_theme.tres" id="3_iyajp"]
-[ext_resource type="Texture2D" uid="uid://dvsq0rhxxvgai" path="res://assets/Realistic/ui/BGs/tittle.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://c2xuv8ncismhm" path="res://assets/Realistic/ui/BGs/tittle.png" id="4_bg"]
 
 [node name="Title" type="Control" unique_id=652401031]
 layout_mode = 3
