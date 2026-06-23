@@ -466,16 +466,10 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
 	if tier != -1:
-		# Important: Add the instance to the RunState temporarily or emit the signal that usually adds it
-		if is_instance_valid(GameManager.run_state):
-			GameManager.run_state.add_instance(instance, &"RunInventoryT%d" % tier, -1)
-			GameManager.run_state.unlock_recipe_for_result(def.id)
 		await _animate_gachaball_to_machine(start_pos, visual_data, tier)
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		_action_in_progress = false
 	else:
-		if is_instance_valid(GameManager.run_state):
-			GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-			GameManager.run_state.unlock_recipe_for_result(def.id)
 		await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
 		_action_in_progress = false
 
@@ -514,8 +508,7 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 			start_pos = mouse_pos
 	
 	await _animate_gold_receive(gold_yield, start_pos)
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.add_gold(gold_yield)
+	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": gold_yield})
 	_action_in_progress = false
 
 func _get_slot_global_center(index: int) -> Vector2:
@@ -722,14 +715,9 @@ func _on_leave_pressed() -> void:
 			_clear_prize_slot(i)
 			
 			if tier != -1:
-				if is_instance_valid(GameManager.run_state):
-					GameManager.run_state.add_instance(instance, &"RunInventoryT%d" % tier, -1)
-					GameManager.run_state.unlock_recipe_for_result(def.id)
 				await _animate_gachaball_to_machine(start_pos, visual_data, tier)
+				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 			else:
-				if is_instance_valid(GameManager.run_state):
-					GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-					GameManager.run_state.unlock_recipe_for_result(def.id)
 				await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)

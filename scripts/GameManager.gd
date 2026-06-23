@@ -50,6 +50,7 @@ func _ready() -> void:
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 	SignalBus.reward_reroll_requested.connect(_on_reward_reroll_requested)
 	SignalBus.flashcard_token_earned.connect(_on_flashcard_token_earned)
+	SignalBus.black_market_action_requested.connect(_on_black_market_action_requested)
 
 func _on_flashcard_token_earned(amount: int) -> void:
 	if is_instance_valid(run_state) and amount > 0:
@@ -290,24 +291,11 @@ func _on_reward_chosen(payload) -> void:
 func get_item_cost(def: Resource) -> int:
 	if not is_instance_valid(def): return 1
 	
-	var tier: int = 1
-	if "tier" in def:
-		tier = int(def.tier)
-	
-	# Trinkets are valued as Tier 3 base
-	if "category" in def and def.category == &"TRINKET":
-		tier = 3
-	
-	# Base cost per tier: T1=1, T2=2, T3+=4
 	var base_cost: int = 1
-	if tier >= 3:
-		base_cost = 4
-	elif tier == 2:
-		base_cost = 2
+	if "cost" in def:
+		base_cost = int(def.cost)
 	
 	# Valuation scales by 2^(Level-1)
-	# T1L1=1, T1L2=2, T1L3=4
-	# T3L1=4, T3L2=8, T3L3=16
 	var level: int = 1
 	if "level" in def:
 		level = int(def.level)
@@ -624,3 +612,49 @@ func use_gacha_discount(tier: int) -> void:
 
 func reset_gacha_discounts() -> void:
 	gacha_discounts_used = {1: false, 2: false, 3: false}
+
+func get_black_market_transform_cost() -> int:
+	return 5
+
+func get_transform_result(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
+	var eligible: Array[GachaBallDefinition] = []
+	for definition in Database.get_all_pool_definitions():
+		if not is_instance_valid(definition):
+			continue
+		if definition.id == source_definition_id:
+			continue
+		if definition.tier != source_tier:
+			continue
+		eligible.append(definition)
+
+	if eligible.is_empty():
+		return null
+	return eligible[randi() % eligible.size()]
+
+func _on_black_market_action_requested(payload: Dictionary) -> void:
+	if not is_instance_valid(run_state):
+		return
+		
+	if payload.type == "remove":
+		var cost: int = payload.cost
+		var instance_uuid: String = payload.instance_uuid
+		if run_state.spend_gold(cost):
+			run_state.remove_instance(instance_uuid)
+			if run_state.has_method("increase_black_market_remove_cost"):
+				run_state.increase_black_market_remove_cost()
+				
+	elif payload.type == "transform":
+		var cost: int = payload.cost
+		var instance_uuid: String = payload.instance_uuid
+		var source_location: LocationIdentifier = payload.source_location
+		var result_definition: GachaBallDefinition = payload.result_definition
+		
+		if not is_instance_valid(result_definition): return
+		
+		if run_state.spend_gold(cost):
+			run_state.remove_instance(instance_uuid)
+			
+			var new_instance := GachaBallInstance.new()
+			new_instance.initialize(result_definition)
+			run_state.add_instance(new_instance, source_location.container, source_location.index)
+			run_state.unlock_recipe_for_result(result_definition.id)

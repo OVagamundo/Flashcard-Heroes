@@ -43,6 +43,7 @@ SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
 TutorialManager="*res://scripts/TutorialManager.gd"
 SaveManager="*res://scripts/SaveManager.gd"
 CursorManager="*res://scripts/CursorManager.gd"
+MergeAnimator="*res://scripts/MergeAnimator.gd"
 
 [debug]
 
