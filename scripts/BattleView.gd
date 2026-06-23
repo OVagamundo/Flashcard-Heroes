@@ -105,8 +105,8 @@ func _ready() -> void:
 	# NOTE: Unit death tutorial is handled directly in BattleAnimator._animate_events
 	# to properly block combat until the tutorial is dismissed.
 	
-	# Connect to battle_state_changed to trigger entry animation on EVERY battle start
-	SignalBus.battle_state_changed.connect(_on_battle_state_changed)
+	# Connect to battle_entry_animation_requested to trigger entry animation on first turn
+	SignalBus.battle_entry_animation_requested.connect(_on_battle_entry_animation_requested)
 	
 	# Connect to SignalBus.results_acknowledged to show battle management tutorial
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
@@ -139,9 +139,7 @@ func _ready() -> void:
 	if is_instance_valid(viewport) and not viewport.size_changed.is_connected(_on_viewport_size_changed):
 		viewport.size_changed.connect(_on_viewport_size_changed)
 	
-	# Animate initial unit entry (first battle only - subsequent battles via signal)
-	await get_tree().process_frame
-	_animate_initial_unit_entry()
+	# The entry animation is now triggered by BattleManager emitting battle_entry_animation_requested
 	
 	# Initialize combat controls styling/connections
 	_resolve_battle_animator()
@@ -199,13 +197,12 @@ func _position_combat_controls() -> void:
 	combat_controls_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	combat_controls_panel.size_flags_horizontal = Control.SIZE_FILL
 
-func _on_battle_state_changed(is_in_battle: bool) -> void:
-	"""Called when battle state changes - triggers entry animation on battle start"""
-	if is_in_battle:
-		# Wait for board to be redrawn first
-		await get_tree().process_frame
-		await get_tree().process_frame
-		_animate_initial_unit_entry()
+func _on_battle_entry_animation_requested() -> void:
+	"""Called when battle starts - triggers entry animation on turn 1"""
+	# Wait for board to be redrawn first
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_animate_initial_unit_entry()
 
 
 func _on_results_acknowledged() -> void:
@@ -276,6 +273,16 @@ func _animate_initial_unit_entry() -> void:
 				if is_instance_valid(ball_view):
 					ball_view.play_landing_bounce()
 			)
+
+	# Calculate total time for the staggered entry
+	var total_time = maxf(0.0, (all_units.size() - 1) * AnimationConstants.ENTRY_STAGGER_DELAY)
+	
+	# Wait for the longest animation to complete before signaling finished
+	var wait_tween = create_tween()
+	wait_tween.tween_interval(total_time + 0.5)
+	wait_tween.tween_callback(func():
+		SignalBus.emit_signal("battle_entry_animation_finished")
+	)
 
 
 func _redraw_board() -> void:

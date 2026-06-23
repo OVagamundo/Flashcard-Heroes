@@ -129,8 +129,11 @@ func _exit_tree() -> void:
 		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged)
 	if is_instance_valid(_animator) and _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
 		_animator.turn_animation_finished.disconnect(_on_turn_animation_finished)
+	if SignalBus.is_connected("management_animation_requested", _on_management_animation_requested):
+		SignalBus.management_animation_requested.disconnect(_on_management_animation_requested)
 
 func _connect_signals() -> void:
+	SignalBus.battle_entry_animation_finished.connect(_on_battle_entry_animation_finished)
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
 	SignalBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
@@ -140,6 +143,8 @@ func _connect_signals() -> void:
 	# Apply deaths after animator finishes death fades
 	if SignalBus.has_signal("apply_deaths_requested") and not SignalBus.is_connected("apply_deaths_requested", _on_apply_deaths_requested):
 		SignalBus.apply_deaths_requested.connect(_on_apply_deaths_requested)
+	if SignalBus.has_signal("management_animation_requested") and not SignalBus.is_connected("management_animation_requested", _on_management_animation_requested):
+		SignalBus.management_animation_requested.connect(_on_management_animation_requested)
 	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 func _emit_battle_inventory_changed() -> void:
@@ -158,6 +163,12 @@ func _emit_battle_inventory_changed() -> void:
 		_pending_inventory_refresh = false
 	else:
 		_pending_inventory_refresh = true
+
+
+func _on_management_animation_requested(snapshot: Dictionary) -> void:
+	await resolve_management_effects_and_animate(snapshot)
+	if has_method("unblock_ui_updates"):
+		unblock_ui_updates()
 
 
 func start_battle(encounter_def: EncounterDefinition) -> void:
@@ -551,9 +562,10 @@ func _change_phase(new_phase: Phases) -> void:
 				# Transition to results acknowledged (which triggers turn start abilities)
 				call_deferred("_on_results_acknowledged")
 			elif is_instance_valid(GameManager.run_state):
-				# Delay flashcard start to allow entry animation to complete
-				await get_tree().create_timer(1.0).timeout
-				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+				if _current_turn == 1:
+					SignalBus.emit_signal("battle_entry_animation_requested")
+				else:
+					FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 			# Note: The management phase will be triggered by _on_results_acknowledged
 		Phases.MANAGEMENT:
 			# Re-enable draw buttons when entering management phase
@@ -1999,6 +2011,10 @@ func _emit_stats_changed_for_equipped_units() -> void:
 				# Using 0 for old_value since this is initialization
 				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"hp", 0, instance.current_hp)
 				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"pwr", 0, instance.current_pwr)
+
+func _on_battle_entry_animation_finished() -> void:
+	if _current_battle_phase == Phases.START_OF_TURN and not is_test_mode and is_instance_valid(GameManager.run_state):
+		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 func _on_flashcard_completed(results: Dictionary) -> void:
 	# TDD Section 9.4: Battle Flow

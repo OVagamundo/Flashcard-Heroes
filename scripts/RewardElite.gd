@@ -94,8 +94,7 @@ func populate(context: Dictionary) -> void:
 	_reward_instances = context.get("reward_instances", [])
 	_original_reward_instances = _reward_instances.duplicate()
 	
-	# HARDCODE FIX: Elite rewards ALWAYS give 10 gold.
-	_gold_amount = 10 
+	_gold_amount = context.get("gold_amount", 10)
 	
 	_update_localized_text()
 	
@@ -225,9 +224,7 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
 	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot)
 	
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-		GameManager.run_state.unlock_recipe_for_result(instance.get_definition().id)
+	SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance.ball_uuid})
 	
 	_complete_choice()
 	_action_in_progress = false
@@ -260,8 +257,7 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	
 	await _animate_gold_receive(_gold_amount, vfx_start_pos)
 	
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.add_gold(_gold_amount)
+	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
 	
 	_complete_choice()
 	_action_in_progress = false

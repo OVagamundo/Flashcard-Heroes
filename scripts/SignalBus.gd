@@ -227,6 +227,10 @@ signal unit_label_update(uuid: String, stat_name: StringName, value: int)
 signal log_animation_event(event: CombatEvent)
 
 ## Emitted when battle state changes
+## @param snapshot: Dictionary - Board snapshot
+signal management_animation_requested(snapshot: Dictionary)
+
+## Emitted when battle state changes
 ## @param is_in_battle: bool - Whether in battle
 signal battle_state_changed(is_in_battle: bool)
 
@@ -248,6 +252,16 @@ signal gacha_draw_animated(draw_result)
 ## Emitted when gacha tokens change
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
+
+## Emitted when the black market receives a user action (remove or transform)
+## @param payload: Dictionary containing 'type', 'instance_uuid', etc.
+signal black_market_action_requested(payload: Dictionary)
+
+## Emitted when BattleManager wants the UI to play the battle entry animation
+signal battle_entry_animation_requested()
+
+## Emitted by BattleView when the battle entry animation has finished
+signal battle_entry_animation_finished()
 
 # -----------------------------------------------------------------------------
 # INVENTORY & LOADOUT SIGNALS
@@ -273,6 +287,11 @@ signal selection_clear_requested
 ## Emitted after a successful inventory action (move/swap/merge/equip) for bounce animation
 ## @param target_uuids: Array[String] - UUIDs of instances that were affected and should bounce
 signal inventory_action_completed(target_uuids: Array)
+
+## Emitted after a merge's data mutations are complete.
+## The animation layer uses this to orchestrate the visual merge sequence.
+## @param context: Dictionary - Contains all data the animator needs
+signal merge_animation_requested(context: Dictionary)
 
 ## Emitted when inventory action is attempted
 ## @param source_loc: LocationIdentifier - Source location

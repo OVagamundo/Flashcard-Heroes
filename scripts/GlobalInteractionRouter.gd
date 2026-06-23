@@ -76,10 +76,6 @@ func _ready() -> void:
 	# Connect to WindowManager closing signal to clear stale selections
 	if _window_manager.has_signal("window_closed"):
 		_window_manager.window_closed.connect(_on_window_closed)
-	
-	# Tutorial Lifecycle: re-evaluate hover state when tutorials are dismissed
-	if SignalBus.has_signal("tutorial_dismissed"):
-		SignalBus.tutorial_dismissed.connect(_on_tutorial_dismissed)
 
 
 func _exit_tree() -> void:
@@ -416,48 +412,12 @@ func _handle_hover_exit(context: InteractionContext) -> void:
 	if _is_drag_active: return
 	# Respect suppression (brief L147, L329: do not close outside suppression guard)
 	if _is_close_suppressed_now(): return
-	
-	# Do not close if the game is paused (e.g., by a TutorialPopup) to prevent 
-	# the hover target from emitting a mouse_exited when the tree halts.
-	if get_tree().paused: return
 
 	# Close ONLY the topmost window — NOT all windows.
 	# The hover-opened inspection is always the top of _active_inspection_group.
 	# Using CLOSE_ALL would destroy parent windows (e.g., InventoryWindow) — brief L179.
 	if _window_manager:
 		_window_manager.close_top_contextual_window()
-
-func _on_tutorial_dismissed(_tutorial_id: StringName) -> void:
-	# Wait for the TutorialPopup to be fully removed and the tree to unpause
-	# This ensures engine-level mouse state and modal blockers are updated.
-	await get_tree().process_frame
-	
-	# RESOLUTION: Fix "Sticky Hover Windows" after tutorials
-	# If a hover-opened window is active (not locked) and the mouse moved 
-	# away while the game was paused by the tutorial, we should close it now.
-	if _hover_entity_view_id != -1 and not _is_inspection_locked:
-		var hover_view = _find_view_by_instance_id(_hover_entity_view_id)
-		if is_instance_valid(hover_view):
-			var mouse_pos = hover_view.get_global_mouse_position()
-			var rect = hover_view.get_global_rect()
-			
-			if not rect.has_point(mouse_pos):
-				# Mouse is no longer over the entity that triggered the hover window
-				print("[GIR] Closing sticky hover window after tutorial dismissal. Mouse was at: ", mouse_pos)
-				_hover_entity_view_id = -1
-				if _window_manager:
-					_window_manager.close_top_contextual_window()
-		else:
-			# If the view we were hovering is gone or invalid, close the window
-			_hover_entity_view_id = -1
-			if _window_manager:
-				_window_manager.close_top_contextual_window()
-	elif not _is_inspection_locked:
-		# Fail-safe: if we have no recorded hover ID but a window is open (not locked),
-		# it's likely a sticky window whose hover-exit was partially processed or missed.
-		if _window_manager:
-			# close_top_contextual_window internally handles the empty check
-			_window_manager.close_top_contextual_window()
 
 ## Handle interactions with GachaBall instances
 func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:

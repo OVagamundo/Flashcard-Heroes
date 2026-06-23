@@ -15,92 +15,6 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		GlobalInteractionRouter.end_drag(false)
 		return
 
-	# Early-case: Allow equipping items onto units even across functional groups
-	var early_source_instance = _get_instance_at_location(source_loc)
-	var early_target_instance = _get_instance_at_location(target_loc)
-	if is_instance_valid(early_source_instance) and is_instance_valid(early_target_instance):
-		var sdef = early_source_instance.get_definition()
-		var tdef = early_target_instance.get_definition()
-		
-		# Early-case: Consumable usage on a specific unit
-		if sdef.category == C.CATEGORY_CONSUMABLE and tdef.category == C.CATEGORY_UNIT:
-			# Allow consumables on both Player and Enemy units (regardless of test mode)
-			var allowed_consumable_containers = [&"PlayerLineup", &"PlayerBench", &"EnemyLineup"]
-			if target_loc.container in allowed_consumable_containers:
-				_use_consumable(early_source_instance, early_target_instance)
-				return
-		
-		# Rule I3: Allow equipping from InventoryGrid or BattleBoard (PlayerBench) onto a UNIT on the board
-		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		var allowed_containers = [&"PlayerLineup", &"PlayerBench"]
-		# In test mode, also allow equipping on enemy units
-		if GameManager.is_test_mode:
-			allowed_containers.append(&"EnemyLineup")
-		
-		# Items can be equipped from InventoryGrid OR BattleBoard (unified bench holds both units and items)
-		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard" or s_group == &"EquippedGrid"
-		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and is_valid_source and target_loc.container in allowed_containers:
-			# Use atomic equip API
-			var owner = _get_data_owner()
-			if is_instance_valid(owner):
-				owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
-			GlobalInteractionRouter.end_drag(true)
-			SignalBus.emit_signal("inventory_action_completed", [early_target_instance.ball_uuid])
-			return
-
-	# Early-case: Allow equipping items by dropping onto an equipped_item slot (empty or same-unit slot)
-	if is_instance_valid(early_source_instance) and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var sdef2 = early_source_instance.get_definition()
-		if sdef2.category == &"ITEM":
-			var data_owner = _get_data_owner()
-			if is_instance_valid(data_owner):
-				var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
-				if is_instance_valid(parent_unit):
-					# If slot already occupied, fall through to swap/merge logic later
-					var slot_is_empty = true
-					if target_loc.index < parent_unit.equipped_item_uuids.size():
-						slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
-					
-					if slot_is_empty:
-						# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard.
-						var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
-						var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard" or s_group2 == &"EquippedGrid"
-						if is_valid_source2:
-							# Use atomic equip with explicit slot
-							data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
-							GlobalInteractionRouter.end_drag(true)
-							SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
-							return
-
-	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
-	var source_context_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-	var target_context_group = GlobalInteractionRouter.get_context_group(target_loc.container)
-	# SelectionOnly contexts (Shop/Rewards): all inventory actions are invalid by design.
-	# Cancel drag immediately so the original sprite reappears and nothing moves.
-	if source_context_group == &"SelectionOnly" or target_context_group == &"SelectionOnly":
-		SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-		GlobalInteractionRouter.end_drag(false)
-		return
-	
-	# If contexts are incompatible, this is an invalid action
-	if source_context_group != target_context_group:
-		# Exception: Allow InventoryGrid -> equipped_item (click-to-click equip)
-		if source_context_group == &"InventoryGrid" and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-			# Allowed exception; fall through to normal handling below
-			pass
-		else:
-			# Special case: Selection-Only contexts allow changing selection
-			if target_context_group == &"SelectionOnly":
-				# We shouldn't reach here, but if we do, it's invalid
-				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-				GlobalInteractionRouter.end_drag(false)
-				return
-			else:
-				# Incompatible contexts - invalid action
-				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-				GlobalInteractionRouter.end_drag(false)
-				return
-	
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 
@@ -108,6 +22,51 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		GlobalInteractionRouter.end_drag(false)
 		return
 
+	# Case 1: Same-slot drop (return to original position) - trigger bounce, no action
+	# Must be checked BEFORE merge to avoid self-merge edge cases
+	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
+		SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid])
+		# Return unhandled (false) so GIR unhides the source view immediately
+		GlobalInteractionRouter.end_drag(false)
+		return
+
+	var sdef = source_instance.get_definition()
+	var target_def = target_instance.get_definition() if is_instance_valid(target_instance) else null
+
+	# Case 2: Consumable usage on a specific unit
+	if sdef.category == C.CATEGORY_CONSUMABLE and is_instance_valid(target_instance):
+		if target_def.category == C.CATEGORY_UNIT:
+			_use_consumable(source_instance, target_instance)
+			return
+
+	# Case 3: Equipping an ITEM onto a UNIT directly
+	if sdef.category == &"ITEM" and is_instance_valid(target_instance):
+		if target_def.category == &"UNIT":
+			var owner = _get_data_owner()
+			if is_instance_valid(owner):
+				owner.equip_item(source_instance.ball_uuid, target_instance.ball_uuid, -1)
+			GlobalInteractionRouter.end_drag(true)
+			SignalBus.emit_signal("inventory_action_completed", [target_instance.ball_uuid])
+			return
+
+	# Case 4: Equipping an ITEM into a specific equipped_item slot
+	if sdef.category == &"ITEM" and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var data_owner = _get_data_owner()
+		if is_instance_valid(data_owner):
+			var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
+			if is_instance_valid(parent_unit):
+				# If slot already occupied, fall through to swap/merge logic later
+				var slot_is_empty = true
+				if target_loc.index < parent_unit.equipped_item_uuids.size():
+					slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
+				
+				if slot_is_empty:
+					data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+					GlobalInteractionRouter.end_drag(true)
+					SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
+					return
+
+	# Case 5: Target slot is empty, check for valid move
 	if not is_instance_valid(target_instance):
 		if is_valid_placement(source_instance, target_loc):
 			_move(source_loc, target_loc)
@@ -118,22 +77,11 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 			GlobalInteractionRouter.end_drag(false)
 		return
 
-	var source_def = source_instance.get_definition()
-	var target_def = target_instance.get_definition()
-
+	# Case 6: Possible Merge
 	var data_owner: Object = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 	var all_instances_db = data_owner.get_all_instances()
 
-	# Case 3: Same-slot drop (return to original position) - trigger bounce, no action
-	# Must be checked BEFORE merge to avoid self-merge edge cases
-	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
-		SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid])
-		# Return unhandled (false) so GIR unhides the source view immediately
-		GlobalInteractionRouter.end_drag(false)
-		return
-
-	# Case 4: Possible Merge
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
 		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
@@ -155,7 +103,7 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		return
 
 
-	# Case 5: Possible Swap
+	# Case 7: Possible Swap
 	if is_valid_placement(source_instance, target_loc) and is_valid_placement(target_instance, source_loc):
 		_swap(source_loc, target_loc)
 		GlobalInteractionRouter.end_drag(true)
@@ -261,17 +209,14 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		SignalBus.emit_signal("inventory_action_completed", [target_unit.ball_uuid])
 
 		# 5. Resolve & Animate (Standard Pipeline)
-		# This async call processes the effect
-		await bm.resolve_management_effects_and_animate(snapshot)
+		# Pass off to the presentation/animation layer by emitting a signal
+		SignalBus.emit_signal("management_animation_requested", snapshot)
 		
 	else:
 		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
 		GlobalInteractionRouter.end_drag(false)
-
-		
-	# 6. Unblock UI (Refreshes Inventory Grid)
-	if bm.has_method("unblock_ui_updates"):
-		bm.unblock_ui_updates()
+		if bm.has_method("unblock_ui_updates"):
+			bm.unblock_ui_updates()
 
 func _use_consumable_simple(_consumable_instance: GachaBallInstance, _target_unit: GachaBallInstance) -> void:
 	# Fallback for non-battle state (rare)
@@ -352,10 +297,6 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
-	var source_view = WindowManager.find_view_for_location(source_loc)
-	var target_view = WindowManager.find_view_for_location(target_loc)
-	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
-
 	var data_owner = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 
@@ -366,14 +307,15 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
 	# --- MERGE ENCOUNTER LOGIC ---
-	if MergeManager.is_merge_encounter_active():
-		if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < GameManager.run_state.merge_encounter_cost:
-			# Play rejection feedback
-			var RejectionFeedbackScript = load("res://scripts/vfx/RejectionFeedback.gd")
-			var main_node = GameManager._active_main_node
-			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-			RejectionFeedbackScript.play_rejection_with_counter(target_view, gold_group, get_tree())
-			return
+	var is_merge_encounter = MergeManager.is_merge_encounter_active()
+	var merge_encounter_cost = 0
+	if is_merge_encounter:
+		if is_instance_valid(GameManager.run_state):
+			merge_encounter_cost = GameManager.run_state.merge_encounter_cost
+			if GameManager.run_state.gold < merge_encounter_cost:
+				# Emit invalid action so the UI can play rejection feedback
+				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+				return
 
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if merge_result.is_empty():
@@ -388,16 +330,9 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	var all_parent_items: Array = merge_result.get("items_to_equip", [])
 	var parent_items_to_discard: Array = merge_result.get("items_to_discard", [])
 
-	# PREPARATION: Hide originals and show the result VFX ball at the merge site
-	# This ensures the user sees the result while coins are flying.
-	_set_unit_view_visible(source_view, false)
-	_set_unit_view_visible(target_view, false)
-	
-	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
-
 	# DATA MUTATION: Perform all backend changes immediately so they are batched into a single UI refresh
-	if MergeManager.is_merge_encounter_active() and is_instance_valid(GameManager.run_state):
-		GameManager.run_state.spend_gold(GameManager.run_state.merge_encounter_cost)
+	if is_merge_encounter and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.spend_gold(merge_encounter_cost)
 		GameManager.run_state.unlock_recipe_for_result(result_def.id)
 
 	# Context-aware placement logic
@@ -448,27 +383,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			else:
 				data_owner.remove_instance(discarded_item.ball_uuid)
 
-	# REFRESH: Wait for exactly one frame for the data changes to propagate to UI
-	# and for the VFX ball's layout to be ready for animation.
-	await get_tree().process_frame
-	
-	# BOUNCE: Satisfy "merged unit bounce animation should also happen when it first appears"
-	vfx_ball.play_landing_bounce()
-	
-	# HIDE: Ensure the real result unit (newly appeared in its slot) is hidden during the VFX sequence
-	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
-	var final_view = WindowManager.find_view_for_location(final_loc)
-	_set_unit_view_visible(final_view, false)
-
-	# AUDIO: Play merge sound
-	Audio.play_sfx("ui_merge")
-
-	# COINS: Animate gold if applicable
-	if MergeManager.is_merge_encounter_active():
-		await _animate_merge_gold_deduction(target_loc)
-
-	# Trigger management-phase on_merge abilities for battle-board merges only.
-	# This covers lineup/bench merges and same-unit equipped item merges on board.
+	# Calculate on_merge trigger context for Battle Animator
 	var should_trigger_on_merge: bool = false
 	var merge_container_tag: StringName = &""
 	if GameManager.is_in_battle:
@@ -482,167 +397,33 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			merge_container_tag = target_loc.container
 
 	var merge_team: String = _get_team_for_board_container(merge_container_tag)
+	
+	var merge_context: Dictionary = {
+		"merged_uuid": new_instance.ball_uuid,
+		"merged_team": merge_team,
+		"merge_container": merge_container_tag,
+		"merge_category": result_def.category
+	}
+	
+	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
+
+	# Emit animation sequence request
+	SignalBus.emit_signal("merge_animation_requested", {
+		"merged_uuid": new_instance.ball_uuid,
+		"source_loc": source_loc,
+		"target_loc": target_loc,
+		"final_loc": final_loc,
+		"new_instance": new_instance,
+		"is_merge_encounter": is_merge_encounter,
+		"merge_encounter_cost": merge_encounter_cost,
+		"should_trigger_on_merge": should_trigger_on_merge,
+		"merge_context": merge_context
+	})
 
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")
-	
-	# Transition: Wait for UI to refresh then perform arc toss
-	await get_tree().process_frame
-	
-	if is_instance_valid(final_view) and not start_pos.is_zero_approx():
-		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
-	else:
-		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-		SignalBus.emit_signal.call_deferred("inventory_action_completed", [new_instance.ball_uuid])
 
-	if should_trigger_on_merge:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			# Let queue_free/redraw settle so animator registers the latest merged views.
-			await get_tree().process_frame
-			var snapshot: Dictionary = bm.get_board_snapshot()
-			if bm.has_method("block_ui_updates"):
-				bm.block_ui_updates()
-			var merge_context: Dictionary = {
-				"merged_uuid": new_instance.ball_uuid,
-				"merged_team": merge_team,
-				"merge_container": merge_container_tag,
-				"merge_category": result_def.category
-			}
-			AbilityResolver.process_trigger(&"on_merge", merge_context)
-			var pending_count: int = 0
-			if bm.has_method("get_pending_reactions_size"):
-				pending_count = int(bm.get_pending_reactions_size())
-			else:
-				pending_count = int(bm._pending_reactions.size())
-			if pending_count > 0:
-				await bm.resolve_management_effects_and_animate(snapshot)
-			if bm.has_method("unblock_ui_updates"):
-				bm.unblock_ui_updates()
 
-func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
-	var target_view = WindowManager.find_view_for_location(target_loc)
-	if not is_instance_valid(target_view): return
-	
-	var end_pos = target_view.get_global_rect().get_center()
-	
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node): return
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group): return
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon): gold_icon = gold_group
-	var gold_rect = gold_icon.get_global_rect()
-	var start_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	
-	var GoldCoinVFXScript = load("res://scripts/vfx/GoldCoinVFX.gd")
-	var coins_to_spawn = 5
-	var stagger_delay = 0.08
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScript.new()
-		var effects_layer = WindowManager.get_vfx_layer()
-		effects_layer.add_child(coin_vfx)
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-		)
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-		
-	# Await completion (stagger + flight time)
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	await get_tree().create_timer(total_wait).timeout
-
-func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> GachaBallView:
-	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
-	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
-	var effects_layer = WindowManager.get_vfx_layer()
-	effects_layer.add_child(anim_ball)
-	
-	anim_ball.force_inventory_mode = true
-	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
-	# to ensure stat labels and icons are correctly positioned.
-	if anim_ball.has_method("set_size_scale"):
-		anim_ball.set_size_scale(1.0)
-	
-	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
-	anim_ball.size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
-	
-	anim_ball.populate(null, visual_data, false)
-	anim_ball.set_is_interactive(false)
-	
-	var pivot = anim_ball.size / 2.0
-	anim_ball.global_position = global_pos - pivot
-	return anim_ball
-
-func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
-	if not is_instance_valid(slot_view): return
-	for child in slot_view.get_children():
-		if child is GachaBallView:
-			child.visible = is_visible
-			break
-
-func _animate_vfx_ball_toss(vfx_ball: GachaBallView, target_slot: Control, instance: GachaBallInstance) -> void:
-	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball): 
-		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-		return
-	
-	var start_pos = vfx_ball.global_position + (vfx_ball.size / 2.0)
-	var end_pos = target_slot.get_global_rect().get_center()
-	
-	# If start and end are too close, just trigger bounce and return
-	if start_pos.distance_to(end_pos) < 20.0:
-		vfx_ball.queue_free()
-		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
-		return
-		
-	# Hide the real ball view in the target slot
-	var real_ball_view: GachaBallView = null
-	for child in target_slot.get_children():
-		if child is GachaBallView:
-			real_ball_view = child
-			break
-	
-	if is_instance_valid(real_ball_view):
-		real_ball_view.visible = false
-		target_slot.visible = true
-
-	# Animate Arc (Kinematic Parabola)
-	var arc_height = clamp(start_pos.distance_to(end_pos) * 0.5, 80.0, 300.0)
-	var duration = 0.55
-	
-	var control_point = Vector2(
-		(start_pos.x + end_pos.x) / 2.0,
-		min(start_pos.y, end_pos.y) - arc_height
-	)
-	
-	var tween = vfx_ball.create_tween()
-	tween.set_trans(Tween.TRANS_LINEAR)
-	
-	Audio.play_sfx("unit_toss")
-	
-	var pivot = vfx_ball.size / 2.0
-	tween.tween_method(func(t: float):
-		if not is_instance_valid(vfx_ball): return
-		var eased_t = pow(t, 1.05)
-		var inv_t = 1.0 - eased_t
-		var pos = (inv_t * inv_t * start_pos) + \
-				  (2.0 * inv_t * eased_t * control_point) + \
-				  (eased_t * eased_t * end_pos)
-		vfx_ball.global_position = pos - pivot
-	, 0.0, 1.0, duration)
-	
-	await tween.finished
-	
-	# Cleanup
-	if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-	if is_instance_valid(real_ball_view):
-		real_ball_view.visible = true
-		real_ball_view.play_landing_bounce()
 	
 # --- Single-Responsibility Helpers ---
 

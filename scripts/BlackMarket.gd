@@ -2,7 +2,6 @@
 extends Control
 
 const BASE_REMOVE_COST: int = 5
-const TRANSFORM_COST_GOLD: int = 5
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
@@ -144,22 +143,23 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 	# Animate gold spend first
 	_animate_gold_spend(remove_cost, interaction_pos, func():
 		# Actually spend gold and remove the instance
-		if GameManager.run_state.spend_gold(remove_cost):
-			# Play removal animation using the already-visible VFX ball
-			_animate_gachaball_removal_vfx(vfx_ball)
-			
-			GameManager.run_state.remove_instance(item_data.uuid)
-			if GameManager.run_state.has_method("increase_black_market_remove_cost"):
-				GameManager.run_state.increase_black_market_remove_cost()
+		SignalBus.emit_signal("black_market_action_requested", {
+			"type": "remove",
+			"cost": remove_cost,
+			"instance_uuid": item_data.uuid
+		})
+		
+		# Play removal animation using the already-visible VFX ball
+		_animate_gachaball_removal_vfx(vfx_ball)
 
-			# Refresh drop zone texts dynamically
-			if is_instance_valid(main_node):
-				if main_node.has_method("set_action_zone_texts"):
-					var transform_text = tr("ui.bm_drop_transform").format({"cost": str(TRANSFORM_COST_GOLD)})
-					var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
-					main_node.set_action_zone_texts(transform_text, remove_text)
-				if main_node.has_method("show_split_action_drop_zones"):
-					main_node.show_split_action_drop_zones()
+		# Refresh drop zone texts dynamically
+		if is_instance_valid(main_node):
+			if main_node.has_method("set_action_zone_texts"):
+				var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
+				var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
+				main_node.set_action_zone_texts(transform_text, remove_text)
+			if main_node.has_method("show_split_action_drop_zones"):
+				main_node.show_split_action_drop_zones()
 
 			# Clear selection
 			SignalBus.emit_signal("selection_clear_requested")
@@ -178,15 +178,17 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	var source_definition = item_data.definition
 	var source_location: LocationIdentifier = item_data.location
 
-	var result_definition := _draw_transform_definition(source_definition.id, int(source_definition.tier))
+	var result_definition := GameManager.get_transform_result(source_definition.id, int(source_definition.tier))
 	if not is_instance_valid(result_definition):
 		return
 
 	var main_node = GameManager._active_main_node
 	var transform_target = main_node.get_action_zone_1() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_1") else null
 	
+	var transform_cost = GameManager.get_black_market_transform_cost()
+	
 	# Check if enough gold first
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRANSFORM_COST_GOLD:
+	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < transform_cost:
 		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 		var target = transform_target if is_instance_valid(transform_target) else open_inventory_button
 		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
@@ -218,31 +220,25 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
 
 	# Animate gold spend first
-	_animate_gold_spend(TRANSFORM_COST_GOLD, interaction_pos, func():
-		# Actually spend gold
-		if not GameManager.run_state.spend_gold(TRANSFORM_COST_GOLD):
-			_action_in_progress = false
-			# Restore visibility if spend failed and remove vfx ball
-			if is_instance_valid(target_slot_view):
-				target_slot_view.modulate.a = 1.0
-			if is_instance_valid(vfx_ball):
-				vfx_ball.queue_free()
-			return
+	_animate_gold_spend(transform_cost, interaction_pos, func():
+		# Emit transform request instead of mutating directly
+		SignalBus.emit_signal("black_market_action_requested", {
+			"type": "transform",
+			"cost": transform_cost,
+			"instance_uuid": item_data.uuid,
+			"source_location": source_location,
+			"result_definition": result_definition
+		})
 
 		# Animation starts from the interaction point
 		var start_pos = interaction_pos
 
-		# Remove old instance
-		GameManager.run_state.remove_instance(item_data.uuid)
-
-		# Create new instance
-		var new_instance := GachaBallInstance.new()
-		new_instance.initialize(result_definition)
-		GameManager.run_state.add_instance(new_instance, source_location.container, source_location.index)
-		GameManager.run_state.unlock_recipe_for_result(result_definition.id)
+		# We need a temporary instance just to generate visual data for the animation
+		var temp_new_instance := GachaBallInstance.new()
+		temp_new_instance.initialize(result_definition)
 
 		# Update the VFX ball to show the NEW transformed unit
-		var new_visual_data = VisualDataAdapter.create_visual_data(new_instance)
+		var new_visual_data = VisualDataAdapter.create_visual_data(temp_new_instance)
 		if is_instance_valid(vfx_ball):
 			vfx_ball.populate(null, new_visual_data, false)
 
@@ -261,21 +257,6 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 
 		_action_in_progress = false
 	)
-
-func _draw_transform_definition(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
-	var eligible: Array[GachaBallDefinition] = []
-	for definition in Database.get_all_pool_definitions():
-		if not is_instance_valid(definition):
-			continue
-		if definition.id == source_definition_id:
-			continue
-		if definition.tier != source_tier:
-			continue
-		eligible.append(definition)
-
-	if eligible.is_empty():
-		return null
-	return eligible[randi() % eligible.size()]
 
 func _find_ball_view_for_location(loc: LocationIdentifier) -> Control:
 	var anchor = WindowManager.find_view_for_location(loc)
@@ -503,7 +484,7 @@ func _on_open_inventory_pressed() -> void:
 	else:
 		var main_node = GameManager._active_main_node
 		if is_instance_valid(main_node) and main_node.has_method("set_action_zone_texts"):
-			var transform_text = tr("ui.bm_drop_transform").format({"cost": str(TRANSFORM_COST_GOLD)})
+			var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
 			var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
 			main_node.set_action_zone_texts(transform_text, remove_text)
 			
