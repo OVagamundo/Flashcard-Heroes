@@ -17,7 +17,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	await animator.get_tree().process_frame
 	
 	if OS.is_debug_build():
-		print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
+		pass
+		# print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
 	
 	# Get visual registry - ONLY used for view updates, NOT position lookups
 	# Position data comes from animator.get_snapshot_position() for decoupling
@@ -70,7 +71,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if target_position != Vector2.ZERO:
 			# AUDIO HOOK: Attack lunge whoosh (before movement starts)
 			if OS.is_debug_build():
-				print("[DamageAnimation] Playing LUNGE sound: unit_toss")
+				pass
+				# print("[DamageAnimation] Playing LUNGE sound: unit_toss")
 			Audio.play_sfx("unit_toss")
 			SignalBus.emit_signal("unit_melee_lunge", source_uuid, target_position)
 			await animator.wait_for_animation_completion("melee_lunge", source_uuid)
@@ -94,11 +96,18 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		# 2. Launch projectile from trinket position to target(s)
 		var p_stat = String(payload.get("stat", "hp"))
 		var p_amount = amount
+		var projectiles = []
 		for target_uuid in targets:
-			_launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, "red")
+			var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, "red")
+			if proj: projectiles.append(proj)
 			
-		# Wait for projectile travel time (approx 0.35s)
-		await animator.get_tree().create_timer(0.35).timeout
+		# Wait for projectile impact
+		if projectiles.is_empty():
+			await animator.get_tree().create_timer(AnimationConstants.scaled(0.6)).timeout
+		else:
+			for proj in projectiles:
+				if is_instance_valid(proj):
+					await proj.impact
 		
 		# 3. Apply damage impact (recoil, flashes, numbers)
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -116,17 +125,23 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# Launch Projectile (Parallel)
 		var proj_data = payload.get("projectile_data", {})
+		var projectiles = []
 		if not proj_data.is_empty():
 			var p_stat = String(proj_data.get("stat", "hp"))
 			var p_amount = int(proj_data.get("amount", 0))
 			var p_color = String(proj_data.get("color", "red"))
 			
 			for target_uuid in targets:
-				_launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, p_color)
+				var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, p_color)
+				if proj: projectiles.append(proj)
 		
-		# Wait for Bump Impact
+		# Wait for Bump Impact OR Projectile Impact
 		if should_bump:
 			await animator.get_tree().create_timer(AnimationConstants.scaled(AnimationConstants.BUMP_TOTAL_DURATION)).timeout
+		elif not projectiles.is_empty():
+			for proj in projectiles:
+				if is_instance_valid(proj):
+					await proj.impact
 		
 		# Apply Damage
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -376,5 +391,5 @@ func _spawn_floating_spikes_damage(_animator: Node, target_uuid: String, amount:
 	# Use the same style as regular damage (red floating number)
 	_spawn_floating_damage(_animator, target_uuid, amount)
 
-func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
-	VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
+func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)

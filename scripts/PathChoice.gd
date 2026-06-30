@@ -24,7 +24,7 @@ func _ready() -> void:
 	
 	if is_instance_valid(GameManager.run_state):
 		if GameManager.loading_from_save:
-			print("[PathChoice] Loading from save, skipping day advance. Current Day: ", GameManager.run_state.day)
+			# print("[PathChoice] Loading from save, skipping day advance. Current Day: ", GameManager.run_state.day)
 			GameManager.loading_from_save = false
 		else:
 			GameManager.run_state.advance_day(1)
@@ -115,7 +115,7 @@ func _setup_normal_nodes() -> void:
 		var days_since = current_day - last_offered
 		var final_weight = base_w + (days_since * 20)
 		
-		print("[PathChoice] Generated weight for ", dict_key, " -> Base: ", base_w, " Pity: ", days_since * 20, " Final: ", final_weight)
+		# print("[PathChoice] Generated weight for ", dict_key, " -> Base: ", base_w, " Pity: ", days_since * 20, " Final: ", final_weight)
 		
 		var def = PathNodeDefinition.new()
 		def.node_type = t.type

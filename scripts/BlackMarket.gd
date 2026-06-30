@@ -301,7 +301,7 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	effects_layer.add_child(anim_ball)
 
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
@@ -354,7 +354,7 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	effects_layer.add_child(anim_ball)
 	
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	
 	anim_ball.force_inventory_mode = true
 	anim_ball.set_size_scale(1.0)

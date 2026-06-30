@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" uid="uid://bxxp0m25s1y6e" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_consumable_steal.tres" id="2_ability"]
-[ext_resource type="Texture2D" uid="uid://bqnxwr6axryw1" path="res://assets/Realistic/sprites/items/Tier3PotionA.png" id="3_icon"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3PotionA.png" id="3_icon"]
 
 [resource]
 script = ExtResource("1_script")

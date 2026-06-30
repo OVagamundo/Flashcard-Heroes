@@ -435,13 +435,13 @@ func _gui_input(event: InputEvent) -> void:
 		
 		# If this is an empty slot (no content), handle the click as EMPTY_SLOT interaction
 		if not has_content:
-			print("DEBUG_INPUT: SlotView Pressed (Empty).")
+			pass
 			var context = _create_interaction_context(&"SINGLE_CLICK")
 			SignalBus.emit_signal("interaction_context_received", context)
 			get_viewport().set_input_as_handled() # Stop propagation to Main/Battle
 			accept_event() # Explicitly stop control bubbling
 		else:
-			print("DEBUG_INPUT: SlotView Bubbled (Has Content). Ignoring.")
+			pass
 		
 		# If we have a child (Unit), we do NOTHING. 
 		# The child (GachaBallView) will handle the input itself (emit UNIT context).

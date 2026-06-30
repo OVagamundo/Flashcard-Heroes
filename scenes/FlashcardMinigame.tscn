@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://dajq7v7k8jvhg"]
 
 [ext_resource type="Script" path="res://scripts/FlashcardMinigame.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
 
 [node name="FlashcardMinigame" type="Control"]
 layout_mode = 3

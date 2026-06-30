@@ -73,6 +73,9 @@ var _reward_collect_label: RichTextLabel = null
 var _reward_sell_label: RichTextLabel = null
 var _reward_drop_zones_visible: bool = false
 
+# Used to prevent overdrawing tokens while waiting for token toss animations to finish
+var _pending_tokens_spent: int = 0
+
 var _action_drop_zone_drag_context: InteractionContext = null
 var _action_instruction_overlay: PanelContainer = null
 var _action_instruction_label: Label = null
@@ -301,7 +304,7 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
 		var current_tokens: int = bm.get_gacha_tokens()
-		if current_tokens < tier:
+		if current_tokens - _pending_tokens_spent < tier:
 			# Insufficient tokens - play rejection feedback on machine and token counter
 			var target_machine: Control = null
 			match tier:
@@ -313,15 +316,17 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
 			return
 	
-	# TDD Safeguard: Disable button immediately on press.
-	button.disabled = true
 	# Ensure UI focus doesn't interfere
 	button.release_focus()
 	
-	# Animate knob rotation
+	# Animate knob rotation (reset first to allow rapid clicks)
+	button.rotation_degrees = 0.0
 	var knob_tween = create_tween()
 	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
+	
+	# We've committed to this draw. Increment pending tokens.
+	_pending_tokens_spent += tier
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
@@ -343,8 +348,6 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	# Get token counter position (source)
 	var token_group = get_node_or_null("%TokenGroup")
 	if not is_instance_valid(token_group):
-		# No animation, just draw
-		SignalBus.emit_signal("draw_gacha_requested", tier)
 		return
 	
 	var token_rect = token_group.get_global_rect()
@@ -362,6 +365,7 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	if not is_instance_valid(target_machine):
 		SignalBus.emit_signal("draw_gacha_requested", tier)
+		_pending_tokens_spent -= tier
 		return
 	
 	var machine_rect = target_machine.get_global_rect()
@@ -376,7 +380,10 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	for i in range(tokens_to_spawn):
 		var token_vfx = TokenSpendScene.instantiate()
-		add_child(token_vfx)
+		if WindowManager.has_method("get_vfx_layer"):
+			WindowManager.get_vfx_layer().add_child(token_vfx)
+		else:
+			add_child(token_vfx)
 		
 		# Connect to coin_landed to trigger machine reaction
 		token_vfx.coin_landed.connect(_on_coin_landed_on_machine.bind(target_machine))
@@ -395,6 +402,9 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
+	
+	# Decrement pending tokens since the draw is now officially requested
+	_pending_tokens_spent -= tier
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""

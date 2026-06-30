@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dvjmlqxnk7wqd"]
 
-[ext_resource type="Script" uid="uid://b3av4xdg8f56s" path="res://scripts/Reward.gd" id="1_reward_script"]
-[ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
-[ext_resource type="Texture2D" uid="uid://bn5ql56um23mt" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
+[ext_resource type="Script" path="res://scripts/Reward.gd" id="1_reward_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.12, 0.14, 0.18, 1)
@@ -135,6 +135,7 @@ horizontal_alignment = 1
 
 [node name="MachinesArea" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 20
 alignment = 1
@@ -304,6 +305,7 @@ text = "Get Tokens!"
 
 [node name="SlotsRow" type="HBoxContainer" parent="."]
 layout_mode = 1
+mouse_filter = 2
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -315,11 +317,13 @@ offset_right = 960.0
 offset_bottom = 282.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 30
 alignment = 1
 
 [node name="PrizeLineup" type="HBoxContainer" parent="SlotsRow"]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/separation = 20
 alignment = 1
 

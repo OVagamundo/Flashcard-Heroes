@@ -78,11 +78,13 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 		return
 	
 	if active_deck.is_empty():
+		push_error("[FlashcardManager] active_deck is empty! Cannot start minigame.")
 		return
 	
 	# Validate that all cards in the deck exist
 	for card_id in active_deck:
 		if not Database.flashcard_definitions.has(card_id):
+			push_error("[FlashcardManager] Card definition missing for: " + str(card_id))
 			return
 	
 	# NEW: Expand deck at START of minigame session
@@ -101,13 +103,16 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 func get_next_question() -> Dictionary:
 	"""Gets the next question using SRS algorithm"""
 	if not is_instance_valid(_run_state_ref):
+		push_error("[FlashcardManager] _run_state_ref is invalid!")
 		return {}
 	
 	if _active_deck_ids.size() < 6:
+		push_error("[FlashcardManager] Not enough cards in active deck! Size is: " + str(_active_deck_ids.size()))
 		return {} # Not enough cards for a question and 5 distractors
 	
 	var question_card_id = _select_card_via_srs()
 	if question_card_id.is_empty():
+		push_error("[FlashcardManager] _select_card_via_srs returned empty!")
 		return {}
 	
 	_last_shown_card_id = question_card_id
@@ -137,7 +142,6 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""
-	print("[FlashcardManager] _on_minigame_complete called. Correct: ", correct)
 	# Store results before cleanup
 	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
@@ -155,9 +159,7 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	_active_deck_ids.clear()
 	
 	# Emit signal after cleanup to prevent any callbacks from accessing freed objects
-	print("[FlashcardManager] Emitting minigame_finished signal with results: ", results)
 	emit_signal("minigame_finished", results)
-	print("[FlashcardManager] Signal emitted successfully")
 
 ## Get statistics about the current deck for debugging.
 ## @return Dictionary - Statistics about the deck

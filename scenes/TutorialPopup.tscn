@@ -1,8 +1,8 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://cobw24jkujo5g" path="res://scripts/TutorialPopup.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
-[ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/styles/game_theme.tres" id="4_theme"]
+[ext_resource type="Script" path="res://scripts/TutorialPopup.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="4_theme"]
 
 [node name="TutorialPopup" type="Control"]
 layout_mode = 3

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cyg3u5nj7ots4"]
 
-[ext_resource type="Script" uid="uid://cmx3ghx0fqaqp" path="res://scripts/RewardElite.gd" id="1_reward_script"]
-[ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="2_slot_view"]
-[ext_resource type="Texture2D" uid="uid://bn5ql56um23mt" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
+[ext_resource type="Script" path="res://scripts/RewardElite.gd" id="1_reward_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.12, 0.14, 0.18, 1)

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b4c5d6e7f8hah"]
 
-[ext_resource type="Script" uid="uid://cvsdcnssy30hp" path="res://scripts/EndBattlePopup.gd" id="1_abcde"]
-[ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_fghij"]
+[ext_resource type="Script" path="res://scripts/EndBattlePopup.gd" id="1_abcde"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_fghij"]
 
 [node name="EndBattlePopup" type="Control"]
 layout_mode = 3

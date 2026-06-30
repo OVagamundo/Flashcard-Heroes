@@ -888,7 +888,10 @@ func to_save_dict() -> Dictionary:
 		"elites_defeated": elites_defeated,
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
+		"total_tokens_earned": total_tokens_earned,
 		"black_market_remove_cost": black_market_remove_cost,
+		"merge_encounter_cost": merge_encounter_cost,
+		"get_tokens_cost": get_tokens_cost,
 		"deck_def_id": String(deck_def_id),
 		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
@@ -925,7 +928,10 @@ func from_save_dict(data: Dictionary) -> void:
 	elites_defeated = data.get("elites_defeated", 0)
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
+	total_tokens_earned = data.get("total_tokens_earned", 0)
 	black_market_remove_cost = data.get("black_market_remove_cost", 5)
+	merge_encounter_cost = data.get("merge_encounter_cost", 5)
+	get_tokens_cost = data.get("get_tokens_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
 	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)

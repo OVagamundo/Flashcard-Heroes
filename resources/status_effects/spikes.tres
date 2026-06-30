@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="StatusEffectDefinition" format=3]
 
-[ext_resource type="Script" uid="uid://b6ls31xcfxeya" path="res://scripts/StatusEffectDefinition.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://d1skjucn2fwxy" path="res://assets/Realistic/ui/textures/icon_spike_pixel.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_spike_pixel.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1")

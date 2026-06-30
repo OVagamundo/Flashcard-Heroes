@@ -41,7 +41,8 @@ const COST_TIER3: int = 3
 # State
 var _tokens: int = 0
 var _prizes: Array[Dictionary] = [] # [{slot_index, stat_type, hp_value, pwr_value, gold_value}]
-var _has_studied: bool = false # Study button only works once per rest site
+var _has_studied: bool = false
+var _action_in_progress: bool = false
 
 func _ready() -> void:
 	# AUDIO HOOK: Rest Site BGM
@@ -175,33 +176,11 @@ func _setup_prize_slot_clicks() -> void:
 # --- Token System ---
 
 func _on_study_pressed() -> void:
-	"""Open flashcard minigame to earn tokens - only once per rest site"""
-	if _has_studied:
-		return
-	
-	var main_node = GameManager._active_main_node
-	var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-	
-	var cost = 5
-	if is_instance_valid(GameManager.run_state):
-		cost = GameManager.run_state.get_tokens_cost
-		
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < cost:
-		RejectionFeedbackScript.play_rejection_with_counter(study_button, gold_group, get_tree())
-		return
-	
+	if _has_studied or _action_in_progress: return
 	_has_studied = true
 	study_button.disabled = true
-	
-	var target_pos = study_button.get_global_rect().get_center()
-	
-	_animate_gold_spend(cost, target_pos, func():
-		if is_instance_valid(GameManager.run_state) and GameManager.run_state.spend_gold(cost):
-			FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
-		else:
-			_has_studied = false
-			study_button.disabled = false
-	)
+	if is_instance_valid(GameManager.run_state):
+		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 func _on_live_token_earned(amount: int) -> void:
 	"""Called when a token lands during flashcard minigame animation"""
@@ -332,6 +311,7 @@ func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictiona
 	var anim_ball = GachaBallViewScene.instantiate()
 	effects_layer.add_child(anim_ball)
 	anim_ball.force_inventory_mode = true
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(128, 128)
 	anim_ball.size = Vector2(128, 128)
 	anim_ball.populate(null, _create_prize_visual_data(prize_data))

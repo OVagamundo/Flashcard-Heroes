@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://get0edktak2b"]
 
-[ext_resource type="Script" uid="uid://bvq7fjdylgfqr" path="res://scripts/ChoiceWindow.gd" id="1_stuvw"]
+[ext_resource type="Script" path="res://scripts/ChoiceWindow.gd" id="1_stuvw"]
 
 [node name="ChoiceWindow" type="PanelContainer"]
 custom_minimum_size = Vector2(300, 220)

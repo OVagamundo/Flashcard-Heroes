@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d1r64ueux6drg"]
 
-[ext_resource type="Script" uid="uid://c37mppchu71x4" path="res://scripts/OptionsWindow.gd" id="1_script"]
-[ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/styles/game_theme.tres" id="2_theme"]
+[ext_resource type="Script" path="res://scripts/OptionsWindow.gd" id="1_script"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="2_theme"]
 
 [node name="OptionsWindow" type="Control"]
 layout_mode = 3

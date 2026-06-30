@@ -11,8 +11,6 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var amount = int(payload.get("amount", 0))
 	var stat = String(payload.get("stat", "pwr"))
 	
-	if OS.is_debug_build():
-		print("[BuffAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -41,10 +39,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
 		
-		# Skip targets not in visual registry
-		if not animator._visual_registry.has(target_uuid):
-			continue
-		
+		# In parallel mode, the target might not be in the visual registry initially.
+		# The animator's apply_hp_delta / apply_pwr_delta will safely handle missing views.
 		final_target_uuid = target_uuid
 		
 		if stat == "hp":

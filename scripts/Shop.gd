@@ -82,14 +82,6 @@ func populate(context: Dictionary) -> void:
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
-			# Ensure the instance has valid stats before populating
-			var def = inst_for_slot.get_definition()
-			if inst_for_slot.current_hp <= 0 or inst_for_slot.current_pwr <= 0:
-				print("Warning: Instance has invalid stats, resetting from definition")
-				if is_instance_valid(def):
-					inst_for_slot.current_hp = def.base_hp
-					inst_for_slot.current_pwr = def.base_pwr
-			
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
 			var ball_view = slot_view.set_content(visual_data, true)
@@ -401,15 +393,20 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
 	
+	# Clear anchors so size is not overridden
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
+	
 	anim_ball.force_inventory_mode = true
 	# Use 2.0 scale (192x192) to match the Shop's slot scale
-	anim_ball.custom_minimum_size = Vector2(192, 192)
-	anim_ball.size = Vector2(192, 192)
+	var target_size = Vector2(192, 192)
+	anim_ball.custom_minimum_size = target_size
+	anim_ball.size = target_size
 	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)
 	
-	anim_ball.pivot_offset = anim_ball.size / 2.0
-	anim_ball.global_position = pos - anim_ball.pivot_offset
+	var pivot = target_size / 2.0
+	anim_ball.pivot_offset = pivot
+	anim_ball.global_position = pos - pivot
 	return anim_ball
 
 func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vector2, tier: int) -> void:

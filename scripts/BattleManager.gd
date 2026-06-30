@@ -24,6 +24,10 @@ var _is_processing_effect: bool:
 	get: return _combat._is_processing_effect
 	set(value): _combat._is_processing_effect = value
 
+var _management_animation_queue: Array[Dictionary] = []
+var _is_animating_management_queue: bool = false
+
+
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
 var is_test_mode: bool = false
@@ -1580,15 +1584,33 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	_check_for_deaths_with_counter_delay(true, events, death_tracking)
 	_process_completed_counter_deaths(events, death_tracking)
 	
-	# Play via animator (uses existing VCR pattern)
-	if not events.is_empty():
-		_is_processing_effect = true # Block UI redraws while animating management effects
-		await _animator.play_turn_sequence(snapshot, events)
-	
 	# Clean up any deaths that occurred during effect resolution
 	# Since is_simulation=true for VCR, cleanup is deferred until now
 	_finalize_deaths()
+	
+	if events.is_empty():
+		return
+		
+	# Queue the presentation
+	_management_animation_queue.append({
+		"snapshot": snapshot,
+		"events": events
+	})
+	
+	if not _is_animating_management_queue:
+		_process_management_animation_queue()
+
+func _process_management_animation_queue() -> void:
+	_is_animating_management_queue = true
+	_is_processing_effect = true
+	
+	while not _management_animation_queue.is_empty():
+		var payload = _management_animation_queue.pop_front()
+		await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
+		
 	_is_processing_effect = false
+	_is_animating_management_queue = false
+
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
 ## This ensures enemy units and items are still available in _battle_instances while

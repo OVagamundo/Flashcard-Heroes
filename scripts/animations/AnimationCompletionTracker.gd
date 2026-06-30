@@ -70,10 +70,8 @@ func await_completion(uuid: String, anim_type: AnimationType) -> void:
 	while _is_pending(uuid, anim_type) and timeout_timer.time_left > 0:
 		await _tree.process_frame
 	
-	# If timed out, log and remove anyway
+	# If timed out, remove anyway
 	if _is_pending(uuid, anim_type):
-		if OS.is_debug_build():
-			print("[AnimationCompletionTracker] Timeout for %s type %d" % [uuid.substr(0, 20), anim_type])
 		_remove_pending(uuid, anim_type)
 
 ## Check if a specific animation is still pending

@@ -10,8 +10,6 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var amount = int(payload.get("amount", 0))
 	var stat = String(payload.get("stat", ""))
 	
-	if OS.is_debug_build():
-		print("[StatusEffectAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame

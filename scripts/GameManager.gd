@@ -97,7 +97,6 @@ func _on_new_game_requested() -> void:
 		return
 
 func _on_battle_ended(results: Dictionary) -> void:
-	print("[GameManager] _on_battle_ended called with results: ", results)
 	# Centralize post-battle handling per GIR.
 	# 1) Flip global battle state off and broadcast.
 	is_in_battle = false
@@ -106,7 +105,6 @@ func _on_battle_ended(results: Dictionary) -> void:
 	
 	# Track boss defeat
 	if is_victory and run_state.current_boss_level > 0:
-		print("[GameManager] Boss victory detected! Level: ", run_state.current_boss_level)
 		run_state.bosses_defeated += 1
 		
 		var max_boss_level = 3 if run_state.is_half_deck else 5
@@ -122,7 +120,6 @@ func _on_battle_ended(results: Dictionary) -> void:
 		
 		# Emit the signal. The levels are NOT reset here, ensuring that 
 		# _on_battle_won_rewards_pending can correctly identify the encounter type.
-		print("[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: ", run_state.current_elite_level)
 		SignalBus.emit_signal("battle_won_rewards_pending")
 	
 	# 4) Open the hermetic end-of-battle modal.
@@ -162,7 +159,6 @@ func _on_battle_start_requested(_encounter_def: EncounterDefinition) -> void:
 func _on_battle_won_rewards_pending() -> void:
 	# Detect if this was a boss or elite victory (both get trinket rewards)
 	var is_special_victory = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
-	print("[RewardDebug] Victory rewards pending. Special: ", is_special_victory)
 	
 	# Reset reward reroll cost for new rewards
 	_reward_reroll_cost = 1
@@ -532,7 +528,6 @@ func _on_reward_reroll_requested() -> void:
 	if not run_state.spend_gold(_reward_reroll_cost): return
 	_reward_reroll_cost += 1
 	
-	print("[RewardDebug] Reroll requested. Cost paid. Generating new stock...")
 	_generate_reward_stock()
 
 	# Refresh the reward scene with new rewards
@@ -541,7 +536,6 @@ func _on_reward_reroll_requested() -> void:
 
 func _generate_reward_stock() -> void:
 	# Regenerate rewards (reroll functionality)
-	print("[RewardDebug] generate_reward_stock. Special: ", run_state.current_boss_level > 0 or run_state.current_elite_level > 0)
 	
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)

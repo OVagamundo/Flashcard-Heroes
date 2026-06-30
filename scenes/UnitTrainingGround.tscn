@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dtraining_ground1"]
 
 [ext_resource type="Script" path="res://scripts/UnitTrainingGround.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://b5psw7hqvxxi6" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
 
 [node name="UnitTrainingGround" type="Control"]
 layout_mode = 3

@@ -50,7 +50,6 @@ static func play_rejection(target: Control, tree: SceneTree) -> void:
 ## @param counter_group: The counter group to also flash (TokenGroup or GoldGroup)
 ## @param tree: SceneTree reference for creating tweens
 static func play_rejection_with_counter(target: Control, counter_group: Control, tree: SceneTree) -> void:
-	print("[RejectionFeedback] Playing rejection for %s" % target.name)
 	play_rejection(target, tree)
 	if is_instance_valid(counter_group):
 		play_rejection(counter_group, tree)

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" uid="uid://bxxp0m25s1y6e" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://b04amng5pa3cj" path="res://assets/Realistic/sprites/units/Tier2DustEliteUnit.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2DustEliteUnit.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_summon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_death.tres" id="4_death"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_growth.tres" id="5_growth"]
