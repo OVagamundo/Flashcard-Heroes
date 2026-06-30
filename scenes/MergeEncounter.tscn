@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bv5m3j7y8k2pw"]
 
-[ext_resource type="Script" uid="uid://cl8m3p7y8k2pw" path="res://scripts/MergeEncounter.gd" id="1_merge"]
-[ext_resource type="Texture2D" uid="uid://b5psw7hqvxxi6" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
+[ext_resource type="Script" path="res://scripts/MergeEncounter.gd" id="1_merge"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
 
 [node name="MergeEncounter" type="Control"]
 layout_mode = 3

@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://l5mhu3dnclc4"]
 
-[ext_resource type="Script" uid="uid://dj471v4u5j0dv" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
-[ext_resource type="Shader" uid="uid://cbr8fsqbv3cbt" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
-[ext_resource type="Texture2D" uid="uid://de6or86fy5nnh" path="res://assets/Realistic/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
-[ext_resource type="Texture2D" uid="uid://pddyfdmvolci" path="res://assets/Realistic/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
-[ext_resource type="Texture2D" uid="uid://dxf1nr5lr8h6i" path="res://assets/Realistic/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
-[ext_resource type="Texture2D" uid="uid://bekxegwei3xwq" path="res://assets/Realistic/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
-[ext_resource type="Script" uid="uid://cnmssbsyhbhs3" path="res://scripts/animations/UnitAnimationController.gd" id="8_anim_ctrl"]
+[ext_resource type="Script" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
+[ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
+[ext_resource type="Script" path="res://scripts/animations/UnitAnimationController.gd" id="8_anim_ctrl"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("2_outline")

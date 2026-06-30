@@ -336,7 +336,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	WindowManager.get_vfx_layer().add_child(anim_ball)
 	
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	
 	anim_ball.top_level = true
 	anim_ball.z_index = 100

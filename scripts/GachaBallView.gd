@@ -1842,7 +1842,7 @@ func _notification(what: int) -> void:
 		if _drag_initiated_for_click:
 			_stop_touch_long_press()
 			_touch_hover_override_active = false
-			print("DEBUG_INPUT: Emitting DRAG_START. Entity: ", _entity_type, " | UUID: ", _instance_uuid)
+			pass
 			_set_hover_state(false, false)
 			_animate_press_to(0.0, 0.05)
 			var context = _create_interaction_context(&"DRAG_START")

@@ -131,7 +131,7 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	# Drag Start: handled separately to initialize drag state
 	# ROBUSTNESS: Check both StringName and string to avoid type issues
 	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
-		print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
+		# print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
 		start_drag(context)
 		return
 
@@ -149,12 +149,13 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	command_queue = _generate_command_queue(context)
 	
 	if context.event_type != &"HOVER_ENTER" and context.event_type != &"HOVER_EXIT":
-		print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
-		print("DEBUG_GIR: Locked: ", _is_inspection_locked, " | LockedID: ", _locked_entity_view_id)
-		print("DEBUG_GIR: Selection: ", _current_selection != null)
-		print("DEBUG_GIR: Commands: ", command_queue.size())
-		for cmd in command_queue:
-			print("DEBUG_GIR: + CMD: ", cmd.cmd)
+		# print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
+		# print("DEBUG_GIR: Locked: ", _is_inspection_locked, " | LockedID: ", _locked_entity_view_id)
+		# print("DEBUG_GIR: Selection: ", _current_selection != null)
+		# print("DEBUG_GIR: Commands: ", command_queue.size())
+		# for cmd in command_queue:
+		# 	print("DEBUG_GIR: + CMD: ", cmd.cmd)
+		pass
 
 	# Execute the command queue
 	_execute_command_queue(command_queue)
@@ -259,7 +260,7 @@ func _on_window_closed(window: Control) -> void:
 	if is_instance_valid(sel_view) and is_instance_valid(window):
 		# check if selection is inside the closed window
 		if window == sel_view or window.is_ancestor_of(sel_view):
-			print("DEBUG_GIR: Selection invalidated by window close. Window=", window.get_class(), " Name=", window.name)
+			# print("DEBUG_GIR: Selection invalidated by window close. Window=", window.get_class(), " Name=", window.name)
 			_execute_deselect()
 
 ## Generate command queue based on interaction context and current state

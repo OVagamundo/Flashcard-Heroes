@@ -143,37 +143,64 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# Create batched event for all targets at once (enables simultaneous projectiles)
 		if not all_target_uuids.is_empty():
 			if stat == "hp":
-				# Log message with all target names
 				var log_text: String
 				var custom_fmt: String = parameters.get("log_format", "")
-				if not custom_fmt.is_empty():
-					log_text = custom_fmt % [source_name, abs(amount)]
-				elif target_names.size() == 1:
-					log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
-				else:
-					log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
-				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
-				
 				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
 				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+				
+				if amount > 0:
+					# HEAL
+					if not custom_fmt.is_empty():
+						log_text = custom_fmt % [source_name, abs(amount)]
+					elif target_names.size() == 1:
+						log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
+					else:
+						log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
+					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
-				# Single HEAL event with all targets batched
-				result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-					"source_uuid": _source_uuid,
-					"target_uuids": all_target_uuids,
-					"ability_id": aid,
-					"trigger_type": context.get("trigger_type", ""),
-					"ability_holder_uuid": _source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"amount": amount,
-						"stat": stat,
-						"skip_bump": parameters.get("skip_bump", false),
-						"targets_old_hp": all_old_vals,
-						"targets_new_hp": all_new_vals,
-						"targets_max_hp": all_max_hp
-					}
-				}))
+					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+						"source_uuid": _source_uuid,
+						"target_uuids": all_target_uuids,
+						"ability_id": aid,
+						"trigger_type": context.get("trigger_type", ""),
+						"ability_holder_uuid": _source_uuid,
+						"visual_payload": {
+							"source_uuid": visual_source_uuid,
+							"amount": amount,
+							"stat": stat,
+							"skip_bump": parameters.get("skip_bump", false),
+							"targets_old_hp": all_old_vals,
+							"targets_new_hp": all_new_vals,
+							"targets_max_hp": all_max_hp
+						}
+					}))
+				else:
+					# DAMAGE
+					if not custom_fmt.is_empty():
+						log_text = custom_fmt % [source_name, abs(amount)]
+					elif target_names.size() == 1:
+						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), target_names[0]]
+					else:
+						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), " and ".join(target_names)]
+					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+
+					result.add_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+						"source_uuid": _source_uuid,
+						"target_uuids": all_target_uuids,
+						"ability_id": aid,
+						"trigger_type": context.get("trigger_type", ""),
+						"ability_holder_uuid": _source_uuid,
+						"visual_payload": {
+							"source_uuid": visual_source_uuid,
+							"amount": amount,
+							"stat": stat,
+							"attack_type": parameters.get("attack_type", "ranged"), # Default ranged for effect damage
+							"skip_bump": parameters.get("skip_bump", true), # Default skip bump for effect damage
+							"projectile_data": parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"}),
+							"targets_old_hp": all_old_vals,
+							"targets_new_hp": all_new_vals
+						}
+					}))
 			elif stat == "pwr":
 				# Log message with all target names
 				var log_text: String

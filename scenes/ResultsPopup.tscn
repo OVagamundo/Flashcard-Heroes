@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b8q7p5d4f3e2"]
 
 [ext_resource type="Script" path="res://scripts/ResultsPopup.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://b7vqgcyh6q8w" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
 
 [node name="ResultsPopup" type="Control"]
 layout_mode = 3

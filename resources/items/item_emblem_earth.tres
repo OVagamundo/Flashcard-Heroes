@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_earth_001"]
 
-[ext_resource type="Texture2D" uid="uid://bg2j5z5z5z5z5" path="res://assets/Realistic/sprites/items/EarthEmblem.png" id="1_tex"]
-[ext_resource type="Script" uid="uid://c8q7y5y5y5y5y" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/EarthEmblem.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
 
 [resource]
 script = ExtResource("2_scr")

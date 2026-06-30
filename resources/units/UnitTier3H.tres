@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" uid="uid://bxxp0m25s1y6e" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://he4gkfsq8cpo" path="res://assets/Realistic/sprites/units/Tier3unitH.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitH.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth.tres" id="4_ability"]
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bkhw1v2x3y405"]
 
-[ext_resource type="Script" uid="uid://dhlkd7ocr5wbr" path="res://scripts/ItemInspectionWindow.gd" id="1_fghij"]
+[ext_resource type="Script" path="res://scripts/ItemInspectionWindow.gd" id="1_fghij"]
 
 [node name="ItemInspectionWindow" type="PanelContainer"]
 mouse_filter = 1

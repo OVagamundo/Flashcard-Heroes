@@ -109,7 +109,8 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_
 			break
 			
 	if OS.is_debug_build():
-		print("[EncounterGenerator] Elite weighting: ", weights, " (Last: ", last_elite_id, ") Picked: ", selected_boss_id)
+		pass
+		# print("[EncounterGenerator] Elite weighting: ", weights, " (Last: ", last_elite_id, ") Picked: ", selected_boss_id)
 
 	var boss_def = Database.get_definition(selected_boss_id)
 	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % selected_boss_id)

@@ -18,35 +18,35 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var victim_current_hp: int = context.get("victim_current_hp", 1)
 	var trinket_team: String = context.get("team", "") # AbilityResolver provides this for trinkets
 	
-	print("[EffectPreventLethal] execute called - victim=%s, victim_team=%s, trinket_team=%s, victim_hp=%d" % [victim_uuid, victim_team, trinket_team, victim_current_hp])
+	pass
 	
 	# Validate required context keys
 	if victim_uuid.is_empty():
-		print("[EffectPreventLethal] EXIT: victim_uuid is empty")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	if victim_team.is_empty():
-		print("[EffectPreventLethal] EXIT: victim_team is empty (context missing)")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	if trinket_team.is_empty():
-		print("[EffectPreventLethal] EXIT: trinket team is empty (context missing)")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 2. Check victim is on same team as trinket
 	if victim_team != trinket_team:
-		print("[EffectPreventLethal] EXIT: Team mismatch - victim=%s, trinket=%s" % [victim_team, trinket_team])
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 3. Check if damage was lethal (HP <= 0)
 	if victim_current_hp > 0:
-		print("[EffectPreventLethal] EXIT: HP > 0, not lethal")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 4. Check once-per-turn flag
 	var aegis_flag_key := "aegis_prevented_" + trinket_team
 	if battle_manager._turn_metadata.get(aegis_flag_key, false):
-		print("[EffectPreventLethal] EXIT: Already triggered this turn for team %s" % trinket_team)
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 5. Calculate heal amount to bring HP to 1
@@ -56,7 +56,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Set the flag to prevent duplicate triggers within same turn
 	battle_manager._turn_metadata[aegis_flag_key] = true
 	
-	print("[EffectPreventLethal] Prevented lethal damage for %s (team=%s), healing by %d" % [victim_uuid, trinket_team, heal_amount])
+	pass
 	
 	if is_simulation:
 		# NEW: Return EffectResult with LETHAL_SAVE event

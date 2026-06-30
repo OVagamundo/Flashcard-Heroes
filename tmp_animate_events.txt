@@ -1,0 +1,301 @@
+scripts/BattleAnimator.gd:263:func _animate_events(events: Array[CombatEvent]) -> void:
+scripts/BattleAnimator.gd-264-	var local_step_seen = _step_counter
+scripts/BattleAnimator.gd-265-	for event in events:
+scripts/BattleAnimator.gd-266-		SignalBus.log_animation_event.emit(event)
+scripts/BattleAnimator.gd-267-		
+scripts/BattleAnimator.gd-268-
+scripts/BattleAnimator.gd-269-		
+scripts/BattleAnimator.gd-270-		if _is_paused:
+scripts/BattleAnimator.gd-271-			if _step_counter <= local_step_seen:
+scripts/BattleAnimator.gd-272-				var step_info = _build_step_info(event)
+scripts/BattleAnimator.gd-273-				step_info["step_counter"] = _step_counter
+scripts/BattleAnimator.gd-274-				emit_signal("combat_step_reached", step_info)
+scripts/BattleAnimator.gd-275-				
+scripts/BattleAnimator.gd-276-				while _is_paused and _step_counter <= local_step_seen:
+scripts/BattleAnimator.gd-277-					await get_tree().process_frame
+scripts/BattleAnimator.gd-278-					
+scripts/BattleAnimator.gd-279-			local_step_seen += 1
+scripts/BattleAnimator.gd-280-		else:
+scripts/BattleAnimator.gd-281-			local_step_seen = _step_counter
+scripts/BattleAnimator.gd-282-			
+scripts/BattleAnimator.gd-283-		_play_trinket_activations_for_event(event)
+scripts/BattleAnimator.gd-284-		if event.type == CombatEvent.Type.LOG_MESSAGE:
+scripts/BattleAnimator.gd-285-			var has_trinket = event.trinket_activations.size() > 0 or event.visual_payload.has("trinket_activations")
+scripts/BattleAnimator.gd-286-			if has_trinket:
+scripts/BattleAnimator.gd-287-				# Standalone trinket activations need to be awaited so the UI isn't destroyed immediately
+scripts/BattleAnimator.gd-288-				await get_tree().create_timer(0.25).timeout
+scripts/BattleAnimator.gd-289-			continue
+scripts/BattleAnimator.gd-290-			
+scripts/BattleAnimator.gd-291-		match event.type:
+scripts/BattleAnimator.gd-292-			CombatEvent.Type.LOG_MESSAGE:
+scripts/BattleAnimator.gd-293-				pass
+scripts/BattleAnimator.gd-294-
+scripts/BattleAnimator.gd-295-			CombatEvent.Type.DAMAGE:
+scripts/BattleAnimator.gd-296-				var anim = AnimationRegistry.get_animation("damage")
+scripts/BattleAnimator.gd-297-				if anim:
+scripts/BattleAnimator.gd-298-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-299-				else:
+scripts/BattleAnimator.gd-300-					push_error("[BattleAnimator] Damage animation not found in registry!")
+scripts/BattleAnimator.gd-301-				
+scripts/BattleAnimator.gd-302-				if not _pending_guardian_return.is_empty():
+scripts/BattleAnimator.gd-303-					var guardian_view = _visual_registry.get(_pending_guardian_return)
+scripts/BattleAnimator.gd-304-					if is_instance_valid(guardian_view) and guardian_view.has_method("animate_leap_return"):
+scripts/BattleAnimator.gd-305-						await guardian_view.animate_leap_return()
+scripts/BattleAnimator.gd-306-					_pending_guardian_return = ""
+scripts/BattleAnimator.gd-307-
+scripts/BattleAnimator.gd-308-			CombatEvent.Type.HEAL:
+scripts/BattleAnimator.gd-309-				var anim = AnimationRegistry.get_animation("heal")
+scripts/BattleAnimator.gd-310-				if anim:
+scripts/BattleAnimator.gd-311-					Audio.play_sfx("combat_heal")
+scripts/BattleAnimator.gd-312-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-313-				else:
+scripts/BattleAnimator.gd-314-					push_error("[BattleAnimator] Heal animation not found in registry!")
+scripts/BattleAnimator.gd-315-
+scripts/BattleAnimator.gd-316-			CombatEvent.Type.BUFF:
+scripts/BattleAnimator.gd-317-				var anim = AnimationRegistry.get_animation("buff")
+scripts/BattleAnimator.gd-318-				if anim:
+scripts/BattleAnimator.gd-319-					Audio.play_sfx("combat_buff")
+scripts/BattleAnimator.gd-320-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-321-				else:
+scripts/BattleAnimator.gd-322-					push_error("[BattleAnimator] Buff animation not found in registry!")
+scripts/BattleAnimator.gd-323-
+scripts/BattleAnimator.gd-324-			CombatEvent.Type.STATUS_EFFECT:
+scripts/BattleAnimator.gd-325-				var anim = AnimationRegistry.get_animation("status_effect")
+scripts/BattleAnimator.gd-326-				if anim:
+scripts/BattleAnimator.gd-327-					Audio.play_sfx("combat_buff")
+scripts/BattleAnimator.gd-328-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-329-				else:
+scripts/BattleAnimator.gd-330-					push_error("[BattleAnimator] Status effect animation not found in registry!")
+scripts/BattleAnimator.gd-331-
+scripts/BattleAnimator.gd-332-			CombatEvent.Type.DEATH:
+scripts/BattleAnimator.gd-333-				if event.target_uuids.size() > 0:
+scripts/BattleAnimator.gd-334-					var dead_uuid := event.target_uuids[0]
+scripts/BattleAnimator.gd-335-					if _dead_units.has(dead_uuid):
+scripts/BattleAnimator.gd-336-						continue
+scripts/BattleAnimator.gd-337-					_dead_units[dead_uuid] = true
+scripts/BattleAnimator.gd-338-					Audio.play_sfx("combat_death")
+scripts/BattleAnimator.gd-339-					if SignalBus.has_signal("unit_death_fade"):
+scripts/BattleAnimator.gd-340-						SignalBus.emit_signal("unit_death_fade", dead_uuid)
+scripts/BattleAnimator.gd-341-					await wait_for_animation_completion("death_fade", dead_uuid)
+scripts/BattleAnimator.gd-342-					
+scripts/BattleAnimator.gd-343-					var dead_view = _visual_registry.get(dead_uuid)
+scripts/BattleAnimator.gd-344-					if is_instance_valid(dead_view):
+scripts/BattleAnimator.gd-345-						dead_view.queue_free()
+scripts/BattleAnimator.gd-346-						_visual_registry.erase(dead_uuid)
+scripts/BattleAnimator.gd-347-						await get_tree().process_frame
+scripts/BattleAnimator.gd-348-
+scripts/BattleAnimator.gd-349-			CombatEvent.Type.SUMMON:
+scripts/BattleAnimator.gd-350-				var payload = event.visual_payload
+scripts/BattleAnimator.gd-351-				var new_unit_uuid = payload.get("new_unit_uuid", "")
+scripts/BattleAnimator.gd-352-				var old_location = payload.get("old_unit_location")
+scripts/BattleAnimator.gd-353-				var spawn_source_uuid = payload.get("spawn_source_uuid", "")
+scripts/BattleAnimator.gd-354-				var unit_tier = int(payload.get("unit_tier", 1))
+scripts/BattleAnimator.gd-355-				
+scripts/BattleAnimator.gd-356-				var container_tag = old_location.container if old_location else &""
+scripts/BattleAnimator.gd-357-				var index = old_location.index if old_location else -1
+scripts/BattleAnimator.gd-358-				var is_inventory_summon = String(container_tag).begins_with("BattleInventoryT")
+scripts/BattleAnimator.gd-359-				
+scripts/BattleAnimator.gd-360-				var battle_view = get_tree().get_first_node_in_group("battle_view")
+scripts/BattleAnimator.gd-361-				var main_node = get_tree().get_root().find_child("Main", true, false)
+scripts/BattleAnimator.gd-362-				
+scripts/BattleAnimator.gd-363-				var arc_completed = false
+scripts/BattleAnimator.gd-364-				if not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
+scripts/BattleAnimator.gd-365-					var source_pos_data = _position_snapshot.get(spawn_source_uuid, {})
+scripts/BattleAnimator.gd-366-					var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % unit_tier)
+scripts/BattleAnimator.gd-367-					if not source_pos_data.is_empty() and is_instance_valid(machine_node):
+scripts/BattleAnimator.gd-368-						var start_center: Vector2 = source_pos_data["center"]
+scripts/BattleAnimator.gd-369-						var machine_rect = machine_node.get_global_rect()
+scripts/BattleAnimator.gd-370-						var end_center: Vector2 = machine_rect.get_center()
+scripts/BattleAnimator.gd-371-						
+scripts/BattleAnimator.gd-372-						var anim_capsule = preload("res://scenes/GachaBallView.tscn").instantiate()
+scripts/BattleAnimator.gd-373-						var effects_layer = WindowManager.get_vfx_layer()
+scripts/BattleAnimator.gd-374-						effects_layer.add_child(anim_capsule)
+scripts/BattleAnimator.gd-375-						anim_capsule.anchors_preset = Control.PRESET_TOP_LEFT
+scripts/BattleAnimator.gd-376-						anim_capsule.set_size_scale(1.0)
+scripts/BattleAnimator.gd-377-						anim_capsule.force_inventory_mode = true
+scripts/BattleAnimator.gd-378-						var new_snapshot = payload.get("new_unit_snapshot", {})
+scripts/BattleAnimator.gd-379-						anim_capsule.populate(null, new_snapshot)
+scripts/BattleAnimator.gd-380-						
+scripts/BattleAnimator.gd-381-						var initial_scale := 0.3
+scripts/BattleAnimator.gd-382-						var final_scale_val := 1.5
+scripts/BattleAnimator.gd-383-						anim_capsule.scale = Vector2(initial_scale, initial_scale)
+scripts/BattleAnimator.gd-384-						
+scripts/BattleAnimator.gd-385-						var center_offset = Vector2(48, 48)
+scripts/BattleAnimator.gd-386-						var arc_height := 500.0
+scripts/BattleAnimator.gd-387-						var duration := 0.7
+scripts/BattleAnimator.gd-388-						
+scripts/BattleAnimator.gd-389-						var tween = anim_capsule.create_tween()
+scripts/BattleAnimator.gd-390-						tween.set_trans(Tween.TRANS_LINEAR)
+scripts/BattleAnimator.gd-391-						
+scripts/BattleAnimator.gd-392-						tween.tween_method(func(t: float):
+scripts/BattleAnimator.gd-393-							var curr_x = lerp(start_center.x, end_center.x, t)
+scripts/BattleAnimator.gd-394-							var curr_y = lerp(start_center.y, end_center.y, t) - (4.0 * arc_height * t * (1.0 - t))
+scripts/BattleAnimator.gd-395-							var scale_t = clamp(t * 10.0, 0.0, 1.0)
+scripts/BattleAnimator.gd-396-							var current_scale = lerp(initial_scale, final_scale_val, scale_t)
+scripts/BattleAnimator.gd-397-							anim_capsule.scale = Vector2(current_scale, current_scale)
+scripts/BattleAnimator.gd-398-							var pos = Vector2(curr_x, curr_y)
+scripts/BattleAnimator.gd-399-							anim_capsule.global_position = pos - (center_offset * current_scale)
+scripts/BattleAnimator.gd-400-						, 0.0, 1.0, duration)
+scripts/BattleAnimator.gd-401-						
+scripts/BattleAnimator.gd-402-						await tween.finished
+scripts/BattleAnimator.gd-403-						anim_capsule.queue_free()
+scripts/BattleAnimator.gd-404-						Audio.play_sfx("coin_land")
+scripts/BattleAnimator.gd-405-						if main_node.has_method("trigger_machine_bounce"):
+scripts/BattleAnimator.gd-406-							main_node.trigger_machine_bounce(unit_tier)
+scripts/BattleAnimator.gd-407-						arc_completed = true
+scripts/BattleAnimator.gd-408-
+scripts/BattleAnimator.gd-409-				if not is_inventory_summon and is_instance_valid(battle_view):
+scripts/BattleAnimator.gd-410-					var lineup_container: HBoxContainer = null
+scripts/BattleAnimator.gd-411-					if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
+scripts/BattleAnimator.gd-412-						lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_bench
+scripts/BattleAnimator.gd-413-					elif container_tag == &"EnemyLineup":
+scripts/BattleAnimator.gd-414-						lineup_container = battle_view.enemy_lineup
+scripts/BattleAnimator.gd-415-					
+scripts/BattleAnimator.gd-416-					if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
+scripts/BattleAnimator.gd-417-						var slot_view = lineup_container.get_child(index)
+scripts/BattleAnimator.gd-418-						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
+scripts/BattleAnimator.gd-419-						
+scripts/BattleAnimator.gd-420-						var has_existing_unit := false
+scripts/BattleAnimator.gd-421-						var old_unit_uuid = payload.get("old_unit_uuid", "")
+scripts/BattleAnimator.gd-422-						for child in slot_view.get_children():
+scripts/BattleAnimator.gd-423-							if child.is_queued_for_deletion():
+scripts/BattleAnimator.gd-424-								continue
+scripts/BattleAnimator.gd-425-							if child.has_method("populate"): # Defensive check instead of is GachaBallView
+scripts/BattleAnimator.gd-426-								if old_unit_uuid != "" and child.has_method("get_instance_uuid") and child.get_instance_uuid() == old_unit_uuid:
+scripts/BattleAnimator.gd-427-									continue # Allow overlapping with the unit being replaced
+scripts/BattleAnimator.gd-428-								has_existing_unit = true
+scripts/BattleAnimator.gd-429-								break
+scripts/BattleAnimator.gd-430-						
+scripts/BattleAnimator.gd-431-						# If there is already a unit, force clear it visually to avoid overlap
+scripts/BattleAnimator.gd-432-						if has_existing_unit:
+scripts/BattleAnimator.gd-433-							for child in slot_view.get_children():
+scripts/BattleAnimator.gd-434-								if child.has_method("populate"):
+scripts/BattleAnimator.gd-435-									child.hide()
+scripts/BattleAnimator.gd-436-									child.queue_free()
+scripts/BattleAnimator.gd-437-									
+scripts/BattleAnimator.gd-438-						slot_view.add_child(new_view)
+scripts/BattleAnimator.gd-439-						var new_snapshot = payload.get("new_unit_snapshot", {})
+scripts/BattleAnimator.gd-440-						if not new_snapshot.is_empty():
+scripts/BattleAnimator.gd-441-							var new_location = LocationIdentifier.new(container_tag, index)
+scripts/BattleAnimator.gd-442-							new_view.populate(new_location, new_snapshot, false)
+scripts/BattleAnimator.gd-443-							new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+scripts/BattleAnimator.gd-444-							_visual_registry[new_unit_uuid] = new_view
+scripts/BattleAnimator.gd-445-							
+scripts/BattleAnimator.gd-446-							await get_tree().process_frame
+scripts/BattleAnimator.gd-447-							var rect = new_view.get_global_rect()
+scripts/BattleAnimator.gd-448-							_position_snapshot[new_unit_uuid] = {
+scripts/BattleAnimator.gd-449-								"position": rect.position,
+scripts/BattleAnimator.gd-450-								"size": rect.size,
+scripts/BattleAnimator.gd-451-								"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+scripts/BattleAnimator.gd-452-							}
+scripts/BattleAnimator.gd-453-							
+scripts/BattleAnimator.gd-454-							if arc_completed:
+scripts/BattleAnimator.gd-455-								new_view.play_landing_bounce()
+scripts/BattleAnimator.gd-456-							else:
+scripts/BattleAnimator.gd-457-								if SignalBus.has_signal("unit_summon_fade"):
+scripts/BattleAnimator.gd-458-									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
+scripts/BattleAnimator.gd-459-									Audio.play_sfx("combat_summon")
+scripts/BattleAnimator.gd-460-									await wait_for_animation_completion("summon_fade", new_unit_uuid)
+scripts/BattleAnimator.gd-461-				
+scripts/BattleAnimator.gd-462-				if arc_completed:
+scripts/BattleAnimator.gd-463-					await get_tree().create_timer(0.2).timeout
+scripts/BattleAnimator.gd-464-
+scripts/BattleAnimator.gd-465-			CombatEvent.Type.LETHAL_SAVE:
+scripts/BattleAnimator.gd-466-				var anim = AnimationRegistry.get_animation("lethal_save")
+scripts/BattleAnimator.gd-467-				if anim:
+scripts/BattleAnimator.gd-468-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-469-				else:
+scripts/BattleAnimator.gd-470-					push_error("[BattleAnimator] Lethal save animation not found in registry!")
+scripts/BattleAnimator.gd-471-
+scripts/BattleAnimator.gd-472-			CombatEvent.Type.GUARDIAN_INTERCEPT:
+scripts/BattleAnimator.gd-473-				var anim = AnimationRegistry.get_animation("guardian_intercept")
+scripts/BattleAnimator.gd-474-				if anim:
+scripts/BattleAnimator.gd-475-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-476-				else:
+scripts/BattleAnimator.gd-477-					push_error("[BattleAnimator] Guardian intercept animation not found in registry!")
+scripts/BattleAnimator.gd-478-
+scripts/BattleAnimator.gd-479-			CombatEvent.Type.KAMIKAZE_ATTACK:
+scripts/BattleAnimator.gd-480-				var anim = AnimationRegistry.get_animation("kamikaze")
+scripts/BattleAnimator.gd-481-				if anim:
+scripts/BattleAnimator.gd-482-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-483-				else:
+scripts/BattleAnimator.gd-484-					push_error("[BattleAnimator] Kamikaze animation not found in registry!")
+scripts/BattleAnimator.gd-485-
+scripts/BattleAnimator.gd-486-			CombatEvent.Type.TRANSFORM:
+scripts/BattleAnimator.gd-487-				var anim = AnimationRegistry.get_animation("transform")
+scripts/BattleAnimator.gd-488-				if anim:
+scripts/BattleAnimator.gd-489-					await anim.execute(self, event.target_uuids, event.visual_payload)
+scripts/BattleAnimator.gd-490-				else:
+scripts/BattleAnimator.gd-491-					push_error("[BattleAnimator] Transform animation not found in registry!")
+scripts/BattleAnimator.gd-492-
+scripts/BattleAnimator.gd-493-			CombatEvent.Type.GOLD_GAIN:
+scripts/BattleAnimator.gd-494-				var payload = event.visual_payload
+scripts/BattleAnimator.gd-495-				var amount = int(payload.get("amount", 0))
+scripts/BattleAnimator.gd-496-				var origin_uuid = payload.get("origin_uuid", "")
+scripts/BattleAnimator.gd-497-				var target_gold_amount = payload.get("target_gold_amount", -1)
+scripts/BattleAnimator.gd-498-				if has_method("_animate_gold_gain"):
+scripts/BattleAnimator.gd-499-					await _animate_gold_gain(origin_uuid, amount, target_gold_amount)
+scripts/BattleAnimator.gd-500-
+scripts/BattleAnimator.gd-501-			CombatEvent.Type.TOKEN_GAIN:
+scripts/BattleAnimator.gd-502-				var payload = event.visual_payload
+scripts/BattleAnimator.gd-503-				var amount = int(payload.get("amount", 0))
+scripts/BattleAnimator.gd-504-				var origin_uuid = payload.get("origin_uuid", "")
+scripts/BattleAnimator.gd-505-				if has_method("_animate_token_gain"):
+scripts/BattleAnimator.gd-506-					await _animate_token_gain(origin_uuid, amount)
+scripts/BattleAnimator.gd-507-
+scripts/BattleAnimator.gd-508-			CombatEvent.Type.ITEM_TRANSFER:
+scripts/BattleAnimator.gd-509-				var payload = event.visual_payload
+scripts/BattleAnimator.gd-510-				var source_uuid = event.source_uuid
+scripts/BattleAnimator.gd-511-				var target_uuid = event.target_uuids[0] if event.target_uuids.size() > 0 else ""
+scripts/BattleAnimator.gd-512-				if not source_uuid.is_empty() and not target_uuid.is_empty():
+scripts/BattleAnimator.gd-513-					if has_method("_animate_item_transfer"):
+scripts/BattleAnimator.gd-514-						await _animate_item_transfer(source_uuid, target_uuid, payload)
+scripts/BattleAnimator.gd-515-
+scripts/BattleAnimator.gd-516-			CombatEvent.Type.SLOT_EFFECT_CHANGE:
+scripts/BattleAnimator.gd-517-				var payload = event.visual_payload
+scripts/BattleAnimator.gd-518-				var container_tag: StringName = payload.get("container_tag", &"")
+scripts/BattleAnimator.gd-519-				var slot_index: int = int(payload.get("slot_index", -1))
+scripts/BattleAnimator.gd-520-				var to_effect: StringName = payload.get("to_effect", &"")
+scripts/BattleAnimator.gd-521-				if has_method("_get_slot_view"):
+scripts/BattleAnimator.gd-522-					var slot_view = _get_slot_view(container_tag, slot_index)
+scripts/BattleAnimator.gd-523-					if is_instance_valid(slot_view) and slot_view.has_method("animate_slot_effect_change"):
+scripts/BattleAnimator.gd-524-						await slot_view.animate_slot_effect_change(to_effect)
+scripts/BattleAnimator.gd-525-					elif is_instance_valid(slot_view) and slot_view.has_method("set_slot_effect"):
+scripts/BattleAnimator.gd-526-						slot_view.set_slot_effect(to_effect)
+scripts/BattleAnimator.gd-527-						await get_tree().create_timer(0.2).timeout
+scripts/BattleAnimator.gd-528-
+scripts/BattleAnimator.gd-529-		await get_tree().process_frame
+scripts/BattleAnimator.gd-530-
+scripts/BattleAnimator.gd-531-func _find_dynamic_view(uuid: String) -> GachaBallView:
+scripts/BattleAnimator.gd-532-	var battle_view = get_tree().get_first_node_in_group("battle_view")
+scripts/BattleAnimator.gd-533-	if is_instance_valid(battle_view):
+scripts/BattleAnimator.gd-534-		var containers = [battle_view.player_lineup, battle_view.enemy_lineup, battle_view.player_bench]
+scripts/BattleAnimator.gd-535-		for c in containers:
+scripts/BattleAnimator.gd-536-			if not is_instance_valid(c): continue
+scripts/BattleAnimator.gd-537-			for slot in c.get_children():
+scripts/BattleAnimator.gd-538-				for child in slot.get_children():
+scripts/BattleAnimator.gd-539-					if child.is_queued_for_deletion(): continue
+scripts/BattleAnimator.gd-540-					if child is GachaBallView and child.has_method("get_instance_uuid") and child.get_instance_uuid() == uuid:
+scripts/BattleAnimator.gd-541-						return child
+scripts/BattleAnimator.gd-542-	return null
+scripts/BattleAnimator.gd-543-
+scripts/BattleAnimator.gd-544-func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
+scripts/BattleAnimator.gd-545-	var view = _visual_registry.get(target_uuid)
+scripts/BattleAnimator.gd-546-	if not is_instance_valid(view):
+scripts/BattleAnimator.gd-547-		view = _find_dynamic_view(target_uuid)
+scripts/BattleAnimator.gd-548-		
+scripts/BattleAnimator.gd-549-	if not is_instance_valid(view) or not view.has_method("animate_stat_change"):
+scripts/BattleAnimator.gd-550-		return
+scripts/BattleAnimator.gd-551-	view.animate_stat_change(new_hp, amount, "hp")
+scripts/BattleAnimator.gd-552-
+scripts/BattleAnimator.gd-553-func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
+scripts/BattleAnimator.gd-554-	var view = _visual_registry.get(target_uuid)
+scripts/BattleAnimator.gd-555-	if not is_instance_valid(view):
+scripts/BattleAnimator.gd-556-		view = _find_dynamic_view(target_uuid)
+scripts/BattleAnimator.gd-557-		
+scripts/BattleAnimator.gd-558-	if not is_instance_valid(view) or not view.has_method("animate_stat_change"):
+scripts/BattleAnimator.gd-559-		return
+scripts/BattleAnimator.gd-560-	view.animate_stat_change(new_pwr, amount, "pwr")
+scripts/BattleAnimator.gd-561-
+scripts/BattleAnimator.gd-562-func apply_burn_stack(uuid: String, new_stacks: int) -> void:
+scripts/BattleAnimator.gd-563-	var view = _visual_registry.get(uuid)

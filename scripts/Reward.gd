@@ -363,6 +363,7 @@ func _animate_prize_draw(machine: Control, slot_index: int, instance: GachaBallI
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, VisualDataAdapter.create_visual_data(instance))
@@ -391,8 +392,6 @@ func _populate_prize_slot(slot_index: int, instance: GachaBallInstance) -> void:
 func _clear_prize_slot(slot_index: int) -> void:
 	if _prizes[slot_index] != null:
 		var uuid = _prizes[slot_index].ball_uuid
-		GameManager._temporary_reward_master_dict.erase(uuid)
-		GameManager._temporary_reward_container.set_uuid(slot_index, "")
 		
 	_prizes[slot_index] = null
 	var slot = prize_lineup.get_child(slot_index)
@@ -471,6 +470,7 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 		_action_in_progress = false
 	else:
 		await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		_action_in_progress = false
 
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
@@ -559,6 +559,7 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, visual_data)
@@ -617,6 +618,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, visual_data)
@@ -719,6 +721,7 @@ func _on_leave_pressed() -> void:
 				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 			else:
 				await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
+				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")

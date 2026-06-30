@@ -230,6 +230,14 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	
 	_kill_active_tweens()
 	
+	# GUARDIAN SENTINEL FIX: Force reset of view layout to the actual slot
+	# so that no matter what tweens were running (leap, recoil, etc),
+	# it is visually detached and floating exactly from its slot.
+	if is_instance_valid(_view):
+		_view.top_level = false
+		_view.position = Vector2.ZERO
+	_reset_sprite_scale()
+	
 	var original_position: Vector2 = _view.position
 	var levitate_target := Vector2(original_position.x, original_position.y - AC.DEATH_LEVITATE_HEIGHT)
 	
@@ -447,18 +455,18 @@ func _flash_unit_color(flash_color: Color) -> void:
 	# Re-attach to parent first
 	_view.top_level = false 
 	
-	# NOW capture the resting position as origin (guaranteed correct)
-	var original_position: Vector2 = _view.global_position
-	_flash_original_position = original_position
-	
-	# Detach from parent layout so position animation works
-	_view.top_level = true
-	
-	_ensure_pivot() # Set bottom-center pivot on sprite
-	
 	var is_heal_or_buff := flash_color.g >= flash_color.r
 	var is_gold_flash := flash_color.r > 0.9 and flash_color.g > 0.7 and flash_color.g < 0.95 and flash_color.b < 0.2
 	var flash_fade_duration := AC.FLASH_GOLD_FADE_DURATION if is_gold_flash else AC.FLASH_FADE_DURATION
+	
+	var original_position: Vector2 = _view.global_position
+	
+	# Only detach and save position if we are doing a position hop
+	if is_heal_or_buff:
+		_flash_original_position = original_position
+		_view.top_level = true
+	else:
+		_flash_original_position = Vector2.ZERO
 	
 	# Set up flash color
 	mat.set_shader_parameter("flash_color", flash_color)
@@ -469,6 +477,8 @@ func _flash_unit_color(flash_color: Color) -> void:
 	_flash_tween = _view.create_tween()
 	
 	if is_heal_or_buff:
+		_ensure_pivot() # Set bottom-center pivot on sprite
+		
 		# HOP: Squish anticipation -> Stretch up -> Squish land -> Normalize
 		var hop_target = Vector2(original_position.x, original_position.y - AC.FLASH_HOP_HEIGHT)
 		
@@ -521,8 +531,10 @@ func _flash_unit_color(flash_color: Color) -> void:
 	_flash_tween.finished.connect(_on_flash_tween_finished)
 
 func _on_flash_tween_finished() -> void:
-	_view.top_level = false # Re-attach to parent layout
-	_view.global_position = _flash_original_position
+	if _flash_original_position != Vector2.ZERO:
+		_view.top_level = false # Re-attach to parent layout
+		_view.global_position = _flash_original_position
+		_flash_original_position = Vector2.ZERO
 	_reset_sprite_scale()
 	SignalBus.emit_signal("unit_flash_finished", _get_uuid())
 
@@ -572,6 +584,10 @@ func _on_lethal_save_tween_finished() -> void:
 # GUARDIAN LEAP ANIMATION
 # =============================================================================
 func animate_leap_to(target_center: Vector2) -> void:
+	if _move_tween and _move_tween.is_valid():
+		_move_tween.kill()
+		_restore_move_layout_state()
+		
 	_guardian_original_position = _view.global_position
 	_original_z_index = _view.z_index
 	_view.z_index = 100
@@ -617,6 +633,10 @@ func animate_leap_to(target_center: Vector2) -> void:
 func animate_leap_return() -> void:
 	if _guardian_original_position == Vector2.ZERO:
 		return
+		
+	if _move_tween and _move_tween.is_valid():
+		_move_tween.kill()
+		_restore_move_layout_state()
 	
 	var tween = _view.create_tween()
 	_move_tween = tween

@@ -1,17 +1,17 @@
 [gd_scene format=3 uid="uid://crndwktdbp0rc"]
 
-[ext_resource type="Script" uid="uid://d1ts0m0sqa1lk" path="res://scripts/Main.gd" id="2_cdefg"]
-[ext_resource type="Script" uid="uid://ban2qfgbvx5bs" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
-[ext_resource type="PackedScene" uid="uid://c5w2h4x3y100" path="res://scenes/SlotView.tscn" id="5_slotview"]
+[ext_resource type="Script" path="res://scripts/Main.gd" id="2_cdefg"]
+[ext_resource type="Script" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 [ext_resource type="PackedScene" path="res://scenes/BattleLogOverlay.tscn" id="6_battle_log_overlay"]
-[ext_resource type="Theme" uid="uid://bvuqtb8gv6two" path="res://assets/styles/game_theme.tres" id="7_theme"]
-[ext_resource type="Texture2D" uid="uid://d1uwh0rb4cmeb" path="res://assets/Realistic/ui/textures/gold_coin.png" id="8_gold_coin"]
-[ext_resource type="Texture2D" uid="uid://rkatef3c1vco" path="res://assets/Realistic/ui/textures/token_100yen.png" id="9_token_coin"]
-[ext_resource type="Texture2D" uid="uid://cbtfvomrqd7ma" path="res://assets/Realistic/ui/textures/Tier1GachaBallBase.png" id="10_machine1"]
-[ext_resource type="Texture2D" uid="uid://dgt0ux8ymqqfm" path="res://assets/Realistic/ui/textures/Tier2GachaBallBase.png" id="11_machine2"]
-[ext_resource type="Texture2D" uid="uid://bb6fa4p3dthoc" path="res://assets/Realistic/ui/textures/Tier3GachaBallBase.png" id="12_machine3"]
-[ext_resource type="Script" uid="uid://x6lo4o8sslbu" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
-[ext_resource type="Texture2D" uid="uid://scjvpm7p8kjd" path="res://assets/Realistic/ui/textures/Knob.png" id="100_knob"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="7_theme"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/gold_coin.png" id="8_gold_coin"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/token_100yen.png" id="9_token_coin"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallBase.png" id="10_machine1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallBase.png" id="11_machine2"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallBase.png" id="12_machine3"]
+[ext_resource type="Script" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Knob.png" id="100_knob"]
 
 
 
@@ -410,7 +410,6 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
-unique_name_in_owner = true
 layout_mode = 0
 offset_left = 442.0
 offset_top = 90.0
@@ -423,7 +422,6 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
-unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.575
@@ -463,7 +461,6 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
-unique_name_in_owner = true
 layout_mode = 0
 offset_left = 442.0
 offset_top = 90.0
@@ -476,7 +473,6 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
-unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.575
@@ -516,7 +512,6 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
-unique_name_in_owner = true
 layout_mode = 0
 offset_left = 442.0
 offset_top = 90.0
@@ -529,7 +524,6 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
-unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.575

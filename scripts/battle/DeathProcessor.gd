@@ -454,7 +454,9 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			AbilityResolver.process_trigger(&"on_death", death_ctx)
 	
 	if OS.is_debug_build() and is_simulation:
-		print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())
+		pass
+		# print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())
+
 
 	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
 	# and emit DEATH events
@@ -493,7 +495,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 
 	if OS.is_debug_build() and is_simulation:
-		print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())
+		pass
+		# print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())
 	
 	# Store deferred deaths for processing after counter-attacks complete
 	if not deferred_deaths.is_empty():
@@ -511,7 +514,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		
 		if not bm._pending_reactions.is_empty():
 			if OS.is_debug_build():
-				print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
+				pass
+				# print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
 			bm.drain_pending_reactions_inline(0)
 			var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
 			for evt in cascade_evts:

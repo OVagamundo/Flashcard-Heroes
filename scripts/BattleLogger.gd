@@ -269,7 +269,7 @@ func _add_entry(type: String, message: String, details: String, indent_level: in
 	if indent_level > 0:
 		indent_str = "└─ "
 	var console_msg = "[%d:%d] %s %s" % [_current_turn, _event_index, indent_str + _strip_bbcode(message), details]
-	print("[BattleLog] " + console_msg)
+	# print("[BattleLog] " + console_msg)
 
 func _strip_bbcode(text: String) -> String:
 	# Remove BBCode tags for console output

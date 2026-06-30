@@ -297,6 +297,9 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
+	var target_view = WindowManager.find_view_for_location(target_loc)
+	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
+
 	var data_owner = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 
@@ -413,6 +416,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		"source_loc": source_loc,
 		"target_loc": target_loc,
 		"final_loc": final_loc,
+		"start_pos": start_pos,
 		"new_instance": new_instance,
 		"is_merge_encounter": is_merge_encounter,
 		"merge_encounter_cost": merge_encounter_cost,
