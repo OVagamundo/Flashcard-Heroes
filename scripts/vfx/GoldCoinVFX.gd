@@ -46,7 +46,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	
 	if delay > 0:
 		_coin_sprite.visible = false
-		await get_tree().create_timer(delay).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), delay).timeout
 		_coin_sprite.visible = true
 	
 	_start_spin()

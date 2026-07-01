@@ -438,7 +438,8 @@ func bm_reshuffle_discard_pile(_tier_to_reshuffle: int) -> bool:
 	# Automatic reshuffle feature has been removed.
 	return false
 
-func bm_draw_gacha_instance(tier: int) -> bool:
+func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
+	var chain_events: Array[CombatEvent] = []
 	var base_cost := tier
 	var cost := base_cost
 	
@@ -449,7 +450,7 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 		cost = maxi(1, cost - 1)
 		
 	if _gacha_tokens < cost:
-		return false
+		return chain_events
 	
 	var container_tag: StringName = "BattleInventoryT%d" % tier
 	var tier_pool := get_instances_in_container(container_tag)
@@ -457,13 +458,13 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	# If pool is empty, try reshuffling first
 	# If pool is empty, the draw fails (No automatic reshuffle)
 	if tier_pool.is_empty():
-		return false
+		return chain_events
 	
 	# Attempt to draw
 	var draw_result := InventoryOperations.draw_from_tier(_state, tier, 5)
 	
 	if not draw_result.success:
-		return false
+		return chain_events
 	
 	# Spend tokens
 	_gacha_tokens -= cost
@@ -483,18 +484,41 @@ func bm_draw_gacha_instance(tier: int) -> bool:
 	if OS.is_debug_build():
 		_bm_validate_state_consistency()
 	
-	# Emit animation signal FIRST so BattleView can suppress the redraw
-	SignalBus.emit_signal("gacha_draw_animated", draw_result)
+	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
+	var new_unit_snapshot = {}
+	var drawn_instance = get_instance(draw_result.drawn_uuid)
+	if is_instance_valid(drawn_instance):
+		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
+		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
+		
+	draw_event.visual_payload = {
+		"draw_result": draw_result,
+		"new_unit_snapshot": new_unit_snapshot
+	}
+	chain_events.append(draw_event)
 	
-	# Then emit inventory changed (BattleView will skip redraw due to suppression flag)
-	_emit_battle_inventory_changed()
+	# Trigger passive updates (like Trinkets) so they enter the reaction queue
+	var context := {
+		"drawn_uuid": draw_result.drawn_uuid,
+		"dest_container": draw_result.dest_container,
+		"dest_slot": draw_result.dest_slot,
+		"tier": tier,
+		"tokens_spent": tier # Tier equals tokens spent
+	}
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	AbilityResolver.process_trigger(&"on_draw", context)
+	AbilityResolver.process_trigger(&"on_token_spent", context)
+	
+	# Process any resulting reactions (e.g. On-draw buffs)
+	var reaction_events = _combat.process_reaction_queue(self, {})
+	chain_events.append_array(reaction_events)
 	
 	# If pool emptied, trigger reshuffle for next draw
 	# If pool emptied, next draw will fail until/if a retrieval mechanic is added.
 	if draw_result.pool_emptied:
 		pass
 	
-	return true
+	return chain_events
 
 # ------------------------------------------------------------------
 # Golden Rule Validation (Battle)
@@ -746,7 +770,9 @@ func _resolve_combat_phase() -> void:
 	var turn_log: Array[CombatEvent] = _combat.execute_combat_turn(self , death_tracking)
 	
 	# 3. Clean up deferred enemy instances AFTER all reactions have resolved
-	_flush_deferred_enemy_erasures()
+	# BUGFIX: Delay erasing enemy instances from memory until _on_turn_animation_finished
+	# so that players can inspect them while they are animating their death or combat actions.
+	# _flush_deferred_enemy_erasures()
 	
 	# 4. Send Log to Animator (The VCR Playback)
 	if not turn_log.is_empty():
@@ -1362,7 +1388,9 @@ func _trigger_battle_start_abilities() -> void:
 	# Instantly resolve starting passive stats/buffs before the first turn begins.
 	_combat.process_reaction_queue(self, {})
 	
-	_flush_deferred_enemy_erasures()
+	# BUGFIX: Delay erasing enemy instances from memory until _on_turn_animation_finished
+	# so that players can inspect them while they are animating their death or combat actions.
+	# _flush_deferred_enemy_erasures()
 
 ## Trigger on_turn_start abilities for all units and trinkets.
 func _trigger_turn_start_abilities() -> void:
@@ -1540,7 +1568,9 @@ func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> v
 	_process_completed_counter_deaths(all_events_for_animator, death_tracking)
 	
 	# Clean up deferred enemy instances AFTER all reactions have resolved
-	_flush_deferred_enemy_erasures()
+	# BUGFIX: Delay erasing enemy instances from memory until _on_turn_animation_finished
+	# so that players can inspect them while they are animating their death or combat actions.
+	# _flush_deferred_enemy_erasures()
 	
 	if not all_events_for_animator.is_empty():
 		_is_processing_effect = false # Wait, let animator emit finished
@@ -2004,7 +2034,11 @@ func _on_draw_gacha_requested(tier: int) -> void:
 	# Ignore draw intents during COMBAT to enforce strict input blocking.
 	if _current_battle_phase != Phases.MANAGEMENT:
 		return
-	bm_draw_gacha_instance(tier)
+	var chain_events = bm_draw_gacha_instance(tier)
+	if not chain_events.is_empty():
+		var animator = get_tree().get_first_node_in_group("battle_animator")
+		if is_instance_valid(animator) and animator.has_method("play_async_chain"):
+			animator.play_async_chain(chain_events, get_board_snapshot())
 
 
 # Helper function to equip an item on a unit

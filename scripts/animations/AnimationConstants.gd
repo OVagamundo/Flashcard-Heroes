@@ -12,6 +12,13 @@ static var speed_factor: float = 1.0
 static func scaled(duration: float) -> float:
 	return duration / speed_factor
 
+## Creates a timer that respects the game's pause state.
+## All combat and management animations should use this instead of tree.create_timer directly
+## to ensure the VCR freezes correctly when the player inspects a unit.
+static func create_pausable_timer(tree: SceneTree, duration: float) -> SceneTreeTimer:
+	return tree.create_timer(duration, false)
+
+
 # =============================================================================
 # MELEE ATTACK ANIMATION
 # =============================================================================

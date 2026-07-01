@@ -42,6 +42,7 @@ func _ready() -> void:
 	# FINAL FIX: Input processing is REMOVED. The WindowManager is now a pure service.
 	# It no longer interprets raw input; it only executes commands from the GIR.
 	set_process_input(false)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	# FINAL FIX: Signal connections now point to the clean, public API functions,
 	# and all old, internal handler functions (_on_..._requested) have been removed.
@@ -474,11 +475,6 @@ func request_close_inspection_window(window: Control, _cause: StringName = &"") 
 
 # This unified function handles the creation and management of ALL Contextual Windows.
 func _open_contextual_window(context: Dictionary) -> Control:
-	# Block contextual windows triggered by user input during COMBAT.
-	# This preserves strict input blocking while allowing true modals via open_modal_window.
-	var gir := get_tree().get_first_node_in_group("global_interaction_router")
-	if is_instance_valid(gir) and gir.has_method("is_combat_locked") and gir.is_combat_locked():
-		return null
 	var window_type: StringName = context.get("window_type")
 	var anchor_view: Control = context.get("anchor_view", null)
 	var populate_context: Dictionary = context.get("populate_context", {})
@@ -503,6 +499,8 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	if window_instance is InspectionWindow:
 		window_instance.custom_minimum_size = Vector2(480, 0)
 		
+	window_instance.process_mode = Node.PROCESS_MODE_ALWAYS
+		
 	_get_modal_layer().add_child(window_instance)
 	
 	# CRITICAL: Do NOT use hide() here. Hidden nodes often skip layout calculations in Godot 4.
@@ -522,6 +520,7 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	
 	_register_window(window_instance, false) # Register as NON-modal.
 	_active_inspection_group.push_back(window_instance)
+	_update_tree_pause_state()
 	
 	# AUDIO HOOK: Window open sound is now handled in _animate_window_open
 	# Audio.play_sfx("ui_window_open")
@@ -695,7 +694,18 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 	var window_type: StringName
 	var context: Dictionary
 	if is_instance_valid(loc):
-		instance = GameManager.get_instance_from_location(loc)
+		# Fallback 1: Try UUID lookup first if source view provides it.
+		# This is CRITICAL during combat animations because units might have died
+		# in the simulation and moved to Discard (Player) or been erased (Enemy).
+		if is_instance_valid(source_view) and source_view.has_method("get_instance_uuid"):
+			var uuid = source_view.get_instance_uuid()
+			if not uuid.is_empty():
+				instance = GameManager.get_instance_by_uuid(uuid)
+				
+		# Fallback 2: Normal location lookup
+		if not is_instance_valid(instance):
+			instance = GameManager.get_instance_from_location(loc)
+			
 		if not is_instance_valid(instance): return {}
 		var def = instance.get_definition()
 		if def.category == &"UNIT":
@@ -758,6 +768,8 @@ func stop_tracking_window(window_id: int) -> void:
 	var window = instance_from_id(window_id)
 	if is_instance_valid(window) and window is Control:
 		window_closed.emit(window)
+	
+	call_deferred("_update_tree_pause_state")
 
 	if not _tracked_windows.has(window_id): return
 	var tracking_info = _tracked_windows[window_id]
@@ -1035,6 +1047,22 @@ func _calculate_contextual_window_position(anchor: Control, parent_window: Contr
 		position = vp_pos + vp_size / 2.0 - _get_window_size(window) / 2.0
 	
 	return position
+
+func _update_tree_pause_state() -> void:
+	var has_tooltip = false
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if not is_instance_valid(w):
+			_active_inspection_group.remove_at(i)
+			continue
+		if w.has_meta("window_type"):
+			var t = w.get_meta("window_type")
+			if t in [&"UnitInspection", &"ItemInspection", &"TraitInspection", &"EffectInspection"]:
+				has_tooltip = true
+	if has_tooltip:
+		has_tooltip = GlobalInteractionRouter.is_inspection_locked()
+		
+	get_tree().paused = has_tooltip
 
 func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):

@@ -23,7 +23,8 @@ enum Type {
 	GOLD_GAIN, # Payload: { "amount": int }
 	ITEM_TRANSFER, # Standard Bearer: item transfer on death
 	SLOT_EFFECT_CHANGE, # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
-	TOKEN_GAIN
+	TOKEN_GAIN,
+	DRAW # New for Async Draw Chains
 }
 
 var type: Type

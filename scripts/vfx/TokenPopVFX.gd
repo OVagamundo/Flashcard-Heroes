@@ -151,7 +151,7 @@ func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 	animation_finished.emit()
 	
 	# Wait for particles then cleanup
-	await get_tree().create_timer(0.2).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), 0.2).timeout
 	queue_free()
 
 func _start_horizontal_flip(count: int) -> void:

@@ -29,6 +29,7 @@ SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
 TutorialManager="*res://scripts/TutorialManager.gd"
 SaveManager="*res://scripts/SaveManager.gd"
 CursorManager="*res://scripts/CursorManager.gd"
+MergeAnimator="*res://scripts/MergeAnimator.gd"
 ```
 
 ## 2. Directory Structure
@@ -267,6 +268,8 @@ scripts/
 ├── EffectDeathTokenRefund.gd.uid
 ├── EffectDefinition.gd
 ├── EffectDefinition.gd.uid
+├── EffectEmpathicLink.gd
+├── EffectEmpathicLink.gd.uid
 ├── EffectGainGold.gd
 ├── EffectGainGold.gd.uid
 ├── EffectGrantExtraAction.gd
@@ -352,6 +355,8 @@ scripts/
 ├── LocationIdentifier.gd.uid
 ├── Main.gd
 ├── Main.gd.uid
+├── MergeAnimator.gd
+├── MergeAnimator.gd.uid
 ├── MergeEncounter.gd
 ├── MergeEncounter.gd.uid
 ├── MergeManager.gd
@@ -514,65 +519,139 @@ scenes/
 
 This section shows which `.gd` scripts are attached to nodes in the `.tscn` scenes. This avoids dumping noisy visual data while preserving structural logic.
 
-### scenes\BackgroundBlocker.tscn
-  - Node `BackgroundBlocker` -> `scripts/BackgroundBlocker.gd`
+### scenes/Main.tscn
+  - Node `Main` -> `scripts/Main.gd`
+  - Node `ScreenShake` -> `scripts/ScreenShake.gd`
+  - Node `SelectionClearArea` -> `scripts/SelectionClearArea.gd`
 
-### scenes\BattleLogOverlay.tscn
-  - Node `BattleLogOverlay` -> `scripts/BattleLogOverlay.gd`
+### scenes/TutorialPopup.tscn
+  - Node `TutorialPopup` -> `scripts/TutorialPopup.gd`
 
-### scenes\DeckSelectButton.tscn
-  - Node `DeckSelectButton` -> `scripts/DeckSelectButton.gd`
+### scenes/ItemInspectionWindow.tscn
+  - Node `ItemInspectionWindow` -> `scripts/ItemInspectionWindow.gd`
 
-### scenes\DiscardPileWindow.tscn
-  - Node `DiscardPileWindow` -> `scripts/DiscardPileWindow.gd`
+### scenes/BattleInventoryWindow.tscn
+  - Node `BattleInventoryWindow` -> `scripts/BattleInventoryWindow.gd`
+  - Node `Tier1Tray` -> `scripts/BattleInventoryTrayRig.gd`
+  - Node `Tier2Tray` -> `scripts/BattleInventoryTrayRig.gd`
+  - Node `Tier3Tray` -> `scripts/BattleInventoryTrayRig.gd`
 
-### scenes\EffectInspectionWindow.tscn
-  - Node `EffectInspectionWindow` -> `scripts/EffectInspectionWindow.gd`
+### scenes/ChoiceWindow.tscn
+  - Node `ChoiceWindow` -> `scripts/ChoiceWindow.gd`
 
-### scenes\FlashcardMinigame.tscn
+### scenes/FlashcardMinigame.tscn
   - Node `FlashcardMinigame` -> `scripts/FlashcardMinigame.gd`
 
-### scenes\HeroSelectButton.tscn
-  - Node `HeroSelectButton` -> `scripts/HeroSelectButton.gd`
-
-### scenes\PhysicsGachaBall.tscn
-  - Node `PhysicsGachaBall` -> `scripts/PhysicsGachaBall.gd`
-
-### scenes\PhysicsTierContainer.tscn
-  - Node `PhysicsTierContainer` -> `scripts/PhysicsTierContainer.gd`
-
-### scenes\ResultsPopup.tscn
-  - Node `ResultsPopup` -> `scripts/ResultsPopup.gd`
-
-### scenes\RunCompletePopup.tscn
-  - Node `RunCompletePopup` -> `scripts/RunCompletePopup.gd`
-
-### scenes\SlotView.tscn
+### scenes/SlotView.tscn
   - Node `SlotView` -> `scripts/SlotView.gd`
 
-### scenes\TraitInspectionWindow.tscn
-  - Node `TraitInspectionWindow` -> `scripts/TraitInspectionWindow.gd`
-
-### scenes\TraitTracker.tscn
-  - Node `TraitTracker` -> `scripts/TraitTracker.gd`
-
-### scenes\UnitInspectionWindow.tscn
-  - Node `UnitInspectionWindow` -> `scripts/UnitInspectionWindow.gd`
-
-### scenes\UnitTrainingGround.tscn
+### scenes/UnitTrainingGround.tscn
   - Node `UnitTrainingGround` -> `scripts/UnitTrainingGround.gd`
 
-### scenes\vfx\FloatingDamageNumber.tscn
-  - Node `FloatingDamageNumber` -> `scripts/vfx/FloatingDamageNumber.gd`
+### scenes/OptionsWindow.tscn
+  - Node `OptionsWindow` -> `scripts/OptionsWindow.gd`
 
-### scenes\vfx\ItemPopup.tscn
-  - Node `ItemPopup` -> `scripts/vfx/ItemPopup.gd`
+### scenes/TraitInspectionWindow.tscn
+  - Node `TraitInspectionWindow` -> `scripts/TraitInspectionWindow.gd`
 
-### scenes\vfx\MinigameAuraVFX.tscn
+### scenes/DiscardPileWindow.tscn
+  - Node `DiscardPileWindow` -> `scripts/DiscardPileWindow.gd`
+
+### scenes/BlackMarket.tscn
+  - Node `BlackMarket` -> `scripts/BlackMarket.gd`
+
+### scenes/Loadout.tscn
+  - Node `Loadout` -> `scripts/Loadout.gd`
+
+### scenes/HeroSelectButton.tscn
+  - Node `HeroSelectButton` -> `scripts/HeroSelectButton.gd`
+
+### scenes/Reward.tscn
+  - Node `Reward` -> `scripts/Reward.gd`
+
+### scenes/RunCompletePopup.tscn
+  - Node `RunCompletePopup` -> `scripts/RunCompletePopup.gd`
+
+### scenes/GachaBallView.tscn
+  - Node `GachaBallView` -> `scripts/GachaBallView.gd`
+  - Node `AnimationController` -> `scripts/animations/UnitAnimationController.gd`
+
+### scenes/UnitInspectionWindow.tscn
+  - Node `UnitInspectionWindow` -> `scripts/UnitInspectionWindow.gd`
+
+### scenes/EffectInspectionWindow.tscn
+  - Node `EffectInspectionWindow` -> `scripts/EffectInspectionWindow.gd`
+
+### scenes/EndBattlePopup.tscn
+  - Node `EndBattlePopup` -> `scripts/EndBattlePopup.gd`
+
+### scenes/ResultsPopup.tscn
+  - Node `ResultsPopup` -> `scripts/ResultsPopup.gd`
+
+### scenes/PhysicsTierContainer.tscn
+  - Node `PhysicsTierContainer` -> `scripts/PhysicsTierContainer.gd`
+
+### scenes/DeckSelectButton.tscn
+  - Node `DeckSelectButton` -> `scripts/DeckSelectButton.gd`
+
+### scenes/PathChoice.tscn
+  - Node `PathChoice` -> `scripts/PathChoice.gd`
+
+### scenes/InventoryWindow.tscn
+  - Node `InventoryWindow` -> `scripts/InventoryWindow.gd`
+  - Node `Tier1Grid` -> `scripts/StaggeredGridContainer.gd`
+  - Node `Tier2Grid` -> `scripts/StaggeredGridContainer.gd`
+  - Node `Tier3Grid` -> `scripts/StaggeredGridContainer.gd`
+
+### scenes/PhysicsGachaBall.tscn
+  - Node `PhysicsGachaBall` -> `scripts/PhysicsGachaBall.gd`
+
+### scenes/TraitTracker.tscn
+  - Node `TraitTracker` -> `scripts/TraitTracker.gd`
+
+### scenes/RewardElite.tscn
+  - Node `Reward` -> `scripts/RewardElite.gd`
+
+### scenes/Battle.tscn
+  - Node `Battle` -> `scripts/BattleView.gd`
+  - Node `BattleManager` -> `scripts/BattleManager.gd`
+  - Node `TestEnvironmentManager` -> `scripts/TestEnvironmentManager.gd`
+
+### scenes/Shop.tscn
+  - Node `Shop` -> `scripts/Shop.gd`
+
+### scenes/BattleLogOverlay.tscn
+  - Node `BattleLogOverlay` -> `scripts/BattleLogOverlay.gd`
+
+### scenes/BackgroundBlocker.tscn
+  - Node `BackgroundBlocker` -> `scripts/BackgroundBlocker.gd`
+
+### scenes/RestSite.tscn
+  - Node `RestSite` -> `scripts/RestSite.gd`
+
+### scenes/Title.tscn
+  - Node `Title` -> `scripts/Title.gd`
+
+### scenes/MergeEncounter.tscn
+  - Node `MergeEncounter` -> `scripts/MergeEncounter.gd`
+
+### scenes/vfx/TokenPopVFX.tscn
+  - Node `TokenPopVFX` -> `scripts/vfx/TokenPopVFX.gd`
+
+### scenes/vfx/MinigameAuraVFX.tscn
   - Node `MinigameAuraVFX` -> `scripts/vfx/MinigameAuraVFX.gd`
 
-### scenes\vfx\StatProjectile.tscn
+### scenes/vfx/StatProjectile.tscn
   - Node `StatProjectile` -> `scripts/vfx/StatProjectile.gd`
+
+### scenes/vfx/TokenSpendVFX.tscn
+  - Node `TokenSpendVFX` -> `scripts/vfx/TokenSpendVFX.gd`
+
+### scenes/vfx/FloatingDamageNumber.tscn
+  - Node `FloatingDamageNumber` -> `scripts/vfx/FloatingDamageNumber.gd`
+
+### scenes/vfx/ItemPopup.tscn
+  - Node `ItemPopup` -> `scripts/vfx/ItemPopup.gd`
 
 ## 4. Source Code (`.gd` files)
 
@@ -1593,14 +1672,24 @@ func generate_icon(filename, bitmap, color):
 	print("Saved: " + path)
 ```
 
-### File: `scripts\abilities\EffectScald.gd`
+### File: `scripts/abilities/EffectScald.gd`
 ```gdscript
 @tool
 class_name EffectScald
 extends EffectDefinition
 
-func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	var result := EffectResult.new()
+	
+	# Only trigger if the unit is in the lineup (Player or Enemy)
+	# This prevents the ability from triggering when the unit is on the bench.
+	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(source_unit):
+		return result
+		
+	var container_tag = source_unit.location_container_tag
+	if container_tag != &"PlayerLineup" and container_tag != &"EnemyLineup":
+		return result
 	
 	# Get heal amount from context
 	var heal_amount: int = context.get("heal_amount", 0)
@@ -1618,7 +1707,7 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 	return result
 ```
 
-### File: `scripts\AbilitiesRegistry.gd`
+### File: `scripts/AbilitiesRegistry.gd`
 ```gdscript
 # res://scripts/AbilitiesRegistry.gd
 class_name AbilitiesRegistry
@@ -1976,7 +2065,7 @@ static func print_all() -> void:
 	print("=========================")
 ```
 
-### File: `scripts\AbilityDefinition.gd`
+### File: `scripts/AbilityDefinition.gd`
 ```gdscript
 # res://scripts/AbilityDefinition.gd
 @tool
@@ -2037,7 +2126,7 @@ func _get_property_list() -> Array:
 @export var execute_on_lethal: bool = false
 ```
 
-### File: `scripts\AbilityResolver.gd`
+### File: `scripts/AbilityResolver.gd`
 ```gdscript
 # res://scripts/AbilityResolver.gd
 extends Node
@@ -2516,7 +2605,7 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		context["attack_replaced"] = true
 ```
 
-### File: `scripts\animations\AnimationCompletionTracker.gd`
+### File: `scripts/animations/AnimationCompletionTracker.gd`
 ```gdscript
 # scripts/animations/AnimationCompletionTracker.gd
 class_name AnimationCompletionTracker
@@ -2590,10 +2679,8 @@ func await_completion(uuid: String, anim_type: AnimationType) -> void:
 	while _is_pending(uuid, anim_type) and timeout_timer.time_left > 0:
 		await _tree.process_frame
 	
-	# If timed out, log and remove anyway
+	# If timed out, remove anyway
 	if _is_pending(uuid, anim_type):
-		if OS.is_debug_build():
-			print("[AnimationCompletionTracker] Timeout for %s type %d" % [uuid.substr(0, 20), anim_type])
 		_remove_pending(uuid, anim_type)
 
 ## Check if a specific animation is still pending
@@ -2639,7 +2726,7 @@ func _on_animation_finished(_uuid: String) -> void:
 	pass
 ```
 
-### File: `scripts\animations\AnimationConstants.gd`
+### File: `scripts/animations/AnimationConstants.gd`
 ```gdscript
 # scripts/animations/AnimationConstants.gd
 class_name AnimationConstants
@@ -2741,7 +2828,7 @@ const HURT_RECOIL_DISTANCE := 35.0 # Very noticeable recoil (was 15px)
 const ENTRY_STAGGER_DELAY := 0.1 # 100ms between each ball appearing
 ```
 
-### File: `scripts\animations\AnimationRegistry.gd`
+### File: `scripts/animations/AnimationRegistry.gd`
 ```gdscript
 class_name AnimationRegistry
 extends RefCounted
@@ -2795,11 +2882,9 @@ static func load_standard_animations() -> void:
 	var transform_anim_script = load("res://scripts/animations/TransformAnimation.gd")
 	register("transform", transform_anim_script.new())
 	
-	if OS.is_debug_build():
-		print("[AnimationRegistry] Loaded animations: ", _animations.keys())
 ```
 
-### File: `scripts\animations\BattleAnimation.gd`
+### File: `scripts/animations/BattleAnimation.gd`
 ```gdscript
 class_name BattleAnimation
 extends RefCounted
@@ -2816,7 +2901,7 @@ func execute(_animator: Node, _targets: Array[String], _payload: Dictionary) -> 
 	pass
 ```
 
-### File: `scripts\animations\BuffAnimation.gd`
+### File: `scripts/animations/BuffAnimation.gd`
 ```gdscript
 class_name BuffAnimation
 extends BattleAnimation
@@ -2831,8 +2916,6 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var amount = int(payload.get("amount", 0))
 	var stat = String(payload.get("stat", "pwr"))
 	
-	if OS.is_debug_build():
-		print("[BuffAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -2861,10 +2944,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
 		
-		# Skip targets not in visual registry
-		if not animator._visual_registry.has(target_uuid):
-			continue
-		
+		# In parallel mode, the target might not be in the visual registry initially.
+		# The animator's apply_hp_delta / apply_pwr_delta will safely handle missing views.
 		final_target_uuid = target_uuid
 		
 		if stat == "hp":
@@ -2909,7 +2990,7 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
 ```
 
-### File: `scripts\animations\DamageAnimation.gd`
+### File: `scripts/animations/DamageAnimation.gd`
 ```gdscript
 class_name DamageAnimation
 extends BattleAnimation
@@ -2930,7 +3011,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	await animator.get_tree().process_frame
 	
 	if OS.is_debug_build():
-		print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
+		pass
+		# print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
 	
 	# Get visual registry - ONLY used for view updates, NOT position lookups
 	# Position data comes from animator.get_snapshot_position() for decoupling
@@ -2983,7 +3065,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if target_position != Vector2.ZERO:
 			# AUDIO HOOK: Attack lunge whoosh (before movement starts)
 			if OS.is_debug_build():
-				print("[DamageAnimation] Playing LUNGE sound: unit_toss")
+				pass
+				# print("[DamageAnimation] Playing LUNGE sound: unit_toss")
 			Audio.play_sfx("unit_toss")
 			SignalBus.emit_signal("unit_melee_lunge", source_uuid, target_position)
 			await animator.wait_for_animation_completion("melee_lunge", source_uuid)
@@ -3007,11 +3090,18 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		# 2. Launch projectile from trinket position to target(s)
 		var p_stat = String(payload.get("stat", "hp"))
 		var p_amount = amount
+		var projectiles = []
 		for target_uuid in targets:
-			_launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, "red")
+			var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, "red")
+			if proj: projectiles.append(proj)
 			
-		# Wait for projectile travel time (approx 0.35s)
-		await animator.get_tree().create_timer(0.35).timeout
+		# Wait for projectile impact
+		if projectiles.is_empty():
+			await animator.get_tree().create_timer(AnimationConstants.scaled(0.6)).timeout
+		else:
+			for proj in projectiles:
+				if is_instance_valid(proj):
+					await proj.impact
 		
 		# 3. Apply damage impact (recoil, flashes, numbers)
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -3029,17 +3119,23 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# Launch Projectile (Parallel)
 		var proj_data = payload.get("projectile_data", {})
+		var projectiles = []
 		if not proj_data.is_empty():
 			var p_stat = String(proj_data.get("stat", "hp"))
 			var p_amount = int(proj_data.get("amount", 0))
 			var p_color = String(proj_data.get("color", "red"))
 			
 			for target_uuid in targets:
-				_launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, p_color)
+				var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, p_color)
+				if proj: projectiles.append(proj)
 		
-		# Wait for Bump Impact
+		# Wait for Bump Impact OR Projectile Impact
 		if should_bump:
 			await animator.get_tree().create_timer(AnimationConstants.scaled(AnimationConstants.BUMP_TOTAL_DURATION)).timeout
+		elif not projectiles.is_empty():
+			for proj in projectiles:
+				if is_instance_valid(proj):
+					await proj.impact
 		
 		# Apply Damage
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -3165,6 +3261,8 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		var _old_spikes = int(spikes_data.get("old_spikes", 0))
 		var new_spikes = int(spikes_data.get("new_spikes", 0))
 		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
+		var armor_consumed = int(spikes_data.get("armor_consumed", 0))
+		var new_armor = int(spikes_data.get("new_armor", 0))
 		
 		if attacker_uuid.is_empty() or spikes_damage <= 0:
 			continue
@@ -3172,11 +3270,22 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 		# Play spike damage sound
 		Audio.play_sfx("combat_hit")
 		
-		# Spawn floating damage number at attacker (white/spikes color)
-		_spawn_floating_spikes_damage(animator, attacker_uuid, spikes_damage)
+		# ARMOR EFFECTS FIRST (before HP)
+		if armor_consumed > 0:
+			# Spawn grey floating damage number for armor
+			_spawn_floating_armor_damage(animator, attacker_uuid, armor_consumed)
+			# Animate armor label countdown
+			animator.apply_armor_delta(attacker_uuid, armor_consumed, new_armor)
+			# Longer pause between armor and HP updates for player to register
+			await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+
+		var hp_damage = spikes_damage - armor_consumed
 		
-		# Update attacker HP
-		animator.apply_hp_delta(attacker_uuid, -spikes_damage, attacker_new_hp)
+		if hp_damage > 0:
+			# Spawn floating damage number at attacker (white/spikes color)
+			_spawn_floating_spikes_damage(animator, attacker_uuid, hp_damage)
+			# Update attacker HP
+			animator.apply_hp_delta(attacker_uuid, -hp_damage, attacker_new_hp)
 		
 		# Update defender's Spikes stacks
 		if not defender_uuid.is_empty():
@@ -3276,11 +3385,11 @@ func _spawn_floating_spikes_damage(_animator: Node, target_uuid: String, amount:
 	# Use the same style as regular damage (red floating number)
 	_spawn_floating_damage(_animator, target_uuid, amount)
 
-func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> void:
-	VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
+func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
 ```
 
-### File: `scripts\animations\DeathAnimation.gd`
+### File: `scripts/animations/DeathAnimation.gd`
 ```gdscript
 class_name DeathAnimation
 extends BattleAnimation
@@ -3300,7 +3409,7 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 			animator._visual_registry.erase(target_uuid)
 ```
 
-### File: `scripts\animations\GuardianInterceptAnimation.gd`
+### File: `scripts/animations/GuardianInterceptAnimation.gd`
 ```gdscript
 class_name GuardianInterceptAnimation
 extends BattleAnimation
@@ -3348,7 +3457,7 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	animator._pending_guardian_return = guardian_uuid
 ```
 
-### File: `scripts\animations\HealAnimation.gd`
+### File: `scripts/animations/HealAnimation.gd`
 ```gdscript
 class_name HealAnimation
 extends BattleAnimation
@@ -3408,7 +3517,7 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, "hp")
 ```
 
-### File: `scripts\animations\ItemActivationAnimation.gd`
+### File: `scripts/animations/ItemActivationAnimation.gd`
 ```gdscript
 class_name ItemActivationAnimation
 extends BattleAnimation
@@ -3443,7 +3552,7 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 		popup.queue_free()
 ```
 
-### File: `scripts\animations\KamikazeAnimation.gd`
+### File: `scripts/animations/KamikazeAnimation.gd`
 ```gdscript
 class_name KamikazeAnimation
 extends BattleAnimation
@@ -3573,7 +3682,7 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 	await animator.wait_for_animation_completion("move", target_uuid)
 ```
 
-### File: `scripts\animations\LethalSaveAnimation.gd`
+### File: `scripts/animations/LethalSaveAnimation.gd`
 ```gdscript
 class_name LethalSaveAnimation
 extends BattleAnimation
@@ -3605,7 +3714,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	animator.apply_hp_delta(saved_uuid, heal_amount, SURVIVAL_HP)
 ```
 
-### File: `scripts\animations\ProjectileAnimation.gd`
+### File: `scripts/animations/ProjectileAnimation.gd`
 ```gdscript
 class_name ProjectileAnimation
 extends BattleAnimation
@@ -3656,7 +3765,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			await projectile.impact
 ```
 
-### File: `scripts\animations\StatusEffectAnimation.gd`
+### File: `scripts/animations/StatusEffectAnimation.gd`
 ```gdscript
 class_name StatusEffectAnimation
 extends BattleAnimation
@@ -3670,8 +3779,6 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var amount = int(payload.get("amount", 0))
 	var stat = String(payload.get("stat", ""))
 	
-	if OS.is_debug_build():
-		print("[StatusEffectAnimation] execute() called - stat='%s' amount=%d targets=%d" % [stat, amount, targets.size()])
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -3781,7 +3888,7 @@ func _spawn_floating_status(animator: Node, target_uuid: String, amount: int, ty
 		VFXFactory.spawn_status_effect_number_on_layer(abs(amount), type, spawn_pos)
 ```
 
-### File: `scripts\animations\SummonAnimation.gd`
+### File: `scripts/animations/SummonAnimation.gd`
 ```gdscript
 class_name SummonAnimation
 extends BattleAnimation
@@ -3832,7 +3939,7 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 			await animator.wait_for_animation_completion("summon_fade", target_uuid)
 ```
 
-### File: `scripts\animations\TransformAnimation.gd`
+### File: `scripts/animations/TransformAnimation.gd`
 ```gdscript
 class_name TransformAnimation
 extends BattleAnimation
@@ -3880,7 +3987,7 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 			view.queue_free()
 ```
 
-### File: `scripts\animations\UnitAnimationController.gd`
+### File: `scripts/animations/UnitAnimationController.gd`
 ```gdscript
 # scripts/animations/UnitAnimationController.gd
 # Handles all visual animations for a GachaBallView unit.
@@ -4114,6 +4221,14 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	
 	_kill_active_tweens()
 	
+	# GUARDIAN SENTINEL FIX: Force reset of view layout to the actual slot
+	# so that no matter what tweens were running (leap, recoil, etc),
+	# it is visually detached and floating exactly from its slot.
+	if is_instance_valid(_view):
+		_view.top_level = false
+		_view.position = Vector2.ZERO
+	_reset_sprite_scale()
+	
 	var original_position: Vector2 = _view.position
 	var levitate_target := Vector2(original_position.x, original_position.y - AC.DEATH_LEVITATE_HEIGHT)
 	
@@ -4331,18 +4446,18 @@ func _flash_unit_color(flash_color: Color) -> void:
 	# Re-attach to parent first
 	_view.top_level = false 
 	
-	# NOW capture the resting position as origin (guaranteed correct)
-	var original_position: Vector2 = _view.global_position
-	_flash_original_position = original_position
-	
-	# Detach from parent layout so position animation works
-	_view.top_level = true
-	
-	_ensure_pivot() # Set bottom-center pivot on sprite
-	
 	var is_heal_or_buff := flash_color.g >= flash_color.r
 	var is_gold_flash := flash_color.r > 0.9 and flash_color.g > 0.7 and flash_color.g < 0.95 and flash_color.b < 0.2
 	var flash_fade_duration := AC.FLASH_GOLD_FADE_DURATION if is_gold_flash else AC.FLASH_FADE_DURATION
+	
+	var original_position: Vector2 = _view.global_position
+	
+	# Only detach and save position if we are doing a position hop
+	if is_heal_or_buff:
+		_flash_original_position = original_position
+		_view.top_level = true
+	else:
+		_flash_original_position = Vector2.ZERO
 	
 	# Set up flash color
 	mat.set_shader_parameter("flash_color", flash_color)
@@ -4353,6 +4468,8 @@ func _flash_unit_color(flash_color: Color) -> void:
 	_flash_tween = _view.create_tween()
 	
 	if is_heal_or_buff:
+		_ensure_pivot() # Set bottom-center pivot on sprite
+		
 		# HOP: Squish anticipation -> Stretch up -> Squish land -> Normalize
 		var hop_target = Vector2(original_position.x, original_position.y - AC.FLASH_HOP_HEIGHT)
 		
@@ -4405,8 +4522,10 @@ func _flash_unit_color(flash_color: Color) -> void:
 	_flash_tween.finished.connect(_on_flash_tween_finished)
 
 func _on_flash_tween_finished() -> void:
-	_view.top_level = false # Re-attach to parent layout
-	_view.global_position = _flash_original_position
+	if _flash_original_position != Vector2.ZERO:
+		_view.top_level = false # Re-attach to parent layout
+		_view.global_position = _flash_original_position
+		_flash_original_position = Vector2.ZERO
 	_reset_sprite_scale()
 	SignalBus.emit_signal("unit_flash_finished", _get_uuid())
 
@@ -4456,6 +4575,10 @@ func _on_lethal_save_tween_finished() -> void:
 # GUARDIAN LEAP ANIMATION
 # =============================================================================
 func animate_leap_to(target_center: Vector2) -> void:
+	if _move_tween and _move_tween.is_valid():
+		_move_tween.kill()
+		_restore_move_layout_state()
+		
 	_guardian_original_position = _view.global_position
 	_original_z_index = _view.z_index
 	_view.z_index = 100
@@ -4501,6 +4624,10 @@ func animate_leap_to(target_center: Vector2) -> void:
 func animate_leap_return() -> void:
 	if _guardian_original_position == Vector2.ZERO:
 		return
+		
+	if _move_tween and _move_tween.is_valid():
+		_move_tween.kill()
+		_restore_move_layout_state()
 	
 	var tween = _view.create_tween()
 	_move_tween = tween
@@ -4655,7 +4782,7 @@ func _on_unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
 	)
 ```
 
-### File: `scripts\ArtStyleManager.gd`
+### File: `scripts/ArtStyleManager.gd`
 ```gdscript
 extends Node
 
@@ -4795,7 +4922,7 @@ func _load_settings() -> void:
 			current_style = data["current_style"]
 ```
 
-### File: `scripts\Audio.gd`
+### File: `scripts/Audio.gd`
 ```gdscript
 class_name Audio
 extends Node
@@ -4828,7 +4955,7 @@ static func set_music_pitch(pitch: float, duration: float = 0.5) -> void:
 		manager.set_music_pitch(pitch, duration)
 ```
 
-### File: `scripts\AudioManager.gd`
+### File: `scripts/AudioManager.gd`
 ```gdscript
 extends Node
 
@@ -4980,7 +5107,7 @@ func _load_audio_settings() -> void:
 			pronunciation_enabled = data["pronunciation_enabled"]
 ```
 
-### File: `scripts\BackgroundBlocker.gd`
+### File: `scripts/BackgroundBlocker.gd`
 ```gdscript
 # res://scripts/BackgroundBlocker.gd
 class_name BackgroundBlocker
@@ -5004,7 +5131,7 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 ```
 
-### File: `scripts\BasicAttackEffect.gd`
+### File: `scripts/BasicAttackEffect.gd`
 ```gdscript
 # res://scripts/BasicAttackEffect.gd
 @tool
@@ -5109,7 +5236,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return damage
 ```
 
-### File: `scripts\battle\BattleHelpers.gd`
+### File: `scripts/battle/BattleHelpers.gd`
 ```gdscript
 # res://scripts/battle/BattleHelpers.gd
 class_name BattleHelpers
@@ -5346,7 +5473,7 @@ static func get_combat_board_snapshot(battle_instances: Dictionary) -> Dictionar
 	return snapshot
 ```
 
-### File: `scripts\battle\BattleSetup.gd`
+### File: `scripts/battle/BattleSetup.gd`
 ```gdscript
 # res://scripts/battle/BattleSetup.gd
 class_name BattleSetup
@@ -5648,7 +5775,7 @@ static func setup_player_trinkets(state: RefCounted) -> void:
 		slot_index += 1
 ```
 
-### File: `scripts\battle\BattleState.gd`
+### File: `scripts/battle/BattleState.gd`
 ```gdscript
 # res://scripts/battle/BattleState.gd
 class_name BattleState
@@ -5827,7 +5954,10 @@ func get_gacha_tokens() -> int:
 	return _gacha_tokens
 
 func add_gacha_tokens(amount: int) -> void:
+	if amount <= 0: return
 	_gacha_tokens += amount
+	if is_instance_valid(GameManager.run_state):
+		GameManager.run_state.total_tokens_earned += amount
 
 func spend_gacha_tokens(amount: int) -> bool:
 	if _gacha_tokens < amount:
@@ -5952,68 +6082,54 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 	var instance := get_instance(uuid)
 	assert(is_instance_valid(instance), "bm_remove_instance: instance not found for uuid " + uuid)
 	var loc := instance.get_location()
-	if not is_instance_valid(loc):
-		return result
 	
-	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var parent := get_instance(loc.unit_uuid)
-		if not is_instance_valid(parent):
-			return result
-		if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
-			return result
-		# Remove bonuses from the parent before clearing the mapping
-		parent.unequip_item_bonus(instance)
-		parent.equipped_item_uuids[loc.index] = ""
-		instance.equipped_on_uuid = ""
-		instance.equipped_slot_index = -1
-		update_instance_location(instance.ball_uuid, &"", -1)
-		result.unit_changed_uuid = parent.ball_uuid
-	else:
-		# If this is a player unit with equipped items, unequip and move them to inventory
-		if instance.equipped_item_uuids.size() > 0:
-			if is_player_unit(instance):
-				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-				for i in range(instance.equipped_item_uuids.size()):
-					var it_uuid := instance.equipped_item_uuids[i]
-					if it_uuid.is_empty():
-						continue
-					var it := get_instance(it_uuid)
-					if not is_instance_valid(it):
-						continue
-					instance.equipped_item_uuids[i] = ""
-					it.equipped_on_uuid = ""
-					it.equipped_slot_index = -1
-					if is_instance_valid(inv):
-						var empty := inv.find_first_empty_slot()
-						if empty != -1:
-							inv.set_uuid(empty, it.ball_uuid)
-							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
-						else:
-							return result
-			else:
-				# Enemy unit: destroy equipped items
-				for it_uuid in instance.equipped_item_uuids:
-					if not it_uuid.is_empty():
-						_battle_instances.erase(it_uuid)
-		# Extra hardening: clear any stray items that believe they are equipped on this unit
-		if is_player_unit(instance):
-			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-			for k in _battle_instances.keys():
-				var maybe_item: GachaBallInstance = _battle_instances[k]
-				if not is_instance_valid(maybe_item):
-					continue
-				if maybe_item.equipped_on_uuid == instance.ball_uuid:
-					maybe_item.equipped_on_uuid = ""
-					maybe_item.equipped_slot_index = -1
-					if is_instance_valid(inv2):
-						var empty2 := inv2.find_first_empty_slot()
-						if empty2 != -1:
-							inv2.set_uuid(empty2, maybe_item.ball_uuid)
-							update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty2)
-						else:
-							return result
-		remove_instance_from_container(instance)
-	
+	# Only attempt to clear from containers if the location is valid
+	if is_instance_valid(loc):
+		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+			var parent := get_instance(loc.unit_uuid)
+			if not is_instance_valid(parent):
+				return result
+			if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
+				return result
+			# Remove bonuses from the parent before clearing the mapping
+			parent.unequip_item_bonus(instance)
+			parent.equipped_item_uuids[loc.index] = ""
+			instance.equipped_on_uuid = ""
+			instance.equipped_slot_index = -1
+			update_instance_location(instance.ball_uuid, &"", -1)
+			result.unit_changed_uuid = parent.ball_uuid
+		else:
+			# If this is a player unit with equipped items, unequip and move them to inventory
+			if instance.equipped_item_uuids.size() > 0:
+				if is_player_unit(instance):
+					var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+					for i in range(instance.equipped_item_uuids.size()):
+						var it_uuid := instance.equipped_item_uuids[i]
+						if it_uuid.is_empty():
+							continue
+						var it := get_instance(it_uuid)
+						if not is_instance_valid(it):
+							continue
+						instance.equipped_item_uuids[i] = ""
+						it.equipped_on_uuid = ""
+						it.equipped_slot_index = -1
+						if is_instance_valid(inv):
+							var empty := inv.find_first_empty_slot()
+							if empty != -1:
+								inv.set_uuid(empty, it.ball_uuid)
+								update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
+								result.unit_changed_uuid = instance.ball_uuid
+							else:
+								push_warning("Inventory full while unequipping item %s" % it.ball_uuid)
+				else:
+					pass
+			
+			if loc.container != &"":
+				var c = get_container(loc.container)
+				if is_instance_valid(c) and loc.index >= 0:
+					if c.get_uuid(loc.index) == instance.ball_uuid:
+						c.set_uuid(loc.index, "")
+	# Finally remove it, even if it had no valid container location
 	_battle_instances.erase(uuid)
 	result.success = true
 	return result
@@ -6089,7 +6205,7 @@ func validate_state_consistency(deferred_erasures: Array = []) -> bool:
 	return true
 ```
 
-### File: `scripts\battle\CombatSimulator.gd`
+### File: `scripts/battle/CombatSimulator.gd`
 ```gdscript
 # res://scripts/battle/CombatSimulator.gd
 class_name CombatSimulator
@@ -7090,7 +7206,7 @@ func clear() -> void:
 	_is_processing_effect = false
 ```
 
-### File: `scripts\battle\DeathProcessor.gd`
+### File: `scripts/battle/DeathProcessor.gd`
 ```gdscript
 # res://scripts/battle/DeathProcessor.gd
 class_name DeathProcessor
@@ -7119,6 +7235,9 @@ static func register_death(state: BattleState, unit: GachaBallInstance, phase: S
 		return false # Already dead this turn
 	
 	var is_player := state.is_player_unit(unit)
+	if not is_player and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.total_enemies_defeated += 1
+		
 	dead_this_turn[unit.ball_uuid] = {
 		"team": "PLAYER" if is_player else "ENEMY",
 		"died_in_phase": phase,
@@ -7173,7 +7292,6 @@ static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstan
 					state.update_instance_location(item_instance.ball_uuid, &"", -1)
 					deferred_erasures.append(item_instance.ball_uuid)
 		unit.equipped_item_uuids.fill("")
-		InventoryOperations.remove_instance_from_container(state, unit)
 		deferred_erasures.append(unit.ball_uuid)
 
 # ============================================================================
@@ -7299,13 +7417,40 @@ static func process_completed_counter_deaths(out_events, death_tracking, bm) -> 
 		# If no pending counter-attacks, this unit can die now
 		if not has_pending_counters:
 			if out_events != null and death_tracking != null:
-				var death_event = create_death_event_if_needed(uuid, death_tracking)
+				var death_location = bm.get_location_for_uuid(uuid)
+				var container_tag: StringName = death_location.container if is_instance_valid(death_location) else &""
+				var death_event = create_death_event_if_needed(uuid, death_tracking, container_tag)
 				if death_event != null:
 					out_events.append(death_event)
+			
+			var death_location = bm.get_location_for_uuid(uuid)
+			var team = "PLAYER" if bm._is_player_unit(unit) else "ENEMY"
+			
+			var death_ctx := {
+				"dying_uuid": uuid,
+				"dying_team": team,
+				"dying_location": death_location,
+				"equipped_items": snapshot_equipped_items(unit, bm._battle_instances),
+				"source_pwr": unit.current_pwr
+			}
+			AbilityResolver.process_trigger(&"on_death", death_ctx)
 			
 			# Process deferred on_ally_death triggers for this unit
 			process_deferred_ally_death(uuid, "PLAYER", bm)
 			process_deferred_ally_death(uuid, "ENEMY", bm)
+			
+			var dying_tier: int = 0
+			var dying_def = unit.get_definition()
+			if is_instance_valid(dying_def):
+				dying_tier = dying_def.tier
+			var unit_death_ctx := {
+				"dying_uuid": uuid,
+				"dying_team": team,
+				"dying_location": death_location,
+				"dying_tier": dying_tier,
+				"dying_definition_id": String(unit.definition_id)
+			}
+			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 			
 			# CRITICAL FIX: Actually clean up the unit from the game state
 			bm._perform_unit_death_cleanup(unit)
@@ -7466,10 +7611,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-				
-				deferred_deaths.append(unit.ball_uuid)
+						deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
-				bm._perform_unit_death_cleanup(unit)
+				if register_death(bm._state, unit, &"COMBAT"):
+					bm._perform_unit_death_cleanup(unit)
 	
 	# Check enemy units (LINEUP only - bench items are not combatants)
 	var enemy_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
@@ -7494,10 +7639,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-				
-				deferred_deaths.append(unit.ball_uuid)
+						deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
-				bm._perform_unit_death_cleanup(unit)
+				if register_death(bm._state, unit, &"COMBAT"):
+					bm._perform_unit_death_cleanup(unit)
 	
 	# -------------------------------------------------------------------------
 	# UNIFIED PRIORITY BATCHING
@@ -7508,17 +7653,20 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 
 	# PHASE 1: Fire ALL on_death triggers (queues item summons, priority 200)
 	for data in dying_units_data:
-		var death_ctx := {
-			"dying_uuid": data.unit.ball_uuid,
-			"dying_team": data.team,
-			"dying_location": data.death_location,
-			"equipped_items": data.equipped_items,
-			"source_pwr": data.unit.current_pwr
-		}
-		AbilityResolver.process_trigger(&"on_death", death_ctx)
+		if not data.has_lethal_counter:
+			var death_ctx := {
+				"dying_uuid": data.unit.ball_uuid,
+				"dying_team": data.team,
+				"dying_location": data.death_location,
+				"equipped_items": data.equipped_items,
+				"source_pwr": data.unit.current_pwr
+			}
+			AbilityResolver.process_trigger(&"on_death", death_ctx)
 	
 	if OS.is_debug_build() and is_simulation:
-		print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())
+		pass
+		# print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())
+
 
 	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
 	# and emit DEATH events
@@ -7557,7 +7705,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 
 	if OS.is_debug_build() and is_simulation:
-		print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())
+		pass
+		# print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())
 	
 	# Store deferred deaths for processing after counter-attacks complete
 	if not deferred_deaths.is_empty():
@@ -7575,7 +7724,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		
 		if not bm._pending_reactions.is_empty():
 			if OS.is_debug_build():
-				print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
+				pass
+				# print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
 			bm.drain_pending_reactions_inline(0)
 			var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
 			for evt in cascade_evts:
@@ -7648,7 +7798,7 @@ static func _emit_immediate_death(_bm, unit: GachaBallInstance, death_location, 
 	AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 ```
 
-### File: `scripts\battle\EffectHandlers.gd`
+### File: `scripts/battle/EffectHandlers.gd`
 ```gdscript
 # res://scripts/battle/EffectHandlers.gd
 class_name EffectHandlers
@@ -8050,7 +8200,7 @@ static func handle_damage_effect(
 			var attacker_max_hp := 0
 			if is_instance_valid(attacker_inst):
 				var attacker_def = attacker_inst.get_definition()
-				if is_instance_valid(attacker_def):
+				if is_instance_valid(attacker_def) and "base_hp" in attacker_def:
 					attacker_max_hp = attacker_def.base_hp
 			
 			# Log message for Spikes (still a separate event since it's UI only)
@@ -8304,7 +8454,7 @@ static func handle_cascade_damage(
 			var attacker_max_hp := 0
 			if is_instance_valid(attacker_inst):
 				var attacker_def = attacker_inst.get_definition()
-				if is_instance_valid(attacker_def):
+				if is_instance_valid(attacker_def) and "base_hp" in attacker_def:
 					attacker_max_hp = attacker_def.base_hp
 			
 			# Log message for Spikes (still a separate event since it's UI only)
@@ -8787,7 +8937,7 @@ static func handle_mirror_transform(
 	return result
 ```
 
-### File: `scripts\battle\EffectResult.gd`
+### File: `scripts/battle/EffectResult.gd`
 ```gdscript
 # res://scripts/battle/EffectResult.gd
 class_name EffectResult
@@ -8894,7 +9044,7 @@ static func empty() -> EffectResult:
 	return EffectResult.new()
 ```
 
-### File: `scripts\battle\InventoryOperations.gd`
+### File: `scripts/battle/InventoryOperations.gd`
 ```gdscript
 # res://scripts/battle/InventoryOperations.gd
 class_name InventoryOperations
@@ -9443,7 +9593,7 @@ static func move_instance_to_discard(state: BattleState, instance: GachaBallInst
 	return result
 ```
 
-### File: `scripts\battle\TargetResolver.gd`
+### File: `scripts/battle/TargetResolver.gd`
 ```gdscript
 # res://scripts/battle/TargetResolver.gd
 class_name TargetResolver
@@ -9788,7 +9938,7 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 	return !result if condition_def.invert_result else result
 ```
 
-### File: `scripts\battle\TestModeHelpers.gd`
+### File: `scripts/battle/TestModeHelpers.gd`
 ```gdscript
 # res://scripts/battle/TestModeHelpers.gd
 class_name TestModeHelpers
@@ -10009,7 +10159,7 @@ static func _sync_enemy_trinket_cache(bm) -> void:
 	bm.enemy_trinkets = refreshed
 ```
 
-### File: `scripts\battle\TurnAbilities.gd`
+### File: `scripts/battle/TurnAbilities.gd`
 ```gdscript
 # res://scripts/battle/TurnAbilities.gd
 class_name TurnAbilities
@@ -10232,7 +10382,7 @@ static func trigger_on_healed(healed_uuid: String, heal_amount: int, healer_uuid
 	AbilityResolver.process_trigger(&"on_healed", healed_context)
 ```
 
-### File: `scripts\BattleAnimator.gd`
+### File: `scripts/BattleAnimator.gd`
 ```gdscript
 # scripts/BattleAnimator.gd
 extends Node
@@ -10593,32 +10743,37 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									continue # Allow overlapping with the unit being replaced
 								has_existing_unit = true
 								break
+						
+						# If there is already a unit, force clear it visually to avoid overlap
 						if has_existing_unit:
-							new_view.queue_free()
-						else:
-							slot_view.add_child(new_view)
-							var new_snapshot = payload.get("new_unit_snapshot", {})
-							if not new_snapshot.is_empty():
-								var new_location = LocationIdentifier.new(container_tag, index)
-								new_view.populate(new_location, new_snapshot, false)
-								new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
-								_visual_registry[new_unit_uuid] = new_view
-								
-								await get_tree().process_frame
-								var rect = new_view.get_global_rect()
-								_position_snapshot[new_unit_uuid] = {
-									"position": rect.position,
-									"size": rect.size,
-									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-								}
-								
-								if arc_completed:
-									new_view.play_landing_bounce()
-								else:
-									if SignalBus.has_signal("unit_summon_fade"):
-										SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
-										Audio.play_sfx("combat_summon")
-										await wait_for_animation_completion("summon_fade", new_unit_uuid)
+							for child in slot_view.get_children():
+								if child.has_method("populate"):
+									child.hide()
+									child.queue_free()
+									
+						slot_view.add_child(new_view)
+						var new_snapshot = payload.get("new_unit_snapshot", {})
+						if not new_snapshot.is_empty():
+							var new_location = LocationIdentifier.new(container_tag, index)
+							new_view.populate(new_location, new_snapshot, false)
+							new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+							_visual_registry[new_unit_uuid] = new_view
+							
+							await get_tree().process_frame
+							var rect = new_view.get_global_rect()
+							_position_snapshot[new_unit_uuid] = {
+								"position": rect.position,
+								"size": rect.size,
+								"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+							}
+							
+							if arc_completed:
+								new_view.play_landing_bounce()
+							else:
+								if SignalBus.has_signal("unit_summon_fade"):
+									SignalBus.emit_signal("unit_summon_fade", new_unit_uuid)
+									Audio.play_sfx("combat_summon")
+									await wait_for_animation_completion("summon_fade", new_unit_uuid)
 				
 				if arc_completed:
 					await get_tree().create_timer(0.2).timeout
@@ -11200,7 +11355,7 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: D
 			target_view.animate_stat_change(new_pwr, pwr_diff, "pwr")
 ```
 
-### File: `scripts\BattleInventoryTrayRig.gd`
+### File: `scripts/BattleInventoryTrayRig.gd`
 ```gdscript
 class_name BattleInventoryTrayRig
 extends Node2D
@@ -11557,7 +11712,7 @@ func _on_battle_transition_finished() -> void:
 			.set_ease(Tween.EASE_OUT)
 ```
 
-### File: `scripts\BattleInventoryWindow.gd`
+### File: `scripts/BattleInventoryWindow.gd`
 ```gdscript
 class_name BattleInventoryWindow
 extends Control
@@ -11708,7 +11863,7 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 ```
 
-### File: `scripts\BattleLogger.gd`
+### File: `scripts/BattleLogger.gd`
 ```gdscript
 # res://scripts/BattleLogger.gd
 extends Node
@@ -11981,7 +12136,7 @@ func _add_entry(type: String, message: String, details: String, indent_level: in
 	if indent_level > 0:
 		indent_str = "└─ "
 	var console_msg = "[%d:%d] %s %s" % [_current_turn, _event_index, indent_str + _strip_bbcode(message), details]
-	print("[BattleLog] " + console_msg)
+	# print("[BattleLog] " + console_msg)
 
 func _strip_bbcode(text: String) -> String:
 	# Remove BBCode tags for console output
@@ -12014,9 +12169,15 @@ func get_unit_name(uuid: String) -> String:
 			return String(def.id)
 	
 	return uuid.substr(0, 8) + "..."
+func _init() -> void:
+	# Clear the log file at the start of every session so we only get the latest output
+	var file := FileAccess.open("res://log.txt", FileAccess.WRITE)
+	if is_instance_valid(file):
+		file.store_string("")
+		file.close()
 ```
 
-### File: `scripts\BattleLogOverlay.gd`
+### File: `scripts/BattleLogOverlay.gd`
 ```gdscript
 # scripts/BattleLogOverlay.gd
 class_name BattleLogOverlay
@@ -12154,7 +12315,7 @@ func _on_log_cleared() -> void:
 	log_text.append_text("[color=gray]Log cleared[/color]\n")
 ```
 
-### File: `scripts\BattleManager.gd`
+### File: `scripts/BattleManager.gd`
 ```gdscript
 class_name BattleManager
 extends Node
@@ -12181,6 +12342,10 @@ var _pending_reactions: Array[EffectRequest]:
 var _is_processing_effect: bool:
 	get: return _combat._is_processing_effect
 	set(value): _combat._is_processing_effect = value
+
+var _management_animation_queue: Array[Dictionary] = []
+var _is_animating_management_queue: bool = false
+
 
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
@@ -12287,8 +12452,11 @@ func _exit_tree() -> void:
 		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged)
 	if is_instance_valid(_animator) and _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
 		_animator.turn_animation_finished.disconnect(_on_turn_animation_finished)
+	if SignalBus.is_connected("management_animation_requested", _on_management_animation_requested):
+		SignalBus.management_animation_requested.disconnect(_on_management_animation_requested)
 
 func _connect_signals() -> void:
+	SignalBus.battle_entry_animation_finished.connect(_on_battle_entry_animation_finished)
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
 	SignalBus.draw_gacha_requested.connect(_on_draw_gacha_requested)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
@@ -12298,6 +12466,8 @@ func _connect_signals() -> void:
 	# Apply deaths after animator finishes death fades
 	if SignalBus.has_signal("apply_deaths_requested") and not SignalBus.is_connected("apply_deaths_requested", _on_apply_deaths_requested):
 		SignalBus.apply_deaths_requested.connect(_on_apply_deaths_requested)
+	if SignalBus.has_signal("management_animation_requested") and not SignalBus.is_connected("management_animation_requested", _on_management_animation_requested):
+		SignalBus.management_animation_requested.connect(_on_management_animation_requested)
 	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 func _emit_battle_inventory_changed() -> void:
@@ -12308,10 +12478,20 @@ func _emit_battle_inventory_changed() -> void:
 		# Instantly resolve these updates silently so that stats are computed in real time.
 		# This ensures active units and equipped items update their stats instantly.
 		_combat.process_reaction_queue(self, {})
+		
+		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
+		_flush_deferred_enemy_erasures()
+		
 		SignalBus.emit_signal("battle_inventory_changed")
 		_pending_inventory_refresh = false
 	else:
 		_pending_inventory_refresh = true
+
+
+func _on_management_animation_requested(snapshot: Dictionary) -> void:
+	await resolve_management_effects_and_animate(snapshot)
+	if has_method("unblock_ui_updates"):
+		unblock_ui_updates()
 
 
 func start_battle(encounter_def: EncounterDefinition) -> void:
@@ -12649,6 +12829,8 @@ func get_gacha_tokens() -> int:
 func add_gacha_token(amount: int = 1) -> void:
 	"""Add gacha tokens and emit signal for UI update. Used for live token updates."""
 	_gacha_tokens += amount
+	if amount > 0 and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.total_tokens_earned += amount
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
 func get_current_phase_name() -> StringName:
@@ -12703,9 +12885,10 @@ func _change_phase(new_phase: Phases) -> void:
 				# Transition to results acknowledged (which triggers turn start abilities)
 				call_deferred("_on_results_acknowledged")
 			elif is_instance_valid(GameManager.run_state):
-				# Delay flashcard start to allow entry animation to complete
-				await get_tree().create_timer(1.0).timeout
-				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+				if _current_turn == 1:
+					SignalBus.emit_signal("battle_entry_animation_requested")
+				else:
+					FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 			# Note: The management phase will be triggered by _on_results_acknowledged
 		Phases.MANAGEMENT:
 			# Re-enable draw buttons when entering management phase
@@ -13324,11 +13507,20 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				if old_spikes > 0:
 					var attacker = get_instance_by_uuid(attacker_uuid)
 					if is_instance_valid(attacker) and attacker.current_hp > 0:
-						# Deal spikes damage to attacker (bypasses armor, direct HP damage)
+						# Deal spikes damage to attacker (respects armor)
 						var spikes_damage = old_spikes
 						var attacker_old_hp = attacker.current_hp
-						var attacker_new_hp = max(0, attacker_old_hp - spikes_damage)
-						attacker.set_current_hp_silent(attacker_new_hp)
+						
+						var damage_result = apply_stat_delta(attacker, "hp", -spikes_damage, false, "")
+						
+						var attacker_new_hp = attacker.current_hp
+						var spikes_armor_consumed = 0
+						var spikes_new_armor = attacker.get_status_effect_amount(&"armor")
+						
+						if damage_result is Dictionary:
+							attacker_new_hp = damage_result.get("new_hp", attacker_new_hp)
+							spikes_armor_consumed = damage_result.get("armor_consumed", 0)
+							spikes_new_armor = damage_result.get("new_armor", spikes_new_armor)
 						
 						# Decay spikes by 1 stack
 						instance.add_status_effect_silent(&"spikes", -1)
@@ -13338,6 +13530,8 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						spikes_data = {
 							"spikes_triggered": true,
 							"spikes_damage": spikes_damage,
+							"armor_consumed": spikes_armor_consumed,
+							"new_armor": spikes_new_armor,
 							"attacker_uuid": attacker_uuid,
 							"attacker_old_hp": attacker_old_hp,
 							"attacker_new_hp": attacker_new_hp,
@@ -13378,8 +13572,7 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						_trigger_static_consumption(instance)
 				return new_hp
 		"pwr":
-			var new_pwr = instance.current_pwr + delta
-			instance.set_current_pwr_silent(new_pwr) # Silent during simulation
+			var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
 			
 			if delta != 0:
 				if delta > 0:
@@ -13487,6 +13680,8 @@ func _trigger_battle_start_abilities() -> void:
 	AbilityResolver.process_trigger(&"on_board_changed", {})
 	# Instantly resolve starting passive stats/buffs before the first turn begins.
 	_combat.process_reaction_queue(self, {})
+	
+	_flush_deferred_enemy_erasures()
 
 ## Trigger on_turn_start abilities for all units and trinkets.
 func _trigger_turn_start_abilities() -> void:
@@ -13708,15 +13903,33 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	_check_for_deaths_with_counter_delay(true, events, death_tracking)
 	_process_completed_counter_deaths(events, death_tracking)
 	
-	# Play via animator (uses existing VCR pattern)
-	if not events.is_empty():
-		_is_processing_effect = true # Block UI redraws while animating management effects
-		await _animator.play_turn_sequence(snapshot, events)
-	
 	# Clean up any deaths that occurred during effect resolution
 	# Since is_simulation=true for VCR, cleanup is deferred until now
 	_finalize_deaths()
+	
+	if events.is_empty():
+		return
+		
+	# Queue the presentation
+	_management_animation_queue.append({
+		"snapshot": snapshot,
+		"events": events
+	})
+	
+	if not _is_animating_management_queue:
+		_process_management_animation_queue()
+
+func _process_management_animation_queue() -> void:
+	_is_animating_management_queue = true
+	_is_processing_effect = true
+	
+	while not _management_animation_queue.is_empty():
+		var payload = _management_animation_queue.pop_front()
+		await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
+		
 	_is_processing_effect = false
+	_is_animating_management_queue = false
+
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
 ## This ensures enemy units and items are still available in _battle_instances while
@@ -13727,7 +13940,7 @@ func _flush_deferred_enemy_erasures() -> void:
 	var erasure_list: Array = get_meta("_deferred_enemy_erasures")
 	for uuid in erasure_list:
 		if _battle_instances.has(uuid):
-			_battle_instances.erase(uuid)
+			_state.bm_remove_instance(uuid)
 	remove_meta("_deferred_enemy_erasures")
 
 func _process_death_slots_end_of_turn(all_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
@@ -14140,6 +14353,10 @@ func _emit_stats_changed_for_equipped_units() -> void:
 				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"hp", 0, instance.current_hp)
 				SignalBus.emit_signal("unit_stat_changed", instance.ball_uuid, &"pwr", 0, instance.current_pwr)
 
+func _on_battle_entry_animation_finished() -> void:
+	if _current_battle_phase == Phases.START_OF_TURN and not is_test_mode and is_instance_valid(GameManager.run_state):
+		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+
 func _on_flashcard_completed(results: Dictionary) -> void:
 	# TDD Section 9.4: Battle Flow
 	# This handler is only for the battle context.
@@ -14213,6 +14430,9 @@ func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> Gacha
 func _finalize_deaths() -> void:
 	# THIN WRAPPER: Delegates to DeathProcessor
 	var something_changed = DeathProcessor.finalize_deaths(self )
+	
+	_flush_deferred_enemy_erasures()
+	
 	if something_changed:
 		_emit_battle_inventory_changed()
 
@@ -14481,34 +14701,30 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 				if enemy == null:
 					continue
 				
-				# Steal 1 PWR from enemy (but can't reduce below 1)
+				# Steal 1 PWR from enemy (will be clamped to 1 systemically)
 				var enemy_old_pwr = enemy.current_pwr
-				var can_steal = enemy_old_pwr > 1 # Only steal if enemy has more than 1 PWR
 				
-				# Always gain 1 PWR regardless of whether we can steal
+				# Always gain 1 PWR
 				var unit_old_pwr = unit.current_pwr
 				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1)
 				
-				# Only reduce enemy PWR if they have more than 1
-				var enemy_new_pwr = enemy_old_pwr
-				if can_steal:
-					enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
+				# Reduce enemy PWR
+				var enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
 				
-				# Create debuff event for enemy (only if we could steal)
-				if can_steal:
-					var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
-						"target_uuids": [enemy.ball_uuid],
-						"ability_id": &"trait_air_steal",
-						"visual_payload": {
-							"source_uuid": enemy.ball_uuid,
-							"stat": "pwr",
-							"amount": - 1,
-							"targets_old_pwr": [enemy_old_pwr],
-							"targets_new_pwr": [enemy_new_pwr]
-						}
-					})
-					total_events.append(debuff_event)
+				# Create debuff event for enemy
+				var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
+					"target_uuids": [enemy.ball_uuid],
+					"ability_id": &"trait_air_steal",
+					"visual_payload": {
+						"source_uuid": enemy.ball_uuid,
+						"stat": "pwr",
+						"amount": - 1,
+						"targets_old_pwr": [enemy_old_pwr],
+						"targets_new_pwr": [enemy_new_pwr]
+					}
+				})
+				total_events.append(debuff_event)
 				
 				# Create buff event for unit - projectile FROM enemy TO Air unit
 				var buff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -14596,7 +14812,7 @@ func _animate_bargain_charm_async(event: CombatEvent) -> void:
 		_emit_battle_inventory_changed()
 ```
 
-### File: `scripts\BattleView.gd`
+### File: `scripts/BattleView.gd`
 ```gdscript
 # res://scripts/BattleView.gd
 class_name BattleView
@@ -14705,8 +14921,8 @@ func _ready() -> void:
 	# NOTE: Unit death tutorial is handled directly in BattleAnimator._animate_events
 	# to properly block combat until the tutorial is dismissed.
 	
-	# Connect to battle_state_changed to trigger entry animation on EVERY battle start
-	SignalBus.battle_state_changed.connect(_on_battle_state_changed)
+	# Connect to battle_entry_animation_requested to trigger entry animation on first turn
+	SignalBus.battle_entry_animation_requested.connect(_on_battle_entry_animation_requested)
 	
 	# Connect to SignalBus.results_acknowledged to show battle management tutorial
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
@@ -14739,9 +14955,7 @@ func _ready() -> void:
 	if is_instance_valid(viewport) and not viewport.size_changed.is_connected(_on_viewport_size_changed):
 		viewport.size_changed.connect(_on_viewport_size_changed)
 	
-	# Animate initial unit entry (first battle only - subsequent battles via signal)
-	await get_tree().process_frame
-	_animate_initial_unit_entry()
+	# The entry animation is now triggered by BattleManager emitting battle_entry_animation_requested
 	
 	# Initialize combat controls styling/connections
 	_resolve_battle_animator()
@@ -14799,13 +15013,12 @@ func _position_combat_controls() -> void:
 	combat_controls_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	combat_controls_panel.size_flags_horizontal = Control.SIZE_FILL
 
-func _on_battle_state_changed(is_in_battle: bool) -> void:
-	"""Called when battle state changes - triggers entry animation on battle start"""
-	if is_in_battle:
-		# Wait for board to be redrawn first
-		await get_tree().process_frame
-		await get_tree().process_frame
-		_animate_initial_unit_entry()
+func _on_battle_entry_animation_requested() -> void:
+	"""Called when battle starts - triggers entry animation on turn 1"""
+	# Wait for board to be redrawn first
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_animate_initial_unit_entry()
 
 
 func _on_results_acknowledged() -> void:
@@ -14876,6 +15089,16 @@ func _animate_initial_unit_entry() -> void:
 				if is_instance_valid(ball_view):
 					ball_view.play_landing_bounce()
 			)
+
+	# Calculate total time for the staggered entry
+	var total_time = maxf(0.0, (all_units.size() - 1) * AnimationConstants.ENTRY_STAGGER_DELAY)
+	
+	# Wait for the longest animation to complete before signaling finished
+	var wait_tween = create_tween()
+	wait_tween.tween_interval(total_time + 0.5)
+	wait_tween.tween_callback(func():
+		SignalBus.emit_signal("battle_entry_animation_finished")
+	)
 
 
 func _redraw_board() -> void:
@@ -15658,19 +15881,19 @@ func _on_combat_step_reached(step_info: Dictionary) -> void:
 		step_button.text = "Next Step ⏭"
 ```
 
-### File: `scripts\BlackMarket.gd`
+### File: `scripts/BlackMarket.gd`
 ```gdscript
 # res://scripts/BlackMarket.gd
 extends Control
 
 const BASE_REMOVE_COST: int = 5
-const TRANSFORM_COST_GOLD: int = 5
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var leave_button: Button = %LeaveButton
 
@@ -15687,7 +15910,6 @@ func _ready() -> void:
 	SignalBus.action_drop_zone_1_activated.connect(_on_transform_requested)
 	_update_localized_text()
 	set_process(true)
-	call_deferred("_show_black_market_tutorial")
 
 func _exit_tree() -> void:
 	if SignalBus.locale_changed.is_connected(_update_localized_text):
@@ -15722,6 +15944,8 @@ func _process(_delta: float) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.black_market_title")
+	if description_label:
+		description_label.text = tr("ui.black_market_desc")
 	open_inventory_button.text = tr("ui.black_market_open_inventory")
 	leave_button.text = tr("ui.leave")
 
@@ -15804,13 +16028,23 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 	# Animate gold spend first
 	_animate_gold_spend(remove_cost, interaction_pos, func():
 		# Actually spend gold and remove the instance
-		if GameManager.run_state.spend_gold(remove_cost):
-			# Play removal animation using the already-visible VFX ball
-			_animate_gachaball_removal_vfx(vfx_ball)
-			
-			GameManager.run_state.remove_instance(item_data.uuid)
-			if GameManager.run_state.has_method("increase_black_market_remove_cost"):
-				GameManager.run_state.increase_black_market_remove_cost()
+		SignalBus.emit_signal("black_market_action_requested", {
+			"type": "remove",
+			"cost": remove_cost,
+			"instance_uuid": item_data.uuid
+		})
+		
+		# Play removal animation using the already-visible VFX ball
+		_animate_gachaball_removal_vfx(vfx_ball)
+
+		# Refresh drop zone texts dynamically
+		if is_instance_valid(main_node):
+			if main_node.has_method("set_action_zone_texts"):
+				var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
+				var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
+				main_node.set_action_zone_texts(transform_text, remove_text)
+			if main_node.has_method("show_split_action_drop_zones"):
+				main_node.show_split_action_drop_zones()
 
 			# Clear selection
 			SignalBus.emit_signal("selection_clear_requested")
@@ -15829,15 +16063,17 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	var source_definition = item_data.definition
 	var source_location: LocationIdentifier = item_data.location
 
-	var result_definition := _draw_transform_definition(source_definition.id, int(source_definition.tier))
+	var result_definition := GameManager.get_transform_result(source_definition.id, int(source_definition.tier))
 	if not is_instance_valid(result_definition):
 		return
 
 	var main_node = GameManager._active_main_node
 	var transform_target = main_node.get_action_zone_1() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_1") else null
 	
+	var transform_cost = GameManager.get_black_market_transform_cost()
+	
 	# Check if enough gold first
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRANSFORM_COST_GOLD:
+	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < transform_cost:
 		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 		var target = transform_target if is_instance_valid(transform_target) else open_inventory_button
 		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
@@ -15869,31 +16105,25 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
 
 	# Animate gold spend first
-	_animate_gold_spend(TRANSFORM_COST_GOLD, interaction_pos, func():
-		# Actually spend gold
-		if not GameManager.run_state.spend_gold(TRANSFORM_COST_GOLD):
-			_action_in_progress = false
-			# Restore visibility if spend failed and remove vfx ball
-			if is_instance_valid(target_slot_view):
-				target_slot_view.modulate.a = 1.0
-			if is_instance_valid(vfx_ball):
-				vfx_ball.queue_free()
-			return
+	_animate_gold_spend(transform_cost, interaction_pos, func():
+		# Emit transform request instead of mutating directly
+		SignalBus.emit_signal("black_market_action_requested", {
+			"type": "transform",
+			"cost": transform_cost,
+			"instance_uuid": item_data.uuid,
+			"source_location": source_location,
+			"result_definition": result_definition
+		})
 
 		# Animation starts from the interaction point
 		var start_pos = interaction_pos
 
-		# Remove old instance
-		GameManager.run_state.remove_instance(item_data.uuid)
-
-		# Create new instance
-		var new_instance := GachaBallInstance.new()
-		new_instance.initialize(result_definition)
-		GameManager.run_state.add_instance(new_instance, source_location.container, source_location.index)
-		GameManager.run_state.unlock_recipe_for_result(result_definition.id)
+		# We need a temporary instance just to generate visual data for the animation
+		var temp_new_instance := GachaBallInstance.new()
+		temp_new_instance.initialize(result_definition)
 
 		# Update the VFX ball to show the NEW transformed unit
-		var new_visual_data = VisualDataAdapter.create_visual_data(new_instance)
+		var new_visual_data = VisualDataAdapter.create_visual_data(temp_new_instance)
 		if is_instance_valid(vfx_ball):
 			vfx_ball.populate(null, new_visual_data, false)
 
@@ -15912,21 +16142,6 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 
 		_action_in_progress = false
 	)
-
-func _draw_transform_definition(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
-	var eligible: Array[GachaBallDefinition] = []
-	for definition in Database.get_all_pool_definitions():
-		if not is_instance_valid(definition):
-			continue
-		if definition.id == source_definition_id:
-			continue
-		if definition.tier != source_tier:
-			continue
-		eligible.append(definition)
-
-	if eligible.is_empty():
-		return null
-	return eligible[randi() % eligible.size()]
 
 func _find_ball_view_for_location(loc: LocationIdentifier) -> Control:
 	var anchor = WindowManager.find_view_for_location(loc)
@@ -15971,7 +16186,7 @@ func _animate_transform_to_slot(visual_data: Dictionary, start_center: Vector2, 
 	effects_layer.add_child(anim_ball)
 
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
@@ -16024,7 +16239,7 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	effects_layer.add_child(anim_ball)
 	
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	
 	anim_ball.force_inventory_mode = true
 	anim_ball.set_size_scale(1.0)
@@ -16148,18 +16363,16 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 	wait_tween.tween_interval(total_wait)
 	wait_tween.tween_callback(on_complete)
 
-func _show_black_market_tutorial() -> void:
-	TutorialManager.show_tutorial(&"black_market_intro", [
-		{
-			"text": "tutorial.black_market_intro",
-			"center": true
-		}
-	], open_inventory_button)
-
 func _on_open_inventory_pressed() -> void:
 	if WindowManager.is_any_inspection_window_open():
 		WindowManager.close_all_inspection_windows()
 	else:
+		var main_node = GameManager._active_main_node
+		if is_instance_valid(main_node) and main_node.has_method("set_action_zone_texts"):
+			var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
+			var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
+			main_node.set_action_zone_texts(transform_text, remove_text)
+			
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
@@ -16187,7 +16400,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 ```
 
-### File: `scripts\ChoiceWindow.gd`
+### File: `scripts/ChoiceWindow.gd`
 ```gdscript
 # res://scripts/ChoiceWindow.gd
 class_name ChoiceWindow
@@ -16218,6 +16431,20 @@ func _ready() -> void:
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
 	# Prune only child windows when clicking on this window's background
 	gui_input.connect(_on_panel_gui_input)
+	
+	SignalBus.locale_changed.connect(_update_localized_text)
+	_update_localized_text()
+
+func _update_localized_text() -> void:
+	swap_button.text = tr("ui.btn_swap")
+	
+	if MergeManager.is_merge_encounter_active():
+		var cost = 5
+		if is_instance_valid(GameManager.run_state):
+			cost = GameManager.run_state.merge_encounter_cost
+		merge_button.text = tr("ui.btn_merge_cost").format({"cost": str(cost)})
+	else:
+		merge_button.text = tr("ui.btn_merge")
 
 func _on_panel_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
@@ -16230,6 +16457,9 @@ func _exit_tree() -> void:
 	# Release interaction lock
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.emit_signal("interaction_lock_requested", false)
+		
+	if SignalBus.locale_changed.is_connected(_update_localized_text):
+		SignalBus.locale_changed.disconnect(_update_localized_text)
 		
 	# Restore visibility of source view if it was hidden (e.g. on Cancel)
 	if _source_view_instance_id != -1:
@@ -16252,6 +16482,8 @@ func populate(context: Dictionary) -> void:
 	_recipe_id = context.get("recipe_id")
 	_source_view_instance_id = context.get("source_view_id", -1)
 
+	_update_localized_text()
+
 
 	# MODIFIED: All button configuration logic is now here, inside populate().
 	# This guarantees it runs AFTER the context data has been received.
@@ -16261,7 +16493,7 @@ func populate(context: Dictionary) -> void:
 		
 		# MERGE ENCOUNTER: Disable if not enough gold
 		if MergeManager.is_merge_encounter_active():
-			if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 5:
+			if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < GameManager.run_state.merge_encounter_cost:
 				merge_button.disabled = true
 		# Ensure we don't connect the signal multiple times if populate were ever called again.
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
@@ -16291,7 +16523,7 @@ func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 	SignalBus.emit_signal("close_top_contextual_requested")
 ```
 
-### File: `scripts\CombatEvent.gd`
+### File: `scripts/CombatEvent.gd`
 ```gdscript
 # scripts/CombatEvent.gd
 @tool
@@ -16409,7 +16641,7 @@ static func reset_event_counter() -> void:
 	_next_event_id = 0
 ```
 
-### File: `scripts\ConditionDefinition.gd`
+### File: `scripts/ConditionDefinition.gd`
 ```gdscript
 # res://scripts/ConditionDefinition.gd
 @tool
@@ -16428,7 +16660,7 @@ extends Resource
 @export var invert_result: bool = false 
 ```
 
-### File: `scripts\conditions\CompositeCondition.gd`
+### File: `scripts/conditions/CompositeCondition.gd`
 ```gdscript
 @tool
 class_name CompositeCondition
@@ -16443,7 +16675,7 @@ func _init() -> void:
 	condition_type = &"COMPOSITE"
 ```
 
-### File: `scripts\conditions\ContextCauseCondition.gd`
+### File: `scripts/conditions/ContextCauseCondition.gd`
 ```gdscript
 @tool
 extends ConditionDefinition
@@ -16467,7 +16699,7 @@ func _validate_property(property: Dictionary) -> void:
         parameters["allowed_causes"] = allowed_causes
 ```
 
-### File: `scripts\Constants.gd`
+### File: `scripts/Constants.gd`
 ```gdscript
 # res://scripts/Constants.gd
 extends Node
@@ -16700,7 +16932,7 @@ const TRAIT_DEFINITIONS = {
 }
 ```
 
-### File: `scripts\CursorManager.gd`
+### File: `scripts/CursorManager.gd`
 ```gdscript
 extends Node
 
@@ -16777,7 +17009,7 @@ func _notification(what: int) -> void:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 ```
 
-### File: `scripts\Database.gd`
+### File: `scripts/Database.gd`
 ```gdscript
 # res://scripts/Database.gd
 extends Node
@@ -17072,7 +17304,7 @@ func _get_resource_load_name(file_name: String) -> String:
 	return file_name
 ```
 
-### File: `scripts\DataContainer.gd`
+### File: `scripts/DataContainer.gd`
 ```gdscript
 class_name DataContainer extends RefCounted
 
@@ -17123,7 +17355,7 @@ func get_all_uuids() -> Array[String]:
 	return []
 ```
 
-### File: `scripts\debug_compile.gd`
+### File: `scripts/debug_compile.gd`
 ```gdscript
 # res://scripts/debug_compile.gd
 extends SceneTree
@@ -17150,7 +17382,7 @@ func _init():
 	quit()
 ```
 
-### File: `scripts\debug_database.gd`
+### File: `scripts/debug_database.gd`
 ```gdscript
 # res://scripts/debug_database.gd
 extends SceneTree
@@ -17178,7 +17410,7 @@ func _init():
 	quit()
 ```
 
-### File: `scripts\debug_korean_deck.gd`
+### File: `scripts/debug_korean_deck.gd`
 ```gdscript
 # res://scripts/debug_korean_deck.gd
 extends SceneTree
@@ -17252,7 +17484,7 @@ func _init():
 	quit(0)
 ```
 
-### File: `scripts\DeckSelectButton.gd`
+### File: `scripts/DeckSelectButton.gd`
 ```gdscript
 # res://scripts/DeckSelectButton.gd
 class_name DeckSelectButton
@@ -17320,7 +17552,7 @@ func get_deck_meta() -> Dictionary:
 	return _deck_meta
 ```
 
-### File: `scripts\DiscardPileWindow.gd`
+### File: `scripts/DiscardPileWindow.gd`
 ```gdscript
 class_name DiscardPileWindow
 extends Control
@@ -17401,7 +17633,7 @@ func get_window_to_animate() -> Control:
 	return self
 ```
 
-### File: `scripts\EffectAmbushPredator.gd`
+### File: `scripts/EffectAmbushPredator.gd`
 ```gdscript
 # res://scripts/EffectAmbushPredator.gd
 @tool
@@ -17447,7 +17679,7 @@ func execute(_source_uuid: String, _resolved_targets: Array[String], _battle_man
 	return result
 ```
 
-### File: `scripts\EffectApplyStatus.gd`
+### File: `scripts/EffectApplyStatus.gd`
 ```gdscript
 # res://scripts/EffectApplyStatus.gd
 @tool
@@ -17502,7 +17734,7 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 	return result
 ```
 
-### File: `scripts\EffectBossSummon.gd`
+### File: `scripts/EffectBossSummon.gd`
 ```gdscript
 # res://scripts/EffectBossSummon.gd
 @tool
@@ -17558,7 +17790,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 ```
 
-### File: `scripts\EffectBuffAllyBehindPWR.gd`
+### File: `scripts/EffectBuffAllyBehindPWR.gd`
 ```gdscript
 # res://scripts/EffectBuffAllyBehindPWR.gd
 @tool
@@ -17606,7 +17838,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return null
 ```
 
-### File: `scripts\EffectBuffDrawnUnit.gd`
+### File: `scripts/EffectBuffDrawnUnit.gd`
 ```gdscript
 # res://scripts/EffectBuffDrawnUnit.gd
 @tool
@@ -17787,7 +18019,7 @@ func _get_team_from_container(container: StringName) -> String:
 	return ""
 ```
 
-### File: `scripts\EffectBuffHeroOnMerge.gd`
+### File: `scripts/EffectBuffHeroOnMerge.gd`
 ```gdscript
 # res://scripts/EffectBuffHeroOnMerge.gd
 @tool
@@ -17952,7 +18184,7 @@ func _get_team_from_container(container: StringName) -> String:
 	return ""
 ```
 
-### File: `scripts\EffectBuffHighLevelUnit.gd`
+### File: `scripts/EffectBuffHighLevelUnit.gd`
 ```gdscript
 # res://scripts/EffectBuffHighLevelUnit.gd
 @tool
@@ -18127,7 +18359,7 @@ func _get_team_from_container(container: StringName) -> String:
 	return ""
 ```
 
-### File: `scripts\EffectBuffTwoRandomAllies.gd`
+### File: `scripts/EffectBuffTwoRandomAllies.gd`
 ```gdscript
 # res://scripts/EffectBuffTwoRandomAllies.gd
 @tool
@@ -18234,7 +18466,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		return buff_amount
 ```
 
-### File: `scripts\EffectCascadeAOE.gd`
+### File: `scripts/EffectCascadeAOE.gd`
 ```gdscript
 # res://scripts/EffectCascadeAOE.gd
 @tool
@@ -18359,7 +18591,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return result
 ```
 
-### File: `scripts\EffectDeathDamageHighestEnemy.gd`
+### File: `scripts/EffectDeathDamageHighestEnemy.gd`
 ```gdscript
 @tool
 class_name EffectDeathDamageHighestEnemy
@@ -18416,7 +18648,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EffectDeathTokenRefund.gd`
+### File: `scripts/EffectDeathTokenRefund.gd`
 ```gdscript
 # res://scripts/EffectDeathTokenRefund.gd
 @tool
@@ -18481,7 +18713,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return tier
 ```
 
-### File: `scripts\EffectDefinition.gd`
+### File: `scripts/EffectDefinition.gd`
 ```gdscript
 # res://scripts/EffectDefinition.gd
 @tool
@@ -18508,7 +18740,65 @@ func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Nod
 	return null
 ```
 
-### File: `scripts\EffectGainGold.gd`
+### File: `scripts/EffectEmpathicLink.gd`
+```gdscript
+# res://scripts/EffectEmpathicLink.gd
+@tool
+extends EffectDefinition
+
+## Cascading buff that travels down the lineup based on depth.
+## Gives PWR to the unit behind it, then halves it for the next, and so on.
+## Minimum PWR given is 1.
+
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+	var is_simulation: bool = context.get("is_simulation", false)
+	
+	if targets.is_empty():
+		return EffectResult.empty() if is_simulation else null
+	
+	var depth: int = parameters.get("depth", 1)
+	
+	# ROBUSTNESS: Use snapshotted source PWR from context if available (captured at moment of death)
+	var current_buff: float = float(context.get("source_pwr", 1))
+	
+	var result := EffectResult.new() if is_simulation else null
+	var current_target_uuid: String = targets[0]
+	var current_target = battle_manager.get_instance_by_uuid(current_target_uuid)
+	
+	for i in range(depth):
+		if not is_instance_valid(current_target):
+			break
+			
+		var apply_buff: int = int(floor(current_buff))
+		if apply_buff < 1:
+			apply_buff = 1
+			
+		if is_simulation:
+			var old_pwr: int = current_target.current_pwr
+			# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
+			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff, false, source_uuid)
+			
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": source_uuid,
+				"target_uuids": [current_target.ball_uuid],
+				"ability_id": context.get("ability_id", &"empathic_link"),
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": {
+					"source_uuid": source_uuid,
+					"stat": "pwr",
+					"amount": apply_buff,
+					"targets_old_pwr": [old_pwr],
+					"targets_new_pwr": [new_pwr]
+				}
+			}))
+			
+		current_target = battle_manager._get_ally_behind(current_target)
+		current_buff /= 2.0
+		
+	return result if is_simulation else null
+```
+
+### File: `scripts/EffectGainGold.gd`
 ```gdscript
 # res://scripts/EffectGainGold.gd
 @tool
@@ -18561,7 +18851,7 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 	return amount
 ```
 
-### File: `scripts\EffectGrantExtraAction.gd`
+### File: `scripts/EffectGrantExtraAction.gd`
 ```gdscript
 # res://scripts/EffectGrantExtraAction.gd
 @tool
@@ -18605,7 +18895,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	return null
 ```
 
-### File: `scripts\EffectGrantStatsPerEmptySlot.gd`
+### File: `scripts/EffectGrantStatsPerEmptySlot.gd`
 ```gdscript
 # res://scripts/EffectGrantStatsPerEmptySlot.gd
 @tool
@@ -18707,7 +18997,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EffectInspectionWindow.gd`
+### File: `scripts/EffectInspectionWindow.gd`
 ```gdscript
 class_name EffectInspectionWindow
 extends InspectionWindow
@@ -18913,7 +19203,7 @@ func get_location() -> LocationIdentifier:
 	return null
 ```
 
-### File: `scripts\EffectItemSteal.gd`
+### File: `scripts/EffectItemSteal.gd`
 ```gdscript
 @tool
 class_name EffectItemSteal
@@ -19036,7 +19326,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EffectModifyStat.gd`
+### File: `scripts/EffectModifyStat.gd`
 ```gdscript
 # res://scripts/EffectModifyStat.gd
 @tool
@@ -19183,37 +19473,64 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# Create batched event for all targets at once (enables simultaneous projectiles)
 		if not all_target_uuids.is_empty():
 			if stat == "hp":
-				# Log message with all target names
 				var log_text: String
 				var custom_fmt: String = parameters.get("log_format", "")
-				if not custom_fmt.is_empty():
-					log_text = custom_fmt % [source_name, abs(amount)]
-				elif target_names.size() == 1:
-					log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
-				else:
-					log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
-				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
-				
 				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
 				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+				
+				if amount > 0:
+					# HEAL
+					if not custom_fmt.is_empty():
+						log_text = custom_fmt % [source_name, abs(amount)]
+					elif target_names.size() == 1:
+						log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
+					else:
+						log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
+					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
-				# Single HEAL event with all targets batched
-				result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-					"source_uuid": _source_uuid,
-					"target_uuids": all_target_uuids,
-					"ability_id": aid,
-					"trigger_type": context.get("trigger_type", ""),
-					"ability_holder_uuid": _source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"amount": amount,
-						"stat": stat,
-						"skip_bump": parameters.get("skip_bump", false),
-						"targets_old_hp": all_old_vals,
-						"targets_new_hp": all_new_vals,
-						"targets_max_hp": all_max_hp
-					}
-				}))
+					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+						"source_uuid": _source_uuid,
+						"target_uuids": all_target_uuids,
+						"ability_id": aid,
+						"trigger_type": context.get("trigger_type", ""),
+						"ability_holder_uuid": _source_uuid,
+						"visual_payload": {
+							"source_uuid": visual_source_uuid,
+							"amount": amount,
+							"stat": stat,
+							"skip_bump": parameters.get("skip_bump", false),
+							"targets_old_hp": all_old_vals,
+							"targets_new_hp": all_new_vals,
+							"targets_max_hp": all_max_hp
+						}
+					}))
+				else:
+					# DAMAGE
+					if not custom_fmt.is_empty():
+						log_text = custom_fmt % [source_name, abs(amount)]
+					elif target_names.size() == 1:
+						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), target_names[0]]
+					else:
+						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), " and ".join(target_names)]
+					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+
+					result.add_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+						"source_uuid": _source_uuid,
+						"target_uuids": all_target_uuids,
+						"ability_id": aid,
+						"trigger_type": context.get("trigger_type", ""),
+						"ability_holder_uuid": _source_uuid,
+						"visual_payload": {
+							"source_uuid": visual_source_uuid,
+							"amount": amount,
+							"stat": stat,
+							"attack_type": parameters.get("attack_type", "ranged"), # Default ranged for effect damage
+							"skip_bump": parameters.get("skip_bump", true), # Default skip bump for effect damage
+							"projectile_data": parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"}),
+							"targets_old_hp": all_old_vals,
+							"targets_new_hp": all_new_vals
+						}
+					}))
 			elif stat == "pwr":
 				# Log message with all target names
 				var log_text: String
@@ -19289,7 +19606,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	return amount
 ```
 
-### File: `scripts\EffectPreventLethal.gd`
+### File: `scripts/EffectPreventLethal.gd`
 ```gdscript
 # res://scripts/EffectPreventLethal.gd
 @tool
@@ -19311,35 +19628,35 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var victim_current_hp: int = context.get("victim_current_hp", 1)
 	var trinket_team: String = context.get("team", "") # AbilityResolver provides this for trinkets
 	
-	print("[EffectPreventLethal] execute called - victim=%s, victim_team=%s, trinket_team=%s, victim_hp=%d" % [victim_uuid, victim_team, trinket_team, victim_current_hp])
+	pass
 	
 	# Validate required context keys
 	if victim_uuid.is_empty():
-		print("[EffectPreventLethal] EXIT: victim_uuid is empty")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	if victim_team.is_empty():
-		print("[EffectPreventLethal] EXIT: victim_team is empty (context missing)")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	if trinket_team.is_empty():
-		print("[EffectPreventLethal] EXIT: trinket team is empty (context missing)")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 2. Check victim is on same team as trinket
 	if victim_team != trinket_team:
-		print("[EffectPreventLethal] EXIT: Team mismatch - victim=%s, trinket=%s" % [victim_team, trinket_team])
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 3. Check if damage was lethal (HP <= 0)
 	if victim_current_hp > 0:
-		print("[EffectPreventLethal] EXIT: HP > 0, not lethal")
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 4. Check once-per-turn flag
 	var aegis_flag_key := "aegis_prevented_" + trinket_team
 	if battle_manager._turn_metadata.get(aegis_flag_key, false):
-		print("[EffectPreventLethal] EXIT: Already triggered this turn for team %s" % trinket_team)
+		pass
 		return EffectResult.empty() if is_simulation else null
 	
 	# 5. Calculate heal amount to bring HP to 1
@@ -19349,7 +19666,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Set the flag to prevent duplicate triggers within same turn
 	battle_manager._turn_metadata[aegis_flag_key] = true
 	
-	print("[EffectPreventLethal] Prevented lethal damage for %s (team=%s), healing by %d" % [victim_uuid, trinket_team, heal_amount])
+	pass
 	
 	if is_simulation:
 		# NEW: Return EffectResult with LETHAL_SAVE event
@@ -19395,7 +19712,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		}
 ```
 
-### File: `scripts\EffectRequest.gd`
+### File: `scripts/EffectRequest.gd`
 ```gdscript
 # res://scripts/EffectRequest.gd
 extends Resource
@@ -19423,7 +19740,7 @@ func _init(p_source_uuid: String, p_ability_id: StringName, p_effect_definition:
 	priority = p_priority
 ```
 
-### File: `scripts\EffectResurrectFirstKilledUnit.gd`
+### File: `scripts/EffectResurrectFirstKilledUnit.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -19438,7 +19755,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# (Soul Echo triggers on_ally_death when a teammate dies)
 	var fainting_ally_team: String = context.get("fainting_ally_team", "")
 	if fainting_ally_team.is_empty():
-		print("[SoulEcho] Failed: fainting_ally_team is empty")
 		return EffectResult.empty()
 	
 	var is_player_team := (fainting_ally_team == "PLAYER")
@@ -19446,21 +19762,28 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# 2. Check if resurrection already happened this turn
 	var resurrection_flag_key := "resurrection_done_player" if is_player_team else "resurrection_done_enemy"
 	if battle_manager._turn_metadata.get(resurrection_flag_key, false):
-		print("[SoulEcho] Failed: resurrection already done for ", fainting_ally_team)
 		return EffectResult.empty() # Already resurrected this turn
 
 	# 3. Get first-killed unit metadata
 	var first_killed_key := "first_killed_player_unit" if is_player_team else "first_killed_enemy_unit"
 	var first_killed_data: Dictionary = battle_manager._turn_metadata.get(first_killed_key, {})
 	if first_killed_data.is_empty():
-		print("[SoulEcho] Failed: no first_killed_data for ", fainting_ally_team)
 		return EffectResult.empty() # No unit died yet
 
 	# 4. Get the definition of the unit to resurrect
 	var def_id: StringName = first_killed_data.get("def_id", &"")
 	var unit_def = Database.get_definition(def_id)
 	if not is_instance_valid(unit_def):
-		print("[SoulEcho] Failed: invalid unit def ", def_id)
+		return EffectResult.empty()
+
+	# 4b. Hero check - don't resurrect the hero (game over condition)
+	var is_hero: bool = false
+	if "is_hero" in unit_def:
+		is_hero = unit_def.is_hero
+	elif String(def_id).to_lower() == "hero":
+		is_hero = true
+		
+	if is_hero:
 		return EffectResult.empty()
 
 	# 5. Determine where to resurrect
@@ -19476,11 +19799,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		
 	if not is_instance_valid(summon_location) or summon_location.index < 0:
 		var loc_str = str(summon_location.index) if is_instance_valid(summon_location) else "null"
-		print("[SoulEcho] Failed: invalid summon location index ", loc_str)
 		return EffectResult.empty()
 
 	# 6. Mark resurrection as done for this team
-	print("[SoulEcho] SUCCESS: Resurrecting ", def_id, " at ", summon_location.index)
 	battle_manager._turn_metadata[resurrection_flag_key] = true
 
 	# 7. Return EffectResult with resurrection instructions
@@ -19494,7 +19815,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 ```
 
-### File: `scripts\EffectRetriggerTurnAttack.gd`
+### File: `scripts/EffectRetriggerTurnAttack.gd`
 ```gdscript
 # res://scripts/EffectRetriggerTurnAttack.gd
 @tool
@@ -19587,7 +19908,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return EffectResult.empty() if is_simulation else null
 ```
 
-### File: `scripts\effects\EffectAweInspiringTotem.gd`
+### File: `scripts/effects/EffectAweInspiringTotem.gd`
 ```gdscript
 # res://scripts/effects/EffectAweInspiringTotem.gd
 @tool
@@ -19761,7 +20082,7 @@ func _get_team_from_container(container: StringName) -> String:
 	return ""
 ```
 
-### File: `scripts\effects\EffectBenchGrowth.gd`
+### File: `scripts/effects/EffectBenchGrowth.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -19850,7 +20171,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\effects\EffectDopplegangerScaling.gd`
+### File: `scripts/effects/EffectDopplegangerScaling.gd`
 ```gdscript
 # res://scripts/effects/EffectDopplegangerScaling.gd
 @tool
@@ -19910,7 +20231,7 @@ func _is_player_unit_team(inst: GachaBallInstance, battle_manager: Node) -> bool
 	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)
 ```
 
-### File: `scripts\effects\EffectDuplicateToGacha.gd`
+### File: `scripts/effects/EffectDuplicateToGacha.gd`
 ```gdscript
 # res://scripts/effects/EffectDuplicateToGacha.gd
 @tool
@@ -19960,7 +20281,7 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	return result
 ```
 
-### File: `scripts\effects\EffectDustEliteSpawn.gd`
+### File: `scripts/effects/EffectDustEliteSpawn.gd`
 ```gdscript
 # res://scripts/effects/EffectDustEliteSpawn.gd
 @tool
@@ -20014,7 +20335,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 ```
 
-### File: `scripts\effects\EffectDustEliteSpawn1.gd`
+### File: `scripts/effects/EffectDustEliteSpawn1.gd`
 ```gdscript
 # res://scripts/effects/EffectDustEliteSpawn1.gd
 @tool
@@ -20059,7 +20380,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 ```
 
-### File: `scripts\effects\EffectDustEliteSpawn2.gd`
+### File: `scripts/effects/EffectDustEliteSpawn2.gd`
 ```gdscript
 # res://scripts/effects/EffectDustEliteSpawn2.gd
 @tool
@@ -20110,7 +20431,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 ```
 
-### File: `scripts\effects\EffectEchoingOrbScaling.gd`
+### File: `scripts/effects/EffectEchoingOrbScaling.gd`
 ```gdscript
 # res://scripts/effects/EffectEchoingOrbScaling.gd
 @tool
@@ -20200,7 +20521,7 @@ func _is_player_item(inst: GachaBallInstance, battle_manager: Node) -> bool:
 	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)
 ```
 
-### File: `scripts\effects\EffectGainDeadAllyPwrAsHP.gd`
+### File: `scripts/effects/EffectGainDeadAllyPwrAsHP.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -20282,7 +20603,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\effects\EffectGrantStatsPerDeadAlly.gd`
+### File: `scripts/effects/EffectGrantStatsPerDeadAlly.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -20352,7 +20673,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\effects\EffectMirrorTransform.gd`
+### File: `scripts/effects/EffectMirrorTransform.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -20423,7 +20744,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\effects\EffectModifyStatsByGold.gd`
+### File: `scripts/effects/EffectModifyStatsByGold.gd`
 ```gdscript
 # res://scripts/effects/EffectModifyStatsByGold.gd
 @tool
@@ -20525,7 +20846,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\effects\EffectPurifyHeal.gd`
+### File: `scripts/effects/EffectPurifyHeal.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -20608,7 +20929,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\effects\EffectRepeatAdjacentBuff.gd`
+### File: `scripts/effects/EffectRepeatAdjacentBuff.gd`
 ```gdscript
 # res://scripts/effects/EffectRepeatAdjacentBuff.gd
 @tool
@@ -20725,7 +21046,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return null
 ```
 
-### File: `scripts\effects\EffectRustyRingBuff.gd`
+### File: `scripts/effects/EffectRustyRingBuff.gd`
 ```gdscript
 # res://scripts/effects/EffectRustyRingBuff.gd
 @tool
@@ -20882,7 +21203,7 @@ func _get_team_from_container(container: StringName) -> String:
 	return ""
 ```
 
-### File: `scripts\effects\EffectRustyRingPassive.gd`
+### File: `scripts/effects/EffectRustyRingPassive.gd`
 ```gdscript
 # res://scripts/effects/EffectRustyRingPassive.gd
 @tool
@@ -20980,7 +21301,7 @@ func _get_team_from_container(container: StringName) -> String:
 	return ""
 ```
 
-### File: `scripts\effects\EffectStaticDischarge.gd`
+### File: `scripts/effects/EffectStaticDischarge.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -21051,7 +21372,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return result
 ```
 
-### File: `scripts\effects\EffectTrinityCharm.gd`
+### File: `scripts/effects/EffectTrinityCharm.gd`
 ```gdscript
 # res://scripts/effects/EffectTrinityCharm.gd
 @tool
@@ -21123,7 +21444,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return EffectResult.empty()
 ```
 
-### File: `scripts\effects\EffectTwinCharmScaling.gd`
+### File: `scripts/effects/EffectTwinCharmScaling.gd`
 ```gdscript
 # res://scripts/effects/EffectTwinCharmScaling.gd
 @tool
@@ -21226,7 +21547,7 @@ func _get_team_for_instance(inst: GachaBallInstance, battle_manager: Node) -> St
 	return ""
 ```
 
-### File: `scripts\effects\EffectUnderdogArmor.gd`
+### File: `scripts/effects/EffectUnderdogArmor.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -21309,7 +21630,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return result
 ```
 
-### File: `scripts\EffectSetHPToGold.gd`
+### File: `scripts/EffectSetHPToGold.gd`
 ```gdscript
 # res://scripts/EffectSetHPToGold.gd
 @tool
@@ -21373,7 +21694,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EffectSetPWRToGold.gd`
+### File: `scripts/EffectSetPWRToGold.gd`
 ```gdscript
 # res://scripts/EffectSetPWRToGold.gd
 @tool
@@ -21434,7 +21755,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EffectSummonBlessing.gd`
+### File: `scripts/EffectSummonBlessing.gd`
 ```gdscript
 # res://scripts/EffectSummonBlessing.gd
 @tool
@@ -21515,7 +21836,7 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 	return result
 ```
 
-### File: `scripts\EffectSummonOnDeath.gd`
+### File: `scripts/EffectSummonOnDeath.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -21575,7 +21896,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EffectSummonT2OnDeath.gd`
+### File: `scripts/EffectSummonT2OnDeath.gd`
 ```gdscript
 @tool
 extends EffectDefinition
@@ -21627,7 +21948,7 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	return result
 ```
 
-### File: `scripts\EffectTransferItemBehind.gd`
+### File: `scripts/EffectTransferItemBehind.gd`
 ```gdscript
 # res://scripts/EffectTransferItemBehind.gd
 @tool
@@ -21712,7 +22033,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	return null
 ```
 
-### File: `scripts\EffectUpdatePwrToTokens.gd`
+### File: `scripts/EffectUpdatePwrToTokens.gd`
 ```gdscript
 # res://scripts/EffectUpdatePwrToTokens.gd
 @tool
@@ -21760,7 +22081,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	return result
 ```
 
-### File: `scripts\EncounterDefinition.gd`
+### File: `scripts/EncounterDefinition.gd`
 ```gdscript
 @tool
 class_name EncounterDefinition extends Resource
@@ -21817,7 +22138,7 @@ class_name EncounterDefinition extends Resource
 
 ```
 
-### File: `scripts\EncounterGenerator.gd`
+### File: `scripts/EncounterGenerator.gd`
 ```gdscript
 # res://scripts/EncounterGenerator.gd
 extends Node
@@ -21930,7 +22251,8 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_
 			break
 			
 	if OS.is_debug_build():
-		print("[EncounterGenerator] Elite weighting: ", weights, " (Last: ", last_elite_id, ") Picked: ", selected_boss_id)
+		pass
+		# print("[EncounterGenerator] Elite weighting: ", weights, " (Last: ", last_elite_id, ") Picked: ", selected_boss_id)
 
 	var boss_def = Database.get_definition(selected_boss_id)
 	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % selected_boss_id)
@@ -22360,7 +22682,7 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 	return enemy_bonus - player_cost
 ```
 
-### File: `scripts\EndBattlePopup.gd`
+### File: `scripts/EndBattlePopup.gd`
 ```gdscript
 # res://scripts/EndBattlePopup.gd
 extends Control
@@ -22397,7 +22719,7 @@ func get_window_to_animate() -> Control:
 	return $CenterContainer/PanelContainer
 ```
 
-### File: `scripts\FixedArrayContainer.gd`
+### File: `scripts/FixedArrayContainer.gd`
 ```gdscript
 class_name FixedArrayContainer extends DataContainer
 
@@ -22469,7 +22791,7 @@ func get_all_uuids() -> Array[String]:
 	return _data.duplicate()
 ```
 
-### File: `scripts\FlashcardManager.gd`
+### File: `scripts/FlashcardManager.gd`
 ```gdscript
 # res://scripts/FlashcardManager.gd
 extends Node
@@ -22551,11 +22873,13 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 		return
 	
 	if active_deck.is_empty():
+		push_error("[FlashcardManager] active_deck is empty! Cannot start minigame.")
 		return
 	
 	# Validate that all cards in the deck exist
 	for card_id in active_deck:
 		if not Database.flashcard_definitions.has(card_id):
+			push_error("[FlashcardManager] Card definition missing for: " + str(card_id))
 			return
 	
 	# NEW: Expand deck at START of minigame session
@@ -22574,13 +22898,16 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 func get_next_question() -> Dictionary:
 	"""Gets the next question using SRS algorithm"""
 	if not is_instance_valid(_run_state_ref):
+		push_error("[FlashcardManager] _run_state_ref is invalid!")
 		return {}
 	
 	if _active_deck_ids.size() < 6:
+		push_error("[FlashcardManager] Not enough cards in active deck! Size is: " + str(_active_deck_ids.size()))
 		return {} # Not enough cards for a question and 5 distractors
 	
 	var question_card_id = _select_card_via_srs()
 	if question_card_id.is_empty():
+		push_error("[FlashcardManager] _select_card_via_srs returned empty!")
 		return {}
 	
 	_last_shown_card_id = question_card_id
@@ -22610,7 +22937,6 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""
-	print("[FlashcardManager] _on_minigame_complete called. Correct: ", correct)
 	# Store results before cleanup
 	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
 	
@@ -22628,9 +22954,7 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	_active_deck_ids.clear()
 	
 	# Emit signal after cleanup to prevent any callbacks from accessing freed objects
-	print("[FlashcardManager] Emitting minigame_finished signal with results: ", results)
 	emit_signal("minigame_finished", results)
-	print("[FlashcardManager] Signal emitted successfully")
 
 ## Get statistics about the current deck for debugging.
 ## @return Dictionary - Statistics about the deck
@@ -22672,7 +22996,7 @@ func get_deck_statistics() -> Dictionary:
 	return stats
 ```
 
-### File: `scripts\FlashcardMinigame.gd`
+### File: `scripts/FlashcardMinigame.gd`
 ```gdscript
 # res://scripts/FlashcardMinigame.gd
 extends Control
@@ -23741,7 +24065,7 @@ func get_window_to_animate() -> Control:
 	return main_panel
 ```
 
-### File: `scripts\FlashcardProgress.gd`
+### File: `scripts/FlashcardProgress.gd`
 ```gdscript
 # res://scripts/FlashcardProgress.gd
 @tool
@@ -23798,7 +24122,7 @@ func record_answer(was_correct: bool, current_day: int) -> void:
 		mastery_level = maxi(MASTERY_MIN, mastery_level - 1)
 ```
 
-### File: `scripts\GachaBallDefinition.gd`
+### File: `scripts/GachaBallDefinition.gd`
 ```gdscript
 @tool
 class_name GachaBallDefinition
@@ -23878,7 +24202,7 @@ var item_slot_count: int:
 @export var ability_definitions: Array[AbilityDefinition]
 ```
 
-### File: `scripts\GachaBallInstance.gd`
+### File: `scripts/GachaBallInstance.gd`
 ```gdscript
 # res://scripts/GachaBallInstance.gd
 class_name GachaBallInstance
@@ -23896,6 +24220,10 @@ var origin_uuid: String = "" # UUID of the permanent instance this battle copy w
 var level: int = 1
 var current_hp: int
 var current_pwr: int
+
+# --- Stat Debt (Systemic Minimum 1 constraint) ---
+var _hp_debt: int = 0
+var _pwr_debt: int = 0
 
 # --- Location Properties (for temporary battle state) ---
 var location_container_tag: StringName = &""
@@ -23993,14 +24321,11 @@ func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_def): return
 	var hp_delta: int = int(item_def.bonus_hp) if "bonus_hp" in item_def else 0
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
-	var old_hp = self.current_hp
-	var old_pwr = self.current_pwr
-	self.current_hp += hp_delta
-	self.current_pwr += pwr_delta
+	
 	if hp_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, self.current_hp)
+		apply_hp_delta(hp_delta, {"silent": false})
 	if pwr_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, self.current_pwr)
+		apply_pwr_delta(pwr_delta, {"silent": false})
 
 func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance): return
@@ -24008,14 +24333,11 @@ func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_def): return
 	var hp_delta: int = int(item_def.bonus_hp) if "bonus_hp" in item_def else 0
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
-	var old_hp = self.current_hp
-	var old_pwr = self.current_pwr
-	self.current_hp -= hp_delta
-	self.current_pwr -= pwr_delta
+	
 	if hp_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, self.current_hp)
+		apply_hp_delta(-hp_delta, {"silent": false})
 	if pwr_delta != 0:
-		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, self.current_pwr)
+		apply_pwr_delta(-pwr_delta, {"silent": false})
 
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
@@ -24372,21 +24694,47 @@ func get_battle_pwr_modifier() -> int:
 	return _sum_components_stat(battle_components, &"pwr", true)
 
 func get_effective_starting_hp(all_instances_db: Dictionary = {}) -> int:
-	return get_definition_base_hp() + get_persistent_hp_modifier() + get_equipment_hp_modifier(all_instances_db) + get_battle_hp_modifier()
+	var total = get_definition_base_hp() + get_persistent_hp_modifier() + get_equipment_hp_modifier(all_instances_db) + get_battle_hp_modifier()
+	return max(1, total)
 
 func get_effective_starting_pwr(all_instances_db: Dictionary = {}) -> int:
-	return get_definition_base_pwr() + get_persistent_pwr_modifier() + get_equipment_pwr_modifier(all_instances_db) + get_battle_pwr_modifier()
+	var total = get_definition_base_pwr() + get_persistent_pwr_modifier() + get_equipment_pwr_modifier(all_instances_db) + get_battle_pwr_modifier()
+	return max(1, total)
 
 func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
 	var old_hp := current_hp
-	current_hp += amount
+	
+	if amount < 0:
+		var max_drop = max(0, current_hp - 1)
+		var actual_drop = min(abs(amount), max_drop)
+		var debt_added = abs(amount) - actual_drop
+		_hp_debt += debt_added
+		current_hp -= actual_drop
+	elif amount > 0:
+		var debt_paid = min(amount, _hp_debt)
+		_hp_debt -= debt_paid
+		var actual_gain = amount - debt_paid
+		current_hp += actual_gain
+		
 	if not bool(context.get("silent", false)) and old_hp != current_hp:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, current_hp)
 	return current_hp
 
 func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 	var old_pwr := current_pwr
-	current_pwr += amount
+	
+	if amount < 0:
+		var max_drop = max(0, current_pwr - 1)
+		var actual_drop = min(abs(amount), max_drop)
+		var debt_added = abs(amount) - actual_drop
+		_pwr_debt += debt_added
+		current_pwr -= actual_drop
+	elif amount > 0:
+		var debt_paid = min(amount, _pwr_debt)
+		_pwr_debt -= debt_paid
+		var actual_gain = amount - debt_paid
+		current_pwr += actual_gain
+		
 	if not bool(context.get("silent", false)) and old_pwr != current_pwr:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
 	return current_pwr
@@ -24846,7 +25194,7 @@ func get_definition() -> Resource:
 	return Database.get_definition(definition_id)
 ```
 
-### File: `scripts\GachaBallView.gd`
+### File: `scripts/GachaBallView.gd`
 ```gdscript
 # res://scripts/GachaBallView.gd
 class_name GachaBallView
@@ -26575,7 +26923,10 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	var drag_payload := _prepare_drag_payload()
 	if drag_payload.is_empty():
 		return null
-	set_drag_preview(drag_payload["preview"])
+	# We omit calling set_drag_preview() here because we use a custom
+	# drag overlay layer in GlobalInteractionRouter. 
+	# Passing an engine preview stub often causes a harmless but annoying 
+	# Godot Engine C++ error: "Don't free the control set as drag preview"
 	return drag_payload["data"]
 
 func _can_drop_data(_at_position, data) -> bool:
@@ -26689,7 +27040,7 @@ func _notification(what: int) -> void:
 		if _drag_initiated_for_click:
 			_stop_touch_long_press()
 			_touch_hover_override_active = false
-			print("DEBUG_INPUT: Emitting DRAG_START. Entity: ", _entity_type, " | UUID: ", _instance_uuid)
+			pass
 			_set_hover_state(false, false)
 			_animate_press_to(0.0, 0.05)
 			var context = _create_interaction_context(&"DRAG_START")
@@ -27048,7 +27399,7 @@ func _setup_overlay_stats_layout() -> void:
 	armor_label.add_theme_constant_override("outline_size", outline_size)
 ```
 
-### File: `scripts\GameManager.gd`
+### File: `scripts/GameManager.gd`
 ```gdscript
 # res://scripts/GameManager.gd
 extends Node
@@ -27101,6 +27452,12 @@ func _ready() -> void:
 	SignalBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 	SignalBus.reward_reroll_requested.connect(_on_reward_reroll_requested)
+	SignalBus.flashcard_token_earned.connect(_on_flashcard_token_earned)
+	SignalBus.black_market_action_requested.connect(_on_black_market_action_requested)
+
+func _on_flashcard_token_earned(amount: int) -> void:
+	if is_instance_valid(run_state) and amount > 0:
+		run_state.total_tokens_earned += amount
 
 # ADD THESE TWO FUNCTIONS
 func register_battle_manager(bm: Node) -> void:
@@ -27123,13 +27480,13 @@ func get_pending_rewards() -> Dictionary:
 		"is_special_victory": run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	}
 
-func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR") -> void:
+func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
 	# User Requirement: Start fresh tutorials every run if enabled
 	if TutorialManager:
 		TutorialManager.reset_all_tutorials()
 		
 	run_state = RunState.new()
-	run_state.initialize_run(hero_def_id, deck_id, deck_order)
+	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	reset_gacha_discounts()
 	SignalBus.emit_signal("main_scene_requested")
 
@@ -27138,12 +27495,11 @@ func _on_new_game_requested() -> void:
 	var hero_defs = Database.get_hero_definitions()
 	var deck_meta = Database.get_all_deck_metadata()
 	if hero_defs.size() > 0 and deck_meta.size() > 0:
-		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id, "REGULAR")
+		_on_start_run_requested(hero_defs[0].id, deck_meta[0].deck_id, "REGULAR", "FULL")
 	else:
 		return
 
 func _on_battle_ended(results: Dictionary) -> void:
-	print("[GameManager] _on_battle_ended called with results: ", results)
 	# Centralize post-battle handling per GIR.
 	# 1) Flip global battle state off and broadcast.
 	is_in_battle = false
@@ -27152,37 +27508,39 @@ func _on_battle_ended(results: Dictionary) -> void:
 	
 	# Track boss defeat
 	if is_victory and run_state.current_boss_level > 0:
-		print("[GameManager] Boss victory detected! Level: ", run_state.current_boss_level)
 		run_state.bosses_defeated += 1
 		
-		# Check for Boss 5 victory (run complete)
-		if run_state.current_boss_level == 5:
+		var max_boss_level = 3 if run_state.is_half_deck else 5
+		# Check for Boss victory (run complete)
+		if run_state.current_boss_level == max_boss_level:
 			_show_run_complete_popup()
 			return
 
 	# 3) If victory, pre-generate rewards now so the modal can be instant.
 	if is_victory:
-		if run_state.current_boss_level > 0:
-			run_state.bosses_defeated += 1
 		if run_state.current_elite_level > 0:
 			run_state.elites_defeated += 1
-			
-		run_state.total_enemies_defeated += 1
 		
 		# Emit the signal. The levels are NOT reset here, ensuring that 
 		# _on_battle_won_rewards_pending can correctly identify the encounter type.
-		print("[GameManager] Victory confirmed, emitting battle_won_rewards_pending. EliteLvl: ", run_state.current_elite_level)
 		SignalBus.emit_signal("battle_won_rewards_pending")
 	
 	# 4) Open the hermetic end-of-battle modal.
 	WindowManager.open_modal_window(&"EndBattlePopup", {"is_victory": is_victory})
 
 func _show_run_complete_popup() -> void:
+	var flashcard_progress: Dictionary = {}
+	if is_instance_valid(run_state) and run_state.flashcard_progress != null:
+		flashcard_progress = run_state.flashcard_progress
+		
 	var context = {
 		"days": run_state.day,
 		"bosses_defeated": run_state.bosses_defeated,
 		"enemies_defeated": run_state.total_enemies_defeated,
-		"gold_earned": run_state.total_gold_earned
+		"elites_defeated": run_state.elites_defeated,
+		"gold_earned": run_state.total_gold_earned,
+		"tokens_earned": run_state.total_tokens_earned,
+		"flashcard_progress": flashcard_progress
 	}
 	WindowManager.open_modal_window(&"RunCompletePopup", context)
 
@@ -27204,7 +27562,6 @@ func _on_battle_start_requested(_encounter_def: EncounterDefinition) -> void:
 func _on_battle_won_rewards_pending() -> void:
 	# Detect if this was a boss or elite victory (both get trinket rewards)
 	var is_special_victory = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
-	print("[RewardDebug] Victory rewards pending. Special: ", is_special_victory)
 	
 	# Reset reward reroll cost for new rewards
 	_reward_reroll_cost = 1
@@ -27333,24 +27690,11 @@ func _on_reward_chosen(payload) -> void:
 func get_item_cost(def: Resource) -> int:
 	if not is_instance_valid(def): return 1
 	
-	var tier: int = 1
-	if "tier" in def:
-		tier = int(def.tier)
-	
-	# Trinkets are valued as Tier 3 base
-	if "category" in def and def.category == &"TRINKET":
-		tier = 3
-	
-	# Base cost per tier: T1=1, T2=2, T3+=4
 	var base_cost: int = 1
-	if tier >= 3:
-		base_cost = 4
-	elif tier == 2:
-		base_cost = 2
+	if "cost" in def:
+		base_cost = int(def.cost)
 	
 	# Valuation scales by 2^(Level-1)
-	# T1L1=1, T1L2=2, T1L3=4
-	# T3L1=4, T3L2=8, T3L3=16
 	var level: int = 1
 	if "level" in def:
 		level = int(def.level)
@@ -27587,7 +27931,6 @@ func _on_reward_reroll_requested() -> void:
 	if not run_state.spend_gold(_reward_reroll_cost): return
 	_reward_reroll_cost += 1
 	
-	print("[RewardDebug] Reroll requested. Cost paid. Generating new stock...")
 	_generate_reward_stock()
 
 	# Refresh the reward scene with new rewards
@@ -27596,7 +27939,6 @@ func _on_reward_reroll_requested() -> void:
 
 func _generate_reward_stock() -> void:
 	# Regenerate rewards (reroll functionality)
-	print("[RewardDebug] generate_reward_stock. Special: ", run_state.current_boss_level > 0 or run_state.current_elite_level > 0)
 	
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
@@ -27667,9 +28009,55 @@ func use_gacha_discount(tier: int) -> void:
 
 func reset_gacha_discounts() -> void:
 	gacha_discounts_used = {1: false, 2: false, 3: false}
+
+func get_black_market_transform_cost() -> int:
+	return 5
+
+func get_transform_result(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
+	var eligible: Array[GachaBallDefinition] = []
+	for definition in Database.get_all_pool_definitions():
+		if not is_instance_valid(definition):
+			continue
+		if definition.id == source_definition_id:
+			continue
+		if definition.tier != source_tier:
+			continue
+		eligible.append(definition)
+
+	if eligible.is_empty():
+		return null
+	return eligible[randi() % eligible.size()]
+
+func _on_black_market_action_requested(payload: Dictionary) -> void:
+	if not is_instance_valid(run_state):
+		return
+		
+	if payload.type == "remove":
+		var cost: int = payload.cost
+		var instance_uuid: String = payload.instance_uuid
+		if run_state.spend_gold(cost):
+			run_state.remove_instance(instance_uuid)
+			if run_state.has_method("increase_black_market_remove_cost"):
+				run_state.increase_black_market_remove_cost()
+				
+	elif payload.type == "transform":
+		var cost: int = payload.cost
+		var instance_uuid: String = payload.instance_uuid
+		var source_location: LocationIdentifier = payload.source_location
+		var result_definition: GachaBallDefinition = payload.result_definition
+		
+		if not is_instance_valid(result_definition): return
+		
+		if run_state.spend_gold(cost):
+			run_state.remove_instance(instance_uuid)
+			
+			var new_instance := GachaBallInstance.new()
+			new_instance.initialize(result_definition)
+			run_state.add_instance(new_instance, source_location.container, source_location.index)
+			run_state.unlock_recipe_for_result(result_definition.id)
 ```
 
-### File: `scripts\GlobalInteractionRouter.gd`
+### File: `scripts/GlobalInteractionRouter.gd`
 ```gdscript
 extends Node
 
@@ -27749,10 +28137,6 @@ func _ready() -> void:
 	# Connect to WindowManager closing signal to clear stale selections
 	if _window_manager.has_signal("window_closed"):
 		_window_manager.window_closed.connect(_on_window_closed)
-	
-	# Tutorial Lifecycle: re-evaluate hover state when tutorials are dismissed
-	if SignalBus.has_signal("tutorial_dismissed"):
-		SignalBus.tutorial_dismissed.connect(_on_tutorial_dismissed)
 
 
 func _exit_tree() -> void:
@@ -27808,7 +28192,7 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	# Drag Start: handled separately to initialize drag state
 	# ROBUSTNESS: Check both StringName and string to avoid type issues
 	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
-		print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
+		# print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
 		start_drag(context)
 		return
 
@@ -27826,12 +28210,13 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	command_queue = _generate_command_queue(context)
 	
 	if context.event_type != &"HOVER_ENTER" and context.event_type != &"HOVER_EXIT":
-		print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
-		print("DEBUG_GIR: Locked: ", _is_inspection_locked, " | LockedID: ", _locked_entity_view_id)
-		print("DEBUG_GIR: Selection: ", _current_selection != null)
-		print("DEBUG_GIR: Commands: ", command_queue.size())
-		for cmd in command_queue:
-			print("DEBUG_GIR: + CMD: ", cmd.cmd)
+		# print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
+		# print("DEBUG_GIR: Locked: ", _is_inspection_locked, " | LockedID: ", _locked_entity_view_id)
+		# print("DEBUG_GIR: Selection: ", _current_selection != null)
+		# print("DEBUG_GIR: Commands: ", command_queue.size())
+		# for cmd in command_queue:
+		# 	print("DEBUG_GIR: + CMD: ", cmd.cmd)
+		pass
 
 	# Execute the command queue
 	_execute_command_queue(command_queue)
@@ -27936,7 +28321,7 @@ func _on_window_closed(window: Control) -> void:
 	if is_instance_valid(sel_view) and is_instance_valid(window):
 		# check if selection is inside the closed window
 		if window == sel_view or window.is_ancestor_of(sel_view):
-			print("DEBUG_GIR: Selection invalidated by window close. Window=", window.get_class(), " Name=", window.name)
+			# print("DEBUG_GIR: Selection invalidated by window close. Window=", window.get_class(), " Name=", window.name)
 			_execute_deselect()
 
 ## Generate command queue based on interaction context and current state
@@ -28089,48 +28474,12 @@ func _handle_hover_exit(context: InteractionContext) -> void:
 	if _is_drag_active: return
 	# Respect suppression (brief L147, L329: do not close outside suppression guard)
 	if _is_close_suppressed_now(): return
-	
-	# Do not close if the game is paused (e.g., by a TutorialPopup) to prevent 
-	# the hover target from emitting a mouse_exited when the tree halts.
-	if get_tree().paused: return
 
 	# Close ONLY the topmost window — NOT all windows.
 	# The hover-opened inspection is always the top of _active_inspection_group.
 	# Using CLOSE_ALL would destroy parent windows (e.g., InventoryWindow) — brief L179.
 	if _window_manager:
 		_window_manager.close_top_contextual_window()
-
-func _on_tutorial_dismissed(_tutorial_id: StringName) -> void:
-	# Wait for the TutorialPopup to be fully removed and the tree to unpause
-	# This ensures engine-level mouse state and modal blockers are updated.
-	await get_tree().process_frame
-	
-	# RESOLUTION: Fix "Sticky Hover Windows" after tutorials
-	# If a hover-opened window is active (not locked) and the mouse moved 
-	# away while the game was paused by the tutorial, we should close it now.
-	if _hover_entity_view_id != -1 and not _is_inspection_locked:
-		var hover_view = _find_view_by_instance_id(_hover_entity_view_id)
-		if is_instance_valid(hover_view):
-			var mouse_pos = hover_view.get_global_mouse_position()
-			var rect = hover_view.get_global_rect()
-			
-			if not rect.has_point(mouse_pos):
-				# Mouse is no longer over the entity that triggered the hover window
-				print("[GIR] Closing sticky hover window after tutorial dismissal. Mouse was at: ", mouse_pos)
-				_hover_entity_view_id = -1
-				if _window_manager:
-					_window_manager.close_top_contextual_window()
-		else:
-			# If the view we were hovering is gone or invalid, close the window
-			_hover_entity_view_id = -1
-			if _window_manager:
-				_window_manager.close_top_contextual_window()
-	elif not _is_inspection_locked:
-		# Fail-safe: if we have no recorded hover ID but a window is open (not locked),
-		# it's likely a sticky window whose hover-exit was partially processed or missed.
-		if _window_manager:
-			# close_top_contextual_window internally handles the empty check
-			_window_manager.close_top_contextual_window()
 
 ## Handle interactions with GachaBall instances
 func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:
@@ -28857,7 +29206,7 @@ func get_drag_origin_context() -> InteractionContext:
 	return _drag_origin_context
 ```
 
-### File: `scripts\GrowableGridContainer.gd`
+### File: `scripts/GrowableGridContainer.gd`
 ```gdscript
 class_name GrowableGridContainer extends DataContainer
 
@@ -28953,7 +29302,7 @@ func _expand_container() -> void:
 		_free_list.append(i)
 ```
 
-### File: `scripts\HeroSelectButton.gd`
+### File: `scripts/HeroSelectButton.gd`
 ```gdscript
 # res://scripts/HeroSelectButton.gd
 class_name HeroSelectButton
@@ -29055,7 +29404,7 @@ func get_hero_def() -> GachaBallDefinition:
 	return _hero_def
 ```
 
-### File: `scripts\InputUtils.gd`
+### File: `scripts/InputUtils.gd`
 ```gdscript
 class_name InputUtils
 extends RefCounted
@@ -29107,7 +29456,7 @@ static func get_event_position(event: InputEvent) -> Vector2:
 	return Vector2.ZERO
 ```
 
-### File: `scripts\InspectionWindow.gd`
+### File: `scripts/InspectionWindow.gd`
 ```gdscript
 class_name InspectionWindow
 extends PanelContainer
@@ -29133,7 +29482,7 @@ func _position_root_window(source_view: Control) -> void:
 		set_global_position(position)
 ```
 
-### File: `scripts\InteractionContext.gd`
+### File: `scripts/InteractionContext.gd`
 ```gdscript
 @tool
 class_name InteractionContext extends Resource
@@ -29160,7 +29509,7 @@ class_name InteractionContext extends Resource
 @export var window_group_id: int = 0 
 ```
 
-### File: `scripts\InventoryManager.gd`
+### File: `scripts/InventoryManager.gd`
 ```gdscript
 # res://scripts/InventoryManager.gd
 extends Node
@@ -29179,92 +29528,6 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		GlobalInteractionRouter.end_drag(false)
 		return
 
-	# Early-case: Allow equipping items onto units even across functional groups
-	var early_source_instance = _get_instance_at_location(source_loc)
-	var early_target_instance = _get_instance_at_location(target_loc)
-	if is_instance_valid(early_source_instance) and is_instance_valid(early_target_instance):
-		var sdef = early_source_instance.get_definition()
-		var tdef = early_target_instance.get_definition()
-		
-		# Early-case: Consumable usage on a specific unit
-		if sdef.category == C.CATEGORY_CONSUMABLE and tdef.category == C.CATEGORY_UNIT:
-			# Allow consumables on both Player and Enemy units (regardless of test mode)
-			var allowed_consumable_containers = [&"PlayerLineup", &"PlayerBench", &"EnemyLineup"]
-			if target_loc.container in allowed_consumable_containers:
-				_use_consumable(early_source_instance, early_target_instance)
-				return
-		
-		# Rule I3: Allow equipping from InventoryGrid or BattleBoard (PlayerBench) onto a UNIT on the board
-		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		var allowed_containers = [&"PlayerLineup", &"PlayerBench"]
-		# In test mode, also allow equipping on enemy units
-		if GameManager.is_test_mode:
-			allowed_containers.append(&"EnemyLineup")
-		
-		# Items can be equipped from InventoryGrid OR BattleBoard (unified bench holds both units and items)
-		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard" or s_group == &"EquippedGrid"
-		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and is_valid_source and target_loc.container in allowed_containers:
-			# Use atomic equip API
-			var owner = _get_data_owner()
-			if is_instance_valid(owner):
-				owner.equip_item(early_source_instance.ball_uuid, early_target_instance.ball_uuid, -1)
-			GlobalInteractionRouter.end_drag(true)
-			SignalBus.emit_signal("inventory_action_completed", [early_target_instance.ball_uuid])
-			return
-
-	# Early-case: Allow equipping items by dropping onto an equipped_item slot (empty or same-unit slot)
-	if is_instance_valid(early_source_instance) and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var sdef2 = early_source_instance.get_definition()
-		if sdef2.category == &"ITEM":
-			var data_owner = _get_data_owner()
-			if is_instance_valid(data_owner):
-				var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
-				if is_instance_valid(parent_unit):
-					# If slot already occupied, fall through to swap/merge logic later
-					var slot_is_empty = true
-					if target_loc.index < parent_unit.equipped_item_uuids.size():
-						slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
-					
-					if slot_is_empty:
-						# Rule I3: Allow equipping into equipped_item from InventoryGrid or BattleBoard.
-						var s_group2 = GlobalInteractionRouter.get_context_group(source_loc.container)
-						var is_valid_source2 = s_group2 == &"InventoryGrid" or s_group2 == &"BattleBoard" or s_group2 == &"EquippedGrid"
-						if is_valid_source2:
-							# Use atomic equip with explicit slot
-							data_owner.equip_item(early_source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
-							GlobalInteractionRouter.end_drag(true)
-							SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
-							return
-
-	# TDD 4.3.IV: Check for invalid actions between incompatible contexts
-	var source_context_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-	var target_context_group = GlobalInteractionRouter.get_context_group(target_loc.container)
-	# SelectionOnly contexts (Shop/Rewards): all inventory actions are invalid by design.
-	# Cancel drag immediately so the original sprite reappears and nothing moves.
-	if source_context_group == &"SelectionOnly" or target_context_group == &"SelectionOnly":
-		SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-		GlobalInteractionRouter.end_drag(false)
-		return
-	
-	# If contexts are incompatible, this is an invalid action
-	if source_context_group != target_context_group:
-		# Exception: Allow InventoryGrid -> equipped_item (click-to-click equip)
-		if source_context_group == &"InventoryGrid" and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-			# Allowed exception; fall through to normal handling below
-			pass
-		else:
-			# Special case: Selection-Only contexts allow changing selection
-			if target_context_group == &"SelectionOnly":
-				# We shouldn't reach here, but if we do, it's invalid
-				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-				GlobalInteractionRouter.end_drag(false)
-				return
-			else:
-				# Incompatible contexts - invalid action
-				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
-				GlobalInteractionRouter.end_drag(false)
-				return
-	
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
 
@@ -29272,6 +29535,51 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		GlobalInteractionRouter.end_drag(false)
 		return
 
+	# Case 1: Same-slot drop (return to original position) - trigger bounce, no action
+	# Must be checked BEFORE merge to avoid self-merge edge cases
+	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
+		SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid])
+		# Return unhandled (false) so GIR unhides the source view immediately
+		GlobalInteractionRouter.end_drag(false)
+		return
+
+	var sdef = source_instance.get_definition()
+	var target_def = target_instance.get_definition() if is_instance_valid(target_instance) else null
+
+	# Case 2: Consumable usage on a specific unit
+	if sdef.category == C.CATEGORY_CONSUMABLE and is_instance_valid(target_instance):
+		if target_def.category == C.CATEGORY_UNIT:
+			_use_consumable(source_instance, target_instance)
+			return
+
+	# Case 3: Equipping an ITEM onto a UNIT directly
+	if sdef.category == &"ITEM" and is_instance_valid(target_instance):
+		if target_def.category == &"UNIT":
+			var owner = _get_data_owner()
+			if is_instance_valid(owner):
+				owner.equip_item(source_instance.ball_uuid, target_instance.ball_uuid, -1)
+			GlobalInteractionRouter.end_drag(true)
+			SignalBus.emit_signal("inventory_action_completed", [target_instance.ball_uuid])
+			return
+
+	# Case 4: Equipping an ITEM into a specific equipped_item slot
+	if sdef.category == &"ITEM" and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var data_owner = _get_data_owner()
+		if is_instance_valid(data_owner):
+			var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
+			if is_instance_valid(parent_unit):
+				# If slot already occupied, fall through to swap/merge logic later
+				var slot_is_empty = true
+				if target_loc.index < parent_unit.equipped_item_uuids.size():
+					slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
+				
+				if slot_is_empty:
+					data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+					GlobalInteractionRouter.end_drag(true)
+					SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
+					return
+
+	# Case 5: Target slot is empty, check for valid move
 	if not is_instance_valid(target_instance):
 		if is_valid_placement(source_instance, target_loc):
 			_move(source_loc, target_loc)
@@ -29282,22 +29590,11 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 			GlobalInteractionRouter.end_drag(false)
 		return
 
-	var source_def = source_instance.get_definition()
-	var target_def = target_instance.get_definition()
-
+	# Case 6: Possible Merge
 	var data_owner: Object = _get_data_owner()
 	if not is_instance_valid(data_owner): return
 	var all_instances_db = data_owner.get_all_instances()
 
-	# Case 3: Same-slot drop (return to original position) - trigger bounce, no action
-	# Must be checked BEFORE merge to avoid self-merge edge cases
-	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
-		SignalBus.emit_signal("inventory_action_completed", [source_instance.ball_uuid])
-		# Return unhandled (false) so GIR unhides the source view immediately
-		GlobalInteractionRouter.end_drag(false)
-		return
-
-	# Case 4: Possible Merge
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
 		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
@@ -29319,7 +29616,7 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		return
 
 
-	# Case 5: Possible Swap
+	# Case 7: Possible Swap
 	if is_valid_placement(source_instance, target_loc) and is_valid_placement(target_instance, source_loc):
 		_swap(source_loc, target_loc)
 		GlobalInteractionRouter.end_drag(true)
@@ -29425,17 +29722,14 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		SignalBus.emit_signal("inventory_action_completed", [target_unit.ball_uuid])
 
 		# 5. Resolve & Animate (Standard Pipeline)
-		# This async call processes the effect
-		await bm.resolve_management_effects_and_animate(snapshot)
+		# Pass off to the presentation/animation layer by emitting a signal
+		SignalBus.emit_signal("management_animation_requested", snapshot)
 		
 	else:
 		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
 		GlobalInteractionRouter.end_drag(false)
-
-		
-	# 6. Unblock UI (Refreshes Inventory Grid)
-	if bm.has_method("unblock_ui_updates"):
-		bm.unblock_ui_updates()
+		if bm.has_method("unblock_ui_updates"):
+			bm.unblock_ui_updates()
 
 func _use_consumable_simple(_consumable_instance: GachaBallInstance, _target_unit: GachaBallInstance) -> void:
 	# Fallback for non-battle state (rare)
@@ -29516,7 +29810,6 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 	SignalBus.emit_signal("selection_clear_requested")
 
 func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
-	var source_view = WindowManager.find_view_for_location(source_loc)
 	var target_view = WindowManager.find_view_for_location(target_loc)
 	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
 
@@ -29530,14 +29823,15 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
 
 	# --- MERGE ENCOUNTER LOGIC ---
-	if MergeManager.is_merge_encounter_active():
-		if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 5:
-			# Play rejection feedback
-			var RejectionFeedbackScript = load("res://scripts/vfx/RejectionFeedback.gd")
-			var main_node = GameManager._active_main_node
-			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-			RejectionFeedbackScript.play_rejection_with_counter(target_view, gold_group, get_tree())
-			return
+	var is_merge_encounter = MergeManager.is_merge_encounter_active()
+	var merge_encounter_cost = 0
+	if is_merge_encounter:
+		if is_instance_valid(GameManager.run_state):
+			merge_encounter_cost = GameManager.run_state.merge_encounter_cost
+			if GameManager.run_state.gold < merge_encounter_cost:
+				# Emit invalid action so the UI can play rejection feedback
+				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+				return
 
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if merge_result.is_empty():
@@ -29552,22 +29846,15 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	var all_parent_items: Array = merge_result.get("items_to_equip", [])
 	var parent_items_to_discard: Array = merge_result.get("items_to_discard", [])
 
-	# PREPARATION: Hide originals and show the result VFX ball at the merge site
-	# This ensures the user sees the result while coins are flying.
-	_set_unit_view_visible(source_view, false)
-	_set_unit_view_visible(target_view, false)
-	
-	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
-
 	# DATA MUTATION: Perform all backend changes immediately so they are batched into a single UI refresh
-	if MergeManager.is_merge_encounter_active() and is_instance_valid(GameManager.run_state):
-		GameManager.run_state.spend_gold(5)
+	if is_merge_encounter and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.spend_gold(merge_encounter_cost)
 		GameManager.run_state.unlock_recipe_for_result(result_def.id)
 
 	# Context-aware placement logic
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
-	var is_board_merge = target_loc.container.begins_with("Player")
+	var is_board_merge = target_loc.container == C.CONTAINER_PLAYER_LINEUP or target_loc.container == C.CONTAINER_PLAYER_BENCH
 	var placed_container: StringName = &""
 	var placed_index: int = -1
 
@@ -29612,27 +29899,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			else:
 				data_owner.remove_instance(discarded_item.ball_uuid)
 
-	# REFRESH: Wait for exactly one frame for the data changes to propagate to UI
-	# and for the VFX ball's layout to be ready for animation.
-	await get_tree().process_frame
-	
-	# BOUNCE: Satisfy "merged unit bounce animation should also happen when it first appears"
-	vfx_ball.play_landing_bounce()
-	
-	# HIDE: Ensure the real result unit (newly appeared in its slot) is hidden during the VFX sequence
-	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
-	var final_view = WindowManager.find_view_for_location(final_loc)
-	_set_unit_view_visible(final_view, false)
-
-	# AUDIO: Play merge sound
-	Audio.play_sfx("ui_merge")
-
-	# COINS: Animate gold if applicable
-	if MergeManager.is_merge_encounter_active():
-		await _animate_merge_gold_deduction(target_loc)
-
-	# Trigger management-phase on_merge abilities for battle-board merges only.
-	# This covers lineup/bench merges and same-unit equipped item merges on board.
+	# Calculate on_merge trigger context for Battle Animator
 	var should_trigger_on_merge: bool = false
 	var merge_container_tag: StringName = &""
 	if GameManager.is_in_battle:
@@ -29646,167 +29913,34 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			merge_container_tag = target_loc.container
 
 	var merge_team: String = _get_team_for_board_container(merge_container_tag)
+	
+	var merge_context: Dictionary = {
+		"merged_uuid": new_instance.ball_uuid,
+		"merged_team": merge_team,
+		"merge_container": merge_container_tag,
+		"merge_category": result_def.category
+	}
+	
+	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
+
+	# Emit animation sequence request
+	SignalBus.emit_signal("merge_animation_requested", {
+		"merged_uuid": new_instance.ball_uuid,
+		"source_loc": source_loc,
+		"target_loc": target_loc,
+		"final_loc": final_loc,
+		"start_pos": start_pos,
+		"new_instance": new_instance,
+		"is_merge_encounter": is_merge_encounter,
+		"merge_encounter_cost": merge_encounter_cost,
+		"should_trigger_on_merge": should_trigger_on_merge,
+		"merge_context": merge_context
+	})
 
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")
-	
-	# Transition: Wait for UI to refresh then perform arc toss
-	await get_tree().process_frame
-	
-	if is_instance_valid(final_view) and not start_pos.is_zero_approx():
-		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
-	else:
-		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-		SignalBus.emit_signal.call_deferred("inventory_action_completed", [new_instance.ball_uuid])
 
-	if should_trigger_on_merge:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			# Let queue_free/redraw settle so animator registers the latest merged views.
-			await get_tree().process_frame
-			var snapshot: Dictionary = bm.get_board_snapshot()
-			if bm.has_method("block_ui_updates"):
-				bm.block_ui_updates()
-			var merge_context: Dictionary = {
-				"merged_uuid": new_instance.ball_uuid,
-				"merged_team": merge_team,
-				"merge_container": merge_container_tag,
-				"merge_category": result_def.category
-			}
-			AbilityResolver.process_trigger(&"on_merge", merge_context)
-			var pending_count: int = 0
-			if bm.has_method("get_pending_reactions_size"):
-				pending_count = int(bm.get_pending_reactions_size())
-			else:
-				pending_count = int(bm._pending_reactions.size())
-			if pending_count > 0:
-				await bm.resolve_management_effects_and_animate(snapshot)
-			if bm.has_method("unblock_ui_updates"):
-				bm.unblock_ui_updates()
 
-func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
-	var target_view = WindowManager.find_view_for_location(target_loc)
-	if not is_instance_valid(target_view): return
-	
-	var end_pos = target_view.get_global_rect().get_center()
-	
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node): return
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group): return
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon): gold_icon = gold_group
-	var gold_rect = gold_icon.get_global_rect()
-	var start_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	
-	var GoldCoinVFXScript = load("res://scripts/vfx/GoldCoinVFX.gd")
-	var coins_to_spawn = 5
-	var stagger_delay = 0.08
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScript.new()
-		var effects_layer = WindowManager.get_vfx_layer()
-		effects_layer.add_child(coin_vfx)
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-		)
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-		
-	# Await completion (stagger + flight time)
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	await get_tree().create_timer(total_wait).timeout
-
-func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> GachaBallView:
-	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
-	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
-	var effects_layer = WindowManager.get_vfx_layer()
-	effects_layer.add_child(anim_ball)
-	
-	anim_ball.force_inventory_mode = true
-	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
-	# to ensure stat labels and icons are correctly positioned.
-	if anim_ball.has_method("set_size_scale"):
-		anim_ball.set_size_scale(1.0)
-	
-	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
-	anim_ball.size = Vector2(C.SLOT_SIZE_BASE, C.SLOT_SIZE_BASE)
-	
-	anim_ball.populate(null, visual_data, false)
-	anim_ball.set_is_interactive(false)
-	
-	var pivot = anim_ball.size / 2.0
-	anim_ball.global_position = global_pos - pivot
-	return anim_ball
-
-func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
-	if not is_instance_valid(slot_view): return
-	for child in slot_view.get_children():
-		if child is GachaBallView:
-			child.visible = is_visible
-			break
-
-func _animate_vfx_ball_toss(vfx_ball: GachaBallView, target_slot: Control, instance: GachaBallInstance) -> void:
-	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball): 
-		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-		return
-	
-	var start_pos = vfx_ball.global_position + (vfx_ball.size / 2.0)
-	var end_pos = target_slot.get_global_rect().get_center()
-	
-	# If start and end are too close, just trigger bounce and return
-	if start_pos.distance_to(end_pos) < 20.0:
-		vfx_ball.queue_free()
-		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
-		return
-		
-	# Hide the real ball view in the target slot
-	var real_ball_view: GachaBallView = null
-	for child in target_slot.get_children():
-		if child is GachaBallView:
-			real_ball_view = child
-			break
-	
-	if is_instance_valid(real_ball_view):
-		real_ball_view.visible = false
-		target_slot.visible = true
-
-	# Animate Arc (Kinematic Parabola)
-	var arc_height = clamp(start_pos.distance_to(end_pos) * 0.5, 80.0, 300.0)
-	var duration = 0.55
-	
-	var control_point = Vector2(
-		(start_pos.x + end_pos.x) / 2.0,
-		min(start_pos.y, end_pos.y) - arc_height
-	)
-	
-	var tween = vfx_ball.create_tween()
-	tween.set_trans(Tween.TRANS_LINEAR)
-	
-	Audio.play_sfx("unit_toss")
-	
-	var pivot = vfx_ball.size / 2.0
-	tween.tween_method(func(t: float):
-		if not is_instance_valid(vfx_ball): return
-		var eased_t = pow(t, 1.05)
-		var inv_t = 1.0 - eased_t
-		var pos = (inv_t * inv_t * start_pos) + \
-				  (2.0 * inv_t * eased_t * control_point) + \
-				  (eased_t * eased_t * end_pos)
-		vfx_ball.global_position = pos - pivot
-	, 0.0, 1.0, duration)
-	
-	await tween.finished
-	
-	# Cleanup
-	if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-	if is_instance_valid(real_ball_view):
-		real_ball_view.visible = true
-		real_ball_view.play_landing_bounce()
 	
 # --- Single-Responsibility Helpers ---
 
@@ -29965,7 +30099,7 @@ func _atomic_move_instance(instance: GachaBallInstance, from_loc: LocationIdenti
 		_validate_state_consistency()
 ```
 
-### File: `scripts\InventoryWindow.gd`
+### File: `scripts/InventoryWindow.gd`
 ```gdscript
 class_name InventoryWindow
 extends Control
@@ -30305,7 +30439,7 @@ func get_window_to_animate() -> Control:
 	return self
 ```
 
-### File: `scripts\ItemInspectionWindow.gd`
+### File: `scripts/ItemInspectionWindow.gd`
 ```gdscript
 class_name ItemInspectionWindow
 extends InspectionWindow
@@ -30471,7 +30605,11 @@ func _update_description_and_stats(item_def: Resource) -> void:
 			if not is_instance_valid(ability):
 				continue
 			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
+			if "name_key" in ability and ability_name == ability.name_key and ability.name_key.begins_with("ability."):
+				ability_name = ""
 			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
+			if "description_key" in ability and ability_desc == ability.description_key and ability.description_key.begins_with("ability."):
+				ability_desc = ""
 			if is_instance_valid(_instance):
 				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
@@ -30484,7 +30622,7 @@ func _update_description_and_stats(item_def: Resource) -> void:
 				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
 		abilities_block = "\n".join(abilities_lines)
 
-		if not base_desc.is_empty():
+		if not base_desc.is_empty() and abilities_block.is_empty():
 			full_text += base_desc
 		if not effect_desc.is_empty():
 			if not full_text.is_empty(): full_text += "\n"
@@ -30804,7 +30942,7 @@ func _trigger_trait_tutorial() -> void:
 	], self)
 ```
 
-### File: `scripts\Loadout.gd`
+### File: `scripts/Loadout.gd`
 ```gdscript
 # res://scripts/Loadout.gd
 extends Control
@@ -30850,6 +30988,7 @@ var _selected_deck_index: int = 0
 var _selected_hero_def: GachaBallDefinition = null
 var _selected_deck_meta: Dictionary = {}
 var deck_order_option: OptionButton # Deck order selection
+var deck_size_option: OptionButton # Deck size selection
 
 var _test_starters: Array[StringName] = []
 var _test_starters_label: Label
@@ -30881,6 +31020,21 @@ func _ready() -> void:
 	
 	order_container.add_child(order_label)
 	order_container.add_child(deck_order_option)
+	
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(20, 0)
+	order_container.add_child(spacer)
+	
+	var size_label = Label.new()
+	size_label.text = tr("ui.deck_size") if tr("ui.deck_size") != "ui.deck_size" else "Deck Size:"
+	
+	deck_size_option = OptionButton.new()
+	deck_size_option.add_item(tr("ui.deck_size.full") if tr("ui.deck_size.full") != "ui.deck_size.full" else "Full (complete deck)", 0)
+	deck_size_option.add_item(tr("ui.deck_size.half") if tr("ui.deck_size.half") != "ui.deck_size.half" else "Quick (half deck)", 1)
+	
+	order_container.add_child(size_label)
+	order_container.add_child(deck_size_option)
+	
 	deck_carousel.get_parent().add_child(order_container)
 	
 	# Create Test Starters UI
@@ -31280,12 +31434,17 @@ func _on_start_run_pressed() -> void:
 		elif deck_order_option.selected == 2:
 			order_str = "RANDOM"
 	
+	var size_str = "FULL"
+	if is_instance_valid(deck_size_option):
+		if deck_size_option.selected == 1:
+			size_str = "HALF"
+	
 	# Pass test starters
 	GameManager.test_starting_items = _test_starters.duplicate()
 	
 	# Ensure test mode is off for normal runs
 	GameManager.is_test_mode = false
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str, size_str)
 
 
 func _on_test_mode_pressed() -> void:
@@ -31303,6 +31462,11 @@ func _on_test_mode_pressed() -> void:
 		elif deck_order_option.selected == 2:
 			order_str = "RANDOM"
 	
+	var size_str = "FULL"
+	if is_instance_valid(deck_size_option):
+		if deck_size_option.selected == 1:
+			size_str = "HALF"
+	
 	# Pass test starters
 	GameManager.test_starting_items = _test_starters.duplicate()
 	
@@ -31310,10 +31474,10 @@ func _on_test_mode_pressed() -> void:
 	GameManager.is_test_mode = true
 	
 	# Trigger normal run start
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str)
+	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str, size_str)
 ```
 
-### File: `scripts\LocationIdentifier.gd`
+### File: `scripts/LocationIdentifier.gd`
 ```gdscript
 class_name LocationIdentifier
 extends Resource
@@ -31341,7 +31505,7 @@ func is_equal(other: LocationIdentifier) -> bool:
 	return container == other.container and index == other.index and unit_uuid == other.unit_uuid
 ```
 
-### File: `scripts\Main.gd`
+### File: `scripts/Main.gd`
 ```gdscript
 # res://scripts/Main.gd
 extends Control
@@ -31417,6 +31581,9 @@ var _reward_sell_zone: PanelContainer = null
 var _reward_collect_label: RichTextLabel = null
 var _reward_sell_label: RichTextLabel = null
 var _reward_drop_zones_visible: bool = false
+
+# Used to prevent overdrawing tokens while waiting for token toss animations to finish
+var _pending_tokens_spent: int = 0
 
 var _action_drop_zone_drag_context: InteractionContext = null
 var _action_instruction_overlay: PanelContainer = null
@@ -31646,7 +31813,7 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
 		var current_tokens: int = bm.get_gacha_tokens()
-		if current_tokens < tier:
+		if current_tokens - _pending_tokens_spent < tier:
 			# Insufficient tokens - play rejection feedback on machine and token counter
 			var target_machine: Control = null
 			match tier:
@@ -31658,15 +31825,17 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
 			return
 	
-	# TDD Safeguard: Disable button immediately on press.
-	button.disabled = true
 	# Ensure UI focus doesn't interfere
 	button.release_focus()
 	
-	# Animate knob rotation
+	# Animate knob rotation (reset first to allow rapid clicks)
+	button.rotation_degrees = 0.0
 	var knob_tween = create_tween()
 	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
+	
+	# We've committed to this draw. Increment pending tokens.
+	_pending_tokens_spent += tier
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
@@ -31688,8 +31857,6 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	# Get token counter position (source)
 	var token_group = get_node_or_null("%TokenGroup")
 	if not is_instance_valid(token_group):
-		# No animation, just draw
-		SignalBus.emit_signal("draw_gacha_requested", tier)
 		return
 	
 	var token_rect = token_group.get_global_rect()
@@ -31707,6 +31874,7 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	if not is_instance_valid(target_machine):
 		SignalBus.emit_signal("draw_gacha_requested", tier)
+		_pending_tokens_spent -= tier
 		return
 	
 	var machine_rect = target_machine.get_global_rect()
@@ -31721,7 +31889,10 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	for i in range(tokens_to_spawn):
 		var token_vfx = TokenSpendScene.instantiate()
-		add_child(token_vfx)
+		if WindowManager.has_method("get_vfx_layer"):
+			WindowManager.get_vfx_layer().add_child(token_vfx)
+		else:
+			add_child(token_vfx)
 		
 		# Connect to coin_landed to trigger machine reaction
 		token_vfx.coin_landed.connect(_on_coin_landed_on_machine.bind(target_machine))
@@ -31740,6 +31911,9 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
+	
+	# Decrement pending tokens since the draw is now officially requested
+	_pending_tokens_spent -= tier
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""
@@ -32005,6 +32179,9 @@ func _populate_flashcard_progress() -> void:
 	
 	# Create a rectangle for each card in main deck order
 	var boss_thresholds = [0.2, 0.4, 0.6, 0.8, 1.0]
+	if GameManager.run_state.is_half_deck:
+		boss_thresholds = [0.3333, 0.6666, 1.0]
+		
 	var boss_indices = []
 	for t in boss_thresholds:
 		var idx = clampi(ceil(main_deck_cards.size() * t) - 1, 0, main_deck_cards.size() - 1)
@@ -32771,7 +32948,235 @@ func get_reward_sell_zone() -> Control:
 	return _reward_sell_zone
 ```
 
-### File: `scripts\MergeEncounter.gd`
+### File: `scripts/MergeAnimator.gd`
+```gdscript
+extends Node
+
+## Handles visual animations and VFX sequencing for merge operations.
+## Listens to the `merge_animation_requested` signal and decouples presentation
+## from the data logic in InventoryManager.
+
+func _ready() -> void:
+	SignalBus.merge_animation_requested.connect(_on_merge_animation_requested)
+
+func _on_merge_animation_requested(context: Dictionary) -> void:
+	# Extract context
+	var merged_uuid: String = context.get("merged_uuid", "")
+	var source_loc: LocationIdentifier = context.get("source_loc")
+	var target_loc: LocationIdentifier = context.get("target_loc")
+	var final_loc: LocationIdentifier = context.get("final_loc")
+	var new_instance: GachaBallInstance = context.get("new_instance")
+	var is_merge_encounter: bool = context.get("is_merge_encounter", false)
+	var merge_encounter_cost: int = context.get("merge_encounter_cost", 0)
+	var should_trigger_on_merge: bool = context.get("should_trigger_on_merge", false)
+	var merge_context: Dictionary = context.get("merge_context", {})
+
+	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc) or not is_instance_valid(new_instance):
+		return
+
+	# Locate views
+	var source_view = WindowManager.find_view_for_location(source_loc)
+	var target_view = WindowManager.find_view_for_location(target_loc)
+	var final_view = WindowManager.find_view_for_location(final_loc)
+	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
+
+	# Hide ingredients
+	_set_unit_view_visible(source_view, false)
+	_set_unit_view_visible(target_view, false)
+
+	# Wait for the tree to process frame so the new final_view is actually ready/instantiated
+	await get_tree().process_frame
+
+	# Ensure we have the latest final_view in case it was created during the frame
+	if not is_instance_valid(final_view):
+		final_view = WindowManager.find_view_for_location(final_loc)
+
+	# Hide the real result unit so we can animate the VFX ball
+	_set_unit_view_visible(final_view, false)
+
+	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
+	if is_instance_valid(vfx_ball):
+		vfx_ball.play_landing_bounce()
+
+	Audio.play_sfx("ui_merge")
+
+	if is_merge_encounter and merge_encounter_cost > 0:
+		await _animate_merge_gold_deduction(target_loc)
+		
+	# Wait for UI to completely refresh before arc toss
+	await get_tree().process_frame
+
+	if is_instance_valid(final_view) and not start_pos.is_zero_approx():
+		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
+	else:
+		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		# Use call_deferred to be safe
+		SignalBus.emit_signal.call_deferred("inventory_action_completed", [merged_uuid])
+
+	# Trigger on_merge AFTER the animation completes
+	if should_trigger_on_merge:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm):
+			# Let queue_free/redraw settle so animator registers the latest merged views.
+			await get_tree().process_frame
+			var snapshot: Dictionary = bm.get_board_snapshot()
+			if bm.has_method("block_ui_updates"):
+				bm.block_ui_updates()
+				
+			AbilityResolver.process_trigger(&"on_merge", merge_context)
+			
+			var pending_count: int = 0
+			if bm.has_method("get_pending_reactions_size"):
+				pending_count = int(bm.get_pending_reactions_size())
+			else:
+				pending_count = int(bm._pending_reactions.size())
+				
+			if pending_count > 0:
+				await bm.resolve_management_effects_and_animate(snapshot)
+				
+			if bm.has_method("unblock_ui_updates"):
+				bm.unblock_ui_updates()
+
+func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Control:
+	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
+	var visual_data = VisualDataAdapter.create_visual_data(instance)
+	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
+	var effects_layer = WindowManager.get_vfx_layer()
+	effects_layer.add_child(anim_ball)
+	
+	anim_ball.force_inventory_mode = true
+	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
+	# to ensure stat labels and icons are correctly positioned.
+	if anim_ball.has_method("set_size_scale"):
+		anim_ball.set_size_scale(1.0)
+	
+	anim_ball.custom_minimum_size = Vector2(192.0, 192.0) # C.SLOT_SIZE_BASE is 192
+	anim_ball.size = Vector2(192.0, 192.0)
+	
+	anim_ball.populate(null, visual_data, false)
+	anim_ball.set_is_interactive(false)
+	
+	var pivot = anim_ball.size / 2.0
+	anim_ball.global_position = global_pos - pivot
+	return anim_ball
+
+func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
+	if not is_instance_valid(slot_view): return
+	for child in slot_view.get_children():
+		if "GachaBallView" in child.name or child.has_method("populate"):
+			child.visible = is_visible
+			break
+
+func _animate_vfx_ball_toss(vfx_ball: Control, target_slot: Control, instance: GachaBallInstance) -> void:
+	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball): 
+		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		return
+	
+	var start_pos = vfx_ball.global_position + (vfx_ball.size / 2.0)
+	var end_pos = target_slot.get_global_rect().get_center()
+	
+	# If start and end are too close, just trigger bounce and return
+	if start_pos.distance_to(end_pos) < 20.0:
+		vfx_ball.queue_free()
+		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+		return
+		
+	# Hide the real ball view in the target slot
+	var real_ball_view: Control = null
+	for child in target_slot.get_children():
+		if "GachaBallView" in child.name or child.has_method("play_landing_bounce"):
+			real_ball_view = child
+			break
+	
+	if is_instance_valid(real_ball_view):
+		real_ball_view.visible = false
+		target_slot.visible = true
+
+	# Animate Arc (Kinematic Parabola)
+	var arc_height = clamp(start_pos.distance_to(end_pos) * 0.5, 80.0, 300.0)
+	var duration = 0.55
+	
+	var control_point = Vector2(
+		(start_pos.x + end_pos.x) / 2.0,
+		min(start_pos.y, end_pos.y) - arc_height
+	)
+	
+	var tween = vfx_ball.create_tween()
+	tween.set_trans(Tween.TRANS_LINEAR)
+	
+	var Audio = get_node_or_null("/root/Audio")
+	if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
+		Audio.play_sfx("unit_toss")
+	
+	var pivot = vfx_ball.size / 2.0
+	tween.tween_method(func(t: float):
+		if not is_instance_valid(vfx_ball): return
+		var eased_t = pow(t, 1.05)
+		var inv_t = 1.0 - eased_t
+		var pos = (inv_t * inv_t * start_pos) + \
+				  (2.0 * inv_t * eased_t * control_point) + \
+				  (eased_t * eased_t * end_pos)
+		vfx_ball.global_position = pos - pivot
+	, 0.0, 1.0, duration)
+	
+	await tween.finished
+	
+	# Cleanup
+	if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+	if is_instance_valid(real_ball_view):
+		real_ball_view.visible = true
+		if real_ball_view.has_method("play_landing_bounce"):
+			real_ball_view.play_landing_bounce()
+			
+	SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+
+func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
+	var target_view = WindowManager.find_view_for_location(target_loc)
+	if not is_instance_valid(target_view): return
+	
+	var end_pos = target_view.get_global_rect().get_center()
+	
+	var GameManager = get_node_or_null("/root/GameManager")
+	var main_node = GameManager._active_main_node if is_instance_valid(GameManager) else null
+	if not is_instance_valid(main_node): return
+	
+	var gold_group = main_node.get_node_or_null("%GoldGroup")
+	if not is_instance_valid(gold_group): return
+	var gold_icon = gold_group.get_node_or_null("GoldIcon")
+	if not is_instance_valid(gold_icon): gold_icon = gold_group
+	var gold_rect = gold_icon.get_global_rect()
+	var start_pos = Vector2(
+		gold_rect.position.x + gold_rect.size.x / 2,
+		gold_rect.position.y + gold_rect.size.y / 2
+	)
+	
+	var GoldCoinVFXScript = load("res://scripts/vfx/GoldCoinVFX.gd")
+	if not GoldCoinVFXScript: return
+	
+	var coins_to_spawn = 5
+	var stagger_delay = 0.08
+	
+	var Audio = get_node_or_null("/root/Audio")
+	
+	for i in range(coins_to_spawn):
+		var coin_vfx = GoldCoinVFXScript.new()
+		var effects_layer = WindowManager.get_vfx_layer()
+		effects_layer.add_child(coin_vfx)
+		coin_vfx.coin_landed.connect(func(_pos: Vector2):
+			if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
+				Audio.play_sfx("coin_land")
+		)
+		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
+		if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
+			Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+		
+	# Await completion (stagger + flight time)
+	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
+	await get_tree().create_timer(total_wait).timeout
+```
+
+### File: `scripts/MergeEncounter.gd`
 ```gdscript
 # res://scripts/MergeEncounter.gd
 extends Control
@@ -32780,6 +33185,7 @@ extends Control
 ## Merging here bypasses recipe locks and unlocks the recipe for the run.
 
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var leave_button: Button = %LeaveButton
 
@@ -32814,13 +33220,22 @@ func _process(_delta: float) -> void:
 		if is_instance_valid(main_node):
 			if is_open:
 				if main_node.has_method("show_action_instruction"):
-					main_node.show_action_instruction(tr("ui.merge_encounter_instruction"))
+					var cost = 5
+					if is_instance_valid(GameManager.run_state):
+						cost = GameManager.run_state.merge_encounter_cost
+					main_node.show_action_instruction(tr("ui.merge_encounter_instruction").format({"cost": str(cost)}))
 			else:
 				if main_node.has_method("hide_action_instruction"):
 					main_node.hide_action_instruction()
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.merge_encounter_title")
+	
+	var cost = 5
+	if is_instance_valid(GameManager.run_state):
+		cost = GameManager.run_state.merge_encounter_cost
+	description_label.text = tr("ui.merge_encounter_description").format({"cost": str(cost)})
+	
 	open_inventory_button.text = tr("ui.merge_encounter_open_inventory")
 	leave_button.text = tr("ui.leave")
 
@@ -32840,7 +33255,7 @@ func _on_leave_pressed() -> void:
 	queue_free()
 ```
 
-### File: `scripts\MergeManager.gd`
+### File: `scripts/MergeManager.gd`
 ```gdscript
 # res://scripts/MergeManager.gd
 extends Node
@@ -33094,7 +33509,7 @@ func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Diction
 	return calculate_merge_result(instance, template_instance, instance.get_location(), instance.get_location(), all_instances_db)
 ```
 
-### File: `scripts\MergeRecipe.gd`
+### File: `scripts/MergeRecipe.gd`
 ```gdscript
 # res://scripts/MergeRecipe.gd
 @tool
@@ -33122,7 +33537,7 @@ extends Resource
 @export var merge_type: StringName
 ```
 
-### File: `scripts\NodeView.gd`
+### File: `scripts/NodeView.gd`
 ```gdscript
 extends TextureButton
 class_name NodeView
@@ -33430,7 +33845,7 @@ func _process(delta: float) -> void:
 	scale = Vector2(final_scale * stretch_x, final_scale * stretch_y)
 ```
 
-### File: `scripts\OptionsWindow.gd`
+### File: `scripts/OptionsWindow.gd`
 ```gdscript
 # res://scripts/OptionsWindow.gd
 extends Control
@@ -33666,7 +34081,7 @@ func populate(_context: Dictionary = {}) -> void:
 	pass
 ```
 
-### File: `scripts\PathChoice.gd`
+### File: `scripts/PathChoice.gd`
 ```gdscript
 # res://scripts/PathChoice.gd
 extends Control
@@ -33694,7 +34109,7 @@ func _ready() -> void:
 	
 	if is_instance_valid(GameManager.run_state):
 		if GameManager.loading_from_save:
-			print("[PathChoice] Loading from save, skipping day advance. Current Day: ", GameManager.run_state.day)
+			# print("[PathChoice] Loading from save, skipping day advance. Current Day: ", GameManager.run_state.day)
 			GameManager.loading_from_save = false
 		else:
 			GameManager.run_state.advance_day(1)
@@ -33703,12 +34118,21 @@ func _ready() -> void:
 	
 	_update_director_run_state(DirectorRunState.Purpose.NODE_GENERATION)
 	
-	# Check for boss based on deck unlock percentage (every 20%: 20%, 40%, 60%, 80%, 100%)
+	var is_half_deck = false
+	if is_instance_valid(GameManager.run_state):
+		is_half_deck = GameManager.run_state.is_half_deck
+		
+	# Check for boss based on deck unlock percentage
 	var boss_level: int = GameManager.run_state.bosses_defeated + 1
 	var threshold: float = boss_level * 0.2
+	var max_bosses: int = 5
+	
+	if is_half_deck:
+		threshold = boss_level * 0.3333
+		max_bosses = 3
 	
 	# Use a small epsilon to handle float precision issues
-	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= 5:
+	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= max_bosses:
 		_setup_boss_node(boss_level)
 	else:
 		_setup_normal_nodes()
@@ -33755,7 +34179,11 @@ func _setup_normal_nodes() -> void:
 		if t.type == "BATTLE" and t.subtype == "":
 			base_w = 100
 		elif t.type == "BATTLE" and t.subtype == "ELITE":
-			if current_day < 5:
+			var is_half = false
+			if is_instance_valid(GameManager.run_state):
+				is_half = GameManager.run_state.is_half_deck
+			var elite_day_threshold = 3 if is_half else 5
+			if current_day < elite_day_threshold:
 				base_w = 20
 			else:
 				base_w = 80
@@ -33772,7 +34200,7 @@ func _setup_normal_nodes() -> void:
 		var days_since = current_day - last_offered
 		var final_weight = base_w + (days_since * 20)
 		
-		print("[PathChoice] Generated weight for ", dict_key, " -> Base: ", base_w, " Pity: ", days_since * 20, " Final: ", final_weight)
+		# print("[PathChoice] Generated weight for ", dict_key, " -> Base: ", base_w, " Pity: ", days_since * 20, " Final: ", final_weight)
 		
 		var def = PathNodeDefinition.new()
 		def.node_type = t.type
@@ -33824,7 +34252,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	SignalBus.emit_signal("node_selected", node_def)
 ```
 
-### File: `scripts\PathNodeDefinition.gd`
+### File: `scripts/PathNodeDefinition.gd`
 ```gdscript
 @tool
 class_name PathNodeDefinition
@@ -33869,7 +34297,7 @@ func meets_prerequisites(state) -> bool:
 @export var difficulty: int = 1
 ```
 
-### File: `scripts\PhysicsGachaBall.gd`
+### File: `scripts/PhysicsGachaBall.gd`
 ```gdscript
 class_name PhysicsGachaBall
 extends RigidBody2D
@@ -34135,7 +34563,7 @@ func _play_impact_sound(pitch: float, volume: float) -> void:
 	impact_audio.play()
 ```
 
-### File: `scripts\PhysicsTierContainer.gd`
+### File: `scripts/PhysicsTierContainer.gd`
 ```gdscript
 class_name PhysicsTierContainer
 extends Control
@@ -34475,7 +34903,7 @@ func finish_open() -> void:
 			.set_ease(Tween.EASE_OUT)
 ```
 
-### File: `scripts\resources\AbilityComponent.gd`
+### File: `scripts/resources/AbilityComponent.gd`
 ```gdscript
 class_name AbilityComponent
 extends GachaBallComponent
@@ -34537,7 +34965,7 @@ func _resolve_ability_definitions() -> void:
 			ability_definitions.append(ability_def)
 ```
 
-### File: `scripts\resources\GachaBallComponent.gd`
+### File: `scripts/resources/GachaBallComponent.gd`
 ```gdscript
 class_name GachaBallComponent
 extends Resource
@@ -34614,7 +35042,7 @@ static func from_save_dict(data: Dictionary) -> GachaBallComponent:
 	return component
 ```
 
-### File: `scripts\resources\StatComponent.gd`
+### File: `scripts/resources/StatComponent.gd`
 ```gdscript
 class_name StatComponent
 extends GachaBallComponent
@@ -34639,7 +35067,7 @@ func load_component_save_dict(data: Dictionary) -> void:
 	mirrors_legacy_base_modifier = bool(data.get("mirrors_legacy_base_modifier", false))
 ```
 
-### File: `scripts\resources\TagComponent.gd`
+### File: `scripts/resources/TagComponent.gd`
 ```gdscript
 class_name TagComponent
 extends GachaBallComponent
@@ -34681,7 +35109,7 @@ func _deserialize_string_names(values: Array) -> Array[StringName]:
 	return result
 ```
 
-### File: `scripts\resources\VisualComponent.gd`
+### File: `scripts/resources/VisualComponent.gd`
 ```gdscript
 class_name VisualComponent
 extends GachaBallComponent
@@ -34733,7 +35161,7 @@ func _resolve_resources() -> void:
 		vfx_scene = load(vfx_scene_path)
 ```
 
-### File: `scripts\RestSite.gd`
+### File: `scripts/RestSite.gd`
 ```gdscript
 # res://scripts/RestSite.gd
 extends Control
@@ -34767,6 +35195,7 @@ enum SiteType { HP, PWR, GOLD }
 @onready var prize_lineup: HBoxContainer = %PrizeLineup
 @onready var hero_slot: Control = %HeroSlot
 @onready var title_label: Label = $VBoxContainer/TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var effects_layer: CanvasLayer = $EffectsLayer
 
 # Token costs
@@ -34774,12 +35203,11 @@ const COST_TIER1: int = 1
 const COST_TIER2: int = 2
 const COST_TIER3: int = 3
 
-const STUDY_COST_GOLD: int = 5
-
 # State
 var _tokens: int = 0
 var _prizes: Array[Dictionary] = [] # [{slot_index, stat_type, hp_value, pwr_value, gold_value}]
-var _has_studied: bool = false # Study button only works once per rest site
+var _has_studied: bool = false
+var _action_in_progress: bool = false
 
 func _ready() -> void:
 	# AUDIO HOOK: Rest Site BGM
@@ -34816,33 +35244,24 @@ func setup_site() -> void:
 	"""Call this after setting site_type to correctly initialize visuals and tutorials"""
 	_update_localized_text()
 	_setup_machine_visuals()
-	
-	# Show site-specific tutorial
-	var tutorial_key = "rest_site_intro"
-	var tutorial_text = "tutorial.rest_site"
-	
-	match site_type:
-		SiteType.PWR:
-			tutorial_key = "training_grounds_intro"
-			tutorial_text = "tutorial.training_grounds"
-		SiteType.GOLD:
-			tutorial_key = "gambling_den_intro"
-			tutorial_text = "tutorial.gambling_den"
-			
-	TutorialManager.show_tutorial(tutorial_key, [
-		{"text": tr(tutorial_text)}
-	])
 
 func _update_localized_text() -> void:
+	var cost = 5
+	if is_instance_valid(GameManager.run_state):
+		cost = GameManager.run_state.get_tokens_cost
+
 	match site_type:
 		SiteType.HP:
 			title_label.text = tr("ui.rest_site")
+			description_label.text = tr("ui.rest_site_desc")
 		SiteType.PWR:
 			title_label.text = tr("ui.training_grounds")
+			description_label.text = tr("ui.training_grounds_desc")
 		SiteType.GOLD:
 			title_label.text = tr("ui.gambling_den")
+			description_label.text = tr("ui.gambling_den_desc")
 	
-	study_button.text = tr("ui.study")
+	study_button.text = tr("ui.rest_study") % cost
 	leave_button.text = tr("ui.leave")
 
 func _setup_machine_visuals() -> void:
@@ -34922,29 +35341,11 @@ func _setup_prize_slot_clicks() -> void:
 # --- Token System ---
 
 func _on_study_pressed() -> void:
-	"""Open flashcard minigame to earn tokens - only once per rest site"""
-	if _has_studied:
-		return
-	
-	var main_node = GameManager._active_main_node
-	var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-	
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < STUDY_COST_GOLD:
-		RejectionFeedbackScript.play_rejection_with_counter(study_button, gold_group, get_tree())
-		return
-	
+	if _has_studied or _action_in_progress: return
 	_has_studied = true
 	study_button.disabled = true
-	
-	var target_pos = study_button.get_global_rect().get_center()
-	
-	_animate_gold_spend(STUDY_COST_GOLD, target_pos, func():
-		if is_instance_valid(GameManager.run_state) and GameManager.run_state.spend_gold(STUDY_COST_GOLD):
-			FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
-		else:
-			_has_studied = false
-			study_button.disabled = false
-	)
+	if is_instance_valid(GameManager.run_state):
+		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 func _on_live_token_earned(amount: int) -> void:
 	"""Called when a token lands during flashcard minigame animation"""
@@ -35075,6 +35476,7 @@ func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictiona
 	var anim_ball = GachaBallViewScene.instantiate()
 	effects_layer.add_child(anim_ball)
 	anim_ball.force_inventory_mode = true
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(128, 128)
 	anim_ball.size = Vector2(128, 128)
 	anim_ball.populate(null, _create_prize_visual_data(prize_data))
@@ -35300,7 +35702,7 @@ func _is_timekeeper_hero() -> bool:
 	return GameManager.run_state.hero_instance.get_definition().id == &"hero_timekeeper"
 ```
 
-### File: `scripts\ResultsPopup.gd`
+### File: `scripts/ResultsPopup.gd`
 ```gdscript
 # res://scripts/ResultsPopup.gd
 extends Control
@@ -35344,7 +35746,7 @@ func get_window_to_animate() -> Control:
 	return $CenterContainer/PanelContainer
 ```
 
-### File: `scripts\Reward.gd`
+### File: `scripts/Reward.gd`
 ```gdscript
 extends Control
 
@@ -35360,7 +35762,8 @@ const COST_TIER1: int = 1
 const COST_TIER2: int = 2
 const COST_TIER3: int = 3
 
-@onready var title_label: Control = %StudyButton
+@onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var prize_lineup: HBoxContainer = %PrizeLineup
 @onready var study_button: Button = %StudyButton
 @onready var leave_button: Button = %LeaveButton
@@ -35468,6 +35871,10 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 		button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
 
 func _update_localized_text() -> void:
+	if is_instance_valid(title_label):
+		title_label.text = tr("ui.rewards_title")
+	if is_instance_valid(description_label):
+		description_label.text = tr("ui.reward_desc")
 	
 	study_button.text = tr("ui.study")
 	leave_button.text = tr("ui.leave")
@@ -35578,6 +35985,8 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		if _trinity_t1_drawn and _trinity_t2_drawn and _trinity_t3_drawn:
 			_trinity_rewarded = true
 			_tokens += 1
+			if is_instance_valid(GameManager.run_state):
+				GameManager.run_state.total_tokens_earned += 1
 			_update_token_display()
 			_animate_trinity_token_gain()
 	
@@ -35704,6 +36113,7 @@ func _animate_prize_draw(machine: Control, slot_index: int, instance: GachaBallI
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, VisualDataAdapter.create_visual_data(instance))
@@ -35732,8 +36142,6 @@ func _populate_prize_slot(slot_index: int, instance: GachaBallInstance) -> void:
 func _clear_prize_slot(slot_index: int) -> void:
 	if _prizes[slot_index] != null:
 		var uuid = _prizes[slot_index].ball_uuid
-		GameManager._temporary_reward_master_dict.erase(uuid)
-		GameManager._temporary_reward_container.set_uuid(slot_index, "")
 		
 	_prizes[slot_index] = null
 	var slot = prize_lineup.get_child(slot_index)
@@ -35807,17 +36215,12 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
 	if tier != -1:
-		# Important: Add the instance to the RunState temporarily or emit the signal that usually adds it
-		if is_instance_valid(GameManager.run_state):
-			GameManager.run_state.add_instance(instance, &"RunInventoryT%d" % tier, -1)
-			GameManager.run_state.unlock_recipe_for_result(def.id)
 		await _animate_gachaball_to_machine(start_pos, visual_data, tier)
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		_action_in_progress = false
 	else:
-		if is_instance_valid(GameManager.run_state):
-			GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-			GameManager.run_state.unlock_recipe_for_result(def.id)
 		await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
+		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		_action_in_progress = false
 
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
@@ -35855,8 +36258,7 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 			start_pos = mouse_pos
 	
 	await _animate_gold_receive(gold_yield, start_pos)
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.add_gold(gold_yield)
+	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": gold_yield})
 	_action_in_progress = false
 
 func _get_slot_global_center(index: int) -> Vector2:
@@ -35907,6 +36309,7 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, visual_data)
@@ -35965,6 +36368,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	anim_ball.z_index = 100
 	anim_ball.force_inventory_mode = true
 	# Use 1.0 scale (96x96) to match the inventory standard
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
 	anim_ball.populate(null, visual_data)
@@ -36063,15 +36467,11 @@ func _on_leave_pressed() -> void:
 			_clear_prize_slot(i)
 			
 			if tier != -1:
-				if is_instance_valid(GameManager.run_state):
-					GameManager.run_state.add_instance(instance, &"RunInventoryT%d" % tier, -1)
-					GameManager.run_state.unlock_recipe_for_result(def.id)
 				await _animate_gachaball_to_machine(start_pos, visual_data, tier)
+				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 			else:
-				if is_instance_valid(GameManager.run_state):
-					GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-					GameManager.run_state.unlock_recipe_for_result(def.id)
 				await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
+				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
@@ -36095,7 +36495,7 @@ func populate(context: Dictionary) -> void:
 	pass
 ```
 
-### File: `scripts\RewardDefinition.gd`
+### File: `scripts/RewardDefinition.gd`
 ```gdscript
 @tool
 class_name RewardDefinition extends Resource
@@ -36119,7 +36519,7 @@ class_name RewardDefinition extends Resource
 @export var max_tier: int = 3 
 ```
 
-### File: `scripts\RewardElite.gd`
+### File: `scripts/RewardElite.gd`
 ```gdscript
 # res://scripts/RewardElite.gd
 extends Control
@@ -36217,8 +36617,7 @@ func populate(context: Dictionary) -> void:
 	_reward_instances = context.get("reward_instances", [])
 	_original_reward_instances = _reward_instances.duplicate()
 	
-	# HARDCODE FIX: Elite rewards ALWAYS give 10 gold.
-	_gold_amount = 10 
+	_gold_amount = context.get("gold_amount", 10)
 	
 	_update_localized_text()
 	
@@ -36348,9 +36747,7 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
 	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot)
 	
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.add_instance(instance, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
-		GameManager.run_state.unlock_recipe_for_result(instance.get_definition().id)
+	SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance.ball_uuid})
 	
 	_complete_choice()
 	_action_in_progress = false
@@ -36383,8 +36780,7 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	
 	await _animate_gold_receive(_gold_amount, vfx_start_pos)
 	
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.add_gold(_gold_amount)
+	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
 	
 	_complete_choice()
 	_action_in_progress = false
@@ -36463,7 +36859,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	WindowManager.get_vfx_layer().add_child(anim_ball)
 	
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	
 	anim_ball.top_level = true
 	anim_ball.z_index = 100
@@ -36517,7 +36913,7 @@ func _get_absolute_screen_pos(pos: Vector2, vp: Viewport = null) -> Vector2:
 	return vp.get_screen_transform() * (vp.get_canvas_transform() * pos) if is_instance_valid(vp) else pos
 ```
 
-### File: `scripts\RunCompletePopup.gd`
+### File: `scripts/RunCompletePopup.gd`
 ```gdscript
 # res://scripts/RunCompletePopup.gd
 extends Control
@@ -36539,6 +36935,17 @@ func populate(context: Dictionary) -> void:
 	var enemies: int = context.get("enemies_defeated", 0)
 	var gold_earned: int = context.get("gold_earned", 0)
 	
+	var flashcard_progress: Dictionary = context.get("flashcard_progress", {})
+	var mastery_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+	var mastered_total = 0
+	for card_id in flashcard_progress:
+		var prog = flashcard_progress[card_id]
+		var level = prog.mastery_level
+		if level >= 1 and level <= 5:
+			mastery_counts[level] += 1
+			if level > 1:
+				mastered_total += 1
+				
 	stats_label.text = """[center][b]%s[/b]
 
 %s
@@ -36548,14 +36955,31 @@ func populate(context: Dictionary) -> void:
 %s: %d
 %s: %d
 %s: %d
+%s: %d
+%s: %d
+%s: %d
+
+[b]%s[/b]
+%s: %d
+%s: %d
+%s: %d
+%s: %d
 %s: %d[/center]""" % [
 		tr("ui.congratulations"),
-		tr("ui.run_complete_message"),
+		tr("ui.run_complete_message") % bosses,
 		tr("ui.final_statistics"),
 		tr("ui.days_survived"), days,
 		tr("ui.bosses_defeated"), bosses,
+		tr("ui.elites_defeated"), context.get("elites_defeated", 0),
 		tr("ui.enemies_slain"), enemies,
-		tr("ui.gold_earned"), gold_earned
+		tr("ui.gold_earned"), gold_earned,
+		tr("ui.tokens_earned"), context.get("tokens_earned", 0),
+		tr("ui.mastery_breakdown"),
+		tr("ui.flashcards_mastered"), mastered_total,
+		tr("ui.mastery_level_2"), mastery_counts[2],
+		tr("ui.mastery_level_3"), mastery_counts[3],
+		tr("ui.mastery_level_4"), mastery_counts[4],
+		tr("ui.mastery_level_5"), mastery_counts[5]
 	]
 
 func _on_return_button_pressed() -> void:
@@ -36568,7 +36992,7 @@ func get_window_to_animate() -> Control:
 	return $CenterContainer/PanelContainer
 ```
 
-### File: `scripts\RunState.gd`
+### File: `scripts/RunState.gd`
 ```gdscript
 class_name RunState
 extends Resource
@@ -36584,7 +37008,10 @@ extends Resource
 @export var elites_defeated: int = 0
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
+@export var total_tokens_earned: int = 0
 @export var black_market_remove_cost: int = 5
+@export var merge_encounter_cost: int = 5
+@export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
 @export var last_elite_id: StringName = &""
 
@@ -36602,6 +37029,7 @@ extends Resource
 @export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
 @export var ordered_deck_pool: Array[StringName] = [] # The pool of cards ordered by user setting
 @export var deck_def_id: StringName = &"" # The definition ID of the chosen deck
+@export var is_half_deck: bool = false # Tracks if the run uses a quick/half deck
 @export var cards_presented_count: int = 0 # Updates the progressive presentation of cards
 
 # All containers indexed by name (e.g., "RunInventoryT1", "PlayerLineup", etc.)
@@ -36621,14 +37049,10 @@ static var RUN_CONTAINER_TAGS: Dictionary = {
 func get_deck_unlock_percentage() -> float:
 	"""Returns the percentage of the full deck that has been unlocked (active_deck_ids size / total card_ids).
 	Returns 0.0 if no deck is selected."""
-	if deck_def_id == &"":
-		return 0.0
-	
-	var full_deck = Database.get_cards_for_deck(deck_def_id)
-	if full_deck.is_empty():
+	if ordered_deck_pool.is_empty():
 		return 0.0
 		
-	return float(active_deck_ids.size()) / float(full_deck.size())
+	return float(active_deck_ids.size()) / float(ordered_deck_pool.size())
 
 ## Records an elite encounter in the history
 func record_elite_encounter(elite_id: StringName) -> void:
@@ -37129,6 +37553,7 @@ func add_gold(amount: int, silent: bool = false) -> bool:
 	if amount < 0:
 		return spend_gold(-amount, silent)
 	gold += amount
+	total_gold_earned += amount
 	if OS.is_debug_build():
 		_validate_state_consistency()
 	if not silent:
@@ -37305,9 +37730,10 @@ func start_new_run() -> void:
 ## Used for weighted encounter generation (pity system)
 @export var elite_encounter_history: Dictionary = {}
 
-func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR") -> void:
+func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
 	start_new_run()
 	self.deck_def_id = deck_id
+	self.is_half_deck = (deck_size == "HALF")
 	
 	# Create hero instance from the selected hero definition
 	var hero_def = Database.get_definition(hero_def_id)
@@ -37333,10 +37759,21 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	for id in deck_card_ids:
 		ordered_deck_pool.append(StringName(id))
 		
-	if deck_order == "INVERTED":
-		ordered_deck_pool.reverse()
-	elif deck_order == "RANDOM":
-		ordered_deck_pool.shuffle()
+	if deck_size == "HALF":
+		var half_size = max(1, ordered_deck_pool.size() / 2)
+		if deck_order == "INVERTED":
+			ordered_deck_pool = ordered_deck_pool.slice(ordered_deck_pool.size() - half_size, ordered_deck_pool.size())
+			ordered_deck_pool.reverse()
+		elif deck_order == "RANDOM":
+			ordered_deck_pool.shuffle()
+			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
+		else:
+			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
+	else:
+		if deck_order == "INVERTED":
+			ordered_deck_pool.reverse()
+		elif deck_order == "RANDOM":
+			ordered_deck_pool.shuffle()
 		
 	for card_id in ordered_deck_pool:
 		if not flashcard_progress.has(card_id):
@@ -37447,8 +37884,12 @@ func to_save_dict() -> Dictionary:
 		"elites_defeated": elites_defeated,
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
+		"total_tokens_earned": total_tokens_earned,
 		"black_market_remove_cost": black_market_remove_cost,
+		"merge_encounter_cost": merge_encounter_cost,
+		"get_tokens_cost": get_tokens_cost,
 		"deck_def_id": String(deck_def_id),
+		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
 		# Serialize all instances
 		"instances": {},
@@ -37483,8 +37924,12 @@ func from_save_dict(data: Dictionary) -> void:
 	elites_defeated = data.get("elites_defeated", 0)
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
+	total_tokens_earned = data.get("total_tokens_earned", 0)
 	black_market_remove_cost = data.get("black_market_remove_cost", 5)
+	merge_encounter_cost = data.get("merge_encounter_cost", 5)
+	get_tokens_cost = data.get("get_tokens_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
+	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
 	
 	# Clear and restore instances
@@ -37586,7 +38031,7 @@ func _deserialize_ordered_deck_pool(data: Array) -> void:
 		ordered_deck_pool.append(StringName(str(id_str)))
 ```
 
-### File: `scripts\SaveManager.gd`
+### File: `scripts/SaveManager.gd`
 ```gdscript
 # res://scripts/SaveManager.gd
 extends Node
@@ -37656,7 +38101,7 @@ func clear_save() -> void:
 			push_error("[SaveManager] Failed to clear save file: %d" % err)
 ```
 
-### File: `scripts\SceneManager.gd`
+### File: `scripts/SceneManager.gd`
 ```gdscript
 # res://scripts/SceneManager.gd
 extends Node
@@ -37761,7 +38206,7 @@ func _change_scene_to(path: String) -> void:
 	get_tree().root.add_child(current_scene)
 ```
 
-### File: `scripts\ScreenShake.gd`
+### File: `scripts/ScreenShake.gd`
 ```gdscript
 # res://scripts/ScreenShake.gd
 extends Node
@@ -37836,7 +38281,7 @@ func _on_screen_shake_requested(intensity: float) -> void:
 			_original_position = _target_node.position
 ```
 
-### File: `scripts\SelectionClearArea.gd`
+### File: `scripts/SelectionClearArea.gd`
 ```gdscript
 extends Control
 
@@ -37852,7 +38297,7 @@ func _gui_input(event) -> void:
 		# Do NOT call set_input_as_handled(), so events propagate to UI above
 ```
 
-### File: `scripts\Shop.gd`
+### File: `scripts/Shop.gd`
 ```gdscript
 # res://scripts/Shop.gd
 extends Control
@@ -37867,6 +38312,7 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 @onready var reroll_button: Button = %RerollButton
 @onready var leave_button: Button = %LeaveButton
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 
 var _current_shop_instances: Array = []
 var _selected_cost: int = 0
@@ -37905,6 +38351,8 @@ func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")
+	if description_label:
+		description_label.text = tr("ui.shop_desc")
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 	leave_button.text = tr("ui.leave")
 
@@ -37935,14 +38383,6 @@ func populate(context: Dictionary) -> void:
 
 		var inst_for_slot = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
-			# Ensure the instance has valid stats before populating
-			var def = inst_for_slot.get_definition()
-			if inst_for_slot.current_hp <= 0 or inst_for_slot.current_pwr <= 0:
-				print("Warning: Instance has invalid stats, resetting from definition")
-				if is_instance_valid(def):
-					inst_for_slot.current_hp = def.base_hp
-					inst_for_slot.current_pwr = def.base_pwr
-			
 			# Use adapter to create visual data
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
 			var ball_view = slot_view.set_content(visual_data, true)
@@ -37954,11 +38394,6 @@ func populate(context: Dictionary) -> void:
 	
 	_update_fixed_price_tags()
 	_animate_staggered_entry()
-	
-	# Show shop tutorial
-	TutorialManager.show_tutorial(&"shop_intro", [
-		{"text": tr("tutorial.shop")}
-	])
 
 func _animate_staggered_entry() -> void:
 	"""Animate gachaballs appearing one-by-one with landing bounce"""
@@ -38259,15 +38694,20 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
 	
+	# Clear anchors so size is not overridden
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
+	
 	anim_ball.force_inventory_mode = true
 	# Use 2.0 scale (192x192) to match the Shop's slot scale
-	anim_ball.custom_minimum_size = Vector2(192, 192)
-	anim_ball.size = Vector2(192, 192)
+	var target_size = Vector2(192, 192)
+	anim_ball.custom_minimum_size = target_size
+	anim_ball.size = target_size
 	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)
 	
-	anim_ball.pivot_offset = anim_ball.size / 2.0
-	anim_ball.global_position = pos - anim_ball.pivot_offset
+	var pivot = target_size / 2.0
+	anim_ball.pivot_offset = pivot
+	anim_ball.global_position = pos - pivot
 	return anim_ball
 
 func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vector2, tier: int) -> void:
@@ -38350,7 +38790,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 ```
 
-### File: `scripts\SignalBus.gd`
+### File: `scripts/SignalBus.gd`
 ```gdscript
 # res://scripts/SignalBus.gd
 extends Node
@@ -38371,7 +38811,8 @@ signal new_game_requested
 ## @param hero_def_id: StringName - The hero definition ID
 ## @param deck_id: StringName - The deck ID
 ## @param deck_order: String - The order to add cards ("REGULAR", "INVERTED", "RANDOM")
-signal start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String)
+## @param deck_size: String - The size of the deck to use ("FULL", "HALF")
+signal start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String, deck_size: String)
 
 ## Emitted when loadout scene is requested
 signal loadout_scene_requested
@@ -38580,6 +39021,10 @@ signal unit_label_update(uuid: String, stat_name: StringName, value: int)
 signal log_animation_event(event: CombatEvent)
 
 ## Emitted when battle state changes
+## @param snapshot: Dictionary - Board snapshot
+signal management_animation_requested(snapshot: Dictionary)
+
+## Emitted when battle state changes
 ## @param is_in_battle: bool - Whether in battle
 signal battle_state_changed(is_in_battle: bool)
 
@@ -38601,6 +39046,16 @@ signal gacha_draw_animated(draw_result)
 ## Emitted when gacha tokens change
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
+
+## Emitted when the black market receives a user action (remove or transform)
+## @param payload: Dictionary containing 'type', 'instance_uuid', etc.
+signal black_market_action_requested(payload: Dictionary)
+
+## Emitted when BattleManager wants the UI to play the battle entry animation
+signal battle_entry_animation_requested()
+
+## Emitted by BattleView when the battle entry animation has finished
+signal battle_entry_animation_finished()
 
 # -----------------------------------------------------------------------------
 # INVENTORY & LOADOUT SIGNALS
@@ -38626,6 +39081,11 @@ signal selection_clear_requested
 ## Emitted after a successful inventory action (move/swap/merge/equip) for bounce animation
 ## @param target_uuids: Array[String] - UUIDs of instances that were affected and should bounce
 signal inventory_action_completed(target_uuids: Array)
+
+## Emitted after a merge's data mutations are complete.
+## The animation layer uses this to orchestrate the visual merge sequence.
+## @param context: Dictionary - Contains all data the animator needs
+signal merge_animation_requested(context: Dictionary)
 
 ## Emitted when inventory action is attempted
 ## @param source_loc: LocationIdentifier - Source location
@@ -38844,7 +39304,7 @@ signal tutorial_dismissed(tutorial_id: StringName)
 signal locale_changed
 ```
 
-### File: `scripts\SlotIndicatorController.gd`
+### File: `scripts/SlotIndicatorController.gd`
 ```gdscript
 # res://scripts/SlotIndicatorController.gd
 extends Node
@@ -39167,7 +39627,7 @@ func _get_data_owner() -> Object:
 		return GameManager.run_state
 ```
 
-### File: `scripts\SlotView.gd`
+### File: `scripts/SlotView.gd`
 ```gdscript
 class_name SlotView
 extends PanelContainer
@@ -39606,13 +40066,13 @@ func _gui_input(event: InputEvent) -> void:
 		
 		# If this is an empty slot (no content), handle the click as EMPTY_SLOT interaction
 		if not has_content:
-			print("DEBUG_INPUT: SlotView Pressed (Empty).")
+			pass
 			var context = _create_interaction_context(&"SINGLE_CLICK")
 			SignalBus.emit_signal("interaction_context_received", context)
 			get_viewport().set_input_as_handled() # Stop propagation to Main/Battle
 			accept_event() # Explicitly stop control bubbling
 		else:
-			print("DEBUG_INPUT: SlotView Bubbled (Has Content). Ignoring.")
+			pass
 		
 		# If we have a child (Unit), we do NOTHING. 
 		# The child (GachaBallView) will handle the input itself (emit UNIT context).
@@ -39642,7 +40102,7 @@ func _drop_data(_at_position, _data) -> void:
 	# call GlobalInteractionRouter.end_drag(true/false) centrally.
 ```
 
-### File: `scripts\SoundRegistry.gd`
+### File: `scripts/SoundRegistry.gd`
 ```gdscript
 class_name SoundRegistry
 extends RefCounted
@@ -39758,7 +40218,7 @@ static func get_stream(sound_id: String) -> AudioStream:
 	return null
 ```
 
-### File: `scripts\StaggeredGridContainer.gd`
+### File: `scripts/StaggeredGridContainer.gd`
 ```gdscript
 @tool
 class_name StaggeredGridContainer
@@ -39904,7 +40364,7 @@ func _get_minimum_size() -> Vector2:
 	return Vector2(min_w, min_h)
 ```
 
-### File: `scripts\StatusEffectDefinition.gd`
+### File: `scripts/StatusEffectDefinition.gd`
 ```gdscript
 # res://scripts/StatusEffectDefinition.gd
 class_name StatusEffectDefinition
@@ -39941,7 +40401,7 @@ extends Resource
 @export var decay_amount: int = 1
 ```
 
-### File: `scripts\StatusEffectRegistry.gd`
+### File: `scripts/StatusEffectRegistry.gd`
 ```gdscript
 # res://scripts/StatusEffectRegistry.gd
 extends Node
@@ -40006,7 +40466,7 @@ func _get_resource_load_name(file_name: String) -> String:
 	return file_name
 ```
 
-### File: `scripts\systems\director\DirectorRunState.gd`
+### File: `scripts/systems/director/DirectorRunState.gd`
 ```gdscript
 @tool
 class_name DirectorRunState
@@ -40034,7 +40494,7 @@ func has_unlocked_recipe(recipe_id: String) -> bool:
     return unlocked_recipes.has(recipe_id)
 ```
 
-### File: `scripts\systems\director\WeightableEntity.gd`
+### File: `scripts/systems/director/WeightableEntity.gd`
 ```gdscript
 @tool
 class_name WeightableEntity
@@ -40053,7 +40513,7 @@ func get_dynamic_weight_multiplier(_run_state) -> float:
     return 1.0
 ```
 
-### File: `scripts\systems\director\WeightedPoolDirector.gd`
+### File: `scripts/systems/director/WeightedPoolDirector.gd`
 ```gdscript
 class_name WeightedPoolDirector
 extends RefCounted
@@ -40109,7 +40569,7 @@ func draw_unique_items(raw_pool: Array, current_state, count: int) -> Array:
     return drawn_items
 ```
 
-### File: `scripts\test_prio.gd`
+### File: `scripts/test_prio.gd`
 ```gdscript
 extends SceneTree
 
@@ -40135,7 +40595,7 @@ func _init():
 	quit()
 ```
 
-### File: `scripts\TestEnvironmentManager.gd`
+### File: `scripts/TestEnvironmentManager.gd`
 ```gdscript
 class_name TestEnvironmentManager
 extends Node
@@ -40391,7 +40851,7 @@ func _on_trigger_battle_start_pressed() -> void:
 	battle_manager.trigger_test_battle_start()
 ```
 
-### File: `scripts\Title.gd`
+### File: `scripts/Title.gd`
 ```gdscript
 # res://scripts/Title.gd
 extends Control
@@ -40487,7 +40947,7 @@ func _on_continue_pressed() -> void:
 		continue_button.visible = false
 ```
 
-### File: `scripts\TraitInspectionWindow.gd`
+### File: `scripts/TraitInspectionWindow.gd`
 ```gdscript
 class_name TraitInspectionWindow
 extends InspectionWindow
@@ -40698,7 +41158,7 @@ func _on_window_manager_window_closed(window: Control) -> void:
 		_last_child_window_id = -1
 ```
 
-### File: `scripts\TraitTracker.gd`
+### File: `scripts/TraitTracker.gd`
 ```gdscript
 class_name TraitTracker
 extends PanelContainer
@@ -40787,7 +41247,7 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 ```
 
-### File: `scripts\TrinketDefinition.gd`
+### File: `scripts/TrinketDefinition.gd`
 ```gdscript
 # res://scripts/TrinketDefinition.gd
 @tool
@@ -40805,7 +41265,7 @@ extends WeightableEntity
 @export var cost: int = 10 # Budget cost for encounter generation
 ```
 
-### File: `scripts\TutorialManager.gd`
+### File: `scripts/TutorialManager.gd`
 ```gdscript
 # res://scripts/TutorialManager.gd
 extends Node
@@ -40846,36 +41306,27 @@ func mark_completed(tutorial_id: StringName) -> void:
 ## @param pages: Array of dictionaries with keys: text (String), anchor_path (optional String)
 ## @param anchor: Optional Control to point an arrow at
 func show_tutorial(tutorial_id: StringName, pages: Array, anchor: Control = null) -> void:
-	print("[TutorialManager] Requesting tutorial: ", tutorial_id)
 	if not tutorials_enabled:
-		print("[TutorialManager] Blocked: Tutorials disabled")
 		return
 	if is_completed(tutorial_id):
-		print("[TutorialManager] Blocked: Already completed")
 		return
 	
-	print("[TutorialManager] Emitting signal for: ", tutorial_id)
 	SignalBus.emit_signal("tutorial_requested", tutorial_id, pages, anchor)
 
 
 ## Show a tutorial popup and WAIT until it's dismissed
 ## Use this when calling from combat animations or other sequences that should pause
 ## @returns: Signal that completes when tutorial is dismissed (or immediately if not shown)
-func show_tutorial_and_wait(tutorial_id: StringName, pages: Array, anchor: Control = null) -> void:
-	print("[TutorialManager] Requesting blocking tutorial: ", tutorial_id)
+func show_blocking_tutorial(tutorial_id: StringName, pages: Array) -> void:
 	if not tutorials_enabled:
-		print("[TutorialManager] Blocked: Tutorials disabled")
 		return
 	if is_completed(tutorial_id):
-		print("[TutorialManager] Blocked: Already completed")
 		return
 	
-	print("[TutorialManager] Emitting signal for blocking tutorial: ", tutorial_id)
-	SignalBus.emit_signal("tutorial_requested", tutorial_id, pages, anchor)
+	SignalBus.emit_signal("blocking_tutorial_requested", tutorial_id, pages)
 	
 	# Wait for this specific tutorial to be dismissed
 	await SignalBus.tutorial_dismissed
-	print("[TutorialManager] Tutorial dismissed: ", tutorial_id)
 
 
 ## Get tooltip text for an element if tutorials are enabled
@@ -40936,7 +41387,6 @@ func load_settings() -> void:
 # --- Signal Handlers ---
 
 func _on_tutorial_requested(tutorial_id: StringName, pages: Array, anchor: Control) -> void:
-	print("[TutorialManager] Signal received, opening overlay for: ", tutorial_id)
 	# Use open_tutorial_overlay instead of open_modal_window
 	# This prevents tutorials from closing existing windows like FlashcardMinigame
 	WindowManager.open_tutorial_overlay({
@@ -40946,7 +41396,7 @@ func _on_tutorial_requested(tutorial_id: StringName, pages: Array, anchor: Contr
 	})
 ```
 
-### File: `scripts\TutorialPopup.gd`
+### File: `scripts/TutorialPopup.gd`
 ```gdscript
 # res://scripts/TutorialPopup.gd
 extends Control
@@ -40979,10 +41429,6 @@ func _ready() -> void:
 	# Ensure popup handles input while game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	# Initial state for animation
-	modulate.a = 0.0
-	popup_panel.scale = Vector2(0.9, 0.9)
-	
 	# Pause the game
 	get_tree().paused = true
 	
@@ -40991,8 +41437,6 @@ func _ready() -> void:
 	
 	# Initial hide of pointer line
 	pointer_line.hide()
-	
-	_play_open_animation()
 
 
 func populate(context: Dictionary) -> void:
@@ -41006,31 +41450,17 @@ func populate(context: Dictionary) -> void:
 		return
 	
 	_update_page_display()
-	_reposition_window()
-	_update_pointer()
-	_update_pointer()
-
-
-func _play_open_animation() -> void:
-	# Instant visibility
-	modulate.a = 1.0
-	popup_panel.scale = Vector2.ONE
-	show()
-
-	# Ensure pivot is centered for bounce effect
-	# Wait for layout to settle sizes
+	
+	# Wait for layout to settle sizes before repositioning
 	await get_tree().process_frame
+	if not is_inside_tree():
+		return
+		
 	_reposition_window()
-	popup_panel.pivot_offset = popup_panel.size / 2.0
-	
-	# Tween: Subtle bouncy overshoot AFTER it's open
-	var tween = create_tween()
-	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	
-	# Subtle overshoot (1.0 -> 1.04 -> 1.0)
-	# 0.1s up, 0.15s back to neutral
-	tween.tween_property(popup_panel, "scale", Vector2(1.04, 1.04), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(popup_panel, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_update_pointer()
+
+
+
 
 
 func _reposition_window() -> void:
@@ -41313,7 +41743,7 @@ func get_window_to_animate() -> Control:
 	return popup_panel
 ```
 
-### File: `scripts\UnitInspectionWindow.gd`
+### File: `scripts/UnitInspectionWindow.gd`
 ```gdscript
 class_name UnitInspectionWindow
 extends InspectionWindow
@@ -41588,11 +42018,15 @@ func _update_description() -> void:
 			continue
 		
 		var ability_name = tr(ability_def.name_key)
+		if ability_name == ability_def.name_key and ability_def.name_key.begins_with("ability."):
+			ability_name = ""
 		if ability_name.is_empty() or seen_ability_names.has(ability_name):
 			continue
 		seen_ability_names[ability_name] = true
 		
 		var ability_desc = tr(ability_def.description_key)
+		if ability_desc == ability_def.description_key and ability_def.description_key.begins_with("ability."):
+			ability_desc = ""
 		if is_instance_valid(_instance):
 			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
@@ -41614,7 +42048,7 @@ func _update_description() -> void:
 	
 	var full_text := ""
 	var unit_desc := tr(unit_definition.description_key) if "description_key" in unit_definition else ""
-	if not unit_desc.is_empty() and unit_desc != unit_definition.description_key:
+	if not unit_desc.is_empty() and unit_desc != unit_definition.description_key and abilities_block.is_empty():
 		full_text = unit_desc
 	
 	if not abilities_block.is_empty():
@@ -41991,7 +42425,7 @@ func _update_trait_display() -> void:
 	trait_icons_container.visible = trait_icons_container.get_child_count() > 0
 ```
 
-### File: `scripts\UnitTrainingGround.gd`
+### File: `scripts/UnitTrainingGround.gd`
 ```gdscript
 # res://scripts/UnitTrainingGround.gd
 extends Control
@@ -42007,6 +42441,7 @@ const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd"
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var title_label: Label = %TitleLabel
+@onready var description_label: Label = %DescriptionLabel
 @onready var open_inventory_button: Button = %OpenInventoryButton
 @onready var leave_button: Button = %LeaveButton
 
@@ -42083,6 +42518,8 @@ func _process(_delta: float) -> void:
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.utg_title")
+	if description_label:
+		description_label.text = tr("ui.utg_desc")
 	open_inventory_button.text = tr("ui.utg_btn")
 	leave_button.text = tr("ui.leave")
 
@@ -42483,7 +42920,7 @@ func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallVi
 	effects_layer.add_child(anim_ball)
 	
 	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.anchors_preset = Control.PRESET_TOP_LEFT
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	
 	anim_ball.force_inventory_mode = true
 	anim_ball.set_size_scale(1.0)
@@ -42603,7 +43040,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 ```
 
-### File: `scripts\utils\DescriptionParser.gd`
+### File: `scripts/utils/DescriptionParser.gd`
 ```gdscript
 class_name DescriptionParser
 extends Object
@@ -42675,7 +43112,7 @@ static func _replace_keyword(text: String, word: String, color: String, meta: St
 	return text
 ```
 
-### File: `scripts\utils\DropZone.gd`
+### File: `scripts/utils/DropZone.gd`
 ```gdscript
 # scripts/utils/DropZone.gd
 extends PanelContainer
@@ -42692,7 +43129,7 @@ func _drop_data(_at_position: Vector2, _data: Variant) -> void:
 		GlobalInteractionRouter.end_drag(true)
 ```
 
-### File: `scripts\utils\StatScaling.gd`
+### File: `scripts/utils/StatScaling.gd`
 ```gdscript
 # res://scripts/utils/StatScaling.gd
 class_name StatScaling
@@ -42788,7 +43225,7 @@ static func _calculate_scaled(param_dict: Dictionary, context: Dictionary, scrip
 	return clampi(int(floor(final_value)), min_val, max_val)
 ```
 
-### File: `scripts\UUIDUtils.gd`
+### File: `scripts/UUIDUtils.gd`
 ```gdscript
 extends Node
 
@@ -42805,7 +43242,7 @@ static func generate_uuid(prefix: StringName) -> String:
 	return "%s_%d_%d_%05d" % [prefix, timestamp, _counter, random_suffix]
 ```
 
-### File: `scripts\vfx\FloatingDamageNumber.gd`
+### File: `scripts/vfx/FloatingDamageNumber.gd`
 ```gdscript
 class_name FloatingDamageNumber
 extends Node2D
@@ -42910,7 +43347,7 @@ func _on_animation_complete() -> void:
 	queue_free()
 ```
 
-### File: `scripts\vfx\GoldCoinVFX.gd`
+### File: `scripts/vfx/GoldCoinVFX.gd`
 ```gdscript
 # res://scripts/vfx/GoldCoinVFX.gd
 class_name GoldCoinVFX
@@ -43035,7 +43472,7 @@ func _start_wobble() -> void:
 	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", 0.0, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 ```
 
-### File: `scripts\vfx\ItemPopup.gd`
+### File: `scripts/vfx/ItemPopup.gd`
 ```gdscript
 class_name ItemPopup
 extends Node2D
@@ -43077,7 +43514,7 @@ func play() -> void:
 	queue_free()
 ```
 
-### File: `scripts\vfx\MinigameAuraVFX.gd`
+### File: `scripts/vfx/MinigameAuraVFX.gd`
 ```gdscript
 extends Control
 class_name MinigameAuraVFX
@@ -43166,7 +43603,7 @@ func set_intensity(streak: int, base_color: Color) -> void:
 			mat.color = glow_color
 ```
 
-### File: `scripts\vfx\RejectionFeedback.gd`
+### File: `scripts/vfx/RejectionFeedback.gd`
 ```gdscript
 # res://scripts/vfx/RejectionFeedback.gd
 class_name RejectionFeedback
@@ -43220,7 +43657,6 @@ static func play_rejection(target: Control, tree: SceneTree) -> void:
 ## @param counter_group: The counter group to also flash (TokenGroup or GoldGroup)
 ## @param tree: SceneTree reference for creating tweens
 static func play_rejection_with_counter(target: Control, counter_group: Control, tree: SceneTree) -> void:
-	print("[RejectionFeedback] Playing rejection for %s" % target.name)
 	play_rejection(target, tree)
 	if is_instance_valid(counter_group):
 		play_rejection(counter_group, tree)
@@ -43244,7 +43680,7 @@ static func _add_shake_keyframes(tween: Tween, target: Control, original_rotatio
 	tween.tween_property(target, "rotation", original_rotation, shake_time * 0.5).set_delay(SHAKE_DURATION)
 ```
 
-### File: `scripts\vfx\StatProjectile.gd`
+### File: `scripts/vfx/StatProjectile.gd`
 ```gdscript
 class_name StatProjectile
 extends Node2D
@@ -43373,7 +43809,7 @@ func _process(delta: float) -> void:
 		queue_free()
 ```
 
-### File: `scripts\vfx\TokenPopVFX.gd`
+### File: `scripts/vfx/TokenPopVFX.gd`
 ```gdscript
 # res://scripts/vfx/TokenPopVFX.gd
 class_name TokenPopVFX
@@ -43558,7 +43994,7 @@ func _start_wobble(delay: float) -> void:
 	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, wobble_duration * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 ```
 
-### File: `scripts\vfx\TokenSpendVFX.gd`
+### File: `scripts/vfx/TokenSpendVFX.gd`
 ```gdscript
 # res://scripts/vfx/TokenSpendVFX.gd
 class_name TokenSpendVFX
@@ -43705,7 +44141,7 @@ func _start_wobble() -> void:
 	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 ```
 
-### File: `scripts\vfx\VFXFactory.gd`
+### File: `scripts/vfx/VFXFactory.gd`
 ```gdscript
 # scripts/vfx/VFXFactory.gd
 extends Node
@@ -43910,7 +44346,7 @@ func launch_projectile_between(animator: Node, source_uuid: String, target_uuid:
 	return projectile
 ```
 
-### File: `scripts\VisualDataAdapter.gd`
+### File: `scripts/VisualDataAdapter.gd`
 ```gdscript
 class_name VisualDataAdapter
 extends RefCounted
@@ -44036,7 +44472,7 @@ static func _create_visual_layers(instance: GachaBallInstance, all_instances: Di
 	return layers
 ```
 
-### File: `scripts\WindowManager.gd`
+### File: `scripts/WindowManager.gd`
 ```gdscript
 # res://scripts/WindowManager.gd
 extends Node
@@ -45570,6 +46006,49 @@ func _run_sim(gen, budget):
 	print("Result: Spent %d/%d, Units %d, Items %d" % [build.spent, budget, build.units.size(), build.items.size()])
 ```
 
+### File: `test.gd`
+```gdscript
+extends SceneTree
+
+func _init() -> void:
+	var rs = preload("res://scripts/RunState.gd").new()
+	rs.initialize_run("hero_timekeeper", "korean_hangul_main")
+	print("Deck ID: ", rs.deck_def_id)
+	print("Ordered pool size: ", rs.ordered_deck_pool.size())
+	rs.check_deck_expansion()
+	print("Active deck size: ", rs.active_deck_ids.size())
+	if rs.active_deck_ids.size() > 0:
+		print("First card: ", rs.active_deck_ids[0])
+	quit()
+```
+
+### File: `test2.gd`
+```gdscript
+extends MainLoop
+
+func _process(delta: float) -> bool:
+	print("Hello from MainLoop!")
+	
+	var db_script = load("res://scripts/Database.gd")
+	if db_script == null:
+		print("Failed to load Database.gd")
+		return true
+		
+	var db = db_script.new()
+	db._load_flashcard_definitions()
+	print("Flashcards loaded: ", db.flashcard_definitions.size())
+	
+	var rs_script = load("res://scripts/RunState.gd")
+	if rs_script:
+		var rs = rs_script.new()
+		rs.deck_def_id = "korean_hangul_main"
+		rs.ordered_deck_pool = ["KOR_067", "KOR_066", "KOR_065"]
+		rs.active_deck_ids = ["KOR_067"]
+		print("Has KOR_067? ", db.flashcard_definitions.has("KOR_067"))
+	
+	return true
+```
+
 ### File: `test_array.gd`
 ```gdscript
 extends SceneTree
@@ -45645,11 +46124,26 @@ func _check_image(path: String):
 ### File: `test_db.gd`
 ```gdscript
 extends SceneTree
-func _init():
-    var tier = 2
-    var inventory_tag: StringName = "BattleInventoryT%d" % tier
-    print("TAG: ", inventory_tag)
-    quit()
+
+func _init() -> void:
+	var db = load("res://scripts/Database.gd").new()
+	db._load_flashcard_definitions()
+	
+	var rs = load("res://scripts/RunState.gd").new()
+	var err = rs.load_run_data()
+	if err != OK:
+		print("Failed to load save: ", err)
+		quit()
+		
+	var active = rs.active_deck_ids
+	print("Active deck size: ", active.size())
+	for c in active:
+		if not db.flashcard_definitions.has(c):
+			print("MISSING CARD: ", c)
+		else:
+			pass
+	print("Check done.")
+	quit()
 ```
 
 ### File: `test_eq.gd`

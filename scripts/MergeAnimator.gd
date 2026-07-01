@@ -221,4 +221,4 @@ func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
 		
 	# Await completion (stagger + flight time)
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	await get_tree().create_timer(total_wait).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout

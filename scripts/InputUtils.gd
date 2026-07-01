@@ -19,8 +19,13 @@ static func should_ignore_mouse_pointer_event(event: InputEvent) -> bool:
 
 
 static func is_primary_pointer_press(event: InputEvent) -> bool:
-	return ((event is InputEventMouseButton and not should_ignore_mouse_pointer_event(event) and event.button_index == MOUSE_BUTTON_LEFT and event.pressed) \
-		or (event is InputEventScreenTouch and event.pressed))
+	if event is InputEventMouseButton and not should_ignore_mouse_pointer_event(event) and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if event.double_click: return false
+		return true
+	if event is InputEventScreenTouch and event.pressed:
+		if event.double_tap: return false
+		return true
+	return false
 
 
 static func is_primary_pointer_release(event: InputEvent) -> bool:

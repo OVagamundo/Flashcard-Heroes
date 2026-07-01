@@ -398,7 +398,7 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	# Wait for all animations to complete, then trigger draw
 	# TokenSpendVFX.TOSS_DURATION = 0.45
 	var total_wait = (tokens_to_spawn - 1) * stagger_delay + 0.55
-	await get_tree().create_timer(total_wait).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
 	
 	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)

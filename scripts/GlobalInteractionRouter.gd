@@ -55,6 +55,7 @@ func _ready() -> void:
 	# Register as singleton
 	add_to_group("global_interaction_router")
 	set_process(true)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# Get references to other managers
 	_window_manager = WindowManager
@@ -116,21 +117,27 @@ func _exit_tree() -> void:
 func _on_interaction_context_received(context: InteractionContext) -> void:
 	var command_queue: Array[Command] = []
 
-	# Full input lock during COMBAT or UI Transitions
-	if _is_combat_phase or _is_ui_transitioning:
+	# Full input lock during UI Transitions
+	if _is_ui_transitioning:
 		return
 
 	# Hover events: handled separately, never enter the click-based command queue
 	if context.event_type == &"HOVER_ENTER":
+		if _is_combat_phase: 
+			return
 		_handle_hover_enter(context)
 		return
 	if context.event_type == &"HOVER_EXIT":
+		if _is_combat_phase: 
+			return
 		_handle_hover_exit(context)
 		return
 		
 	# Drag Start: handled separately to initialize drag state
 	# ROBUSTNESS: Check both StringName and string to avoid type issues
 	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
+		if is_vcr_playing(): 
+			return
 		# print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
 		start_drag(context)
 		return
@@ -167,7 +174,9 @@ func _process(_delta: float) -> void:
 ## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
 	# Full input lock during COMBAT: swallow ESC/background clicks
-	if _is_combat_phase:
+	# UNLESS the player is currently inspecting something (the game is frozen).
+	# If we are inspecting, allow background clicks to close the inspection window and unfreeze!
+	if _is_combat_phase and not _is_inspection_locked:
 		return
 	# ESC: cancel drag, then modals, then contextual windows, then selection
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -187,19 +196,21 @@ func _unhandled_input(event: InputEvent) -> void:
 		# 4) Close contextual windows (guarded by suppression) and clear selection
 		if not _is_close_suppressed_now():
 			_execute_close_all_inspection_windows()
-		_execute_deselect()
+		if not is_vcr_playing() and not _is_combat_phase:
+			_execute_deselect()
 		return
 
 	# True background click: left mouse press not handled by any Control
 	if InputUtils.is_primary_pointer_press(event):
-		# Clear lock/hover state
-		_is_inspection_locked = false
-		_locked_entity_view_id = -1
-		_hover_entity_view_id = -1
 		# Close contextual windows and clear selection (guarded by suppression)
 		if not _is_close_suppressed_now():
+			# Clear lock/hover state
+			_is_inspection_locked = false
+			_locked_entity_view_id = -1
+			_hover_entity_view_id = -1
 			_execute_close_all_inspection_windows()
-		_execute_deselect()
+		if not is_vcr_playing() and not _is_combat_phase:
+			_execute_deselect()
 
 ## External signal handler: proactively clear selection when requested (e.g., scene transitions)
 func _on_selection_clear_requested() -> void:
@@ -229,6 +240,10 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 	_is_combat_phase = phase_name == &"COMBAT"
 	# If entering COMBAT, ensure any drag state and engine preview are cleared
 	if _is_combat_phase:
+		# Close any open windows immediately
+		_execute_close_all_inspection_windows()
+		_execute_deselect()
+		
 		# Clear lock/hover state
 		_is_inspection_locked = false
 		_locked_entity_view_id = -1
@@ -364,6 +379,10 @@ func _handle_hover_enter(context: InteractionContext) -> void:
 	if _is_drag_active: return
 	if _is_inspection_locked: return
 	if _is_close_suppressed_now(): return
+	
+	# Guard: Hovering is disabled during VCR playback and Combat phase.
+	# Players must explicitly click to inspect and pause during these phases.
+	if is_vcr_playing() or _is_combat_phase: return
 	# Guard: duplicate hover (same entity)
 	if context.source_view_instance_id == _hover_entity_view_id: return
 
@@ -452,6 +471,24 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
 	
+	# If VCR or Combat is playing, do not perform actions (like move/merge) or select units.
+	# User can ONLY open/close inspection windows during these phases.
+	if is_vcr_playing() or _is_combat_phase:
+		if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
+			# Toggle off if clicking the already inspected unit
+			commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
+		else:
+			# Open new inspection window (closing others if not suppressed)
+			var click_inside_window = _is_click_inside_inspection_group(context)
+			if not click_inside_window and not _is_close_suppressed_for_context(context):
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+				"context": context,
+				"anchor_view_id": context.source_view_instance_id,
+				"lock": true
+			}))
+		return commands
+	
 	# Check if we have a current selection
 	if _current_selection != null:
 		# S4: Re-selection on already-locked entity -> Toggle Off (Close Top & Deselect)
@@ -484,7 +521,9 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 			return commands
 		
 		# Check if this is a valid action target
-		if _is_valid_action_target(_current_selection, context):
+		var is_valid_action = _is_valid_action_target(_current_selection, context)
+		
+		if is_valid_action:
 			var req_ctx: Dictionary = {
 				"source_context": _current_selection,
 				"target_context": context,
@@ -574,6 +613,10 @@ func _handle_empty_slot_interaction(context: InteractionContext) -> Array[Comman
 			# Note: Empty slots don't get selected, so we just deselect
 		# Check if this is a valid move target
 		elif _is_valid_move_target(_current_selection, context):
+			if is_vcr_playing() or _is_combat_phase:
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+				return commands
+				
 			var req_ctx: Dictionary = {
 				"source_context": _current_selection,
 				"target_context": context,
@@ -847,11 +890,11 @@ func _execute_open_inspection_window(command_context: Dictionary) -> void:
 		# Find the anchor view by instance ID
 		var anchor_view = _find_view_by_instance_id(anchor_view_id)
 		if anchor_view:
-			# Use the public WindowManager API
-			_window_manager.open_inspection_window(context.location, anchor_view)
 			if should_lock:
 				_is_inspection_locked = true
 				_locked_entity_view_id = anchor_view_id
+			# Use the public WindowManager API
+			_window_manager.open_inspection_window(context.location, anchor_view)
 
 ## Execute close all inspection windows command
 func _execute_close_all_inspection_windows() -> void:
@@ -866,7 +909,9 @@ func _execute_close_child_windows(window_group_id: int, parent_window_id: int = 
 ## Execute request action command
 func _execute_request_action(command_context: Dictionary) -> void:
 	# COMBAT-phase gate: full lockout, no side-effects
-	if _is_combat_phase:
+	if _is_combat_phase or is_vcr_playing():
+		_execute_close_all_inspection_windows()
+		_execute_deselect()
 		return
 	var source_context: InteractionContext = command_context.get("source_context")
 	var target_context: InteractionContext = command_context.get("target_context")
@@ -974,7 +1019,7 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 ## Public API: start a drag operation (called by InteractionManager)
 func start_drag(origin_context: InteractionContext) -> void:
 	# Full input lock during COMBAT: do not start drags
-	if _is_combat_phase:
+	if _is_combat_phase or is_vcr_playing():
 		return
 	
 	# Per docs: "It clears any current selection"
@@ -1124,6 +1169,10 @@ func get_drag_source_view() -> Control:
 func is_combat_locked() -> bool:
 	return _is_combat_phase
 
+## Public API: expose inspection lock state
+func is_inspection_locked() -> bool:
+	return _is_inspection_locked
+
 ## Public API: expose suppression state for WindowManager
 func is_close_suppressed_for_window_id(window_id: int) -> bool:
 	# Valid only within the active suppression window
@@ -1143,3 +1192,9 @@ func is_close_suppressed_now() -> bool:
 
 func get_drag_origin_context() -> InteractionContext:
 	return _drag_origin_context
+
+func is_vcr_playing() -> bool:
+	var animator = get_tree().get_first_node_in_group("battle_animator")
+	if is_instance_valid(animator) and animator.has_method("is_playing_sequence"):
+		return animator.is_playing_sequence()
+	return false

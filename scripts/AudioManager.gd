@@ -11,6 +11,9 @@ var _music_player: AudioStreamPlayer
 var _current_sfx_index: int = 0
 var pronunciation_enabled: bool = true
 
+var _frame_sfx_counts: Dictionary = {}
+var _last_frame: int = -1
+
 func _ready() -> void:
 	# Load settings first
 	_load_audio_settings()
@@ -41,6 +44,17 @@ func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
 	if not stream:
 		push_warning("AudioManager: Sound not found: " + sound_id)
 		return
+	
+	# Enforce polyphony limit to prevent clipping when multiple async events play simultaneously
+	var frame = Engine.get_process_frames()
+	if frame != _last_frame:
+		_last_frame = frame
+		_frame_sfx_counts.clear()
+		
+	var count = _frame_sfx_counts.get(sound_id, 0)
+	if count >= 2:
+		return # Polyphony limit reached
+	_frame_sfx_counts[sound_id] = count + 1
 	
 	# Get next available player from pool
 	var player = _sfx_pool[_current_sfx_index]

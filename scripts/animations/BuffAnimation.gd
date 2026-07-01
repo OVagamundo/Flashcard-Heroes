@@ -25,7 +25,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 	# Wait for impact
 	if projectiles.is_empty():
-		await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 	else:
 		for proj in projectiles:
 			if is_instance_valid(proj):

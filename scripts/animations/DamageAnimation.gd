@@ -103,7 +103,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			
 		# Wait for projectile impact
 		if projectiles.is_empty():
-			await animator.get_tree().create_timer(AnimationConstants.scaled(0.6)).timeout
+			await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.6)).timeout
 		else:
 			for proj in projectiles:
 				if is_instance_valid(proj):
@@ -137,7 +137,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# Wait for Bump Impact OR Projectile Impact
 		if should_bump:
-			await animator.get_tree().create_timer(AnimationConstants.scaled(AnimationConstants.BUMP_TOTAL_DURATION)).timeout
+			await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(AnimationConstants.BUMP_TOTAL_DURATION)).timeout
 		elif not projectiles.is_empty():
 			for proj in projectiles:
 				if is_instance_valid(proj):
@@ -176,7 +176,7 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 					var is_enemy = bool(raw_activation.get("is_enemy", false))
 					if animator.has_method("play_trinket_activation"):
 						animator.play_trinket_activation(visual_uuid, def_id, is_enemy)
-						await animator.get_tree().create_timer(0.25).timeout
+						await AnimationConstants.create_pausable_timer(animator.get_tree(), 0.25).timeout
 	
 	# Trigger screen shake based on total damage dealt
 	# Intensity scales from 0.0 to 1.0, where 5+ damage = max shake
@@ -214,7 +214,7 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 				# Animate armor label countdown
 				animator.apply_armor_delta(target_uuid, armor_consumed, new_armor)
 				# Longer pause between armor and HP updates for player to register
-				await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+				await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 		
 			# HP EFFECTS SECOND
 			var hp_damage = abs(amount) - armor_consumed
@@ -283,7 +283,7 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 			# Animate armor label countdown
 			animator.apply_armor_delta(attacker_uuid, armor_consumed, new_armor)
 			# Longer pause between armor and HP updates for player to register
-			await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+			await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 
 		var hp_damage = spikes_damage - armor_consumed
 		

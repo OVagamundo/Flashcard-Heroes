@@ -292,10 +292,12 @@ func _redraw_board() -> void:
 	# CRITICAL: NEVER redraw the board during animation phases!
 	# The BattleAnimator owns all views during these phases (Puppet Mode).
 	# Any board rebuild will destroy the registered views and break animations.
+	_resolve_battle_animator()
 	var current_phase = battle_manager.get_current_phase()
 	if current_phase == BattleManager.Phases.COMBAT or \
 	   current_phase == BattleManager.Phases.START_OF_TURN or \
-	   current_phase == BattleManager.Phases.END_OF_TURN:
+	   current_phase == BattleManager.Phases.END_OF_TURN or \
+	   (is_instance_valid(_battle_animator) and _battle_animator.has_method("is_playing_sequence") and _battle_animator.is_playing_sequence()):
 		return
 	
 
@@ -849,7 +851,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	
 	# Arc parameters
 	var arc_height := 400.0 # Peak height above the highest point
-	var duration := 0.45 # Snappy fast animation
+	var duration := 0.45 / AnimationConstants.speed_factor # Snappy fast animation, scale with speed
 	
 	# Quadratic Bezier curve for natural basketball arc
 	# P0 = start_center (launch point)
@@ -968,51 +970,7 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	# Phase 4: Settle to normal
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
-	# VCR PATTERN: AFTER bounce completes, trigger management phase effects
-	# This uses the same simulation-presentation pattern as combat
-	bounce_tween.tween_callback(func():
-		_trigger_on_draw_effects(draw_result)
-	)
-
-## Trigger management phase effects for a drawn unit/item (e.g., Royal Insignia buff)
-## Uses the VCR pattern: capture snapshot, simulate effects, animate via BattleAnimator
-func _trigger_on_draw_effects(draw_result) -> void:
-	if not is_instance_valid(battle_manager):
-		return
-	
-	# Get the drawn instance to check tags
-	var drawn_instance = battle_manager.get_instance(draw_result.drawn_uuid)
-	if not is_instance_valid(drawn_instance):
-		return
-	
-	# Determine tier from source container (also equals token cost)
-	var tier := 1
-	if draw_result.source_container.ends_with("T2"):
-		tier = 2
-	elif draw_result.source_container.ends_with("T3"):
-		tier = 3
-	
-	# Build context for on_draw trigger
-	var context := {
-		"drawn_uuid": draw_result.drawn_uuid,
-		"dest_container": draw_result.dest_container,
-		"dest_slot": draw_result.dest_slot,
-		"tier": tier,
-		"tokens_spent": tier # Tier equals tokens spent
-	}
-	
-	# VCR Step 1: Capture snapshot BEFORE simulation
-	var snapshot := battle_manager.get_board_snapshot()
-	
-	# VCR Step 2a: Trigger on_draw (once per draw)
-	AbilityResolver.process_trigger(&"on_draw", context)
-	
-	# VCR Step 2b: Trigger on_token_spent (once per draw, with token amount in context)
-	AbilityResolver.process_trigger(&"on_token_spent", context)
-	
-	# VCR Step 3: If effects were generated, resolve and animate them
-	if battle_manager._pending_reactions.size() > 0:
-		battle_manager.resolve_management_effects_and_animate(snapshot)
+	# Visual animation completes here. Logic and triggers are handled asynchronously by BattleManager.
 
 # =============================================================================
 # COMBAT CONTROLS LOGIC
