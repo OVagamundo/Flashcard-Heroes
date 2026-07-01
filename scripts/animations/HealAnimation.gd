@@ -21,7 +21,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Wait for projectiles to land (Juicy feel: heal happens on impact)
 	# If no projectiles (missing snapshots), wait a simulated duration
 	if projectiles.is_empty():
-		await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 	else:
 		for proj in projectiles:
 			if is_instance_valid(proj):

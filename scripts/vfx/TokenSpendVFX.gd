@@ -48,7 +48,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	# Wait for stagger delay
 	if delay > 0:
 		token_sprite.visible = false
-		await get_tree().create_timer(delay).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), delay).timeout
 		token_sprite.visible = true
 	
 	# Start the spinning

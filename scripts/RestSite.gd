@@ -291,7 +291,7 @@ func _animate_token_spend(target_machine: Control, cost: int, token_group: Contr
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 	
-	await get_tree().create_timer((cost - 1) * stagger_delay + 0.55).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), (cost - 1) * stagger_delay + 0.55).timeout
 
 func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	if not is_instance_valid(machine): return
@@ -479,7 +479,7 @@ func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void
 			_do_hero_buff_hop(Color.RED if type_str == "hp" else Color.MEDIUM_PURPLE)
 	
 	ball_view.hide()
-	await get_tree().create_timer(0.2).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), 0.2).timeout
 
 func _do_hero_buff_hop(flash_color: Color) -> void:
 	Audio.play_sfx("unit_buff")

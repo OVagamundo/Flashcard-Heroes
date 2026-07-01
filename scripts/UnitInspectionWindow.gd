@@ -427,8 +427,6 @@ func _on_description_meta_hover_ended(_meta) -> void:
 
 func _on_long_press_timeout() -> void:
 	var meta = _last_meta_at_pointer
-	if meta == null:
-		meta = description_label.get_meta_at_point(description_label.get_local_mouse_position())
 	
 	if meta:
 		_handle_effect_meta_interaction(meta)

@@ -101,7 +101,7 @@ func _animate_staggered_entry() -> void:
 	# STAGE 2: Wait before starting the population sequence
 	# Only wait a short time on first entry (per USER request)
 	if _is_first_populate:
-		await get_tree().create_timer(0.5).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), 0.5).timeout
 		_is_first_populate = false
 	else:
 		# Just a tiny delay for rerolls to let layout settle

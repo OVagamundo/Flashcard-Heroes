@@ -787,6 +787,8 @@ func _can_begin_drag() -> bool:
 		return false
 	if GlobalInteractionRouter and GlobalInteractionRouter.is_combat_locked():
 		return false
+	if GlobalInteractionRouter and GlobalInteractionRouter.is_vcr_playing():
+		return false
 	if is_instance_valid(_location):
 		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 		if context_group == &"InspectionOnly":

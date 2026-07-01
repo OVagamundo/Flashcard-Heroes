@@ -203,7 +203,7 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	# Animate Bargain Charm if it is providing a discount
 	if GameManager.is_bargain_charm_active(tier):
 		BattleAnimator.hop_trinket_by_definition_id(&"trinket_bargain_charm", false)
-		await get_tree().create_timer(0.25).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
 	
 	await _animate_token_spend(machine, cost, token_group)
 	
@@ -329,7 +329,7 @@ func _animate_token_spend(target_machine: Control, cost: int, token_group: Contr
 		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 	
-	await get_tree().create_timer((cost - 1) * stagger_delay + 0.55).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), (cost - 1) * stagger_delay + 0.55).timeout
 
 func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	if not is_instance_valid(machine): return
@@ -677,7 +677,7 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 	
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	await get_tree().create_timer(total_wait).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
 
 func _on_leave_pressed() -> void:
 	if _action_in_progress: return

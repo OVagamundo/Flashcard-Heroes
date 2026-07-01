@@ -14,6 +14,11 @@ var _pending_guardian_return: String = "" # UUID of Guardian needing to return a
 var _tracker: AnimationCompletionTracker # Animation completion tracking
 var _visual_gacha_tokens: int = 0
 
+var _is_playing_sequence: bool = false
+var _active_async_chains: int = 0
+
+func is_playing_sequence() -> bool:
+	return _is_playing_sequence or _active_async_chains > 0
 
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
@@ -42,7 +47,20 @@ func _ready() -> void:
 	if SignalBus.has_signal("trait_threshold_reached"):
 		SignalBus.connect("trait_threshold_reached", _on_trait_threshold_reached)
 
+func play_async_chain(chain_events: Array[CombatEvent], snapshot: Dictionary = {}) -> void:
+	_active_async_chains += 1
+	if not snapshot.is_empty():
+		_register_all_puppets(snapshot)
+		
+	await _animate_events(chain_events)
+	
+	_active_async_chains -= 1
+	if _active_async_chains == 0 and not _is_playing_sequence:
+		_visual_registry.clear()
+		_position_snapshot.clear()
+
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
+	_is_playing_sequence = true
 	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
 	# Extract HP snapshot for backward compatibility
 	var hp_only_snapshot: Dictionary = {}
@@ -64,6 +82,12 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 			total_tokens_gained_in_log += int(payload.get("amount", 0))
 	_visual_gacha_tokens = final_tokens - total_tokens_gained_in_log
 	
+	_register_all_puppets(start_snapshot)
+	
+	await play_turn(turn_log)
+	_is_playing_sequence = false
+
+func _register_all_puppets(start_snapshot: Dictionary) -> void:
 	# PUPPET MODE: Build visual registry by scanning scene tree
 	_visual_registry.clear()
 	_position_snapshot.clear() # DECOUPLING: Reset position snapshot each sequence
@@ -155,8 +179,6 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 							"size": rect.size,
 							"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
 						}
-	
-	await play_turn(turn_log)
 
 func _get_slot_view(container_tag: StringName, slot_index: int) -> PanelContainer:
 	if slot_index < 0:
@@ -206,7 +228,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 			var has_trinket = event.trinket_activations.size() > 0 or event.visual_payload.has("trinket_activations")
 			if has_trinket:
 				# Standalone trinket activations need to be awaited so the UI isn't destroyed immediately
-				await get_tree().create_timer(0.25).timeout
+				await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
 			continue
 		
 		if _is_paused and not _step_advance_requested:
@@ -221,6 +243,59 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 		match event.type:
 			CombatEvent.Type.LOG_MESSAGE:
 				pass
+
+			CombatEvent.Type.DRAW:
+				var payload = event.visual_payload
+				var draw_result = payload.get("draw_result")
+				if draw_result:
+					SignalBus.emit_signal("gacha_draw_animated", draw_result)
+					await AnimationConstants.create_pausable_timer(get_tree(), 0.45 / AnimationConstants.speed_factor).timeout
+					
+					var battle_view = get_tree().get_first_node_in_group("battle_view")
+					if is_instance_valid(battle_view) and not draw_result.went_to_discard:
+						var container_tag = draw_result.dest_container
+						var index = draw_result.dest_slot
+						var lineup_container: HBoxContainer = null
+						
+						if container_tag == &"PlayerBench":
+							lineup_container = battle_view.player_bench
+						
+						if is_instance_valid(lineup_container) and index >= 0 and index < lineup_container.get_child_count():
+							var slot_view = lineup_container.get_child(index)
+							var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
+							
+							var has_existing_unit := false
+							for child in slot_view.get_children():
+								if child.is_queued_for_deletion():
+									continue
+								if child.has_method("populate"):
+									has_existing_unit = true
+									break
+							
+							if has_existing_unit:
+								for child in slot_view.get_children():
+									if child.has_method("populate"):
+										child.hide()
+										child.queue_free()
+							
+							slot_view.add_child(new_view)
+							var new_snapshot = payload.get("new_unit_snapshot", {})
+							if not new_snapshot.is_empty():
+								var new_location = LocationIdentifier.new(container_tag, index)
+								new_view.populate(new_location, new_snapshot, false)
+								var new_unit_uuid = draw_result.drawn_uuid
+								_visual_registry[new_unit_uuid] = new_view
+								
+								await get_tree().process_frame
+								var rect = new_view.get_global_rect()
+								_position_snapshot[new_unit_uuid] = {
+									"position": rect.position,
+									"size": rect.size,
+									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+								}
+								
+								if new_view.has_method("play_landing_bounce"):
+									new_view.play_landing_bounce()
 
 			CombatEvent.Type.DAMAGE:
 				var anim = AnimationRegistry.get_animation("damage")
@@ -390,7 +465,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									await wait_for_animation_completion("summon_fade", new_unit_uuid)
 				
 				if arc_completed:
-					await get_tree().create_timer(0.2).timeout
+					await AnimationConstants.create_pausable_timer(get_tree(), 0.2).timeout
 
 			CombatEvent.Type.LETHAL_SAVE:
 				var anim = AnimationRegistry.get_animation("lethal_save")
@@ -454,7 +529,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						await slot_view.animate_slot_effect_change(to_effect)
 					elif is_instance_valid(slot_view) and slot_view.has_method("set_slot_effect"):
 						slot_view.set_slot_effect(to_effect)
-						await get_tree().create_timer(0.2).timeout
+						await AnimationConstants.create_pausable_timer(get_tree(), 0.2).timeout
 
 		await get_tree().process_frame
 	
@@ -786,7 +861,7 @@ func _animate_gold_gain(origin_uuid: String, amount: int, target_gold_amount: in
 
 	# Wait for animations
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.45
-	await get_tree().create_timer(total_wait).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
 
 func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 	# 1. Get origin position from snapshot
@@ -857,7 +932,7 @@ func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 		)
 		
 		if i > 0:
-			await get_tree().create_timer(stagger_delay).timeout
+			await AnimationConstants.create_pausable_timer(get_tree(), stagger_delay).timeout
 		
 		if is_instance_valid(token_vfx):
 			token_vfx.play(target_pos)
@@ -865,7 +940,7 @@ func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 
 	# Wait for animations to complete
 	var total_wait_token = 0.5 + (tokens_to_spawn * stagger_delay)
-	await get_tree().create_timer(total_wait_token).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), total_wait_token).timeout
 
 func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: Dictionary) -> void:
 	var source_view = _visual_registry.get(source_uuid)

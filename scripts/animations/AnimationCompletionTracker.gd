@@ -64,7 +64,7 @@ func await_completion(uuid: String, anim_type: AnimationType) -> void:
 	
 	# Get timeout duration
 	var timeout_duration: float = TIMEOUTS.get(anim_type, 1.5)
-	var timeout_timer = _tree.create_timer(timeout_duration)
+	var timeout_timer = AnimationConstants.create_pausable_timer(_tree, timeout_duration)
 	
 	# Poll until complete or timeout
 	while _is_pending(uuid, anim_type) and timeout_timer.time_left > 0:

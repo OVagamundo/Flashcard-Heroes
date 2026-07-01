@@ -137,7 +137,7 @@ func _animate_staggered_entry() -> void:
 	# STAGE 2: Wait before starting the population sequence
 	# Only wait a short time on first entry (per USER request)
 	if _is_first_populate:
-		await get_tree().create_timer(0.5).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), 0.5).timeout
 		_is_first_populate = false
 	else:
 		# Just a tiny delay for subsequent refreshes to let layout settle
@@ -376,7 +376,7 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 			t.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
 		)
 		coin.play(start_pos + Vector2(randf_range(-15, 15), randf_range(-8, 8)), target_pos, i * 0.08)
-	await get_tree().create_timer((coins - 1) * 0.08 + 0.55).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), (coins - 1) * 0.08 + 0.55).timeout
 
 func _map_screen_to_vfx_viewport(screen_pos: Vector2) -> Vector2:
 	var vfx_layer = WindowManager.get_vfx_layer()

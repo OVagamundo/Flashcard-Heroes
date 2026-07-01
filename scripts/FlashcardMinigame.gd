@@ -885,7 +885,7 @@ func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) 
 				else:
 					# Use SceneTree timer instead of Tween for robust lambda execution
 					var delay = 0.15 * j
-					get_tree().create_timer(delay).timeout.connect(func():
+					AnimationConstants.create_pausable_timer(get_tree(), delay).timeout.connect(func():
 						if is_instance_valid(self) and is_inside_tree():
 							_spawn_token_pop_at_pos(spawn_pos)
 					)

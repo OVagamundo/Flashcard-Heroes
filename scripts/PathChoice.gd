@@ -163,5 +163,5 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	for node_view in _node_views:
 		if is_instance_valid(node_view):
 			node_view.disabled = true
-	await get_tree().create_timer(SELECTION_TRANSITION_DELAY).timeout
+	await AnimationConstants.create_pausable_timer(get_tree(), SELECTION_TRANSITION_DELAY).timeout
 	SignalBus.emit_signal("node_selected", node_def)

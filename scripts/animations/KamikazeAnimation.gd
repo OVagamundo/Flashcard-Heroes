@@ -89,7 +89,7 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 			var spawn_pos = target_view.global_position + (target_view.size * Vector2(0.5, 0.3))
 			VFXFactory.spawn_damage_number_on_layer(armor_consumed, spawn_pos, true) # true = armor (grey)
 		animator.apply_armor_delta(target_uuid, armor_consumed, new_armor)
-		await animator.get_tree().create_timer(AnimationConstants.scaled(0.5)).timeout
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 	
 	# HP DAMAGE (if any after armor)
 	var hp_damage = abs(amount) - armor_consumed
