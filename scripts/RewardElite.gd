@@ -90,7 +90,6 @@ func _update_localized_text() -> void:
 	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
 
 func populate(context: Dictionary) -> void:
-	print("[RewardElite] populate called")
 	_reward_instances = context.get("reward_instances", [])
 	_original_reward_instances = _reward_instances.duplicate()
 	

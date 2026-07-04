@@ -213,6 +213,12 @@ During the presentation phase:
 > [!IMPORTANT]
 > **Zero-Tolerance Rule**: During COMBAT phase, presentation code must make **ZERO** queries to simulation data. Any `get_instance()` call is a violation.
 
+### The Inspection Window Exception
+The **ONLY** exception to this rule is the **Inspection Window**, which actively queries simulation data to display real-time status (like current HP, applied statuses, and dynamic components).
+Because the simulation finishes before the visual VCR playback:
+1. **UUID Lookup Fallback:** Units moving between containers (e.g., moving to the Discard pile during combat) might not be found via their pre-combat `LocationIdentifier`. The `WindowManager` explicitly falls back to `get_instance_by_uuid()` to locate them mid-flight.
+2. **Deferred Memory Erasure:** Enemies that die during the simulation are normally erased from memory. However, to ensure they can still be inspected while their death animation plays, `BattleManager` defers `_flush_deferred_enemy_erasures()` until the turn animation has completely finished.
+
 ---
 
 ## 1.6 Phase-Based UI Blocking
@@ -240,6 +246,24 @@ func _redraw_board() -> void:
 ```
 
 **Why?** If `_redraw_board()` runs during COMBAT, it destroys and recreates `SlotView` nodes, invalidating the `BattleAnimator`'s `_visual_registry`. This breaks all animations mid-playback.
+
+---
+
+## 1.7 Parallel vs. Sequential Animations
+
+A massive architectural distinction exists between how animations are played during Combat versus the Management phase.
+
+### Sequential Combat Playback (VCR)
+During the `COMBAT` phase, `CombatSimulator` generates a monolithic `TurnLog` array containing hundreds of events. 
+`BattleAnimator.play_turn_sequence()` processes this log **strictly sequentially**. Each event is awaited (`await _animate_events`) before the next event can begin, preserving the precise causal history of the simulation (e.g., Damage → Death → Summon).
+
+### Parallel Management Phase Playback
+During the `MANAGEMENT` phase, interactive commands (like **Drawing** units or **Merging**) do NOT use the VCR's `TurnLog`. Instead, they use a specialized decoupled execution path:
+- The UI triggers an action (`bm_draw_gacha_instance`).
+- `BattleManager` executes the action instantly and returns a localized array of `chain_events`.
+- `BattleManager` calls `animator.play_async_chain(chain_events)`.
+- **Parallel Execution:** Because `play_async_chain` is dispatched asynchronously without blocking the main interaction thread, clicking a button multiple times rapidly (e.g., spam-clicking the Draw button) fires off multiple asynchronous chains simultaneously.
+- This allows visual animations (like units flying out of a gacha pipe) to **overlap and play in parallel** rather than being queued up and played one at a time.
 
 ### Event Ordering and Deferred Deaths
 
@@ -686,3 +710,17 @@ Separate from the turn-based simulation, the **Inventory Drawer** and **Discard 
 - **Overflow Penalty**: If a ball maintains continuous contact with the **Spring Lid** for 5 seconds, it emits a penalty signal.
 - **Data Mutation**: This signal triggers an **immediate** atomic move of the instance to the **Battle Discard Pile**. See [InventoryManager.md](InventoryManager.md) for details.
 - **Interaction Boundaries**: To prevent accidental window closure, hover inspections originating outside the active inventory window are blocked while the drawer is open (Rule S8).
+
+## 1.8 Universal Sub-Phase Payload Architecture
+
+As abilities became more complex, we needed a way for complex animations (like multi-hit attacks, chaining attacks, or intercepting blows) to be sequenced properly without breaking the Zero-Time Simulation rule.
+
+### The Problem
+Previously, abilities like `BasicAttackEffect` hardcoded logic directly into the central `EffectHandlers`, making it difficult to sequence visual timings. In addition, when we decoupled the ability logic into separate scripts, we inadvertently bypassed central checks (like Traits, Trinkets, and Guardian Intercepts), causing regressions. Furthermore, nested payloads (like passing arrays of sub-events) were losing their type metadata when Godot cloned dictionaries via `.duplicate(true)`, resulting in untyped `Array`s instead of strongly typed `Array[Resource]`s, which crashed the `BattleAnimator`.
+
+### The Solution: Universal Sub-Phase Payloads
+To resolve this, we introduced the Universal Sub-Phase Payload architecture:
+
+1. **Self-Contained Effect Scripts**: Complex abilities (like `BasicAttackEffect`) now handle their own execution and sub-phase logic internally, rather than relying on a monolithic `EffectHandlers` switch statement. They must explicitly calculate interactions (like Burn application, Fire Traits, and Guardian intercepts) before computing final damage impacts.
+2. **Sub-Phase Arrays**: `CombatEvent`s can now contain nested arrays of sub-events (e.g., an `events` array within the `visual_payload`). This allows the `BattleAnimator` to unpack and play complex sequences (like "Lunge" -> "Hit" -> "Return") in order, dynamically handling sub-routines.
+3. **Type-Safe Resource Nesting**: To prevent Godot's `duplicate(true)` from mangling inner arrays of objects into untyped dictionaries, `CombatEvent` now extends `Resource` (which supports deep copying natively without stripping object metadata), and arrays of events MUST be strongly typed as `Array[Resource]` before being nested in a dictionary payload.

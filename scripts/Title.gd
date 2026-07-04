@@ -11,15 +11,12 @@ extends Control
 func _input(event: InputEvent) -> void:
 	# Debug Header: Reset tutorials with Shift+T
 	if event is InputEventKey and event.pressed and event.keycode == KEY_T and event.shift_pressed:
-		print("[Title] Debug: Resetting all tutorials request.")
 		if TutorialManager:
 			TutorialManager.reset_all_tutorials()
-			print("[Title] Tutorials reset.")
 			if tutorial_checkbox:
 				tutorial_checkbox.button_pressed = true # Auto-enable
 
 func _ready() -> void:
-	print("[Title] Ready. TutorialManager.tutorials_enabled: ", TutorialManager.tutorials_enabled)
 	# AUDIO HOOK: Title BGM
 	Audio.play_music(SoundRegistry.BGM_TITLE)
 	

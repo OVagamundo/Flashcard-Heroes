@@ -224,7 +224,7 @@ func _on_bump_tween_finished() -> void:
 # =============================================================================
 # DEATH FADE ANIMATION
 # =============================================================================
-func _on_unit_death_fade(unit_uuid: String) -> void:
+func _on_unit_death_fade(unit_uuid: String, stay_in_place: bool = false) -> void:
 	if _get_uuid() != unit_uuid:
 		return
 	
@@ -234,8 +234,11 @@ func _on_unit_death_fade(unit_uuid: String) -> void:
 	# so that no matter what tweens were running (leap, recoil, etc),
 	# it is visually detached and floating exactly from its slot.
 	if is_instance_valid(_view):
-		_view.top_level = false
-		_view.position = Vector2.ZERO
+		if not stay_in_place:
+			_view.top_level = false
+			_view.position = Vector2.ZERO
+		else:
+			_view.top_level = true
 	_reset_sprite_scale()
 	
 	var original_position: Vector2 = _view.position

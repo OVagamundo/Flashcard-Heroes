@@ -165,7 +165,7 @@ signal apply_deaths_requested(dead_unit_uuids: Array)
 
 ## Request that a unit view plays its death fade animation (visual only).
 ## The actual removal from data happens via apply_deaths_requested after fade.
-signal unit_death_fade(unit_uuid: String)
+signal unit_death_fade(unit_uuid: String, stay_in_place: bool)
 
 ## Emitted when a unit's death fade animation completes
 ## @param unit_uuid: String - The UUID of the unit that finished fading

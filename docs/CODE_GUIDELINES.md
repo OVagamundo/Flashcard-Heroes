@@ -52,21 +52,27 @@ Abilities are isolated functions. They know **only** what is passed in their `co
 
 This layer includes `BattleView`, `BattleAnimator`, and `GachaBallView`.
 
-### 3.1 The VCR Pattern
+### 3.1 The VCR Pattern (Combat Phase)
 Combat is a pre-recorded movie.
 1.  **Simulation** runs instantly at Turn Start → generates `TurnLog`.
-2.  **Presentation** plays the `TurnLog` like a VCR tape.
+2.  **Presentation** plays the `TurnLog` sequentially like a VCR tape.
 *   **Implication:** The UI is physically incapable of changing the game outcome. It is a dumb terminal.
 
-### 3.2 The Snapshot Rule
+### 3.2 The Async Pattern (Management Phase)
+During the Management phase, actions like drawing units or merging do NOT use the sequential VCR.
+*   **Simulation** runs the action instantly and returns a localized event chain.
+*   **Presentation** plays this chain asynchronously (`animator.play_async_chain()`).
+*   **Implication:** Multiple visual actions (like rapid-fire drawing) overlap and execute in parallel, completely decoupled from the strict sequential turn log.
+
+### 3.3 The Snapshot Rule (Combat Phase)
 During the `COMBAT` phase, the UI must **NEVER** query the live `GachaBallInstance`.
 *   **Why?** The live instance is already at the "End of Turn" state (damaged/dead).
 *   **How:** The UI uses a **Visual Snapshot** captured before the turn started.
 *   ❌ **Banned in UI:** `BattleManager.get_instance(id)`
 *   ✅ **Allowed:** `_visual_snapshot[id]`
 
-### 3.3 The Puppet Mode (Orchestration)
-During complex animation sequences (like a potion usage with multiple effects), the Data Model ("Truth") updates instantly, but visuals must play sequentially.
+### 3.4 The Puppet Mode (Orchestration)
+During complex animation sequences (like a potion usage or combat event), the Data Model ("Truth") updates instantly, but visuals must animate.
 *   **Silence the Index:** The Manager actively blocks global UI refreshes (`set_processing_effect(true)`) during the sequence.
 *   **Guard the Puppet:** The View actively ignores "loud" signals (`unit_stat_changed`) if the Manager is in Puppet Mode.
 *   **Tween, Don't Snap:** Visual updates must *always* tween from the current visual value, not snap to the new data value.
@@ -102,6 +108,7 @@ Trinkets are not "held" by units in the simulation sense (even if the UI shows t
 2.  **Never Defensive Code:** Do not use `if is_instance_valid(x): return`. Use `assert(is_instance_valid(x))` and crash. We fail fast to find bugs, we don't hide them.
 3.  **Never Modify Core for One Ability:** If you need to change `BattleManager.gd` for a specific trinket, your design is wrong. Use the existing Event/Trigger system.
 4.  **Never Mix Logic and Visuals:** If your script imports `Control` or `Sprite2D`, it CANNOT contain combat logic. If your script imports `GachaBallInstance`, it CANNOT contain visual code.
+5.  **Never Leak Engine Resources:** When destroying nodes (`queue_free`), ALWAYS ensure that any active `Tween` or `SceneTreeTimer` is explicitly killed or properly bound (`tween.bind_node(self)`). Orphaned tweens holding references to freed nodes will cause severe memory leaks and desyncs.
 
 6.  **Never Assume Existence:** Do not call a function (e.g. `enqueue_reaction`) unless you have verified it exists in the definition file.
 7.  **Never Leave Zombies:** When removing a unit, ALWAYS use `bm_remove_instance`. Never use `container.set_uuid(i, "")` directly.

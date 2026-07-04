@@ -23,7 +23,6 @@ func save_run(run_state: RunState) -> bool:
 	
 	file.store_var(data)
 	file.close()
-	print("[SaveManager] Run saved successfully (Day %d)" % run_state.day)
 	return true
 
 
@@ -47,7 +46,6 @@ func load_run() -> RunState:
 	
 	var run_state := RunState.new()
 	run_state.from_save_dict(data)
-	print("[SaveManager] Run loaded successfully (Day %d)" % run_state.day)
 	return run_state
 
 
@@ -60,7 +58,5 @@ func has_save() -> bool:
 func clear_save() -> void:
 	if has_save():
 		var err := DirAccess.remove_absolute(SAVE_PATH)
-		if err == OK:
-			print("[SaveManager] Save file cleared")
-		else:
+		if err != OK:
 			push_error("[SaveManager] Failed to clear save file: %d" % err)

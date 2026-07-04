@@ -57,7 +57,7 @@ var source_name: String = ""
 var target_names: Array[String] = []
 var apply_burn: bool = false
 
-func _init(p_type: Type, p_context: Dictionary = {}) -> void:
+func _init(p_type: Type = Type.DAMAGE, p_context: Dictionary = {}) -> void:
 	self.type = p_type
 	
 	# Assign unique event ID for simulation-presentation verification
@@ -108,8 +108,39 @@ func get_type_name() -> String:
 ## Log this event to console with [SIM] prefix for verification
 func log_sim() -> void:
 	var targets_str = ", ".join(target_uuids) if not target_uuids.is_empty() else "none"
-	print("[SIM] Event#%d: %s | src=%s | targets=[%s]" % [event_id, get_type_name(), source_uuid.substr(0, 20), targets_str])
 
 ## Static method to reset event counter (call at battle start)
 static func reset_event_counter() -> void:
 	_next_event_id = 0
+
+## Deep clone this event, bypassing Godot's duplicate(true) limitation on non-exported fields.
+func deep_clone() -> CombatEvent:
+	var copy = CombatEvent.new(self.type)
+	copy.event_id = self.event_id
+	copy.source_uuid = self.source_uuid
+	copy.target_uuids = self.target_uuids.duplicate()
+	copy.ability_id = self.ability_id
+	copy.trigger_type = self.trigger_type
+	copy.ability_holder_uuid = self.ability_holder_uuid
+	copy.trinket_activations = self.trinket_activations.duplicate(true)
+	copy.text = self.text
+	copy.amount = self.amount
+	copy.stat = self.stat
+	copy.skip_bump = self.skip_bump
+	copy.source_name = self.source_name
+	copy.target_names = self.target_names.duplicate()
+	copy.apply_burn = self.apply_burn
+	
+	var new_payload = self.visual_payload.duplicate()
+	# Recursively clone nested events
+	for key in ["windup_events", "pre_impact_events", "impact_events"]:
+		if new_payload.has(key):
+			var nested_copies: Array[CombatEvent] = []
+			for nested in new_payload[key]:
+				if is_instance_valid(nested) and nested.has_method("deep_clone"):
+					nested_copies.append(nested.deep_clone())
+			new_payload[key] = nested_copies
+			
+	copy.visual_payload = new_payload
+	return copy
+
