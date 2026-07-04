@@ -863,6 +863,28 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 			# appended reactions start at start_index.
 			drain_reactions_inline(start_index, bm)
 
+func drain_and_capture_reactions_inline(start_index: int, bm) -> Array[CombatEvent]:
+	var captured_events: Array[CombatEvent] = []
+	if start_index >= _pending_reactions.size():
+		return captured_events
+	
+	var reactions_to_process: Array[EffectRequest] = []
+	for i in range(start_index, _pending_reactions.size()):
+		reactions_to_process.append(_pending_reactions[i])
+	
+	_pending_reactions.resize(start_index)
+	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	
+	for request in reactions_to_process:
+		var inline_start_index := captured_events.size()
+		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(captured_events, request, bm, inline_start_index)
+		
+		if not _pending_reactions.is_empty():
+			captured_events.append_array(drain_and_capture_reactions_inline(start_index, bm))
+			
+	return captured_events
+
 ## Drain ONLY execute_on_lethal reactions WITHOUT recursive cascade processing.
 ## @param start_index: Only process reactions at index >= start_index
 ## @param bm: BattleManager reference

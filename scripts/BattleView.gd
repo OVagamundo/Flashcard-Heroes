@@ -496,7 +496,6 @@ func _show_battle_management_tutorial() -> void:
 
 func _gui_input(event) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		print("DEBUG_INPUT: BattleView Background Clicked.")
 		# Create and emit InteractionContext for battle background
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()

@@ -25,7 +25,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		var source_view = animator._visual_registry.get(source_uuid)
 		if is_instance_valid(source_view):
 			if SignalBus.has_signal("unit_death_fade"):
-				SignalBus.emit_signal("unit_death_fade", source_uuid)
+				SignalBus.emit_signal("unit_death_fade", source_uuid, false)
 				await animator.wait_for_animation_completion("death_fade", source_uuid)
 			if animator._visual_registry.has(source_uuid):
 				animator._visual_registry.erase(source_uuid)
@@ -54,7 +54,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	
 	# 3. DEATH AT TARGET - No return, die where we are
 	if SignalBus.has_signal("unit_death_fade"):
-		SignalBus.emit_signal("unit_death_fade", source_uuid)
+		SignalBus.emit_signal("unit_death_fade", source_uuid, true)
 		await animator.wait_for_animation_completion("death_fade", source_uuid)
 	
 	# Cleanup from registry

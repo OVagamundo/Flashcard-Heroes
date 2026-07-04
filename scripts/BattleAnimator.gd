@@ -86,6 +86,7 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 	
 	await play_turn(turn_log)
 	_is_playing_sequence = false
+	emit_signal("turn_animation_finished")
 
 func _register_all_puppets(start_snapshot: Dictionary) -> void:
 	# PUPPET MODE: Build visual registry by scanning scene tree
@@ -153,12 +154,6 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 								# Inject uuid into snapshot so set_visual_state can update _instance_uuid
 								snapshot_data["uuid"] = uuid
 								gacha_view.set_visual_state(snapshot_data)
-							else:
-								push_warning("[BattleAnimator] Failed to register %s: Child is not GachaBallView" % uuid)
-						else:
-							push_warning("[BattleAnimator] Failed to register %s: Slot %d in %s is empty" % [uuid, index, container_tag])
-					else:
-						pass
 				else:
 					pass
 		
@@ -206,7 +201,6 @@ func _get_slot_view(container_tag: StringName, slot_index: int) -> PanelContaine
 
 func play_turn(events: Array[CombatEvent]) -> void:
 	if events.is_empty():
-		emit_signal("turn_animation_finished")
 		return
 	
 	_dead_units.clear()
@@ -342,7 +336,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					_dead_units[dead_uuid] = true
 					Audio.play_sfx("combat_death")
 					if SignalBus.has_signal("unit_death_fade"):
-						SignalBus.emit_signal("unit_death_fade", dead_uuid)
+						SignalBus.emit_signal("unit_death_fade", dead_uuid, false)
 					await wait_for_animation_completion("death_fade", dead_uuid)
 					
 					var dead_view = _visual_registry.get(dead_uuid)
@@ -535,54 +529,34 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	
 	_is_paused = false
 	_step_advance_requested = false
-	
-	emit_signal("turn_animation_finished")
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
 	var view = _visual_registry.get(target_uuid)
-	if not is_instance_valid(view) or not view.has_method("animate_stat_change"):
-		push_warning("[BattleAnimator] HP delta target not in visual registry: " + target_uuid)
-		return
 	view.animate_stat_change(new_hp, amount, "hp")
 
 func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 	var view = _visual_registry.get(target_uuid)
-	if is_instance_valid(view) and view.has_method("animate_stat_change"):
-		view.animate_stat_change(new_pwr, amount, "pwr")
-	else:
-		push_warning("[BattleAnimator] PWR delta target not in visual registry: " + target_uuid)
+	view.animate_stat_change(new_pwr, amount, "pwr")
 
 func apply_burn_stack(uuid: String, new_stacks: int) -> void:
-	if _visual_registry.has(uuid):
-		var view = _visual_registry[uuid]
-		if is_instance_valid(view) and view.has_method("animate_burn_change"):
-			view.animate_burn_change(new_stacks)
+	var view = _visual_registry[uuid]
+	view.animate_burn_change(new_stacks)
 
 func apply_armor_stack(uuid: String, new_stacks: int) -> void:
-	if _visual_registry.has(uuid):
-		var view = _visual_registry[uuid]
-		if is_instance_valid(view) and view.has_method("animate_armor_change"):
-			view.animate_armor_change(new_stacks)
+	var view = _visual_registry[uuid]
+	view.animate_armor_change(new_stacks)
 
 func apply_armor_delta(target_uuid: String, armor_consumed: int, new_armor: int) -> void:
 	var view = _visual_registry.get(target_uuid)
-	if is_instance_valid(view):
-		if view.has_method("animate_armor_stat_change"):
-			view.animate_armor_stat_change(new_armor, armor_consumed)
-		elif view.has_method("animate_armor_change"):
-			view.animate_armor_change(new_armor)
+	view.animate_armor_stat_change(new_armor, armor_consumed)
 
 func apply_status_stack(uuid: String, status_id: StringName, new_stacks: int) -> void:
-	if _visual_registry.has(uuid):
-		var view = _visual_registry[uuid]
-		if is_instance_valid(view) and view.has_method("animate_status_change"):
-			view.animate_status_change(status_id, new_stacks)
+	var view = _visual_registry[uuid]
+	view.animate_status_change(status_id, new_stacks)
 
 func apply_spikes_stack(uuid: String, new_stacks: int) -> void:
-	if _visual_registry.has(uuid):
-		var view = _visual_registry[uuid]
-		if is_instance_valid(view) and view.has_method("animate_status_change"):
-			view.animate_status_change(&"spikes", new_stacks)
+	var view = _visual_registry[uuid]
+	view.animate_status_change(&"spikes", new_stacks)
 
 func _emit_bump(_attacker_uuid: String) -> void:
 	pass
@@ -639,7 +613,6 @@ func _play_trinket_activations_for_event(event: CombatEvent) -> void:
 		})
 	
 	for activation in activations:
-		print("[TRINKET_DBG] Activation: def=", activation.get("definition_id", ""), " uuid=", activation.get("visual_uuid", ""), " enemy=", activation.get("is_enemy", false), " event_type=", event.get_type_name())
 		play_trinket_activation(
 			String(activation.get("visual_uuid", "")),
 			StringName(activation.get("definition_id", &"")),
@@ -650,16 +623,11 @@ func _play_trinket_activations_for_event(event: CombatEvent) -> void:
 func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
 	var view = _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
 	if is_instance_valid(view):
-		print("[TRINKET_DBG] FOUND view for def=", trinket_definition_id, " uuid=", visual_uuid, " -> playing bounce on view def=", view.get_definition_id(), " view_uuid=", view.get_instance_uuid())
 		if view.has_method("play_trinket_activation_bounce"):
 			view.play_trinket_activation_bounce()
 		elif view.has_method("play_landing_bounce"):
 			view.play_landing_bounce()
-	else:
-		print("[TRINKET_DBG] NO VIEW FOUND for def=", trinket_definition_id, " uuid=", visual_uuid, " enemy=", is_enemy_trinket)
-
 func hop_trinket_by_definition_id(trinket_definition_id: StringName, is_enemy_trinket: bool = false) -> void:
-	print("[TRINKET_DBG] hop_trinket_by_definition_id: ", trinket_definition_id)
 	play_trinket_activation("", trinket_definition_id, is_enemy_trinket)
 
 func hop_trinket_by_visual_uuid(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
@@ -667,10 +635,6 @@ func hop_trinket_by_visual_uuid(visual_uuid: String, trinket_definition_id: Stri
 
 func _find_trinket_view(visual_uuid: String, trinket_definition_id: StringName, is_enemy_trinket: bool) -> GachaBallView:
 	var trinket_views := _get_trinket_views_from_tree()
-	print("[TRINKET_DBG] _find_trinket_view: ", trinket_views.size(), " views in group. Looking for uuid=", visual_uuid, " def=", trinket_definition_id, " enemy=", is_enemy_trinket)
-	for v in trinket_views:
-		if is_instance_valid(v):
-			print("[TRINKET_DBG]   view: uuid=", v.get_instance_uuid(), " def=", v.get_definition_id(), " container=", v._location.container if is_instance_valid(v._location) else "NO_LOC", " visible=", v.visible)
 	if not visual_uuid.is_empty():
 		for view in trinket_views:
 			if is_instance_valid(view) and view.get_instance_uuid() == visual_uuid:

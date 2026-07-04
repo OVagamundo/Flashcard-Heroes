@@ -12,6 +12,11 @@
 - [x] Fixed Entity Description Mismatches across various unit defs.
 - [x] Audited Animation Refactor Documentation to reflect current architectural state.
 - [x] Implemented Soul Inheritance Logic for dynamic stat transferring.
+- [x] Debugged and fixed Engine Resource Leaks.
+- [x] Fixed Fusion Spark Bug.
+- [x] Fixed inspection window lookup failures during combat animations by implementing UUID-based fallback in `WindowManager`.
+- [x] Fixed premature enemy memory erasure by deferring `_flush_deferred_enemy_erasures()` until combat animations finish in `BattleManager`.
+- [x] Fixed interaction bugs during VCR playback by disabling hover and properly ignoring double-click events to prevent instant window closures.
 
 ### 🔄 CURRENT TASKS
 - [ ] **Test the complete flashcard system end-to-end**

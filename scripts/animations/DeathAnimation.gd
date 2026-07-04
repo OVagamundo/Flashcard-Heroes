@@ -7,7 +7,7 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 	
 	for target_uuid in targets:
 		if SignalBus.has_signal("unit_death_fade"):
-			SignalBus.emit_signal("unit_death_fade", target_uuid)
+			SignalBus.emit_signal("unit_death_fade", target_uuid, false)
 			
 		await animator.wait_for_animation_completion("death_fade", target_uuid)
 		

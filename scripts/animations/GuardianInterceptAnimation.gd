@@ -10,7 +10,6 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	var original_target_uuid: String = String(payload.get("original_target_uuid", ""))
 	
 	if guardian_uuid.is_empty() or original_target_uuid.is_empty():
-		push_warning("[GuardianInterceptAnimation] Missing guardian_uuid or original_target_uuid")
 		return
 	
 	# Ensure this is a coroutine
@@ -21,12 +20,7 @@ func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> vo
 	var guardian_view = animator._visual_registry.get(guardian_uuid)
 	var target_pos = animator.get_snapshot_position(original_target_uuid)
 	
-	if not is_instance_valid(guardian_view):
-		push_warning("[GuardianInterceptAnimation] Guardian view not found in registry")
-		return
-	
 	if target_pos.is_empty():
-		push_warning("[GuardianInterceptAnimation] Target position snapshot not found")
 		return
 	
 	# Leap to target's position

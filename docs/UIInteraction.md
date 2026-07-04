@@ -62,7 +62,7 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | **S2** Change of Focus | Click on non-target = move selection |
 | **S3** Selection-Only | Shop/Rewards: any click = change focus |
 | **S4** Re-Selection | Click selected item = lock inspection window |
-| **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) after a 1-second dwell-time delay (to prevent accidental triggers during quick mouse passes) |
+| **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) after a 1-second dwell-time delay. Hover is **disabled** during VCR playback and Combat phases to prevent conflicts; players must explicitly click to inspect during animations. |
 | **S5a** Touch Peek | On touch devices, long-press temporarily opens inspection; release closes it unless the interaction is promoted by a tap/selection flow |
 | **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
@@ -115,12 +115,22 @@ The application maintains a strict four-tier UI hierarchy to resolve all occlusi
 
 ---
 
-## 4. Combat Presentation (VCR)
+## 4. Animation Playback Architectures
 
-### Flow
+The game uses two distinct architectures for handling visual animations depending on the phase.
+
+### 4.1 Sequential Combat Presentation (VCR)
+During Combat (`COMBAT`, `START_OF_TURN`, `END_OF_TURN`), the game uses a strict VCR pattern to preserve causal history:
 1. "Battle!" Button Pressed (End Turn) → Simulation runs instantly → TurnLog generated
-2. BattleAnimator plays TurnLog sequentially
-3. Views operate in **Puppet Mode** - only react to Animator signals
+2. `BattleAnimator.play_turn_sequence()` plays the TurnLog sequentially.
+3. Views operate in **Puppet Mode** - only react to Animator signals, waiting for each event to finish before the next begins.
+
+### 4.2 Parallel Management Phase Animations
+During the `MANAGEMENT` phase, interactions (like Drawing units from the Gacha or Merging) do NOT use the TurnLog.
+1. UI triggers an action (e.g., clicking Draw).
+2. Simulation generates a localized event chain (`chain_events`).
+3. `BattleAnimator.play_async_chain()` is called asynchronously without blocking the UI thread.
+4. **Parallel Execution:** Rapid interactions (like spam-clicking Draw) fire off concurrent chains, allowing visual animations to overlap and play in parallel instead of queuing sequentially.
 
 ### Blocking Phases
 | Phase | UI Status |

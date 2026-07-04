@@ -37,17 +37,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	#    This prevents "Extra Attack" (Cause: ABILITY) from triggering another "Extra Attack" (Requires: CAUSE_TURN)
 	var trigger_cause = _context.get("trigger_cause", &"")
 	var ability_id = _context.get("ability_id", &"")
-	
 	if ability_id != &"basic_attack":
 		trigger_cause = &"CAUSE_ABILITY"
 	
-	# CRITICAL: Capture queue size BEFORE triggering any reactions
-	# This ensures we drain ALL reactions (on_attack + on_before_damage) added during this attack
-	var reactions_before_attack: int = battle_manager.get_pending_reactions_size()
-	
-	# Trigger on_attack for the attacker using the unified broadcast system
-	# This structure allows abilities to listen to:
-	# 1. "on_attack" (Generic - fires for everything, filtered by CAUSE)
+	# WIND-UP PHASE
+	var windup_start: int = battle_manager.get_pending_reactions_size()
 	if not _context.get("on_attack_already_triggered", false):
 		var attack_context: Dictionary = {
 			"attacker_uuid": attacker_uuid,
@@ -55,47 +49,141 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			"target_initial_hp": target_instance.current_hp,
 			"is_simulation": is_simulation,
 			"trigger_cause": trigger_cause,
-			"cause_id": ability_id # Track which ability caused this attack
+			"cause_id": ability_id
 		}
-		
-		# Always fire generic trigger
 		AbilityResolver.process_trigger(&"on_attack", attack_context)
+		
+	var windup_events: Array[CombatEvent] = []
+	if is_simulation:
+		windup_events = battle_manager.drain_and_capture_reactions_inline(windup_start)
 
-	# Trigger on_before_damage on the target (for defensive abilities like Defensive Stance)
-	# This fires for all attacks including counter-attacks
+	# PRE-IMPACT PHASE
+	var pre_impact_start: int = battle_manager.get_pending_reactions_size()
 	var before_attack_context: Dictionary = {
-		"source_uuid": target_instance.ball_uuid, # The target is the source of its own defensive ability
-		"defender_uuid": target_instance.ball_uuid, # CRITICAL: Used by AbilityResolver to filter responding units
+		"source_uuid": target_instance.ball_uuid,
+		"defender_uuid": target_instance.ball_uuid,
 		"attacker_uuid": attacker_uuid,
 		"target_initial_hp": target_instance.current_hp,
 		"is_simulation": is_simulation
 	}
 	AbilityResolver.process_trigger(&"on_before_damage", before_attack_context)
 	
-	# CRITICAL FIX: Drain ALL pre-attack reactions (on_attack + on_before_damage) inline
-	# This includes Power Amulet buffs, Defensive Stance heals, etc.
-	# They must execute BEFORE damage is calculated so stats are correct
-	# Priority sorting ensures high-priority effects (Power Amulet=100) execute first
+	var pre_impact_events: Array[CombatEvent] = []
 	if is_simulation:
-		battle_manager.drain_pending_reactions_inline(reactions_before_attack)
+		pre_impact_events = battle_manager.drain_and_capture_reactions_inline(pre_impact_start)
 
+	# -------------------------------------------------------------------------
+	# TRAIT & TRINKET LOGIC
+	# -------------------------------------------------------------------------
+	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
+	var is_player_source = false
+	if is_instance_valid(source_instance):
+		is_player_source = battle_manager._is_player_unit(source_instance)
 	
-	# CRITICAL: During simulation, DO NOT modify state here.
-	# BattleManager handles the application via apply_stat_delta().
-	# Modifying it here would cause double damage (once here, once in BattleManager).
-	if not is_simulation:
-		battle_manager.apply_stat_delta(target_instance, "hp", -damage)
-
-	# NOTE: on_hurt is triggered by BattleManager AFTER apply_stat_delta, not here.
-	# This ensures condition checks like DAMAGE_WAS_NON_LETHAL see post-damage HP.
+	var burn_amount := 0
+	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
+	var fire_level = active_traits.get("FIRE", 0)
 	
-	# NOTE: on_kill is NOT triggered here - BattleManager handles kill tracking
-	# at the per-actor level after all reactions complete. This ensures kills from
-	# all sources (shockwave, counter, double strike, etc.) are properly attributed.
+	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
+		burn_amount += 1
+		
+	if fire_level >= 3:
+		if is_instance_valid(source_instance) and battle_manager._has_trait_soul(source_instance, "FIRE"):
+			burn_amount += 1
+			if fire_level >= 5:
+				burn_amount += 1
+	
+	var should_apply_burn = burn_amount > 0
+	
+	# Fire 9 Bonus Damage
+	if fire_level >= 9:
+		if is_instance_valid(source_instance) and battle_manager._has_trait_soul(source_instance, "FIRE"):
+			var burn_count = target_instance.get_status_effect_amount(&"burn")
+			if burn_count > 0:
+				damage += burn_count
+				
+	# Guardian Sentinel Intercept
+	var would_be_lethal = target_instance.current_hp - damage <= 0
+	var tgt_is_player_unit = battle_manager._is_player_unit(target_instance)
+	var is_ally_damage = (tgt_is_player_unit != is_player_source)
+	
+	var final_target_uuid = target_instance.ball_uuid
+	var final_target = target_instance
+	
+	if would_be_lethal and is_ally_damage:
+		var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, final_target_uuid)
+		if is_instance_valid(guardian):
+			pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+				"source_uuid": guardian.ball_uuid,
+				"target_uuids": [final_target_uuid],
+				"visual_payload": {
+					"guardian_uuid": guardian.ball_uuid,
+					"original_target_uuid": final_target_uuid,
+					"damage": damage
+				}
+			}))
+			final_target_uuid = guardian.ball_uuid
+			final_target = guardian
 
-	# Inform UI and log systems (suppressed when simulating)
+	# IMPACT PHASE (Damage Application)
+	var old_hp = final_target.current_hp
+	var old_armor = final_target.get_status_effect_amount(&"armor")
+	var old_burn = final_target.get_status_effect_amount(&"burn")
+	
+	var damage_result = battle_manager.apply_stat_delta(final_target, "hp", -damage, false, attacker_uuid)
+	
+	var new_hp = damage_result.get("new_hp", final_target.current_hp) if damage_result is Dictionary else final_target.current_hp
+	var armor_consumed = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
+	var new_armor = damage_result.get("new_armor", old_armor) if damage_result is Dictionary else old_armor
+	
+	var burn_val = old_burn
+	if should_apply_burn:
+		burn_val = battle_manager.apply_stat_delta(final_target, "burn_stacks", burn_amount)
+	
+	var spikes_data_list: Array[Dictionary] = []
+	if damage_result is Dictionary and damage_result.has("spikes_data"):
+		spikes_data_list.append(damage_result["spikes_data"])
+		
+	var impact_start: int = battle_manager.get_pending_reactions_size()
+	battle_manager.trigger_on_hurt(final_target_uuid, damage, attacker_uuid)
+	
+	if new_hp <= 0:
+		battle_manager.trigger_on_kill(attacker_uuid, final_target_uuid)
+		
+	var impact_events: Array[CombatEvent] = []
+	if is_simulation:
+		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
+		
+	# PACKAGE EVENTS INTO PAYLOAD
+	var visual_payload: Dictionary = {
+		"source_uuid": attacker_uuid,
+		"amount": damage,
+		"targets_old_hp": [old_hp],
+		"targets_new_hp": [new_hp],
+		"targets_old_armor": [old_armor],
+		"targets_new_armor": [new_armor],
+		"targets_old_burn": [old_burn],
+		"targets_new_burn": [burn_val],
+		"apply_burn": should_apply_burn,
+		"armor_consumed": [armor_consumed],
+		"attack_type": "melee",
+		"original_target_uuids": [target_instance.ball_uuid], # The original target the attack aimed for
+		"spikes_data_list": spikes_data_list,
+		"windup_events": windup_events,
+		"pre_impact_events": pre_impact_events,
+		"impact_events": impact_events
+	}
+	
+	var damage_event = CombatEvent.new(CombatEvent.Type.DAMAGE, {
+		"source_uuid": attacker_uuid,
+		"target_uuids": [final_target_uuid],
+		"visual_payload": visual_payload
+	})
+	
+	var effect_result = EffectResult.from_event(damage_event)
+	effect_result.skip_death_check = false # Allow CombatSimulator to finalize deaths
+	
 	if not is_simulation:
 		SignalBus.battle_inventory_changed.emit()
-		# NOTE: apply_stat_delta() already handles silent/loud logic per context
 
-	return damage
+	return effect_result

@@ -1061,6 +1061,10 @@ func drain_pending_reactions_inline(start_index: int) -> void:
 	# THIN WRAPPER: Delegates to CombatSimulator
 	_combat.drain_reactions_inline(start_index, self )
 
+func drain_and_capture_reactions_inline(start_index: int) -> Array[CombatEvent]:
+	# THIN WRAPPER: Delegates to CombatSimulator
+	return _combat.drain_and_capture_reactions_inline(start_index, self )
+
 func collect_inline_events() -> Array[CombatEvent]:
 	# THIN WRAPPER: Delegates to CombatSimulator
 	return _combat.collect_and_clear_inline_events()

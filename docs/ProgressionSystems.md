@@ -20,7 +20,9 @@ More or better-equipped items.
 (Potentially) Powerful enemy leaders with team-wide passive abilities.
 (Potentially) Enemy trinkets providing team-wide passive effects.
 
-
+### Non-Combat Encounters (Study Sessions)
+As players progress along the path, they will encounter special "Study Session" nodes (Rest Sites, Training Grounds, Gambling Dens).
+- **Cost Structure**: These encounters offer powerful, targeted benefits (healing, unit upgrades, high-risk rewards) and cost a flat fee (e.g., 5 Gold) to utilize, creating an economic choice between shopping and immediate run sustainment.
 
 ## Reward Reroll System
 Players may spend gold to refresh the available rewards. Note: Rerolling reward screens is intended to be a feature unlocked by acquiring the **Reroll Trinket** (Future Content). It is currently enabled by default for testing purposes.

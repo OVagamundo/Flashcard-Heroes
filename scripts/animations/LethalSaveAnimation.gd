@@ -6,7 +6,6 @@ extends BattleAnimation
 
 func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
 	if targets.is_empty():
-		push_warning("[LethalSaveAnimation] No targets provided")
 		return
 	
 	var saved_uuid: String = targets[0]
