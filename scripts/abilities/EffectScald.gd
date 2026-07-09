@@ -19,12 +19,17 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var heal_amount: int = context.get("heal_amount", 0)
 	if heal_amount <= 0:
 		return result
+		
+	var multiplier: float = parameters.get("multiplier", 1.0)
+	
+	if OS.is_debug_build():
+		print("[EffectScald] execute: heal_amount=", heal_amount, ", multiplier=", multiplier, ", computed_dmg=", int(floor(heal_amount * multiplier)))
 	
 	# Apply damage to all targets (usually just FRONT_ENEMY)
 	if not targets.is_empty():
 		result.damage_request = {
 			"stat": "hp",
-			"amount": - heal_amount,
+			"amount": - int(floor(heal_amount * multiplier)),
 			"targets": targets
 		}
 		

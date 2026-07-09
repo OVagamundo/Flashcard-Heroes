@@ -22,7 +22,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			if _is_player_unit_team(inst, battle_manager) == source_is_player:
 				copy_count += 1
 	
-	var scale_amount = 3 if source.level == 1 else (4 if source.level == 2 else 5)
+	var scale_amount = self.parameters.get("scale_amount", 3)
 	var bonus_pwr = copy_count * scale_amount
 	var status_key = &"doppleganger_scaling"
 	var last_scaling = source.get_status_effect_amount(status_key)

@@ -5,17 +5,18 @@
 
 [sub_resource type="Resource" id="EffectRepeatAdjacentBuff_1"]
 script = ExtResource("2_effect")
-parameters = {}
+parameters = { "effectiveness": 1.0 }
 target_type = &"TRIGGERING_ENTITY"
 
 [resource]
 script = ExtResource("1_ability")
-id = &"unit_t2_g_buff_echo"
+id = &"unit_t3_shadow_buff_echo_l1"
 name_key = "ability.unit_t2_g_buff_echo.name"
-description_key = "ability.unit_t2_g_buff_echo.desc"
+description_key = "ability.unit_t3_shadow_l1.desc"
 trigger = &"on_stat_increased"
 priority = 0
 effects = Array[Resource]([SubResource("EffectRepeatAdjacentBuff_1")])
 execute_on_lethal = false
 replaces_basic_attack = false
 condition = null
+max_level = 1

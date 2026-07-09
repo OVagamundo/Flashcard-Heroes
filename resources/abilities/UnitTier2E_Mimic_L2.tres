@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/effects/EffectMirrorTransform.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_custom_transform_2"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "level_delta": 1, "max_level": false }
+
+[resource]
+script = ExtResource("1_def")
+id = &"ability_unit_t3_mimic_l2"
+name_key = "ability.unit_t2_e_mimic.name"
+description_key = "ability.unit_t3_mimic_l2.desc"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("Resource_custom_transform_2")])
+priority = 500
+execute_on_lethal = false
+replaces_basic_attack = false
+required_level = 2
+max_level = 2

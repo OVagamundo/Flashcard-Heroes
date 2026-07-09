@@ -4,6 +4,8 @@
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1EarthUnit.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal.tres" id="4_passive_heal"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal_L3.tres" id="6_l3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -21,4 +23,4 @@ base_hp = 2
 base_pwr = 1
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_passive_heal")])
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_passive_heal"), ExtResource("5_l2"), ExtResource("6_l3")])

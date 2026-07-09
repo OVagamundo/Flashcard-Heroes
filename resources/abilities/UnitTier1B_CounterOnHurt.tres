@@ -26,3 +26,4 @@ effects = Array[Resource]([SubResource("BasicAttackEffect_Counter_1")])
 description_key = "ability.unit_tier1b_counter_on_hurt.desc"
 execute_on_lethal = true
 
+max_level = 1

@@ -4,5 +4,7 @@
 
 [resource]
 script = ExtResource("1_script")
-parameters = {}
+parameters = {
+"multiplier": 1.0
+}
 target_type = &"FRONTMOST_ENEMY"

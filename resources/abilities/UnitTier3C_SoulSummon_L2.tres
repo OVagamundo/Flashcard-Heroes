@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSummonT2OnDeath.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonT2OnDeath_2"]
+script = ExtResource("2_effect")
+parameters = { "level": 2 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_tier3c_soul_summon_l2"
+name_key = "ability.unit_tier3c_soul_summon.name"
+description_key = "ability.unit_tier3c_soul_summon_l2.desc"
+trigger = &"on_death"
+priority = 205
+effects = Array[Resource]([SubResource("EffectSummonT2OnDeath_2")])
+execute_on_lethal = true
+required_level = 2
+max_level = 2

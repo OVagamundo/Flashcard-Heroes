@@ -21,37 +21,39 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var gold = 0
 	if is_instance_valid(GameManager.run_state):
-		gold = GameManager.run_state.gold
+		var multiplier: float = self.parameters.get("multiplier", 1.0)
+		gold = maxi(1, int(GameManager.run_state.gold * multiplier))
 	
-	var current_pwr = source.current_pwr
+	# Delta-safe scaling logic: calculate the required bonus relative to base stats
+	var base_pwr = source.get_definition_base_pwr()
+	var required_bonus = max(0, gold - base_pwr)
 	
-	# Calculate delta to reach target
-	var delta = gold - current_pwr
+	# Fetch previously applied bonus
+	var previous_bonus = source.get_meta("gold_pwr_bonus", 0)
+	var delta = required_bonus - previous_bonus
 	
 	if delta == 0:
 		return EffectResult.new()
 		
+	# Store the new total bonus applied
+	source.set_meta("gold_pwr_bonus", required_bonus)
+	
 	# Apply change via BattleManager
-	# Note: We apply this as bonus_pwr so it's additive to base stats
 	var pwr_result = battle_manager.apply_stat_delta(source, "pwr", delta)
-	var _new_pwr: int = current_pwr
+	var _new_pwr: int = source.current_pwr
 	if pwr_result is Dictionary:
-		_new_pwr = pwr_result.get("new_pwr", current_pwr)
+		_new_pwr = pwr_result.get("new_pwr", source.current_pwr)
 	elif pwr_result != null:
 		_new_pwr = int(pwr_result)
 	
-	# Create visual event - Use LOG_MESSAGE for quiet initialization if it's draw/spawn
-	# Or just a BUFF event if we want the visual. User mentioned "taking damage" was weird.
-	# We'll use a LOG_MESSAGE to explain the stat jump.
 	var unit_name = BattleHelpers.get_instance_display_name(source)
 	
 	var result = EffectResult.new()
-	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-		"text": "%s's investments mature! PWR set to %d (current Gold)" % [unit_name, gold]
-	}))
-	
-	# Still send a BUFF event for the UI to update, but maybe with 0 delta or use state_applied
-	# SignalBus will handle the visual if we emit stat_changed.
+	# Only log if it's a significant change to prevent spamming logs on every board event
+	if abs(delta) >= 1:
+		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+			"text": "%s's investments mature! PWR set to %d (current Gold)" % [unit_name, gold]
+		}))
 	
 	result.state_applied = true
 	return result

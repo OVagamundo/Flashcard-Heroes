@@ -37,12 +37,11 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	
 	var random_def = tier_2_units.pick_random()
 	
-	# 4. Return EffectResult with summon instructions
-	# CombatSimulator will process summon_request via EffectHandlers
 	var result := EffectResult.new()
 	result.summon_request = {
 		"summon_unit_id": random_def.id,
 		"holder_uuid": holder_uuid,
-		"holder_location": holder_location
+		"holder_location": holder_location,
+		"level": self.parameters.get("level", 1)
 	}
 	return result

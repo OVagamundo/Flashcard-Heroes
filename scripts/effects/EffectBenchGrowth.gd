@@ -21,9 +21,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 		
 	# Apply Stats
-	var scale_amount = 3 if source_unit.level == 1 else (5 if source_unit.level == 2 else 7)
-	var hp_amount: int = scale_amount
-	var pwr_amount: int = scale_amount
+	var hp_amount: int = self.parameters.get("scale_amount", 3)
+	var pwr_amount: int = self.parameters.get("scale_amount", 3)
 	
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr

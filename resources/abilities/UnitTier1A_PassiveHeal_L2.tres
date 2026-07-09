@@ -25,3 +25,4 @@ condition = SubResource("ConditionDefinition_NonLethal_1")
 effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1")])
 description_key = "ability.unit_tier1a_passive_heal_l2.desc"
 required_level = 2
+max_level = 2

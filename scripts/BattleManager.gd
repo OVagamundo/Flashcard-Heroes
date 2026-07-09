@@ -1425,7 +1425,7 @@ func _trigger_turn_start_abilities() -> void:
 		null,
 		[],
 		{},
-		C.PRIORITY_TRAIT_BURN # 100
+		C.PRIORITY_TRAIT_START_EFFECTS # -10
 	)
 	_pending_reactions.append(trait_request)
 	

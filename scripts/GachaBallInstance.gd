@@ -630,6 +630,8 @@ func _add_ability_entry(entries: Array[Dictionary], seen: Dictionary, ability: A
 		component_id: StringName) -> void:
 	if not is_instance_valid(ability):
 		return
+	if self.level < ability.required_level or self.level > ability.max_level:
+		return
 	var seen_key := "%s|%s" % [String(ability.id), source_uuid]
 	if seen.has(seen_key):
 		return

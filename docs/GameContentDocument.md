@@ -3,9 +3,9 @@
 
 **Important**: Merge recipes are LOCKED by default at the start of each run. Recipes only unlock when you acquire the resulting gachaball (via shop purchase, battle reward, etc.). These unlocks are per-run only and reset when starting a new run.
 
-- **Tier 1 units** (Apprentice, Squire) are base units with NO recipes
+- **Tier 1 units** (Rocky, Burny) are base units with NO recipes
 - **Tier 2+ units** have recipes that unlock upon acquisition
-- Example: Buying a Knight from the shop unlocks its recipe (Apprentice + Squire → Knight)
+- Example: Buying a Knight from the shop unlocks its recipe (Rocky + Burny → Knight)
 
 ### Ability Stacking Logic
 When merging units, all abilities from both parent units are retained in the resulting unit. If identical abilities exist, their effects stack (e.g., two "Resilience" triggers result in two separate heals) unless otherwise specified in the unit's unique script.
@@ -23,42 +23,41 @@ Units are the primary actors in battle. They have Health (HP) and Power (PWR) st
 | `hero_pyro` | Pyromancer | 0 | 8 HP / 2 PWR | **Incinerate** (`on_attack`): Instead of damage, apply Burn stacks equal to PWR. |
 
 ### Tier 1 Units (Cost: 1 * 2^(L-1))
-| ID | Name | Stats | Souls | Abilities (Level Scaling `[L1 / L2 / L3]`) |
+| ID | Name | Stats | Souls | Abilities |
 |---|---|---|---|---|
-| `unit_t1_a` | Apprentice | 2 HP / 1 PWR | 1 Earth | **Resilience** (`on_hurt`): Heal self by PWR `[PWR / PWR+1 / PWR+2]`. |
-| `unit_t1_b` | Squire | 1 HP / 2 PWR | 1 Fire | **Retaliation** (`on_hurt`): Counter-attack for PWR damage `[100% / 125% / 150%]`. `[L3: Also gains 1 Armor stack]`. |
-| `unit_t1_c` | Protector | 1 HP / 1 PWR | 1 Water | **Guardian's Grace** (`on_ally_hurt`): When ally directly in front takes damage, heal them for PWR `[100% / 150% / 200%]`. |
-| `unit_t1_d` | Empath | 1 HP / 1 PWR | 1 Wind | **Empathic Link** (`on_death`): On death, grant total current PWR to ally behind `[100% / 150% / 200%]`. |
+| `unit_t1_a` | Rocky | 3 HP / 1 PWR | 1 Earth | **Resilience** (`on_hurt`):<br>**L1**: When hurt by a non-lethal attack, heal this unit by 1 HP.<br>**L2**: When hurt by a non-lethal attack, heal this unit by 2 HP.<br>**L3**: When hurt by a non-lethal attack, heal this unit by 3 HP. |
+| `unit_t1_b` | Burny | 1 HP / 2 PWR | 1 Fire | **Retaliation** (`on_hurt`):<br>**L1**: Counter-attack the attacker for 100% of PWR. Triggers even if lethal.<br>**L2**: Counter-attack the attacker for 100% of PWR, and shoot a fire projectile adding PWR as burn to a random unit. Triggers even if lethal.<br>**L3**: Counter-attack the attacker for 100% of PWR, and shoot 2 fire projectiles adding PWR as burn to random units. Triggers even if lethal. |
+| `unit_t1_c` | Dewey | 2 HP / 1 PWR | 1 Water | **Guardian's Grace** (`on_ally_hurt`):<br>**L1**: When the ally directly in front takes damage, heal them for 1 HP.<br>**L2**: When the ally directly in front takes damage, heal them for 2 HP.<br>**L3**: When the ally directly in front takes damage, heal them for 3 HP. |
+| `unit_t1_d` | Windy | 1 HP / 1 PWR | 1 Wind | **Empathic Link** (`on_death`):<br>**L1**: Grant current PWR to the ally behind.<br>**L2**: Grant current PWR to the ally behind, and half to the next ally.<br>**L3**: Grant current PWR to the ally behind, half to the next ally, and half to the next. |
 
 ### Tier 2 Units (Cost: 2 * 2^(L-1))
-| ID | Name | Merge Recipe | Stats | Souls | Abilities (Level Scaling `[L1 / L2 / L3]`) |
+| ID | Name | Merge Recipe | Stats | Souls | Abilities |
 |---|---|---|---|---|---|
-| `unit_t2_c` | Knight | **Apprentice + Squire** | 3 HP / 3 PWR | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`): Gain `[+1/+1, +2/+1, +2/+2]` HP/PWR. |
-| `unit_t2_d` | Templar | **Squire + Empath** | 2 HP / 3 PWR | 1 Water, 1 Wind | **Gacha Power** (`passive`): PWR is equal to Gacha Tokens `[(Min 1) / (Min 2) / (Min 3)]`. PWR buffs convert to HP at `[100% / 150% / 200%]` effectiveness. |
-| `unit_t2_f` | Merchant | **Apprentice + Empath** | 3 HP / 2 PWR | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`, `on_battle_start`): Initial PWR equals your current Gold multiplied by `[1.0 / 1.5 / 2.0]` when drawn or spawned. |
-| `unit_t2_h` | Hermit | **Protector + Empath** | 2 HP / 2 PWR | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only): Gains `[+1/+1, +2/+2, +3/+3]` HP/PWR per empty lineup slot. |
-| `unit_t2_i` | Mud Wretch | **Apprentice + Protector** | 3 HP / 2 PWR | 1 Earth, 1 Water | **Mud Coating** (`on_healed`): When healed, gain `[+1/+1, +2/+1, +2/+2]` Armor/Spikes stacks. |
-| `unit_t2_j` | Steam Wisp | **Squire + Protector** | 2 HP / 3 PWR | 1 Fire, 1 Water | **Scald** (`on_healed`): When healed, deal damage to the front enemy equal to `[100% / 150% / 200%]` of the heal amount. |
+| `unit_t2_c` | Knight | **Rocky + Burny** | 3 HP / 3 PWR | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`):<br>**L1**: Gain +1 HP and +1 PWR.<br>**L2**: Gain +2 HP and +1 PWR.<br>**L3**: Gain +2 HP and +2 PWR. |
+| `unit_t2_d` | Templar | **Burny + Windy** | 2 HP / 3 PWR | 1 Water, 1 Wind | **Gacha Power** (`passive`):<br>**L1**: PWR equals 100% of Gacha Tokens (Min 1). PWR buffs convert to HP.<br>**L2**: PWR equals 125% of Gacha Tokens (Min 1). PWR buffs convert to HP.<br>**L3**: PWR equals 150% of Gacha Tokens (Min 1). PWR buffs convert to HP. |
+| `unit_t2_f` | Merchant | **Rocky + Windy** | 3 HP / 2 PWR | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`, `on_battle_start`):<br>**L1**: Initial PWR equals your current Gold multiplied by 1.0 when drawn or spawned.<br>**L2**: Initial PWR equals your current Gold multiplied by 1.5 when drawn or spawned.<br>**L3**: Initial PWR equals your current Gold multiplied by 2.0 when drawn or spawned. |
+| `unit_t2_h` | Hermit | **Dewey + Windy** | 2 HP / 2 PWR | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only):<br>**L1**: Gains +1 HP and +1 PWR per empty lineup slot.<br>**L2**: Gains +2 HP and +2 PWR per empty lineup slot.<br>**L3**: Gains +3 HP and +3 PWR per empty lineup slot. |
+| `unit_t2_i` | Mud Wretch | **Rocky + Dewey** | 3 HP / 2 PWR | 1 Earth, 1 Water | **Mud Coating** (`on_healed`):<br>**L1**: When healed, gain 1 Armor and 1 Spikes.<br>**L2**: When healed, gain 2 Armor and 2 Spikes.<br>**L3**: When healed, gain 3 Armor and 3 Spikes. |
+| `unit_t2_j` | Steam Wisp | **Burny + Dewey** | 2 HP / 3 PWR | 1 Fire, 1 Water | **Scald** (`on_healed`):<br>**L1**: When healed, deal damage to the front enemy equal to 100% of the heal amount.<br>**L2**: When healed, deal damage to the front enemy equal to 150% of the heal amount.<br>**L3**: When healed, deal damage to the front enemy equal to 200% of the heal amount. |
 
 ### Tier 3 Units (Gold Cost: 4 * 2^(L-1) | Draw Cost: 3 Tokens)
 | ID | Name | Merge Recipe | Stats | Souls | Abilities (Level Scaling `[L1 / L2 / L3]`) |
 |---|---|---|---|---|---|
-| `unit_t3_a` | Duelist | **Merchant + Steam Wisp** | 5 HP / 5 PWR | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in opposite mirror slot. If empty, targets backmost enemy. Deals `[100% / 125% / 150%]` damage. |
-| `unit_t3_b` | Guardian | **Knight + Hermit** | 5 HP / 5 PWR | 4 Earth | **Guardian Sacrifice** (`on_before_damage`): Leaps to intercept lethal damage on allies. Gains `[2 / 4 / 6]` temporary Armor upon interception. |
-| `unit_t3_c` | Necromancer | **Merchant + Templar** | 5 HP / 5 PWR | 2 Fire, 2 Earth | **Soul Summon** (`on_death`): Summons a Tier 2 unit on death at Level `[1 / 2 / 3]`. |
-| `unit_t3_d` | Warden | **Knight + Mud Wretch** | 6 HP / 5 PWR | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): Grants `[+1/+1, +2/+1, +2/+2]` HP/PWR to adjacent allies. |
+| `unit_t3_a` | Shadow Striker | **Merchant + Steam Wisp** | 5 HP / 5 PWR | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in opposite mirror slot. If empty, targets backmost enemy.<br>**L1**: Deals 100% damage.<br>**L2**: Deals 150% damage.<br>**L3**: Deals 200% damage. |
+| `unit_t3_b` | Guardian Sentinel | **Knight + Hermit** | 5 HP / 5 PWR | 4 Earth | **Guardian Sacrifice** (`passive_intercept`): Leaps to intercept lethal damage on allies.<br>**L1**: Gains 2 temporary Armor.<br>**L2**: Gains 4 temporary Armor.<br>**L3**: Gains 6 temporary Armor. |
+| `unit_t3_c` | Soul Caller | **Merchant + Templar** | 5 HP / 5 PWR | 2 Fire, 2 Earth | **Soul Summon** (`on_death`):<br>**L1**: Summons a Tier 2 unit on death at Level 1.<br>**L2**: Summons a Tier 2 unit on death at Level 2.<br>**L3**: Summons a Tier 2 unit on death at Level 3. |
+| `unit_t3_d` | Sakura Spirit | **Knight + Mud Wretch** | 6 HP / 5 PWR | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): When hurt by an attack:<br>**L1**: Grants +1 HP and +1 PWR to adjacent allies.<br>**L2**: Grants +2 HP and +1 PWR to adjacent allies.<br>**L3**: Grants +2 HP and +2 PWR to adjacent allies. |
 | `unit_t3_e` | Assassin | **Knight + Merchant** | 6 HP / 5 PWR | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies equal to `[100% / 150% / 200%]` of PWR when they are summoned. |
 | `unit_t3_f` | Summoner | **Mud Wretch + Templar** | 5 HP / 5 PWR | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies for `[2 / 4 / 6]` HP when they are summoned. |
 | `unit_t3_g` | Phantom Wayfarer | **Templar + Hermit** | 4 HP / 5 PWR | 4 Wind | **Quiet Meditation** (`on_turn_start`): If on bench, gain `[+3/+3, +4/+4, +6/+6]` HP/PWR. **[Player Exclusive]** |
 | `unit_t3_h` | Fusion Warden | **Mud Wretch + Steam Wisp** | 5 HP / 5 PWR | 1 Fire, 1 Water, 2 Wind | **Convergence Surge** (`on_merge`): If on board when a merge happens, gain `[+2/+2, +3/+3, +4/+4]` HP/PWR. |
 | `unit_t3_i` | Doppleganger | **Mud Wretch + Hermit** | 5 HP / 4 PWR | — | **Mirrored Might** (`passive`): `[+3 / +4 / +5]` PWR for every other Doppleganger in the Battle Pool.<br>**Clone Split** (`on_death`): Spawn `[1 / 1 / 2]` additional Dopplegangers into the Gacha Machine. **[Player Exclusive]** |
 | `unit_t3_paladin` | Paladin | **Knight + Templar** | 5 HP / 6 PWR | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain `[+2, +4, +6]` HP before taking damage. |
-| `unit_t3_berserker` | Berserker | **Knight + Steam Wisp** | 5 HP / 6 PWR | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind for `[50% / 75% / 100%]` of PWR. |
+| `unit_t3_berserker` | Berserker | **Knight + Steam Wisp** | 5 HP / 6 PWR | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind.<br>**L1**: Deals 100% of PWR as damage to the front enemy.<br>**L2**: Deals 150% of PWR as damage to the front enemy.<br>**L3**: Deals 200% of PWR as damage to the front enemy. |
 | `unit_t3_mimic` | Mimic | **Mud Wretch + Merchant** | 6 HP / 4 PWR | 2 Water | **Mirror Transformation** (`on_turn_start`): Transforms into the enemy unit in the mirror slot. Level matches target level `[+0 / +1 / maxed out]`. |
 | `unit_t3_shadow` | Shadow Cloner | **Steam Wisp + Hermit** | 4 HP / 5 PWR | 1 Wind | **Buff Echo** (`on_stat_increased`): Repeats any buff received by an adjacent ally at `[100% / 150% / 200%]` effectiveness. |
-| `unit_t3_j` | Standard Bearer | **Steam Wisp + Templar** | 5 HP / 5 PWR | 1 Fire, 2 Water, 1 Wind | **Standard's Legacy** (`on_death`): On death, transfers its equipped item to the ally directly behind it. |
-| `unit_t3_l` | Golden Hermit | **Hermit + Merchant** | 5 HP / 4 PWR | 1 Earth, 1 Water, 2 Wind | **Wealth Accumulation** (`on_turn_start`): At the start of each turn, gain +3 HP and +3 PWR for every 5 Gold you have. **[Player Exclusive]** |
-
+| `unit_t3_j` | Standard Bearer | **Steam Wisp + Templar** | 5 HP / 5 PWR | 1 Fire, 2 Water, 1 Wind | **Standard's Legacy** (`on_death`): Transfers its equipped item.<br>**L1**: Transfers item to ally directly behind.<br>**L2**: Transfers item to ally behind and 1 copy behind them.<br>**L3**: Transfers item to ally behind and 2 copies behind them. |
+| `unit_t3_l` | Golden Hermit | **Hermit + Merchant** | 5 HP / 4 PWR | 1 Earth, 1 Water, 2 Wind | **Wealth Accumulation** (`on_turn_start`): At the start of each turn, gain `[+3 / +4 / +5]` HP and PWR for every 5 Gold you have. **[Player Exclusive]** |
 
 ### Enemies
 | ID | Name | Stats | Type | Abilities |

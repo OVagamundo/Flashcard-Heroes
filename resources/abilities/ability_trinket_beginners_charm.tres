@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_beginners_charm"
-name_key = "ability.beginners_charm.name"
-description_key = "ability.beginners_charm.desc"
+name_key = ""
+description_key = ""
 trigger = &"minigame_start"
 priority = 50
 effects = Array[Resource]([])

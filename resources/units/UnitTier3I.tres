@@ -6,6 +6,13 @@
 [ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale.tres" id="4_scale"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death.tres" id="5_death"]
 
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death_L3.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death_L2.tres" id="102_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale_L3.tres" id="103_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death.tres" id="104_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale.tres" id="105_ability"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"unit_t3_i"
@@ -21,4 +28,12 @@ base_hp = 5
 base_pwr = 4
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_scale"), ExtResource("5_death")])
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic_attack"),
+	ExtResource("105_ability"),
+	ExtResource("100_ability"),
+	ExtResource("103_ability"),
+	ExtResource("104_ability"),
+	ExtResource("102_ability"),
+	ExtResource("101_ability")
+])

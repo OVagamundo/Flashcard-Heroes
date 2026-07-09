@@ -288,9 +288,7 @@ When a unit reaches 0 HP, the simulation processes death in this order:
 
 > [!IMPORTANT]
 > **Event Generation vs. Cleanup Separation:**
-> The DEATH event is generated immediately (step 4) to ensure correct TurnLog ordering.
-> Game state cleanup is deferred (step 7) so reactions can reference the dying unit.
-> This separation is invisible to presentation - it only sees events in the correct order.
+> The `DEATH` event is generated immediately, but its insertion into the TurnLog is carefully sequenced. `DEATH` events are injected *after* standard VFX reactions (`BUFF`, `HEAL`, `PROJECTILE`) to ensure dying units visually cast their final buffs, but *before* physical replacement reactions (`SUMMON`, `TRANSFORM`) to prevent sprites from overlapping.
 
 ### Unified Death Registry (`_dead_this_turn`)
 
@@ -373,10 +371,10 @@ To ensure correct interaction between Unit Abilities (like Mimic) and Team Trait
 
 1.  **Unit Abilities (Priority > 100)**: Trigger first.
     *   *Example:* Mimic Transformation (Priority 500). The unit transforms *before* traits calculate.
-2.  **Trait Effects (Priority 100)**: Trigger second.
-    *   `BattleManager` queues a special `_trait_start_effects` reaction with **Priority 100**.
-    *   This ensures that Trait logic (e.g., counting active Earth units) sees the board state *after* Mimics have transformed.
-3.  **Trinkets/Other (Priority < 100)**: Trigger last.
+2.  **Trait Effects (Priority -10)**: Trigger last.
+    *   `BattleManager` queues a special `_trait_start_effects` reaction with **Priority -10**.
+    *   This ensures that Trait logic (e.g., counting active Earth units) sees the board state *after* standard Summons (Priority 0) or Transformations (Priority 500) have entered the board.
+3.  **Trinkets/Other**: Interleave based on their explicit priority values.
 
 This unified queue ensures that state mutations (Transformations) happen *before* state-dependent calculations (Buffs), preventing "missed buffs" on transformed units.
     *   *Result:* +3 Armor (Trait) and +3 Armor (Trinket) result in a smooth +6 Armor visualization and correct final state.

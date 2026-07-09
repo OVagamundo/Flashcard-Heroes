@@ -34,3 +34,4 @@ description_key = "ability.unit_tier1b_counter_on_hurt_l2.desc"
 execute_on_lethal = true
 required_level = 2
 
+max_level = 2

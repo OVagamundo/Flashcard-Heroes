@@ -7,20 +7,13 @@
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="5_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres" id="6_ability_gold"]
 
-[sub_resource type="Resource" id="Resource_spawn_effect"]
-script = ExtResource("2_effect_script")
-target_type = "SELF"
 
-[sub_resource type="Resource" id="Resource_spawn_ability"]
-script = ExtResource("1_script_ability")
-id = &"ability_unit_t2_f_spawn_pwr"
-name_key = "ability.unit_t2_f_gold_pwr.name"
-description_key = "ability.unit_t2_f_gold_pwr.desc"
-trigger = &"on_battle_start"
-effects = Array[Resource]([SubResource("Resource_spawn_effect")])
-priority = 100
-replaces_basic_attack = false
-execute_on_lethal = true
+
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L1.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP_L2.tres" id="102_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L2.tres" id="103_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP_L3.tres" id="104_ability"]
 
 [resource]
 script = ExtResource("3_script")
@@ -38,4 +31,12 @@ base_hp = 3
 base_pwr = 2
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("5_basic_attack"), ExtResource("6_ability_gold"), SubResource("Resource_spawn_ability")])
+ability_definitions = Array[Resource]([
+	ExtResource("5_basic_attack"),
+	ExtResource("6_ability_gold"),
+	ExtResource("102_ability"),
+	ExtResource("104_ability"),
+	ExtResource("101_ability"),
+	ExtResource("103_ability"),
+	ExtResource("100_ability")
+])

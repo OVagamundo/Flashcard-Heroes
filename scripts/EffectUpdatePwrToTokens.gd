@@ -12,17 +12,21 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.new()
 
 	var current_tokens = battle_manager.get_gacha_tokens()
-	var target_pwr = maxi(1, current_tokens) # Min PWR 1
-	var old_pwr = source.current_pwr
+	var multiplier: float = self.parameters.get("multiplier", 1.0)
+	var target_pwr = maxi(1, int(current_tokens * multiplier)) # Min PWR 1
 	
-	# Calculate delta to reach target
-	var delta = target_pwr - old_pwr
+	var base_pwr = source.get_definition_base_pwr()
+	var required_bonus = max(0, target_pwr - base_pwr)
+	
+	var previous_bonus = source.get_meta("token_pwr_bonus", 0)
+	var delta = required_bonus - previous_bonus
 	
 	if delta == 0:
 		return EffectResult.new()
 		
+	source.set_meta("token_pwr_bonus", required_bonus)
+	
 	# Apply change via BattleManager for consistency and signals
-	# Note: We are setting it TO a value, so we calculate the delta.
 	var new_pwr = battle_manager.apply_stat_delta(source, "pwr", delta)
 	
 	# Create visual event
@@ -33,7 +37,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"visual_payload": {
 			"stat": "pwr",
 			"amount": delta,
-			"targets_old_pwr": [old_pwr],
+			"targets_old_pwr": [source.current_pwr - delta],
 			"targets_new_pwr": [new_pwr]
 		}
 	})

@@ -52,11 +52,23 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# 2. RETURN TRANSFORM REQUEST (Simulation Only)
 	# We do NOT mutate state here. We request the transformation.
 	
+	# Calculate Level
+	var level_delta = parameters.get("level_delta", 0)
+	var max_level = parameters.get("max_level", false)
+	var target_level = target_unit.level
+	if max_level:
+		target_level = 3
+	else:
+		target_level += level_delta
+	
+	target_level = clamp(target_level, 1, 3)
+
 	var result := EffectResult.new()
 	
 	result.transform_request = {
 		"self_uuid": source_uuid,
 		"target_unit_id": target_def.id,
+		"target_level": target_level,
 		"target_name": BattleHelpers.get_instance_display_name(target_unit)
 	}
 	

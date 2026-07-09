@@ -610,14 +610,16 @@ func reset_gacha_discounts() -> void:
 func get_black_market_transform_cost() -> int:
 	return 5
 
-func get_transform_result(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
+func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDefinition:
 	var eligible: Array[GachaBallDefinition] = []
 	for definition in Database.get_all_pool_definitions():
 		if not is_instance_valid(definition):
 			continue
-		if definition.id == source_definition_id:
+		if definition.id == source_definition.id:
 			continue
-		if definition.tier != source_tier:
+		if definition.tier != source_definition.tier:
+			continue
+		if definition.category != source_definition.category:
 			continue
 		eligible.append(definition)
 
@@ -642,6 +644,7 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 		var instance_uuid: String = payload.instance_uuid
 		var source_location: LocationIdentifier = payload.source_location
 		var result_definition: GachaBallDefinition = payload.result_definition
+		var source_level: int = payload.get("source_level", 1)
 		
 		if not is_instance_valid(result_definition): return
 		
@@ -650,5 +653,6 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 			
 			var new_instance := GachaBallInstance.new()
 			new_instance.initialize(result_definition)
+			new_instance.level = source_level
 			run_state.add_instance(new_instance, source_location.container, source_location.index)
 			run_state.unlock_recipe_for_result(result_definition.id)

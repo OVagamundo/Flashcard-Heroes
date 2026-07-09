@@ -353,6 +353,19 @@ static func handle_damage_effect(
 				}))
 				tgt_uuid = guardian.ball_uuid
 				tgt = guardian
+				
+				# Trigger Guardian passive effects (e.g., gain Armor)
+				var combat_sim = battle_manager._combat
+				var intercept_start = combat_sim._pending_reactions.size()
+				
+				AbilityResolver.process_trigger(&"passive_intercept", {
+					"source_uuid": guardian.ball_uuid,
+					"is_simulation": true
+				})
+				
+				combat_sim.drain_reactions_inline(intercept_start, battle_manager)
+				var guardian_results = combat_sim.collect_and_clear_inline_events()
+				result.events.append_array(guardian_results)
 		
 		original_target_uuids.append(original_tgt_uuid)
 		targets_old_hp.append(tgt.current_hp)
@@ -981,6 +994,10 @@ static func handle_summon_units(
 		# Create new unit
 		var new_unit := GachaBallInstance.new()
 		new_unit.initialize(unit_def)
+		if summon_data.has("level"):
+			var target_level = summon_data.get("level")
+			for i in range(1, target_level):
+				new_unit.level_up()
 		new_unit.reset_battle_stats_silent()
 		
 		# Equip items if provided in summon data
@@ -1075,13 +1092,17 @@ static func handle_mirror_transform(
 		}
 	}))
 	
-	# 3. State Mutation: Discard Items
-	var items_to_discard = source.equipped_item_uuids.duplicate()
-	for item_uuid in items_to_discard:
+	# 3. State Mutation: Preserve items for the new unit
+	var items_to_transfer = []
+	for slot_idx in range(source.equipped_item_uuids.size()):
+		var item_uuid = source.equipped_item_uuids[slot_idx]
 		if not item_uuid.is_empty():
 			var item_inst = battle_manager.get_instance_by_uuid(item_uuid)
 			if is_instance_valid(item_inst):
-				InventoryOperations.move_instance_to_discard(battle_manager._state, item_inst)
+				items_to_transfer.append({"uuid": item_uuid, "slot": slot_idx})
+				source.unequip_item_bonus(item_inst)
+				item_inst.equipped_on_uuid = ""
+				item_inst.equipped_slot_index = -1
 	# Clear on source
 	source.equipped_item_uuids.fill("")
 	
@@ -1096,16 +1117,23 @@ static func handle_mirror_transform(
 	# 5. Determine Summon Location
 	# We want to summon EXACTLY where we were.
 	
+	var target_level: int = transform_data.get("target_level", 1)
+
 	# Create the new instance
 	var new_def = Database.get_definition(target_unit_id)
 	if is_instance_valid(new_def):
 		var new_unit = GachaBallInstance.new()
 		new_unit.initialize(new_def)
+		new_unit.level = target_level
 		new_unit.reset_battle_stats_silent()
 		
 		# Place it in the container
 		# Use atomic API to register and place
 		battle_manager._state.bm_add_instance(new_unit, my_loc.container, my_loc.index)
+		
+		# Transfer preserved items to the new unit
+		for transfer_data in items_to_transfer:
+			InventoryOperations.equip_item(battle_manager._state, transfer_data["uuid"], new_unit.ball_uuid, transfer_data["slot"])
 		
 		# Populate result
 		result.new_instances.append(new_unit)

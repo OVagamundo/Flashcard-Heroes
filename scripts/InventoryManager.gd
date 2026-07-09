@@ -84,7 +84,12 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
-		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
+		var context: Dictionary = {
+			"source_location": source_loc, 
+			"target_location": target_loc, 
+			"recipe_id": recipe.id,
+			"result_id": recipe.result_id
+		}
 		
 		# VISUAL FIX: Hide the source view so it doesn't snap back while the prompt is open.
 		# CRITICAL: Use GIR's known source view, NOT WindowManager lookup (which might find placeholders/wrong views).

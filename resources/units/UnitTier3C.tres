@@ -4,6 +4,9 @@
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitC.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3C_SoulSummon.tres" id="3_ability"]
 
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3C_SoulSummon_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3C_SoulSummon_L3.tres" id="101_ability"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"unit_t3_c"
@@ -20,4 +23,8 @@ base_hp = 5
 base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_ability")])
+ability_definitions = Array[Resource]([
+	ExtResource("3_ability"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability")
+])

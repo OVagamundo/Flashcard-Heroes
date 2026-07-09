@@ -3,7 +3,7 @@
 extends EffectDefinition
 
 ## Grants +1 PWR to the target (ally behind the source unit).
-## Used by the Empath unit's Empathic Link ability.
+## Used by the Windy unit's Empathic Link ability.
 
 func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	var is_simulation: bool = context.get("is_simulation", false)

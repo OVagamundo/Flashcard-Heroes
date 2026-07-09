@@ -30,8 +30,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 		
 	# Apply Stats
-	var hp_amount: int = multiplier * 3
-	var pwr_amount: int = multiplier * 3
+	var hp_scale = parameters.get("hp_per_5_gold", 3)
+	var pwr_scale = parameters.get("pwr_per_5_gold", 3)
+	var hp_amount: int = multiplier * hp_scale
+	var pwr_amount: int = multiplier * pwr_scale
 	
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr

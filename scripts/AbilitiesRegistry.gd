@@ -30,7 +30,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier1a_passive_heal": {
-		"owner": "Apprentice (T1A)",
+		"owner": "Rocky (T1A)",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_NON_LETHAL",
 		"effect": "Heal self for PWR",
@@ -38,7 +38,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier1b_counter_on_hurt": {
-		"owner": "Squire (T1B)",
+		"owner": "Burny (T1B)",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_RECEIVED",
 		"effect": "Attack the attacker for PWR damage",
@@ -187,7 +187,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Phoenix Egg (T2C02)",
 		"trigger": "on_death",
 		"condition": null,
-		"effect": "Summon a Squire when holder dies",
+		"effect": "Summon a Burny when holder dies",
 	},
 	
 	# ==================== TRINKET ABILITIES ====================

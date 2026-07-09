@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitC.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff_L3.tres" id="l3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -20,4 +22,4 @@ base_hp = 3
 base_pwr = 3
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = [ExtResource("3_ability")]
+ability_definitions = [ExtResource("3_ability"), ExtResource("l2"), ExtResource("l3")]

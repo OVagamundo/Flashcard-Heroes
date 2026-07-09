@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectModifyStatsByGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectGoldScaling_2"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_l_ability",
+"hp_per_5_gold": 4,
+"pwr_per_5_gold": 4
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_l_ability_l2"
+name_key = "ability.unit_t3_l.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectGoldScaling_2")])
+description_key = "ability.unit_t3_l_l2.desc"
+priority = 0
+required_level = 2
+max_level = 2

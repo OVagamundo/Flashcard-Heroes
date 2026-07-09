@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDopplegangerScaling.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDopplegangerScaling_2"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "scale_amount": 4 }
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_scale_l2"
+name_key = "ability.doppleganger_scale.name"
+description_key = "ability.doppleganger_scale_l2.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([SubResource("EffectDopplegangerScaling_2")])
+execute_on_lethal = false
+required_level = 2
+max_level = 2

@@ -443,6 +443,15 @@ func _index_in_active_group(node: Node) -> int:
 			return i
 	return -1
 
+# Checks if a given global screen point is inside any active inspection window.
+func is_point_inside_any_inspection_window(pos: Vector2) -> bool:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if is_instance_valid(w) and w.is_visible_in_tree():
+			if w.get_global_rect().has_point(pos):
+				return true
+	return false
+
 # Public API for inspection windows to handle background clicks locally.
 # Windows should call this from their `_gui_input` when detecting a click on their
 # background. This prunes only the descendants of the clicked window (W3),
@@ -1061,6 +1070,11 @@ func _update_tree_pause_state() -> void:
 				has_tooltip = true
 	if has_tooltip:
 		has_tooltip = GlobalInteractionRouter.is_inspection_locked()
+		
+	# Only freeze the game for inspection windows during battle contexts.
+	# Outside of battle, the game should not freeze when inspecting.
+	if not GameManager.is_in_battle:
+		has_tooltip = false
 		
 	get_tree().paused = has_tooltip
 

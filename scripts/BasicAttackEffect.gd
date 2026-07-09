@@ -124,6 +124,19 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			}))
 			final_target_uuid = guardian.ball_uuid
 			final_target = guardian
+			
+			# Trigger Guardian passive effects (e.g., gain Armor)
+			var combat_sim = battle_manager._combat
+			var intercept_start = combat_sim._pending_reactions.size()
+			
+			AbilityResolver.process_trigger(&"passive_intercept", {
+				"source_uuid": guardian.ball_uuid,
+				"is_simulation": true
+			})
+			
+			combat_sim.drain_reactions_inline(intercept_start, battle_manager)
+			var guardian_results = combat_sim.collect_and_clear_inline_events()
+			pre_impact_events.append_array(guardian_results)
 
 	# IMPACT PHASE (Damage Application)
 	var old_hp = final_target.current_hp

@@ -17,6 +17,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if stat == null or amount <= 0:
 		return EffectResult.empty() if is_simulation else null
 		
+	var multiplier = parameters.get("effectiveness", 1.0)
+	amount = int(floor(amount * multiplier))
+		
 	# Validate targets
 	if targets.is_empty():
 		return EffectResult.empty() if is_simulation else null

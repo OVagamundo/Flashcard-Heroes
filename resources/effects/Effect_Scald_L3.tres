@@ -1,0 +1,10 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/EffectScald.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"multiplier": 2.0
+}
+target_type = &"FRONTMOST_ENEMY"
